@@ -17,7 +17,8 @@
 
 import re
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
+from decimal import Decimal
 
 import pyarrow as pa
 import pytest
@@ -999,3 +1000,108 @@ def test_ensure_expr_list_bytes():
 def test_ensure_expr_list_bytearray():
     with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         ensure_expr_list(bytearray(b"a"))
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        # Boolean
+        pa.scalar(True, type=pa.bool_()),  # noqa: FBT003
+        pa.scalar(False, type=pa.bool_()),  # noqa: FBT003
+        # Integers - signed
+        pa.scalar(127, type=pa.int8()),
+        pa.scalar(-128, type=pa.int8()),
+        pa.scalar(32767, type=pa.int16()),
+        pa.scalar(-32768, type=pa.int16()),
+        pa.scalar(2147483647, type=pa.int32()),
+        pa.scalar(-2147483648, type=pa.int32()),
+        pa.scalar(9223372036854775807, type=pa.int64()),
+        pa.scalar(-9223372036854775808, type=pa.int64()),
+        # Integers - unsigned
+        pa.scalar(255, type=pa.uint8()),
+        pa.scalar(65535, type=pa.uint16()),
+        pa.scalar(4294967295, type=pa.uint32()),
+        pa.scalar(18446744073709551615, type=pa.uint64()),
+        # Floating point
+        pa.scalar(3.14, type=pa.float32()),
+        pa.scalar(3.141592653589793, type=pa.float64()),
+        pa.scalar(float("inf"), type=pa.float64()),
+        pa.scalar(float("-inf"), type=pa.float64()),
+        # Decimal
+        pa.scalar(Decimal("123.45"), type=pa.decimal128(10, 2)),
+        pa.scalar(Decimal("-999999.999"), type=pa.decimal128(12, 3)),
+        pa.scalar(Decimal("0.00001"), type=pa.decimal128(10, 5)),
+        pa.scalar(Decimal("123.45"), type=pa.decimal256(20, 2)),
+        # Strings
+        pa.scalar("hello world", type=pa.string()),
+        pa.scalar("", type=pa.string()),
+        pa.scalar("unicode: 日本語 🎉", type=pa.string()),
+        pa.scalar("hello", type=pa.large_string()),
+        # Binary
+        pa.scalar(b"binary data", type=pa.binary()),
+        pa.scalar(b"", type=pa.binary()),
+        pa.scalar(b"\x00\x01\x02\xff", type=pa.binary()),
+        pa.scalar(b"large binary", type=pa.large_binary()),
+        pa.scalar(b"fixed!", type=pa.binary(6)),  # fixed size binary
+        # Date
+        pa.scalar(date(2023, 8, 18), type=pa.date32()),
+        pa.scalar(date(1970, 1, 1), type=pa.date32()),
+        pa.scalar(date(2023, 8, 18), type=pa.date64()),
+        # Time
+        pa.scalar(time(12, 30, 45), type=pa.time32("s")),
+        pa.scalar(time(12, 30, 45, 123000), type=pa.time32("ms")),
+        pa.scalar(time(12, 30, 45, 123456), type=pa.time64("us")),
+        pa.scalar(
+            12 * 3600 * 10**9 + 30 * 60 * 10**9, type=pa.time64("ns")
+        ),  # raw nanos
+        # Timestamp - various resolutions
+        pa.scalar(1692335046, type=pa.timestamp("s")),
+        pa.scalar(1692335046618, type=pa.timestamp("ms")),
+        pa.scalar(1692335046618897, type=pa.timestamp("us")),
+        pa.scalar(1692335046618897499, type=pa.timestamp("ns")),
+        # Timestamp with timezone
+        pa.scalar(1692335046, type=pa.timestamp("s", tz="UTC")),
+        pa.scalar(1692335046618897, type=pa.timestamp("us", tz="America/New_York")),
+        pa.scalar(1692335046618897499, type=pa.timestamp("ns", tz="Europe/London")),
+        # Duration
+        pa.scalar(3600, type=pa.duration("s")),
+        pa.scalar(3600000, type=pa.duration("ms")),
+        pa.scalar(3600000000, type=pa.duration("us")),
+        pa.scalar(3600000000000, type=pa.duration("ns")),
+        # Interval
+        pa.scalar((1, 15, 3600000000000), type=pa.month_day_nano_interval()),
+        pa.scalar((0, 0, 0), type=pa.month_day_nano_interval()),
+        pa.scalar((12, 30, 0), type=pa.month_day_nano_interval()),
+        # Null
+        pa.scalar(None, type=pa.null()),
+        pa.scalar(None, type=pa.int64()),
+        pa.scalar(None, type=pa.string()),
+        # List types
+        pa.scalar([1, 2, 3], type=pa.list_(pa.int64())),
+        pa.scalar([], type=pa.list_(pa.int64())),
+        pa.scalar(["a", "b", "c"], type=pa.list_(pa.string())),
+        pa.scalar([[1, 2], [3, 4]], type=pa.list_(pa.list_(pa.int64()))),
+        pa.scalar([1, 2, 3], type=pa.large_list(pa.int64())),
+        # Fixed size list
+        pa.scalar([1, 2, 3], type=pa.list_(pa.int64(), 3)),
+        # Struct
+        pa.scalar(
+            {"x": 1, "y": 2}, type=pa.struct([("x", pa.int64()), ("y", pa.int64())])
+        ),
+        pa.scalar(
+            {"name": "Alice", "age": 30},
+            type=pa.struct([("name", pa.string()), ("age", pa.int32())]),
+        ),
+        pa.scalar(
+            {"nested": {"a": 1}},
+            type=pa.struct([("nested", pa.struct([("a", pa.int64())]))]),
+        ),
+        # Map
+        pa.scalar([("key1", 1), ("key2", 2)], type=pa.map_(pa.string(), pa.int64())),
+    ],
+    ids=lambda v: f"{v.type}",
+)
+def test_round_trip_pyscalar_value(ctx: SessionContext, value: pa.Scalar):
+    df = ctx.sql("select 1 as a")
+    df = df.select(lit(value))
+    assert pa.table(df)[0][0] == value
