@@ -42,7 +42,7 @@ protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
-tokio = { version = "1.47", features = [
+tokio = { version = "1.49", features = [
     "macros",
     "rt",
     "rt-multi-thread",
