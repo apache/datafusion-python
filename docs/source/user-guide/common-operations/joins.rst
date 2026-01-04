@@ -78,6 +78,10 @@ Full Join
 A full join merges rows from two tables based on a related column, returning all rows from both tables, even if there
 is no match. Unmatched rows will have null values.
 
+The drop_duplicate_keys option is not supported for FULL JOINs because left and right join key columns may contain
+non-equivalent values (including NULLs). For FULL JOINs, both key columns are always preserved and users should perform
+explicit post-processing if desired.
+
 .. ipython:: python
 
     left.join(right, left_on="customer_id", right_on="id", how="full")

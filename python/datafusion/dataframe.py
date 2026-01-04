@@ -832,6 +832,10 @@ class DataFrame:
             drop_duplicate_keys: When True, the columns from the right DataFrame
                 that have identical names in the ``on`` fields to the left DataFrame
                 will be dropped.
+                This option is not supported for FULL JOINs because left and right join
+                key columns may contain non-equivalent values (including NULLs). For
+                FULL JOINs, both key columns are always preserved and users should
+                perform explicit post-processing if desired.
             join_keys: Tuple of two lists of column names to join on. [Deprecated]
 
         Returns:
