@@ -1044,11 +1044,18 @@ impl PyDataFrame {
     /// Collect the batches and pass to Arrow Table
     fn to_arrow_table(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let batches = self.collect(py)?.into_pyobject(py)?;
-        let schema = self.schema().into_pyobject(py)?;
+
+        // only use the DataFrame's schema if there are no batches, otherwise let the schema be
+        // determined from the batches (avoids some inconsistencies with nullable columns)
+        let args = if batches.len()? == 0 {
+            let schema = self.schema().into_pyobject(py)?;
+            PyTuple::new(py, &[batches, schema])?
+        } else {
+            PyTuple::new(py, &[batches])?
+        };
 
         // Instantiate pyarrow Table object and use its from_batches method
         let table_class = py.import("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new(py, &[batches, schema])?;
         let table: Py<PyAny> = table_class.call_method1("from_batches", args)?.into();
         Ok(table)
     }

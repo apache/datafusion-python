@@ -1898,6 +1898,53 @@ def test_to_arrow_table(df):
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 
+def test_parquet_non_null_column_to_pyarrow(ctx, tmp_path):
+    path = tmp_path.joinpath("t.parquet")
+
+    ctx.sql("create table t_(a int not null)").collect()
+    ctx.sql("insert into t_ values (1), (2), (3)").collect()
+    ctx.sql(f"copy (select * from t_) to '{path}'").collect()
+
+    ctx.register_parquet("t", path)
+    pyarrow_table = ctx.sql("select max(a) as m from t").to_arrow_table()
+    assert pyarrow_table.to_pydict() == {"m": [3]}
+
+
+def test_parquet_empty_batch_to_pyarrow(ctx, tmp_path):
+    path = tmp_path.joinpath("t.parquet")
+
+    ctx.sql("create table t_(a int not null)").collect()
+    ctx.sql("insert into t_ values (1), (2), (3)").collect()
+    ctx.sql(f"copy (select * from t_) to '{path}'").collect()
+
+    ctx.register_parquet("t", path)
+    pyarrow_table = ctx.sql("select * from t limit 0").to_arrow_table()
+    assert pyarrow_table.schema == pa.schema(
+        [
+            pa.field("a", pa.int32(), nullable=False),
+        ]
+    )
+
+
+def test_parquet_null_aggregation_to_pyarrow(ctx, tmp_path):
+    path = tmp_path.joinpath("t.parquet")
+
+    ctx.sql("create table t_(a int not null)").collect()
+    ctx.sql("insert into t_ values (1), (2), (3)").collect()
+    ctx.sql(f"copy (select * from t_) to '{path}'").collect()
+
+    ctx.register_parquet("t", path)
+    pyarrow_table = ctx.sql(
+        "select max(a) as m from (select * from t where a < 0)"
+    ).to_arrow_table()
+    assert pyarrow_table.to_pydict() == {"m": [None]}
+    assert pyarrow_table.schema == pa.schema(
+        [
+            pa.field("m", pa.int32(), nullable=True),
+        ]
+    )
+
+
 def test_execute_stream(df):
     stream = df.execute_stream()
     assert all(batch is not None for batch in stream)
