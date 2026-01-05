@@ -896,10 +896,10 @@ def test_alias_with_metadata(df):
             col("d").arrow_typeof(),
             pa.array(
                 [
-                    "List(nullable Int64)",
-                    "List(nullable Int64)",
-                    "List(nullable Int64)",
-                    "List(nullable Int64)",
+                    "List(Int64)",
+                    "List(Int64)",
+                    "List(Int64)",
+                    "List(Int64)",
                 ],
                 type=pa.string(),
             ),

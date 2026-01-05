@@ -286,7 +286,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pyarrow", marker = "python_full_version < '3.14'", specifier = ">=11.0.0" },
+    { name = "pyarrow", marker = "python_full_version < '3.14'", specifier = ">=16.0.0" },
     { name = "pyarrow", marker = "python_full_version >= '3.14'", specifier = ">=22.0.0" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
