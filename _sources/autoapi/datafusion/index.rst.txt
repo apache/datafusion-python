@@ -131,7 +131,8 @@ Package Contents
 
 
 
-.. py:class:: AggregateUDF(name: str, accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+.. py:class:: AggregateUDF(name: str, accumulator: collections.abc.Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+              AggregateUDF(name: str, accumulator: AggregateUDFExportable, input_types: None = ..., return_type: None = ..., state_type: None = ..., volatility: None = ...)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -159,7 +160,7 @@ Package Contents
 
 
 
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable) -> AggregateUDF
+   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -170,8 +171,10 @@ Package Contents
 
 
 
-   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
-                  udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
+   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
+                  udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+                  udaf(accum: AggregateUDFExportable) -> AggregateUDF
+                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -564,7 +567,7 @@ Package Contents
 
 
 
-   .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
+   .. py:method:: alias(name: str, metadata: dict[str, str] | None = None) -> Expr
 
       Assign a name to the expression.
 
@@ -687,7 +690,7 @@ Package Contents
 
 
 
-   .. py:method:: cast(to: Union[pyarrow.DataType[Any], type]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | type) -> Expr
 
       Cast to a new data type.
 
@@ -797,13 +800,13 @@ Package Contents
 
 
 
-   .. py:method:: fill_nan(value: Optional[Union[Any, Expr]] = None) -> Expr
+   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
 
       Fill NaN values with a provided value.
 
 
 
-   .. py:method:: fill_null(value: Optional[Union[Any, Expr]] = None) -> Expr
+   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
 
       Fill NULL values with a provided value.
 
@@ -981,7 +984,7 @@ Package Contents
 
 
 
-   .. py:method:: order_by(*exprs: Union[Expr, SortExpr]) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
@@ -1015,7 +1018,7 @@ Package Contents
 
    .. py:method:: python_value() -> Any
 
-      Extracts the Expr value into a PyObject.
+      Extracts the Expr value into `Any`.
 
       This is only valid for literal expressions.
 
@@ -1351,7 +1354,7 @@ Package Contents
    .. py:attribute:: _raw_plan
 
 
-.. py:class:: ParquetColumnOptions(encoding: Optional[str] = None, dictionary_enabled: Optional[bool] = None, compression: Optional[str] = None, statistics_enabled: Optional[str] = None, bloom_filter_enabled: Optional[bool] = None, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None)
+.. py:class:: ParquetColumnOptions(encoding: str | None = None, dictionary_enabled: bool | None = None, compression: str | None = None, statistics_enabled: str | None = None, bloom_filter_enabled: bool | None = None, bloom_filter_fpp: float | None = None, bloom_filter_ndv: int | None = None)
 
    Parquet options for individual columns.
 
@@ -1418,7 +1421,7 @@ Package Contents
 
 
 
-.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: Optional[str] = 'zstd(3)', compression_level: Optional[int] = None, dictionary_enabled: Optional[bool] = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: Optional[str] = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: Optional[int] = 64, statistics_truncate_length: Optional[int] = None, data_page_row_count_limit: int = 20000, encoding: Optional[str] = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None)
+.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: str | None = 'zstd(3)', compression_level: int | None = None, dictionary_enabled: bool | None = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: str | None = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: int | None = 64, statistics_truncate_length: int | None = None, data_page_row_count_limit: int = 20000, encoding: str | None = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: float | None = None, bloom_filter_ndv: int | None = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: dict[str, ParquetColumnOptions] | None = None)
 
    Advanced parquet writer options.
 
@@ -1601,6 +1604,23 @@ Package Contents
    See the :py:class:`RecordBatchStream` iterator for generating this class.
 
 
+   .. py:method:: __arrow_c_array__(requested_schema: object | None = None) -> tuple[object, object]
+
+      Export the record batch via the Arrow C Data Interface.
+
+      This allows zero-copy interchange with libraries that support the
+      `Arrow PyCapsule interface <https://arrow.apache.org/docs/format/
+      CDataInterface/PyCapsuleInterface.html>`_.
+
+      :param requested_schema: Attempt to provide the record batch using this
+                               schema. Only straightforward projections such as column
+                               selection or reordering are applied.
+
+      :returns: Two Arrow PyCapsule objects representing the ``ArrowArray`` and
+                ``ArrowSchema``.
+
+
+
    .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
 
       Convert to :py:class:`pa.RecordBatch`.
@@ -1622,7 +1642,7 @@ Package Contents
 
    .. py:method:: __aiter__() -> typing_extensions.Self
 
-      Async iterator function.
+      Return an asynchronous iterator over record batches.
 
 
 
@@ -1630,19 +1650,19 @@ Package Contents
       :async:
 
 
-      Async iterator function.
+      Return the next :py:class:`RecordBatch` in the stream asynchronously.
 
 
 
    .. py:method:: __iter__() -> typing_extensions.Self
 
-      Iterator function.
+      Return an iterator over record batches.
 
 
 
    .. py:method:: __next__() -> RecordBatch
 
-      Iterator function.
+      Return the next :py:class:`RecordBatch` in the stream.
 
 
 
@@ -1821,7 +1841,7 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str, func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -1859,8 +1879,8 @@ Package Contents
 
 
 
-   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, ScalarUDF]
-                  udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
+   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
+                  udf(func: collections.abc.Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
                   udf(func: ScalarUDFExportable) -> ScalarUDF
       :staticmethod:
 
@@ -2120,7 +2140,7 @@ Package Contents
       Returns the schema associated with this table.
 
 
-.. py:class:: TableFunction(name: str, func: Callable[[], any])
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any])
 
    Class for performing user-defined table functions (UDTF).
 
@@ -2145,7 +2165,7 @@ Package Contents
 
 
 
-   .. py:method:: _create_table_udf(func: Callable[Ellipsis, Any], name: str) -> TableFunction
+   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
       :staticmethod:
 
 
@@ -2153,7 +2173,7 @@ Package Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
       :staticmethod:
 
 
@@ -2161,8 +2181,8 @@ Package Contents
 
 
 
-   .. py:method:: udtf(name: str) -> Callable[Ellipsis, Any]
-                  udtf(func: Callable[[], Any], name: str) -> TableFunction
+   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
+                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
       :staticmethod:
 
 
@@ -2173,7 +2193,7 @@ Package Contents
    .. py:attribute:: _udtf
 
 
-.. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
+.. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
 
@@ -2215,7 +2235,7 @@ Package Contents
    .. py:attribute:: window_frame
 
 
-.. py:class:: WindowUDF(name: str, func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+.. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
 
    Class for performing window user-defined functions (UDF).
 
@@ -2243,7 +2263,7 @@ Package Contents
 
 
 
-   .. py:method:: _create_window_udf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+   .. py:method:: _create_window_udf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
       :staticmethod:
 
 
@@ -2251,7 +2271,7 @@ Package Contents
 
 
 
-   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
       :staticmethod:
 
 
@@ -2259,7 +2279,7 @@ Package Contents
 
 
 
-   .. py:method:: _get_default_name(func: Callable) -> str
+   .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
       :staticmethod:
 
 
@@ -2286,8 +2306,8 @@ Package Contents
 
 
 
-   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, WindowUDF]
-                  udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
+                  udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
       :staticmethod:
 
 
@@ -2366,12 +2386,12 @@ Package Contents
    ... )
 
 
-.. py:function:: lit(value) -> expr.Expr
+.. py:function:: lit(value: Any) -> expr.Expr
 
    Create a literal expression.
 
 
-.. py:function:: literal(value) -> expr.Expr
+.. py:function:: literal(value: Any) -> expr.Expr
 
    Create a literal expression.
 

@@ -52,7 +52,7 @@ Module Contents
 
 
 
-.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, max_memory_bytes: int = 2 * 1024 * 1024, min_rows_display: int = 20, repr_rows: int = 10, enable_cell_expansion: bool = True, custom_css: Optional[str] = None, show_truncation_message: bool = True, style_provider: Optional[StyleProvider] = None, use_shared_styles: bool = True)
+.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, max_memory_bytes: int = 2 * 1024 * 1024, min_rows_display: int = 20, repr_rows: int = 10, enable_cell_expansion: bool = True, custom_css: str | None = None, show_truncation_message: bool = True, style_provider: StyleProvider | None = None, use_shared_styles: bool = True)
 
    Configurable HTML formatter for DataFusion DataFrames.
 
@@ -237,7 +237,7 @@ Module Contents
 
 
 
-   .. py:method:: set_custom_cell_builder(builder: Callable[[Any, int, int, str], str]) -> None
+   .. py:method:: set_custom_cell_builder(builder: collections.abc.Callable[[Any, int, int, str], str]) -> None
 
       Set a custom cell builder function.
 
@@ -245,7 +245,7 @@ Module Contents
 
 
 
-   .. py:method:: set_custom_header_builder(builder: Callable[[Any], str]) -> None
+   .. py:method:: set_custom_header_builder(builder: collections.abc.Callable[[Any], str]) -> None
 
       Set a custom header builder function.
 
@@ -254,13 +254,13 @@ Module Contents
 
 
    .. py:attribute:: _custom_cell_builder
-      :type:  Optional[Callable[[Any, int, int, str], str]]
+      :type:  collections.abc.Callable[[Any, int, int, str], str] | None
       :value: None
 
 
 
    .. py:attribute:: _custom_header_builder
-      :type:  Optional[Callable[[Any], str]]
+      :type:  collections.abc.Callable[[Any], str] | None
       :value: None
 
 

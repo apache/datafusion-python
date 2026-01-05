@@ -866,9 +866,13 @@ Module Contents
 
 
 
-   .. py:method:: sql(query: str, options: SQLOptions | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: sql(query: str, options: SQLOptions | None = None, param_values: dict[str, Any] | None = None, **named_params: Any) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.DataFrame` from SQL query text.
+
+      See the online documentation for a description of how to perform
+      parameterized substitution via either the ``param_values`` option
+      or passing in ``named_params``.
 
       Note: This API implements DDL statements such as ``CREATE TABLE`` and
       ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
@@ -877,12 +881,15 @@ Module Contents
 
       :param query: SQL query text.
       :param options: If provided, the query will be validated against these options.
+      :param param_values: Provides substitution of scalar values in the query
+                           after parsing.
+      :param named_params: Provides string or DataFrame substitution in the query string.
 
       :returns: DataFrame representation of the SQL query.
 
 
 
-   .. py:method:: sql_with_options(query: str, options: SQLOptions) -> datafusion.dataframe.DataFrame
+   .. py:method:: sql_with_options(query: str, options: SQLOptions, param_values: dict[str, Any] | None = None, **named_params: Any) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
@@ -891,6 +898,9 @@ Module Contents
 
       :param query: SQL query text.
       :param options: SQL options.
+      :param param_values: Provides substitution of scalar values in the query
+                           after parsing.
+      :param named_params: Provides string or DataFrame substitution in the query string.
 
       :returns: DataFrame representation of the SQL query.
 

@@ -339,7 +339,7 @@ Module Contents
 
 
 
-   .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
+   .. py:method:: alias(name: str, metadata: dict[str, str] | None = None) -> Expr
 
       Assign a name to the expression.
 
@@ -462,7 +462,7 @@ Module Contents
 
 
 
-   .. py:method:: cast(to: Union[pyarrow.DataType[Any], type]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | type) -> Expr
 
       Cast to a new data type.
 
@@ -572,13 +572,13 @@ Module Contents
 
 
 
-   .. py:method:: fill_nan(value: Optional[Union[Any, Expr]] = None) -> Expr
+   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
 
       Fill NaN values with a provided value.
 
 
 
-   .. py:method:: fill_null(value: Optional[Union[Any, Expr]] = None) -> Expr
+   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
 
       Fill NULL values with a provided value.
 
@@ -756,7 +756,7 @@ Module Contents
 
 
 
-   .. py:method:: order_by(*exprs: Union[Expr, SortExpr]) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
@@ -790,7 +790,7 @@ Module Contents
 
    .. py:method:: python_value() -> Any
 
-      Extracts the Expr value into a PyObject.
+      Extracts the Expr value into `Any`.
 
       This is only valid for literal expressions.
 
@@ -1048,7 +1048,7 @@ Module Contents
    .. py:attribute:: raw_sort
 
 
-.. py:class:: Window(partition_by: Optional[Union[list[Expr], Expr]] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[Union[list[Union[SortExpr, Expr, str]], Expr, SortExpr, str]] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
+.. py:class:: Window(partition_by: list[Expr] | Expr | None = None, window_frame: WindowFrame | None = None, order_by: list[SortExpr | Expr | str] | Expr | SortExpr | str | None = None, null_treatment: datafusion.common.NullTreatment | None = None)
 
    Define reusable window parameters.
 
@@ -1080,7 +1080,7 @@ Module Contents
 
 
 
-.. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
+.. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
 
@@ -1131,7 +1131,7 @@ Module Contents
    Constructs a window frame bound.
 
 
-   .. py:method:: get_offset() -> Optional[int]
+   .. py:method:: get_offset() -> int | None
 
       Returns the offset of the window frame.
 
@@ -1164,7 +1164,7 @@ Module Contents
    .. py:attribute:: frame_bound
 
 
-.. py:function:: ensure_expr(value: Union[Expr, Any]) -> datafusion._internal.expr.Expr
+.. py:function:: ensure_expr(value: Expr | Any) -> datafusion._internal.expr.Expr
 
    Return the internal expression from ``Expr`` or raise ``TypeError``.
 
@@ -1179,7 +1179,7 @@ Module Contents
    :raises TypeError: If ``value`` is not an instance of :class:`Expr`.
 
 
-.. py:function:: ensure_expr_list(exprs: Iterable[Union[Expr, Iterable[Expr]]]) -> list[datafusion._internal.expr.Expr]
+.. py:function:: ensure_expr_list(exprs: collections.abc.Iterable[Expr | collections.abc.Iterable[Expr]]) -> list[datafusion._internal.expr.Expr]
 
    Flatten an iterable of expressions, validating each via ``ensure_expr``.
 

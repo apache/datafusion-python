@@ -427,6 +427,15 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch.__arrow_c_array__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatch.__arrow_c_array__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch.to_pyarrow">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -561,6 +570,25 @@
 <p>This constructor is generally not called by the end user.</p>
 <p>See the <a class="reference internal" href="#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a> iterator for generating this class.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.record_batch.RecordBatch.__arrow_c_array__">
+<span class="sig-name descname"><span class="pre">__arrow_c_array__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatch.__arrow_c_array__" title="Link to this definition">¶</a></dt>
+<dd><p>Export the record batch via the Arrow C Data Interface.</p>
+<p>This allows zero-copy interchange with libraries that support the
+<a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html">Arrow PyCapsule interface</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>requested_schema</strong> – Attempt to provide the record batch using this
+schema. Only straightforward projections such as column
+selection or reordering are applied.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Two Arrow PyCapsule objects representing the <code class="docutils literal notranslate"><span class="pre">ArrowArray</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ArrowSchema</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatch.to_pyarrow">
 <span class="sig-name descname"><span class="pre">to_pyarrow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatch.to_pyarrow" title="Link to this definition">¶</a></dt>
 <dd><p>Convert to <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p>
@@ -583,25 +611,25 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__aiter__">
 <span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
-<dd><p>Async iterator function.</p>
+<dd><p>Return an asynchronous iterator over record batches.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__anext__">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.record_batch.RecordBatch" title="datafusion.record_batch.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__anext__" title="Link to this definition">¶</a></dt>
-<dd><p>Async iterator function.</p>
+<dd><p>Return the next <a class="reference internal" href="#datafusion.record_batch.RecordBatch" title="datafusion.record_batch.RecordBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordBatch</span></code></a> in the stream asynchronously.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__iter__">
 <span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__iter__" title="Link to this definition">¶</a></dt>
-<dd><p>Iterator function.</p>
+<dd><p>Return an iterator over record batches.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__next__">
 <span class="sig-name descname"><span class="pre">__next__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.record_batch.RecordBatch" title="datafusion.record_batch.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__next__" title="Link to this definition">¶</a></dt>
-<dd><p>Iterator function.</p>
+<dd><p>Return the next <a class="reference internal" href="#datafusion.record_batch.RecordBatch" title="datafusion.record_batch.RecordBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordBatch</span></code></a> in the stream.</p>
 </dd></dl>
 
 <dl class="py method">

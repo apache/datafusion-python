@@ -38,6 +38,14 @@ Classes
    datafusion.user_defined.WindowUDFExportable
 
 
+Functions
+---------
+
+.. autoapisummary::
+
+   datafusion.user_defined._is_pycapsule
+
+
 Module Contents
 ---------------
 
@@ -78,7 +86,8 @@ Module Contents
 
 
 
-.. py:class:: AggregateUDF(name: str, accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+.. py:class:: AggregateUDF(name: str, accumulator: collections.abc.Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+              AggregateUDF(name: str, accumulator: AggregateUDFExportable, input_types: None = ..., return_type: None = ..., state_type: None = ..., volatility: None = ...)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -106,7 +115,7 @@ Module Contents
 
 
 
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable) -> AggregateUDF
+   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -117,8 +126,10 @@ Module Contents
 
 
 
-   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
-                  udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
+   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
+                  udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+                  udaf(accum: AggregateUDFExportable) -> AggregateUDF
+                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -206,7 +217,7 @@ Module Contents
    .. py:method:: __datafusion_aggregate_udf__() -> object
 
 
-.. py:class:: ScalarUDF(name: str, func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -244,8 +255,8 @@ Module Contents
 
 
 
-   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, ScalarUDF]
-                  udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
+   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
+                  udf(func: collections.abc.Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
                   udf(func: ScalarUDFExportable) -> ScalarUDF
       :staticmethod:
 
@@ -308,7 +319,7 @@ Module Contents
    .. py:method:: __datafusion_scalar_udf__() -> object
 
 
-.. py:class:: TableFunction(name: str, func: Callable[[], any])
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any])
 
    Class for performing user-defined table functions (UDTF).
 
@@ -333,7 +344,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf(func: Callable[Ellipsis, Any], name: str) -> TableFunction
+   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
       :staticmethod:
 
 
@@ -341,7 +352,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
       :staticmethod:
 
 
@@ -349,8 +360,8 @@ Module Contents
 
 
 
-   .. py:method:: udtf(name: str) -> Callable[Ellipsis, Any]
-                  udtf(func: Callable[[], Any], name: str) -> TableFunction
+   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
+                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
       :staticmethod:
 
 
@@ -589,7 +600,7 @@ Module Contents
 
 
 
-.. py:class:: WindowUDF(name: str, func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+.. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
 
    Class for performing window user-defined functions (UDF).
 
@@ -617,7 +628,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_window_udf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+   .. py:method:: _create_window_udf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
       :staticmethod:
 
 
@@ -625,7 +636,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
       :staticmethod:
 
 
@@ -633,7 +644,7 @@ Module Contents
 
 
 
-   .. py:method:: _get_default_name(func: Callable) -> str
+   .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
       :staticmethod:
 
 
@@ -660,8 +671,8 @@ Module Contents
 
 
 
-   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, WindowUDF]
-                  udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
+                  udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
       :staticmethod:
 
 
@@ -726,6 +737,11 @@ Module Contents
 
 
    .. py:method:: __datafusion_window_udf__() -> object
+
+
+.. py:function:: _is_pycapsule(value: object) -> TypeGuard[_typeshed.CapsuleType]
+
+   Return ``True`` when ``value`` is a CPython ``PyCapsule``.
 
 
 .. py:data:: _R
