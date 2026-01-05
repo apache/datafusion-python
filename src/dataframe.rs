@@ -1056,7 +1056,7 @@ impl PyDataFrame {
 
         // Instantiate pyarrow Table object and use its from_batches method
         let table_class = py.import("pyarrow")?.getattr("Table")?;
-        let table: PyObject = table_class.call_method1("from_batches", args)?.into();
+        let table: Py<PyAny> = table_class.call_method1("from_batches", args)?.into();
         Ok(table)
     }
 
