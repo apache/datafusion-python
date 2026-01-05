@@ -778,7 +778,7 @@ class DataFrame:
         left_on: None = None,
         right_on: None = None,
         join_keys: None = None,
-        drop_duplicate_keys: bool = True,
+        coalesce_duplicate_keys: bool = True,
     ) -> DataFrame: ...
 
     @overload
@@ -791,7 +791,7 @@ class DataFrame:
         left_on: str | Sequence[str],
         right_on: str | Sequence[str],
         join_keys: tuple[list[str], list[str]] | None = None,
-        drop_duplicate_keys: bool = True,
+        coalesce_duplicate_keys: bool = True,
     ) -> DataFrame: ...
 
     @overload
@@ -804,7 +804,7 @@ class DataFrame:
         join_keys: tuple[list[str], list[str]],
         left_on: None = None,
         right_on: None = None,
-        drop_duplicate_keys: bool = True,
+        coalesce_duplicate_keys: bool = True,
     ) -> DataFrame: ...
 
     def join(
@@ -816,7 +816,7 @@ class DataFrame:
         left_on: str | Sequence[str] | None = None,
         right_on: str | Sequence[str] | None = None,
         join_keys: tuple[list[str], list[str]] | None = None,
-        drop_duplicate_keys: bool = True,
+        coalesce_duplicate_keys: bool = True,
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
@@ -829,9 +829,9 @@ class DataFrame:
                 "right", "full", "semi", "anti".
             left_on: Join column of the left dataframe.
             right_on: Join column of the right dataframe.
-            drop_duplicate_keys: When True, the columns from the right DataFrame
-                that have identical names in the ``on`` fields to the left DataFrame
-                will be dropped.
+            coalesce_duplicate_keys: When True, coalesce the columns
+                from the right DataFrame and left DataFrame
+                that have identical names in the ``on`` fields.
             join_keys: Tuple of two lists of column names to join on. [Deprecated]
 
         Returns:
@@ -879,7 +879,7 @@ class DataFrame:
             right_on = [right_on]
 
         return DataFrame(
-            self.df.join(right.df, how, left_on, right_on, drop_duplicate_keys)
+            self.df.join(right.df, how, left_on, right_on, coalesce_duplicate_keys)
         )
 
     def join_on(

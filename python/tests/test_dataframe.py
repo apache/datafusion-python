@@ -663,7 +663,7 @@ def test_join():
     df1 = ctx.create_dataframe([[batch]], "r")
 
     df2 = df.join(df1, on="a", how="inner")
-    df2 = df2.sort(column("l.a"))
+    df2 = df2.sort(column("a"))
     table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -673,8 +673,10 @@ def test_join():
     # Since we may have a duplicate column name and pa.Table()
     # hides the fact, instead we need to explicitly check the
     # resultant arrays.
-    df2 = df.join(df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=True)
-    df2 = df2.sort(column("l.a"))
+    df2 = df.join(
+        df1, left_on="a", right_on="a", how="inner", coalesce_duplicate_keys=True
+    )
+    df2 = df2.sort(column("a"))
     result = df2.collect()[0]
     assert result.num_columns == 3
     assert result.column(0) == pa.array([1, 2], pa.int64())
@@ -682,7 +684,7 @@ def test_join():
     assert result.column(2) == pa.array([8, 10], pa.int64())
 
     df2 = df.join(
-        df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=False
+        df1, left_on="a", right_on="a", how="inner", coalesce_duplicate_keys=False
     )
     df2 = df2.sort(column("l.a"))
     result = df2.collect()[0]
@@ -695,7 +697,7 @@ def test_join():
     # Verify we don't make a breaking change to pre-43.0.0
     # where users would pass join_keys as a positional argument
     df2 = df.join(df1, (["a"], ["a"]), how="inner")
-    df2 = df2.sort(column("l.a"))
+    df2 = df2.sort(column("a"))
     table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -720,7 +722,7 @@ def test_join_invalid_params():
     with pytest.deprecated_call():
         df2 = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
         df2.show()
-        df2 = df2.sort(column("l.a"))
+        df2 = df2.sort(column("a"))
         table = pa.Table.from_batches(df2.collect())
 
         expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -776,6 +778,35 @@ def test_join_on():
     table = pa.Table.from_batches(df3.collect())
     expected = {"a": [2], "c": [10], "b": [5]}
     assert table.to_pydict() == expected
+
+
+def test_join_full_with_drop_duplicate_keys():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 3, 5, 7, 9]), pa.array([True, True, True, True, True])],
+        names=["log_time", "key_frame"],
+    )
+    key_frame = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([2, 4, 6, 8, 10])],
+        names=["log_time"],
+    )
+    query_times = ctx.create_dataframe([[batch]])
+
+    merged = query_times.join(
+        key_frame,
+        left_on="log_time",
+        right_on="log_time",
+        how="full",
+        coalesce_duplicate_keys=True,
+    )
+    merged = merged.sort(column("log_time"))
+    result = merged.collect()[0]
+
+    assert result.num_columns == 2
+    assert result.column(0).to_pylist() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 def test_join_on_invalid_expr():
