@@ -208,7 +208,7 @@ impl PyLogicalPlan {
             })?;
 
         let codec = DefaultLogicalExtensionCodec {};
-        let plan = proto_plan.try_into_logical_plan(&ctx.ctx, &codec)?;
+        let plan = proto_plan.try_into_logical_plan(&ctx.ctx.task_ctx(), &codec)?;
         Ok(Self::new(plan))
     }
 }

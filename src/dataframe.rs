@@ -281,7 +281,11 @@ impl PyDataFrame {
         Arc::clone(&self.df)
     }
 
-    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+    fn prepare_repr_string<'py>(
+        &self,
+        py: Python<'py>,
+        as_html: bool,
+    ) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
@@ -309,11 +313,11 @@ impl PyDataFrame {
 
         let table_uuid = uuid::Uuid::new_v4().to_string();
 
-        // Convert record batches to PyObject list
+        // Convert record batches to Py<PyAny> list
         let py_batches = batches
             .iter()
             .map(|rb| rb.to_pyarrow(py))
-            .collect::<PyResult<Vec<PyObject>>>()?;
+            .collect::<PyResult<Vec<Bound<'py, PyAny>>>>()?;
 
         let py_schema = self.schema().into_pyobject(py)?;
 
@@ -378,7 +382,7 @@ impl Iterator for PartitionedDataFrameStreamReader {
         while self.current < self.streams.len() {
             let stream = &mut self.streams[self.current];
             let fut = poll_next_batch(stream);
-            let result = Python::with_gil(|py| wait_for_future(py, fut));
+            let result = Python::attach(|py| wait_for_future(py, fut));
 
             match result {
                 Ok(Ok(Some(batch))) => {
@@ -486,7 +490,7 @@ impl PyDataFrame {
 
     /// Returns the schema from the logical plan
     fn schema(&self) -> PyArrowType<Schema> {
-        PyArrowType(self.df.schema().into())
+        PyArrowType(self.df.schema().as_arrow().clone())
     }
 
     /// Convert this DataFrame into a Table Provider that can be used in register_table
@@ -544,7 +548,7 @@ impl PyDataFrame {
         self.df
             .as_ref()
             .parse_sql_expr(&expr)
-            .map(|e| PyExpr::from(e))
+            .map(PyExpr::from)
             .map_err(PyDataFusionError::from)
     }
 
@@ -597,7 +601,7 @@ impl PyDataFrame {
     /// Executes the plan, returning a list of `RecordBatch`es.
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
-    fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
+    fn collect<'py>(&self, py: Python<'py>) -> PyResult<Vec<Bound<'py, PyAny>>> {
         let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
@@ -613,7 +617,7 @@ impl PyDataFrame {
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
-    fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
+    fn collect_partitioned<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<Bound<'py, PyAny>>>> {
         let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
             .map_err(PyDataFusionError::from)?;
 
@@ -623,7 +627,7 @@ impl PyDataFrame {
             .collect()
     }
 
-    fn collect_column(&self, py: Python, column: &str) -> PyResult<PyObject> {
+    fn collect_column<'py>(&self, py: Python<'py>, column: &str) -> PyResult<Bound<'py, PyAny>> {
         wait_for_future(py, self.collect_column_inner(column))?
             .map_err(PyDataFusionError::from)?
             .to_data()
@@ -649,7 +653,7 @@ impl PyDataFrame {
         how: &str,
         left_on: Vec<PyBackedStr>,
         right_on: Vec<PyBackedStr>,
-        drop_duplicate_keys: bool,
+        coalesce_keys: bool,
     ) -> PyDataFusionResult<Self> {
         let join_type = match how {
             "inner" => JoinType::Inner,
@@ -676,7 +680,7 @@ impl PyDataFrame {
             None,
         )?;
 
-        if drop_duplicate_keys {
+        if coalesce_keys {
             let mutual_keys = left_keys
                 .iter()
                 .zip(right_keys.iter())
@@ -684,15 +688,16 @@ impl PyDataFrame {
                 .map(|(key, _)| *key)
                 .collect::<Vec<_>>();
 
-            let fields_to_drop = mutual_keys
+            let fields_to_coalesce = mutual_keys
                 .iter()
                 .map(|name| {
-                    df.logical_plan()
+                    let qualified_fields = df
+                        .logical_plan()
                         .schema()
-                        .qualified_fields_with_unqualified_name(name)
+                        .qualified_fields_with_unqualified_name(name);
+                    (*name, qualified_fields)
                 })
-                .filter(|r| r.len() == 2)
-                .map(|r| r[1])
+                .filter(|(_, fields)| fields.len() == 2)
                 .collect::<Vec<_>>();
 
             let expr: Vec<Expr> = df
@@ -702,8 +707,23 @@ impl PyDataFrame {
                 .into_iter()
                 .enumerate()
                 .map(|(idx, _)| df.logical_plan().schema().qualified_field(idx))
-                .filter(|(qualifier, f)| !fields_to_drop.contains(&(*qualifier, f)))
-                .map(|(qualifier, field)| Expr::Column(Column::from((qualifier, field))))
+                .filter_map(|(qualifier, field)| {
+                    if let Some((key_name, qualified_fields)) = fields_to_coalesce
+                        .iter()
+                        .find(|(_, qf)| qf.contains(&(qualifier, field)))
+                    {
+                        // Only add the coalesce expression once (when we encounter the first field)
+                        // Skip the second field (it's already included in to coalesce)
+                        if (qualifier, field) == qualified_fields[0] {
+                            let left_col = Expr::Column(Column::from(qualified_fields[0]));
+                            let right_col = Expr::Column(Column::from(qualified_fields[1]));
+                            return Some(coalesce(vec![left_col, right_col]).alias(*key_name));
+                        }
+                        None
+                    } else {
+                        Some(Expr::Column(Column::from((qualifier, field))))
+                    }
+                })
                 .collect();
             df = df.select(expr)?;
         }
@@ -1022,7 +1042,7 @@ impl PyDataFrame {
 
     /// Convert to Arrow Table
     /// Collect the batches and pass to Arrow Table
-    fn to_arrow_table(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_arrow_table(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let batches = self.collect(py)?.into_pyobject(py)?;
 
         // only use the DataFrame's schema if there are no batches, otherwise let the schema be
@@ -1049,7 +1069,7 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
 
-        let mut schema: Schema = self.df.schema().to_owned().into();
+        let mut schema: Schema = self.df.schema().to_owned().as_arrow().clone();
         let mut projection: Option<SchemaRef> = None;
 
         if let Some(schema_capsule) = requested_schema {
@@ -1095,7 +1115,7 @@ impl PyDataFrame {
 
     /// Convert to pandas dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
-    fn to_pandas(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_pandas(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
@@ -1105,7 +1125,7 @@ impl PyDataFrame {
 
     /// Convert to Python list using pyarrow
     /// Each list item represents one row encoded as dictionary
-    fn to_pylist(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_pylist(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
@@ -1115,7 +1135,7 @@ impl PyDataFrame {
 
     /// Convert to Python dictionary using pyarrow
     /// Each dictionary key is a column and the dictionary value represents the column values
-    fn to_pydict(&self, py: Python) -> PyResult<PyObject> {
+    fn to_pydict(&self, py: Python) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
@@ -1125,11 +1145,11 @@ impl PyDataFrame {
 
     /// Convert to polars dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
-    fn to_polars(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_polars(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
         let dataframe = py.import("polars")?.getattr("DataFrame")?;
         let args = PyTuple::new(py, &[table])?;
-        let result: PyObject = dataframe.call1(args)?.into();
+        let result: Py<PyAny> = dataframe.call1(args)?.into();
         Ok(result)
     }
 
@@ -1142,7 +1162,7 @@ impl PyDataFrame {
     #[pyo3(signature = (value, columns=None))]
     fn fill_null(
         &self,
-        value: PyObject,
+        value: Py<PyAny>,
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {

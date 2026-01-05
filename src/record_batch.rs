@@ -23,7 +23,7 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::StreamExt;
 use pyo3::exceptions::{PyStopAsyncIteration, PyStopIteration};
 use pyo3::prelude::*;
-use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
+use pyo3::{pyclass, pymethods, PyAny, PyResult, Python};
 use tokio::sync::Mutex;
 
 use crate::errors::PyDataFusionError;
@@ -36,7 +36,7 @@ pub struct PyRecordBatch {
 
 #[pymethods]
 impl PyRecordBatch {
-    fn to_pyarrow(&self, py: Python) -> PyResult<PyObject> {
+    fn to_pyarrow<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         self.batch.to_pyarrow(py)
     }
 }

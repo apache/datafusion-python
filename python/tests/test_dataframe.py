@@ -663,7 +663,7 @@ def test_join():
     df1 = ctx.create_dataframe([[batch]], "r")
 
     df2 = df.join(df1, on="a", how="inner")
-    df2 = df2.sort(column("l.a"))
+    df2 = df2.sort(column("a"))
     table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -673,8 +673,10 @@ def test_join():
     # Since we may have a duplicate column name and pa.Table()
     # hides the fact, instead we need to explicitly check the
     # resultant arrays.
-    df2 = df.join(df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=True)
-    df2 = df2.sort(column("l.a"))
+    df2 = df.join(
+        df1, left_on="a", right_on="a", how="inner", coalesce_duplicate_keys=True
+    )
+    df2 = df2.sort(column("a"))
     result = df2.collect()[0]
     assert result.num_columns == 3
     assert result.column(0) == pa.array([1, 2], pa.int64())
@@ -682,7 +684,7 @@ def test_join():
     assert result.column(2) == pa.array([8, 10], pa.int64())
 
     df2 = df.join(
-        df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=False
+        df1, left_on="a", right_on="a", how="inner", coalesce_duplicate_keys=False
     )
     df2 = df2.sort(column("l.a"))
     result = df2.collect()[0]
@@ -695,7 +697,7 @@ def test_join():
     # Verify we don't make a breaking change to pre-43.0.0
     # where users would pass join_keys as a positional argument
     df2 = df.join(df1, (["a"], ["a"]), how="inner")
-    df2 = df2.sort(column("l.a"))
+    df2 = df2.sort(column("a"))
     table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -720,7 +722,7 @@ def test_join_invalid_params():
     with pytest.deprecated_call():
         df2 = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
         df2.show()
-        df2 = df2.sort(column("l.a"))
+        df2 = df2.sort(column("a"))
         table = pa.Table.from_batches(df2.collect())
 
         expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -776,6 +778,35 @@ def test_join_on():
     table = pa.Table.from_batches(df3.collect())
     expected = {"a": [2], "c": [10], "b": [5]}
     assert table.to_pydict() == expected
+
+
+def test_join_full_with_drop_duplicate_keys():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 3, 5, 7, 9]), pa.array([True, True, True, True, True])],
+        names=["log_time", "key_frame"],
+    )
+    key_frame = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([2, 4, 6, 8, 10])],
+        names=["log_time"],
+    )
+    query_times = ctx.create_dataframe([[batch]])
+
+    merged = query_times.join(
+        key_frame,
+        left_on="log_time",
+        right_on="log_time",
+        how="full",
+        coalesce_duplicate_keys=True,
+    )
+    merged = merged.sort(column("log_time"))
+    result = merged.collect()[0]
+
+    assert result.num_columns == 2
+    assert result.column(0).to_pylist() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 def test_join_on_invalid_expr():
@@ -3277,7 +3308,7 @@ def test_collect_interrupted():
     interrupt_thread.join(timeout=1.0)
 
 
-def test_arrow_c_stream_interrupted():
+def test_arrow_c_stream_interrupted():  # noqa: C901 PLR0915
     """__arrow_c_stream__ responds to ``KeyboardInterrupt`` signals.
 
     Similar to ``test_collect_interrupted`` this test issues a long running
@@ -3333,50 +3364,71 @@ def test_arrow_c_stream_interrupted():
 
     reader = pa.RecordBatchReader.from_stream(df)
 
-    interrupted = False
-    interrupt_error = None
-    query_started = threading.Event()
+    read_started = threading.Event()
+    read_exception = []
+    read_thread_id = None
     max_wait_time = 5.0
 
     def trigger_interrupt():
-        start_time = time.time()
-        while not query_started.is_set():
-            time.sleep(0.1)
-            if time.time() - start_time > max_wait_time:
-                msg = f"Query did not start within {max_wait_time} seconds"
-                raise RuntimeError(msg)
+        """Wait for read to start, then raise KeyboardInterrupt in read thread."""
+        if not read_started.wait(timeout=max_wait_time):
+            msg = f"Read operation did not start within {max_wait_time} seconds"
+            raise RuntimeError(msg)
 
-        thread_id = threading.main_thread().ident
-        if thread_id is None:
-            msg = "Cannot get main thread ID"
+        if read_thread_id is None:
+            msg = "Cannot get read thread ID"
             raise RuntimeError(msg)
 
         exception = ctypes.py_object(KeyboardInterrupt)
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-            ctypes.c_long(thread_id), exception
+            ctypes.c_long(read_thread_id), exception
         )
         if res != 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                ctypes.c_long(thread_id), ctypes.py_object(0)
+                ctypes.c_long(read_thread_id), ctypes.py_object(0)
             )
-            msg = "Failed to raise KeyboardInterrupt in main thread"
+            msg = "Failed to raise KeyboardInterrupt in read thread"
             raise RuntimeError(msg)
+
+    def read_stream():
+        """Consume the reader, which should be interrupted."""
+        nonlocal read_thread_id
+        read_thread_id = threading.get_ident()
+        try:
+            read_started.set()
+            reader.read_all()
+            # If we get here, the read completed without interruption
+            read_exception.append(RuntimeError("Read completed without interruption"))
+        except KeyboardInterrupt:
+            read_exception.append(KeyboardInterrupt)
+        except Exception as e:
+            read_exception.append(e)
+
+    read_thread = threading.Thread(target=read_stream)
+    read_thread.daemon = True
+    read_thread.start()
 
     interrupt_thread = threading.Thread(target=trigger_interrupt)
     interrupt_thread.daemon = True
     interrupt_thread.start()
 
-    try:
-        query_started.set()
-        # consume the reader which should block and be interrupted
-        reader.read_all()
-    except KeyboardInterrupt:
-        interrupted = True
-    except Exception as e:  # pragma: no cover - unexpected errors
-        interrupt_error = e
+    # Wait for the read operation with a timeout
+    read_thread.join(timeout=10.0)
 
-    if not interrupted:
-        pytest.fail(f"Stream was not interrupted; got error: {interrupt_error}")
+    if read_thread.is_alive():
+        pytest.fail("Stream read operation timed out after 10 seconds")
+
+    # Verify we got the expected KeyboardInterrupt
+    if not read_exception:
+        pytest.fail("No exception was raised during stream read")
+
+    # Check if we got KeyboardInterrupt directly or wrapped in another exception
+    exception = read_exception[0]
+    if not (
+        isinstance(exception, type(KeyboardInterrupt))
+        or "KeyboardInterrupt" in str(exception)
+    ):
+        pytest.fail(f"Expected KeyboardInterrupt, got: {exception}")
 
     interrupt_thread.join(timeout=1.0)
 

@@ -21,7 +21,7 @@ use arrow::array::{Array, ArrayData};
 use arrow::pyarrow::{FromPyArrow, ToPyArrow};
 use datafusion::scalar::ScalarValue;
 use pyo3::types::{PyAnyMethods, PyList};
-use pyo3::{Bound, FromPyObject, PyAny, PyObject, PyResult, Python};
+use pyo3::{Bound, FromPyObject, PyAny, PyResult, Python};
 
 use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionError;
@@ -30,11 +30,10 @@ impl FromPyArrow for PyScalarValue {
     fn from_pyarrow_bound(value: &Bound<'_, PyAny>) -> PyResult<Self> {
         let py = value.py();
         let typ = value.getattr("type")?;
-        let val = value.call_method0("as_py")?;
 
         // construct pyarrow array from the python value and pyarrow type
         let factory = py.import("pyarrow")?.getattr("array")?;
-        let args = PyList::new(py, [val])?;
+        let args = PyList::new(py, [value])?;
         let array = factory.call1((args, typ))?;
 
         // convert the pyarrow array to rust array using C data interface
@@ -51,11 +50,14 @@ impl<'source> FromPyObject<'source> for PyScalarValue {
     }
 }
 
-pub fn scalar_to_pyarrow(scalar: &ScalarValue, py: Python) -> PyResult<PyObject> {
+pub fn scalar_to_pyarrow<'py>(
+    scalar: &ScalarValue,
+    py: Python<'py>,
+) -> PyResult<Bound<'py, PyAny>> {
     let array = scalar.to_array().map_err(PyDataFusionError::from)?;
     // convert to pyarrow array using C data interface
     let pyarray = array.to_data().to_pyarrow(py)?;
-    let pyscalar = pyarray.call_method1(py, "__getitem__", (0,))?;
+    let pyscalar = pyarray.call_method1("__getitem__", (0,))?;
 
     Ok(pyscalar)
 }

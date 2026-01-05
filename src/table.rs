@@ -88,7 +88,7 @@ impl PyTable {
 
     /// Get a reference to the schema for this table
     #[getter]
-    fn schema(&self, py: Python) -> PyResult<PyObject> {
+    fn schema<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         self.table.schema().to_pyarrow(py)
     }
 
@@ -136,7 +136,7 @@ impl TableProvider for TempViewTable {
     }
 
     fn schema(&self) -> SchemaRef {
-        Arc::new(self.df.schema().into())
+        Arc::new(self.df.schema().as_arrow().clone())
     }
 
     fn table_type(&self) -> TableType {
