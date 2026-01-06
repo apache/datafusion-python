@@ -90,6 +90,12 @@ converting to Python objects to do the evaluation.
 
     df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
 
+If you need to write a custom function but do not want to incur the performance
+cost of converting to Python objects and back, a more advanced approach is to
+write Rust based UDFs and to expose them to Python. There is an example in the
+`DataFusion blog <https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/>`_
+describing how to do this.
+
 Aggregate Functions
 -------------------
 
