@@ -81,6 +81,9 @@ Generating changelog content
 ### Update the version number
 
 The only place you should need to update the version is in the root `Cargo.toml`.
+After updating the toml file, run `cargo update` to update the cargo lock file.
+If you do not want to update all the dependencies, you can instead run `cargo build`
+which should only update the version number for `datafusion-python`.
 
 ### Tag the Repository
 

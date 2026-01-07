@@ -18,17 +18,30 @@
 use std::sync::Arc;
 
 use datafusion::config::ConfigOptions;
+use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use parking_lot::RwLock;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use crate::errors::PyDataFusionResult;
-use crate::utils::py_obj_to_scalar_value;
+use crate::errors::{py_datafusion_err, PyDataFusionResult};
+use crate::utils::{py_obj_to_scalar_value, validate_pycapsule};
 #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
     config: Arc<RwLock<ConfigOptions>>,
 }
+
+/// // set up config struct and register extension
+/// let mut config = ConfigOptions::default();
+/// config.extensions.insert(MyConfig::default());
+///
+/// // overwrite config default
+/// config.set("my_config.baz_count", "42").unwrap();
+///
+/// // check config state
+/// let my_config = config.extensions.get::<MyConfig>().unwrap();
+/// assert!(my_config.foo_to_bar,);
+/// assert_eq!(my_config.baz_count, 42,);
 
 #[pymethods]
 impl PyConfig {
@@ -78,7 +91,13 @@ impl PyConfig {
             options
                 .entries()
                 .into_iter()
-                .map(|entry| (entry.key.clone(), entry.value.clone()))
+                .map(|entry| {
+                    if entry.key.starts_with("datafusion_ffi.") {
+                        (entry.key[15..].to_owned(), entry.value.to_owned())
+                    } else {
+                        (entry.key.to_owned(), entry.value.to_owned())
+                    }
+                })
                 .collect()
         };
 
@@ -94,5 +113,26 @@ impl PyConfig {
             Ok(result) => Ok(format!("Config({result})")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
+    }
+
+    pub fn add_extension(&self, extension: Bound<PyAny>) -> PyResult<()> {
+        let capsule = extension.getattr("__datafusion_extension_options__")?;
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+
+        validate_pycapsule(capsule, "datafusion_extension_options")?;
+
+        let mut extension = unsafe { capsule.reference::<FFI_ExtensionOptions>() }.clone();
+
+        let config_lock = self.config.read();
+        if let Some(prior_extension) = config_lock.extensions.get::<FFI_ExtensionOptions>() {
+            extension
+                .merge(prior_extension)
+                .map_err(py_datafusion_err)?;
+        }
+
+        let mut config_lock = self.config.write();
+        config_lock.extensions.insert(extension);
+
+        Ok(())
     }
 }

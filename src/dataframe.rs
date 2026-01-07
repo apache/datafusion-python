@@ -17,6 +17,7 @@
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::str::FromStr;
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, Array, ArrayRef, RecordBatch, RecordBatchReader};
@@ -30,6 +31,7 @@ use datafusion::arrow::datatypes::{Schema, SchemaRef};
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::catalog::TableProvider;
+use datafusion::common::parquet_config::DFParquetWriterVersion;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
@@ -194,6 +196,8 @@ impl PyParquetWriterOptions {
         maximum_parallel_row_group_writers: usize,
         maximum_buffered_record_batches_per_stream: usize,
     ) -> Self {
+        // TODO(tsaucer) Remove unwrap and create enum for writer version
+        let writer_version = DFParquetWriterVersion::from_str(&writer_version).unwrap();
         Self {
             options: ParquetOptions {
                 data_pagesize_limit,

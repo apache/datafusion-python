@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "50.1.0"
+version = "51.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
 authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
@@ -90,3 +90,10 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+
+[patch.crates-io]
+datafusion = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-proto = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-ffi = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }

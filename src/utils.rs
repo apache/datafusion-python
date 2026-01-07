@@ -23,7 +23,7 @@ use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -171,9 +171,9 @@ pub(crate) fn table_provider_from_pycapsule(
         validate_pycapsule(capsule, "datafusion_table_provider")?;
 
         let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-        let provider: ForeignTableProvider = provider.into();
+        let provider: Arc<dyn TableProvider> = provider.into();
 
-        Ok(Some(Arc::new(provider)))
+        Ok(Some(provider))
     } else {
         Ok(None)
     }

@@ -118,6 +118,7 @@ impl PyLogicalPlan {
                 Statement::Prepare(plan) => PyPrepare::from(plan.clone()).to_variant(py),
                 Statement::Execute(plan) => PyExecute::from(plan.clone()).to_variant(py),
                 Statement::Deallocate(plan) => PyDeallocate::from(plan.clone()).to_variant(py),
+                Statement::ResetVariable(_) => unimplemented!(),
             },
             LogicalPlan::Values(plan) => PyValues::from(plan.clone()).to_variant(py),
             LogicalPlan::Dml(plan) => PyDmlStatement::from(plan.clone()).to_variant(py),

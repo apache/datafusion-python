@@ -21,8 +21,8 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-datafusion = { version = "51" }
-datafusion-ffi = { version = "51" }
+datafusion = { path = "../../../datafusion/datafusion/core" }
+datafusion-ffi = { path = "../../../datafusion/datafusion/ffi" }
 pyo3 = { version = "0.27", features = ["extension-module", "abi3", "abi3-py310"] }
 arrow = { version = "57" }
 arrow-array = { version = "57" }
