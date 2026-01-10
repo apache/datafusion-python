@@ -1666,7 +1666,6 @@ def test_execution_plan(aggregate_df):
     # indent plan will be different for everyone due to absolute path
     # to filename, so we just check for some expected content
     assert "AggregateExec:" in indent
-    assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
     assert "DataSourceExec:" in indent
     assert "file_type=csv" in indent
@@ -2435,9 +2434,7 @@ def test_write_parquet_with_options_writer_version(
 @pytest.mark.parametrize("writer_version", ["1.2.3", "custom-version", "0"])
 def test_write_parquet_with_options_wrong_writer_version(df, tmp_path, writer_version):
     """Test that invalid writer versions in Parquet throw an exception."""
-    with pytest.raises(
-        Exception, match="Unknown or unsupported parquet writer version"
-    ):
+    with pytest.raises(Exception, match="Invalid parquet writer version"):
         df.write_parquet_with_options(
             tmp_path, ParquetWriterOptions(writer_version=writer_version)
         )

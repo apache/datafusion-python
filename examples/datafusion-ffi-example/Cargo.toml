@@ -21,16 +21,27 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-datafusion = { version = "51" }
-datafusion-ffi = { version = "51" }
-pyo3 = { version = "0.27", features = ["extension-module", "abi3", "abi3-py310"] }
+#datafusion-catalog = { version = "51" , default-features = false }
+#datafusion-common = { version = "51" , default-features = false }
+#datafusion-functions-aggregate = { version = "51"  }
+#datafusion-functions-window = { version = "51"  }
+#datafusion-expr = { version = "51"  }
+#datafusion-ffi = { version = "51" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c" , default-features = false }
+datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c" , default-features = false }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c"  }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c"  }
+datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c"  }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "bc043c3a5fe448fc5735d9fa173b69ac95a7e11c" }
+
+pyo3 = { version = "0.26", features = ["extension-module", "abi3", "abi3-py39"] }
 arrow = { version = "57" }
 arrow-array = { version = "57" }
 arrow-schema = { version = "57" }
-async-trait = "0.1.88"
+async-trait = "0.1.89"
 
 [build-dependencies]
-pyo3-build-config = "0.27"
+pyo3-build-config = "0.26"
 
 [lib]
 name = "datafusion_ffi_example"

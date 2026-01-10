@@ -15,19 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use pyo3::prelude::*;
+
 use crate::aggregate_udf::MySumUDF;
 use crate::catalog_provider::MyCatalogProvider;
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
 use crate::window_udf::MyRankUDF;
-use pyo3::prelude::*;
 
 pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
+pub(crate) mod utils;
 pub(crate) mod window_udf;
 
 #[pymodule]

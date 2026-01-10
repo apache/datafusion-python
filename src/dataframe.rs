@@ -17,6 +17,7 @@
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::str::FromStr;
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, Array, ArrayRef, RecordBatch, RecordBatchReader};
@@ -175,7 +176,7 @@ impl PyParquetWriterOptions {
     pub fn new(
         data_pagesize_limit: usize,
         write_batch_size: usize,
-        writer_version: String,
+        writer_version: &str,
         skip_arrow_metadata: bool,
         compression: Option<String>,
         dictionary_enabled: Option<bool>,
@@ -193,8 +194,11 @@ impl PyParquetWriterOptions {
         allow_single_file_parallelism: bool,
         maximum_parallel_row_group_writers: usize,
         maximum_buffered_record_batches_per_stream: usize,
-    ) -> Self {
-        Self {
+    ) -> PyResult<Self> {
+        let writer_version =
+            datafusion::common::parquet_config::DFParquetWriterVersion::from_str(writer_version)
+                .map_err(py_datafusion_err)?;
+        Ok(Self {
             options: ParquetOptions {
                 data_pagesize_limit,
                 write_batch_size,
@@ -218,7 +222,7 @@ impl PyParquetWriterOptions {
                 maximum_buffered_record_batches_per_stream,
                 ..Default::default()
             },
-        }
+        })
     }
 }
 

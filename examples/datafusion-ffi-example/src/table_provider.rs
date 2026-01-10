@@ -15,21 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::Arc;
+
 use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
-use datafusion::catalog::MemTable;
-use datafusion::error::{DataFusionError, Result as DataFusionResult};
+use datafusion_catalog::MemTable;
+use datafusion_common::error::{DataFusionError, Result as DataFusionResult};
+use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
-use std::sync::Arc;
+use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+
+use crate::utils::ffi_logical_codec_from_pycapsule;
 
 /// In order to provide a test that demonstrates different sized record batches,
 /// the first batch will have num_rows, the second batch num_rows+1, and so on.
 #[pyclass(name = "MyTableProvider", module = "datafusion_ffi_example", subclass)]
 #[derive(Clone)]
 pub(crate) struct MyTableProvider {
+    logical_codec: FFI_LogicalExtensionCodec,
     num_cols: usize,
     num_rows: usize,
     num_batches: usize,
@@ -76,15 +81,38 @@ impl MyTableProvider {
     }
 }
 
-#[pymethods]
 impl MyTableProvider {
-    #[new]
-    pub fn new(num_cols: usize, num_rows: usize, num_batches: usize) -> Self {
+    pub fn new_from_ffi_session(
+        logical_codec: FFI_LogicalExtensionCodec,
+        num_cols: usize,
+        num_rows: usize,
+        num_batches: usize,
+    ) -> Self {
         Self {
+            logical_codec,
             num_cols,
             num_rows,
             num_batches,
         }
+    }
+}
+
+#[pymethods]
+impl MyTableProvider {
+    #[new]
+    pub fn new(
+        session: &Bound<PyAny>,
+        num_cols: usize,
+        num_rows: usize,
+        num_batches: usize,
+    ) -> PyResult<Self> {
+        let logical_codec = ffi_logical_codec_from_pycapsule(session)?;
+        Ok(Self {
+            logical_codec,
+            num_cols,
+            num_rows,
+            num_batches,
+        })
     }
 
     pub fn __datafusion_table_provider__<'py>(
@@ -96,7 +124,12 @@ impl MyTableProvider {
         let provider = self
             .create_table()
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        let provider = FFI_TableProvider::new(Arc::new(provider), false, None);
+        let provider = FFI_TableProvider::new_with_ffi_codec(
+            Arc::new(provider),
+            false,
+            None,
+            self.logical_codec.clone(),
+        );
 
         PyCapsule::new(py, provider, Some(name))
     }
