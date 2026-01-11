@@ -77,6 +77,11 @@ where
     let runtime: &Runtime = &get_tokio_runtime().0;
     const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
 
+    // Some fast running processes that generate many `wait_for_future` calls like
+    // PartitionedDataFrameStreamReader::next require checking for interrupts early
+    py.run(cr"pass", None, None)?;
+    py.check_signals()?;
+
     py.detach(|| {
         runtime.block_on(async {
             tokio::pin!(fut);
