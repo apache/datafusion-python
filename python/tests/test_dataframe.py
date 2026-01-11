@@ -37,6 +37,7 @@ from datafusion import (
     WindowFrame,
     column,
     literal,
+    udf,
 )
 from datafusion import (
     col as df_col,
@@ -3190,6 +3191,13 @@ def test_fill_null_all_null_column(ctx):
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
 
 
+@udf([pa.int64()], pa.int64(), "immutable")
+def slow_udf(x: pa.Array) -> pa.Array:
+    # This must be longer than the check interval in wait_for_future
+    time.sleep(2.0)
+    return x
+
+
 def test_collect_interrupted():
     """Test that a long-running query can be interrupted with Ctrl-C.
 
@@ -3198,50 +3206,7 @@ def test_collect_interrupted():
     """
     # Create a context and a DataFrame with a query that will run for a while
     ctx = SessionContext()
-
-    # Create a recursive computation that will run for some time
-    batches = []
-    for i in range(10):
-        batch = pa.RecordBatch.from_arrays(
-            [
-                pa.array(list(range(i * 1000, (i + 1) * 1000))),
-                pa.array([f"value_{j}" for j in range(i * 1000, (i + 1) * 1000)]),
-            ],
-            names=["a", "b"],
-        )
-        batches.append(batch)
-
-    # Register tables
-    ctx.register_record_batches("t1", [batches])
-    ctx.register_record_batches("t2", [batches])
-
-    # Create a large join operation that will take time to process
-    df = ctx.sql("""
-        WITH t1_expanded AS (
-            SELECT
-                a,
-                b,
-                CAST(a AS DOUBLE) / 1.5 AS c,
-                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS d
-            FROM t1
-            CROSS JOIN (SELECT 1 AS dummy FROM t1 LIMIT 5)
-        ),
-        t2_expanded AS (
-            SELECT
-                a,
-                b,
-                CAST(a AS DOUBLE) * 2.5 AS e,
-                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS f
-            FROM t2
-            CROSS JOIN (SELECT 1 AS dummy FROM t2 LIMIT 5)
-        )
-        SELECT
-            t1.a, t1.b, t1.c, t1.d,
-            t2.a AS a2, t2.b AS b2, t2.e, t2.f
-        FROM t1_expanded t1
-        JOIN t2_expanded t2 ON t1.a % 100 = t2.a % 100
-        WHERE t1.a > 100 AND t2.a > 100
-    """)
+    df = ctx.from_pydict({"a": [1, 2, 3]}).select(slow_udf(column("a")))
 
     # Flag to track if the query was interrupted
     interrupted = False
@@ -3298,7 +3263,10 @@ def test_collect_interrupted():
     except KeyboardInterrupt:
         interrupted = True
     except Exception as e:
-        interrupt_error = e
+        if "KeyboardInterrupt" in str(e):
+            interrupted = True
+        else:
+            interrupt_error = e
 
     # Assert that the query was interrupted properly
     if not interrupted:
@@ -3308,7 +3276,7 @@ def test_collect_interrupted():
     interrupt_thread.join(timeout=1.0)
 
 
-def test_arrow_c_stream_interrupted():  # noqa: C901 PLR0915
+def test_arrow_c_stream_interrupted():  # noqa: C901
     """__arrow_c_stream__ responds to ``KeyboardInterrupt`` signals.
 
     Similar to ``test_collect_interrupted`` this test issues a long running
@@ -3318,49 +3286,7 @@ def test_arrow_c_stream_interrupted():  # noqa: C901 PLR0915
     """
 
     ctx = SessionContext()
-
-    batches = []
-    for i in range(10):
-        batch = pa.RecordBatch.from_arrays(
-            [
-                pa.array(list(range(i * 1000, (i + 1) * 1000))),
-                pa.array([f"value_{j}" for j in range(i * 1000, (i + 1) * 1000)]),
-            ],
-            names=["a", "b"],
-        )
-        batches.append(batch)
-
-    ctx.register_record_batches("t1", [batches])
-    ctx.register_record_batches("t2", [batches])
-
-    df = ctx.sql(
-        """
-        WITH t1_expanded AS (
-            SELECT
-                a,
-                b,
-                CAST(a AS DOUBLE) / 1.5 AS c,
-                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS d
-            FROM t1
-            CROSS JOIN (SELECT 1 AS dummy FROM t1 LIMIT 5)
-        ),
-        t2_expanded AS (
-            SELECT
-                a,
-                b,
-                CAST(a AS DOUBLE) * 2.5 AS e,
-                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS f
-            FROM t2
-            CROSS JOIN (SELECT 1 AS dummy FROM t2 LIMIT 5)
-        )
-        SELECT
-            t1.a, t1.b, t1.c, t1.d,
-            t2.a AS a2, t2.b AS b2, t2.e, t2.f
-        FROM t1_expanded t1
-        JOIN t2_expanded t2 ON t1.a % 100 = t2.a % 100
-        WHERE t1.a > 100 AND t2.a > 100
-        """
-    )
+    df = ctx.from_pydict({"a": [1, 2, 3]}).select(slow_udf(column("a")))
 
     reader = pa.RecordBatchReader.from_stream(df)
 
