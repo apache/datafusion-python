@@ -52,6 +52,7 @@ pub mod store;
 pub mod table;
 pub mod unparser;
 
+mod array;
 #[cfg(feature = "substrait")]
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
