@@ -24,14 +24,14 @@ DataFusion 52.0.0
 This version includes a major update to the :ref:`ffi` due to upgrades
 to the `Foreign Function Interface <https://doc.rust-lang.org/nomicon/ffi.html>`_.
 Users who contribute their own ``CatalogProvider``, ``SchemaProvider``,
-``TableProvider`` or ``TableFunction``` via FFI must now provide access to a
+``TableProvider`` or ``TableFunction`` via FFI must now provide access to a
 ``LogicalExtensionCodec`` and a ``TaskContextProvider``. The most convenient
 way to provide these is from the ``datafusion-python`` ``SessionContext`` Python
 object. The ``SessionContext`` now has a method to export a
 ``FFI_LogicalExtensionCodec``, which can satisfy this new requirement.
 
 A complete example can be found in the `FFI example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
-The constructor for your provider needs to take an an input the ``SessionContext``
+The constructor for your provider needs to take as an input the ``SessionContext``
 python object. Instead of calling ``FFI_CatalogProvider::new`` you can use the
 added method ``FFI_CatalogProvider::new_with_ffi_codec`` as follows:
 
@@ -95,12 +95,12 @@ using the specific datafusion project crates.
 
 For example, instead of including expressions like:
 
-.. code-block: rust
+.. code-block:: rust
 
     use datafusion::catalog::MemTable;
 
 Instead you can now write:
 
-.. code-block: rust
+.. code-block:: rust
 
     use datafusion_catalog::MemTable;
