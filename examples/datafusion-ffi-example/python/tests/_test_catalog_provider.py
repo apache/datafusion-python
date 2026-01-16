@@ -30,7 +30,7 @@ def test_catalog_provider():
     expected_table_name = "my_table"
     expected_table_columns = ["units", "price"]
 
-    catalog_provider = MyCatalogProvider()
+    catalog_provider = MyCatalogProvider(ctx)
     ctx.register_catalog_provider(my_catalog_name, catalog_provider)
     my_catalog = ctx.catalog(my_catalog_name)
 

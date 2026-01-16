@@ -23,7 +23,7 @@ use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -60,9 +60,9 @@ pub(crate) fn is_ipython_env(py: Python) -> &'static bool {
 
 /// Utility to get the Global Datafussion CTX
 #[inline]
-pub(crate) fn get_global_ctx() -> &'static SessionContext {
-    static CTX: OnceLock<SessionContext> = OnceLock::new();
-    CTX.get_or_init(SessionContext::new)
+pub(crate) fn get_global_ctx() -> &'static Arc<SessionContext> {
+    static CTX: OnceLock<Arc<SessionContext>> = OnceLock::new();
+    CTX.get_or_init(|| Arc::new(SessionContext::new()))
 }
 
 /// Utility to collect rust futures with GIL released and respond to
@@ -176,9 +176,9 @@ pub(crate) fn table_provider_from_pycapsule(
         validate_pycapsule(capsule, "datafusion_table_provider")?;
 
         let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-        let provider: ForeignTableProvider = provider.into();
+        let provider: Arc<dyn TableProvider> = provider.into();
 
-        Ok(Some(Arc::new(provider)))
+        Ok(Some(provider))
     } else {
         Ok(None)
     }

@@ -1301,3 +1301,19 @@ class SessionContext:
             )
 
         return converted_table_partition_cols
+
+    def __datafusion_task_context_provider__(self) -> Any:
+        """Access the PyCapsule FFI_TaskContextProvider."""
+        return self.ctx.__datafusion_task_context_provider__()
+
+    def __datafusion_logical_extension_codec__(self) -> Any:
+        """Access the PyCapsule FFI_LogicalExtensionCodec."""
+        return self.ctx.__datafusion_logical_extension_codec__()
+
+    def with_logical_extension_codec(self, codec: Any) -> SessionContext:
+        """Create a new session context with specified codec.
+
+        This only supports codecs that have been implemented using the
+        FFI interface.
+        """
+        return self.ctx.with_logical_extension_codec(codec)

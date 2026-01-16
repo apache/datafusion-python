@@ -77,6 +77,7 @@ Example
    user-guide/io/index
    user-guide/configuration
    user-guide/sql
+   user-guide/upgrade-guides
 
 
 .. _toc.contributor_guide:

@@ -25,8 +25,10 @@ from util import get_answer_file
 
 
 def df_selection(col_name, col_type):
-    if col_type == pa.float64() or isinstance(col_type, pa.Decimal128Type):
+    if col_type == pa.float64():
         return F.round(col(col_name), lit(2)).alias(col_name)
+    if isinstance(col_type, pa.Decimal128Type):
+        return F.round(col(col_name).cast(pa.float64()), lit(2)).alias(col_name)
     if col_type == pa.string() or col_type == pa.string_view():
         return F.trim(col(col_name)).alias(col_name)
     return col(col_name)
