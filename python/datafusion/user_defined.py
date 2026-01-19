@@ -124,8 +124,8 @@ class ScalarUDF:
         self,
         name: str,
         func: Callable[..., _R],
-        input_types: list[pa.Field],
-        return_type: _R,
+        input_fields: list[pa.Field],
+        return_field: _R,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
@@ -135,10 +135,10 @@ class ScalarUDF:
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
-        if isinstance(input_types, pa.DataType):
-            input_types = [input_types]
+        if isinstance(input_fields, pa.DataType):
+            input_fields = [input_fields]
         self._udf = df_internal.ScalarUDF(
-            name, func, input_types, return_type, str(volatility)
+            name, func, input_fields, return_field, str(volatility)
         )
 
     def __repr__(self) -> str:
@@ -157,8 +157,8 @@ class ScalarUDF:
     @overload
     @staticmethod
     def udf(
-        input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
-        return_type: pa.DataType | pa.Field,
+        input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_field: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> Callable[..., ScalarUDF]: ...
@@ -167,8 +167,8 @@ class ScalarUDF:
     @staticmethod
     def udf(
         func: Callable[..., _R],
-        input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
-        return_type: pa.DataType | pa.Field,
+        input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_field: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> ScalarUDF: ...
@@ -194,10 +194,10 @@ class ScalarUDF:
                 backed ScalarUDF within a PyCapsule, you can pass this parameter
                 and ignore the rest. They will be determined directly from the
                 underlying function. See the online documentation for more information.
-            input_types (list[pa.DataType]): The data types of the arguments
-                to ``func``. This list must be of the same length as the number of
-                arguments.
-            return_type (_R): The data type of the return value from the function.
+            input_fields (list[pa.Field | pa.DataType]): The data types or Fields
+                of the arguments to ``func``. This list must be of the same length
+                as the number of arguments.
+            return_field (_R): The field of the return value from the function.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 
@@ -221,8 +221,8 @@ class ScalarUDF:
 
         def _function(
             func: Callable[..., _R],
-            input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
-            return_type: pa.DataType | pa.Field,
+            input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+            return_field: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> ScalarUDF:
@@ -234,25 +234,25 @@ class ScalarUDF:
                     name = func.__qualname__.lower()
                 else:
                     name = func.__class__.__name__.lower()
-            input_types = data_types_or_fields_to_field_list(input_types)
-            return_type = data_type_or_field_to_field(return_type, "value")
+            input_fields = data_types_or_fields_to_field_list(input_fields)
+            return_field = data_type_or_field_to_field(return_field, "value")
             return ScalarUDF(
                 name=name,
                 func=func,
-                input_types=input_types,
-                return_type=return_type,
+                input_fields=input_fields,
+                return_field=return_field,
                 volatility=volatility,
             )
 
         def _decorator(
-            input_types: list[pa.DataType],
-            return_type: _R,
+            input_fields: list[pa.DataType],
+            return_field: _R,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> Callable:
             def decorator(func: Callable) -> Callable:
                 udf_caller = ScalarUDF.udf(
-                    func, input_types, return_type, volatility, name
+                    func, input_fields, return_field, volatility, name
                 )
 
                 @functools.wraps(func)
@@ -283,8 +283,8 @@ class ScalarUDF:
         return ScalarUDF(
             name=name,
             func=func,
-            input_types=None,
-            return_type=None,
+            input_fields=None,
+            return_field=None,
             volatility=None,
         )
 
