@@ -217,7 +217,7 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
 pub(crate) fn extract_logical_extension_codec(
     py: Python,
     obj: Option<Bound<PyAny>>,
-) -> PyResult<FFI_LogicalExtensionCodec> {
+) -> PyResult<Arc<FFI_LogicalExtensionCodec>> {
     let obj = match obj {
         Some(obj) => obj,
         None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
@@ -235,5 +235,5 @@ pub(crate) fn extract_logical_extension_codec(
     validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
 
     let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
-    Ok(codec.clone())
+    Ok(Arc::new(codec.clone()))
 }

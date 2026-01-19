@@ -49,7 +49,7 @@ use datafusion::prelude::{
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
-use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
+use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use object_store::ObjectStore;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
@@ -303,7 +303,7 @@ impl PySQLOptions {
 #[derive(Clone)]
 pub struct PySessionContext {
     pub ctx: Arc<SessionContext>,
-    logical_codec: Arc<dyn LogicalExtensionCodec>,
+    logical_codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 #[pymethods]
@@ -330,10 +330,9 @@ impl PySessionContext {
             .with_runtime_env(runtime)
             .with_default_features()
             .build();
-        Ok(PySessionContext {
-            ctx: Arc::new(SessionContext::new_with_state(session_state)),
-            logical_codec: Arc::new(DefaultLogicalExtensionCodec {}),
-        })
+        let ctx = Arc::new(SessionContext::new_with_state(session_state));
+        let logical_codec = Self::default_logical_codec(&ctx);
+        Ok(PySessionContext { ctx, logical_codec })
     }
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
@@ -346,10 +345,9 @@ impl PySessionContext {
     #[staticmethod]
     #[pyo3(signature = ())]
     pub fn global_ctx() -> PyResult<Self> {
-        Ok(Self {
-            ctx: get_global_ctx().clone(),
-            logical_codec: Arc::new(DefaultLogicalExtensionCodec {}),
-        })
+        let ctx = get_global_ctx().clone();
+        let logical_codec = Self::default_logical_codec(&ctx);
+        Ok(Self { ctx, logical_codec })
     }
 
     /// Register an object store with the given name
@@ -648,7 +646,7 @@ impl PySessionContext {
                 Ok(py_catalog) => py_catalog.catalog,
                 Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
                     provider.into(),
-                    self.get_ffi_logical_codec(),
+                    Arc::clone(&self.logical_codec),
                 )) as Arc<dyn CatalogProvider>,
             }
         };
@@ -885,7 +883,8 @@ impl PySessionContext {
         {
             Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
             None => Ok(
-                PyCatalog::new_from_parts(catalog, self.get_ffi_logical_codec()).into_py_any(py)?,
+                PyCatalog::new_from_parts(catalog, Arc::clone(&self.logical_codec))
+                    .into_py_any(py)?,
             ),
         }
     }
@@ -1154,7 +1153,7 @@ impl PySessionContext {
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_logical_extension_codec".into();
-        let codec = self.get_ffi_logical_codec();
+        let codec = self.logical_codec.as_ref().clone();
 
         PyCapsule::new(py, codec, Some(name))
     }
@@ -1171,12 +1170,12 @@ impl PySessionContext {
             validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
 
             let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
-            let codec: Arc<dyn LogicalExtensionCodec> = codec.into();
+            let logical_codec = Arc::new(codec.clone());
 
             Ok({
                 Self {
                     ctx: Arc::clone(&self.ctx),
-                    logical_codec: codec,
+                    logical_codec,
                 }
             })
         } else {
@@ -1232,10 +1231,15 @@ impl PySessionContext {
         Ok(())
     }
 
-    pub(crate) fn get_ffi_logical_codec(&self) -> FFI_LogicalExtensionCodec {
+    fn default_logical_codec(ctx: &Arc<SessionContext>) -> Arc<FFI_LogicalExtensionCodec> {
+        let codec = Arc::new(DefaultLogicalExtensionCodec {});
         let runtime = get_tokio_runtime().0.handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        FFI_LogicalExtensionCodec::new(self.logical_codec.clone(), Some(runtime), &ctx_provider)
+        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        Arc::new(FFI_LogicalExtensionCodec::new(
+            codec,
+            Some(runtime),
+            &ctx_provider,
+        ))
     }
 }
 
@@ -1256,9 +1260,9 @@ impl From<PySessionContext> for SessionContext {
 
 impl From<SessionContext> for PySessionContext {
     fn from(ctx: SessionContext) -> PySessionContext {
-        PySessionContext {
-            ctx: Arc::new(ctx),
-            logical_codec: Arc::new(DefaultLogicalExtensionCodec {}),
-        }
+        let ctx = Arc::new(ctx);
+        let logical_codec = Self::default_logical_codec(&ctx);
+
+        PySessionContext { ctx, logical_codec }
     }
 }

@@ -41,20 +41,20 @@ use crate::utils::{extract_logical_extension_codec, validate_pycapsule, wait_for
 #[derive(Clone)]
 pub struct PyCatalog {
     pub catalog: Arc<dyn CatalogProvider>,
-    codec: FFI_LogicalExtensionCodec,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 #[pyclass(frozen, name = "RawSchema", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
-    codec: FFI_LogicalExtensionCodec,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 impl PyCatalog {
     pub(crate) fn new_from_parts(
         catalog: Arc<dyn CatalogProvider>,
-        codec: FFI_LogicalExtensionCodec,
+        codec: Arc<FFI_LogicalExtensionCodec>,
     ) -> Self {
         Self { catalog, codec }
     }
@@ -63,7 +63,7 @@ impl PyCatalog {
 impl PySchema {
     pub(crate) fn new_from_parts(
         schema: Arc<dyn SchemaProvider>,
-        codec: FFI_LogicalExtensionCodec,
+        codec: Arc<FFI_LogicalExtensionCodec>,
     ) -> Self {
         Self { schema, codec }
     }
@@ -350,11 +350,11 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
 #[derive(Debug)]
 pub(crate) struct RustWrappedPyCatalogProvider {
     pub(crate) catalog_provider: Py<PyAny>,
-    codec: FFI_LogicalExtensionCodec,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 impl RustWrappedPyCatalogProvider {
-    pub fn new(catalog_provider: Py<PyAny>, codec: FFI_LogicalExtensionCodec) -> Self {
+    pub fn new(catalog_provider: Py<PyAny>, codec: Arc<FFI_LogicalExtensionCodec>) -> Self {
         Self {
             catalog_provider,
             codec,
