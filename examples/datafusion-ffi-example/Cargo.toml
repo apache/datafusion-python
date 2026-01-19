@@ -21,16 +21,21 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-datafusion = { version = "51" }
-datafusion-ffi = { version = "51" }
-pyo3 = { version = "0.27", features = ["extension-module", "abi3", "abi3-py310"] }
+datafusion-catalog = { version = "52" , default-features = false }
+datafusion-common = { version = "52" , default-features = false }
+datafusion-functions-aggregate = { version = "52"  }
+datafusion-functions-window = { version = "52"  }
+datafusion-expr = { version = "52"  }
+datafusion-ffi = { version = "52" }
+
+pyo3 = { version = "0.26", features = ["extension-module", "abi3", "abi3-py39"] }
 arrow = { version = "57" }
 arrow-array = { version = "57" }
 arrow-schema = { version = "57" }
-async-trait = "0.1.88"
+async-trait = "0.1.89"
 
 [build-dependencies]
-pyo3-build-config = "0.27"
+pyo3-build-config = "0.26"
 
 [lib]
 name = "datafusion_ffi_example"
