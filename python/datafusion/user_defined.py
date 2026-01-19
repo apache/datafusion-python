@@ -184,9 +184,13 @@ class ScalarUDF:
         This class can be used both as either a function or a decorator.
 
         Usage:
-            - As a function: ``udf(func, input_types, return_type, volatility, name)``.
-            - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
+            - As a function: ``udf(func, input_fields, return_field, volatility, name)``.
+            - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
               When used a decorator, do **not** pass ``func`` explicitly.
+
+        In lieu of passing a PyArrow Field, you can pass a DataType for simplicity.
+        When you do so, it will be assumed that the nullability of the inputs and
+        output are True and that they have no metadata.
 
         Args:
             func (Callable, optional): Only needed when calling as a function.
@@ -217,7 +221,7 @@ class ScalarUDF:
             @udf([pa.int32()], pa.int32(), "volatile", "double_it")
             def double_udf(x):
                 return x * 2
-        """
+        """  # noqa: W505 E501
 
         def _function(
             func: Callable[..., _R],
