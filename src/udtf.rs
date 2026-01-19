@@ -21,9 +21,12 @@ use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
+use pyo3::exceptions::{PyImportError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyTuple, PyType};
+use pyo3::IntoPyObjectExt;
 
+use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTable;
@@ -47,10 +50,27 @@ pub(crate) enum PyTableFunctionInner {
 #[pymethods]
 impl PyTableFunction {
     #[new]
-    #[pyo3(signature=(name, func))]
-    pub fn new(name: &str, func: Bound<'_, PyAny>) -> PyResult<Self> {
+    #[pyo3(signature=(name, func, session))]
+    pub fn new(
+        name: &str,
+        func: Bound<'_, PyAny>,
+        session: Option<Bound<PyAny>>,
+    ) -> PyResult<Self> {
         let inner = if func.hasattr("__datafusion_table_function__")? {
-            let capsule = func.getattr("__datafusion_table_function__")?.call0()?;
+            let py = func.py();
+            let session = match session {
+                Some(session) => session,
+                None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
+            };
+            let capsule = func
+                .getattr("__datafusion_table_function__")?
+                .call1((session,)).map_err(|err| {
+                if err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+                    PyImportError::new_err("Incompatible libraries. DataFusion 52.0.0 introduced an incompatible signature change for table functions. Either downgrade DataFusion or upgrade your function library.")
+                } else {
+                    err
+                }
+            })?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
             validate_pycapsule(capsule, "datafusion_table_function")?;
 
@@ -98,7 +118,7 @@ fn call_python_table_function(
         let provider_obj = func.call1(py, py_args)?;
         let provider = provider_obj.bind(py);
 
-        Ok::<Arc<dyn TableProvider>, PyErr>(PyTable::new(provider)?.table)
+        Ok::<Arc<dyn TableProvider>, PyErr>(PyTable::new(provider, None)?.table)
     })
     .map_err(to_datafusion_err)
 }

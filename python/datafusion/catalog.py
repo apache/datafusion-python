@@ -27,7 +27,7 @@ import datafusion._internal as df_internal
 if TYPE_CHECKING:
     import pyarrow as pa
 
-    from datafusion import DataFrame
+    from datafusion import DataFrame, SessionContext
     from datafusion.context import TableProviderExportable
 
 try:
@@ -65,9 +65,9 @@ class Catalog:
         return self.catalog.schema_names()
 
     @staticmethod
-    def memory_catalog() -> Catalog:
+    def memory_catalog(ctx: SessionContext | None = None) -> Catalog:
         """Create an in-memory catalog provider."""
-        catalog = df_internal.catalog.RawCatalog.memory_catalog()
+        catalog = df_internal.catalog.RawCatalog.memory_catalog(ctx)
         return Catalog(catalog)
 
     def schema(self, name: str = "public") -> Schema:
@@ -112,9 +112,9 @@ class Schema:
         return self._raw_schema.__repr__()
 
     @staticmethod
-    def memory_schema() -> Schema:
+    def memory_schema(ctx: SessionContext | None = None) -> Schema:
         """Create an in-memory schema provider."""
-        schema = df_internal.catalog.RawSchema.memory_schema()
+        schema = df_internal.catalog.RawSchema.memory_schema(ctx)
         return Schema(schema)
 
     def names(self) -> set[str]:
@@ -163,10 +163,12 @@ class Table:
     __slots__ = ("_inner",)
 
     def __init__(
-        self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
+        self,
+        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
+        ctx: SessionContext | None = None,
     ) -> None:
         """Constructor."""
-        self._inner = df_internal.catalog.RawTable(table)
+        self._inner = df_internal.catalog.RawTable(table, ctx)
 
     def __repr__(self) -> str:
         """Print a string representation of the table."""

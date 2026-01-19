@@ -20,7 +20,6 @@ use std::sync::Arc;
 use datafusion_catalog::{TableFunctionImpl, TableProvider};
 use datafusion_common::error::Result as DataFusionResult;
 use datafusion_expr::Expr;
-use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::types::PyCapsule;
 use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
@@ -30,28 +29,25 @@ use crate::utils::ffi_logical_codec_from_pycapsule;
 
 #[pyclass(name = "MyTableFunction", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct MyTableFunction {
-    logical_codec: FFI_LogicalExtensionCodec,
-}
+pub(crate) struct MyTableFunction {}
 
 #[pymethods]
 impl MyTableFunction {
     #[new]
-    fn new(session: &Bound<PyAny>) -> PyResult<Self> {
-        let logical_codec = ffi_logical_codec_from_pycapsule(session)?;
-
-        Ok(Self { logical_codec })
+    fn new() -> Self {
+        Self {}
     }
 
     fn __datafusion_table_function__<'py>(
         &self,
         py: Python<'py>,
+        session: &Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_function".into();
 
         let func = self.clone();
-        let provider =
-            FFI_TableFunction::new_with_ffi_codec(Arc::new(func), None, self.logical_codec.clone());
+        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let provider = FFI_TableFunction::new_with_ffi_codec(Arc::new(func), None, codec);
 
         PyCapsule::new(py, provider, Some(name))
     }
@@ -59,8 +55,7 @@ impl MyTableFunction {
 
 impl TableFunctionImpl for MyTableFunction {
     fn call(&self, _args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
-        let provider = MyTableProvider::new_from_ffi_session(self.logical_codec.clone(), 4, 3, 2)
-            .create_table()?;
+        let provider = MyTableProvider::new(4, 3, 2).create_table()?;
         Ok(Arc::new(provider))
     }
 }

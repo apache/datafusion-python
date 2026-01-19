@@ -21,7 +21,6 @@ use arrow_array::{ArrayRef, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_catalog::MemTable;
 use datafusion_common::error::{DataFusionError, Result as DataFusionResult};
-use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::types::PyCapsule;
@@ -34,7 +33,6 @@ use crate::utils::ffi_logical_codec_from_pycapsule;
 #[pyclass(name = "MyTableProvider", module = "datafusion_ffi_example", subclass)]
 #[derive(Clone)]
 pub(crate) struct MyTableProvider {
-    logical_codec: FFI_LogicalExtensionCodec,
     num_cols: usize,
     num_rows: usize,
     num_batches: usize,
@@ -81,55 +79,31 @@ impl MyTableProvider {
     }
 }
 
+#[pymethods]
 impl MyTableProvider {
-    pub fn new_from_ffi_session(
-        logical_codec: FFI_LogicalExtensionCodec,
-        num_cols: usize,
-        num_rows: usize,
-        num_batches: usize,
-    ) -> Self {
+    #[new]
+    pub fn new(num_cols: usize, num_rows: usize, num_batches: usize) -> Self {
         Self {
-            logical_codec,
             num_cols,
             num_rows,
             num_batches,
         }
     }
-}
-
-#[pymethods]
-impl MyTableProvider {
-    #[new]
-    pub fn new(
-        session: &Bound<PyAny>,
-        num_cols: usize,
-        num_rows: usize,
-        num_batches: usize,
-    ) -> PyResult<Self> {
-        let logical_codec = ffi_logical_codec_from_pycapsule(session)?;
-        Ok(Self {
-            logical_codec,
-            num_cols,
-            num_rows,
-            num_batches,
-        })
-    }
 
     pub fn __datafusion_table_provider__<'py>(
         &self,
         py: Python<'py>,
+        session: &Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_provider".into();
 
         let provider = self
             .create_table()
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        let provider = FFI_TableProvider::new_with_ffi_codec(
-            Arc::new(provider),
-            false,
-            None,
-            self.logical_codec.clone(),
-        );
+
+        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let provider =
+            FFI_TableProvider::new_with_ffi_codec(Arc::new(provider), false, None, codec);
 
         PyCapsule::new(py, provider, Some(name))
     }

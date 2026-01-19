@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 def test_ffi_table_function_register():
     ctx = SessionContext()
-    table_func = MyTableFunction(ctx)
+    table_func = MyTableFunction()
     table_udtf = udtf(table_func, "my_table_func")
     ctx.register_udtf(table_udtf)
     result = ctx.sql("select * from my_table_func()").collect()
@@ -49,7 +49,7 @@ def test_ffi_table_function_register():
 
 def test_ffi_table_function_call_directly():
     ctx = SessionContext()
-    table_func = MyTableFunction(ctx)
+    table_func = MyTableFunction()
     table_udtf = udtf(table_func, "my_table_func")
 
     my_table = table_udtf()
@@ -77,9 +77,6 @@ class PythonTableFunction:
     provider, and this function takes no arguments
     """
 
-    def __init__(self, ctx: SessionContext) -> None:
-        self._ctx = ctx
-
     def __call__(
         self, num_cols: Expr, num_rows: Expr, num_batches: Expr
     ) -> TableProviderExportable:
@@ -88,7 +85,7 @@ class PythonTableFunction:
             num_rows.to_variant().value_i64(),
             num_batches.to_variant().value_i64(),
         ]
-        return MyTableProvider(self._ctx, *args)
+        return MyTableProvider(*args)
 
 
 def common_table_function_test(test_ctx: SessionContext) -> None:
@@ -111,7 +108,7 @@ def common_table_function_test(test_ctx: SessionContext) -> None:
 
 def test_python_table_function():
     ctx = SessionContext()
-    table_func = PythonTableFunction(ctx)
+    table_func = PythonTableFunction()
     table_udtf = udtf(table_func, "my_table_func")
     ctx.register_udtf(table_udtf)
 
@@ -130,7 +127,7 @@ def test_python_table_function_decorator():
             num_rows.to_variant().value_i64(),
             num_batches.to_variant().value_i64(),
         ]
-        return MyTableProvider(ctx, *args)
+        return MyTableProvider(*args)
 
     ctx.register_udtf(my_udtf)
 

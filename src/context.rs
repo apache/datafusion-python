@@ -53,7 +53,7 @@ use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtens
 use object_store::ObjectStore;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use pyo3::IntoPyObjectExt;
 use url::Url;
 use uuid::Uuid;
@@ -343,9 +343,9 @@ impl PySessionContext {
         })
     }
 
-    #[classmethod]
+    #[staticmethod]
     #[pyo3(signature = ())]
-    fn global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
+    pub fn global_ctx() -> PyResult<Self> {
         Ok(Self {
             ctx: get_global_ctx().clone(),
             logical_codec: Arc::new(DefaultLogicalExtensionCodec {}),
@@ -616,7 +616,8 @@ impl PySessionContext {
     }
 
     pub fn register_table(&self, name: &str, table: Bound<'_, PyAny>) -> PyDataFusionResult<()> {
-        let table = PyTable::new(&table)?;
+        let session = self.clone().into_bound_py_any(table.py())?;
+        let table = PyTable::new(&table, Some(session))?;
 
         self.ctx.register_table(name, table.table)?;
         Ok(())
@@ -645,8 +646,10 @@ impl PySessionContext {
         } else {
             match provider.extract::<PyCatalog>() {
                 Ok(py_catalog) => py_catalog.catalog,
-                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
-                    as Arc<dyn CatalogProvider>,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
+                    provider.into(),
+                    self.get_ffi_logical_codec(),
+                )) as Arc<dyn CatalogProvider>,
             }
         };
 
@@ -871,20 +874,20 @@ impl PySessionContext {
     }
 
     #[pyo3(signature = (name="datafusion"))]
-    pub fn catalog(&self, name: &str) -> PyResult<Py<PyAny>> {
+    pub fn catalog(&self, py: Python, name: &str) -> PyResult<Py<PyAny>> {
         let catalog = self.ctx.catalog(name).ok_or(PyKeyError::new_err(format!(
             "Catalog with name {name} doesn't exist."
         )))?;
 
-        Python::attach(|py| {
-            match catalog
-                .as_any()
-                .downcast_ref::<RustWrappedPyCatalogProvider>()
-            {
-                Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
-                None => PyCatalog::from(catalog).into_py_any(py),
-            }
-        })
+        match catalog
+            .as_any()
+            .downcast_ref::<RustWrappedPyCatalogProvider>()
+        {
+            Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
+            None => Ok(
+                PyCatalog::new_from_parts(catalog, self.get_ffi_logical_codec()).into_py_any(py)?,
+            ),
+        }
     }
 
     pub fn catalog_names(&self) -> HashSet<String> {
@@ -1098,7 +1101,8 @@ impl PySessionContext {
     }
 
     pub fn read_table(&self, table: Bound<'_, PyAny>) -> PyDataFusionResult<PyDataFrame> {
-        let table = PyTable::new(&table)?;
+        let session = self.clone().into_bound_py_any(table.py())?;
+        let table = PyTable::new(&table, Some(session))?;
         let df = self.ctx.read_table(table.table())?;
         Ok(PyDataFrame::new(df))
     }
@@ -1150,14 +1154,7 @@ impl PySessionContext {
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_logical_extension_codec".into();
-
-        let runtime = get_tokio_runtime().0.handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        let codec = FFI_LogicalExtensionCodec::new(
-            self.logical_codec.clone(),
-            Some(runtime),
-            &ctx_provider,
-        );
+        let codec = self.get_ffi_logical_codec();
 
         PyCapsule::new(py, codec, Some(name))
     }
@@ -1233,6 +1230,12 @@ impl PySessionContext {
         self.ctx
             .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
         Ok(())
+    }
+
+    pub(crate) fn get_ffi_logical_codec(&self) -> FFI_LogicalExtensionCodec {
+        let runtime = get_tokio_runtime().0.handle().clone();
+        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
+        FFI_LogicalExtensionCodec::new(self.logical_codec.clone(), Some(runtime), &ctx_provider)
     }
 }
 
