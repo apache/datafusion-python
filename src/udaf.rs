@@ -52,28 +52,25 @@ impl RustAccumulator {
         }
     }
 
-    fn ensure_pyarrow_types(
-        &mut self,
-        py: Python<'_>,
-    ) -> PyResult<(Bound<'_, PyType>, Bound<'_, PyType>)> {
+    fn ensure_pyarrow_types(&mut self, py: Python<'_>) -> PyResult<(Py<PyType>, Py<PyType>)> {
         if self.pyarrow_array_type.is_none() || self.pyarrow_chunked_array_type.is_none() {
             let pyarrow = PyModule::import(py, "pyarrow")?;
             let array_attr = pyarrow.getattr("Array")?;
             let array_type = array_attr.downcast::<PyType>()?;
             let chunked_array_attr = pyarrow.getattr("ChunkedArray")?;
             let chunked_array_type = chunked_array_attr.downcast::<PyType>()?;
-            self.pyarrow_array_type = Some(array_type.unbind());
-            self.pyarrow_chunked_array_type = Some(chunked_array_type.unbind());
+            self.pyarrow_array_type = Some(array_type.clone().unbind());
+            self.pyarrow_chunked_array_type = Some(chunked_array_type.clone().unbind());
         }
         Ok((
             self.pyarrow_array_type
                 .as_ref()
                 .expect("array type set")
-                .bind(py),
+                .clone_ref(py),
             self.pyarrow_chunked_array_type
                 .as_ref()
                 .expect("chunked array type set")
-                .bind(py),
+                .clone_ref(py),
         ))
     }
 
@@ -83,6 +80,8 @@ impl RustAccumulator {
         value: &Bound<'_, PyAny>,
     ) -> PyResult<bool> {
         let (array_type, chunked_array_type) = self.ensure_pyarrow_types(py)?;
+        let array_type = array_type.bind(py);
+        let chunked_array_type = chunked_array_type.bind(py);
         Ok(value.is_instance(&array_type)? || value.is_instance(&chunked_array_type)?)
     }
 }
