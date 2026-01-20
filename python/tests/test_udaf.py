@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
@@ -56,6 +58,25 @@ class MissingMethods(Accumulator):
 
     def state(self) -> list[pa.Scalar]:
         return [self._sum]
+
+
+class CollectTimestamps(Accumulator):
+    def __init__(self):
+        self._values: list[datetime] = []
+
+    def state(self) -> list[pa.Scalar]:
+        return [pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))]
+
+    def update(self, values: pa.Array) -> None:
+        self._values.extend(values.to_pylist())
+
+    def merge(self, states: list[pa.Array]) -> None:
+        for state in states[0].to_pylist():
+            if state is not None:
+                self._values.extend(state)
+
+    def evaluate(self) -> pa.Array:
+        return pa.array(self._values, type=pa.timestamp("ns"))
 
 
 @pytest.fixture
@@ -217,3 +238,27 @@ def test_register_udaf(ctx, df) -> None:
     df_result = ctx.sql("select summarize(b) from test_table")
 
     assert df_result.collect()[0][0][0].as_py() == 14.0
+
+
+def test_udaf_list_timestamp_return(ctx) -> None:
+    timestamps = [datetime(2024, 1, 1), datetime(2024, 1, 2)]
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array(timestamps, type=pa.timestamp("ns"))],
+        names=["ts"],
+    )
+    df = ctx.create_dataframe([[batch]], name="timestamp_table")
+
+    collect = udaf(
+        CollectTimestamps,
+        pa.timestamp("ns"),
+        pa.list_(pa.timestamp("ns")),
+        [pa.list_(pa.timestamp("ns"))],
+        volatility="immutable",
+    )
+
+    result = df.aggregate([], [collect(column("ts"))]).collect()[0]
+
+    assert result.column(0) == pa.array(
+        [timestamps],
+        type=pa.list_(pa.timestamp("ns")),
+    )
