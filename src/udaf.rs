@@ -27,7 +27,7 @@ use datafusion::logical_expr::{
 };
 use datafusion_ffi::udaf::{FFI_AggregateUDF, ForeignAggregateUDF};
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyDict, PyTuple, PyType};
 
 use crate::common::data_type::PyScalarValue;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -37,11 +37,52 @@ use crate::utils::{parse_volatility, validate_pycapsule};
 #[derive(Debug)]
 struct RustAccumulator {
     accum: Py<PyAny>,
+    return_type: DataType,
+    pyarrow_array_type: Option<Py<PyType>>,
+    pyarrow_chunked_array_type: Option<Py<PyType>>,
 }
 
 impl RustAccumulator {
-    fn new(accum: Py<PyAny>) -> Self {
-        Self { accum }
+    fn new(accum: Py<PyAny>, return_type: DataType) -> Self {
+        Self {
+            accum,
+            return_type,
+            pyarrow_array_type: None,
+            pyarrow_chunked_array_type: None,
+        }
+    }
+
+    fn ensure_pyarrow_types(&mut self, py: Python<'_>) -> PyResult<(Py<PyType>, Py<PyType>)> {
+        if self.pyarrow_array_type.is_none() || self.pyarrow_chunked_array_type.is_none() {
+            let pyarrow = PyModule::import(py, "pyarrow")?;
+            let array_attr = pyarrow.getattr("Array")?;
+            let array_type = array_attr.downcast::<PyType>()?;
+            let chunked_array_attr = pyarrow.getattr("ChunkedArray")?;
+            let chunked_array_type = chunked_array_attr.downcast::<PyType>()?;
+            self.pyarrow_array_type = Some(array_type.clone().unbind());
+            self.pyarrow_chunked_array_type = Some(chunked_array_type.clone().unbind());
+        }
+        Ok((
+            self.pyarrow_array_type
+                .as_ref()
+                .expect("array type set")
+                .clone_ref(py),
+            self.pyarrow_chunked_array_type
+                .as_ref()
+                .expect("chunked array type set")
+                .clone_ref(py),
+        ))
+    }
+
+    fn is_pyarrow_array_like(
+        &mut self,
+        py: Python<'_>,
+        value: &Bound<'_, PyAny>,
+    ) -> PyResult<bool> {
+        let (array_type, chunked_array_type) = self.ensure_pyarrow_types(py)?;
+        let array_type = array_type.bind(py);
+        let chunked_array_type = chunked_array_type.bind(py);
+        Ok(value.is_instance(array_type)? || value.is_instance(chunked_array_type)?)
     }
 }
 
@@ -59,10 +100,23 @@ impl Accumulator for RustAccumulator {
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Python::attach(|py| {
-            self.accum
-                .bind(py)
-                .call_method0("evaluate")?
-                .extract::<PyScalarValue>()
+            let value = self.accum.bind(py).call_method0("evaluate")?;
+            let is_list_type = matches!(
+                self.return_type,
+                DataType::List(_) | DataType::LargeList(_) | DataType::FixedSizeList(_, _)
+            );
+            if is_list_type && self.is_pyarrow_array_like(py, &value)? {
+                let pyarrow = PyModule::import(py, "pyarrow")?;
+                let list_value = value.call_method0("to_pylist")?;
+                let py_type = self.return_type.to_pyarrow(py)?;
+                let kwargs = PyDict::new(py);
+                kwargs.set_item("type", py_type)?;
+                return pyarrow
+                    .getattr("scalar")?
+                    .call((list_value,), Some(&kwargs))?
+                    .extract::<PyScalarValue>();
+            }
+            value.extract::<PyScalarValue>()
         })
         .map(|v| v.0)
         .map_err(|e| DataFusionError::Execution(format!("{e}")))
@@ -144,13 +198,16 @@ impl Accumulator for RustAccumulator {
 }
 
 pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
-    Arc::new(move |_| -> Result<Box<dyn Accumulator>> {
+    Arc::new(move |args| -> Result<Box<dyn Accumulator>> {
         let accum = Python::attach(|py| {
             accum
                 .call0(py)
                 .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })?;
-        Ok(Box::new(RustAccumulator::new(accum)))
+        Ok(Box::new(RustAccumulator::new(
+            accum,
+            args.return_type().clone(),
+        )))
     })
 }
 
