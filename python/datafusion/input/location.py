@@ -60,7 +60,7 @@ class LocationInputPlugin(BaseInputSource):
                 for col in metadata.schema
             ]
 
-        elif format == "csv":
+        elif file_format == "csv":
             import csv
 
             # Consume header row and count number of rows for statistics.
