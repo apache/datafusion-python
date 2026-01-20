@@ -75,8 +75,8 @@ class CollectTimestamps(Accumulator):
             if state is not None:
                 self._values.extend(state)
 
-    def evaluate(self) -> pa.Array:
-        return pa.array(self._values, type=pa.timestamp("ns"))
+    def evaluate(self) -> pa.Scalar:
+        return pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))
 
 
 @pytest.fixture
