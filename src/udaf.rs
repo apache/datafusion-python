@@ -73,7 +73,7 @@ impl Accumulator for RustAccumulator {
                 kwargs.set_item("type", py_type)?;
                 return pyarrow
                     .getattr("scalar")?
-                    .call((list_value,), Some(kwargs))?
+                    .call((list_value,), Some(&kwargs))?
                     .extract::<PyScalarValue>();
             }
             value.extract::<PyScalarValue>()
@@ -166,15 +166,17 @@ pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
         })?;
         Ok(Box::new(RustAccumulator::new(
             accum,
-            args.return_type.clone(),
+            args.return_type().clone(),
         )))
     })
 }
 
 fn is_pyarrow_array_like(py: Python<'_>, value: &Bound<'_, PyAny>) -> PyResult<bool> {
     let pyarrow = PyModule::import(py, "pyarrow")?;
-    let array_type = pyarrow.getattr("Array")?.downcast::<PyType>()?;
-    let chunked_array_type = pyarrow.getattr("ChunkedArray")?.downcast::<PyType>()?;
+    let array_attr = pyarrow.getattr("Array")?;
+    let array_type = array_attr.downcast::<PyType>()?;
+    let chunked_array_attr = pyarrow.getattr("ChunkedArray")?;
+    let chunked_array_type = chunked_array_attr.downcast::<PyType>()?;
     Ok(value.is_instance(array_type)? || value.is_instance(chunked_array_type)?)
 }
 
