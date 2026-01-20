@@ -82,7 +82,7 @@ impl RustAccumulator {
         let (array_type, chunked_array_type) = self.ensure_pyarrow_types(py)?;
         let array_type = array_type.bind(py);
         let chunked_array_type = chunked_array_type.bind(py);
-        Ok(value.is_instance(&array_type)? || value.is_instance(&chunked_array_type)?)
+        Ok(value.is_instance(array_type)? || value.is_instance(chunked_array_type)?)
     }
 }
 
