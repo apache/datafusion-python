@@ -149,6 +149,17 @@ also see how the inputs to ``update`` and ``merge`` differ.
 
     df.aggregate([], [my_udaf(col("a"), col("b")).alias("col_diff")])
 
+FAQ
+^^^
+
+**How do I return a list from a UDAF?**
+Use a list-valued scalar and declare list types for both the return and state
+definitions. Returning a ``pyarrow.Array`` from ``evaluate`` is not supported
+unless you convert it to a list scalar. For example, in ``evaluate`` you can
+return ``pa.scalar([...], type=pa.list_(pa.timestamp("ms")))`` and register the
+UDAF with ``return_type=pa.list_(pa.timestamp("ms"))`` and
+``state_type=[pa.list_(pa.timestamp("ms"))]``.
+
 Window Functions
 ----------------
 

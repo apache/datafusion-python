@@ -282,7 +282,21 @@ class Accumulator(metaclass=ABCMeta):
 
     @abstractmethod
     def evaluate(self) -> pa.Scalar:
-        """Return the resultant value."""
+        """Return the resultant value.
+
+        If you need to return a list, wrap it in a scalar with the correct
+        list type, for example::
+
+            import pyarrow as pa
+
+            return pa.scalar(
+                [pa.scalar("2024-01-01T00:00:00Z")],
+                type=pa.list_(pa.timestamp("ms")),
+            )
+
+        Returning a ``pyarrow.Array`` from ``evaluate`` is not supported unless
+        you explicitly convert it to a list-valued scalar.
+        """
 
 
 class AggregateUDFExportable(Protocol):
