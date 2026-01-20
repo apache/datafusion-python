@@ -60,7 +60,7 @@ class LocationInputPlugin(BaseInputSource):
                 for col in metadata.schema
             ]
 
-        elif format == "csv":
+        elif file_format == "csv":
             import csv
 
             # Consume header row and count number of rows for statistics.
@@ -78,8 +78,7 @@ class LocationInputPlugin(BaseInputSource):
             msg = "TODO: Currently unable to support CSV input files."
             raise RuntimeError(msg)
         else:
-            msg = f"Input of format: `{format}` is currently not supported.\
-                Only Parquet and CSV."
+            msg = f"Input of format: `{file_format}` is currently not supported. Only Parquet and CSV."
             raise RuntimeError(msg)
 
         # Input could possibly be multiple files. Create a list if so
