@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -241,7 +241,10 @@ def test_register_udaf(ctx, df) -> None:
 
 
 def test_udaf_list_timestamp_return(ctx) -> None:
-    timestamps = [datetime(2024, 1, 1), datetime(2024, 1, 2)]
+    timestamps = [
+        datetime(2024, 1, 1, tzinfo=timezone.utc),
+        datetime(2024, 1, 2, tzinfo=timezone.utc),
+    ]
     batch = pa.RecordBatch.from_arrays(
         [pa.array(timestamps, type=pa.timestamp("ns"))],
         names=["ts"],
