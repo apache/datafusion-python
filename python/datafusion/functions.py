@@ -2268,6 +2268,11 @@ def first_value(
 ) -> Expr:
     """Returns the first value in a group of values.
 
+    .. note::
+        This is an aggregate function. It must be used within
+        :py:meth:`~datafusion.dataframe.DataFrame.aggregate` and generally cannot be
+        used with :py:meth:`~datafusion.dataframe.DataFrame.select`.
+
     This aggregate function will return the first value in the partition.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
