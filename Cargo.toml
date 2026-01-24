@@ -57,7 +57,7 @@ pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }
 pyo3-log = "0.13.2"
 arrow = { version = "57", features = ["pyarrow"] }
 arrow-select = { version = "57" }
-datafusion = { version = "51", features = ["avro", "unicode_expressions"] }
+datafusion = { version = "52", features = ["avro", "unicode_expressions"] }
 datafusion-substrait = { version = "51", optional = true }
 datafusion-proto = { version = "51" }
 datafusion-ffi = { version = "51" }
