@@ -60,7 +60,7 @@ arrow-select = { version = "57" }
 datafusion = { version = "51", features = ["avro", "unicode_expressions"] }
 datafusion-substrait = { version = "51", optional = true }
 datafusion-proto = { version = "51" }
-datafusion-ffi = { version = "51" }
+datafusion-ffi = { version = "52" }
 prost = "0.14.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.18", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = [
