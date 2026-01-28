@@ -50,7 +50,6 @@ tokio = { version = "1.47", features = [
 ] }
 pyo3 = { version = "0.26", features = [
     "extension-module",
-    "abi3",
     "abi3-py310",
 ] }
 pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }

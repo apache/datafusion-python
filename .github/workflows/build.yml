@@ -74,8 +74,49 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
-        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            python-version: "3.10"
+            artifact-suffix: ""
+          - os: macos-latest
+            python-version: "3.11"
+            artifact-suffix: ""
+          - os: macos-latest
+            python-version: "3.12"
+            artifact-suffix: ""
+          - os: macos-latest
+            python-version: "3.13"
+            artifact-suffix: ""
+          - os: macos-latest
+            python-version: "3.14"
+            artifact-suffix: ""
+          - os: macos-latest
+            python-version: "3.13t"
+            artifact-suffix: "-freethreaded"
+          - os: macos-latest
+            python-version: "3.14t"
+            artifact-suffix: "-freethreaded"
+          - os: windows-latest
+            python-version: "3.10"
+            artifact-suffix: ""
+          - os: windows-latest
+            python-version: "3.11"
+            artifact-suffix: ""
+          - os: windows-latest
+            python-version: "3.12"
+            artifact-suffix: ""
+          - os: windows-latest
+            python-version: "3.13"
+            artifact-suffix: ""
+          - os: windows-latest
+            python-version: "3.14"
+            artifact-suffix: ""
+          - os: windows-latest
+            python-version: "3.13t"
+            artifact-suffix: "-freethreaded"
+          - os: windows-latest
+            python-version: "3.14t"
+            artifact-suffix: "-freethreaded"
     steps:
       - uses: actions/checkout@v5
 
@@ -105,7 +146,7 @@ jobs:
       - name: Build Python package
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait
+          uv run --no-project maturin build --release --strip --features substrait --interpreter python
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -121,7 +162,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os  }}
+          name: dist-${{ matrix.os  }}${{ matrix.artifact-suffix }}
           path: target/wheels/*
 
   build-macos-x86_64:
@@ -131,7 +172,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        include:
+          - python-version: "3.10"
+            artifact-suffix: ""
+          - python-version: "3.11"
+            artifact-suffix: ""
+          - python-version: "3.12"
+            artifact-suffix: ""
+          - python-version: "3.13"
+            artifact-suffix: ""
+          - python-version: "3.14"
+            artifact-suffix: ""
+          - python-version: "3.13t"
+            artifact-suffix: "-freethreaded"
+          - python-version: "3.14t"
+            artifact-suffix: "-freethreaded"
     steps:
       - uses: actions/checkout@v5
 
@@ -161,7 +216,7 @@ jobs:
       - name: Build Python package
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait
+          uv run --no-project maturin build --release --strip --features substrait --interpreter python
 
       - name: List Mac wheels
         run: find target/wheels/
@@ -169,13 +224,21 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-macos-aarch64
+          name: dist-macos-aarch64${{ matrix.artifact-suffix }}
           path: target/wheels/*
 
   build-manylinux-x86_64:
     needs: [generate-license]
     name: Manylinux x86_64
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - interpreter: "3.10 3.11 3.12 3.13 3.14"
+            artifact-suffix: ""
+          - interpreter: "3.13t 3.14t"
+            artifact-suffix: "-freethreaded"
     steps:
       - uses: actions/checkout@v5
       - run: rm LICENSE.txt
@@ -194,17 +257,26 @@ jobs:
           target: x86_64
           manylinux: auto
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
+          interpreter: ${{ matrix.interpreter }}
           args: --release --manylinux 2014 --features protoc,substrait
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64${{ matrix.artifact-suffix }}
           path: target/wheels/*
 
   build-manylinux-aarch64:
     needs: [generate-license]
     name: Manylinux arm64
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - interpreter: "3.10 3.11 3.12 3.13 3.14"
+            artifact-suffix: ""
+          - interpreter: "3.13t 3.14t"
+            artifact-suffix: "-freethreaded"
     steps:
       - uses: actions/checkout@v5
       - run: rm LICENSE.txt
@@ -224,11 +296,12 @@ jobs:
           # Use manylinux_2_28-cross because the manylinux2014-cross has GCC 4.8.5, which causes the build to fail
           manylinux: 2_28
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
+          interpreter: ${{ matrix.interpreter }}
           args: --release --features protoc,substrait
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-manylinux-aarch64
+          name: dist-manylinux-aarch64${{ matrix.artifact-suffix }}
           path: target/wheels/*
 
   build-sdist:
