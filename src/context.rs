@@ -715,7 +715,8 @@ impl PySessionContext {
                         delimiter=",",
                         schema_infer_max_records=1000,
                         file_extension=".csv",
-                        file_compression_type=None))]
+                        file_compression_type=None,
+                        truncated_rows=false))]
     pub fn register_csv(
         &self,
         name: &str,
@@ -726,6 +727,7 @@ impl PySessionContext {
         schema_infer_max_records: usize,
         file_extension: &str,
         file_compression_type: Option<String>,
+        truncated_rows: bool,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let delimiter = delimiter.as_bytes();
@@ -740,7 +742,8 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
+            .file_compression_type(parse_file_compression_type(file_compression_type)?)
+            .truncated_rows(truncated_rows);
         options.schema = schema.as_ref().map(|x| &x.0);
 
         if path.is_instance_of::<PyList>() {
@@ -969,7 +972,8 @@ impl PySessionContext {
         schema_infer_max_records=1000,
         file_extension=".csv",
         table_partition_cols=vec![],
-        file_compression_type=None))]
+        file_compression_type=None,
+        truncated_rows=false))]
     pub fn read_csv(
         &self,
         path: &Bound<'_, PyAny>,
@@ -980,6 +984,7 @@ impl PySessionContext {
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
+        truncated_rows: bool,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let delimiter = delimiter.as_bytes();
@@ -1000,7 +1005,8 @@ impl PySessionContext {
                     .map(|(name, ty)| (name, ty.0))
                     .collect::<Vec<(String, DataType)>>(),
             )
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
+            .file_compression_type(parse_file_compression_type(file_compression_type)?)
+            .truncated_rows(truncated_rows);
         options.schema = schema.as_ref().map(|x| &x.0);
 
         if path.is_instance_of::<PyList>() {

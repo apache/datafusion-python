@@ -137,6 +137,67 @@ def test_register_csv_list(ctx, tmp_path):
     assert int_sum == 2 * sum(int_values)
 
 
+def test_register_csv_truncated_rows(ctx, tmp_path):
+    # Create CSV file with 3 columns
+    path1 = tmp_path / "file1.csv"
+    table1 = pa.Table.from_arrays(
+        [
+            [1, 2],
+            ["a", "b"],
+            [1.1, 2.2],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table1, path1)
+
+    # Create CSV file with 5 columns
+    path2 = tmp_path / "file2.csv"
+    table2 = pa.Table.from_arrays(
+        [
+            [3, 4],
+            ["c", "d"],
+            [3.3, 4.4],
+            ["x", "y"],
+            [10, 20],
+        ],
+        names=["int", "str", "float", "extra1", "extra2"],
+    )
+    write_csv(table2, path2)
+
+    # Register with truncated_rows=True to handle mismatched columns
+    ctx.register_csv("mixed", [path1, path2], truncated_rows=True)
+
+    # Verify the table exists and has correct schema
+    result = ctx.sql("SELECT * FROM mixed").collect()
+    result_table = pa.Table.from_batches(result)
+
+    # Should have 5 columns (union schema)
+    assert len(result_table.schema) == 5
+    assert result_table.schema.names == ["int", "str", "float", "extra1", "extra2"]
+
+    # Should have 4 rows total (2 from each file)
+    assert result_table.num_rows == 4
+
+    # Convert to dict for easier validation
+    result_dict = result_table.to_pydict()
+
+    # Check that rows from file1 have nulls for extra1 and extra2
+    assert result_dict["int"] == [1, 2, 3, 4]
+    assert result_dict["str"] == ["a", "b", "c", "d"]
+    assert result_dict["float"] == [1.1, 2.2, 3.3, 4.4]
+
+    # First two rows should have None for extra1 and extra2
+    assert result_dict["extra1"][0] is None
+    assert result_dict["extra1"][1] is None
+    assert result_dict["extra1"][2] == "x"
+    assert result_dict["extra1"][3] == "y"
+
+    assert result_dict["extra2"][0] is None
+    assert result_dict["extra2"][1] is None
+    assert result_dict["extra2"][2] == 10
+    assert result_dict["extra2"][3] == 20
+
+
 def test_register_http_csv(ctx):
     url = "https://raw.githubusercontent.com/ibis-project/testing-data/refs/heads/master/csv/diamonds.csv"
     ctx.register_object_store("", Http(url))

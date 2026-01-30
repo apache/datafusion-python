@@ -927,6 +927,7 @@ class SessionContext:
         schema_infer_max_records: int = 1000,
         file_extension: str = ".csv",
         file_compression_type: str | None = None,
+        truncated_rows: bool = False,
     ) -> None:
         """Register a CSV file as a table.
 
@@ -946,6 +947,10 @@ class SessionContext:
             file_extension: File extension; only files with this extension are
                 selected for data input.
             file_compression_type: File compression type.
+            truncated_rows: Allow reading CSV files with inconsistent column
+                counts by creating a union schema. Missing columns are filled
+                with nulls. Default is False. Useful for evolving datasets
+                where newer files have additional columns.
         """
         path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
@@ -958,6 +963,7 @@ class SessionContext:
             schema_infer_max_records,
             file_extension,
             file_compression_type,
+            truncated_rows,
         )
 
     def register_json(
@@ -1123,6 +1129,7 @@ class SessionContext:
         file_extension: str = ".csv",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        truncated_rows: bool = False,
     ) -> DataFrame:
         """Read a CSV data source.
 
@@ -1140,6 +1147,10 @@ class SessionContext:
                 selected for data input.
             table_partition_cols:  Partition columns.
             file_compression_type:  File compression type.
+            truncated_rows: Allow reading CSV files with inconsistent column
+                counts by creating a union schema. Missing columns are filled
+                with nulls. Default is False. Useful for evolving datasets
+                where newer files have additional columns.
 
         Returns:
             DataFrame representation of the read CSV files
@@ -1160,6 +1171,7 @@ class SessionContext:
                 file_extension,
                 table_partition_cols,
                 file_compression_type,
+                truncated_rows,
             )
         )
 
