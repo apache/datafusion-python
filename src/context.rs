@@ -26,7 +26,7 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::CatalogProvider;
+use datafusion::catalog::{CatalogProvider, CatalogProviderList};
 use datafusion::common::{exec_err, ScalarValue, TableReference};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
@@ -47,6 +47,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
+use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
@@ -58,7 +59,9 @@ use pyo3::IntoPyObjectExt;
 use url::Url;
 use uuid::Uuid;
 
-use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
+use crate::catalog::{
+    PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
+};
 use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
@@ -624,6 +627,40 @@ impl PySessionContext {
 
     pub fn deregister_table(&self, name: &str) -> PyDataFusionResult<()> {
         self.ctx.deregister_table(name)?;
+        Ok(())
+    }
+
+    pub fn register_catalog_provider_list(
+        &self,
+        mut provider: Bound<PyAny>,
+    ) -> PyDataFusionResult<()> {
+        if provider.hasattr("__datafusion_catalog_provider_list__")? {
+            let py = provider.py();
+            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            provider = provider
+                .getattr("__datafusion_catalog_provider_list__")?
+                .call1((codec_capsule,))?;
+        }
+
+        let provider =
+            if let Ok(capsule) = provider.downcast::<PyCapsule>().map_err(py_datafusion_err) {
+                validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
+
+                let provider = unsafe { capsule.reference::<FFI_CatalogProviderList>() };
+                let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
+                provider as Arc<dyn CatalogProviderList>
+            } else {
+                match provider.extract::<PyCatalogList>() {
+                    Ok(py_catalog_list) => py_catalog_list.catalog_list,
+                    Err(_) => Arc::new(RustWrappedPyCatalogProviderList::new(
+                        provider.into(),
+                        Arc::clone(&self.logical_codec),
+                    )) as Arc<dyn CatalogProviderList>,
+                }
+            };
+
+        self.ctx.register_catalog_list(provider);
+
         Ok(())
     }
 
