@@ -141,6 +141,10 @@ class Schema:
         """Deregister a table provider from this schema."""
         return self._raw_schema.deregister_table(name)
 
+    def table_exist(self, name: str) -> bool:
+        """Determines if a table exists in this schema."""
+        return self._raw_schema.table_exist(name)
+
 
 @deprecated("Use `Schema` instead.")
 class Database(Schema):

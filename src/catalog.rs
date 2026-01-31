@@ -206,6 +206,10 @@ impl PySchema {
 
         Ok(())
     }
+
+    fn table_exist(&self, name: &str) -> bool {
+        self.schema.table_exist(name)
+    }
 }
 
 #[derive(Debug)]
