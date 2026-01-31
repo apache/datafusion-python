@@ -21,7 +21,6 @@ import pathlib
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from pyarrow.csv import write_csv
 from datafusion import (
     DataFrame,
     RuntimeEnvBuilder,
@@ -32,6 +31,7 @@ from datafusion import (
     column,
     literal,
 )
+from pyarrow.csv import write_csv
 
 
 def test_create_context_no_args():
