@@ -62,7 +62,8 @@ impl PyTable {
     /// - FFI Table Providers via PyCapsule
     /// - PyArrow Dataset objects
     #[new]
-    pub fn new(obj: &Bound<'_, PyAny>, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+    pub fn new(obj: Bound<'_, PyAny>, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let py = obj.py();
         if let Ok(py_table) = obj.extract::<PyTable>() {
             Ok(py_table)
         } else if let Ok(py_table) = obj
@@ -84,12 +85,11 @@ impl PyTable {
                 Some(session) => session,
                 None => PySessionContext::global_ctx()?.into_bound_py_any(obj.py())?,
             };
-            table_provider_from_pycapsule(obj, session)?
+            table_provider_from_pycapsule(obj.clone(), session)?
         } {
             Ok(PyTable::from(provider))
         } else {
-            let py = obj.py();
-            let provider = Arc::new(Dataset::new(obj, py)?) as Arc<dyn TableProvider>;
+            let provider = Arc::new(Dataset::new(&obj, py)?) as Arc<dyn TableProvider>;
             Ok(PyTable::from(provider))
         }
     }

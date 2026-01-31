@@ -170,12 +170,12 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     Ok(())
 }
 
-pub(crate) fn table_provider_from_pycapsule(
-    obj: &Bound<PyAny>,
-    session: Bound<PyAny>,
+pub(crate) fn table_provider_from_pycapsule<'py>(
+    mut obj: Bound<'py, PyAny>,
+    session: Bound<'py, PyAny>,
 ) -> PyResult<Option<Arc<dyn TableProvider>>> {
     if obj.hasattr("__datafusion_table_provider__")? {
-        let capsule = obj
+        obj = obj
             .getattr("__datafusion_table_provider__")?
             .call1((session,)).map_err(|err| {
             let py = obj.py();
@@ -184,9 +184,10 @@ pub(crate) fn table_provider_from_pycapsule(
             } else {
                 err
             }
-
         })?;
-        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+    }
+
+    if let Ok(capsule) = obj.downcast::<PyCapsule>().map_err(py_datafusion_err) {
         validate_pycapsule(capsule, "datafusion_table_provider")?;
 
         let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
@@ -236,4 +237,14 @@ pub(crate) fn extract_logical_extension_codec(
 
     let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
     Ok(Arc::new(codec.clone()))
+}
+
+pub(crate) fn create_logical_extension_capsule<'py>(
+    py: Python<'py>,
+    codec: &FFI_LogicalExtensionCodec,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let name = cr"datafusion_logical_extension_codec".into();
+    let codec = codec.clone();
+
+    PyCapsule::new(py, codec, Some(name))
 }

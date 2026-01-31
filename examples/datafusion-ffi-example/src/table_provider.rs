@@ -93,13 +93,13 @@ impl MyTableProvider {
     pub fn __datafusion_table_provider__<'py>(
         &self,
         py: Python<'py>,
-        session: &Bound<PyAny>,
+        session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_provider".into();
 
         let provider = self
             .create_table()
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+            .map_err(|e: DataFusionError| PyRuntimeError::new_err(e.to_string()))?;
 
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider =

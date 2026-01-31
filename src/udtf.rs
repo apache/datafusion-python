@@ -116,7 +116,7 @@ fn call_python_table_function(
     Python::attach(|py| {
         let py_args = PyTuple::new(py, args)?;
         let provider_obj = func.call1(py, py_args)?;
-        let provider = provider_obj.bind(py);
+        let provider = provider_obj.bind(py).clone();
 
         Ok::<Arc<dyn TableProvider>, PyErr>(PyTable::new(provider, None)?.table)
     })

@@ -27,7 +27,7 @@ use datafusion_catalog::{
 };
 use datafusion_common::error::{DataFusionError, Result};
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
-use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::types::PyCapsule;
 use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
 
@@ -58,20 +58,48 @@ pub fn my_table() -> Arc<dyn TableProvider + 'static> {
     Arc::new(MemTable::try_new(schema, vec![partitions]).unwrap())
 }
 
+#[pyclass(
+    name = "FixedSchemaProvider",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug)]
 pub struct FixedSchemaProvider {
-    inner: MemorySchemaProvider,
+    inner: Arc<MemorySchemaProvider>,
 }
 
 impl Default for FixedSchemaProvider {
     fn default() -> Self {
-        let inner = MemorySchemaProvider::new();
+        let inner = Arc::new(MemorySchemaProvider::new());
 
         let table = my_table();
 
         let _ = inner.register_table("my_table".to_string(), table).unwrap();
 
         Self { inner }
+    }
+}
+
+#[pymethods]
+impl FixedSchemaProvider {
+    #[new]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn __datafusion_schema_provider__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Bound<PyAny>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = cr"datafusion_schema_provider".into();
+
+        let provider = Arc::clone(&self.inner) as Arc<dyn SchemaProvider + Send>;
+
+        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let provider = FFI_SchemaProvider::new_with_ffi_codec(provider, None, codec);
+
+        PyCapsule::new(py, provider, Some(name))
     }
 }
 
@@ -116,7 +144,6 @@ impl SchemaProvider for FixedSchemaProvider {
 #[derive(Debug, Clone)]
 pub(crate) struct MyCatalogProvider {
     inner: Arc<MemoryCatalogProvider>,
-    logical_codec: FFI_LogicalExtensionCodec,
 }
 
 impl CatalogProvider for MyCatalogProvider {
@@ -152,28 +179,27 @@ impl CatalogProvider for MyCatalogProvider {
 #[pymethods]
 impl MyCatalogProvider {
     #[new]
-    pub fn new(session: &Bound<PyAny>) -> PyResult<Self> {
-        let logical_codec = ffi_logical_codec_from_pycapsule(session)?;
+    pub fn new() -> PyResult<Self> {
         let inner = Arc::new(MemoryCatalogProvider::new());
 
         let schema_name: &str = "my_schema";
         let _ = inner.register_schema(schema_name, Arc::new(FixedSchemaProvider::default()));
 
-        Ok(Self {
-            inner,
-            logical_codec,
-        })
+        Ok(Self { inner })
     }
 
     pub fn __datafusion_catalog_provider__<'py>(
         &self,
         py: Python<'py>,
+        session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_catalog_provider".into();
-        let codec = self.logical_codec.clone();
-        let catalog_provider =
-            FFI_CatalogProvider::new_with_ffi_codec(Arc::new(self.clone()), None, codec);
 
-        PyCapsule::new(py, catalog_provider, Some(name))
+        let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProvider + Send>;
+
+        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let provider = FFI_CatalogProvider::new_with_ffi_codec(provider, None, codec);
+
+        PyCapsule::new(py, provider, Some(name))
     }
 }

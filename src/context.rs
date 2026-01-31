@@ -27,7 +27,7 @@ use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::catalog::CatalogProvider;
-use datafusion::common::{exec_datafusion_err, exec_err, ScalarValue, TableReference};
+use datafusion::common::{exec_err, ScalarValue, TableReference};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -76,7 +76,8 @@ use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{
-    get_global_ctx, get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
+    create_logical_extension_capsule, extract_logical_extension_codec, get_global_ctx,
+    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
 };
 
 /// Configuration options for a SessionContext
@@ -615,7 +616,7 @@ impl PySessionContext {
 
     pub fn register_table(&self, name: &str, table: Bound<'_, PyAny>) -> PyDataFusionResult<()> {
         let session = self.clone().into_bound_py_any(table.py())?;
-        let table = PyTable::new(&table, Some(session))?;
+        let table = PyTable::new(table, Some(session))?;
 
         self.ctx.register_table(name, table.table)?;
         Ok(())
@@ -629,27 +630,32 @@ impl PySessionContext {
     pub fn register_catalog_provider(
         &self,
         name: &str,
-        provider: Bound<'_, PyAny>,
+        mut provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        let provider = if provider.hasattr("__datafusion_catalog_provider__")? {
-            let capsule = provider
+        if provider.hasattr("__datafusion_catalog_provider__")? {
+            let py = provider.py();
+            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            provider = provider
                 .getattr("__datafusion_catalog_provider__")?
-                .call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+                .call1((codec_capsule,))?;
+        }
 
-            let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
-            let provider: Arc<dyn CatalogProvider + Send> = provider.into();
-            provider as Arc<dyn CatalogProvider>
-        } else {
-            match provider.extract::<PyCatalog>() {
-                Ok(py_catalog) => py_catalog.catalog,
-                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
-                    provider.into(),
-                    Arc::clone(&self.logical_codec),
-                )) as Arc<dyn CatalogProvider>,
-            }
-        };
+        let provider =
+            if let Ok(capsule) = provider.downcast::<PyCapsule>().map_err(py_datafusion_err) {
+                validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+
+                let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+                let provider: Arc<dyn CatalogProvider + Send> = provider.into();
+                provider as Arc<dyn CatalogProvider>
+            } else {
+                match provider.extract::<PyCatalog>() {
+                    Ok(py_catalog) => py_catalog.catalog,
+                    Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
+                        provider.into(),
+                        Arc::clone(&self.logical_codec),
+                    )) as Arc<dyn CatalogProvider>,
+                }
+            };
 
         let _ = self.ctx.register_catalog(name, provider);
 
@@ -1101,7 +1107,7 @@ impl PySessionContext {
 
     pub fn read_table(&self, table: Bound<'_, PyAny>) -> PyDataFusionResult<PyDataFrame> {
         let session = self.clone().into_bound_py_any(table.py())?;
-        let table = PyTable::new(&table, Some(session))?;
+        let table = PyTable::new(table, Some(session))?;
         let df = self.ctx.read_table(table.table())?;
         Ok(PyDataFrame::new(df))
     }
@@ -1152,37 +1158,22 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_logical_extension_codec".into();
-        let codec = self.logical_codec.as_ref().clone();
-
-        PyCapsule::new(py, codec, Some(name))
+        create_logical_extension_capsule(py, self.logical_codec.as_ref())
     }
 
     pub fn with_logical_extension_codec<'py>(
         &self,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        if codec.hasattr("__datafusion_logical_extension_codec__")? {
-            let capsule = codec
-                .getattr("__datafusion_logical_extension_codec__")?
-                .call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
+        let py = codec.py();
+        let logical_codec = extract_logical_extension_codec(py, Some(codec))?;
 
-            let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
-            let logical_codec = Arc::new(codec.clone());
-
-            Ok({
-                Self {
-                    ctx: Arc::clone(&self.ctx),
-                    logical_codec,
-                }
-            })
-        } else {
-            Err(PyDataFusionError::from(exec_datafusion_err!(
-                "Logical Extension Codec does not have expected PyCapsule object."
-            )))
-        }
+        Ok({
+            Self {
+                ctx: Arc::clone(&self.ctx),
+                logical_codec,
+            }
+        })
     }
 }
 

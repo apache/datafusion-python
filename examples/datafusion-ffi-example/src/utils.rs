@@ -5,23 +5,21 @@ use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult};
 
 pub(crate) fn ffi_logical_codec_from_pycapsule(
-    obj: &Bound<PyAny>,
+    obj: Bound<PyAny>,
 ) -> PyResult<FFI_LogicalExtensionCodec> {
     let attr_name = "__datafusion_logical_extension_codec__";
-
-    if obj.hasattr(attr_name)? {
-        let capsule = obj.getattr(attr_name)?.call0()?;
-        let capsule = capsule.downcast::<PyCapsule>()?;
-        validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
-
-        let provider = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
-
-        Ok(provider.clone())
+    let capsule = if obj.hasattr(attr_name)? {
+        obj.getattr(attr_name)?.call0()?
     } else {
-        Err(PyValueError::new_err(
-            "Expected PyCapsule object for FFI_LogicalExtensionCodec, but attribute does not exist",
-        ))
-    }
+        obj
+    };
+
+    let capsule = capsule.downcast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
+
+    let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+
+    Ok(codec.clone())
 }
 
 pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {

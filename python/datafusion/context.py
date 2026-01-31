@@ -88,7 +88,7 @@ class TableProviderExportable(Protocol):
     https://datafusion.apache.org/python/user-guide/io/table_provider.html
     """
 
-    def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class CatalogProviderExportable(Protocol):
@@ -97,7 +97,7 @@ class CatalogProviderExportable(Protocol):
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
 
-    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_catalog_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:

@@ -19,19 +19,14 @@ from __future__ import annotations
 
 import pyarrow as pa
 from datafusion import SessionContext
-from datafusion_ffi_example import MyCatalogProvider
+from datafusion_ffi_example import FixedSchemaProvider, MyCatalogProvider
 
 
-def test_catalog_provider():
-    ctx = SessionContext()
-
-    my_catalog_name = "my_catalog"
+def common_checks(ctx: SessionContext, my_catalog_name: str) -> None:
     expected_schema_name = "my_schema"
     expected_table_name = "my_table"
     expected_table_columns = ["units", "price"]
 
-    catalog_provider = MyCatalogProvider(ctx)
-    ctx.register_catalog_provider(my_catalog_name, catalog_provider)
     my_catalog = ctx.catalog(my_catalog_name)
 
     my_catalog_schemas = my_catalog.names()
@@ -58,3 +53,23 @@ def test_catalog_provider():
     ]
     assert col0_result == expected_col0
     assert col1_result == expected_col1
+
+
+def test_catalog_provider():
+    ctx = SessionContext()
+
+    my_catalog_name = "my_catalog"
+
+    catalog_provider = MyCatalogProvider()
+    ctx.register_catalog_provider(my_catalog_name, catalog_provider)
+    common_checks(ctx, my_catalog_name)
+
+
+def test_schema_provider():
+    ctx = SessionContext()
+
+    my_schema_name = "my_schema"
+
+    schema_provider = FixedSchemaProvider()
+    ctx.catalog().register_schema(my_schema_name, schema_provider)
+    common_checks(ctx, "datafusion")

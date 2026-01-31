@@ -249,22 +249,21 @@ impl PyWindowUDF {
 
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        if func.hasattr("__datafusion_window_udf__")? {
-            let capsule = func.getattr("__datafusion_window_udf__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_window_udf")?;
-
-            let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
-            let udwf: Arc<dyn WindowUDFImpl> = udwf.into();
-
-            Ok(Self {
-                function: WindowUDF::new_from_shared_impl(udwf),
-            })
+        let capsule = if func.hasattr("__datafusion_window_udf__")? {
+            func.getattr("__datafusion_window_udf__")?.call0()?
         } else {
-            Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_window_udf__ does not exist on WindowUDF object.".to_string(),
-            ))
-        }
+            func
+        };
+
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_window_udf")?;
+
+        let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
+        let udwf: Arc<dyn WindowUDFImpl> = udwf.into();
+
+        Ok(Self {
+            function: WindowUDF::new_from_shared_impl(udwf),
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {

@@ -35,7 +35,10 @@ use pyo3::IntoPyObjectExt;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::table::PyTable;
-use crate::utils::{extract_logical_extension_codec, validate_pycapsule, wait_for_future};
+use crate::utils::{
+    create_logical_extension_capsule, extract_logical_extension_codec, validate_pycapsule,
+    wait_for_future,
+};
 
 #[pyclass(frozen, name = "RawCatalog", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
@@ -111,23 +114,7 @@ impl PyCatalog {
     }
 
     pub fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {
-        let provider = if schema_provider.hasattr("__datafusion_schema_provider__")? {
-            let capsule = schema_provider
-                .getattr("__datafusion_schema_provider__")?
-                .call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_schema_provider")?;
-
-            let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-            let provider: Arc<dyn SchemaProvider + Send> = provider.into();
-            provider as Arc<dyn SchemaProvider>
-        } else {
-            match schema_provider.extract::<PySchema>() {
-                Ok(py_schema) => py_schema.schema,
-                Err(_) => Arc::new(RustWrappedPySchemaProvider::new(schema_provider.into()))
-                    as Arc<dyn SchemaProvider>,
-            }
-        };
+        let provider = extract_schema_provider_from_pyobj(schema_provider, self.codec.as_ref())?;
 
         let _ = self
             .catalog
@@ -195,14 +182,11 @@ impl PySchema {
         Ok(format!("Schema(table_names=[{}])", names.join(";")))
     }
 
-    fn register_table(&self, name: &str, table_provider: &Bound<'_, PyAny>) -> PyResult<()> {
+    fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
         let py = table_provider.py();
-        let codec_capsule = PyCapsule::new(
-            py,
-            self.codec.clone(),
-            Some(cr"datafusion_logical_extension_codec".into()),
-        )?
-        .into_bound_py_any(py)?;
+        let codec_capsule = create_logical_extension_capsule(py, self.codec.as_ref())?
+            .as_any()
+            .clone();
 
         let table = PyTable::new(table_provider, Some(codec_capsule))?;
 
@@ -256,7 +240,7 @@ impl RustWrappedPySchemaProvider {
                 return Ok(None);
             }
 
-            let table = PyTable::new(&py_table, None)?;
+            let table = PyTable::new(py_table, None)?;
 
             Ok(Some(table.table))
         })
@@ -370,32 +354,7 @@ impl RustWrappedPyCatalogProvider {
                 return Ok(None);
             }
 
-            if py_schema.hasattr("__datafusion_schema_provider__")? {
-                let capsule = provider
-                    .getattr("__datafusion_schema_provider__")?
-                    .call0()?;
-                let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-                validate_pycapsule(capsule, "datafusion_schema_provider")?;
-
-                let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-                let provider: Arc<dyn SchemaProvider + Send> = provider.into();
-
-                Ok(Some(provider as Arc<dyn SchemaProvider>))
-            } else {
-                if let Ok(inner_schema) = py_schema.getattr("schema") {
-                    if let Ok(inner_schema) = inner_schema.extract::<PySchema>() {
-                        return Ok(Some(inner_schema.schema));
-                    }
-                }
-                match py_schema.extract::<PySchema>() {
-                    Ok(inner_schema) => Ok(Some(inner_schema.schema)),
-                    Err(_) => {
-                        let py_schema = RustWrappedPySchemaProvider::new(py_schema.into());
-
-                        Ok(Some(Arc::new(py_schema) as Arc<dyn SchemaProvider>))
-                    }
-                }
-            }
+            extract_schema_provider_from_pyobj(py_schema, self.codec.as_ref()).map(Some)
         })
     }
 }
@@ -477,6 +436,35 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
             Ok(Some(schema))
         })
     }
+}
+
+fn extract_schema_provider_from_pyobj(
+    mut schema_provider: Bound<PyAny>,
+    codec: &FFI_LogicalExtensionCodec,
+) -> PyResult<Arc<dyn SchemaProvider>> {
+    if schema_provider.hasattr("__datafusion_schema_provider__")? {
+        let py = schema_provider.py();
+        let codec_capsule = create_logical_extension_capsule(py, codec)?;
+        schema_provider = schema_provider
+            .getattr("__datafusion_schema_provider__")?
+            .call1((codec_capsule,))?;
+    }
+
+    let provider = if let Ok(capsule) = schema_provider.downcast::<PyCapsule>() {
+        validate_pycapsule(capsule, "datafusion_schema_provider")?;
+
+        let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
+        let provider: Arc<dyn SchemaProvider + Send> = provider.into();
+        provider as Arc<dyn SchemaProvider>
+    } else {
+        match schema_provider.extract::<PySchema>() {
+            Ok(py_schema) => py_schema.schema,
+            Err(_) => Arc::new(RustWrappedPySchemaProvider::new(schema_provider.into()))
+                as Arc<dyn SchemaProvider>,
+        }
+    };
+
+    Ok(provider)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

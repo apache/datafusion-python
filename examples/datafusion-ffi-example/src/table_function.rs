@@ -41,7 +41,7 @@ impl MyTableFunction {
     fn __datafusion_table_function__<'py>(
         &self,
         py: Python<'py>,
-        session: &Bound<PyAny>,
+        session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_function".into();
 
