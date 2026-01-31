@@ -25,68 +25,58 @@ This version includes a major update to the :ref:`ffi` due to upgrades
 to the `Foreign Function Interface <https://doc.rust-lang.org/nomicon/ffi.html>`_.
 Users who contribute their own ``CatalogProvider``, ``SchemaProvider``,
 ``TableProvider`` or ``TableFunction`` via FFI must now provide access to a
-``LogicalExtensionCodec`` and a ``TaskContextProvider``. The most convenient
-way to provide these is from the ``datafusion-python`` ``SessionContext`` Python
-object. The ``SessionContext`` now has a method to export a
-``FFI_LogicalExtensionCodec``, which can satisfy this new requirement.
+``LogicalExtensionCodec`` and a ``TaskContextProvider``. The function signatures
+for the methods to get these ``PyCapsule`` objects now requires an additional
+parameter, which is a Python object that can be used to extract the
+``FFI_LogicalExtensionCodec`` that is necessary.
 
 A complete example can be found in the `FFI example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
-The constructor for your provider needs to take as an input the ``SessionContext``
-python object. Instead of calling ``FFI_CatalogProvider::new`` you can use the
-added method ``FFI_CatalogProvider::new_with_ffi_codec`` as follows:
+Your methods need to be updated to take an additional parameter like in this
+example.
 
 .. code-block:: rust
 
     #[pymethods]
     impl MyCatalogProvider {
-        #[new]
-        pub fn new(session: &Bound<PyAny>) -> PyResult<Self> {
-            let logical_codec = ffi_logical_codec_from_pycapsule(session)?;
-            let inner = Arc::new(MemoryCatalogProvider::new());
-
-            Ok(Self {
-                inner,
-                logical_codec,
-            })
-        }
-
         pub fn __datafusion_catalog_provider__<'py>(
             &self,
             py: Python<'py>,
+            session: Bound<PyAny>,
         ) -> PyResult<Bound<'py, PyCapsule>> {
             let name = cr"datafusion_catalog_provider".into();
-            let codec = self.logical_codec.clone();
-            let catalog_provider =
-                FFI_CatalogProvider::new_with_ffi_codec(Arc::new(self.clone()), None, codec);
 
-            PyCapsule::new(py, catalog_provider, Some(name))
+            let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProvider + Send>;
+
+            let codec = ffi_logical_codec_from_pycapsule(session)?;
+            let provider = FFI_CatalogProvider::new_with_ffi_codec(provider, None, codec);
+
+            PyCapsule::new(py, provider, Some(name))
         }
     }
 
-To extract the logical extension codec FFI object from the ``SessionContext`` you
+To extract the logical extension codec FFI object from the provided object you
 can implement a helper method such as:
 
 .. code-block:: rust
 
     pub(crate) fn ffi_logical_codec_from_pycapsule(
-        obj: &Bound<PyAny>,
+        obj: Bound<PyAny>,
     ) -> PyResult<FFI_LogicalExtensionCodec> {
         let attr_name = "__datafusion_logical_extension_codec__";
-
-        if obj.hasattr(attr_name)? {
-            let capsule = obj.getattr(attr_name)?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>()?;
-            validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
-
-            let provider = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
-
-            Ok(provider.clone())
+        let capsule = if obj.hasattr(attr_name)? {
+            obj.getattr(attr_name)?.call0()?
         } else {
-            Err(PyValueError::new_err(
-                "Expected PyCapsule object for FFI_LogicalExtensionCodec, but attribute does not exist",
-            ))
-        }
+            obj
+        };
+
+        let capsule = capsule.downcast::<PyCapsule>()?;
+        validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
+
+        let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+
+        Ok(codec.clone())
     }
+
 
 The DataFusion FFI interface updates no longer depend directly on the
 ``datafusion`` core crate. You can improve your build times and potentially
