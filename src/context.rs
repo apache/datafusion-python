@@ -707,7 +707,6 @@ impl PySessionContext {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name,
                         path,
                         options=None))]
@@ -940,7 +939,6 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (
         path,
         options=None))]
