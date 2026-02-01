@@ -36,3 +36,22 @@ An alternative is to use :py:func:`~datafusion.context.SessionContext.register_c
 
     ctx.register_csv("file", "file.csv")
     df = ctx.table("file")
+
+If you require additional control over how to read the CSV file, you can use
+:py:class:`~datafusion.options.CsvReadOptions` to set a variety of options.
+
+.. code-block:: python
+
+    from datafusion import CsvReadOptions
+    options = (
+        CsvReadOptions()
+        .with_has_header(True) # File contains a header row
+        .with_delimiter(";") # Use ; as the delimiter instead of ,
+        .with_comment("#")  # Skip lines starting with #
+        .with_escape("\\")  # Escape character
+        .with_null_regex(r"^(null|NULL|N/A)$")  # Treat these as NULL
+        .with_truncated_rows(True) # Allow rows to have incomplete columns
+        .with_file_compression_type("gzip")  # Read gzipped CSV
+        .with_file_extension(".gz") # File extension other than .csv
+    )
+    df = ctx.read_csv("data.csv.gz", options=options)

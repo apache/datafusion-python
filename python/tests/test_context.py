@@ -710,3 +710,68 @@ def test_create_dataframe_with_global_ctx(batch):
     result = df.collect()[0].column(0)
 
     assert result == pa.array([4, 5, 6])
+
+
+def test_csv_read_options_builder_pattern():
+    """Test CsvReadOptions builder pattern."""
+    from datafusion import CsvReadOptions
+
+    options = (
+        CsvReadOptions()
+        .with_has_header(False)  # noqa: FBT003
+        .with_delimiter("|")
+        .with_quote("'")
+        .with_schema_infer_max_records(2000)
+        .with_truncated_rows(True)  # noqa: FBT003
+        .with_newlines_in_values(True)  # noqa: FBT003
+        .with_file_extension(".tsv")
+    )
+    assert options.has_header is False
+    assert options.delimiter == "|"
+    assert options.quote == "'"
+    assert options.schema_infer_max_records == 2000
+    assert options.truncated_rows is True
+    assert options.newlines_in_values is True
+    assert options.file_extension == ".tsv"
+
+
+@pytest.mark.parametrize(
+    ("as_read", "global_ctx"),
+    [
+        (True, True),
+        (True, False),
+        (False, False),
+    ],
+)
+def test_read_csv_with_options(tmp_path, as_read, global_ctx):
+    """Test reading CSV with CsvReadOptions."""
+    from datafusion import CsvReadOptions, SessionContext
+
+    # Create a test CSV file
+    csv_path = tmp_path / "test.csv"
+    csv_content = "name;age;city\nAlice;30;New York\nBob;25\n#Charlie;35;Paris"
+    csv_path.write_text(csv_content)
+
+    ctx = SessionContext()
+
+    # Test with CsvReadOptions
+    options = CsvReadOptions(
+        has_header=True, delimiter=";", comment="#", truncated_rows=True
+    )
+
+    if as_read:
+        if global_ctx:
+            from datafusion.io import read_csv
+
+            df = read_csv(str(csv_path), options=options)
+        else:
+            df = ctx.read_csv(str(csv_path), options=options)
+    else:
+        ctx.register_csv("test_table", str(csv_path), options=options)
+        df = ctx.sql("SELECT * FROM test_table")
+
+    # Verify the data
+    result = df.collect()
+    assert len(result) == 1
+    assert result[0].num_columns == 3
+    assert result[0].column(0).to_pylist() == ["Alice", "Bob", None]
