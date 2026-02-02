@@ -69,7 +69,7 @@ mimalloc = { version = "0.1", optional = true, default-features = false, feature
 async-trait = "0.1.89"
 futures = "0.3"
 cstr = "0.2"
-object_store = { version = "0.12.4", features = [
+object_store = { version = "0.13.1", features = [
     "aws",
     "gcp",
     "azure",
