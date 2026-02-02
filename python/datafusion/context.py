@@ -88,7 +88,7 @@ class TableProviderExportable(Protocol):
     https://datafusion.apache.org/python/user-guide/io/table_provider.html
     """
 
-    def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class CatalogProviderExportable(Protocol):
@@ -97,7 +97,7 @@ class CatalogProviderExportable(Protocol):
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
 
-    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_catalog_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -1301,3 +1301,19 @@ class SessionContext:
             )
 
         return converted_table_partition_cols
+
+    def __datafusion_task_context_provider__(self) -> Any:
+        """Access the PyCapsule FFI_TaskContextProvider."""
+        return self.ctx.__datafusion_task_context_provider__()
+
+    def __datafusion_logical_extension_codec__(self) -> Any:
+        """Access the PyCapsule FFI_LogicalExtensionCodec."""
+        return self.ctx.__datafusion_logical_extension_codec__()
+
+    def with_logical_extension_codec(self, codec: Any) -> SessionContext:
+        """Create a new session context with specified codec.
+
+        This only supports codecs that have been implemented using the
+        FFI interface.
+        """
+        return self.ctx.with_logical_extension_codec(codec)

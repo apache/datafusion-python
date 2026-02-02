@@ -145,8 +145,8 @@ impl PyExpr {
             match &self.expr {
             Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_bound_py_any(py)?),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_bound_py_any(py)?),
-            Expr::ScalarVariable(data_type, variables) => {
-                Ok(PyScalarVariable::new(data_type, variables).into_bound_py_any(py)?)
+            Expr::ScalarVariable(field, variables) => {
+                Ok(PyScalarVariable::new(field, variables).into_bound_py_any(py)?)
             }
             Expr::Like(value) => Ok(PyLike::from(value.clone()).into_bound_py_any(py)?),
             Expr::Literal(value, metadata) => Ok(PyLiteral::new_with_metadata(value.clone(), metadata.clone()).into_bound_py_any(py)?),

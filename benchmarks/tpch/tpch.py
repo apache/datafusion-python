@@ -23,7 +23,7 @@ from datafusion import SessionContext
 
 
 def bench(data_path, query_path) -> None:
-    with Path.open("results.csv", "w") as results:
+    with Path("results.csv").open("w") as results:
         # register tables
         start = time.time()
         total_time_millis = 0
@@ -46,7 +46,7 @@ def bench(data_path, query_path) -> None:
         print("Configuration:\n", ctx)
 
         # register tables
-        with Path.open("create_tables.sql") as f:
+        with Path("create_tables.sql").open() as f:
             sql = ""
             for line in f.readlines():
                 if line.startswith("--"):
@@ -66,7 +66,7 @@ def bench(data_path, query_path) -> None:
 
         # run queries
         for query in range(1, 23):
-            with Path.open(f"{query_path}/q{query}.sql") as f:
+            with Path(f"{query_path}/q{query}.sql").open() as f:
                 text = f.read()
                 tmp = text.split(";")
                 queries = [s.strip() for s in tmp if len(s.strip()) > 0]

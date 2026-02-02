@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, TypeVar, cast, overl
 import pyarrow as pa
 
 import datafusion._internal as df_internal
+from datafusion import SessionContext
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
@@ -923,16 +924,14 @@ class TableFunction:
     """
 
     def __init__(
-        self,
-        name: str,
-        func: Callable[[], any],
+        self, name: str, func: Callable[[], any], ctx: SessionContext | None = None
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.TableFunction(name, func)
+        self._udtf = df_internal.TableFunction(name, func, ctx)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""
