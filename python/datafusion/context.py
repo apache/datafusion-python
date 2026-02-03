@@ -31,7 +31,13 @@ except ImportError:
 
 import pyarrow as pa
 
-from datafusion.catalog import Catalog
+from datafusion.catalog import (
+    Catalog,
+    CatalogList,
+    CatalogProviderExportable,
+    CatalogProviderList,
+    CatalogProviderListExportable,
+)
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
@@ -89,15 +95,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class CatalogProviderExportable(Protocol):
-    """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
-
-    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
-    """
-
-    def __datafusion_catalog_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -831,6 +828,16 @@ class SessionContext:
     def catalog_names(self) -> set[str]:
         """Returns the list of catalogs in this context."""
         return self.ctx.catalog_names()
+
+    def register_catalog_provider_list(
+        self,
+        provider: CatalogProviderListExportable | CatalogProviderList | CatalogList,
+    ) -> None:
+        """Register a catalog provider list."""
+        if isinstance(provider, CatalogList):
+            self.ctx.register_catalog_provider_list(provider.catalog)
+        else:
+            self.ctx.register_catalog_provider_list(provider)
 
     def register_catalog_provider(
         self, name: str, provider: CatalogProviderExportable | CatalogProvider | Catalog

@@ -458,8 +458,9 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
         Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
             provider
-                .getattr("schema_names")
-                .and_then(|names| names.extract::<Vec<String>>())
+                .call_method0("schema_names")
+                .and_then(|names| names.extract::<HashSet<String>>())
+                .map(|names| names.into_iter().collect())
                 .unwrap_or_else(|err| {
                     log::error!("Unable to get schema_names: {err}");
                     Vec::default()
@@ -565,8 +566,9 @@ impl CatalogProviderList for RustWrappedPyCatalogProviderList {
         Python::attach(|py| {
             let provider = self.catalog_provider_list.bind(py);
             provider
-                .getattr("catalog_names")
-                .and_then(|names| names.extract::<Vec<String>>())
+                .call_method0("catalog_names")
+                .and_then(|names| names.extract::<HashSet<String>>())
+                .map(|names| names.into_iter().collect())
                 .unwrap_or_else(|err| {
                     log::error!("Unable to get catalog_names: {err}");
                     Vec::default()
