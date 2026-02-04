@@ -39,7 +39,7 @@ pub enum PyDataFusionError {
 impl fmt::Display for PyDataFusionError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PyDataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {e:?}"),
+            PyDataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {e}"),
             PyDataFusionError::ArrowError(e) => write!(f, "Arrow error: {e:?}"),
             PyDataFusionError::PythonError(e) => write!(f, "Python error {e:?}"),
             PyDataFusionError::Common(e) => write!(f, "{e}"),
