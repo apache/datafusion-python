@@ -126,8 +126,9 @@ class DataFrameHtmlFormatter:
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
         max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
-        min_rows_display: Minimum number of rows to display (must be <= repr_rows)
-        repr_rows: Default number of rows to display in repr output
+        min_rows_display: Minimum number of rows to display (must be <= max_rows)
+        max_rows: Maximum number of rows to display in repr output
+        repr_rows: Deprecated alias for max_rows
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
           values
         custom_css: Additional CSS to include in the HTML output
@@ -144,7 +145,8 @@ class DataFrameHtmlFormatter:
         max_height: int = 300,
         max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
         min_rows_display: int = 10,
-        repr_rows: int = 10,
+        max_rows: int = 10,
+        repr_rows: int | None = None,
         enable_cell_expansion: bool = True,
         custom_css: str | None = None,
         show_truncation_message: bool = True,
@@ -165,9 +167,11 @@ class DataFrameHtmlFormatter:
             Maximum memory in bytes for rendered data.
         min_rows_display : int, default 10
             Minimum number of rows to display. Must be less than or equal to
-            ``repr_rows``.
-        repr_rows : int, default 10
-            Default number of rows to display in repr output.
+            ``max_rows``.
+        max_rows : int, default 10
+            Maximum number of rows to display in repr output.
+        repr_rows : int, optional
+            Deprecated alias for ``max_rows``. Use ``max_rows`` instead.
         enable_cell_expansion : bool, default True
             Whether to allow cells to expand when clicked.
         custom_css : str, optional
@@ -184,7 +188,7 @@ class DataFrameHtmlFormatter:
         ------
         ValueError
             If max_cell_length, max_width, max_height, max_memory_bytes,
-            min_rows_display, or repr_rows is not a positive integer.
+            min_rows_display or max_rows is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
             not a boolean,
@@ -198,10 +202,19 @@ class DataFrameHtmlFormatter:
         _validate_positive_int(max_height, "max_height")
         _validate_positive_int(max_memory_bytes, "max_memory_bytes")
         _validate_positive_int(min_rows_display, "min_rows_display")
-        _validate_positive_int(repr_rows, "repr_rows")
 
-        if min_rows_display > repr_rows:
-            msg = "min_rows_display must be less than or equal to repr_rows"
+        if repr_rows is not None and repr_rows != max_rows:
+            msg = "Specify only max_rows (repr_rows is deprecated)"
+            raise ValueError(msg)
+
+        if repr_rows is not None:
+            _validate_positive_int(repr_rows, "repr_rows")
+            max_rows = repr_rows
+
+        _validate_positive_int(max_rows, "max_rows")
+
+        if min_rows_display > max_rows:
+            msg = "min_rows_display must be less than or equal to max_rows"
             raise ValueError(msg)
 
         # Validate boolean parameters
@@ -224,7 +237,9 @@ class DataFrameHtmlFormatter:
         self.max_height = max_height
         self.max_memory_bytes = max_memory_bytes
         self.min_rows_display = min_rows_display
-        self.repr_rows = repr_rows
+        self.max_rows = max_rows
+        # Backwards-compatible alias
+        self.repr_rows = max_rows
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
@@ -665,6 +680,7 @@ def configure_formatter(**kwargs: Any) -> None:
         "max_height",
         "max_memory_bytes",
         "min_rows_display",
+        "max_rows",
         "repr_rows",
         "enable_cell_expansion",
         "custom_css",

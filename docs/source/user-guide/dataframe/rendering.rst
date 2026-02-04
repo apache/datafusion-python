@@ -58,7 +58,7 @@ You can customize how DataFrames are rendered by configuring the formatter:
         max_height=300,            # Maximum height in pixels
         max_memory_bytes=2097152,  # Maximum memory for rendering (2MB)
         min_rows_display=20,       # Minimum number of rows to display
-        repr_rows=10,              # Number of rows to display in __repr__
+        max_rows=10,               # Maximum rows to display in __repr__
         enable_cell_expansion=True,# Allow expanding truncated cells
         custom_css=None,           # Additional custom CSS
         show_truncation_message=True, # Show message when data is truncated
@@ -191,7 +191,7 @@ You can control how much data is displayed and how much memory is used for rende
     configure_formatter(
         max_memory_bytes=4 * 1024 * 1024,  # 4MB maximum memory for display
         min_rows_display=50,               # Always show at least 50 rows
-        repr_rows=20                       # Show 20 rows in __repr__ output
+        max_rows=20                        # Show 20 rows in __repr__ output
     )
 
 These parameters help balance comprehensive data display against performance considerations.
