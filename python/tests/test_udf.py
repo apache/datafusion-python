@@ -207,4 +207,4 @@ def test_udf_with_nullability(ctx: SessionContext) -> None:
 
     with pytest.raises(Exception) as e_info:
         _results = df_result.collect()
-    assert "InvalidArgumentError" in str(e_info)
+    assert "Invalid argument error" in str(e_info)
