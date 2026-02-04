@@ -148,31 +148,12 @@ where
         .unwrap_or_else(|_| default_value.clone())
 }
 
-/// Resolve the max_rows value, preferring repr_rows if it differs from the default.
-///
-/// This function handles the transition from the deprecated `repr_rows` parameter
-/// to the new `max_rows` parameter. It checks both attributes and uses `repr_rows`
-/// if it has been explicitly set to a different value than `max_rows`.
-fn resolve_max_rows(formatter: &Bound<'_, PyAny>, default: usize) -> usize {
-    let max_rows = get_attr(formatter, "max_rows", default);
-    let repr_rows = get_attr(formatter, "repr_rows", default);
-
-    // If repr_rows differs from the default, it was explicitly set by the user
-    // (Python-side validation ensures only one is used, but we prefer repr_rows
-    // for backward compatibility in case it was set)
-    if repr_rows != default && repr_rows != max_rows {
-        repr_rows
-    } else {
-        max_rows
-    }
-}
-
 /// Helper function to create a FormatterConfig from a Python formatter object
 fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<FormatterConfig> {
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
     let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
-    let max_rows = resolve_max_rows(formatter, default_config.max_rows);
+    let max_rows = get_attr(formatter, "max_rows", default_config.max_rows);
 
     let config = FormatterConfig {
         max_bytes,
