@@ -1569,9 +1569,7 @@ def test_repr_rows_backward_compatibility(clean_formatter_state):
     assert formatter.repr_rows == 15
 
     # Should fail when conflicting with max_rows
-    with pytest.raises(
-        ValueError, match="Cannot specify both repr_rows and max_rows"
-    ):
+    with pytest.raises(ValueError, match="Cannot specify both repr_rows and max_rows"):
         DataFrameHtmlFormatter(repr_rows=5, max_rows=10)
 
     # Setting repr_rows via property should warn
