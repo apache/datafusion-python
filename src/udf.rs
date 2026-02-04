@@ -24,6 +24,7 @@ use arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::array::{make_array, ArrayData};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType};
+use datafusion::common::internal_err;
 use datafusion::error::DataFusionError;
 use datafusion::logical_expr::{
     ColumnarValue, ReturnFieldArgs, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
@@ -105,7 +106,9 @@ impl ScalarUDFImpl for PythonFunctionScalarUDF {
     }
 
     fn return_type(&self, _arg_types: &[DataType]) -> datafusion::common::Result<DataType> {
-        unimplemented!()
+        internal_err!(
+            "return_field should not be called when return_field_from_args is implemented."
+        )
     }
 
     fn return_field_from_args(
