@@ -148,18 +148,31 @@ where
         .unwrap_or_else(|_| default_value.clone())
 }
 
+/// Resolve the max_rows value, preferring repr_rows if it differs from the default.
+///
+/// This function handles the transition from the deprecated `repr_rows` parameter
+/// to the new `max_rows` parameter. It checks both attributes and uses `repr_rows`
+/// if it has been explicitly set to a different value than `max_rows`.
+fn resolve_max_rows(formatter: &Bound<'_, PyAny>, default: usize) -> usize {
+    let max_rows = get_attr(formatter, "max_rows", default);
+    let repr_rows = get_attr(formatter, "repr_rows", default);
+
+    // If repr_rows differs from the default, it was explicitly set by the user
+    // (Python-side validation ensures only one is used, but we prefer repr_rows
+    // for backward compatibility in case it was set)
+    if repr_rows != default && repr_rows != max_rows {
+        repr_rows
+    } else {
+        max_rows
+    }
+}
+
 /// Helper function to create a FormatterConfig from a Python formatter object
 fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<FormatterConfig> {
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
     let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
-    let max_rows = get_attr(formatter, "max_rows", default_config.max_rows);
-    let repr_rows = get_attr(formatter, "repr_rows", max_rows);
-    let max_rows = if repr_rows != max_rows {
-        repr_rows
-    } else {
-        max_rows
-    };
+    let max_rows = resolve_max_rows(formatter, default_config.max_rows);
 
     let config = FormatterConfig {
         max_bytes,
@@ -1360,7 +1373,10 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    // ensure minimum rows even if memory/row limits are hit
+    // Collect rows until we hit a limit (memory or max_rows) OR reach the guaranteed minimum.
+    // The minimum rows constraint overrides both memory and row limits to ensure a baseline
+    // of data is always displayed, even if it temporarily exceeds those limits.
+    // This provides better UX by guaranteeing users see at least min_rows rows.
     while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
@@ -1374,11 +1390,14 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
+            // When memory limit is exceeded, scale back row count proportionally to stay within budget
             if size_estimate_so_far > max_bytes {
                 let ratio = max_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
+                // Calculate reduced rows maintaining the memory/data proportion
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
+                // Ensure we always respect the minimum rows guarantee
                 if reduced_row_num < min_rows {
                     reduced_row_num = min_rows.min(total_rows);
                 }
