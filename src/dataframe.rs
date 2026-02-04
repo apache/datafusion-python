@@ -72,7 +72,7 @@ type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
 pub struct FormatterConfig {
     /// Maximum memory in bytes to use for display (default: 2MB)
     pub max_bytes: usize,
-    /// Minimum number of rows to display (default: 20)
+    /// Minimum number of rows to display (default: 10)
     pub min_rows: usize,
     /// Number of rows to include in __repr__ output (default: 10)
     pub repr_rows: usize,
@@ -82,7 +82,7 @@ impl Default for FormatterConfig {
     fn default() -> Self {
         Self {
             max_bytes: 2 * 1024 * 1024, // 2MB
-            min_rows: 20,
+            min_rows: 10,
             repr_rows: 10,
         }
     }
@@ -105,6 +105,10 @@ impl FormatterConfig {
 
         if self.repr_rows == 0 {
             return Err("repr_rows must be a positive integer".to_string());
+        }
+
+        if self.min_rows > self.repr_rows {
+            return Err("min_rows must be less than or equal to repr_rows".to_string());
         }
 
         Ok(())

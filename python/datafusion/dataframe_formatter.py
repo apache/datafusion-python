@@ -126,7 +126,7 @@ class DataFrameHtmlFormatter:
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
         max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
-        min_rows_display: Minimum number of rows to display
+        min_rows_display: Minimum number of rows to display (must be <= repr_rows)
         repr_rows: Default number of rows to display in repr output
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
           values
@@ -143,7 +143,7 @@ class DataFrameHtmlFormatter:
         max_width: int = 1000,
         max_height: int = 300,
         max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
-        min_rows_display: int = 20,
+        min_rows_display: int = 10,
         repr_rows: int = 10,
         enable_cell_expansion: bool = True,
         custom_css: str | None = None,
@@ -163,8 +163,9 @@ class DataFrameHtmlFormatter:
             Maximum height of the displayed table in pixels.
         max_memory_bytes : int, default 2097152 (2MB)
             Maximum memory in bytes for rendered data.
-        min_rows_display : int, default 20
-            Minimum number of rows to display.
+        min_rows_display : int, default 10
+            Minimum number of rows to display. Must be less than or equal to
+            ``repr_rows``.
         repr_rows : int, default 10
             Default number of rows to display in repr output.
         enable_cell_expansion : bool, default True
@@ -198,6 +199,10 @@ class DataFrameHtmlFormatter:
         _validate_positive_int(max_memory_bytes, "max_memory_bytes")
         _validate_positive_int(min_rows_display, "min_rows_display")
         _validate_positive_int(repr_rows, "repr_rows")
+
+        if min_rows_display > repr_rows:
+            msg = "min_rows_display must be less than or equal to repr_rows"
+            raise ValueError(msg)
 
         # Validate boolean parameters
         _validate_bool(enable_cell_expansion, "enable_cell_expansion")

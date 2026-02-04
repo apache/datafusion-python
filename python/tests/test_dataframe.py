@@ -1504,6 +1504,11 @@ def test_html_formatter_validation():
     with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
         DataFrameHtmlFormatter(repr_rows=-10)
 
+    with pytest.raises(
+        ValueError, match="min_rows_display must be less than or equal to repr_rows"
+    ):
+        DataFrameHtmlFormatter(min_rows_display=5, repr_rows=4)
+
 
 def test_configure_formatter(df, clean_formatter_state):
     """Test using custom style providers with the HTML formatter and configured
