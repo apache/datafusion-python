@@ -249,7 +249,7 @@ class ScalarUDF:
             )
 
         def _decorator(
-            input_fields: list[pa.DataType],
+            input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
             return_field: _R,
             volatility: Volatility | str,
             name: str | None = None,
