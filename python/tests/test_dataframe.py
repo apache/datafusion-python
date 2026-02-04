@@ -1460,11 +1460,12 @@ def test_html_formatter_memory(df, clean_formatter_state):
 
 def test_html_formatter_memory_boundary_conditions(df, clean_formatter_state):
     """Test memory limit behavior at boundary conditions.
-    
+
     This test validates that the formatter correctly handles edge cases when
     the memory limit is very close to actual data size, ensuring that min_rows
     constraint is properly respected while respecting memory limits.
     """
+
     # Get the raw size of the data to test boundary conditions
     # First, capture output with no limits
     configure_formatter(max_memory_bytes=10 * MB, min_rows_display=1, max_rows=100)

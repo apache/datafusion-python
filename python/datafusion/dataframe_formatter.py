@@ -119,11 +119,11 @@ def _validate_formatter_parameters(
             msg = "Cannot specify both repr_rows and max_rows; use max_rows only"
             raise ValueError(msg)
         max_rows = repr_rows
-    
+
     # Use default if max_rows was not provided
     if max_rows is None:
         max_rows = 10
-    
+
     _validate_positive_int(max_rows, "max_rows")
 
     # Validate constraint: min_rows_display <= max_rows
