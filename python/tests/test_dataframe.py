@@ -1510,6 +1510,28 @@ def test_html_formatter_validation():
         DataFrameHtmlFormatter(min_rows_display=5, max_rows=4)
 
 
+def test_repr_rows_backward_compatibility(clean_formatter_state):
+    """Test that repr_rows parameter still works as deprecated alias."""
+    # Should work when not conflicting with max_rows
+    with pytest.warns(DeprecationWarning, match="repr_rows parameter is deprecated"):
+        formatter = DataFrameHtmlFormatter(repr_rows=15, min_rows_display=10)
+    assert formatter.max_rows == 15
+    assert formatter.repr_rows == 15
+
+    # Should fail when conflicting with max_rows
+    with pytest.raises(
+        ValueError, match="Cannot specify both repr_rows and max_rows"
+    ):
+        DataFrameHtmlFormatter(repr_rows=5, max_rows=10)
+
+    # Setting repr_rows via property should warn
+    formatter2 = DataFrameHtmlFormatter()
+    with pytest.warns(DeprecationWarning, match="repr_rows is deprecated"):
+        formatter2.repr_rows = 7
+    assert formatter2.max_rows == 7
+    assert formatter2.repr_rows == 7
+
+
 def test_configure_formatter(df, clean_formatter_state):
     """Test using custom style providers with the HTML formatter and configured
     parameters."""

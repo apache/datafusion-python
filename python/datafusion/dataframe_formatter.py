@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -59,6 +60,93 @@ def _validate_bool(value: Any, param_name: str) -> None:
     if not isinstance(value, bool):
         msg = f"{param_name} must be a boolean"
         raise TypeError(msg)
+
+
+def _validate_formatter_parameters(
+    max_cell_length: int,
+    max_width: int,
+    max_height: int,
+    max_memory_bytes: int,
+    min_rows_display: int,
+    max_rows: int | None,
+    repr_rows: int | None,
+    enable_cell_expansion: bool,
+    show_truncation_message: bool,
+    use_shared_styles: bool,
+    custom_css: str | None,
+    style_provider: Any,
+) -> int:
+    """Validate all formatter parameters and return resolved max_rows value.
+
+    Args:
+        max_cell_length: Maximum cell length value to validate
+        max_width: Maximum width value to validate
+        max_height: Maximum height value to validate
+        max_memory_bytes: Maximum memory bytes value to validate
+        min_rows_display: Minimum rows to display value to validate
+        max_rows: Maximum rows value to validate (None means use default)
+        repr_rows: Deprecated repr_rows value to validate
+        enable_cell_expansion: Boolean expansion flag to validate
+        show_truncation_message: Boolean message flag to validate
+        use_shared_styles: Boolean styles flag to validate
+        custom_css: Custom CSS string to validate
+        style_provider: Style provider object to validate
+
+    Returns:
+        The resolved max_rows value after handling repr_rows deprecation
+
+    Raises:
+        ValueError: If any numeric parameter is invalid or constraints are violated
+        TypeError: If any parameter has invalid type
+        DeprecationWarning: If repr_rows parameter is used
+    """
+    # Validate numeric parameters
+    _validate_positive_int(max_cell_length, "max_cell_length")
+    _validate_positive_int(max_width, "max_width")
+    _validate_positive_int(max_height, "max_height")
+    _validate_positive_int(max_memory_bytes, "max_memory_bytes")
+    _validate_positive_int(min_rows_display, "min_rows_display")
+
+    # Handle deprecated repr_rows parameter
+    if repr_rows is not None:
+        warnings.warn(
+            "repr_rows parameter is deprecated, use max_rows instead",
+            DeprecationWarning,
+            stacklevel=4,
+        )
+        _validate_positive_int(repr_rows, "repr_rows")
+        if max_rows is not None and repr_rows != max_rows:
+            msg = "Cannot specify both repr_rows and max_rows; use max_rows only"
+            raise ValueError(msg)
+        max_rows = repr_rows
+    
+    # Use default if max_rows was not provided
+    if max_rows is None:
+        max_rows = 10
+    
+    _validate_positive_int(max_rows, "max_rows")
+
+    # Validate constraint: min_rows_display <= max_rows
+    if min_rows_display > max_rows:
+        msg = "min_rows_display must be less than or equal to max_rows"
+        raise ValueError(msg)
+
+    # Validate boolean parameters
+    _validate_bool(enable_cell_expansion, "enable_cell_expansion")
+    _validate_bool(show_truncation_message, "show_truncation_message")
+    _validate_bool(use_shared_styles, "use_shared_styles")
+
+    # Validate custom_css
+    if custom_css is not None and not isinstance(custom_css, str):
+        msg = "custom_css must be None or a string"
+        raise TypeError(msg)
+
+    # Validate style_provider
+    if style_provider is not None and not isinstance(style_provider, StyleProvider):
+        msg = "style_provider must implement the StyleProvider protocol"
+        raise TypeError(msg)
+
+    return max_rows
 
 
 @runtime_checkable
@@ -145,7 +233,7 @@ class DataFrameHtmlFormatter:
         max_height: int = 300,
         max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
         min_rows_display: int = 10,
-        max_rows: int = 10,
+        max_rows: int | None = None,
         repr_rows: int | None = None,
         enable_cell_expansion: bool = True,
         custom_css: str | None = None,
@@ -196,50 +284,28 @@ class DataFrameHtmlFormatter:
             or if style_provider is provided but does not implement the StyleProvider
             protocol.
         """
-        # Validate numeric parameters
-        _validate_positive_int(max_cell_length, "max_cell_length")
-        _validate_positive_int(max_width, "max_width")
-        _validate_positive_int(max_height, "max_height")
-        _validate_positive_int(max_memory_bytes, "max_memory_bytes")
-        _validate_positive_int(min_rows_display, "min_rows_display")
-
-        if repr_rows is not None and repr_rows != max_rows:
-            msg = "Specify only max_rows (repr_rows is deprecated)"
-            raise ValueError(msg)
-
-        if repr_rows is not None:
-            _validate_positive_int(repr_rows, "repr_rows")
-            max_rows = repr_rows
-
-        _validate_positive_int(max_rows, "max_rows")
-
-        if min_rows_display > max_rows:
-            msg = "min_rows_display must be less than or equal to max_rows"
-            raise ValueError(msg)
-
-        # Validate boolean parameters
-        _validate_bool(enable_cell_expansion, "enable_cell_expansion")
-        _validate_bool(show_truncation_message, "show_truncation_message")
-        _validate_bool(use_shared_styles, "use_shared_styles")
-
-        # Validate custom_css
-        if custom_css is not None and not isinstance(custom_css, str):
-            msg = "custom_css must be None or a string"
-            raise TypeError(msg)
-
-        # Validate style_provider
-        if style_provider is not None and not isinstance(style_provider, StyleProvider):
-            msg = "style_provider must implement the StyleProvider protocol"
-            raise TypeError(msg)
+        # Validate all parameters and get resolved max_rows
+        resolved_max_rows = _validate_formatter_parameters(
+            max_cell_length,
+            max_width,
+            max_height,
+            max_memory_bytes,
+            min_rows_display,
+            max_rows,
+            repr_rows,
+            enable_cell_expansion,
+            show_truncation_message,
+            use_shared_styles,
+            custom_css,
+            style_provider,
+        )
 
         self.max_cell_length = max_cell_length
         self.max_width = max_width
         self.max_height = max_height
         self.max_memory_bytes = max_memory_bytes
         self.min_rows_display = min_rows_display
-        self.max_rows = max_rows
-        # Backwards-compatible alias
-        self.repr_rows = max_rows
+        self._max_rows = resolved_max_rows
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
@@ -250,6 +316,55 @@ class DataFrameHtmlFormatter:
         # Custom cell builders
         self._custom_cell_builder: Callable[[Any, int, int, str], str] | None = None
         self._custom_header_builder: Callable[[Any], str] | None = None
+
+    @property
+    def max_rows(self) -> int:
+        """Get the maximum number of rows to display.
+
+        Returns:
+            The maximum number of rows to display in repr output
+        """
+        return self._max_rows
+
+    @max_rows.setter
+    def max_rows(self, value: int) -> None:
+        """Set the maximum number of rows to display.
+
+        Args:
+            value: The maximum number of rows
+        """
+        self._max_rows = value
+
+    @property
+    def repr_rows(self) -> int:
+        """Get the maximum number of rows (deprecated name).
+
+        .. deprecated::
+            Use :attr:`max_rows` instead. This property is provided for
+            backward compatibility.
+
+        Returns:
+            The maximum number of rows to display
+        """
+        return self._max_rows
+
+    @repr_rows.setter
+    def repr_rows(self, value: int) -> None:
+        """Set the maximum number of rows using deprecated name.
+
+        .. deprecated::
+            Use :attr:`max_rows` setter instead. This property is provided for
+            backward compatibility.
+
+        Args:
+            value: The maximum number of rows
+        """
+        warnings.warn(
+            "repr_rows is deprecated, use max_rows instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._max_rows = value
 
     def register_formatter(self, type_class: type, formatter: CellFormatter) -> None:
         """Register a custom formatter for a specific data type.
