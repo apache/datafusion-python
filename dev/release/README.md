@@ -222,6 +222,12 @@ cargo publish
 
 ### Publishing Python Artifacts to PyPi
 
+GitHub Actions groups wheel artifacts by platform and interpreter tag using the pattern `dist-<platform>-<python-tag>`.
+For example, standard manylinux wheels live under `dist-manylinux-x86_64-cp310-314` while the free-threaded builds
+use `dist-manylinux-x86_64-cp313t-314t`. macOS and Windows jobs publish one artifact per CPython version as well
+(`dist-macos-latest-cp311`, `dist-windows-latest-cp313t`, etc.). Download the exact tags you intend to push to PyPI,
+and remember that the docs workflow currently installs from the `cp310-314` manylinux artifact.
+
 Go to the Test PyPI page of Datafusion, and download
 [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
 uploading them using `twine`:

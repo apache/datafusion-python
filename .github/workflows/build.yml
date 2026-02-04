@@ -77,46 +77,46 @@ jobs:
         include:
           - os: macos-latest
             python-version: "3.10"
-            artifact-suffix: ""
+            python-tag: cp310
           - os: macos-latest
             python-version: "3.11"
-            artifact-suffix: ""
+            python-tag: cp311
           - os: macos-latest
             python-version: "3.12"
-            artifact-suffix: ""
+            python-tag: cp312
           - os: macos-latest
             python-version: "3.13"
-            artifact-suffix: ""
+            python-tag: cp313
           - os: macos-latest
             python-version: "3.14"
-            artifact-suffix: ""
+            python-tag: cp314
           - os: macos-latest
             python-version: "3.13t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp313t
           - os: macos-latest
             python-version: "3.14t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp314t
           - os: windows-latest
             python-version: "3.10"
-            artifact-suffix: ""
+            python-tag: cp310
           - os: windows-latest
             python-version: "3.11"
-            artifact-suffix: ""
+            python-tag: cp311
           - os: windows-latest
             python-version: "3.12"
-            artifact-suffix: ""
+            python-tag: cp312
           - os: windows-latest
             python-version: "3.13"
-            artifact-suffix: ""
+            python-tag: cp313
           - os: windows-latest
             python-version: "3.14"
-            artifact-suffix: ""
+            python-tag: cp314
           - os: windows-latest
             python-version: "3.13t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp313t
           - os: windows-latest
             python-version: "3.14t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp314t
     steps:
       - uses: actions/checkout@v5
 
@@ -162,7 +162,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os  }}${{ matrix.artifact-suffix }}
+          name: dist-${{ matrix.os }}-${{ matrix.python-tag }}
           path: target/wheels/*
 
   build-macos-x86_64:
@@ -174,19 +174,19 @@ jobs:
       matrix:
         include:
           - python-version: "3.10"
-            artifact-suffix: ""
+            python-tag: cp310
           - python-version: "3.11"
-            artifact-suffix: ""
+            python-tag: cp311
           - python-version: "3.12"
-            artifact-suffix: ""
+            python-tag: cp312
           - python-version: "3.13"
-            artifact-suffix: ""
+            python-tag: cp313
           - python-version: "3.14"
-            artifact-suffix: ""
+            python-tag: cp314
           - python-version: "3.13t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp313t
           - python-version: "3.14t"
-            artifact-suffix: "-freethreaded"
+            python-tag: cp314t
     steps:
       - uses: actions/checkout@v5
 
@@ -224,7 +224,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-macos-aarch64${{ matrix.artifact-suffix }}
+          name: dist-macos-aarch64-${{ matrix.python-tag }}
           path: target/wheels/*
 
   build-manylinux-x86_64:
@@ -236,9 +236,9 @@ jobs:
       matrix:
         include:
           - interpreter: "3.10 3.11 3.12 3.13 3.14"
-            artifact-suffix: ""
+            artifact-label: cp310-314
           - interpreter: "3.13t 3.14t"
-            artifact-suffix: "-freethreaded"
+            artifact-label: cp313t-314t
     steps:
       - uses: actions/checkout@v5
       - run: rm LICENSE.txt
@@ -262,7 +262,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-manylinux-x86_64${{ matrix.artifact-suffix }}
+          name: dist-manylinux-x86_64-${{ matrix.artifact-label }}
           path: target/wheels/*
 
   build-manylinux-aarch64:
@@ -274,9 +274,9 @@ jobs:
       matrix:
         include:
           - interpreter: "3.10 3.11 3.12 3.13 3.14"
-            artifact-suffix: ""
+            artifact-label: cp310-314
           - interpreter: "3.13t 3.14t"
-            artifact-suffix: "-freethreaded"
+            artifact-label: cp313t-314t
     steps:
       - uses: actions/checkout@v5
       - run: rm LICENSE.txt
@@ -301,7 +301,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-manylinux-aarch64${{ matrix.artifact-suffix }}
+          name: dist-manylinux-aarch64-${{ matrix.artifact-label }}
           path: target/wheels/*
 
   build-sdist:
@@ -396,7 +396,7 @@ jobs:
       - name: Download pre-built Linux wheel
         uses: actions/download-artifact@v5
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-cp310-314
           path: wheels/
 
       # Install from the pre-built wheel
