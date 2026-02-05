@@ -3143,12 +3143,6 @@ def test_html_formatter_backward_compatibility_repr_rows(df, clean_formatter_sta
     This is critical for supporting custom formatters created before `max_rows`
     was added. Users should be able to pass their custom formatter objects
     without breaking the rendering pipeline.
-
-    Deprecation Timeline:
-    - Release N (current): Added `max_rows`, kept `repr_rows` for backward compatibility
-    - Release N+1: Both `repr_rows` and `max_rows` supported (with fallback in Rust)
-    - Release N+2: Remove `repr_rows` fallback logic in Rust code
-    - Release N+3: Remove `repr_rows` property entirely from Python
     """
 
     # Create a custom formatter class that ONLY has repr_rows (simulating old code)
