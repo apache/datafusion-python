@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use datafusion::arrow::array::ArrayRef;
 use datafusion::arrow::datatypes::DataType;
-use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::{
@@ -47,14 +47,14 @@ impl RustAccumulator {
 
 impl Accumulator for RustAccumulator {
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
-        Python::attach(|py| {
+        Python::attach(|py| -> PyResult<Vec<ScalarValue>> {
             let values = self.accum.bind(py).call_method0("state")?;
             let mut scalars = Vec::new();
-            for item in values.iter()? {
-                let item = item?;
+            for item in values.try_iter()? {
+                let item: Bound<'_, PyAny> = item?;
                 let scalar = match item.extract::<PyScalarValue>() {
                     Ok(py_scalar) => py_scalar.0,
-                    Err(_) => py_obj_to_scalar_value(py, item.into_py(py))?,
+                    Err(_) => py_obj_to_scalar_value(py, item.unbind())?,
                 };
                 scalars.push(scalar);
             }
@@ -64,11 +64,11 @@ impl Accumulator for RustAccumulator {
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
-        Python::attach(|py| {
+        Python::attach(|py| -> PyResult<ScalarValue> {
             let value = self.accum.bind(py).call_method0("evaluate")?;
             match value.extract::<PyScalarValue>() {
                 Ok(py_scalar) => Ok(py_scalar.0),
-                Err(_) => py_obj_to_scalar_value(py, value.into_py(py)),
+                Err(_) => py_obj_to_scalar_value(py, value.unbind()),
             }
         })
         .map_err(|e| DataFusionError::Execution(format!("{e}")))
@@ -79,7 +79,7 @@ impl Accumulator for RustAccumulator {
             // 1. cast args to Pyarrow array
             let py_args = values
                 .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
+                .map(|arg| arg.to_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
@@ -100,7 +100,7 @@ impl Accumulator for RustAccumulator {
                 .iter()
                 .map(|state| {
                     state
-                        .into_data()
+                        .to_data()
                         .to_pyarrow(py)
                         .map_err(|e| DataFusionError::Execution(format!("{e}")))
                 })
@@ -125,7 +125,7 @@ impl Accumulator for RustAccumulator {
             // 1. cast args to Pyarrow array
             let py_args = values
                 .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
+                .map(|arg| arg.to_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
@@ -150,7 +150,7 @@ impl Accumulator for RustAccumulator {
 }
 
 pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
-    Arc::new(move |args| -> Result<Box<dyn Accumulator>> {
+    Arc::new(move |_args| -> Result<Box<dyn Accumulator>> {
         let accum = Python::attach(|py| {
             accum
                 .call0(py)

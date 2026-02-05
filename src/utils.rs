@@ -192,9 +192,12 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
     // convert Python object to PyScalarValue to ScalarValue
 
     let pa = py.import("pyarrow")?;
-    let scalar_type = pa.getattr("Scalar")?.downcast::<PyType>()?;
-    let array_type = pa.getattr("Array")?.downcast::<PyType>()?;
-    let chunked_array_type = pa.getattr("ChunkedArray")?.downcast::<PyType>()?;
+    let scalar_attr = pa.getattr("Scalar")?;
+    let scalar_type = scalar_attr.downcast::<PyType>()?;
+    let array_attr = pa.getattr("Array")?;
+    let array_type = array_attr.downcast::<PyType>()?;
+    let chunked_array_attr = pa.getattr("ChunkedArray")?;
+    let chunked_array_type = chunked_array_attr.downcast::<PyType>()?;
 
     let obj_ref = obj.bind(py);
 
@@ -206,9 +209,9 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
 
     if obj_ref.is_instance(array_type)? || obj_ref.is_instance(chunked_array_type)? {
         let array_obj = if obj_ref.is_instance(chunked_array_type)? {
-            obj_ref.call_method0("combine_chunks")?.to_object(py)
+            obj_ref.call_method0("combine_chunks")?.unbind()
         } else {
-            obj_ref.to_object(py)
+            obj_ref.clone().unbind()
         };
         let array_bound = array_obj.bind(py);
         let array_data = ArrayData::from_pyarrow_bound(&array_bound)
