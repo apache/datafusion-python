@@ -3135,13 +3135,13 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
 
 def test_html_formatter_backward_compatibility_repr_rows(df, clean_formatter_state):
-    """Test backward compatibility with custom formatter using deprecated repr_rows attribute.
+    """Test backward compatibility with custom formatter using deprecated repr_rows.
 
     This test validates that the Rust code correctly handles custom formatter
-    implementations that only have the deprecated `repr_rows` attribute (no `max_rows`).
+    implementations that only have the deprecated `repr_rows` attribute.
 
-    This is critical for supporting custom formatters created before the `max_rows`
-    attribute was added. Users should be able to pass their custom formatter objects
+    This is critical for supporting custom formatters created before `max_rows`
+    was added. Users should be able to pass their custom formatter objects
     without breaking the rendering pipeline.
 
     Deprecation Timeline:
@@ -3153,7 +3153,7 @@ def test_html_formatter_backward_compatibility_repr_rows(df, clean_formatter_sta
 
     # Create a custom formatter class that ONLY has repr_rows (simulating old code)
     class LegacyCustomFormatter:
-        """Simulates a custom formatter implementation created before max_rows existed."""
+        """Simulates a custom formatter created before max_rows existed."""
 
         def __init__(self):
             # Only set repr_rows, not max_rows (as old formatters would)
@@ -3166,8 +3166,8 @@ def test_html_formatter_backward_compatibility_repr_rows(df, clean_formatter_sta
             # Just return valid HTML to pass validation
             return "<table><tr><td>test</td></tr></table>"
 
-    # Use the legacy formatter with DataFusion
-    legacy_formatter = LegacyCustomFormatter()
+    # Use the legacy formatter with DataFusion (currently unused)
+    _ = LegacyCustomFormatter()
 
     # This should not raise an error even though max_rows doesn't exist
     # The Rust code should fall back to repr_rows
