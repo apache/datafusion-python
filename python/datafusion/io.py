@@ -31,6 +31,8 @@ if TYPE_CHECKING:
     from datafusion.dataframe import DataFrame
     from datafusion.expr import Expr
 
+    from .options import CsvReadOptions
+
 
 def read_parquet(
     path: str | pathlib.Path,
@@ -126,6 +128,7 @@ def read_csv(
     file_extension: str = ".csv",
     table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     file_compression_type: str | None = None,
+    options: CsvReadOptions | None = None,
 ) -> DataFrame:
     """Read a CSV data source.
 
@@ -147,15 +150,12 @@ def read_csv(
             selected for data input.
         table_partition_cols:  Partition columns.
         file_compression_type:  File compression type.
+        options: Set advanced options for CSV reading. This cannot be
+            combined with any of the other options in this method.
 
     Returns:
         DataFrame representation of the read CSV files
     """
-    if table_partition_cols is None:
-        table_partition_cols = []
-
-    path = [str(p) for p in path] if isinstance(path, list) else str(path)
-
     return SessionContext.global_ctx().read_csv(
         path,
         schema,
@@ -165,6 +165,7 @@ def read_csv(
         file_extension,
         table_partition_cols,
         file_compression_type,
+        options,
     )
 
 

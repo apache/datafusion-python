@@ -92,7 +92,7 @@ def test_register_csv(ctx, tmp_path):
     result = pa.Table.from_batches(result)
     assert result.schema == alternative_schema
 
-    with pytest.raises(ValueError, match="Delimiter must be a single character"):
+    with pytest.raises(ValueError, match="delimiter must be a single character"):
         ctx.register_csv("csv4", path, delimiter="wrong")
 
     with pytest.raises(

@@ -64,9 +64,9 @@ use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
+use crate::options::PyCsvReadOptions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
-use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
@@ -724,41 +724,20 @@ impl PySessionContext {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name,
                         path,
-                        schema=None,
-                        has_header=true,
-                        delimiter=",",
-                        schema_infer_max_records=1000,
-                        file_extension=".csv",
-                        file_compression_type=None))]
+                        options=None))]
     pub fn register_csv(
         &self,
         name: &str,
         path: &Bound<'_, PyAny>,
-        schema: Option<PyArrowType<Schema>>,
-        has_header: bool,
-        delimiter: &str,
-        schema_infer_max_records: usize,
-        file_extension: &str,
-        file_compression_type: Option<String>,
+        options: Option<&PyCsvReadOptions>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
-            return Err(PyDataFusionError::PythonError(py_value_err(
-                "Delimiter must be a single character",
-            )));
-        }
-
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        let options = options
+            .map(|opts| opts.try_into())
+            .transpose()?
+            .unwrap_or_default();
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
@@ -978,48 +957,19 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (
         path,
-        schema=None,
-        has_header=true,
-        delimiter=",",
-        schema_infer_max_records=1000,
-        file_extension=".csv",
-        table_partition_cols=vec![],
-        file_compression_type=None))]
+        options=None))]
     pub fn read_csv(
         &self,
         path: &Bound<'_, PyAny>,
-        schema: Option<PyArrowType<Schema>>,
-        has_header: bool,
-        delimiter: &str,
-        schema_infer_max_records: usize,
-        file_extension: &str,
-        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
-        file_compression_type: Option<String>,
+        options: Option<&PyCsvReadOptions>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
-            return Err(PyDataFusionError::PythonError(py_value_err(
-                "Delimiter must be a single character",
-            )));
-        };
-
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .table_partition_cols(
-                table_partition_cols
-                    .into_iter()
-                    .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>(),
-            )
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        let options = options
+            .map(|opts| opts.try_into())
+            .transpose()?
+            .unwrap_or_default();
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
