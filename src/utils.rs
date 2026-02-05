@@ -229,7 +229,7 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
             obj_ref.clone().unbind()
         };
         let array_bound = array_obj.bind(py);
-        let array_data = ArrayData::from_pyarrow_bound(&array_bound)
+        let array_data = ArrayData::from_pyarrow_bound(array_bound)
             .map_err(|e| PyValueError::new_err(format!("Failed to extract pyarrow array: {e}")))?;
         let array = make_array(array_data);
         let offsets = OffsetBuffer::new(ScalarBuffer::from(vec![0, array.len() as i32]));
