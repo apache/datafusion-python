@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING
 
 import pyarrow as pa
 
+from datafusion.expr import sort_list_to_raw_sort_list
+
 if TYPE_CHECKING:
     from datafusion.expr import SortExpr
 
@@ -208,6 +210,15 @@ class CsvReadOptions:
 
         This is intended for internal use only.
         """
+        file_sort_order = (
+            []
+            if self.file_sort_order is None
+            else [
+                sort_list_to_raw_sort_list(sort_list)
+                for sort_list in self.file_sort_order
+            ]
+        )
+
         return options.CsvReadOptions(
             has_header=self.has_header,
             delimiter=ord(self.delimiter[0]) if self.delimiter else ord(","),
@@ -223,7 +234,7 @@ class CsvReadOptions:
                 self.table_partition_cols
             ),
             file_compression_type=self.file_compression_type or "",
-            file_sort_order=self.file_sort_order or [],
+            file_sort_order=file_sort_order,
             null_regex=self.null_regex,
             truncated_rows=self.truncated_rows,
         )

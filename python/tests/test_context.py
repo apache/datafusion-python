@@ -22,6 +22,7 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 from datafusion import (
+    CsvReadOptions,
     DataFrame,
     RuntimeEnvBuilder,
     SessionConfig,
@@ -626,6 +627,8 @@ def test_read_csv_list(ctx):
 def test_read_csv_compressed(ctx, tmp_path):
     test_data_path = pathlib.Path("testing/data/csv/aggregate_test_100.csv")
 
+    expected = ctx.read_csv(test_data_path).collect()
+
     # File compression type
     gzip_path = tmp_path / "aggregate_test_100.csv.gz"
 
@@ -636,7 +639,13 @@ def test_read_csv_compressed(ctx, tmp_path):
         gzipped_file.writelines(csv_file)
 
     csv_df = ctx.read_csv(gzip_path, file_extension=".gz", file_compression_type="gz")
-    csv_df.select(column("c1")).show()
+    assert csv_df.collect() == expected
+
+    csv_df = ctx.read_csv(
+        gzip_path,
+        options=CsvReadOptions(file_extension=".gz", file_compression_type="gz"),
+    )
+    assert csv_df.collect() == expected
 
 
 def test_read_parquet(ctx):
@@ -735,6 +744,43 @@ def test_csv_read_options_builder_pattern():
     assert options.file_extension == ".tsv"
 
 
+def read_csv_with_options_inner(
+    tmp_path: pathlib.Path,
+    csv_content: str,
+    options: CsvReadOptions,
+    expected: pa.RecordBatch,
+    as_read: bool,
+    global_ctx: bool,
+) -> None:
+    from datafusion import SessionContext
+
+    # Create a test CSV file
+    group_dir = tmp_path / "group=a"
+    group_dir.mkdir(exist_ok=True)
+
+    csv_path = group_dir / "test.csv"
+    csv_path.write_text(csv_content)
+
+    ctx = SessionContext()
+
+    if as_read:
+        if global_ctx:
+            from datafusion.io import read_csv
+
+            df = read_csv(str(tmp_path), options=options)
+        else:
+            df = ctx.read_csv(str(tmp_path), options=options)
+    else:
+        ctx.register_csv("test_table", str(tmp_path), options=options)
+        df = ctx.sql("SELECT * FROM test_table")
+    df.show()
+
+    # Verify the data
+    result = df.collect()
+    assert len(result) == 1
+    assert result[0] == expected
+
+
 @pytest.mark.parametrize(
     ("as_read", "global_ctx"),
     [
@@ -745,33 +791,82 @@ def test_csv_read_options_builder_pattern():
 )
 def test_read_csv_with_options(tmp_path, as_read, global_ctx):
     """Test reading CSV with CsvReadOptions."""
-    from datafusion import CsvReadOptions, SessionContext
 
-    # Create a test CSV file
-    csv_path = tmp_path / "test.csv"
-    csv_content = "name;age;city\nAlice;30;New York\nBob;25\n#Charlie;35;Paris"
-    csv_path.write_text(csv_content)
+    csv_content = "Alice;30;|New York; NY|\nBob;25\n#Charlie;35;Paris\nPhil;75;Detroit' MI\nKarin;50;|Stockholm\nSweden|"  # noqa: E501
 
-    ctx = SessionContext()
-
-    # Test with CsvReadOptions
+    # Some of the read options are difficult to test in combination
+    # such as schema and schema_infer_max_records so run multiple tests
+    # file_sort_order doesn't impact reading, but included here to ensure
+    # all options parse correctly
     options = CsvReadOptions(
-        has_header=True, delimiter=";", comment="#", truncated_rows=True
+        has_header=False,
+        delimiter=";",
+        quote="|",
+        terminator="\n",
+        escape="\\",
+        comment="#",
+        newlines_in_values=True,
+        schema_infer_max_records=1,
+        null_regex="[pP]+aris",
+        truncated_rows=True,
+        file_sort_order=[[column("column_1").sort(), column("column_2")], ["column_3"]],
     )
 
-    if as_read:
-        if global_ctx:
-            from datafusion.io import read_csv
+    expected = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["Alice", "Bob", "Phil", "Karin"]),
+            pa.array([30, 25, 75, 50]),
+            pa.array(["New York; NY", None, "Detroit' MI", "Stockholm\nSweden"]),
+        ],
+        names=["column_1", "column_2", "column_3"],
+    )
 
-            df = read_csv(str(csv_path), options=options)
-        else:
-            df = ctx.read_csv(str(csv_path), options=options)
-    else:
-        ctx.register_csv("test_table", str(csv_path), options=options)
-        df = ctx.sql("SELECT * FROM test_table")
+    read_csv_with_options_inner(
+        tmp_path, csv_content, options, expected, as_read, global_ctx
+    )
 
-    # Verify the data
-    result = df.collect()
-    assert len(result) == 1
-    assert result[0].num_columns == 3
-    assert result[0].column(0).to_pylist() == ["Alice", "Bob", None]
+    schema = pa.schema(
+        [
+            pa.field("name", pa.string(), nullable=False),
+            pa.field("age", pa.float32(), nullable=False),
+            pa.field("location", pa.string(), nullable=True),
+        ]
+    )
+    options.with_schema(schema)
+
+    expected = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["Alice", "Bob", "Phil", "Karin"]),
+            pa.array([30.0, 25.0, 75.0, 50.0]),
+            pa.array(["New York; NY", None, "Detroit' MI", "Stockholm\nSweden"]),
+        ],
+        schema=schema,
+    )
+
+    read_csv_with_options_inner(
+        tmp_path, csv_content, options, expected, as_read, global_ctx
+    )
+
+    csv_content = "name,age\nAlice,30\nBob,25\nCharlie,35\nDiego,40\nEmily,15"
+
+    expected = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["Alice", "Bob", "Charlie", "Diego", "Emily"]),
+            pa.array([30, 25, 35, 40, 15]),
+            pa.array(["a", "a", "a", "a", "a"]),
+        ],
+        schema=pa.schema(
+            [
+                pa.field("name", pa.string(), nullable=True),
+                pa.field("age", pa.int64(), nullable=True),
+                pa.field("group", pa.string(), nullable=False),
+            ]
+        ),
+    )
+    options = CsvReadOptions(
+        table_partition_cols=[("group", pa.string())],
+    )
+
+    read_csv_with_options_inner(
+        tmp_path, csv_content, options, expected, as_read, global_ctx
+    )

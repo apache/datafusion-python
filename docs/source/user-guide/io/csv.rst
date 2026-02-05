@@ -55,3 +55,6 @@ If you require additional control over how to read the CSV file, you can use
         .with_file_extension(".gz") # File extension other than .csv
     )
     df = ctx.read_csv("data.csv.gz", options=options)
+
+Details for all CSV reading options can be found on the
+`DataFusion documentation site <https://datafusion.apache.org/library-user-guide/custom-table-providers.html>`_.
