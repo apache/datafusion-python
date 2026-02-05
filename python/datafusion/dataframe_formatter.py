@@ -67,7 +67,7 @@ def _validate_formatter_parameters(
     max_width: int,
     max_height: int,
     max_memory_bytes: int,
-    min_rows_display: int,
+    min_rows: int,
     max_rows: int | None,
     repr_rows: int | None,
     enable_cell_expansion: bool,
@@ -83,7 +83,7 @@ def _validate_formatter_parameters(
         max_width: Maximum width value to validate
         max_height: Maximum height value to validate
         max_memory_bytes: Maximum memory bytes value to validate
-        min_rows_display: Minimum rows to display value to validate
+        min_rows: Minimum rows to display value to validate
         max_rows: Maximum rows value to validate (None means use default)
         repr_rows: Deprecated repr_rows value to validate
         enable_cell_expansion: Boolean expansion flag to validate
@@ -105,7 +105,7 @@ def _validate_formatter_parameters(
     _validate_positive_int(max_width, "max_width")
     _validate_positive_int(max_height, "max_height")
     _validate_positive_int(max_memory_bytes, "max_memory_bytes")
-    _validate_positive_int(min_rows_display, "min_rows_display")
+    _validate_positive_int(min_rows, "min_rows")
 
     # Handle deprecated repr_rows parameter
     if repr_rows is not None:
@@ -126,9 +126,9 @@ def _validate_formatter_parameters(
 
     _validate_positive_int(max_rows, "max_rows")
 
-    # Validate constraint: min_rows_display <= max_rows
-    if min_rows_display > max_rows:
-        msg = "min_rows_display must be less than or equal to max_rows"
+    # Validate constraint: min_rows <= max_rows
+    if min_rows > max_rows:
+        msg = "min_rows must be less than or equal to max_rows"
         raise ValueError(msg)
 
     # Validate boolean parameters
@@ -214,7 +214,7 @@ class DataFrameHtmlFormatter:
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
         max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
-        min_rows_display: Minimum number of rows to display (must be <= max_rows)
+        min_rows: Minimum number of rows to display (must be <= max_rows)
         max_rows: Maximum number of rows to display in repr output
         repr_rows: Deprecated alias for max_rows
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
@@ -232,7 +232,7 @@ class DataFrameHtmlFormatter:
         max_width: int = 1000,
         max_height: int = 300,
         max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
-        min_rows_display: int = 10,
+        min_rows: int = 10,
         max_rows: int | None = None,
         repr_rows: int | None = None,
         enable_cell_expansion: bool = True,
@@ -253,7 +253,7 @@ class DataFrameHtmlFormatter:
             Maximum height of the displayed table in pixels.
         max_memory_bytes : int, default 2097152 (2MB)
             Maximum memory in bytes for rendered data.
-        min_rows_display : int, default 10
+        min_rows : int, default 10
             Minimum number of rows to display. Must be less than or equal to
             ``max_rows``.
         max_rows : int, default 10
@@ -276,7 +276,7 @@ class DataFrameHtmlFormatter:
         ------
         ValueError
             If max_cell_length, max_width, max_height, max_memory_bytes,
-            min_rows_display or max_rows is not a positive integer.
+            min_rows or max_rows is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
             not a boolean,
@@ -290,7 +290,7 @@ class DataFrameHtmlFormatter:
             max_width,
             max_height,
             max_memory_bytes,
-            min_rows_display,
+            min_rows,
             max_rows,
             repr_rows,
             enable_cell_expansion,
@@ -304,7 +304,7 @@ class DataFrameHtmlFormatter:
         self.max_width = max_width
         self.max_height = max_height
         self.max_memory_bytes = max_memory_bytes
-        self.min_rows_display = min_rows_display
+        self.min_rows = min_rows
         self._max_rows = resolved_max_rows
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
@@ -794,7 +794,7 @@ def configure_formatter(**kwargs: Any) -> None:
         "max_width",
         "max_height",
         "max_memory_bytes",
-        "min_rows_display",
+        "min_rows",
         "max_rows",
         "repr_rows",
         "enable_cell_expansion",

@@ -1438,7 +1438,7 @@ def test_html_formatter_complex_customization(df, clean_formatter_state):
 
 def test_html_formatter_memory(df, clean_formatter_state):
     """Test the memory and row control parameters in DataFrameHtmlFormatter."""
-    configure_formatter(max_memory_bytes=10, min_rows_display=1)
+    configure_formatter(max_memory_bytes=10, min_rows=1)
     html_output = df._repr_html_()
 
     # Count the number of table rows in the output
@@ -1448,7 +1448,7 @@ def test_html_formatter_memory(df, clean_formatter_state):
     assert tr_count == 2  # 1 for header row, 1 for data row
     assert "data truncated" in html_output.lower()
 
-    configure_formatter(max_memory_bytes=10 * MB, min_rows_display=1)
+    configure_formatter(max_memory_bytes=10 * MB, min_rows=1)
     html_output = df._repr_html_()
     # With larger memory limit and min_rows=2, should display all rows
     tr_count = count_table_rows(html_output)
@@ -1468,12 +1468,12 @@ def test_html_formatter_memory_boundary_conditions(df, clean_formatter_state):
 
     # Get the raw size of the data to test boundary conditions
     # First, capture output with no limits
-    configure_formatter(max_memory_bytes=10 * MB, min_rows_display=1, max_rows=100)
+    configure_formatter(max_memory_bytes=10 * MB, min_rows=1, max_rows=100)
     unrestricted_output = df._repr_html_()
     unrestricted_rows = count_table_rows(unrestricted_output)
 
     # Test 1: Very small memory limit should still respect min_rows
-    configure_formatter(max_memory_bytes=10, min_rows_display=1)
+    configure_formatter(max_memory_bytes=10, min_rows=1)
     html_output = df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 2  # At least header + 1 data row (minimum)
@@ -1481,20 +1481,20 @@ def test_html_formatter_memory_boundary_conditions(df, clean_formatter_state):
     assert "data truncated" in html_output.lower()
 
     # Test 2: Memory limit at default size should work well
-    configure_formatter(max_memory_bytes=2 * MB, min_rows_display=1)
+    configure_formatter(max_memory_bytes=2 * MB, min_rows=1)
     html_output = df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 2  # At least header + min_rows
 
     # Test 3: Very large memory limit should show all data
-    configure_formatter(max_memory_bytes=100 * MB, min_rows_display=1)
+    configure_formatter(max_memory_bytes=100 * MB, min_rows=1)
     html_output = df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count == unrestricted_rows  # Should show all rows
 
     # Test 4: Min rows should override memory limit
     # With tiny memory and larger min_rows, min_rows should win
-    configure_formatter(max_memory_bytes=10, min_rows_display=2)
+    configure_formatter(max_memory_bytes=10, min_rows=2)
     html_output = df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 3  # At least header + 2 data rows (min_rows)
@@ -1502,21 +1502,21 @@ def test_html_formatter_memory_boundary_conditions(df, clean_formatter_state):
     assert "data truncated" in html_output.lower()
 
     # Test 5: Default memory limit with different min_rows
-    configure_formatter(max_memory_bytes=2 * MB, min_rows_display=2, max_rows=2)
+    configure_formatter(max_memory_bytes=2 * MB, min_rows=2, max_rows=2)
     html_output = df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count == 3  # header + 2 data rows
 
 
 def test_html_formatter_max_rows(df, clean_formatter_state):
-    configure_formatter(min_rows_display=2, max_rows=2)
+    configure_formatter(min_rows=2, max_rows=2)
     html_output = df._repr_html_()
 
     tr_count = count_table_rows(html_output)
     # Table should have header row (1) + 2 data rows = 3 rows
     assert tr_count == 3
 
-    configure_formatter(min_rows_display=2, max_rows=3)
+    configure_formatter(min_rows=2, max_rows=3)
     html_output = df._repr_html_()
 
     tr_count = count_table_rows(html_output)
@@ -1542,11 +1542,11 @@ def test_html_formatter_validation():
     with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
         DataFrameHtmlFormatter(max_memory_bytes=-100)
 
-    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
-        DataFrameHtmlFormatter(min_rows_display=0)
+    with pytest.raises(ValueError, match="min_rows must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows=0)
 
-    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
-        DataFrameHtmlFormatter(min_rows_display=-5)
+    with pytest.raises(ValueError, match="min_rows must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows=-5)
 
     with pytest.raises(ValueError, match="max_rows must be a positive integer"):
         DataFrameHtmlFormatter(max_rows=0)
@@ -1555,16 +1555,16 @@ def test_html_formatter_validation():
         DataFrameHtmlFormatter(max_rows=-10)
 
     with pytest.raises(
-        ValueError, match="min_rows_display must be less than or equal to max_rows"
+        ValueError, match="min_rows must be less than or equal to max_rows"
     ):
-        DataFrameHtmlFormatter(min_rows_display=5, max_rows=4)
+        DataFrameHtmlFormatter(min_rows=5, max_rows=4)
 
 
 def test_repr_rows_backward_compatibility(clean_formatter_state):
     """Test that repr_rows parameter still works as deprecated alias."""
     # Should work when not conflicting with max_rows
     with pytest.warns(DeprecationWarning, match="repr_rows parameter is deprecated"):
-        formatter = DataFrameHtmlFormatter(repr_rows=15, min_rows_display=10)
+        formatter = DataFrameHtmlFormatter(repr_rows=15, min_rows=10)
     assert formatter.max_rows == 15
     assert formatter.repr_rows == 15
 
@@ -1589,7 +1589,7 @@ def test_configure_formatter(df, clean_formatter_state):
     max_width = 500
     max_height = 30
     max_memory_bytes = 3 * MB
-    min_rows_display = 2
+    min_rows = 2
     max_rows = 2
     enable_cell_expansion = False
     show_truncation_message = False
@@ -1602,7 +1602,7 @@ def test_configure_formatter(df, clean_formatter_state):
     assert formatter_default.max_width != max_width
     assert formatter_default.max_height != max_height
     assert formatter_default.max_memory_bytes != max_memory_bytes
-    assert formatter_default.min_rows_display != min_rows_display
+    assert formatter_default.min_rows != min_rows
     assert formatter_default.max_rows != max_rows
     assert formatter_default.enable_cell_expansion != enable_cell_expansion
     assert formatter_default.show_truncation_message != show_truncation_message
@@ -1614,7 +1614,7 @@ def test_configure_formatter(df, clean_formatter_state):
         max_width=max_width,
         max_height=max_height,
         max_memory_bytes=max_memory_bytes,
-        min_rows_display=min_rows_display,
+        min_rows=min_rows,
         max_rows=max_rows,
         enable_cell_expansion=enable_cell_expansion,
         show_truncation_message=show_truncation_message,
@@ -1625,7 +1625,7 @@ def test_configure_formatter(df, clean_formatter_state):
     assert formatter_custom.max_width == max_width
     assert formatter_custom.max_height == max_height
     assert formatter_custom.max_memory_bytes == max_memory_bytes
-    assert formatter_custom.min_rows_display == min_rows_display
+    assert formatter_custom.min_rows == min_rows
     assert formatter_custom.max_rows == max_rows
     assert formatter_custom.enable_cell_expansion == enable_cell_expansion
     assert formatter_custom.show_truncation_message == show_truncation_message

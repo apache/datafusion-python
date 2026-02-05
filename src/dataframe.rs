@@ -152,7 +152,7 @@ where
 fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<FormatterConfig> {
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
-    let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
+    let min_rows = get_attr(formatter, "min_rows", default_config.min_rows);
     let max_rows = get_attr(formatter, "max_rows", default_config.max_rows);
 
     let config = FormatterConfig {
