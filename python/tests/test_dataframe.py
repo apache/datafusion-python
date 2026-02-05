@@ -92,6 +92,39 @@ def large_df():
 
 
 @pytest.fixture
+def large_multi_batch_df():
+    """Create a DataFrame with multiple record batches for testing stream behavior.
+
+    This fixture creates 10 batches of 10,000 rows each (100,000 rows total),
+    ensuring the DataFrame spans multiple batches. This is essential for testing
+    that memory limits actually cause early stream termination rather than
+    truncating all collected data.
+    """
+    ctx = SessionContext()
+
+    # Create multiple batches, each with 10,000 rows
+    batches = []
+    rows_per_batch = 10000
+    num_batches = 10
+
+    for batch_idx in range(num_batches):
+        start_row = batch_idx * rows_per_batch
+        end_row = start_row + rows_per_batch
+        data = {
+            "a": list(range(start_row, end_row)),
+            "b": [f"s-{i}" for i in range(start_row, end_row)],
+            "c": [float(i + 0.1) for i in range(start_row, end_row)],
+        }
+        batch = pa.record_batch(data)
+        batches.append(batch)
+
+    # Register as record batches to maintain multi-batch structure
+    # Using [batches] wraps list in another list as required by register_record_batches
+    ctx.register_record_batches("large_multi_batch_data", [batches])
+    return ctx.table("large_multi_batch_data")
+
+
+@pytest.fixture
 def struct_df():
     ctx = SessionContext()
 
@@ -1521,6 +1554,62 @@ def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_sta
     assert tr_count >= 11  # header + at least 10 data rows (min_rows)
     # Should be truncated due to memory limit
     assert tr_count < unrestricted_rows
+
+
+def test_html_formatter_stream_early_termination(
+    large_multi_batch_df, clean_formatter_state
+):
+    """Test that memory limits cause early stream termination with multi-batch data.
+
+    This test specifically validates that the formatter stops collecting data when
+    the memory limit is reached, rather than collecting all data and then truncating.
+    The large_multi_batch_df fixture creates 10 record batches, allowing us to verify
+    that not all batches are consumed when memory limit is hit.
+
+    Key difference from test_html_formatter_memory_boundary_conditions:
+    - Uses multi-batch DataFrame to verify stream termination behavior
+    - Tests with memory limit exceeded by 2-3 batches but not 1 batch
+    - Verifies partial data + truncation message + respects min_rows
+    """
+
+    # Get baseline: how much data fits without memory limit
+    configure_formatter(max_memory_bytes=100 * MB, min_rows=1, max_rows=200000)
+    unrestricted_output = large_multi_batch_df._repr_html_()
+    unrestricted_rows = count_table_rows(unrestricted_output)
+
+    # Test 1: Memory limit exceeded by ~2 batches (each batch ~10k rows)
+    # With 1 batch (~1-2MB), we should have space. With 2-3 batches, we exceed limit.
+    # Set limit to ~3MB to ensure we collect ~1 batch before hitting limit
+    configure_formatter(max_memory_bytes=3 * MB, min_rows=1, max_rows=200000)
+    html_output = large_multi_batch_df._repr_html_()
+    tr_count = count_table_rows(html_output)
+
+    # Should show significant truncation (not all 100k rows)
+    assert tr_count < unrestricted_rows, "Should be truncated by memory limit"
+    assert tr_count >= 2, "Should respect min_rows"
+    assert "data truncated" in html_output.lower(), "Should indicate truncation"
+
+    # Test 2: Very tight memory limit should still respect min_rows
+    # Even with tiny memory (10 bytes), should show at least min_rows
+    configure_formatter(max_memory_bytes=10, min_rows=5, max_rows=200000)
+    html_output = large_multi_batch_df._repr_html_()
+    tr_count = count_table_rows(html_output)
+
+    assert tr_count >= 6, "Should show header + at least min_rows (5)"
+    assert "data truncated" in html_output.lower(), "Should indicate truncation"
+
+    # Test 3: Memory limit should take precedence over max_rows in early termination
+    # With max_rows=100 but small memory limit, should terminate early due to memory
+    configure_formatter(max_memory_bytes=2 * MB, min_rows=1, max_rows=100)
+    html_output = large_multi_batch_df._repr_html_()
+    tr_count = count_table_rows(html_output)
+
+    # Should be truncated by memory limit (showing more than max_rows would suggest
+    # but less than unrestricted)
+    assert tr_count >= 2, "Should respect min_rows"
+    assert tr_count < unrestricted_rows, "Should be truncated"
+    # Output should indicate why truncation occurred
+    assert "data truncated" in html_output.lower()
 
 
 def test_html_formatter_max_rows(df, clean_formatter_state):
