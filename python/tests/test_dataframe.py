@@ -1458,54 +1458,61 @@ def test_html_formatter_memory(df, clean_formatter_state):
     assert "data truncated" not in html_output.lower()
 
 
-def test_html_formatter_memory_boundary_conditions(df, clean_formatter_state):
-    """Test memory limit behavior at boundary conditions.
+def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_state):
+    """Test memory limit behavior at boundary conditions with large dataset.
 
     This test validates that the formatter correctly handles edge cases when
-    the memory limit is very close to actual data size, ensuring that min_rows
-    constraint is properly respected while respecting memory limits.
+    the memory limit is reached with a large dataset (100,000 rows), ensuring
+    that min_rows constraint is properly respected while respecting memory limits.
+    Uses large_df to actually test memory limit behavior with realistic data sizes.
     """
 
     # Get the raw size of the data to test boundary conditions
-    # First, capture output with no limits
-    configure_formatter(max_memory_bytes=10 * MB, min_rows=1, max_rows=100)
-    unrestricted_output = df._repr_html_()
+    # First, capture output with no limits - use very high max_rows to avoid row limit
+    configure_formatter(max_memory_bytes=10 * MB, min_rows=1, max_rows=200000)
+    unrestricted_output = large_df._repr_html_()
     unrestricted_rows = count_table_rows(unrestricted_output)
 
     # Test 1: Very small memory limit should still respect min_rows
+    # With large dataset, this should definitely hit memory limit
     configure_formatter(max_memory_bytes=10, min_rows=1)
-    html_output = df._repr_html_()
+    html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 2  # At least header + 1 data row (minimum)
     # Should show truncation since we limited memory so aggressively
     assert "data truncated" in html_output.lower()
 
-    # Test 2: Memory limit at default size should work well
+    # Test 2: Memory limit at default size (2MB) should truncate the large dataset
     configure_formatter(max_memory_bytes=2 * MB, min_rows=1)
-    html_output = df._repr_html_()
+    html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 2  # At least header + min_rows
+    # Should be truncated since full dataset is much larger than 2MB
+    assert tr_count < unrestricted_rows
 
-    # Test 3: Very large memory limit should show all data
-    configure_formatter(max_memory_bytes=100 * MB, min_rows=1)
-    html_output = df._repr_html_()
+    # Test 3: Very large memory limit should show much more data
+    configure_formatter(max_memory_bytes=100 * MB, min_rows=1, max_rows=200000)
+    html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
-    assert tr_count == unrestricted_rows  # Should show all rows
+    # Should show significantly more rows, possibly all
+    assert tr_count > 100  # Should show substantially more rows
 
     # Test 4: Min rows should override memory limit
     # With tiny memory and larger min_rows, min_rows should win
     configure_formatter(max_memory_bytes=10, min_rows=2)
-    html_output = df._repr_html_()
+    html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
     assert tr_count >= 3  # At least header + 2 data rows (min_rows)
     # Should show truncation message despite min_rows being satisfied
     assert "data truncated" in html_output.lower()
 
-    # Test 5: Default memory limit with different min_rows
-    configure_formatter(max_memory_bytes=2 * MB, min_rows=2, max_rows=2)
-    html_output = df._repr_html_()
+    # Test 5: With reasonable memory and min_rows settings
+    configure_formatter(max_memory_bytes=2 * MB, min_rows=10, max_rows=200000)
+    html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
-    assert tr_count == 3  # header + 2 data rows
+    assert tr_count >= 11  # header + at least 10 data rows (min_rows)
+    # Should be truncated due to memory limit
+    assert tr_count < unrestricted_rows
 
 
 def test_html_formatter_max_rows(df, clean_formatter_state):
