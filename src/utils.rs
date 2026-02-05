@@ -19,6 +19,10 @@ use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
+use datafusion::arrow::array::{make_array, ArrayData, ListArray};
+use datafusion::arrow::buffer::{OffsetBuffer, ScalarBuffer};
+use datafusion::arrow::datatypes::Field;
+use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
@@ -26,7 +30,7 @@ use datafusion::logical_expr::Volatility;
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyCapsule;
+use pyo3::types::{PyCapsule, PyType};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
@@ -188,6 +192,38 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
     // convert Python object to PyScalarValue to ScalarValue
 
     let pa = py.import("pyarrow")?;
+    let scalar_type = pa.getattr("Scalar")?.downcast::<PyType>()?;
+    let array_type = pa.getattr("Array")?.downcast::<PyType>()?;
+    let chunked_array_type = pa.getattr("ChunkedArray")?.downcast::<PyType>()?;
+
+    let obj_ref = obj.bind(py);
+
+    if obj_ref.is_instance(scalar_type)? {
+        let py_scalar = PyScalarValue::extract_bound(obj_ref)
+            .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
+        return Ok(py_scalar.into());
+    }
+
+    if obj_ref.is_instance(array_type)? || obj_ref.is_instance(chunked_array_type)? {
+        let array_obj = if obj_ref.is_instance(chunked_array_type)? {
+            obj_ref.call_method0("combine_chunks")?.to_object(py)
+        } else {
+            obj_ref.to_object(py)
+        };
+        let array_bound = array_obj.bind(py);
+        let array_data = ArrayData::from_pyarrow_bound(&array_bound)
+            .map_err(|e| PyValueError::new_err(format!("Failed to extract pyarrow array: {e}")))?;
+        let array = make_array(array_data);
+        let offsets = OffsetBuffer::new(ScalarBuffer::from(vec![0, array.len() as i32]));
+        let list_array = Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(array.data_type().clone(), true)),
+            offsets,
+            array,
+            None,
+        ));
+
+        return Ok(ScalarValue::List(list_array));
+    }
 
     // Convert Python object to PyArrow scalar
     let scalar = pa.call_method1("scalar", (obj,))?;
