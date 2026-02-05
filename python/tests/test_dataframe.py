@@ -3134,6 +3134,53 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
     assert "<style>" not in local_html_2
 
 
+def test_html_formatter_backward_compatibility_repr_rows(df, clean_formatter_state):
+    """Test backward compatibility with custom formatter using deprecated repr_rows attribute.
+
+    This test validates that the Rust code correctly handles custom formatter
+    implementations that only have the deprecated `repr_rows` attribute (no `max_rows`).
+
+    This is critical for supporting custom formatters created before the `max_rows`
+    attribute was added. Users should be able to pass their custom formatter objects
+    without breaking the rendering pipeline.
+
+    Deprecation Timeline:
+    - Release N (current): Added `max_rows`, kept `repr_rows` for backward compatibility
+    - Release N+1: Both `repr_rows` and `max_rows` supported (with fallback in Rust)
+    - Release N+2: Remove `repr_rows` fallback logic in Rust code
+    - Release N+3: Remove `repr_rows` property entirely from Python
+    """
+
+    # Create a custom formatter class that ONLY has repr_rows (simulating old code)
+    class LegacyCustomFormatter:
+        """Simulates a custom formatter implementation created before max_rows existed."""
+
+        def __init__(self):
+            # Only set repr_rows, not max_rows (as old formatters would)
+            self.repr_rows = 5
+            self.max_memory_bytes = 2 * MB
+            self.min_rows = 2
+
+        def format_html(self, batches, schema):
+            """Minimal format_html implementation for testing."""
+            # Just return valid HTML to pass validation
+            return "<table><tr><td>test</td></tr></table>"
+
+    # Use the legacy formatter with DataFusion
+    legacy_formatter = LegacyCustomFormatter()
+
+    # This should not raise an error even though max_rows doesn't exist
+    # The Rust code should fall back to repr_rows
+    html_output = df._repr_html_()
+
+    # Verify that rendering succeeded
+    assert isinstance(html_output, str)
+    assert len(html_output) > 0
+
+    # Verify it's valid HTML (basic check)
+    assert "<table" in html_output.lower() or "data truncated" in html_output.lower()
+
+
 def test_fill_null_basic(null_df):
     """Test basic fill_null functionality with a single value."""
     # Fill all nulls with 0

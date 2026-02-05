@@ -153,7 +153,24 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
     let min_rows = get_attr(formatter, "min_rows", default_config.min_rows);
-    let max_rows = get_attr(formatter, "max_rows", default_config.max_rows);
+
+    // Backward compatibility: Try max_rows first (new name), fall back to repr_rows (deprecated),
+    // then use default. This ensures backward compatibility with custom formatter implementations
+    // during the deprecation period.
+    let max_rows = get_attr(formatter, "max_rows", 0usize);
+    let max_rows = if max_rows > 0 {
+        // max_rows attribute exists and has a value
+        max_rows
+    } else {
+        // Try the deprecated repr_rows attribute
+        let repr_rows = get_attr(formatter, "repr_rows", 0usize);
+        if repr_rows > 0 {
+            repr_rows
+        } else {
+            // Use default
+            default_config.max_rows
+        }
+    };
 
     let config = FormatterConfig {
         max_bytes,
