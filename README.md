@@ -275,7 +275,7 @@ needing to activate the virtual environment:
 
 ```bash
 uv run --no-project maturin develop --uv
-uv --no-project pytest .
+uv run --no-project pytest .
 ```
 
 ### Running & Installing pre-commit hooks

@@ -18,13 +18,18 @@
 from __future__ import annotations
 
 import pyarrow as pa
+import pytest
 from datafusion import SessionContext
 from datafusion_ffi_example import MyTableProvider
 
 
-def test_table_loading():
+@pytest.mark.parametrize("inner_capsule", [True, False])
+def test_table_provider_ffi(inner_capsule: bool) -> None:
     ctx = SessionContext()
     table = MyTableProvider(3, 2, 4)
+    if inner_capsule:
+        table = table.__datafusion_table_provider__(ctx)
+
     ctx.register_table("t", table)
     result = ctx.table("t").collect()
 

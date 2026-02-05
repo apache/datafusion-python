@@ -27,15 +27,18 @@ use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
-use pyo3::exceptions::PyValueError;
+use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::table_provider::FFI_TableProvider;
+use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
+use pyo3::IntoPyObjectExt;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
 use crate::common::data_type::PyScalarValue;
+use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::TokioRuntime;
 
@@ -64,9 +67,9 @@ pub(crate) fn is_ipython_env(py: Python) -> &'static bool {
 
 /// Utility to get the Global Datafussion CTX
 #[inline]
-pub(crate) fn get_global_ctx() -> &'static SessionContext {
-    static CTX: OnceLock<SessionContext> = OnceLock::new();
-    CTX.get_or_init(SessionContext::new)
+pub(crate) fn get_global_ctx() -> &'static Arc<SessionContext> {
+    static CTX: OnceLock<Arc<SessionContext>> = OnceLock::new();
+    CTX.get_or_init(|| Arc::new(SessionContext::new()))
 }
 
 /// Utility to collect rust futures with GIL released and respond to
@@ -171,18 +174,30 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     Ok(())
 }
 
-pub(crate) fn table_provider_from_pycapsule(
-    obj: &Bound<PyAny>,
+pub(crate) fn table_provider_from_pycapsule<'py>(
+    mut obj: Bound<'py, PyAny>,
+    session: Bound<'py, PyAny>,
 ) -> PyResult<Option<Arc<dyn TableProvider>>> {
     if obj.hasattr("__datafusion_table_provider__")? {
-        let capsule = obj.getattr("__datafusion_table_provider__")?.call0()?;
-        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        obj = obj
+            .getattr("__datafusion_table_provider__")?
+            .call1((session,)).map_err(|err| {
+            let py = obj.py();
+            if err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+                PyImportError::new_err("Incompatible libraries. DataFusion 52.0.0 introduced an incompatible signature change for table providers. Either downgrade DataFusion or upgrade your function library.")
+            } else {
+                err
+            }
+        })?;
+    }
+
+    if let Ok(capsule) = obj.downcast::<PyCapsule>().map_err(py_datafusion_err) {
         validate_pycapsule(capsule, "datafusion_table_provider")?;
 
         let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-        let provider: ForeignTableProvider = provider.into();
+        let provider: Arc<dyn TableProvider> = provider.into();
 
-        Ok(Some(Arc::new(provider)))
+        Ok(Some(provider))
     } else {
         Ok(None)
     }
@@ -237,4 +252,38 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<Sca
 
     // Convert PyScalarValue to ScalarValue
     Ok(py_scalar.into())
+}
+
+pub(crate) fn extract_logical_extension_codec(
+    py: Python,
+    obj: Option<Bound<PyAny>>,
+) -> PyResult<Arc<FFI_LogicalExtensionCodec>> {
+    let obj = match obj {
+        Some(obj) => obj,
+        None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
+    };
+    let capsule = if obj.hasattr("__datafusion_logical_extension_codec__")? {
+        let capsule = obj
+            .getattr("__datafusion_logical_extension_codec__")?
+            .call0()?;
+        capsule
+    } else {
+        obj
+    };
+    let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+
+    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
+
+    let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+    Ok(Arc::new(codec.clone()))
+}
+
+pub(crate) fn create_logical_extension_capsule<'py>(
+    py: Python<'py>,
+    codec: &FFI_LogicalExtensionCodec,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let name = cr"datafusion_logical_extension_codec".into();
+    let codec = codec.clone();
+
+    PyCapsule::new(py, codec, Some(name))
 }

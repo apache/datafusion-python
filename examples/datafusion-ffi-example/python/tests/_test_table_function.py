@@ -27,9 +27,10 @@ if TYPE_CHECKING:
     from datafusion.context import TableProviderExportable
 
 
-def test_ffi_table_function_register():
+def test_ffi_table_function_register() -> None:
     ctx = SessionContext()
     table_func = MyTableFunction()
+
     table_udtf = udtf(table_func, "my_table_func")
     ctx.register_udtf(table_udtf)
     result = ctx.sql("select * from my_table_func()").collect()

@@ -76,7 +76,7 @@ pub struct PyMicrosoftAzureContext {
 #[pymethods]
 impl PyMicrosoftAzureContext {
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (container_name, account=None, access_key=None, bearer_token=None, client_id=None, client_secret=None, tenant_id=None, sas_query_pairs=None, use_emulator=None, allow_http=None))]
+    #[pyo3(signature = (container_name, account=None, access_key=None, bearer_token=None, client_id=None, client_secret=None, tenant_id=None, sas_query_pairs=None, use_emulator=None, allow_http=None, use_fabric_endpoint=None))]
     #[new]
     fn new(
         container_name: String,
@@ -89,6 +89,7 @@ impl PyMicrosoftAzureContext {
         sas_query_pairs: Option<Vec<(String, String)>>,
         use_emulator: Option<bool>,
         allow_http: Option<bool>,
+        use_fabric_endpoint: Option<bool>,
     ) -> Self {
         let mut builder = MicrosoftAzureBuilder::from_env().with_container_name(&container_name);
 
@@ -125,6 +126,10 @@ impl PyMicrosoftAzureContext {
 
         if let Some(allow_http) = allow_http {
             builder = builder.with_allow_http(allow_http);
+        }
+
+        if let Some(use_fabric_endpoint) = use_fabric_endpoint {
+            builder = builder.with_use_fabric_endpoint(use_fabric_endpoint);
         }
 
         Self {
