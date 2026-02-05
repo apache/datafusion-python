@@ -1468,13 +1468,16 @@ def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_sta
     """
 
     # Get the raw size of the data to test boundary conditions
-    # First, capture output with no limits - use very high max_rows to avoid row limit
+    # First, capture output with no limits
+    # NOTE: max_rows=200000 is set well above the dataset size (100k rows) to ensure
+    # we're testing memory limits, not row limits. Default max_rows=10 would
+    # truncate before memory limit is reached.
     configure_formatter(max_memory_bytes=10 * MB, min_rows=1, max_rows=200000)
     unrestricted_output = large_df._repr_html_()
     unrestricted_rows = count_table_rows(unrestricted_output)
 
     # Test 1: Very small memory limit should still respect min_rows
-    # With large dataset, this should definitely hit memory limit
+    # With large dataset, this should definitely hit memory limit before min_rows
     configure_formatter(max_memory_bytes=10, min_rows=1)
     html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
@@ -1483,6 +1486,8 @@ def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_sta
     assert "data truncated" in html_output.lower()
 
     # Test 2: Memory limit at default size (2MB) should truncate the large dataset
+    # Default max_rows would truncate at 10 rows, so we don't set it here to test
+    # that memory limit is respected even with default row limit
     configure_formatter(max_memory_bytes=2 * MB, min_rows=1)
     html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
@@ -1491,6 +1496,8 @@ def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_sta
     assert tr_count < unrestricted_rows
 
     # Test 3: Very large memory limit should show much more data
+    # NOTE: max_rows=200000 is critical here - without it, default max_rows=10
+    # would limit output to 10 rows even though we have 100MB of memory available
     configure_formatter(max_memory_bytes=100 * MB, min_rows=1, max_rows=200000)
     html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
@@ -1507,6 +1514,7 @@ def test_html_formatter_memory_boundary_conditions(large_df, clean_formatter_sta
     assert "data truncated" in html_output.lower()
 
     # Test 5: With reasonable memory and min_rows settings
+    # NOTE: max_rows=200000 ensures we test memory limit behavior, not row limit
     configure_formatter(max_memory_bytes=2 * MB, min_rows=10, max_rows=200000)
     html_output = large_df._repr_html_()
     tr_count = count_table_rows(html_output)
