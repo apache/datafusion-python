@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::arrow::datatypes::DataType;
+use arrow::datatypes::FieldRef;
 use pyo3::prelude::*;
 
 use crate::common::data_type::PyDataType;
@@ -23,14 +23,14 @@ use crate::common::data_type::PyDataType;
 #[pyclass(frozen, name = "ScalarVariable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyScalarVariable {
-    data_type: DataType,
+    field: FieldRef,
     variables: Vec<String>,
 }
 
 impl PyScalarVariable {
-    pub fn new(data_type: &DataType, variables: &[String]) -> Self {
+    pub fn new(field: &FieldRef, variables: &[String]) -> Self {
         Self {
-            data_type: data_type.to_owned(),
+            field: field.to_owned(),
             variables: variables.to_vec(),
         }
     }
@@ -40,7 +40,7 @@ impl PyScalarVariable {
 impl PyScalarVariable {
     /// Get the data type
     fn data_type(&self) -> PyResult<PyDataType> {
-        Ok(self.data_type.clone().into())
+        Ok(self.field.data_type().clone().into())
     }
 
     fn variables(&self) -> PyResult<Vec<String>> {
@@ -48,6 +48,6 @@ impl PyScalarVariable {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{}{:?}", self.data_type, self.variables))
+        Ok(format!("{}{:?}", self.field.data_type(), self.variables))
     }
 }

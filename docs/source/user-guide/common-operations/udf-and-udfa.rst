@@ -90,6 +90,17 @@ converting to Python objects to do the evaluation.
 
     df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
 
+In this example we passed the PyArrow ``DataType`` when we defined the function
+by calling ``udf()``. If you need additional control, such as specifying
+metadata or nullability of the input or output, you can instead specify a
+PyArrow ``Field``.
+
+If you need to write a custom function but do not want to incur the performance
+cost of converting to Python objects and back, a more advanced approach is to
+write Rust based UDFs and to expose them to Python. There is an example in the
+`DataFusion blog <https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/>`_
+describing how to do this.
+
 Aggregate Functions
 -------------------
 

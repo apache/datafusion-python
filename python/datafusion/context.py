@@ -93,7 +93,7 @@ class TableProviderExportable(Protocol):
     https://datafusion.apache.org/python/user-guide/io/table_provider.html
     """
 
-    def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class CatalogProviderExportable(Protocol):
@@ -102,7 +102,7 @@ class CatalogProviderExportable(Protocol):
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
 
-    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_catalog_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -1323,3 +1323,57 @@ class SessionContext:
             if file_sort_order is not None
             else None
         )
+
+    @staticmethod
+    def _convert_table_partition_cols(
+        table_partition_cols: list[tuple[str, str | pa.DataType]],
+    ) -> list[tuple[str, pa.DataType]]:
+        warn = False
+        converted_table_partition_cols = []
+
+        for col, data_type in table_partition_cols:
+            if isinstance(data_type, str):
+                warn = True
+                if data_type == "string":
+                    converted_data_type = pa.string()
+                elif data_type == "int":
+                    converted_data_type = pa.int32()
+                else:
+                    message = (
+                        f"Unsupported literal data type '{data_type}' for partition "
+                        "column. Supported types are 'string' and 'int'"
+                    )
+                    raise ValueError(message)
+            else:
+                converted_data_type = data_type
+
+            converted_table_partition_cols.append((col, converted_data_type))
+
+        if warn:
+            message = (
+                "using literals for table_partition_cols data types is deprecated,"
+                "use pyarrow types instead"
+            )
+            warnings.warn(
+                message,
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+
+        return converted_table_partition_cols
+
+    def __datafusion_task_context_provider__(self) -> Any:
+        """Access the PyCapsule FFI_TaskContextProvider."""
+        return self.ctx.__datafusion_task_context_provider__()
+
+    def __datafusion_logical_extension_codec__(self) -> Any:
+        """Access the PyCapsule FFI_LogicalExtensionCodec."""
+        return self.ctx.__datafusion_logical_extension_codec__()
+
+    def with_logical_extension_codec(self, codec: Any) -> SessionContext:
+        """Create a new session context with specified codec.
+
+        This only supports codecs that have been implemented using the
+        FFI interface.
+        """
+        return self.ctx.with_logical_extension_codec(codec)

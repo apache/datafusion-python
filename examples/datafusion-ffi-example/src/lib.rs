@@ -15,19 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use pyo3::prelude::*;
+
 use crate::aggregate_udf::MySumUDF;
-use crate::catalog_provider::MyCatalogProvider;
+use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider};
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
 use crate::window_udf::MyRankUDF;
-use pyo3::prelude::*;
 
 pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
+pub(crate) mod utils;
 pub(crate) mod window_udf;
 
 #[pymodule]
@@ -35,6 +37,7 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyTableProvider>()?;
     m.add_class::<MyTableFunction>()?;
     m.add_class::<MyCatalogProvider>()?;
+    m.add_class::<FixedSchemaProvider>()?;
     m.add_class::<IsNullUDF>()?;
     m.add_class::<MySumUDF>()?;
     m.add_class::<MyRankUDF>()?;

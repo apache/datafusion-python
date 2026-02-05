@@ -28,7 +28,9 @@ use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPush
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
 use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
+use crate::context::PySessionContext;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::utils::table_provider_from_pycapsule;
@@ -60,7 +62,8 @@ impl PyTable {
     /// - FFI Table Providers via PyCapsule
     /// - PyArrow Dataset objects
     #[new]
-    pub fn new(obj: &Bound<'_, PyAny>) -> PyResult<Self> {
+    pub fn new(obj: Bound<'_, PyAny>, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let py = obj.py();
         if let Ok(py_table) = obj.extract::<PyTable>() {
             Ok(py_table)
         } else if let Ok(py_table) = obj
@@ -77,11 +80,16 @@ impl PyTable {
         {
             let provider = py_df.inner_df().as_ref().clone().into_view();
             Ok(PyTable::from(provider))
-        } else if let Some(provider) = table_provider_from_pycapsule(obj)? {
+        } else if let Some(provider) = {
+            let session = match session {
+                Some(session) => session,
+                None => PySessionContext::global_ctx()?.into_bound_py_any(obj.py())?,
+            };
+            table_provider_from_pycapsule(obj.clone(), session)?
+        } {
             Ok(PyTable::from(provider))
         } else {
-            let py = obj.py();
-            let provider = Arc::new(Dataset::new(obj, py)?) as Arc<dyn TableProvider>;
+            let provider = Arc::new(Dataset::new(&obj, py)?) as Arc<dyn TableProvider>;
             Ok(PyTable::from(provider))
         }
     }
