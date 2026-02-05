@@ -245,43 +245,46 @@ class DataFrameHtmlFormatter:
 
         Parameters
         ----------
-        max_cell_length : int, default 25
+        max_cell_length
             Maximum length of cell content before truncation.
-        max_width : int, default 1000
+        max_width
             Maximum width of the displayed table in pixels.
-        max_height : int, default 300
+        max_height
             Maximum height of the displayed table in pixels.
-        max_memory_bytes : int, default 2097152 (2MB)
-            Maximum memory in bytes for rendered data.
-        min_rows : int, default 10
-            Minimum number of rows to display. Must be less than or equal to
-            ``max_rows``.
-        max_rows : int, default 10
-            Maximum number of rows to display in repr output.
-        repr_rows : int, optional
+        max_memory_bytes
+            Maximum memory in bytes for rendered data. Helps prevent performance
+            issues with large datasets.
+        min_rows
+            Minimum number of rows to display even if memory limit is reached.
+            Must not exceed ``max_rows``.
+        max_rows
+            Maximum number of rows to display. Takes precedence over memory limits
+            when fewer rows are requested.
+        repr_rows
             Deprecated alias for ``max_rows``. Use ``max_rows`` instead.
-        enable_cell_expansion : bool, default True
+        enable_cell_expansion
             Whether to allow cells to expand when clicked.
-        custom_css : str, optional
+        custom_css
             Custom CSS to apply to the HTML table.
-        show_truncation_message : bool, default True
+        show_truncation_message
             Whether to show a message indicating that content has been truncated.
-        style_provider : StyleProvider, optional
+        style_provider
             Provider of CSS styles for the HTML table. If None, DefaultStyleProvider
             is used.
-        use_shared_styles : bool, default True
-            Whether to use shared styles across multiple tables.
+        use_shared_styles
+            Whether to use shared styles across multiple tables. This improves
+            performance when displaying many DataFrames in a single notebook.
 
         Raises:
         ------
         ValueError
             If max_cell_length, max_width, max_height, max_memory_bytes,
-            min_rows or max_rows is not a positive integer.
+            min_rows or max_rows is not a positive integer, or if min_rows
+            exceeds max_rows.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
-            not a boolean,
-            or if custom_css is provided but is not a string,
-            or if style_provider is provided but does not implement the StyleProvider
+            not a boolean, or if custom_css is provided but is not a string, or if
+            style_provider is provided but does not implement the StyleProvider
             protocol.
         """
         # Validate all parameters and get resolved max_rows
