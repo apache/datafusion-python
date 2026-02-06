@@ -20,6 +20,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timezone
 from decimal import Decimal
 
+import arro3.core
+import nanoarrow
 import pyarrow as pa
 import pytest
 from datafusion import (
@@ -978,6 +980,34 @@ def test_literal_metadata(ctx):
     for expected_field in expected_schema:
         actual_field = result[0].schema.field(expected_field.name)
         assert expected_field.metadata == actual_field.metadata
+
+
+def test_scalar_conversion() -> None:
+    expected_value = lit(1)
+    assert str(expected_value) == "Expr(Int64(1))"
+
+    # Test pyarrow imports
+    assert expected_value == lit(pa.scalar(1))
+    assert expected_value == lit(pa.scalar(1, type=pa.int32()))
+
+    # Test nanoarrow
+    na_scalar = nanoarrow.Array([1], nanoarrow.int32())[0]
+    assert expected_value == lit(na_scalar)
+
+    # Test pyo3
+    arro3_scalar = arro3.core.Scalar(1, type=arro3.core.DataType.int32())
+    assert expected_value == lit(arro3_scalar)
+
+    expected_value = lit([1, 2, 3])
+    assert str(expected_value) == "Expr(List([1, 2, 3]))"
+
+    assert expected_value == lit(pa.scalar([1, 2, 3]))
+
+    na_array = nanoarrow.Array([1, 2, 3], nanoarrow.int32())
+    assert expected_value == lit(na_array)
+
+    arro3_array = arro3.core.Array([1, 2, 3], type=arro3.core.DataType.int32())
+    assert expected_value == lit(arro3_array)
 
 
 def test_ensure_expr():
