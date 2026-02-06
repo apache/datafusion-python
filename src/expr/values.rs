@@ -19,10 +19,10 @@ use std::sync::Arc;
 
 use datafusion::logical_expr::Values;
 use pyo3::prelude::*;
-use pyo3::{pyclass, IntoPyObjectExt, PyErr, PyResult, Python};
+use pyo3::{IntoPyObjectExt, PyErr, PyResult, Python, pyclass};
 
-use super::logical_node::LogicalNode;
 use super::PyExpr;
+use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 

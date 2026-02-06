@@ -25,7 +25,7 @@ use datafusion_expr::{PartitionEvaluator, Signature, WindowUDF, WindowUDFImpl};
 use datafusion_ffi::udwf::FFI_WindowUDF;
 use datafusion_functions_window::rank::rank_udwf;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
 #[pyclass(name = "MyRankUDF", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

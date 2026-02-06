@@ -23,7 +23,7 @@ use arrow::ffi::{FFI_ArrowArray, FFI_ArrowSchema};
 use arrow::pyarrow::ToPyArrow;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::errors::PyDataFusionResult;
 use crate::utils::validate_pycapsule;

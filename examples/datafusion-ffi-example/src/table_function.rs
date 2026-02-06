@@ -22,7 +22,7 @@ use datafusion_common::error::Result as DataFusionResult;
 use datafusion_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::table_provider::MyTableProvider;
 use crate::utils::ffi_logical_codec_from_pycapsule;

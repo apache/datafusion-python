@@ -17,8 +17,8 @@
 
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::{DmlStatement, WriteOp};
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

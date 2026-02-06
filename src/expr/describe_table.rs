@@ -21,8 +21,8 @@ use std::sync::Arc;
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
 use datafusion::logical_expr::DescribeTable;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

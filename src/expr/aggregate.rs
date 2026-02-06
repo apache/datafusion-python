@@ -18,11 +18,11 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::common::DataFusionError;
+use datafusion::logical_expr::Expr;
 use datafusion::logical_expr::expr::{AggregateFunction, AggregateFunctionParams, Alias};
 use datafusion::logical_expr::logical_plan::Aggregate;
-use datafusion::logical_expr::Expr;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

@@ -19,12 +19,12 @@ use std::fmt::{self, Display, Formatter};
 
 use datafusion::common::TableReference;
 use datafusion::logical_expr::logical_plan::TableScan;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use crate::common::df_schema::PyDFSchema;
-use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
+use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "TableScan", module = "datafusion.expr", subclass)]

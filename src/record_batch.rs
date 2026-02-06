@@ -23,7 +23,7 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::StreamExt;
 use pyo3::exceptions::{PyStopAsyncIteration, PyStopIteration};
 use pyo3::prelude::*;
-use pyo3::{pyclass, pymethods, PyAny, PyResult, Python};
+use pyo3::{PyAny, PyResult, Python, pyclass, pymethods};
 use tokio::sync::Mutex;
 
 use crate::errors::PyDataFusionError;

@@ -17,7 +17,7 @@
 
 use std::collections::HashMap;
 
-use datafusion::common::{exec_err, plan_datafusion_err, DataFusionError};
+use datafusion::common::{DataFusionError, exec_err, plan_datafusion_err};
 use datafusion::logical_expr::sqlparser::dialect::dialect_from_str;
 use datafusion::sql::sqlparser::dialect::Dialect;
 use datafusion::sql::sqlparser::parser::Parser;

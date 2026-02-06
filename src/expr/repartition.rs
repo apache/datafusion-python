@@ -19,11 +19,11 @@ use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::logical_plan::Repartition;
 use datafusion::logical_expr::{Expr, Partitioning};
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
-use super::logical_node::LogicalNode;
 use super::PyExpr;
+use super::logical_node::LogicalNode;
 use crate::errors::py_type_err;
 use crate::sql::logical::PyLogicalPlan;
 

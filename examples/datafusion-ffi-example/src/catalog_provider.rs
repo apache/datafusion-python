@@ -29,7 +29,7 @@ use datafusion_common::error::{DataFusionError, Result};
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::utils::ffi_logical_codec_from_pycapsule;
 
