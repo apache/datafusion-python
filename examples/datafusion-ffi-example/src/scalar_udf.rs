@@ -20,15 +20,15 @@ use std::sync::Arc;
 
 use arrow_array::{Array, BooleanArray};
 use arrow_schema::DataType;
-use datafusion_common::error::Result as DataFusionResult;
 use datafusion_common::ScalarValue;
+use datafusion_common::error::Result as DataFusionResult;
 use datafusion_expr::{
     ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, TypeSignature,
     Volatility,
 };
 use datafusion_ffi::udf::FFI_ScalarUDF;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
 #[pyclass(name = "IsNullUDF", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
