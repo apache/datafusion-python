@@ -899,10 +899,10 @@ impl PySessionContext {
         match res {
             Ok(df) => Ok(PyDataFrame::new(df)),
             Err(e) => {
-                if let datafusion::error::DataFusionError::Plan(msg) = &e {
-                    if msg.contains("No table named") {
-                        return Err(PyKeyError::new_err(msg.to_string()));
-                    }
+                if let datafusion::error::DataFusionError::Plan(msg) = &e
+                    && msg.contains("No table named")
+                {
+                    return Err(PyKeyError::new_err(msg.to_string()));
                 }
                 Err(py_datafusion_err(e))
             }

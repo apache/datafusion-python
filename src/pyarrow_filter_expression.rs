@@ -57,7 +57,7 @@ fn extract_scalar_list<'py>(
     exprs: &[Expr],
     py: Python<'py>,
 ) -> PyDataFusionResult<Vec<Bound<'py, PyAny>>> {
-    let ret = exprs
+    exprs
         .iter()
         .map(|expr| match expr {
             // TODO: should we also leverage `ScalarValue::to_pyarrow` here?
@@ -83,8 +83,7 @@ fn extract_scalar_list<'py>(
                 "Only a list of Literals are supported got {expr:?}"
             ))),
         })
-        .collect();
-    ret
+        .collect()
 }
 
 impl PyArrowFilterExpression {

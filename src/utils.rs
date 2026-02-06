@@ -224,10 +224,8 @@ pub(crate) fn extract_logical_extension_codec(
         None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
     };
     let capsule = if obj.hasattr("__datafusion_logical_extension_codec__")? {
-        let capsule = obj
-            .getattr("__datafusion_logical_extension_codec__")?
-            .call0()?;
-        capsule
+        obj.getattr("__datafusion_logical_extension_codec__")?
+            .call0()?
     } else {
         obj
     };
