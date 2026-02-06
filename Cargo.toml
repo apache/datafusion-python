@@ -24,8 +24,8 @@ authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
 description = "Apache DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
 license = "Apache-2.0"
-edition = "2021"
-rust-version = "1.78"
+edition = "2024"
+rust-version = "1.88"
 include = [
   "/src",
   "/datafusion",

@@ -29,13 +29,13 @@ use datafusion::datasource::TableProvider;
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
-use pyo3::IntoPyObjectExt;
 
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::table::PyTable;
 use crate::utils::{
     create_logical_extension_capsule, extract_logical_extension_codec, validate_pycapsule,

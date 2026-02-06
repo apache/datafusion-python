@@ -21,11 +21,11 @@ use std::sync::Arc;
 use datafusion::logical_expr::{
     CreateFunction, CreateFunctionBody, OperateFunctionArg, Volatility,
 };
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
-use super::logical_node::LogicalNode;
 use super::PyExpr;
+use super::logical_node::LogicalNode;
 use crate::common::data_type::PyDataType;
 use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;

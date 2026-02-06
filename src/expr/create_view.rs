@@ -18,8 +18,8 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::{CreateView, DdlStatement, LogicalPlan};
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::errors::py_type_err;

@@ -22,8 +22,8 @@ use std::fmt::Debug;
 use datafusion::arrow::error::ArrowError;
 use datafusion::error::DataFusionError as InnerDataFusionError;
 use prost::EncodeError;
-use pyo3::exceptions::{PyException, PyValueError};
 use pyo3::PyErr;
+use pyo3::exceptions::{PyException, PyValueError};
 
 pub type PyDataFusionResult<T> = std::result::Result<T, PyDataFusionError>;
 

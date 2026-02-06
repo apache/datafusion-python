@@ -24,7 +24,7 @@ use datafusion::functions_window::all_default_window_functions;
 use datafusion::logical_expr::expr::{
     Alias, FieldMetadata, NullTreatment as DFNullTreatment, WindowFunction, WindowFunctionParams,
 };
-use datafusion::logical_expr::{lit, Expr, ExprFunctionExt, WindowFrame, WindowFunctionDefinition};
+use datafusion::logical_expr::{Expr, ExprFunctionExt, WindowFrame, WindowFunctionDefinition, lit};
 use datafusion::{functions, functions_aggregate, functions_window};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
@@ -32,10 +32,10 @@ use pyo3::wrap_pyfunction;
 use crate::common::data_type::{NullTreatment, PyScalarValue};
 use crate::context::PySessionContext;
 use crate::errors::{PyDataFusionError, PyDataFusionResult};
-use crate::expr::conditional_expr::PyCaseBuilder;
-use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
-use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
+use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
+use crate::expr::window::PyWindowFrame;
 
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
@@ -441,7 +441,11 @@ macro_rules! array_fn {
 expr_fn!(abs, num);
 expr_fn!(acos, num);
 expr_fn!(acosh, num);
-expr_fn!(ascii, arg1, "Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character.");
+expr_fn!(
+    ascii,
+    arg1,
+    "Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character."
+);
 expr_fn!(asin, num);
 expr_fn!(asinh, num);
 expr_fn!(atan, num);
@@ -452,7 +456,10 @@ expr_fn!(
     arg,
     "Returns number of bits in the string (8 times the octet_length)."
 );
-expr_fn_vec!(btrim, "Removes the longest string containing only characters in characters (a space by default) from the start and end of string.");
+expr_fn_vec!(
+    btrim,
+    "Removes the longest string containing only characters in characters (a space by default) from the start and end of string."
+);
 expr_fn!(cbrt, num);
 expr_fn!(ceil, num);
 expr_fn!(
@@ -475,7 +482,11 @@ expr_fn!(exp, num);
 expr_fn!(factorial, num);
 expr_fn!(floor, num);
 expr_fn!(gcd, x y);
-expr_fn!(initcap, string, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
+expr_fn!(
+    initcap,
+    string,
+    "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters."
+);
 expr_fn!(isnan, num);
 expr_fn!(iszero, num);
 expr_fn!(levenshtein, string1 string2);
@@ -486,8 +497,14 @@ expr_fn!(log, base num);
 expr_fn!(log10, num);
 expr_fn!(log2, num);
 expr_fn!(lower, arg1, "Converts the string to all lower case");
-expr_fn_vec!(lpad, "Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right).");
-expr_fn_vec!(ltrim, "Removes the longest string containing only characters in characters (a space by default) from the start of string.");
+expr_fn_vec!(
+    lpad,
+    "Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right)."
+);
+expr_fn_vec!(
+    ltrim,
+    "Removes the longest string containing only characters in characters (a space by default) from the start of string."
+);
 expr_fn!(
     md5,
     input_arg,
@@ -504,7 +521,11 @@ expr_fn!(
     "Returns x if x is not NULL otherwise returns y."
 );
 expr_fn!(nullif, arg_1 arg_2);
-expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+expr_fn!(
+    octet_length,
+    args,
+    "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces."
+);
 expr_fn_vec!(overlay);
 expr_fn!(pi);
 expr_fn!(power, base exponent);
@@ -522,8 +543,14 @@ expr_fn!(
 );
 expr_fn!(right, string n, "Returns last n characters in the string, or when n is negative, returns all but first |n| characters.");
 expr_fn_vec!(round);
-expr_fn_vec!(rpad, "Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.");
-expr_fn_vec!(rtrim, "Removes the longest string containing only characters in characters (a space by default) from the end of string.");
+expr_fn_vec!(
+    rpad,
+    "Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated."
+);
+expr_fn_vec!(
+    rtrim,
+    "Removes the longest string containing only characters in characters (a space by default) from the end of string."
+);
 expr_fn!(sha224, input_arg1);
 expr_fn!(sha256, input_arg1);
 expr_fn!(sha384, input_arg1);
@@ -565,7 +592,10 @@ expr_fn!(date_bin, stride source origin);
 expr_fn!(make_date, year month day);
 
 expr_fn!(translate, string from to, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
-expr_fn_vec!(trim, "Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string.");
+expr_fn_vec!(
+    trim,
+    "Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string."
+);
 expr_fn_vec!(trunc);
 expr_fn!(upper, arg1, "Converts the string to all upper case.");
 expr_fn!(uuid);

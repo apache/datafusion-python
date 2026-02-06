@@ -2,7 +2,7 @@ use arrow::datatypes::{DataType, Schema};
 use arrow::pyarrow::PyArrowType;
 use datafusion::prelude::CsvReadOptions;
 use pyo3::prelude::{PyModule, PyModuleMethods};
-use pyo3::{pyclass, pymethods, Bound, PyResult};
+use pyo3::{Bound, PyResult, pyclass, pymethods};
 
 use crate::context::parse_file_compression_type;
 use crate::errors::PyDataFusionError;
