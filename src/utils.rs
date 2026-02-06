@@ -19,11 +19,6 @@ use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
-use datafusion::arrow::array::{make_array, ArrayData, ListArray};
-use datafusion::arrow::buffer::{OffsetBuffer, ScalarBuffer};
-use datafusion::arrow::datatypes::Field;
-use datafusion::arrow::pyarrow::FromPyArrow;
-use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
@@ -37,7 +32,6 @@ use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
-use crate::common::data_type::PyScalarValue;
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::TokioRuntime;
@@ -201,57 +195,6 @@ pub(crate) fn table_provider_from_pycapsule<'py>(
     } else {
         Ok(None)
     }
-}
-
-pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<ScalarValue> {
-    // convert Python object to PyScalarValue to ScalarValue
-
-    let pa = py.import("pyarrow")?;
-    let scalar_attr = pa.getattr("Scalar")?;
-    let scalar_type = scalar_attr.downcast::<PyType>()?;
-    let array_attr = pa.getattr("Array")?;
-    let array_type = array_attr.downcast::<PyType>()?;
-    let chunked_array_attr = pa.getattr("ChunkedArray")?;
-    let chunked_array_type = chunked_array_attr.downcast::<PyType>()?;
-
-    let obj_ref = obj.bind(py);
-
-    if obj_ref.is_instance(scalar_type)? {
-        let py_scalar = PyScalarValue::extract_bound(obj_ref)
-            .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
-        return Ok(py_scalar.into());
-    }
-
-    if obj_ref.is_instance(array_type)? || obj_ref.is_instance(chunked_array_type)? {
-        let array_obj = if obj_ref.is_instance(chunked_array_type)? {
-            obj_ref.call_method0("combine_chunks")?.unbind()
-        } else {
-            obj_ref.clone().unbind()
-        };
-        let array_bound = array_obj.bind(py);
-        let array_data = ArrayData::from_pyarrow_bound(array_bound)
-            .map_err(|e| PyValueError::new_err(format!("Failed to extract pyarrow array: {e}")))?;
-        let array = make_array(array_data);
-        let offsets = OffsetBuffer::new(ScalarBuffer::from(vec![0, array.len() as i32]));
-        let list_array = Arc::new(ListArray::new(
-            Arc::new(Field::new_list_field(array.data_type().clone(), true)),
-            offsets,
-            array,
-            None,
-        ));
-
-        return Ok(ScalarValue::List(list_array));
-    }
-
-    // Convert Python object to PyArrow scalar
-    let scalar = pa.call_method1("scalar", (obj,))?;
-
-    // Convert PyArrow scalar to PyScalarValue
-    let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
-        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
-
-    // Convert PyScalarValue to ScalarValue
-    Ok(py_scalar.into())
 }
 
 pub(crate) fn extract_logical_extension_codec(

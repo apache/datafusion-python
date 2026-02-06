@@ -94,7 +94,6 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
-        println!("evaluate all called with number of values {}", values.len());
         Python::attach(|py| {
             let py_values = PyList::new(
                 py,

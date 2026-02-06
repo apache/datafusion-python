@@ -32,7 +32,7 @@ use pyo3::types::{PyCapsule, PyTuple};
 use crate::common::data_type::PyScalarValue;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, py_obj_to_scalar_value, validate_pycapsule};
+use crate::utils::{parse_volatility, validate_pycapsule};
 
 #[derive(Debug)]
 struct RustAccumulator {
@@ -52,10 +52,7 @@ impl Accumulator for RustAccumulator {
             let mut scalars = Vec::new();
             for item in values.try_iter()? {
                 let item: Bound<'_, PyAny> = item?;
-                let scalar = match item.extract::<PyScalarValue>() {
-                    Ok(py_scalar) => py_scalar.0,
-                    Err(_) => py_obj_to_scalar_value(py, item.unbind())?,
-                };
+                let scalar = item.extract::<PyScalarValue>()?.0;
                 scalars.push(scalar);
             }
             Ok(scalars)
@@ -66,10 +63,7 @@ impl Accumulator for RustAccumulator {
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Python::attach(|py| -> PyResult<ScalarValue> {
             let value = self.accum.bind(py).call_method0("evaluate")?;
-            match value.extract::<PyScalarValue>() {
-                Ok(py_scalar) => Ok(py_scalar.0),
-                Err(_) => py_obj_to_scalar_value(py, value.unbind()),
-            }
+            value.extract::<PyScalarValue>().map(|v| v.0)
         })
         .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }

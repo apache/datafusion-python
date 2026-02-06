@@ -48,6 +48,7 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use pyo3::PyErr;
 
+use crate::common::data_type::PyScalarValue;
 use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
 use crate::expr::PyExpr;
@@ -55,9 +56,7 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
 use crate::table::{PyTable, TempViewTable};
-use crate::utils::{
-    is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule, wait_for_future,
-};
+use crate::utils::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
 
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
@@ -1191,14 +1190,14 @@ impl PyDataFrame {
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {
-        let scalar_value = py_obj_to_scalar_value(py, value)?;
+        let scalar_value: PyScalarValue = value.extract(py)?;
 
         let cols = match columns {
             Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
             None => Vec::new(), // Empty vector means fill null for all columns
         };
 
-        let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
+        let df = self.df.as_ref().clone().fill_null(scalar_value.0, cols)?;
         Ok(Self::new(df))
     }
 }
