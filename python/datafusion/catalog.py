@@ -38,11 +38,59 @@ except ImportError:
 
 __all__ = [
     "Catalog",
+    "CatalogList",
     "CatalogProvider",
+    "CatalogProviderList",
     "Schema",
     "SchemaProvider",
     "Table",
 ]
+
+
+class CatalogList:
+    """DataFusion data catalog list."""
+
+    def __init__(self, catalog_list: df_internal.catalog.RawCatalogList) -> None:
+        """This constructor is not typically called by the end user."""
+        self.catalog_list = catalog_list
+
+    def __repr__(self) -> str:
+        """Print a string representation of the catalog list."""
+        return self.catalog_list.__repr__()
+
+    def names(self) -> set[str]:
+        """This is an alias for `catalog_names`."""
+        return self.catalog_names()
+
+    def catalog_names(self) -> set[str]:
+        """Returns the list of schemas in this catalog."""
+        return self.catalog_list.catalog_names()
+
+    @staticmethod
+    def memory_catalog(ctx: SessionContext | None = None) -> CatalogList:
+        """Create an in-memory catalog provider list."""
+        catalog_list = df_internal.catalog.RawCatalogList.memory_catalog(ctx)
+        return CatalogList(catalog_list)
+
+    def catalog(self, name: str = "datafusion") -> Schema:
+        """Returns the catalog with the given ``name`` from this catalog."""
+        catalog = self.catalog_list.catalog(name)
+
+        return (
+            Catalog(catalog)
+            if isinstance(catalog, df_internal.catalog.RawCatalog)
+            else catalog
+        )
+
+    def register_catalog(
+        self,
+        name: str,
+        catalog: Catalog | CatalogProvider | CatalogProviderExportable,
+    ) -> Catalog | None:
+        """Register a catalog with this catalog list."""
+        if isinstance(catalog, Catalog):
+            return self.catalog_list.register_catalog(name, catalog.catalog)
+        return self.catalog_list.register_catalog(name, catalog)
 
 
 class Catalog:
@@ -195,6 +243,38 @@ class Table:
         return self._inner.kind
 
 
+class CatalogProviderList(ABC):
+    """Abstract class for defining a Python based Catalog Provider List."""
+
+    @abstractmethod
+    def catalog_names(self) -> set[str]:
+        """Set of the names of all catalogs in this catalog list."""
+        ...
+
+    @abstractmethod
+    def catalog(self, name: str) -> Catalog | None:
+        """Retrieve a specific catalog from this catalog list."""
+        ...
+
+    def register_catalog(  # noqa: B027
+        self, name: str, catalog: CatalogProviderExportable | CatalogProvider | Catalog
+    ) -> None:
+        """Add a catalog to this catalog list.
+
+        This method is optional. If your catalog provides a fixed list of catalogs, you
+        do not need to implement this method.
+        """
+
+
+class CatalogProviderListExportable(Protocol):
+    """Type hint for object that has __datafusion_catalog_provider_list__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProviderList.html
+    """
+
+    def __datafusion_catalog_provider_list__(self, session: Any) -> object: ...
+
+
 class CatalogProvider(ABC):
     """Abstract class for defining a Python based Catalog Provider."""
 
@@ -227,6 +307,15 @@ class CatalogProvider(ABC):
             name: The name of the schema to remove.
             cascade: If true, deregister the tables within the schema.
         """
+
+
+class CatalogProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
+    """
+
+    def __datafusion_catalog_provider__(self, session: Any) -> object: ...
 
 
 class SchemaProvider(ABC):

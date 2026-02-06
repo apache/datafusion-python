@@ -22,7 +22,7 @@ import pyarrow.dataset as ds
 import pytest
 from datafusion import SessionContext, Table
 from datafusion.catalog import Schema
-from datafusion_ffi_example import MyCatalogProvider
+from datafusion_ffi_example import MyCatalogProvider, MyCatalogProviderList
 
 
 def create_test_dataset() -> Table:
@@ -33,6 +33,30 @@ def create_test_dataset() -> Table:
     )
     dataset = ds.dataset([batch])
     return Table(dataset)
+
+
+@pytest.mark.parametrize("inner_capsule", [True, False])
+def test_ffi_catalog_provider_list(inner_capsule: bool) -> None:
+    """Test basic FFI CatalogProviderList functionality."""
+    ctx = SessionContext()
+
+    # Register FFI catalog
+    catalog_provider_list = MyCatalogProviderList()
+    if inner_capsule:
+        catalog_provider_list = (
+            catalog_provider_list.__datafusion_catalog_provider_list__(ctx)
+        )
+
+    ctx.register_catalog_provider_list(catalog_provider_list)
+
+    # Verify the catalog exists
+    catalog = ctx.catalog("auto_ffi_catalog")
+    schema_names = catalog.names()
+    assert "my_schema" in schema_names
+
+    ctx.register_catalog_provider("second", MyCatalogProvider())
+
+    assert ctx.catalog_names() == {"auto_ffi_catalog", "second"}
 
 
 @pytest.mark.parametrize("inner_capsule", [True, False])
