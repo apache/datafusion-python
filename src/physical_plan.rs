@@ -17,7 +17,7 @@
 
 use std::sync::Arc;
 
-use datafusion::physical_plan::{displayable, ExecutionPlan, ExecutionPlanProperties};
+use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
 use datafusion_proto::physical_plan::{AsExecutionPlan, DefaultPhysicalExtensionCodec};
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;

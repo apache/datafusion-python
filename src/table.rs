@@ -27,8 +27,8 @@ use datafusion::datasource::{TableProvider, TableType};
 use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPushDown};
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
 use crate::dataframe::PyDataFrame;

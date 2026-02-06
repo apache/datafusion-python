@@ -25,18 +25,18 @@ use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
-use pyo3::IntoPyObjectExt;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
+use crate::TokioRuntime;
 use crate::common::data_type::PyScalarValue;
 use crate::context::PySessionContext;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::TokioRuntime;
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
@@ -147,7 +147,7 @@ pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
             return Err(PyDataFusionError::Common(format!(
                 "Unsupported volatility type: `{value}`, supported \
                  values are: immutable, stable and volatile."
-            )))
+            )));
         }
     })
 }

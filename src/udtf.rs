@@ -21,10 +21,10 @@ use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple, PyType};
-use pyo3::IntoPyObjectExt;
 
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};

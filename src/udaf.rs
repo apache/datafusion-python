@@ -23,14 +23,14 @@ use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::{
-    create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl,
+    Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, create_udaf,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 

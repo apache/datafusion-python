@@ -22,7 +22,7 @@ use datafusion::common::{Column, ScalarValue};
 use datafusion::logical_expr::expr::InList;
 use datafusion::logical_expr::{Between, BinaryExpr, Expr, Operator};
 /// Converts a Datafusion logical plan expression (Expr) into a PyArrow compute expression
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::{IntoPyObjectExt, prelude::*};
 
 use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::pyarrow_util::scalar_to_pyarrow;
@@ -47,7 +47,7 @@ fn operator_to_py<'py>(
         _ => {
             return Err(PyDataFusionError::Common(format!(
                 "Unsupported operator {operator:?}"
-            )))
+            )));
         }
     };
     Ok(py_op)

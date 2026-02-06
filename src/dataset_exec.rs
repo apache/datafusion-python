@@ -24,8 +24,8 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::error::{DataFusionError as InnerDataFusionError, Result as DFResult};
 use datafusion::execution::context::TaskContext;
-use datafusion::logical_expr::utils::conjunction;
 use datafusion::logical_expr::Expr;
+use datafusion::logical_expr::utils::conjunction;
 use datafusion::physical_expr::{EquivalenceProperties, LexOrdering};
 use datafusion::physical_plan::execution_plan::{Boundedness, EmissionType};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
@@ -33,7 +33,7 @@ use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
     SendableRecordBatchStream, Statistics,
 };
-use futures::{stream, TryStreamExt};
+use futures::{TryStreamExt, stream};
 /// Implements a Datafusion physical ExecutionPlan that delegates to a PyArrow Dataset
 /// This actually performs the projection, filtering and scanning of a Dataset
 use pyo3::prelude::*;
