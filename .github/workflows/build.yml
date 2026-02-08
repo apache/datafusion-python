@@ -139,28 +139,12 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
 
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
-
-      - name: Run Clippy
-        run: cargo clippy --all-targets --features protoc,substrait -- -D warnings
-
-      - name: Build (${{ inputs.build_mode }} mode)
-        run: |
-          if [[ "${{ inputs.build_mode }}" == "release" ]]; then
-            uv run --no-project maturin build --release --strip --manylinux 2014 --features protoc,substrait
-          else
-            uv run --no-project maturin build --manylinux 2014 --features protoc,substrait
-          fi
 
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
@@ -212,11 +196,6 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ inputs.build_mode }}
-
-#      - name: Install Python
-#        uses: actions/setup-python@v5
-#        with:
-#          python-version: ${{ matrix.python-version }}
 
       - uses: astral-sh/setup-uv@v6
         with:
@@ -297,6 +276,13 @@ jobs:
       # TODO(tsaucer) is this necessary if build doesn't run pytest?
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
+
+      # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
+      # exactly the features used by maturin. Linux maturin builds need to happen in a
+      # container so only run this for our mac runner.
+      - name: Run Clippy
+        if: matrix.os != 'windows-latest'
+        run: cargo clippy --no-deps --all-targets --features protoc,substrait -- -D warnings
 
       - name: Build Python package (release mode)
         if: inputs.build_mode == 'release'
