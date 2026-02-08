@@ -143,9 +143,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync --dev --no-install-package datafusion
-
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
         if: inputs.build_mode == 'release'
@@ -201,9 +198,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync --dev --no-install-package datafusion
-
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
         if: inputs.build_mode == 'release'
@@ -245,10 +239,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: dtolnay/rust-toolchain@stable
 
       - run: rm LICENSE.txt
@@ -272,10 +262,6 @@ jobs:
         with:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      # TODO(tsaucer) is this necessary if build doesn't run pytest?
-      - name: Install dependencies
-        run: uv sync --dev --no-install-package datafusion
 
       # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
       # exactly the features used by maturin. Linux maturin builds need to happen in a
@@ -323,10 +309,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - uses: dtolnay/rust-toolchain@stable
 
       - run: rm LICENSE.txt
@@ -350,9 +332,6 @@ jobs:
         with:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        run: uv sync --dev --no-install-package datafusion
 
       - name: Build (release mode)
         run: |
