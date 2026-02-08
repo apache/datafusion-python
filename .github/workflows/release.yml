@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   test-and-build:
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/build.yml
     with:
       build_mode: release
       run_wheels: true

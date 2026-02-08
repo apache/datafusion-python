@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   test:
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/build.yml
     with:
       build_mode: debug
       run_wheels: false

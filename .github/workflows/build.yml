@@ -15,10 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Reusable workflow for running tests
+# Reusable workflow for running building
 # This ensures the same tests run for both debug (PRs) and release (main/tags) builds
 
-name: Test
+name: Build
 
 on:
   workflow_call:
