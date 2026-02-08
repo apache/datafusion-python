@@ -27,26 +27,26 @@ license = { file = "LICENSE.txt" }
 requires-python = ">=3.10"
 keywords = ["datafusion", "dataframe", "rust", "query-engine"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "License :: OSI Approved",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python",
-    "Programming Language :: Rust",
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "License :: OSI Approved",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python",
+  "Programming Language :: Rust",
 ]
 dependencies = [
-    "pyarrow>=16.0.0;python_version<'3.14'",
-    "pyarrow>=22.0.0;python_version>='3.14'",
-    "typing-extensions;python_version<'3.13'"
+  "pyarrow>=16.0.0;python_version<'3.14'",
+  "pyarrow>=22.0.0;python_version>='3.14'",
+  "typing-extensions;python_version<'3.13'",
 ]
 dynamic = ["version"]
 
@@ -73,23 +73,23 @@ asyncio_default_fixture_loop_scope = "function"
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = ["ALL" ]
+select = ["ALL"]
 ignore = [
-    "A001",    # Allow using words like min as variable names
-    "A002",    # Allow using words like filter as variable names
-    "ANN401",  # Allow Any for wrapper classes
-    "COM812",  # Recommended to ignore these rules when using with ruff-format
-    "FIX002",  # Allow TODO lines - consider removing at some point
-    "FBT001",  # Allow boolean positional args
-    "FBT002",  # Allow boolean positional args
-    "ISC001",  # Recommended to ignore these rules when using with ruff-format
-    "SLF001",  # Allow accessing private members
-    "TD002",   # Do not require author names in TODO statements
-    "TD003",   # Allow TODO lines
-    "PLR0913", # Allow many arguments in function definition
-    "PD901",   # Allow variable name df
-    "N812",    # Allow importing functions as `F`
-    "A005",    # Allow module named io
+  "A001",    # Allow using words like min as variable names
+  "A002",    # Allow using words like filter as variable names
+  "ANN401",  # Allow Any for wrapper classes
+  "COM812",  # Recommended to ignore these rules when using with ruff-format
+  "FIX002",  # Allow TODO lines - consider removing at some point
+  "FBT001",  # Allow boolean positional args
+  "FBT002",  # Allow boolean positional args
+  "ISC001",  # Recommended to ignore these rules when using with ruff-format
+  "SLF001",  # Allow accessing private members
+  "TD002",   # Do not require author names in TODO statements
+  "TD003",   # Allow TODO lines
+  "PLR0913", # Allow many arguments in function definition
+  "PD901",   # Allow variable name df
+  "N812",    # Allow importing functions as `F`
+  "A005",    # Allow module named io
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -104,61 +104,96 @@ extend-allowed-calls = ["lit", "datafusion.lit"]
 # Disable docstring checking for these directories
 [tool.ruff.lint.per-file-ignores]
 "python/tests/*" = [
-    "ANN",
-    "ARG",
-    "BLE001",
-    "D",
-    "S101",
-    "SLF",
-    "PD",
-    "PLR2004",
-    "PT011",
-    "RUF015",
-    "S608",
-    "PLR0913",
-    "PT004",
+  "ANN",
+  "ARG",
+  "BLE001",
+  "D",
+  "S101",
+  "SLF",
+  "PD",
+  "PLR2004",
+  "PT011",
+  "RUF015",
+  "S608",
+  "PLR0913",
+  "PT004",
 ]
-"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004", "ANN001", "ANN202", "INP001", "DTZ007", "RUF015"]
-"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817", "ERA001", "ANN001"]
-"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP", "ERA001", "ANN001", "INP001"]
+"examples/*" = [
+  "D",
+  "W505",
+  "E501",
+  "T201",
+  "S101",
+  "PLR2004",
+  "ANN001",
+  "ANN202",
+  "INP001",
+  "DTZ007",
+  "RUF015",
+]
+"dev/*" = [
+  "D",
+  "E",
+  "T",
+  "S",
+  "PLR",
+  "C",
+  "SIM",
+  "UP",
+  "EXE",
+  "N817",
+  "ERA001",
+  "ANN001",
+]
+"benchmarks/*" = [
+  "D",
+  "F",
+  "T",
+  "BLE",
+  "FURB",
+  "PLR",
+  "E",
+  "TD",
+  "TRY",
+  "S",
+  "SIM",
+  "EXE",
+  "UP",
+  "ERA001",
+  "ANN001",
+  "INP001",
+]
 "docs/*" = ["D"]
 "docs/source/conf.py" = ["ERA001", "ANN001", "INP001"]
 
 [tool.codespell]
-skip = [
-    "./target",
-    "uv.lock",
-    "./python/tests/test_functions.py"
-]
+skip = ["./target", "uv.lock", "./python/tests/test_functions.py"]
 count = true
-ignore-words-list = [
-    "ans",
-    "IST"
-]
+ignore-words-list = ["ans", "IST"]
 
 [dependency-groups]
 dev = [
-    "maturin>=1.8.1",
-    "numpy>1.25.0;python_version<'3.14'",
-    "numpy>=2.3.2;python_version>='3.14'",
-    "pyarrow>=19.0.0",
-    "pre-commit>=4.3.0",
-    "pyyaml>=6.0.3",
-    "pytest>=7.4.4",
-    "pytest-asyncio>=0.23.3",
-    "ruff>=0.9.1",
-    "toml>=0.10.2",
-    "pygithub==2.5.0",
-    "codespell==2.4.1",
+  "maturin>=1.8.1",
+  "numpy>1.25.0;python_version<'3.14'",
+  "numpy>=2.3.2;python_version>='3.14'",
+  "pyarrow>=19.0.0",
+  "pre-commit>=4.3.0",
+  "pyyaml>=6.0.3",
+  "pytest>=7.4.4",
+  "pytest-asyncio>=0.23.3",
+  "ruff>=0.9.1",
+  "toml>=0.10.2",
+  "pygithub==2.5.0",
+  "codespell==2.4.1",
 ]
 docs = [
-    "sphinx>=7.1.2",
-    "pydata-sphinx-theme==0.8.0",
-    "myst-parser>=3.0.1",
-    "jinja2>=3.1.5",
-    "ipython>=8.12.3",
-    "pandas>=2.0.3",
-    "pickleshare>=0.7.5",
-    "sphinx-autoapi>=3.4.0",
-    "setuptools>=75.3.0",
+  "sphinx>=7.1.2",
+  "pydata-sphinx-theme==0.8.0",
+  "myst-parser>=3.0.1",
+  "jinja2>=3.1.5",
+  "ipython>=8.12.3",
+  "pandas>=2.0.3",
+  "pickleshare>=0.7.5",
+  "sphinx-autoapi>=3.4.0",
+  "setuptools>=75.3.0",
 ]
