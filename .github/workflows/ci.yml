@@ -28,7 +28,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  build:
     uses: ./.github/workflows/build.yml
     with:
       build_mode: debug

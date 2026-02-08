@@ -49,17 +49,13 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          components: rustfmt
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
         run: cargo fmt --all -- --check
-
-# TODO(tsaucer) clippy isn't fast so maybe this is in the test section?
-#      - name: Run Clippy
-#        run: cargo clippy --all-targets --all-features -- -D warnings
 
   lint-python:
     runs-on: ubuntu-latest
@@ -152,6 +148,9 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
+      
+      - name: Run Clippy
+        run: cargo clippy --all-targets --features protoc,substrait -- -D warnings
 
       - name: Build (${{ inputs.build_mode }} mode)
         run: |
@@ -160,6 +159,26 @@ jobs:
           else
             uv run --no-project maturin build --manylinux 2014 --features protoc,substrait
           fi
+
+      - name: Build (release mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'release'
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_17"
+          # protoc feature uses bundled protoc, avoiding system dependency issues
+          args: --release --strip --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Build (debug mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'debug'
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_17"
+          # protoc feature uses bundled protoc, avoiding system dependency issues
+          args: --features protoc,substrait --out dist
+          rustup-components: rust-std
 
       - name: Archive wheels
         uses: actions/upload-artifact@v6
@@ -204,13 +223,25 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
 
-      - name: Build (${{ inputs.build_mode }} mode)
-        run: |
-          if [[ "${{ inputs.build_mode }}" == "release" ]]; then
-            uv run --no-project maturin build --release --strip --manylinux 2_28 --features protoc,substrait
-          else
-            uv run --no-project maturin build --manylinux 2_28 --features protoc,substrait
-          fi
+      - name: Build (release mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'release'
+        with:
+          target: aarch64-unknown-linux-gnu
+          # aarch64 cross-compilation needs manylinux_2_28
+          manylinux: "2_28"
+          args: --release --strip --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Build (debug mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'debug'
+        with:
+          target: aarch64-unknown-linux-gnu
+          # aarch64 cross-compilation needs manylinux_2_28
+          manylinux: "2_28"
+          args: --features protoc,substrait --out dist
+          rustup-components: rust-std
 
       - name: Archive wheels
         uses: actions/upload-artifact@v6
@@ -223,7 +254,7 @@ jobs:
   # ============================================
   build-python-mac-win:
     needs: [generate-license, lint-rust, lint-python]
-    name: macOS ARM64 / Windows
+    name: macOS ARM64 & Windows
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

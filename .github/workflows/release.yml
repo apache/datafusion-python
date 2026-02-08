@@ -38,7 +38,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-and-build:
+  build:
     uses: ./.github/workflows/build.yml
     with:
       build_mode: release
