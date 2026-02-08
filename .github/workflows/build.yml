@@ -172,7 +172,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: dist-manylinux-x86_64
-          path: target/wheels/*
+          path: dist/*
 
   # ============================================
   # Build - Linux ARM64
@@ -227,7 +227,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: dist-manylinux-aarch64
-          path: target/wheels/*
+          path: dist/*
 
   # ============================================
   # Build - macOS arm64 / Windows
