@@ -156,9 +156,9 @@ jobs:
       - name: Build (${{ inputs.build_mode }} mode)
         run: |
           if [[ "${{ inputs.build_mode }}" == "release" ]]; then
-            uv run --no-project maturin build --release --strip --manylinux 2014 --features substrait
+            uv run --no-project maturin build --release --strip --manylinux 2014 --features protoc,substrait
           else
-            uv run --no-project maturin build --manylinux 2014 --features substrait
+            uv run --no-project maturin build --manylinux 2014 --features protoc,substrait
           fi
 
       - name: Archive wheels
@@ -207,9 +207,9 @@ jobs:
       - name: Build (${{ inputs.build_mode }} mode)
         run: |
           if [[ "${{ inputs.build_mode }}" == "release" ]]; then
-            uv run --no-project maturin build --release --strip --manylinux 2_28 --features substrait
+            uv run --no-project maturin build --release --strip --manylinux 2_28 --features protoc,substrait
           else
-            uv run --no-project maturin build --manylinux 2_28 --features substrait
+            uv run --no-project maturin build --manylinux 2_28 --features protoc,substrait
           fi
 
       - name: Archive wheels
@@ -265,13 +265,13 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
 
-      - name: Build Python package (${{ inputs.build_mode }} mode)
-        run: |
-          if [[ "${{ inputs.build_mode }}" == "release" ]]; then
-            uv run --no-project maturin build --release --strip --features substrait
-          else
-            uv run --no-project maturin build --features substrait
-          fi
+      - name: Build Python package (release mode)
+        if: inputs.build_mode == 'release'
+        run: uv run --no-project maturin build --release --strip --features substrait
+
+      - name: Build Python package (debug mode)
+        if: inputs.build_mode != 'release'
+        run: uv run --no-project maturin build --features substrait
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
