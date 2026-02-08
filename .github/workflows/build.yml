@@ -268,6 +268,9 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install dependencies
+        run: uv sync --dev --no-install-package datafusion
+
       # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
       # exactly the features used by maturin. Linux maturin builds need to happen in a
       # container so only run this for our mac runner.
@@ -337,6 +340,9 @@ jobs:
         with:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: uv sync --dev --no-install-package datafusion
 
       - name: Build (release mode)
         run: |
