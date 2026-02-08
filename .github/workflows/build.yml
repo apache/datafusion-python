@@ -49,13 +49,14 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: "nightly"
           components: rustfmt
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: cargo +nightly fmt --all -- --check
 
   lint-python:
     runs-on: ubuntu-latest
