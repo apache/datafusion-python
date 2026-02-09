@@ -122,7 +122,7 @@ def test_python_catalog_provider_list(ctx: SessionContext):
     assert ctx.catalog_names() == {"my_catalog"}
 
     # Ensure registering works
-    ctx.register_catalog_provider("second_catalog", CustomCatalogProvider())
+    ctx.register_catalog_provider("second_catalog", Catalog.memory_catalog())
     assert ctx.catalog_names() == {"my_catalog", "second_catalog"}
 
 
