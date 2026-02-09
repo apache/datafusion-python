@@ -72,7 +72,7 @@ class CatalogList:
         catalog_list = df_internal.catalog.RawCatalogList.memory_catalog(ctx)
         return CatalogList(catalog_list)
 
-    def catalog(self, name: str = "datafusion") -> Schema:
+    def catalog(self, name: str = "datafusion") -> Catalog:
         """Returns the catalog with the given ``name`` from this catalog."""
         catalog = self.catalog_list.catalog(name)
 
@@ -252,7 +252,9 @@ class CatalogProviderList(ABC):
         ...
 
     @abstractmethod
-    def catalog(self, name: str) -> Catalog | None:
+    def catalog(
+        self, name: str
+    ) -> CatalogProviderExportable | CatalogProvider | Catalog | None:
         """Retrieve a specific catalog from this catalog list."""
         ...
 
