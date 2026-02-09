@@ -15,16 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Python test
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+# Reusable workflow for running tests
+# This ensures the same tests run for both debug (PRs) and release (main/tags) builds
 
-concurrency:
-  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
-  cancel-in-progress: true
+name: Test
+
+on:
+  workflow_call:
 
 jobs:
   test-matrix:
@@ -50,7 +47,7 @@ jobs:
           EXAMPLE_VERSION=$(grep -A 1 "name = \"datafusion-common\"" examples/datafusion-ffi-example/Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
           echo "Main crate datafusion version: $MAIN_VERSION"
           echo "FFI example datafusion version: $EXAMPLE_VERSION"
-          
+
           if [ "$MAIN_VERSION" != "$EXAMPLE_VERSION" ]; then
             echo "❌ Error: FFI example datafusion versions don't match!"
             exit 1
@@ -77,17 +74,39 @@ jobs:
           path: ~/.cargo
           key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
 
-      - name: Install dependencies and build
+      - name: Install dependencies
         uses: astral-sh/setup-uv@v7
         with:
             enable-cache: true
+
+      # Download the Linux wheel built in the build workflow
+      - name: Download pre-built Linux wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: dist-manylinux-x86_64
+          path: wheels/
+
+      # Install the pre-built wheel
+      - name: Install datafusion from pre-built wheel
+        run: |
+          set -x
+          # Install development dependencies
+          uv sync --dev --no-install-package datafusion
+          # Install the pre-built wheel
+          WHEEL=$(find wheels/ -name "*.whl" | head -1)
+          if [ -n "$WHEEL" ]; then
+            echo "Installing wheel: $WHEEL"
+            uv pip install "$WHEEL"
+          else
+            echo "ERROR: No wheel found!"
+            exit 1
+          fi
 
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
         run: |
           git submodule update --init
-          uv sync --dev --no-install-package datafusion
           uv run --no-project pytest -v .
 
       - name: FFI unit tests

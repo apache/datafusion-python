@@ -44,3 +44,8 @@ jobs:
       build_mode: release
       run_wheels: true
     secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
