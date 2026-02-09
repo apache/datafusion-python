@@ -285,7 +285,7 @@ jobs:
       # container so only run this for our mac runner.
       - name: Run Clippy
         if: matrix.os != 'windows-latest'
-        run: cargo clippy --no-deps --all-targets --features protoc,substrait -- -D warnings
+        run: cargo clippy --no-deps --all-targets --features substrait -- -D warnings
 
       - name: Build Python package (release mode)
         if: inputs.build_mode == 'release'
