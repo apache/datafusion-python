@@ -226,6 +226,7 @@ jobs:
 
       - name: Archive wheels
         uses: actions/upload-artifact@v6
+        if: inputs.build_mode == 'release'
         with:
           name: dist-manylinux-aarch64
           path: dist/*
@@ -300,6 +301,7 @@ jobs:
 
       - name: Archive wheels
         uses: actions/upload-artifact@v6
+        if: inputs.build_mode == 'release'
         with:
           name: dist-${{ matrix.os  }}
           path: target/wheels/*
