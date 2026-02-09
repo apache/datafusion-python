@@ -154,8 +154,7 @@ jobs:
         if: inputs.build_mode == 'release'
         with:
           target: x86_64-unknown-linux-gnu
-          manylinux: "2_17"
-          # protoc feature uses bundled protoc, avoiding system dependency issues
+          manylinux: "2_28"
           args: --release --strip --features protoc,substrait --out dist
           rustup-components: rust-std
 
@@ -164,8 +163,7 @@ jobs:
         if: inputs.build_mode == 'debug'
         with:
           target: x86_64-unknown-linux-gnu
-          manylinux: "2_17"
-          # protoc feature uses bundled protoc, avoiding system dependency issues
+          manylinux: "2_28"
           args: --features protoc,substrait --out dist
           rustup-components: rust-std
 
@@ -209,7 +207,6 @@ jobs:
         if: inputs.build_mode == 'release'
         with:
           target: aarch64-unknown-linux-gnu
-          # aarch64 cross-compilation needs manylinux_2_28
           manylinux: "2_28"
           args: --release --strip --features protoc,substrait --out dist
           rustup-components: rust-std
@@ -219,7 +216,6 @@ jobs:
         if: inputs.build_mode == 'debug'
         with:
           target: aarch64-unknown-linux-gnu
-          # aarch64 cross-compilation needs manylinux_2_28
           manylinux: "2_28"
           args: --features protoc,substrait --out dist
           rustup-components: rust-std
