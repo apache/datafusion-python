@@ -64,7 +64,7 @@ Module Contents
    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
 
 
-   .. py:method:: __datafusion_catalog_provider__() -> object
+   .. py:method:: __datafusion_catalog_provider__(session: Any) -> object
 
 
 .. py:class:: RuntimeConfig
@@ -425,6 +425,18 @@ Module Contents
        df = ctx.read_csv("data.csv")
 
 
+   .. py:method:: __datafusion_logical_extension_codec__() -> Any
+
+      Access the PyCapsule FFI_LogicalExtensionCodec.
+
+
+
+   .. py:method:: __datafusion_task_context_provider__() -> Any
+
+      Access the PyCapsule FFI_TaskContextProvider.
+
+
+
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Session Context.
@@ -600,7 +612,7 @@ Module Contents
 
 
 
-   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
 
@@ -617,6 +629,8 @@ Module Contents
                              selected for data input.
       :param table_partition_cols: Partition columns.
       :param file_compression_type: File compression type.
+      :param options: Set advanced options for CSV reading. This cannot be
+                      combined with any of the other options in this method.
 
       :returns: DataFrame representation of the read CSV files
 
@@ -690,7 +704,7 @@ Module Contents
 
 
 
-   .. py:method:: register_csv(name: str, path: str | pathlib.Path | list[str | pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', file_compression_type: str | None = None) -> None
+   .. py:method:: register_csv(name: str, path: str | pathlib.Path | list[str | pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> None
 
       Register a CSV file as a table.
 
@@ -709,6 +723,8 @@ Module Contents
       :param file_extension: File extension; only files with this extension are
                              selected for data input.
       :param file_compression_type: File compression type.
+      :param options: Set advanced options for CSV reading. This cannot be
+                      combined with any of the other options in this method.
 
 
 
@@ -918,6 +934,15 @@ Module Contents
 
 
 
+   .. py:method:: with_logical_extension_codec(codec: Any) -> SessionContext
+
+      Create a new session context with specified codec.
+
+      This only supports codecs that have been implemented using the
+      FFI interface.
+
+
+
    .. py:attribute:: ctx
 
 
@@ -931,6 +956,6 @@ Module Contents
    https://datafusion.apache.org/python/user-guide/io/table_provider.html
 
 
-   .. py:method:: __datafusion_table_provider__() -> object
+   .. py:method:: __datafusion_table_provider__(session: Any) -> object
 
 

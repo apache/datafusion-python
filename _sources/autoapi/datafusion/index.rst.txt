@@ -28,6 +28,7 @@ Submodules
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
    /autoapi/datafusion/object_store/index
+   /autoapi/datafusion/options/index
    /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
@@ -43,10 +44,6 @@ Attributes
    datafusion.DFSchema
    datafusion.col
    datafusion.column
-   datafusion.udaf
-   datafusion.udf
-   datafusion.udtf
-   datafusion.udwf
 
 
 Classes
@@ -54,9 +51,8 @@ Classes
 
 .. autoapisummary::
 
-   datafusion.Accumulator
-   datafusion.AggregateUDF
    datafusion.Catalog
+   datafusion.CsvReadOptions
    datafusion.DataFrameWriteOptions
    datafusion.Database
    datafusion.ExecutionPlan
@@ -69,12 +65,9 @@ Classes
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
    datafusion.SQLOptions
-   datafusion.ScalarUDF
    datafusion.SessionConfig
    datafusion.Table
-   datafusion.TableFunction
    datafusion.WindowFrame
-   datafusion.WindowUDF
 
 
 Functions
@@ -93,163 +86,6 @@ Functions
 
 Package Contents
 ----------------
-
-.. py:class:: Accumulator
-
-   Defines how an :py:class:`AggregateUDF` accumulates values.
-
-
-   .. py:method:: evaluate() -> pyarrow.Scalar
-      :abstractmethod:
-
-
-      Return the resultant value.
-
-
-
-   .. py:method:: merge(states: list[pyarrow.Array]) -> None
-      :abstractmethod:
-
-
-      Merge a set of states.
-
-
-
-   .. py:method:: state() -> list[pyarrow.Scalar]
-      :abstractmethod:
-
-
-      Return the current state.
-
-
-
-   .. py:method:: update(*values: pyarrow.Array) -> None
-      :abstractmethod:
-
-
-      Evaluate an array of values and update state.
-
-
-
-.. py:class:: AggregateUDF(name: str, accumulator: collections.abc.Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
-              AggregateUDF(name: str, accumulator: AggregateUDFExportable, input_types: None = ..., return_type: None = ..., state_type: None = ..., volatility: None = ...)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Aggregate UDFs operate on a group of rows and return a single value. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined aggregate function (UDAF).
-
-   See :py:func:`udaf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDAF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Aggregate UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
-      :staticmethod:
-
-
-      Create an Aggregate UDF from AggregateUDF PyCapsule object.
-
-      This function will instantiate a Aggregate UDF that uses a DataFusion
-      AggregateUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
-                  udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
-                  udaf(accum: AggregateUDFExportable) -> AggregateUDF
-                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Aggregate Function (UDAF).
-
-      This class allows you to define an aggregate function that can be used in
-      data aggregation or window function calls.
-
-      Usage:
-          - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
-          - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
-            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
-
-      Function example:
-
-      If your :py:class:`Accumulator` can be instantiated with no arguments, you
-      can simply pass it's type as `accum`. If you need to pass additional
-      arguments to it's constructor, you can define a lambda or a factory method.
-      During runtime the :py:class:`Accumulator` will be constructed for every
-      instance in which this UDAF is used. The following examples are all valid::
-
-          import pyarrow as pa
-          import pyarrow.compute as pc
-
-          class Summarize(Accumulator):
-              def __init__(self, bias: float = 0.0):
-                  self._sum = pa.scalar(bias)
-
-              def state(self) -> list[pa.Scalar]:
-                  return [self._sum]
-
-              def update(self, values: pa.Array) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
-
-              def merge(self, states: list[pa.Array]) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
-
-              def evaluate(self) -> pa.Scalar:
-                  return self._sum
-
-          def sum_bias_10() -> Summarize:
-              return Summarize(10.0)
-
-          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
-              [pa.float64()], "immutable")
-
-      Decorator example:::
-
-          @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
-          def udf4() -> Summarize:
-              return Summarize(10.0)
-
-      :param accum: The accumulator python function. Only needed when calling as a
-                    function. Skip this argument when using ``udaf`` as a decorator.
-                    If you have a Rust backed AggregateUDF within a PyCapsule, you can
-                    pass this parameter and ignore the rest. They will be determined
-                    directly from the underlying function. See the online documentation
-                    for more information.
-      :param input_types: The data types of the arguments to ``accum``.
-      :param return_type: The data type of the return value.
-      :param state_type: The data types of the intermediate accumulation.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined aggregate function, which can be used in either data
-                aggregation or window function calls.
-
-
-
-   .. py:attribute:: _udaf
-
 
 .. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
@@ -276,7 +112,7 @@ Package Contents
 
 
 
-   .. py:method:: memory_catalog() -> Catalog
+   .. py:method:: memory_catalog(ctx: datafusion.SessionContext | None = None) -> Catalog
       :staticmethod:
 
 
@@ -309,6 +145,226 @@ Package Contents
 
 
    .. py:attribute:: catalog
+
+
+.. py:class:: CsvReadOptions(*, has_header: bool = True, delimiter: str = ',', quote: str = '"', terminator: str | None = None, escape: str | None = None, comment: str | None = None, newlines_in_values: bool = False, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, pyarrow.DataType]] | None = None, file_compression_type: str = '', file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None, null_regex: str | None = None, truncated_rows: bool = False)
+
+   Options for reading CSV files.
+
+   This class provides a builder pattern for configuring CSV reading options.
+   All methods starting with ``with_`` return ``self`` to allow method chaining.
+
+   Initialize CsvReadOptions.
+
+   :param has_header: Does the CSV file have a header row? If schema inference
+                      is run on a file with no headers, default column names are created.
+   :param delimiter: Column delimiter character. Must be a single ASCII character.
+   :param quote: Quote character for fields containing delimiters or newlines.
+                 Must be a single ASCII character.
+   :param terminator: Optional line terminator character. If ``None``, uses CRLF.
+                      Must be a single ASCII character.
+   :param escape: Optional escape character for quotes. Must be a single ASCII
+                  character.
+   :param comment: If specified, lines beginning with this character are ignored.
+                   Must be a single ASCII character.
+   :param newlines_in_values: Whether newlines in quoted values are supported.
+                              Parsing newlines in quoted values may be affected by execution
+                              behavior such as parallel file scanning. Setting this to ``True``
+                              ensures that newlines in values are parsed successfully, which may
+                              reduce performance.
+   :param schema: Optional PyArrow schema representing the CSV files. If ``None``,
+                  the CSV reader will try to infer it based on data in the file.
+   :param schema_infer_max_records: Maximum number of rows to read from CSV files
+                                    for schema inference if needed.
+   :param file_extension: File extension; only files with this extension are
+                          selected for data input.
+   :param table_partition_cols: Partition columns as a list of tuples of
+                                (column_name, data_type).
+   :param file_compression_type: File compression type. Supported values are
+                                 ``"gzip"``, ``"bz2"``, ``"xz"``, ``"zstd"``, or empty string for
+                                 uncompressed.
+   :param file_sort_order: Optional sort order of the files as a list of sort
+                           expressions per file.
+   :param null_regex: Optional regex pattern to match null values in the CSV.
+   :param truncated_rows: Whether to allow truncated rows when parsing. By default
+                          this is ``False`` and will error if the CSV rows have different
+                          lengths. When set to ``True``, it will allow records with less than
+                          the expected number of columns and fill the missing columns with
+                          nulls. If the record's schema is not nullable, it will still return
+                          an error.
+
+
+   .. py:method:: to_inner() -> datafusion._internal.options.CsvReadOptions
+
+      Convert this object into the underlying Rust structure.
+
+      This is intended for internal use only.
+
+
+
+   .. py:method:: with_comment(comment: str | None) -> CsvReadOptions
+
+      Configure the comment character.
+
+
+
+   .. py:method:: with_delimiter(delimiter: str) -> CsvReadOptions
+
+      Configure the column delimiter.
+
+
+
+   .. py:method:: with_escape(escape: str | None) -> CsvReadOptions
+
+      Configure the escape character.
+
+
+
+   .. py:method:: with_file_compression_type(file_compression_type: str) -> CsvReadOptions
+
+      Configure file compression type.
+
+
+
+   .. py:method:: with_file_extension(file_extension: str) -> CsvReadOptions
+
+      Configure the file extension filter.
+
+
+
+   .. py:method:: with_file_sort_order(file_sort_order: list[list[datafusion.expr.SortExpr]]) -> CsvReadOptions
+
+      Configure file sort order.
+
+
+
+   .. py:method:: with_has_header(has_header: bool) -> CsvReadOptions
+
+      Configure whether the CSV has a header row.
+
+
+
+   .. py:method:: with_newlines_in_values(newlines_in_values: bool) -> CsvReadOptions
+
+      Configure whether newlines in values are supported.
+
+
+
+   .. py:method:: with_null_regex(null_regex: str | None) -> CsvReadOptions
+
+      Configure null value regex pattern.
+
+
+
+   .. py:method:: with_quote(quote: str) -> CsvReadOptions
+
+      Configure the quote character.
+
+
+
+   .. py:method:: with_schema(schema: pyarrow.Schema | None) -> CsvReadOptions
+
+      Configure the schema.
+
+
+
+   .. py:method:: with_schema_infer_max_records(schema_infer_max_records: int) -> CsvReadOptions
+
+      Configure maximum records for schema inference.
+
+
+
+   .. py:method:: with_table_partition_cols(table_partition_cols: list[tuple[str, pyarrow.DataType]]) -> CsvReadOptions
+
+      Configure table partition columns.
+
+
+
+   .. py:method:: with_terminator(terminator: str | None) -> CsvReadOptions
+
+      Configure the line terminator character.
+
+
+
+   .. py:method:: with_truncated_rows(truncated_rows: bool) -> CsvReadOptions
+
+      Configure whether to allow truncated rows.
+
+
+
+   .. py:attribute:: comment
+      :value: None
+
+
+
+   .. py:attribute:: delimiter
+      :value: ','
+
+
+
+   .. py:attribute:: escape
+      :value: None
+
+
+
+   .. py:attribute:: file_compression_type
+      :value: ''
+
+
+
+   .. py:attribute:: file_extension
+      :value: '.csv'
+
+
+
+   .. py:attribute:: file_sort_order
+      :value: []
+
+
+
+   .. py:attribute:: has_header
+      :value: True
+
+
+
+   .. py:attribute:: newlines_in_values
+      :value: False
+
+
+
+   .. py:attribute:: null_regex
+      :value: None
+
+
+
+   .. py:attribute:: quote
+      :value: '"'
+
+
+
+   .. py:attribute:: schema
+      :value: None
+
+
+
+   .. py:attribute:: schema_infer_max_records
+      :value: 1000
+
+
+
+   .. py:attribute:: table_partition_cols
+      :value: []
+
+
+
+   .. py:attribute:: terminator
+      :value: None
+
+
+
+   .. py:attribute:: truncated_rows
+      :value: False
+
 
 
 .. py:class:: DataFrameWriteOptions(insert_operation: InsertOp | None = None, single_file_output: bool = False, partition_by: str | collections.abc.Sequence[str] | None = None, sort_by: datafusion.expr.Expr | datafusion.expr.SortExpr | collections.abc.Sequence[datafusion.expr.Expr] | collections.abc.Sequence[datafusion.expr.SortExpr] | None = None)
@@ -1841,97 +1897,6 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
-   operating on a group of rows.
-
-   Instantiate a scalar user-defined function (UDF).
-
-   See helper method :py:func:`udf` for argument details.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Scalar UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a Scalar UDF from ScalarUDF PyCapsule object.
-
-      This function will instantiate a Scalar UDF that uses a DataFusion
-      ScalarUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
-                  udf(func: collections.abc.Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
-                  udf(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Function (UDF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
-            When used a decorator, do **not** pass ``func`` explicitly.
-
-      :param func: Only needed when calling as a function.
-                   Skip this argument when using `udf` as a decorator. If you have a Rust
-                   backed ScalarUDF within a PyCapsule, you can pass this parameter
-                   and ignore the rest. They will be determined directly from the
-                   underlying function. See the online documentation for more information.
-      :type func: Callable, optional
-      :param input_types: The data types of the arguments
-                          to ``func``. This list must be of the same length as the number of
-                          arguments.
-      :type input_types: list[pa.DataType]
-      :param return_type: The data type of the return value from the function.
-      :type return_type: _R
-      :param volatility: See `Volatility` for allowed values.
-      :type volatility: Volatility | str
-      :param name: A descriptive name for the function.
-      :type name: Optional[str]
-
-      :returns: A user-defined function that can be used in SQL expressions,
-                data aggregation, or window function calls.
-
-      Example: Using ``udf`` as a function::
-
-          def double_func(x):
-              return x * 2
-          double_udf = udf(double_func, [pa.int32()], pa.int32(),
-          "volatile", "double_it")
-
-      Example: Using ``udf`` as a decorator::
-
-          @udf([pa.int32()], pa.int32(), "volatile", "double_it")
-          def double_udf(x):
-              return x * 2
-
-
-
-   .. py:attribute:: _udf
-
-
 .. py:class:: SessionConfig(config_options: dict[str, str] | None = None)
 
    Session configuration options.
@@ -2088,7 +2053,7 @@ Package Contents
    .. py:attribute:: config_internal
 
 
-.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset)
+.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset, ctx: datafusion.SessionContext | None = None)
 
    A DataFusion table.
 
@@ -2140,59 +2105,6 @@ Package Contents
       Returns the schema associated with this table.
 
 
-.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any])
-
-   Class for performing user-defined table functions (UDTF).
-
-   Table functions generate new table providers based on the
-   input expressions.
-
-   Instantiate a user-defined table function (UDTF).
-
-   See :py:func:`udtf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> Any
-
-      Execute the UDTF and return a table provider.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      User printable representation.
-
-
-
-   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a TableFunction instance from function arguments.
-
-
-
-   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
-                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a new User-Defined Table Function (UDTF).
-
-
-
-   .. py:attribute:: _udtf
-
-
 .. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
@@ -2233,134 +2145,6 @@ Package Contents
 
 
    .. py:attribute:: window_frame
-
-
-.. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
-
-   Class for performing window user-defined functions (UDF).
-
-   Window UDFs operate on a partition of rows. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined window function (UDWF).
-
-   See :py:func:`udwf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDWF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Window UDF.
-
-
-
-   .. py:method:: _create_window_udf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a WindowUDF instance from function arguments.
-
-
-
-   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
-      :staticmethod:
-
-
-      Get the default name for a function based on its attributes.
-
-
-
-   .. py:method:: _normalize_input_types(input_types: pyarrow.DataType | list[pyarrow.DataType]) -> list[pyarrow.DataType]
-      :staticmethod:
-
-
-      Convert a single DataType to a list if needed.
-
-
-
-   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
-      :staticmethod:
-
-
-      Create a Window UDF from WindowUDF PyCapsule object.
-
-      This function will instantiate a Window UDF that uses a DataFusion
-      WindowUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
-                  udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Window Function (UDWF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udwf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
-            When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
-
-      Function example::
-
-          import pyarrow as pa
-
-          class BiasedNumbers(WindowEvaluator):
-              def __init__(self, start: int = 0) -> None:
-                  self.start = start
-
-              def evaluate_all(self, values: list[pa.Array],
-                  num_rows: int) -> pa.Array:
-                  return pa.array([self.start + i for i in range(num_rows)])
-
-          def bias_10() -> BiasedNumbers:
-              return BiasedNumbers(10)
-
-          udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
-          udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
-          udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
-
-
-      Decorator example::
-
-          @udwf(pa.int64(), pa.int64(), "immutable")
-          def biased_numbers() -> BiasedNumbers:
-              return BiasedNumbers(10)
-
-      :param func: Only needed when calling as a function. Skip this argument when
-                   using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
-                   within a PyCapsule, you can pass this parameter and ignore the rest.
-                   They will be determined directly from the underlying function. See
-                   the online documentation for more information.
-      :param input_types: The data types of the arguments.
-      :param return_type: The data type of the return value.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined window function that can be used in window function calls.
-
-
-
-   .. py:attribute:: _udwf
 
 
 .. py:function:: configure_formatter(**kwargs: Any) -> None
@@ -2412,7 +2196,7 @@ Package Contents
    :returns: DataFrame representation of the read Avro file
 
 
-.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
    Read a CSV data source.
 
@@ -2433,6 +2217,8 @@ Package Contents
                           selected for data input.
    :param table_partition_cols: Partition columns.
    :param file_compression_type: File compression type.
+   :param options: Set advanced options for CSV reading. This cannot be
+                   combined with any of the other options in this method.
 
    :returns: DataFrame representation of the read CSV files
 
@@ -2489,12 +2275,4 @@ Package Contents
 
 .. py:data:: column
    :type:  Col
-
-.. py:data:: udaf
-
-.. py:data:: udf
-
-.. py:data:: udtf
-
-.. py:data:: udwf
 

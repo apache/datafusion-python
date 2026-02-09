@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -507,16 +517,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">power</span><span class="p">(</span><span class="n">pokemon</span><span class="o">.</span><span class="n">Attack</span><span class="p">,</span><span class="n">Int64</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">power</span><span class="p">(</span><span class="n">pokemon</span><span class="o">.</span><span class="n">Defense</span><span class="p">,</span><span class="n">Int64</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="mi">0</span>                                                                <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mi">125</span>                                                             <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mi">165</span>                                                             <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mi">5129</span>                                                            <span class="o">|</span>
-<span class="o">|</span> <span class="mi">855</span>                                                              <span class="o">|</span>
-<span class="o">|</span> <span class="mi">732</span>                                                              <span class="o">|</span>
-<span class="o">|</span> <span class="mi">972</span>                                                              <span class="o">|</span>
-<span class="o">|</span> <span class="mi">4579</span>                                                             <span class="o">|</span>
-<span class="o">|</span> <span class="mi">4732</span>                                                             <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mi">1921</span>                                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">0.0</span>                                                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span><span class="mf">125.0</span>                                                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span><span class="mf">165.0</span>                                                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span><span class="mf">5129.0</span>                                                          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">855.0</span>                                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">732.0</span>                                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">972.0</span>                                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4579.0</span>                                                           <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4732.0</span>                                                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span><span class="mf">1921.0</span>                                                          <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 </pre></div>
 </div>
@@ -556,16 +566,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+-------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                         <span class="o">|</span>
 <span class="o">+-------------------------------+</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span><span class="n">T16</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mf">57.764994749</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">09</span><span class="n">T15</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mf">03.744596391</span> <span class="o">|</span>
 <span class="o">+-------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
 </pre></div>

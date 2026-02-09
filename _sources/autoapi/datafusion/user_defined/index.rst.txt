@@ -44,6 +44,8 @@ Functions
 .. autoapisummary::
 
    datafusion.user_defined._is_pycapsule
+   datafusion.user_defined.data_type_or_field_to_field
+   datafusion.user_defined.data_types_or_fields_to_field_list
 
 
 Module Contents
@@ -217,7 +219,7 @@ Module Contents
    .. py:method:: __datafusion_aggregate_udf__() -> object
 
 
-.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: _R, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -255,8 +257,8 @@ Module Contents
 
 
 
-   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
-                  udf(func: collections.abc.Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
+   .. py:method:: udf(input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
+                  udf(func: collections.abc.Callable[Ellipsis, _R], input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
                   udf(func: ScalarUDFExportable) -> ScalarUDF
       :staticmethod:
 
@@ -266,9 +268,13 @@ Module Contents
       This class can be used both as either a function or a decorator.
 
       Usage:
-          - As a function: ``udf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
+          - As a function: ``udf(func, input_fields, return_field, volatility, name)``.
+          - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
             When used a decorator, do **not** pass ``func`` explicitly.
+
+      In lieu of passing a PyArrow Field, you can pass a DataType for simplicity.
+      When you do so, it will be assumed that the nullability of the inputs and
+      output are True and that they have no metadata.
 
       :param func: Only needed when calling as a function.
                    Skip this argument when using `udf` as a decorator. If you have a Rust
@@ -276,12 +282,12 @@ Module Contents
                    and ignore the rest. They will be determined directly from the
                    underlying function. See the online documentation for more information.
       :type func: Callable, optional
-      :param input_types: The data types of the arguments
-                          to ``func``. This list must be of the same length as the number of
-                          arguments.
-      :type input_types: list[pa.DataType]
-      :param return_type: The data type of the return value from the function.
-      :type return_type: _R
+      :param input_fields: The data types or Fields
+                           of the arguments to ``func``. This list must be of the same length
+                           as the number of arguments.
+      :type input_fields: list[pa.Field | pa.DataType]
+      :param return_field: The field of the return value from the function.
+      :type return_field: _R
       :param volatility: See `Volatility` for allowed values.
       :type volatility: Volatility | str
       :param name: A descriptive name for the function.
@@ -319,7 +325,7 @@ Module Contents
    .. py:method:: __datafusion_scalar_udf__() -> object
 
 
-.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any])
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any], ctx: datafusion.SessionContext | None = None)
 
    Class for performing user-defined table functions (UDTF).
 
@@ -742,6 +748,16 @@ Module Contents
 .. py:function:: _is_pycapsule(value: object) -> TypeGuard[_typeshed.CapsuleType]
 
    Return ``True`` when ``value`` is a CPython ``PyCapsule``.
+
+
+.. py:function:: data_type_or_field_to_field(value: pyarrow.DataType | pyarrow.Field, name: str) -> pyarrow.Field
+
+   Helper function to return a Field from either a Field or DataType.
+
+
+.. py:function:: data_types_or_fields_to_field_list(inputs: collections.abc.Sequence[pyarrow.Field | pyarrow.DataType] | pyarrow.Field | pyarrow.DataType) -> list[pyarrow.Field]
+
+   Helper function to return a list of Fields.
 
 
 .. py:data:: _R

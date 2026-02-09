@@ -39,7 +39,7 @@ Module Contents
    :returns: DataFrame representation of the read Avro file
 
 
-.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
    Read a CSV data source.
 
@@ -60,6 +60,8 @@ Module Contents
                           selected for data input.
    :param table_partition_cols: Partition columns.
    :param file_compression_type: File compression type.
+   :param options: Set advanced options for CSV reading. This cannot be
+                   combined with any of the other options in this method.
 
    :returns: DataFrame representation of the read CSV files
 

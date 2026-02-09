@@ -49,7 +49,7 @@ Module Contents
 
 
 
-   .. py:method:: memory_catalog() -> Catalog
+   .. py:method:: memory_catalog(ctx: datafusion.SessionContext | None = None) -> Catalog
       :staticmethod:
 
 
@@ -148,7 +148,7 @@ Module Contents
 
 
 
-   .. py:method:: memory_schema() -> Schema
+   .. py:method:: memory_schema(ctx: datafusion.SessionContext | None = None) -> Schema
       :staticmethod:
 
 
@@ -171,6 +171,12 @@ Module Contents
    .. py:method:: table(name: str) -> Table
 
       Return the table with the given ``name`` from this schema.
+
+
+
+   .. py:method:: table_exist(name: str) -> bool
+
+      Determines if a table exists in this schema.
 
 
 
@@ -241,7 +247,7 @@ Module Contents
 
 
 
-.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset)
+.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset, ctx: datafusion.SessionContext | None = None)
 
    A DataFusion table.
 

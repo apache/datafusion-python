@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -546,6 +556,15 @@ converting to Python objects to do the evaluation.</p>
 <span class="o">+---+---------+</span>
 </pre></div>
 </div>
+<p>In this example we passed the PyArrow <code class="docutils literal notranslate"><span class="pre">DataType</span></code> when we defined the function
+by calling <code class="docutils literal notranslate"><span class="pre">udf()</span></code>. If you need additional control, such as specifying
+metadata or nullability of the input or output, you can instead specify a
+PyArrow <code class="docutils literal notranslate"><span class="pre">Field</span></code>.</p>
+<p>If you need to write a custom function but do not want to incur the performance
+cost of converting to Python objects and back, a more advanced approach is to
+write Rust based UDFs and to expose them to Python. There is an example in the
+<a class="reference external" href="https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/">DataFusion blog</a>
+describing how to do this.</p>
 </section>
 <section id="aggregate-functions">
 <h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h2>

@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -517,8 +527,8 @@ a richer visualization than plain text output.</p>
     <span class="n">max_width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>            <span class="c1"># Maximum width in pixels</span>
     <span class="n">max_height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>            <span class="c1"># Maximum height in pixels</span>
     <span class="n">max_memory_bytes</span><span class="o">=</span><span class="mi">2097152</span><span class="p">,</span>  <span class="c1"># Maximum memory for rendering (2MB)</span>
-    <span class="n">min_rows_display</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>       <span class="c1"># Minimum number of rows to display</span>
-    <span class="n">repr_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>              <span class="c1"># Number of rows to display in __repr__</span>
+    <span class="n">min_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>               <span class="c1"># Minimum number of rows to display</span>
+    <span class="n">max_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>               <span class="c1"># Maximum rows to display in __repr__</span>
     <span class="n">enable_cell_expansion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="c1"># Allow expanding truncated cells</span>
     <span class="n">custom_css</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Additional custom CSS</span>
     <span class="n">show_truncation_message</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># Show message when data is truncated</span>
@@ -635,8 +645,8 @@ multiple DataFrames in notebook environments:</p>
 <p>You can control how much data is displayed and how much memory is used for rendering:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">configure_formatter</span><span class="p">(</span>
     <span class="n">max_memory_bytes</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>  <span class="c1"># 4MB maximum memory for display</span>
-    <span class="n">min_rows_display</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>               <span class="c1"># Always show at least 50 rows</span>
-    <span class="n">repr_rows</span><span class="o">=</span><span class="mi">20</span>                       <span class="c1"># Show 20 rows in __repr__ output</span>
+    <span class="n">min_rows</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                       <span class="c1"># Always show at least 20 rows</span>
+    <span class="n">max_rows</span><span class="o">=</span><span class="mi">50</span>                        <span class="c1"># Show up to 50 rows in output</span>
 <span class="p">)</span>
 </pre></div>
 </div>

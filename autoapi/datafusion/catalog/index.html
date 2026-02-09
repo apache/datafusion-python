@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -620,6 +630,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.table_exist">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.table_exist()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.catalog.Schema.table_names">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -844,7 +863,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.catalog.Catalog.memory_catalog">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.memory_catalog" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.SessionContext</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.memory_catalog" title="Link to this definition">¶</a></dt>
 <dd><p>Create an in-memory catalog provider.</p>
 </dd></dl>
 
@@ -941,7 +960,7 @@ do not need to implement this method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.catalog.Schema.memory_schema">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Schema.memory_schema" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.SessionContext</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Schema.memory_schema" title="Link to this definition">¶</a></dt>
 <dd><p>Create an in-memory schema provider.</p>
 </dd></dl>
 
@@ -961,6 +980,12 @@ do not need to implement this method.</p>
 <dt class="sig sig-object py" id="datafusion.catalog.Schema.table">
 <span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Schema.table" title="Link to this definition">¶</a></dt>
 <dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.table_exist">
+<span class="sig-name descname"><span class="pre">table_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.table_exist" title="Link to this definition">¶</a></dt>
+<dd><p>Determines if a table exists in this schema.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1026,7 +1051,7 @@ not need to implement this method.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.catalog.Table">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../context/index.html#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><span class="pre">datafusion.context.TableProviderExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datafusion.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Table" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../context/index.html#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><span class="pre">datafusion.context.TableProviderExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datafusion.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.dataset.Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.SessionContext</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Table" title="Link to this definition">¶</a></dt>
 <dd><p>A DataFusion table.</p>
 <p>Internally we currently support the following types of tables:</p>
 <ul class="simple">
