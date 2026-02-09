@@ -476,20 +476,21 @@ jobs:
           name: dist-manylinux-x86_64
           path: wheels/
 
-      # Install from the pre-built wheel
-      - name: Install from pre-built wheel
+      # Install from the pre-built wheels
+      - name: Install from pre-built wheels
         run: |
           set -x
           uv venv
           # Install documentation dependencies
           uv sync --dev --no-install-package datafusion --group docs
-          # Install the pre-built wheel
-          WHEEL=$(find wheels/ -name "*.whl" | head -1)
-          if [ -n "$WHEEL" ]; then
-            echo "Installing wheel: $WHEEL"
-            uv pip install "$WHEEL"
+          # Install all pre-built wheels
+          WHEELS=$(find wheels/ -name "*.whl")
+          if [ -n "$WHEELS" ]; then
+            echo "Installing wheels:"
+            echo "$WHEELS"
+            uv pip install wheels/*.whl
           else
-            echo "ERROR: No wheel found!"
+            echo "ERROR: No wheels found!"
             exit 1
           fi
 
