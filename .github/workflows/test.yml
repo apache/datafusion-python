@@ -107,6 +107,7 @@ jobs:
           RUST_BACKTRACE: 1
         run: |
           git submodule update --init
+          cd python/tests
           uv run --no-project pytest -v .
 
       - name: FFI unit tests
