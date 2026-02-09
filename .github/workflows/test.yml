@@ -91,7 +91,7 @@ jobs:
         run: |
           set -x
           uv venv
-          # Install documentation dependencies
+          # Install development dependencies
           uv sync --dev --no-install-package datafusion
           # Install all pre-built wheels
           WHEELS=$(find wheels/ -name "*.whl")
