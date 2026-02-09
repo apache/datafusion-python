@@ -173,8 +173,10 @@ jobs:
           target: x86_64-unknown-linux-gnu
           manylinux: "2_28"
           working-directory: examples/datafusion-ffi-example
-          args: --out ../../dist
+          args: --out dist
           rustup-components: rust-std
+
+      - run: cp examples/datafusion-ffi-example/dist/*.whl dist/
 
       - name: Archive wheels
         uses: actions/upload-artifact@v6
