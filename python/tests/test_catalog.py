@@ -16,11 +16,16 @@
 # under the License.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import datafusion as dfn
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import SessionContext, Table, udtf
+from datafusion import Catalog, SessionContext, Table, udtf
+
+if TYPE_CHECKING:
+    from datafusion.catalog import CatalogProvider, CatalogProviderExportable
 
 
 # Note we take in `database` as a variable even though we don't use
@@ -91,6 +96,34 @@ class CustomCatalogProvider(dfn.catalog.CatalogProvider):
 
     def deregister_schema(self, name, cascade: bool):
         del self.schemas[name]
+
+
+class CustomCatalogProviderList(dfn.catalog.CatalogProviderList):
+    def __init__(self):
+        self.catalogs = {"my_catalog": CustomCatalogProvider()}
+
+    def catalog_names(self) -> set[str]:
+        return set(self.catalogs.keys())
+
+    def catalog(self, name: str) -> Catalog | None:
+        return self.catalogs[name]
+
+    def register_catalog(
+        self, name: str, catalog: CatalogProviderExportable | CatalogProvider | Catalog
+    ) -> None:
+        self.catalogs[name] = catalog
+
+
+def test_python_catalog_provider_list(ctx: SessionContext):
+    ctx.register_catalog_provider_list(CustomCatalogProviderList())
+
+    # Ensure `datafusion` catalog does not exist since
+    # we replaced the catalog list
+    assert ctx.catalog_names() == {"my_catalog"}
+
+    # Ensure registering works
+    ctx.register_catalog_provider("second_catalog", Catalog.memory_catalog())
+    assert ctx.catalog_names() == {"my_catalog", "second_catalog"}
 
 
 def test_python_catalog_provider(ctx: SessionContext):
