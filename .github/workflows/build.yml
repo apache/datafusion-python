@@ -167,6 +167,15 @@ jobs:
           args: --features protoc,substrait --out dist
           rustup-components: rust-std
 
+      - name: Build FFI test library
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/datafusion-ffi-example
+          args: --out ../../dist
+          rustup-components: rust-std
+
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
