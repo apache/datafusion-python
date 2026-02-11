@@ -19,7 +19,7 @@
 
 use std::sync::Arc;
 
-use arrow::array::{make_array, Array, ArrayData, ListArray};
+use arrow::array::{make_array, Array, ArrayData, ArrayRef, ListArray};
 use arrow::buffer::OffsetBuffer;
 use arrow::datatypes::Field;
 use arrow::pyarrow::{FromPyArrow, ToPyArrow};
@@ -31,13 +31,7 @@ use pyo3::{Bound, FromPyObject, PyAny, PyResult, Python};
 use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionError;
 
-fn pyobj_extract_scalar_via_capsule(
-    value: &Bound<'_, PyAny>,
-    as_list_array: bool,
-) -> PyResult<PyScalarValue> {
-    let array_data = ArrayData::from_pyarrow_bound(value)?;
-    let array = make_array(array_data);
-
+fn array_to_scalar_value(array: ArrayRef, as_list_array: bool) -> PyResult<PyScalarValue> {
     if as_list_array {
         let field = Arc::new(Field::new_list_field(
             array.data_type().clone(),
@@ -50,6 +44,16 @@ fn pyobj_extract_scalar_via_capsule(
         let scalar = ScalarValue::try_from_array(&array, 0).map_err(PyDataFusionError::from)?;
         Ok(PyScalarValue(scalar))
     }
+}
+
+fn pyobj_extract_scalar_via_capsule(
+    value: &Bound<'_, PyAny>,
+    as_list_array: bool,
+) -> PyResult<PyScalarValue> {
+    let array_data = ArrayData::from_pyarrow_bound(value)?;
+    let array = make_array(array_data);
+
+    array_to_scalar_value(array, as_list_array)
 }
 
 impl FromPyArrow for PyScalarValue {
@@ -115,19 +119,9 @@ impl FromPyArrow for PyScalarValue {
 
             let array_data = ArrayData::from_pyarrow_bound(value)?;
             let array = make_array(array_data);
-            if array.len() == 1 {
-                let scalar =
-                    ScalarValue::try_from_array(&array, 0).map_err(PyDataFusionError::from)?;
-                return Ok(PyScalarValue(scalar));
-            } else {
-                let field = Arc::new(Field::new_list_field(
-                    array.data_type().clone(),
-                    array.nulls().is_some(),
-                ));
-                let offsets = OffsetBuffer::from_lengths(vec![array.len()]);
-                let list_array = ListArray::new(field, offsets, array, None);
-                return Ok(PyScalarValue(ScalarValue::List(Arc::new(list_array))));
-            }
+
+            let as_array_list = array.len() != 1;
+            return array_to_scalar_value(array, as_array_list);
         }
 
         // Last attempt - try to create a PyArrow scalar from a plain Python object
