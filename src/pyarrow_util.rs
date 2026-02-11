@@ -83,8 +83,8 @@ impl FromPyArrow for PyScalarValue {
 
         // Is it a NanoArrow scalar?
         if let Ok(na) = py.import("nanoarrow") {
-            let type_name = value.get_type().repr()?;
-            if type_name.contains("nanoarrow")? && type_name.contains("Scalar")? {
+            let scalar_type = py.import("nanoarrow.array")?.getattr("Scalar")?;
+            if value.is_instance(&scalar_type)? {
                 return pyobj_extract_scalar_via_capsule(value, false);
             }
             let array_type = na.getattr("Array")?;
