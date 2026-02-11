@@ -983,6 +983,15 @@ def test_literal_metadata(ctx):
 
 
 def test_scalar_conversion() -> None:
+    class WrappedPyArrow:
+        """Wrapper class for testing __arrow_c_array__."""
+
+        def __init__(self, val: pa.Array) -> None:
+            self.val = val
+
+        def __arrow_c_array__(self, requested_schema=None):
+            return self.val.__arrow_c_array__(requested_schema=requested_schema)
+
     expected_value = lit(1)
     assert str(expected_value) == "Expr(Int64(1))"
 
@@ -998,6 +1007,9 @@ def test_scalar_conversion() -> None:
     arro3_scalar = arro3.core.Scalar(1, type=arro3.core.DataType.int32())
     assert expected_value == lit(arro3_scalar)
 
+    generic_scalar = WrappedPyArrow(pa.array([1]))
+    assert expected_value == lit(generic_scalar)
+
     expected_value = lit([1, 2, 3])
     assert str(expected_value) == "Expr(List([1, 2, 3]))"
 
@@ -1008,6 +1020,9 @@ def test_scalar_conversion() -> None:
 
     arro3_array = arro3.core.Array([1, 2, 3], type=arro3.core.DataType.int32())
     assert expected_value == lit(arro3_array)
+
+    generic_array = WrappedPyArrow(pa.array([1, 2, 3]))
+    assert expected_value == lit(generic_array)
 
 
 def test_ensure_expr():
