@@ -74,8 +74,49 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
-        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            python-version: "3.10"
+            python-tag: cp310
+          - os: macos-latest
+            python-version: "3.11"
+            python-tag: cp311
+          - os: macos-latest
+            python-version: "3.12"
+            python-tag: cp312
+          - os: macos-latest
+            python-version: "3.13"
+            python-tag: cp313
+          - os: macos-latest
+            python-version: "3.14"
+            python-tag: cp314
+          - os: macos-latest
+            python-version: "3.13t"
+            python-tag: cp313t
+          - os: macos-latest
+            python-version: "3.14t"
+            python-tag: cp314t
+          - os: windows-latest
+            python-version: "3.10"
+            python-tag: cp310
+          - os: windows-latest
+            python-version: "3.11"
+            python-tag: cp311
+          - os: windows-latest
+            python-version: "3.12"
+            python-tag: cp312
+          - os: windows-latest
+            python-version: "3.13"
+            python-tag: cp313
+          - os: windows-latest
+            python-version: "3.14"
+            python-tag: cp314
+          - os: windows-latest
+            python-version: "3.13t"
+            python-tag: cp313t
+          - os: windows-latest
+            python-version: "3.14t"
+            python-tag: cp314t
     steps:
       - uses: actions/checkout@v6
 
@@ -102,10 +143,45 @@ jobs:
         with:
             enable-cache: true
 
+      - name: Validate interpreter/wheel mode
+        shell: bash
+        env:
+          WHEEL_MODE: ${{ endsWith(matrix.python-version, 't') && 'freethreaded' || 'abi3' }}
+          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          import sysconfig
+
+          mode = os.environ["WHEEL_MODE"]
+          features = os.environ["MATURIN_FEATURES"]
+          is_free_threaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
+
+          print(sys.version)
+          print(f"Py_GIL_DISABLED={int(is_free_threaded)}")
+          print(f"wheel_mode={mode}")
+          print(f"maturin_features={features}")
+
+          if mode == "abi3" and is_free_threaded:
+              raise SystemExit("Invalid matrix: free-threaded interpreter cannot build abi3 wheels")
+          if mode == "freethreaded" and not is_free_threaded:
+              raise SystemExit("Invalid matrix: freethreaded wheel mode requires a free-threaded interpreter")
+          PY
+
+      - name: Show resolved PyO3 versions
+        shell: bash
+        run: |
+          cargo tree -e no-dev -i pyo3
+          cargo tree -e no-dev -i pyo3-build-config
+
       - name: Build Python package
+        shell: bash
+        env:
+          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait
+          uv run --no-project maturin build --release --strip --features "${MATURIN_FEATURES}" --interpreter python
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -121,7 +197,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
-          name: dist-${{ matrix.os  }}
+          name: dist-${{ matrix.os }}-${{ matrix.python-tag }}
           path: target/wheels/*
 
   build-macos-x86_64:
@@ -131,7 +207,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        include:
+          - python-version: "3.10"
+            python-tag: cp310
+          - python-version: "3.11"
+            python-tag: cp311
+          - python-version: "3.12"
+            python-tag: cp312
+          - python-version: "3.13"
+            python-tag: cp313
+          - python-version: "3.14"
+            python-tag: cp314
+          - python-version: "3.13t"
+            python-tag: cp313t
+          - python-version: "3.14t"
+            python-tag: cp314t
     steps:
       - uses: actions/checkout@v6
 
@@ -158,10 +248,45 @@ jobs:
         with:
             enable-cache: true
 
+      - name: Validate interpreter/wheel mode
+        shell: bash
+        env:
+          WHEEL_MODE: ${{ endsWith(matrix.python-version, 't') && 'freethreaded' || 'abi3' }}
+          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          import sysconfig
+
+          mode = os.environ["WHEEL_MODE"]
+          features = os.environ["MATURIN_FEATURES"]
+          is_free_threaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
+
+          print(sys.version)
+          print(f"Py_GIL_DISABLED={int(is_free_threaded)}")
+          print(f"wheel_mode={mode}")
+          print(f"maturin_features={features}")
+
+          if mode == "abi3" and is_free_threaded:
+              raise SystemExit("Invalid matrix: free-threaded interpreter cannot build abi3 wheels")
+          if mode == "freethreaded" and not is_free_threaded:
+              raise SystemExit("Invalid matrix: freethreaded wheel mode requires a free-threaded interpreter")
+          PY
+
+      - name: Show resolved PyO3 versions
+        shell: bash
+        run: |
+          cargo tree -e no-dev -i pyo3
+          cargo tree -e no-dev -i pyo3-build-config
+
       - name: Build Python package
+        shell: bash
+        env:
+          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait
+          uv run --no-project maturin build --release --strip --features "${MATURIN_FEATURES}" --interpreter python
 
       - name: List Mac wheels
         run: find target/wheels/
@@ -169,13 +294,25 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
-          name: dist-macos-aarch64
+          name: dist-macos-aarch64-${{ matrix.python-tag }}
           path: target/wheels/*
 
   build-manylinux-x86_64:
     needs: [generate-license]
     name: Manylinux x86_64
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - interpreter: "3.10 3.11 3.12 3.13 3.14"
+            artifact-label: cp310-314
+            wheel-mode: abi3
+            maturin-features: protoc,substrait,py-limited-api
+          - interpreter: "3.13t 3.14t"
+            artifact-label: cp313t-314t
+            wheel-mode: freethreaded
+            maturin-features: protoc,substrait
     steps:
       - uses: actions/checkout@v6
       - run: rm LICENSE.txt
@@ -185,6 +322,20 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
+      - name: Validate wheel mode matrix
+        shell: bash
+        run: |
+          echo "interpreter=${{ matrix.interpreter }}"
+          echo "wheel_mode=${{ matrix.wheel-mode }}"
+          echo "maturin_features=${{ matrix.maturin-features }}"
+          if [[ "${{ matrix.wheel-mode }}" == "abi3" && "${{ matrix.interpreter }}" == *t* ]]; then
+            echo "Invalid matrix: abi3 mode cannot use free-threaded interpreters"
+            exit 1
+          fi
+          if [[ "${{ matrix.wheel-mode }}" == "freethreaded" && "${{ matrix.interpreter }}" != *t* ]]; then
+            echo "Invalid matrix: freethreaded mode requires free-threaded interpreters"
+            exit 1
+          fi
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -194,17 +345,30 @@ jobs:
           target: x86_64
           manylinux: auto
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
-          args: --release --manylinux 2014 --features protoc,substrait
+          interpreter: ${{ matrix.interpreter }}
+          args: --release --manylinux 2014 --features ${{ matrix.maturin-features }}
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-${{ matrix.artifact-label }}
           path: target/wheels/*
 
   build-manylinux-aarch64:
     needs: [generate-license]
     name: Manylinux arm64
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - interpreter: "3.10 3.11 3.12 3.13 3.14"
+            artifact-label: cp310-314
+            wheel-mode: abi3
+            maturin-features: protoc,substrait,py-limited-api
+          - interpreter: "3.13t 3.14t"
+            artifact-label: cp313t-314t
+            wheel-mode: freethreaded
+            maturin-features: protoc,substrait
     steps:
       - uses: actions/checkout@v6
       - run: rm LICENSE.txt
@@ -214,6 +378,20 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
+      - name: Validate wheel mode matrix
+        shell: bash
+        run: |
+          echo "interpreter=${{ matrix.interpreter }}"
+          echo "wheel_mode=${{ matrix.wheel-mode }}"
+          echo "maturin_features=${{ matrix.maturin-features }}"
+          if [[ "${{ matrix.wheel-mode }}" == "abi3" && "${{ matrix.interpreter }}" == *t* ]]; then
+            echo "Invalid matrix: abi3 mode cannot use free-threaded interpreters"
+            exit 1
+          fi
+          if [[ "${{ matrix.wheel-mode }}" == "freethreaded" && "${{ matrix.interpreter }}" != *t* ]]; then
+            echo "Invalid matrix: freethreaded mode requires free-threaded interpreters"
+            exit 1
+          fi
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -224,11 +402,12 @@ jobs:
           # Use manylinux_2_28-cross because the manylinux2014-cross has GCC 4.8.5, which causes the build to fail
           manylinux: 2_28
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
-          args: --release --features protoc,substrait
+          interpreter: ${{ matrix.interpreter }}
+          args: --release --features ${{ matrix.maturin-features }}
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
-          name: dist-manylinux-aarch64
+          name: dist-manylinux-aarch64-${{ matrix.artifact-label }}
           path: target/wheels/*
 
   build-sdist:
@@ -323,7 +502,7 @@ jobs:
       - name: Download pre-built Linux wheel
         uses: actions/download-artifact@v7
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-cp310-314
           path: wheels/
 
       # Install from the pre-built wheel
