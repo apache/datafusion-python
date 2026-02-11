@@ -1779,7 +1779,7 @@ def array_agg(
 
     For example::
 
-        df.select(array_agg(col("a"), order_by="b"))
+        df.aggregate([], array_agg(col("a"), order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -1941,7 +1941,7 @@ def median(
 
 
 def min(expression: Expr, filter: Expr | None = None) -> Expr:
-    """Returns the minimum value of the argument.
+    """Aggregate function that returns the minimum value of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
@@ -2268,11 +2268,6 @@ def first_value(
 ) -> Expr:
     """Returns the first value in a group of values.
 
-    .. note::
-        This is an aggregate function. It must be used within
-        :py:meth:`~datafusion.dataframe.DataFrame.aggregate` and generally cannot be
-        used with :py:meth:`~datafusion.dataframe.DataFrame.select`.
-
     This aggregate function will return the first value in the partition.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -2287,7 +2282,7 @@ def first_value(
 
     For example::
 
-        df.select(first_value(col("a"), order_by="ts"))
+        df.aggregate([], first_value(col("a"), order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2324,7 +2319,7 @@ def last_value(
 
     For example::
 
-        df.select(last_value(col("a"), order_by="ts"))
+        df.aggregate([], last_value(col("a"), order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2363,7 +2358,7 @@ def nth_value(
 
     For example::
 
-        df.select(nth_value(col("a"), 2, order_by="ts"))
+        df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2848,7 +2843,7 @@ def string_agg(
 
     For example::
 
-        df.select(string_agg(col("a"), ",", order_by="b"))
+        df.aggregate([], string_agg(col("a"), ",", order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
