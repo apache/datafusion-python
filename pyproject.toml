@@ -138,27 +138,29 @@ ignore-words-list = [
 
 [dependency-groups]
 dev = [
+    "arro3-core==0.6.5",
+    "codespell==2.4.1",
     "maturin>=1.8.1",
+    "nanoarrow==0.8.0",
     "numpy>1.25.0;python_version<'3.14'",
     "numpy>=2.3.2;python_version>='3.14'",
-    "pyarrow>=19.0.0",
     "pre-commit>=4.3.0",
-    "pyyaml>=6.0.3",
+    "pyarrow>=19.0.0",
+    "pygithub==2.5.0",
     "pytest>=7.4.4",
     "pytest-asyncio>=0.23.3",
+    "pyyaml>=6.0.3",
     "ruff>=0.9.1",
     "toml>=0.10.2",
-    "pygithub==2.5.0",
-    "codespell==2.4.1",
 ]
 docs = [
-    "sphinx>=7.1.2",
-    "pydata-sphinx-theme==0.8.0",
-    "myst-parser>=3.0.1",
-    "jinja2>=3.1.5",
     "ipython>=8.12.3",
+    "jinja2>=3.1.5",
+    "myst-parser>=3.0.1",
     "pandas>=2.0.3",
     "pickleshare>=0.7.5",
-    "sphinx-autoapi>=3.4.0",
+    "pydata-sphinx-theme==0.8.0",
     "setuptools>=75.3.0",
+    "sphinx>=7.1.2",
+    "sphinx-autoapi>=3.4.0",
 ]
