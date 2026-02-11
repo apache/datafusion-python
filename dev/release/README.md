@@ -130,9 +130,9 @@ datafusion-22.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 datafusion-22.0.0-cp37-abi3-win_amd64.whl
 ```
 
-Note: PyO3's free-threaded CPython builds (3.13t/3.14t) use a distinct ABI and ignore the `abi3` setting. We keep
-the `abi3-py310` feature enabled to preserve the stable-ABI wheels for GIL-enabled Python, and we additionally ship
-version-specific `cp313t`/`cp314t` wheels for the free-threaded builds.
+Note: PyO3's free-threaded CPython builds (3.13t/3.14t) use a distinct ABI and cannot use the limited API (`abi3`).
+The release workflow enables Cargo feature `py-limited-api` for GIL-enabled wheels and disables it for free-threaded
+builds, producing version-specific `cp313t`/`cp314t` wheels.
 
 Upload the wheels to testpypi.
 
