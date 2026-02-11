@@ -86,6 +86,13 @@ jobs:
           name: dist-manylinux-x86_64
           path: wheels/
 
+      # Download the FFI test wheel
+      - name: Download pre-built FFI test wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: test-ffi-manylinux-x86_64
+          path: wheels/
+
       # Install from the pre-built wheels
       - name: Install from pre-built wheels
         run: |
