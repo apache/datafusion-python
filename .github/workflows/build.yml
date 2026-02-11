@@ -176,13 +176,17 @@ jobs:
           args: --out dist
           rustup-components: rust-std
 
-      - run: cp examples/datafusion-ffi-example/dist/*.whl dist/
-
       - name: Archive wheels
         uses: actions/upload-artifact@v6
         with:
           name: dist-manylinux-x86_64
           path: dist/*
+
+      - name: Archive FFI test wheel
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-ffi-manylinux-x86_64
+          path: examples/datafusion-ffi-example/dist/*
 
   # ============================================
   # Build - Linux ARM64
