@@ -33,6 +33,23 @@ Module Contents
    See the :py:class:`RecordBatchStream` iterator for generating this class.
 
 
+   .. py:method:: __arrow_c_array__(requested_schema: object | None = None) -> tuple[object, object]
+
+      Export the record batch via the Arrow C Data Interface.
+
+      This allows zero-copy interchange with libraries that support the
+      `Arrow PyCapsule interface <https://arrow.apache.org/docs/format/
+      CDataInterface/PyCapsuleInterface.html>`_.
+
+      :param requested_schema: Attempt to provide the record batch using this
+                               schema. Only straightforward projections such as column
+                               selection or reordering are applied.
+
+      :returns: Two Arrow PyCapsule objects representing the ``ArrowArray`` and
+                ``ArrowSchema``.
+
+
+
    .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
 
       Convert to :py:class:`pa.RecordBatch`.
@@ -54,7 +71,7 @@ Module Contents
 
    .. py:method:: __aiter__() -> typing_extensions.Self
 
-      Async iterator function.
+      Return an asynchronous iterator over record batches.
 
 
 
@@ -62,19 +79,19 @@ Module Contents
       :async:
 
 
-      Async iterator function.
+      Return the next :py:class:`RecordBatch` in the stream asynchronously.
 
 
 
    .. py:method:: __iter__() -> typing_extensions.Self
 
-      Iterator function.
+      Return an iterator over record batches.
 
 
 
    .. py:method:: __next__() -> RecordBatch
 
-      Iterator function.
+      Return the next :py:class:`RecordBatch` in the stream.
 
 
 

@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
@@ -438,23 +448,27 @@ via <a class="reference external" href="https://pyo3.rs/main/doc/pyo3/types/stru
 <span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
 <span class="w">        </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CString</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">();</span>
 
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">())</span>
-<span class="w">            </span><span class="p">.</span><span class="n">map_err</span><span class="p">(</span><span class="o">|</span><span class="n">e</span><span class="o">|</span><span class="w"> </span><span class="n">PyRuntimeError</span><span class="p">::</span><span class="n">new_err</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">to_string</span><span class="p">()))</span><span class="o">?</span><span class="p">;</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">provider</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">);</span>
 
 <span class="w">        </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_bound</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">()))</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Once you have this library available, in python you can register your table provider
-to the <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provider</span> <span class="o">=</span> <span class="n">MyTableProvider</span><span class="p">()</span>
-<span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
+<p>Once you have this library available, you can construct a
+<a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.Table" title="datafusion.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> in Python and register it with the
+<code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">Table</span>
 
-<span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">provider</span> <span class="o">=</span> <span class="n">MyTableProvider</span><span class="p">()</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s2">&quot;capsule_table&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;capsule_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

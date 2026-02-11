@@ -42,6 +42,7 @@ Attributes
    datafusion.expr.DropFunction
    datafusion.expr.DropTable
    datafusion.expr.DropView
+   datafusion.expr.EXPR_TYPE_ERROR
    datafusion.expr.EmptyRelation
    datafusion.expr.Execute
    datafusion.expr.Exists
@@ -81,6 +82,7 @@ Attributes
    datafusion.expr.SetVariable
    datafusion.expr.SimilarTo
    datafusion.expr.Sort
+   datafusion.expr.SortKey
    datafusion.expr.Subquery
    datafusion.expr.SubqueryAlias
    datafusion.expr.TableScan
@@ -110,6 +112,15 @@ Classes
    datafusion.expr.WindowFrameBound
 
 
+Functions
+---------
+
+.. autoapisummary::
+
+   datafusion.expr.ensure_expr
+   datafusion.expr.ensure_expr_list
+
+
 Module Contents
 ---------------
 
@@ -122,7 +133,7 @@ Module Contents
        import datafusion.functions as f
        from datafusion import lit, col
        df.select(
-           f.case(col("column_a")
+           f.case(col("column_a"))
            .when(lit(1), lit("One"))
            .when(lit(2), lit("Two"))
            .otherwise(lit("Unknown"))
@@ -203,7 +214,12 @@ Module Contents
 
       If ``key`` is a string, returns the subfield of the struct.
       If ``key`` is an integer, retrieves the element in the array. Note that the
-      element index begins at ``0``, unlike `array_element` which begins at ``1``.
+      element index begins at ``0``, unlike
+      :py:func:`~datafusion.functions.array_element` which begins at ``1``.
+      If ``key`` is a slice, returns an array that contains a slice of the
+      original array. Similar to integer indexing, this follows Python convention
+      where the index begins at ``0`` unlike
+      :py:func:`~datafusion.functions.array_slice` which begins at ``1``.
 
 
 
@@ -323,7 +339,7 @@ Module Contents
 
 
 
-   .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
+   .. py:method:: alias(name: str, metadata: dict[str, str] | None = None) -> Expr
 
       Assign a name to the expression.
 
@@ -446,7 +462,7 @@ Module Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any] | type[float | int | str | bool]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | type) -> Expr
 
       Cast to a new data type.
 
@@ -774,7 +790,7 @@ Module Contents
 
    .. py:method:: python_value() -> Any
 
-      Extracts the Expr value into a PyObject.
+      Extracts the Expr value into `Any`.
 
       This is only valid for literal expressions.
 
@@ -1032,7 +1048,7 @@ Module Contents
    .. py:attribute:: raw_sort
 
 
-.. py:class:: Window(partition_by: Optional[list[Expr] | Expr] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[list[SortExpr | Expr] | Expr | SortExpr] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
+.. py:class:: Window(partition_by: list[Expr] | Expr | None = None, window_frame: WindowFrame | None = None, order_by: list[SortExpr | Expr | str] | Expr | SortExpr | str | None = None, null_treatment: datafusion.common.NullTreatment | None = None)
 
    Define reusable window parameters.
 
@@ -1064,7 +1080,7 @@ Module Contents
 
 
 
-.. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
+.. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
 
@@ -1148,6 +1164,32 @@ Module Contents
    .. py:attribute:: frame_bound
 
 
+.. py:function:: ensure_expr(value: Expr | Any) -> datafusion._internal.expr.Expr
+
+   Return the internal expression from ``Expr`` or raise ``TypeError``.
+
+   This helper rejects plain strings and other non-:class:`Expr` values so
+   higher level APIs consistently require explicit :func:`~datafusion.col` or
+   :func:`~datafusion.lit` expressions.
+
+   :param value: Candidate expression or other object.
+
+   :returns: The internal expression representation.
+
+   :raises TypeError: If ``value`` is not an instance of :class:`Expr`.
+
+
+.. py:function:: ensure_expr_list(exprs: collections.abc.Iterable[Expr | collections.abc.Iterable[Expr]]) -> list[datafusion._internal.expr.Expr]
+
+   Flatten an iterable of expressions, validating each via ``ensure_expr``.
+
+   :param exprs: Possibly nested iterable containing expressions.
+
+   :returns: A flat list of raw expressions.
+
+   :raises TypeError: If any item is not an instance of :class:`Expr`.
+
+
 .. py:data:: Aggregate
 
 .. py:data:: AggregateFunction
@@ -1199,6 +1241,10 @@ Module Contents
 .. py:data:: DropTable
 
 .. py:data:: DropView
+
+.. py:data:: EXPR_TYPE_ERROR
+   :value: 'Use col()/column() or lit()/literal() to construct expressions'
+
 
 .. py:data:: EmptyRelation
 
@@ -1277,6 +1323,8 @@ Module Contents
 .. py:data:: SimilarTo
 
 .. py:data:: Sort
+
+.. py:data:: SortKey
 
 .. py:data:: Subquery
 

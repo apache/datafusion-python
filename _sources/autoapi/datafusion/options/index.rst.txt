@@ -1,0 +1,242 @@
+datafusion.options
+==================
+
+.. py:module:: datafusion.options
+
+.. autoapi-nested-parse::
+
+   Options for reading various file formats.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.options.CsvReadOptions
+
+
+Module Contents
+---------------
+
+.. py:class:: CsvReadOptions(*, has_header: bool = True, delimiter: str = ',', quote: str = '"', terminator: str | None = None, escape: str | None = None, comment: str | None = None, newlines_in_values: bool = False, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, pyarrow.DataType]] | None = None, file_compression_type: str = '', file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None, null_regex: str | None = None, truncated_rows: bool = False)
+
+   Options for reading CSV files.
+
+   This class provides a builder pattern for configuring CSV reading options.
+   All methods starting with ``with_`` return ``self`` to allow method chaining.
+
+   Initialize CsvReadOptions.
+
+   :param has_header: Does the CSV file have a header row? If schema inference
+                      is run on a file with no headers, default column names are created.
+   :param delimiter: Column delimiter character. Must be a single ASCII character.
+   :param quote: Quote character for fields containing delimiters or newlines.
+                 Must be a single ASCII character.
+   :param terminator: Optional line terminator character. If ``None``, uses CRLF.
+                      Must be a single ASCII character.
+   :param escape: Optional escape character for quotes. Must be a single ASCII
+                  character.
+   :param comment: If specified, lines beginning with this character are ignored.
+                   Must be a single ASCII character.
+   :param newlines_in_values: Whether newlines in quoted values are supported.
+                              Parsing newlines in quoted values may be affected by execution
+                              behavior such as parallel file scanning. Setting this to ``True``
+                              ensures that newlines in values are parsed successfully, which may
+                              reduce performance.
+   :param schema: Optional PyArrow schema representing the CSV files. If ``None``,
+                  the CSV reader will try to infer it based on data in the file.
+   :param schema_infer_max_records: Maximum number of rows to read from CSV files
+                                    for schema inference if needed.
+   :param file_extension: File extension; only files with this extension are
+                          selected for data input.
+   :param table_partition_cols: Partition columns as a list of tuples of
+                                (column_name, data_type).
+   :param file_compression_type: File compression type. Supported values are
+                                 ``"gzip"``, ``"bz2"``, ``"xz"``, ``"zstd"``, or empty string for
+                                 uncompressed.
+   :param file_sort_order: Optional sort order of the files as a list of sort
+                           expressions per file.
+   :param null_regex: Optional regex pattern to match null values in the CSV.
+   :param truncated_rows: Whether to allow truncated rows when parsing. By default
+                          this is ``False`` and will error if the CSV rows have different
+                          lengths. When set to ``True``, it will allow records with less than
+                          the expected number of columns and fill the missing columns with
+                          nulls. If the record's schema is not nullable, it will still return
+                          an error.
+
+
+   .. py:method:: to_inner() -> datafusion._internal.options.CsvReadOptions
+
+      Convert this object into the underlying Rust structure.
+
+      This is intended for internal use only.
+
+
+
+   .. py:method:: with_comment(comment: str | None) -> CsvReadOptions
+
+      Configure the comment character.
+
+
+
+   .. py:method:: with_delimiter(delimiter: str) -> CsvReadOptions
+
+      Configure the column delimiter.
+
+
+
+   .. py:method:: with_escape(escape: str | None) -> CsvReadOptions
+
+      Configure the escape character.
+
+
+
+   .. py:method:: with_file_compression_type(file_compression_type: str) -> CsvReadOptions
+
+      Configure file compression type.
+
+
+
+   .. py:method:: with_file_extension(file_extension: str) -> CsvReadOptions
+
+      Configure the file extension filter.
+
+
+
+   .. py:method:: with_file_sort_order(file_sort_order: list[list[datafusion.expr.SortExpr]]) -> CsvReadOptions
+
+      Configure file sort order.
+
+
+
+   .. py:method:: with_has_header(has_header: bool) -> CsvReadOptions
+
+      Configure whether the CSV has a header row.
+
+
+
+   .. py:method:: with_newlines_in_values(newlines_in_values: bool) -> CsvReadOptions
+
+      Configure whether newlines in values are supported.
+
+
+
+   .. py:method:: with_null_regex(null_regex: str | None) -> CsvReadOptions
+
+      Configure null value regex pattern.
+
+
+
+   .. py:method:: with_quote(quote: str) -> CsvReadOptions
+
+      Configure the quote character.
+
+
+
+   .. py:method:: with_schema(schema: pyarrow.Schema | None) -> CsvReadOptions
+
+      Configure the schema.
+
+
+
+   .. py:method:: with_schema_infer_max_records(schema_infer_max_records: int) -> CsvReadOptions
+
+      Configure maximum records for schema inference.
+
+
+
+   .. py:method:: with_table_partition_cols(table_partition_cols: list[tuple[str, pyarrow.DataType]]) -> CsvReadOptions
+
+      Configure table partition columns.
+
+
+
+   .. py:method:: with_terminator(terminator: str | None) -> CsvReadOptions
+
+      Configure the line terminator character.
+
+
+
+   .. py:method:: with_truncated_rows(truncated_rows: bool) -> CsvReadOptions
+
+      Configure whether to allow truncated rows.
+
+
+
+   .. py:attribute:: comment
+      :value: None
+
+
+
+   .. py:attribute:: delimiter
+      :value: ','
+
+
+
+   .. py:attribute:: escape
+      :value: None
+
+
+
+   .. py:attribute:: file_compression_type
+      :value: ''
+
+
+
+   .. py:attribute:: file_extension
+      :value: '.csv'
+
+
+
+   .. py:attribute:: file_sort_order
+      :value: []
+
+
+
+   .. py:attribute:: has_header
+      :value: True
+
+
+
+   .. py:attribute:: newlines_in_values
+      :value: False
+
+
+
+   .. py:attribute:: null_regex
+      :value: None
+
+
+
+   .. py:attribute:: quote
+      :value: '"'
+
+
+
+   .. py:attribute:: schema
+      :value: None
+
+
+
+   .. py:attribute:: schema_infer_max_records
+      :value: 1000
+
+
+
+   .. py:attribute:: table_partition_cols
+      :value: []
+
+
+
+   .. py:attribute:: terminator
+      :value: None
+
+
+
+   .. py:attribute:: truncated_rows
+      :value: False
+
+
+

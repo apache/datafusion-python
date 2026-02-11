@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
@@ -437,6 +447,25 @@
 <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>If you require additional control over how to read the CSV file, you can use
+<a class="reference internal" href="../../autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions" title="datafusion.options.CsvReadOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">CsvReadOptions</span></code></a> to set a variety of options.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">CsvReadOptions</span>
+<span class="n">options</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">CsvReadOptions</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_has_header</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># File contains a header row</span>
+    <span class="o">.</span><span class="n">with_delimiter</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span> <span class="c1"># Use ; as the delimiter instead of ,</span>
+    <span class="o">.</span><span class="n">with_comment</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>  <span class="c1"># Skip lines starting with #</span>
+    <span class="o">.</span><span class="n">with_escape</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Escape character</span>
+    <span class="o">.</span><span class="n">with_null_regex</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(null|NULL|N/A)$&quot;</span><span class="p">)</span>  <span class="c1"># Treat these as NULL</span>
+    <span class="o">.</span><span class="n">with_truncated_rows</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># Allow rows to have incomplete columns</span>
+    <span class="o">.</span><span class="n">with_file_compression_type</span><span class="p">(</span><span class="s2">&quot;gzip&quot;</span><span class="p">)</span>  <span class="c1"># Read gzipped CSV</span>
+    <span class="o">.</span><span class="n">with_file_extension</span><span class="p">(</span><span class="s2">&quot;.gz&quot;</span><span class="p">)</span> <span class="c1"># File extension other than .csv</span>
+<span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data.csv.gz&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Details for all CSV reading options can be found on the
+<a class="reference external" href="https://datafusion.apache.org/library-user-guide/custom-table-providers.html">DataFusion documentation site</a>.</p>
 </section>
 
 

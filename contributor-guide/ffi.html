@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
@@ -428,6 +438,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pyo3-class-mutability-guidelines">
+   PyO3 class mutability guidelines
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#alternative-approach">
    Alternative Approach
   </a>
@@ -459,7 +474,7 @@
               <div>
                 
   <section id="python-extensions">
-<h1>Python Extensions<a class="headerlink" href="#python-extensions" title="Link to this heading">¶</a></h1>
+<span id="ffi"></span><h1>Python Extensions<a class="headerlink" href="#python-extensions" title="Link to this heading">¶</a></h1>
 <p>The DataFusion in Python project is designed to allow users to extend its functionality in a few core
 areas. Ideally many users would like to package their extensions as a Python package and easily
 integrate that package with this project. This page serves to describe some of the challenges we face
@@ -560,6 +575,57 @@ and you want to create a sharable FFI counterpart, you could write:</p>
 <span class="kd">let</span><span class="w"> </span><span class="n">ffi_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">my_provider</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">);</span>
 </pre></div>
 </div>
+</section>
+<section id="pyo3-class-mutability-guidelines">
+<span id="ffi-pyclass-mutability"></span><h2>PyO3 class mutability guidelines<a class="headerlink" href="#pyo3-class-mutability-guidelines" title="Link to this heading">¶</a></h2>
+<p>PyO3 bindings should present immutable wrappers whenever a struct stores shared or
+interior-mutable state. In practice this means that any <code class="docutils literal notranslate"><span class="pre">#[pyclass]</span></code> containing an
+<code class="docutils literal notranslate"><span class="pre">Arc&lt;RwLock&lt;_&gt;&gt;</span></code> or similar synchronized primitive must opt into <code class="docutils literal notranslate"><span class="pre">#[pyclass(frozen)]</span></code>
+unless there is a compelling reason not to.</p>
+<p>The <a class="reference internal" href="../autoapi/datafusion/index.html#module-datafusion" title="datafusion"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion</span></code></a> configuration helpers illustrate the preferred pattern. The
+<code class="docutils literal notranslate"><span class="pre">PyConfig</span></code> class in <code class="file docutils literal notranslate"><span class="pre">src/config.rs</span></code> stores an <code class="docutils literal notranslate"><span class="pre">Arc&lt;RwLock&lt;ConfigOptions&gt;&gt;</span></code> and is
+explicitly frozen so callers interact with configuration state through provided methods
+instead of mutating the container directly:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(name = </span><span class="s">&quot;Config&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass, frozen)]</span>
+<span class="cp">#[derive(Clone)]</span>
+<span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyConfig</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">config</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="n">RwLock</span><span class="o">&lt;</span><span class="n">ConfigOptions</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The same approach applies to execution contexts. <code class="docutils literal notranslate"><span class="pre">PySessionContext</span></code> in
+<code class="file docutils literal notranslate"><span class="pre">src/context.rs</span></code> stays frozen even though it shares mutable state internally via
+<code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>. This ensures PyO3 tracks borrows correctly while Python-facing APIs
+clone the inner <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> or return new wrappers instead of mutating the
+existing instance in place:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(frozen, name = </span><span class="s">&quot;SessionContext&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass)]</span>
+<span class="cp">#[derive(Clone)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PySessionContext</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="nc">SessionContext</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Occasionally a type must remain mutable—for example when PyO3 attribute setters need to
+update fields directly. In these rare cases add an inline justification so reviewers and
+future contributors understand why <code class="docutils literal notranslate"><span class="pre">frozen</span></code> is unsafe to enable. <code class="docutils literal notranslate"><span class="pre">DataTypeMap</span></code> in
+<code class="file docutils literal notranslate"><span class="pre">src/common/data_type.rs</span></code> includes such a comment because PyO3 still needs to track
+field updates:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now</span>
+<span class="cp">#[derive(Debug, Clone)]</span>
+<span class="cp">#[pyclass(name = </span><span class="s">&quot;DataTypeMap&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion.common&quot;</span><span class="cp">, subclass)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DataTypeMap</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[pyo3(get, set)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">arrow_type</span><span class="p">:</span><span class="w"> </span><span class="nc">PyDataType</span><span class="p">,</span>
+<span class="w">    </span><span class="cp">#[pyo3(get, set)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">python_type</span><span class="p">:</span><span class="w"> </span><span class="nc">PythonType</span><span class="p">,</span>
+<span class="w">    </span><span class="cp">#[pyo3(get, set)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">sql_type</span><span class="p">:</span><span class="w"> </span><span class="nc">SqlType</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When reviewers encounter a mutable <code class="docutils literal notranslate"><span class="pre">#[pyclass]</span></code> without a comment, they should request
+an explanation or ask that <code class="docutils literal notranslate"><span class="pre">frozen</span></code> be added. Keeping these wrappers frozen by default
+helps avoid subtle bugs stemming from PyO3’s interior mutability tracking.</p>
 <p>If you were interfacing with a library that provided the above <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code> and
 you needed to turn it back into an <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code>, you can turn it into a
 <code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code> with implements the <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> trait.</p>

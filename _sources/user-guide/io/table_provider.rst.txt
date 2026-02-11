@@ -37,22 +37,26 @@ A complete example can be found in the `examples folder <https://github.com/apac
             &self,
             py: Python<'py>,
         ) -> PyResult<Bound<'py, PyCapsule>> {
-            let name = CString::new("datafusion_table_provider").unwrap();
+            let name = cr"datafusion_table_provider".into();
 
-            let provider = Arc::new(self.clone())
-                .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-            let provider = FFI_TableProvider::new(Arc::new(provider), false);
+            let provider = Arc::new(self.clone());
+            let provider = FFI_TableProvider::new(provider, false, None);
 
             PyCapsule::new_bound(py, provider, Some(name.clone()))
         }
     }
 
-Once you have this library available, in python you can register your table provider
-to the ``SessionContext``.
+Once you have this library available, you can construct a
+:py:class:`~datafusion.Table` in Python and register it with the
+``SessionContext``.
 
 .. code-block:: python
 
-    provider = MyTableProvider()
-    ctx.register_table_provider("my_table", provider)
+    from datafusion import SessionContext, Table
 
-    ctx.table("my_table").show()
+    ctx = SessionContext()
+    provider = MyTableProvider()
+
+    ctx.register_table("capsule_table", provider)
+
+    ctx.table("capsule_table").show()

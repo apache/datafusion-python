@@ -16,7 +16,6 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
-   datafusion.context.CatalogProviderExportable
    datafusion.context.RuntimeConfig
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
@@ -52,19 +51,6 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
-
-
-.. py:class:: CatalogProviderExportable
-
-   Bases: :py:obj:`Protocol`
-
-
-   Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
-
-   https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
-
-
-   .. py:method:: __datafusion_catalog_provider__() -> object
 
 
 .. py:class:: RuntimeConfig
@@ -425,9 +411,33 @@ Module Contents
        df = ctx.read_csv("data.csv")
 
 
+   .. py:method:: __datafusion_logical_extension_codec__() -> Any
+
+      Access the PyCapsule FFI_LogicalExtensionCodec.
+
+
+
+   .. py:method:: __datafusion_task_context_provider__() -> Any
+
+      Access the PyCapsule FFI_TaskContextProvider.
+
+
+
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Session Context.
+
+
+
+   .. py:method:: _convert_file_sort_order(file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None) -> list[list[datafusion._internal.expr.SortExpr]] | None
+      :staticmethod:
+
+
+      Convert nested ``SortKey`` sequences into raw sort expressions.
+
+      Each ``SortKey`` can be a column name string, an ``Expr``, or a
+      ``SortExpr`` and will be converted using
+      :func:`datafusion.expr.sort_list_to_raw_sort_list`.
 
 
 
@@ -588,7 +598,7 @@ Module Contents
 
 
 
-   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
 
@@ -605,6 +615,8 @@ Module Contents
                              selected for data input.
       :param table_partition_cols: Partition columns.
       :param file_compression_type: File compression type.
+      :param options: Set advanced options for CSV reading. This cannot be
+                      combined with any of the other options in this method.
 
       :returns: DataFrame representation of the read CSV files
 
@@ -627,7 +639,7 @@ Module Contents
 
 
 
-   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> datafusion.dataframe.DataFrame
 
       Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -643,19 +655,17 @@ Module Contents
       :param schema: An optional schema representing the parquet files. If None,
                      the parquet reader will try to infer it based on data in the
                      file.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
       :returns: DataFrame representation of the read Parquet files
 
 
 
-   .. py:method:: read_table(table: datafusion.catalog.Table) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_table(table: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> datafusion.dataframe.DataFrame
 
       Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
-
-      For a :py:class:`~datafusion.catalog.Table` such as a
-      :py:class:`~datafusion.catalog.ListingTable`, create a
-      :py:class:`~datafusion.dataframe.DataFrame`.
 
 
 
@@ -674,13 +684,19 @@ Module Contents
 
 
 
-   .. py:method:: register_catalog_provider(name: str, provider: CatalogProviderExportable | datafusion.catalog.CatalogProvider | datafusion.catalog.Catalog) -> None
+   .. py:method:: register_catalog_provider(name: str, provider: datafusion.catalog.CatalogProviderExportable | datafusion.catalog.CatalogProvider | datafusion.catalog.Catalog) -> None
 
       Register a catalog provider.
 
 
 
-   .. py:method:: register_csv(name: str, path: str | pathlib.Path | list[str | pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', file_compression_type: str | None = None) -> None
+   .. py:method:: register_catalog_provider_list(provider: datafusion.catalog.CatalogProviderListExportable | datafusion.catalog.CatalogProviderList | datafusion.catalog.CatalogList) -> None
+
+      Register a catalog provider list.
+
+
+
+   .. py:method:: register_csv(name: str, path: str | pathlib.Path | list[str | pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> None
 
       Register a CSV file as a table.
 
@@ -699,6 +715,8 @@ Module Contents
       :param file_extension: File extension; only files with this extension are
                              selected for data input.
       :param file_compression_type: File compression type.
+      :param options: Set advanced options for CSV reading. This cannot be
+                      combined with any of the other options in this method.
 
 
 
@@ -730,7 +748,7 @@ Module Contents
 
 
 
-   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> None
 
       Register multiple files as a single table.
 
@@ -743,7 +761,9 @@ Module Contents
       :param table_partition_cols: Partition columns.
       :param file_extension: File extension of the provided table.
       :param schema: The data source schema.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
 
 
@@ -757,7 +777,7 @@ Module Contents
 
 
 
-   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> None
 
       Register a Parquet file as a table.
 
@@ -775,7 +795,9 @@ Module Contents
                             that may be in the file schema. This can help avoid schema
                             conflicts due to metadata.
       :param schema: The data source schema.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
 
 
@@ -791,23 +813,23 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name: str, table: datafusion.catalog.Table) -> None
+   .. py:method:: register_table(name: str, table: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
-      Register a :py:class: `~datafusion.catalog.Table` as a table.
+      Register a :py:class:`~datafusion.Table` with this context.
 
-      The registered table can be referenced from SQL statement executed against.
+      The registered table can be referenced from SQL statements executed against
+      this context.
 
       :param name: Name of the resultant table.
-      :param table: DataFusion table to add to the session context.
+      :param table: Any object that can be converted into a :class:`Table`.
 
 
 
-   .. py:method:: register_table_provider(name: str, provider: TableProviderExportable) -> None
+   .. py:method:: register_table_provider(name: str, provider: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
       Register a table provider.
 
-      This table provider must have a method called ``__datafusion_table_provider__``
-      which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+      Deprecated: use :meth:`register_table` instead.
 
 
 
@@ -837,7 +859,7 @@ Module Contents
 
    .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame) -> None
 
-      Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+      Register a :py:class:`~datafusion.dataframe.DataFrame` as a view.
 
       :param name: The name to register the view under.
       :type name: str
@@ -852,9 +874,13 @@ Module Contents
 
 
 
-   .. py:method:: sql(query: str, options: SQLOptions | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: sql(query: str, options: SQLOptions | None = None, param_values: dict[str, Any] | None = None, **named_params: Any) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.DataFrame` from SQL query text.
+
+      See the online documentation for a description of how to perform
+      parameterized substitution via either the ``param_values`` option
+      or passing in ``named_params``.
 
       Note: This API implements DDL statements such as ``CREATE TABLE`` and
       ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
@@ -863,12 +889,15 @@ Module Contents
 
       :param query: SQL query text.
       :param options: If provided, the query will be validated against these options.
+      :param param_values: Provides substitution of scalar values in the query
+                           after parsing.
+      :param named_params: Provides string or DataFrame substitution in the query string.
 
       :returns: DataFrame representation of the SQL query.
 
 
 
-   .. py:method:: sql_with_options(query: str, options: SQLOptions) -> datafusion.dataframe.DataFrame
+   .. py:method:: sql_with_options(query: str, options: SQLOptions, param_values: dict[str, Any] | None = None, **named_params: Any) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
@@ -877,6 +906,9 @@ Module Contents
 
       :param query: SQL query text.
       :param options: SQL options.
+      :param param_values: Provides substitution of scalar values in the query
+                           after parsing.
+      :param named_params: Provides string or DataFrame substitution in the query string.
 
       :returns: DataFrame representation of the SQL query.
 
@@ -894,6 +926,15 @@ Module Contents
 
 
 
+   .. py:method:: with_logical_extension_codec(codec: Any) -> SessionContext
+
+      Create a new session context with specified codec.
+
+      This only supports codecs that have been implemented using the
+      FFI interface.
+
+
+
    .. py:attribute:: ctx
 
 
@@ -907,6 +948,6 @@ Module Contents
    https://datafusion.apache.org/python/user-guide/io/table_provider.html
 
 
-   .. py:method:: __datafusion_table_provider__() -> object
+   .. py:method:: __datafusion_table_provider__(session: Any) -> object
 
 

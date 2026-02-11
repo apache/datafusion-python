@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
@@ -430,6 +440,11 @@
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#left-anti-join">
    Left Anti Join
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#duplicate-keys">
+   Duplicate Keys
   </a>
  </li>
 </ul>
@@ -568,6 +583,52 @@ the right table.</p>
 <span class="o">+-------------+----------+</span>
 <span class="o">|</span> <span class="mi">3</span>           <span class="o">|</span> <span class="n">Charlie</span>  <span class="o">|</span>
 <span class="o">+-------------+----------+</span>
+</pre></div>
+</div>
+</section>
+<section id="duplicate-keys">
+<h2>Duplicate Keys<a class="headerlink" href="#duplicate-keys" title="Link to this heading">¶</a></h2>
+<p>It is common to join two DataFrames on a common column name. Starting in
+version 51.0.0, <code class="docutils literal notranslate"><span class="pre">datafusion-python`</span></code> will now coalesce on column with identical names by
+default. This reduces problems with ambiguous column selection after joins.
+You can disable this feature by setting the parameter <code class="docutils literal notranslate"><span class="pre">coalesce_duplicate_keys</span></code>
+to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">}</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CityCabs&quot;</span><span class="p">},</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MetroRide&quot;</span><span class="p">},</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;UrbanGo&quot;</span><span class="p">},</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">])</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----+----------+-----------+</span>
+<span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
+<span class="o">+----+----------+-----------+</span>
+<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
+<span class="o">+----+----------+-----------+</span>
+</pre></div>
+</div>
+<p>In contrast to the above example, if we wish to get both columns:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="n">coalesce_duplicate_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----+----------+----+-----------+</span>
+<span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
+<span class="o">+----+----------+----+-----------+</span>
+<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
+<span class="o">+----+----------+----+-----------+</span>
 </pre></div>
 </div>
 </section>

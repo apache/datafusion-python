@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../plan/index.html">
        datafusion.plan
       </a>
@@ -415,6 +425,11 @@
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#classes">
    Classes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#functions">
+   Functions
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -1794,6 +1809,24 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.ensure_expr">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ensure_expr()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.ensure_expr_list">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ensure_expr_list()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.Aggregate">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -2023,6 +2056,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        DropView
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.EXPR_TYPE_ERROR">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EXPR_TYPE_ERROR
       </span>
      </code>
     </a>
@@ -2379,6 +2421,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.SortKey">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SortKey
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.Subquery">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -2613,121 +2664,127 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.DropView" title="datafusion.expr.DropView"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DropView</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.EmptyRelation" title="datafusion.expr.EmptyRelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmptyRelation</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.EXPR_TYPE_ERROR" title="datafusion.expr.EXPR_TYPE_ERROR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EXPR_TYPE_ERROR</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Execute" title="datafusion.expr.Execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Execute</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.EmptyRelation" title="datafusion.expr.EmptyRelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmptyRelation</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Exists" title="datafusion.expr.Exists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exists</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Execute" title="datafusion.expr.Execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Execute</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Explain" title="datafusion.expr.Explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Explain</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Exists" title="datafusion.expr.Exists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exists</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Extension" title="datafusion.expr.Extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Extension</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Explain" title="datafusion.expr.Explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Explain</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.FileType" title="datafusion.expr.FileType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileType</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Extension" title="datafusion.expr.Extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Extension</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Filter" title="datafusion.expr.Filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.FileType" title="datafusion.expr.FileType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileType</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupingSet</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Filter" title="datafusion.expr.Filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.ILike" title="datafusion.expr.ILike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILike</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupingSet</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.InList" title="datafusion.expr.InList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InList</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ILike" title="datafusion.expr.ILike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILike</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.InSubquery" title="datafusion.expr.InSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InSubquery</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.InList" title="datafusion.expr.InList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InList</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsFalse" title="datafusion.expr.IsFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsFalse</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.InSubquery" title="datafusion.expr.InSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InSubquery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotFalse" title="datafusion.expr.IsNotFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotFalse</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsFalse" title="datafusion.expr.IsFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsFalse</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotNull" title="datafusion.expr.IsNotNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotNull</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotFalse" title="datafusion.expr.IsNotFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotFalse</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotTrue" title="datafusion.expr.IsNotTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotTrue</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotNull" title="datafusion.expr.IsNotNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotNull</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotUnknown" title="datafusion.expr.IsNotUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotUnknown</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotTrue" title="datafusion.expr.IsNotTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotTrue</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNull" title="datafusion.expr.IsNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNull</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotUnknown" title="datafusion.expr.IsNotUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotUnknown</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsTrue" title="datafusion.expr.IsTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsTrue</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNull" title="datafusion.expr.IsNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNull</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsUnknown" title="datafusion.expr.IsUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsUnknown</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsTrue" title="datafusion.expr.IsTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsTrue</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Join" title="datafusion.expr.Join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Join</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsUnknown" title="datafusion.expr.IsUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsUnknown</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.JoinConstraint" title="datafusion.expr.JoinConstraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinConstraint</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Join" title="datafusion.expr.Join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Join</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.JoinType" title="datafusion.expr.JoinType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinType</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.JoinConstraint" title="datafusion.expr.JoinConstraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinConstraint</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Like" title="datafusion.expr.Like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Like</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.JoinType" title="datafusion.expr.JoinType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinType</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Limit" title="datafusion.expr.Limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Limit</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Like" title="datafusion.expr.Like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Like</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Literal" title="datafusion.expr.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Limit" title="datafusion.expr.Limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Limit</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Negative" title="datafusion.expr.Negative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Negative</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Literal" title="datafusion.expr.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Not" title="datafusion.expr.Not"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Not</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Negative" title="datafusion.expr.Negative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Negative</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.OperateFunctionArg" title="datafusion.expr.OperateFunctionArg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OperateFunctionArg</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Not" title="datafusion.expr.Not"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Not</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Partitioning" title="datafusion.expr.Partitioning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Partitioning</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.OperateFunctionArg" title="datafusion.expr.OperateFunctionArg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OperateFunctionArg</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Placeholder" title="datafusion.expr.Placeholder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Placeholder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Partitioning" title="datafusion.expr.Partitioning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Partitioning</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Prepare" title="datafusion.expr.Prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Prepare</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Placeholder" title="datafusion.expr.Placeholder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Placeholder</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Projection" title="datafusion.expr.Projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Projection</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Prepare" title="datafusion.expr.Prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Prepare</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.RecursiveQuery" title="datafusion.expr.RecursiveQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecursiveQuery</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Projection" title="datafusion.expr.Projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Projection</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Repartition" title="datafusion.expr.Repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Repartition</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.RecursiveQuery" title="datafusion.expr.RecursiveQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecursiveQuery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.ScalarSubquery" title="datafusion.expr.ScalarSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarSubquery</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Repartition" title="datafusion.expr.Repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Repartition</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ScalarVariable" title="datafusion.expr.ScalarVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarVariable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ScalarSubquery" title="datafusion.expr.ScalarSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarSubquery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SetVariable" title="datafusion.expr.SetVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetVariable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.ScalarVariable" title="datafusion.expr.ScalarVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarVariable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.SimilarTo" title="datafusion.expr.SimilarTo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimilarTo</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.SetVariable" title="datafusion.expr.SetVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetVariable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Sort" title="datafusion.expr.Sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sort</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SimilarTo" title="datafusion.expr.SimilarTo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimilarTo</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Sort" title="datafusion.expr.Sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sort</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SortKey" title="datafusion.expr.SortKey"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SortKey</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Subquery" title="datafusion.expr.Subquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Subquery</span></code></a></p></td>
@@ -2800,6 +2857,19 @@
 </tbody>
 </table>
 </section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.ensure_expr" title="datafusion.expr.ensure_expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_expr</span></code></a>(→ datafusion._internal.expr.Expr)</p></td>
+<td><p>Return the internal expression from <code class="docutils literal notranslate"><span class="pre">Expr</span></code> or raise <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ensure_expr_list" title="datafusion.expr.ensure_expr_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_expr_list</span></code></a>(→ list[datafusion._internal.expr.Expr])</p></td>
+<td><p>Flatten an iterable of expressions, validating each via <code class="docutils literal notranslate"><span class="pre">ensure_expr</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <dl class="py class">
@@ -2810,7 +2880,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datafusion.functions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">f</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">lit</span><span class="p">,</span> <span class="n">col</span>
 <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column_a&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column_a&quot;</span><span class="p">))</span>
     <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;One&quot;</span><span class="p">))</span>
     <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Two&quot;</span><span class="p">))</span>
     <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Unknown&quot;</span><span class="p">))</span>
@@ -2886,7 +2956,12 @@
 <dd><p>Retrieve sub-object.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">key</span></code> is a string, returns the subfield of the struct.
 If <code class="docutils literal notranslate"><span class="pre">key</span></code> is an integer, retrieves the element in the array. Note that the
-element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike <cite>array_element</cite> which begins at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike
+<a class="reference internal" href="../functions/index.html#datafusion.functions.array_element" title="datafusion.functions.array_element"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_element()</span></code></a> which begins at <code class="docutils literal notranslate"><span class="pre">1</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">key</span></code> is a slice, returns an array that contains a slice of the
+original array. Similar to integer indexing, this follows Python convention
+where the index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code> unlike
+<a class="reference internal" href="../functions/index.html#datafusion.functions.array_slice" title="datafusion.functions.array_slice"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_slice()</span></code></a> which begins at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3137,7 +3212,7 @@ element index begins at <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
 <dd><p>Cast to a new data type.</p>
 </dd></dl>
 
@@ -3453,7 +3528,7 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.python_value">
 <span class="sig-name descname"><span class="pre">python_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.python_value" title="Link to this definition">¶</a></dt>
-<dd><p>Extracts the Expr value into a PyObject.</p>
+<dd><p>Extracts the Expr value into <cite>Any</cite>.</p>
 <p>This is only valid for literal expressions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -3734,7 +3809,7 @@ type of expression, an error will be generated when <code class="docutils litera
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.expr.Window">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">WindowFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">null_treatment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.common.NullTreatment</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.Window" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">WindowFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">null_treatment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.common.NullTreatment</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.Window" title="Link to this definition">¶</a></dt>
 <dd><p>Define reusable window parameters.</p>
 <p>Construct a window definition.</p>
 <dl class="field-list simple">
@@ -3859,6 +3934,43 @@ parameter must be set.</p></li>
 <span class="sig-name descname"><span class="pre">frame_bound</span></span><a class="headerlink" href="#datafusion.expr.WindowFrameBound.frame_bound" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.expr.ensure_expr">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">ensure_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion._internal.expr.Expr</span></span></span><a class="headerlink" href="#datafusion.expr.ensure_expr" title="Link to this definition">¶</a></dt>
+<dd><p>Return the internal expression from <code class="docutils literal notranslate"><span class="pre">Expr</span></code> or raise <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+<p>This helper rejects plain strings and other non-<a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> values so
+higher level APIs consistently require explicit <a class="reference internal" href="../index.html#datafusion.col" title="datafusion.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">col()</span></code></a> or
+<a class="reference internal" href="../index.html#datafusion.lit" title="datafusion.lit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lit()</span></code></a> expressions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – Candidate expression or other object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The internal expression representation.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">value</span></code> is not an instance of <a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.expr.ensure_expr_list">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">ensure_expr_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">datafusion._internal.expr.Expr</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.expr.ensure_expr_list" title="Link to this definition">¶</a></dt>
+<dd><p>Flatten an iterable of expressions, validating each via <code class="docutils literal notranslate"><span class="pre">ensure_expr</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exprs</strong> – Possibly nested iterable containing expressions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A flat list of raw expressions.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If any item is not an instance of <a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -3989,6 +4101,11 @@ parameter must be set.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.DropView">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DropView</span></span><a class="headerlink" href="#datafusion.expr.DropView" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.EXPR_TYPE_ERROR">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">EXPR_TYPE_ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Use</span> <span class="pre">col()/column()</span> <span class="pre">or</span> <span class="pre">lit()/literal()</span> <span class="pre">to</span> <span class="pre">construct</span> <span class="pre">expressions'</span></em><a class="headerlink" href="#datafusion.expr.EXPR_TYPE_ERROR" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -4184,6 +4301,11 @@ parameter must be set.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.Sort">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Sort</span></span><a class="headerlink" href="#datafusion.expr.Sort" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.SortKey">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">SortKey</span></span><a class="headerlink" href="#datafusion.expr.SortKey" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">

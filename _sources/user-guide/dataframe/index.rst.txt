@@ -95,8 +95,9 @@ DataFusion's DataFrame API offers a wide range of operations:
     # Select with expressions
     df = df.select(column("a") + column("b"), column("a") - column("b"))
     
-    # Filter rows
+    # Filter rows (expressions or SQL strings)
     df = df.filter(column("age") > literal(25))
+    df = df.filter("age > 25")
     
     # Add computed columns
     df = df.with_column("full_name", column("first_name") + literal(" ") + column("last_name"))
@@ -126,6 +127,56 @@ DataFusion's DataFrame API offers a wide range of operations:
     # Drop columns
     df = df.drop("temporary_column")
 
+Column Names as Function Arguments
+----------------------------------
+
+Some ``DataFrame`` methods accept column names when an argument refers to an
+existing column. These include:
+
+* :py:meth:`~datafusion.DataFrame.select`
+* :py:meth:`~datafusion.DataFrame.sort`
+* :py:meth:`~datafusion.DataFrame.drop`
+* :py:meth:`~datafusion.DataFrame.join` (``on`` argument)
+* :py:meth:`~datafusion.DataFrame.aggregate` (grouping columns)
+
+See the full function documentation for details on any specific function.
+
+Note that :py:meth:`~datafusion.DataFrame.join_on` expects ``col()``/``column()`` expressions rather than plain strings.
+
+For such methods, you can pass column names directly:
+
+.. code-block:: python
+
+    from datafusion import col, functions as f
+
+    df.sort('id')
+    df.aggregate('id', [f.count(col('value'))])
+
+The same operation can also be written with explicit column expressions, using either ``col()`` or ``column()``:
+
+.. code-block:: python
+
+    from datafusion import col, column, functions as f
+
+    df.sort(col('id'))
+    df.aggregate(column('id'), [f.count(col('value'))])
+
+Note that ``column()`` is an alias of ``col()``, so you can use either name; the example above shows both in action.
+
+Whenever an argument represents an expression—such as in
+:py:meth:`~datafusion.DataFrame.filter` or
+:py:meth:`~datafusion.DataFrame.with_column`—use ``col()`` to reference
+columns. The comparison and arithmetic operators on ``Expr`` will automatically
+convert any non-``Expr`` value into a literal expression, so writing
+
+.. code-block:: python
+
+    from datafusion import col
+    df.filter(col("age") > 21)
+
+is equivalent to using ``lit(21)`` explicitly. Use ``lit()`` (also available
+as ``literal()``) when you need to construct a literal expression directly.
+
 Terminal Operations
 -------------------
 
@@ -145,9 +196,120 @@ To materialize the results of your DataFrame operations:
     
     # Display results
     df.show()                         # Print tabular format to console
-    
+
     # Count rows
     count = df.count()
+
+    # Collect a single column of data as a PyArrow Array
+    arr = df.collect_column("age")
+
+Zero-copy streaming to Arrow-based Python libraries
+---------------------------------------------------
+
+DataFusion DataFrames implement the ``__arrow_c_stream__`` protocol, enabling
+zero-copy, lazy streaming into Arrow-based Python libraries. With the streaming
+protocol, batches are produced on demand.
+
+.. note::
+
+    The protocol is implementation-agnostic and works with any Python library
+    that understands the Arrow C streaming interface (for example, PyArrow
+    or other Arrow-compatible implementations). The sections below provide a
+    short PyArrow-specific example and general guidance for other
+    implementations.
+
+PyArrow
+-------
+
+.. code-block:: python
+
+    import pyarrow as pa
+
+    # Create a PyArrow RecordBatchReader without materializing all batches
+    reader = pa.RecordBatchReader.from_stream(df)
+    for batch in reader:
+        ...  # process each batch as it is produced
+
+DataFrames are also iterable, yielding :class:`datafusion.RecordBatch`
+objects lazily so you can loop over results directly without importing
+PyArrow:
+
+.. code-block:: python
+
+    for batch in df:
+        ...  # each batch is a ``datafusion.RecordBatch``
+
+Each batch exposes ``to_pyarrow()``, allowing conversion to a PyArrow
+table. ``pa.table(df)`` collects the entire DataFrame eagerly into a
+PyArrow table:
+
+.. code-block:: python
+
+    import pyarrow as pa
+    table = pa.table(df)
+
+Asynchronous iteration is supported as well, allowing integration with
+``asyncio`` event loops:
+
+.. code-block:: python
+
+    async for batch in df:
+        ...  # process each batch as it is produced
+
+To work with the stream directly, use ``execute_stream()``, which returns a
+:class:`~datafusion.RecordBatchStream`.
+
+.. code-block:: python
+
+    stream = df.execute_stream()
+    for batch in stream:
+        ...
+
+Execute as Stream
+^^^^^^^^^^^^^^^^^
+
+For finer control over streaming execution, use
+:py:meth:`~datafusion.DataFrame.execute_stream` to obtain a
+:py:class:`datafusion.RecordBatchStream`:
+
+.. code-block:: python
+
+    stream = df.execute_stream()
+    for batch in stream:
+        ...  # process each batch as it is produced
+
+.. tip::
+
+    To get a PyArrow reader instead, call
+
+    ``pa.RecordBatchReader.from_stream(df)``.
+    
+When partition boundaries are important,
+:py:meth:`~datafusion.DataFrame.execute_stream_partitioned`
+returns an iterable of :py:class:`datafusion.RecordBatchStream` objects, one per
+partition:
+
+.. code-block:: python
+
+    for stream in df.execute_stream_partitioned():
+        for batch in stream:
+            ...  # each stream yields RecordBatches
+
+To process partitions concurrently, first collect the streams into a list
+and then poll each one in a separate ``asyncio`` task:
+
+.. code-block:: python
+
+    import asyncio
+
+    async def consume(stream):
+        async for batch in stream:
+            ...
+
+    streams = list(df.execute_stream_partitioned())
+    await asyncio.gather(*(consume(s) for s in streams))
+
+See :doc:`../io/arrow` for additional details on the Arrow interface.
 
 HTML Rendering
 --------------

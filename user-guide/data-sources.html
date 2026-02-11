@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -355,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/options/index.html">
+       datafusion.options
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
@@ -438,8 +448,8 @@
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#iceberg">
-     Iceberg
+    <a class="reference internal nav-link" href="#apache-iceberg">
+     Apache Iceberg
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
@@ -656,7 +666,7 @@ as Delta Lake. This will require a recent version of
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deltalake</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeltaTable</span>
 
 <span class="n">delta_table</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="p">(</span><span class="s2">&quot;path_to_table&quot;</span><span class="p">)</span>
-<span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;my_delta_table&quot;</span><span class="p">,</span> <span class="n">delta_table</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s2">&quot;my_delta_table&quot;</span><span class="p">,</span> <span class="n">delta_table</span><span class="p">)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;my_delta_table&quot;</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -674,16 +684,44 @@ which can lead to a significant performance difference.</p>
 </pre></div>
 </div>
 </section>
-<section id="iceberg">
-<h2>Iceberg<a class="headerlink" href="#iceberg" title="Link to this heading">¶</a></h2>
-<p>Coming soon!</p>
+<section id="apache-iceberg">
+<h2>Apache Iceberg<a class="headerlink" href="#apache-iceberg" title="Link to this heading">¶</a></h2>
+<p>DataFusion 45.0.0 and later support the ability to register Apache Iceberg tables as table providers through the Custom Table Provider interface.</p>
+<p>This requires either the <a class="reference external" href="https://pypi.org/project/pyiceberg/">pyiceberg</a> library (&gt;=0.10.0) or the <a class="reference external" href="https://pypi.org/project/pyiceberg-core/">pyiceberg-core</a> library (&gt;=0.5.0).</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pyiceberg-core</span></code> library exposes Iceberg Rust’s implementation of the Custom Table Provider interface as python bindings.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pyiceberg</span></code> library utilizes the <code class="docutils literal notranslate"><span class="pre">pyiceberg-core</span></code> python bindings under the hood and provides a native way for Python users to interact with the DataFusion.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyiceberg.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_catalog</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+
+<span class="c1"># Load catalog and create/load a table</span>
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">load_catalog</span><span class="p">(</span><span class="s2">&quot;catalog&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;in-memory&quot;</span><span class="p">)</span>
+<span class="n">catalog</span><span class="o">.</span><span class="n">create_namespace_if_not_exists</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create some sample data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="n">iceberg_table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="s2">&quot;default.test&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+<span class="n">iceberg_table</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Register the table with DataFusion</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">iceberg_table</span><span class="p">)</span>
+
+<span class="c1"># Query the table using DataFusion</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Note that the Datafusion integration rely on features from the <a class="reference external" href="https://github.com/apache/iceberg-rust/">Iceberg Rust</a> implementation instead of the <a class="reference external" href="https://github.com/apache/iceberg-python/">PyIceberg</a> implementation.
+Features that are available in PyIceberg but not yet in Iceberg Rust will not be available when using DataFusion.</p>
 </section>
 <section id="custom-table-provider">
 <h2>Custom Table Provider<a class="headerlink" href="#custom-table-provider" title="Link to this heading">¶</a></h2>
 <p>You can implement a custom Data Provider in Rust and expose it to DataFusion through the
 the interface as describe in the <a class="reference internal" href="io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a>
 section. This is an advanced topic, but a
-<a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/ffi-table-provider">user example</a>
+<a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example">user example</a>
 is provided in the DataFusion repository.</p>
 </section>
 </section>

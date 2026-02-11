@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -614,6 +624,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameHtmlFormatter._max_rows
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -668,6 +687,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameHtmlFormatter.max_rows
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -677,10 +705,10 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows_display">
+      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows">
        <code class="docutils literal notranslate">
         <span class="pre">
-         DataFrameHtmlFormatter.min_rows_display
+         DataFrameHtmlFormatter.min_rows
         </span>
        </code>
       </a>
@@ -838,6 +866,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._validate_formatter_parameters">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       _validate_formatter_parameters()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._validate_positive_int">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -940,19 +977,22 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter._validate_bool" title="datafusion.dataframe_formatter._validate_bool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_bool</span></code></a>(→ None)</p></td>
 <td><p>Validate that a parameter is a boolean.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter._validate_positive_int" title="datafusion.dataframe_formatter._validate_positive_int"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_positive_int</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter._validate_formatter_parameters" title="datafusion.dataframe_formatter._validate_formatter_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_formatter_parameters</span></code></a>(→ int)</p></td>
+<td><p>Validate all formatter parameters and return resolved max_rows value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter._validate_positive_int" title="datafusion.dataframe_formatter._validate_positive_int"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_positive_int</span></code></a>(→ None)</p></td>
 <td><p>Validate that a parameter is a positive integer.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.configure_formatter" title="datafusion.dataframe_formatter.configure_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">configure_formatter</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.configure_formatter" title="datafusion.dataframe_formatter.configure_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">configure_formatter</span></code></a>(→ None)</p></td>
 <td><p>Configure the global DataFrame HTML formatter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.get_formatter" title="datafusion.dataframe_formatter.get_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_formatter</span></code></a>(→ DataFrameHtmlFormatter)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.get_formatter" title="datafusion.dataframe_formatter.get_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_formatter</span></code></a>(→ DataFrameHtmlFormatter)</p></td>
 <td><p>Get the current global DataFrame HTML formatter.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.reset_formatter" title="datafusion.dataframe_formatter.reset_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_formatter</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.reset_formatter" title="datafusion.dataframe_formatter.reset_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_formatter</span></code></a>(→ None)</p></td>
 <td><p>Reset the global DataFrame HTML formatter to default settings.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.set_formatter" title="datafusion.dataframe_formatter.set_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_formatter</span></code></a>(→ None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.set_formatter" title="datafusion.dataframe_formatter.set_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_formatter</span></code></a>(→ None)</p></td>
 <td><p>Set the global DataFrame HTML formatter.</p></td>
 </tr>
 </tbody>
@@ -975,7 +1015,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows_display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.StyleProvider" title="datafusion.dataframe_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.StyleProvider" title="datafusion.dataframe_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="Link to this definition">¶</a></dt>
 <dd><p>Configurable HTML formatter for DataFusion DataFrames.</p>
 <p>This class handles the HTML rendering of DataFrames for display in
 Jupyter notebooks and other rich display contexts.</p>
@@ -990,8 +1030,9 @@ Jupyter notebooks and other rich display contexts.</p>
 <li><p><strong>max_width</strong> – Maximum width of the HTML table in pixels</p></li>
 <li><p><strong>max_height</strong> – Maximum height of the HTML table in pixels</p></li>
 <li><p><strong>max_memory_bytes</strong> – Maximum memory in bytes for rendered data (default: 2MB)</p></li>
-<li><p><strong>min_rows_display</strong> – Minimum number of rows to display</p></li>
-<li><p><strong>repr_rows</strong> – Default number of rows to display in repr output</p></li>
+<li><p><strong>min_rows</strong> – Minimum number of rows to display (must be &lt;= max_rows)</p></li>
+<li><p><strong>max_rows</strong> – Maximum number of rows to display in repr output</p></li>
+<li><p><strong>repr_rows</strong> – Deprecated alias for max_rows</p></li>
 <li><p><strong>enable_cell_expansion</strong> – Whether to add expand/collapse buttons for long cell
 values</p></li>
 <li><p><strong>custom_css</strong> – Additional CSS to include in the HTML output</p></li>
@@ -1006,26 +1047,31 @@ session</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>max_cell_length</strong> (<em>int</em><em>, </em><em>default 25</em>) – Maximum length of cell content before truncation.</p></li>
-<li><p><strong>max_width</strong> (<em>int</em><em>, </em><em>default 1000</em>) – Maximum width of the displayed table in pixels.</p></li>
-<li><p><strong>max_height</strong> (<em>int</em><em>, </em><em>default 300</em>) – Maximum height of the displayed table in pixels.</p></li>
-<li><p><strong>max_memory_bytes</strong> (<em>int</em><em>, </em><em>default 2097152</em><em> (</em><em>2MB</em><em>)</em>) – Maximum memory in bytes for rendered data.</p></li>
-<li><p><strong>min_rows_display</strong> (<em>int</em><em>, </em><em>default 20</em>) – Minimum number of rows to display.</p></li>
-<li><p><strong>repr_rows</strong> (<em>int</em><em>, </em><em>default 10</em>) – Default number of rows to display in repr output.</p></li>
-<li><p><strong>enable_cell_expansion</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to allow cells to expand when clicked.</p></li>
-<li><p><strong>custom_css</strong> (<em>str</em><em>, </em><em>optional</em>) – Custom CSS to apply to the HTML table.</p></li>
-<li><p><strong>show_truncation_message</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to show a message indicating that content has been truncated.</p></li>
-<li><p><strong>style_provider</strong> (<a class="reference internal" href="#datafusion.dataframe_formatter.StyleProvider" title="datafusion.dataframe_formatter.StyleProvider"><em>StyleProvider</em></a><em>, </em><em>optional</em>) – Provider of CSS styles for the HTML table. If None, DefaultStyleProvider
+<li><p><strong>max_cell_length</strong> – Maximum length of cell content before truncation.</p></li>
+<li><p><strong>max_width</strong> – Maximum width of the displayed table in pixels.</p></li>
+<li><p><strong>max_height</strong> – Maximum height of the displayed table in pixels.</p></li>
+<li><p><strong>max_memory_bytes</strong> – Maximum memory in bytes for rendered data. Helps prevent performance
+issues with large datasets.</p></li>
+<li><p><strong>min_rows</strong> – Minimum number of rows to display even if memory limit is reached.
+Must not exceed <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>.</p></li>
+<li><p><strong>max_rows</strong> – Maximum number of rows to display. Takes precedence over memory limits
+when fewer rows are requested.</p></li>
+<li><p><strong>repr_rows</strong> – Deprecated alias for <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> instead.</p></li>
+<li><p><strong>enable_cell_expansion</strong> – Whether to allow cells to expand when clicked.</p></li>
+<li><p><strong>custom_css</strong> – Custom CSS to apply to the HTML table.</p></li>
+<li><p><strong>show_truncation_message</strong> – Whether to show a message indicating that content has been truncated.</p></li>
+<li><p><strong>style_provider</strong> – Provider of CSS styles for the HTML table. If None, DefaultStyleProvider
 is used.</p></li>
-<li><p><strong>use_shared_styles</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to use shared styles across multiple tables.</p></li>
+<li><p><strong>use_shared_styles</strong> – Whether to use shared styles across multiple tables. This improves
+performance when displaying many DataFrames in a single notebook.</p></li>
 <li><p><strong>Raises</strong></p></li>
 <li><p><strong>------</strong></p></li>
 <li><p><strong>ValueError</strong> – If max_cell_length, max_width, max_height, max_memory_bytes,
-min_rows_display, or repr_rows is not a positive integer.</p></li>
+min_rows or max_rows is not a positive integer, or if min_rows
+exceeds max_rows.</p></li>
 <li><p><strong>TypeError</strong> – If enable_cell_expansion, show_truncation_message, or use_shared_styles is
-not a boolean,
-or if custom_css is provided but is not a string,
-or if style_provider is provided but does not implement the StyleProvider
+not a boolean, or if custom_css is provided but is not a string, or if
+style_provider is provided but does not implement the StyleProvider
 protocol.</p></li>
 </ul>
 </dd>
@@ -1181,7 +1227,7 @@ a formatted string</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder">
-<span class="sig-name descname"><span class="pre">set_custom_cell_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_custom_cell_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder" title="Link to this definition">¶</a></dt>
 <dd><p>Set a custom cell builder function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1192,7 +1238,7 @@ a formatted string</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder">
-<span class="sig-name descname"><span class="pre">set_custom_header_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_custom_header_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder" title="Link to this definition">¶</a></dt>
 <dd><p>Set a custom header builder function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1203,12 +1249,17 @@ a formatted string</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder">
-<span class="sig-name descname"><span class="pre">_custom_cell_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_custom_cell_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder">
-<span class="sig-name descname"><span class="pre">_custom_header_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_custom_header_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows">
+<span class="sig-name descname"><span class="pre">_max_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1241,20 +1292,41 @@ a formatted string</p></li>
 <span class="sig-name descname"><span class="pre">max_memory_bytes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2097152</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_memory_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Get the maximum number of rows to display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The maximum number of rows to display in repr output</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width">
 <span class="sig-name descname"><span class="pre">max_width</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows_display">
-<span class="sig-name descname"><span class="pre">min_rows_display</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows_display" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows">
+<span class="sig-name descname"><span class="pre">min_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="py property">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows">
-<span class="sig-name descname"><span class="pre">repr_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">repr_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Get the maximum number of rows (deprecated name).</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version Use: </span><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_rows</span></code></a> instead. This property is provided for
+backward compatibility.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The maximum number of rows to display</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message">
@@ -1374,6 +1446,40 @@ DataFrames that might be caching the formatter reference.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>TypeError</strong> – If the value is not a boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.dataframe_formatter._validate_formatter_parameters">
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_formatter_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_formatter_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Validate all formatter parameters and return resolved max_rows value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_cell_length</strong> – Maximum cell length value to validate</p></li>
+<li><p><strong>max_width</strong> – Maximum width value to validate</p></li>
+<li><p><strong>max_height</strong> – Maximum height value to validate</p></li>
+<li><p><strong>max_memory_bytes</strong> – Maximum memory bytes value to validate</p></li>
+<li><p><strong>min_rows</strong> – Minimum rows to display value to validate</p></li>
+<li><p><strong>max_rows</strong> – Maximum rows value to validate (None means use default)</p></li>
+<li><p><strong>repr_rows</strong> – Deprecated repr_rows value to validate</p></li>
+<li><p><strong>enable_cell_expansion</strong> – Boolean expansion flag to validate</p></li>
+<li><p><strong>show_truncation_message</strong> – Boolean message flag to validate</p></li>
+<li><p><strong>use_shared_styles</strong> – Boolean styles flag to validate</p></li>
+<li><p><strong>custom_css</strong> – Custom CSS string to validate</p></li>
+<li><p><strong>style_provider</strong> – Style provider object to validate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resolved max_rows value after handling repr_rows deprecation</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If any numeric parameter is invalid or constraints are violated</p></li>
+<li><p><strong>TypeError</strong> – If any parameter has invalid type</p></li>
+<li><p><strong>DeprecationWarning</strong> – If repr_rows parameter is used</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

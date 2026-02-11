@@ -28,6 +28,7 @@ Functions
 
    datafusion.dataframe_formatter._refresh_formatter_reference
    datafusion.dataframe_formatter._validate_bool
+   datafusion.dataframe_formatter._validate_formatter_parameters
    datafusion.dataframe_formatter._validate_positive_int
    datafusion.dataframe_formatter.configure_formatter
    datafusion.dataframe_formatter.get_formatter
@@ -52,7 +53,7 @@ Module Contents
 
 
 
-.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, max_memory_bytes: int = 2 * 1024 * 1024, min_rows_display: int = 20, repr_rows: int = 10, enable_cell_expansion: bool = True, custom_css: Optional[str] = None, show_truncation_message: bool = True, style_provider: Optional[StyleProvider] = None, use_shared_styles: bool = True)
+.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, max_memory_bytes: int = 2 * 1024 * 1024, min_rows: int = 10, max_rows: int | None = None, repr_rows: int | None = None, enable_cell_expansion: bool = True, custom_css: str | None = None, show_truncation_message: bool = True, style_provider: StyleProvider | None = None, use_shared_styles: bool = True)
 
    Configurable HTML formatter for DataFusion DataFrames.
 
@@ -68,8 +69,9 @@ Module Contents
    :param max_width: Maximum width of the HTML table in pixels
    :param max_height: Maximum height of the HTML table in pixels
    :param max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
-   :param min_rows_display: Minimum number of rows to display
-   :param repr_rows: Default number of rows to display in repr output
+   :param min_rows: Minimum number of rows to display (must be <= max_rows)
+   :param max_rows: Maximum number of rows to display in repr output
+   :param repr_rows: Deprecated alias for max_rows
    :param enable_cell_expansion: Whether to add expand/collapse buttons for long cell
                                  values
    :param custom_css: Additional CSS to include in the HTML output
@@ -81,36 +83,30 @@ Module Contents
    Initialize the HTML formatter.
 
    :param max_cell_length: Maximum length of cell content before truncation.
-   :type max_cell_length: int, default 25
    :param max_width: Maximum width of the displayed table in pixels.
-   :type max_width: int, default 1000
    :param max_height: Maximum height of the displayed table in pixels.
-   :type max_height: int, default 300
-   :param max_memory_bytes: Maximum memory in bytes for rendered data.
-   :type max_memory_bytes: int, default 2097152 (2MB)
-   :param min_rows_display: Minimum number of rows to display.
-   :type min_rows_display: int, default 20
-   :param repr_rows: Default number of rows to display in repr output.
-   :type repr_rows: int, default 10
+   :param max_memory_bytes: Maximum memory in bytes for rendered data. Helps prevent performance
+                            issues with large datasets.
+   :param min_rows: Minimum number of rows to display even if memory limit is reached.
+                    Must not exceed ``max_rows``.
+   :param max_rows: Maximum number of rows to display. Takes precedence over memory limits
+                    when fewer rows are requested.
+   :param repr_rows: Deprecated alias for ``max_rows``. Use ``max_rows`` instead.
    :param enable_cell_expansion: Whether to allow cells to expand when clicked.
-   :type enable_cell_expansion: bool, default True
    :param custom_css: Custom CSS to apply to the HTML table.
-   :type custom_css: str, optional
    :param show_truncation_message: Whether to show a message indicating that content has been truncated.
-   :type show_truncation_message: bool, default True
    :param style_provider: Provider of CSS styles for the HTML table. If None, DefaultStyleProvider
                           is used.
-   :type style_provider: StyleProvider, optional
-   :param use_shared_styles: Whether to use shared styles across multiple tables.
-   :type use_shared_styles: bool, default True
+   :param use_shared_styles: Whether to use shared styles across multiple tables. This improves
+                             performance when displaying many DataFrames in a single notebook.
    :param Raises:
    :param ------:
    :param ValueError: If max_cell_length, max_width, max_height, max_memory_bytes,
-                      min_rows_display, or repr_rows is not a positive integer.
+                      min_rows or max_rows is not a positive integer, or if min_rows
+                      exceeds max_rows.
    :param TypeError: If enable_cell_expansion, show_truncation_message, or use_shared_styles is
-                     not a boolean,
-                     or if custom_css is provided but is not a string,
-                     or if style_provider is provided but does not implement the StyleProvider
+                     not a boolean, or if custom_css is provided but is not a string, or if
+                     style_provider is provided but does not implement the StyleProvider
                      protocol.
 
 
@@ -237,7 +233,7 @@ Module Contents
 
 
 
-   .. py:method:: set_custom_cell_builder(builder: Callable[[Any, int, int, str], str]) -> None
+   .. py:method:: set_custom_cell_builder(builder: collections.abc.Callable[[Any, int, int, str], str]) -> None
 
       Set a custom cell builder function.
 
@@ -245,7 +241,7 @@ Module Contents
 
 
 
-   .. py:method:: set_custom_header_builder(builder: Callable[[Any], str]) -> None
+   .. py:method:: set_custom_header_builder(builder: collections.abc.Callable[[Any], str]) -> None
 
       Set a custom header builder function.
 
@@ -254,13 +250,18 @@ Module Contents
 
 
    .. py:attribute:: _custom_cell_builder
-      :type:  Optional[Callable[[Any, int, int, str], str]]
+      :type:  collections.abc.Callable[[Any, int, int, str], str] | None
       :value: None
 
 
 
    .. py:attribute:: _custom_header_builder
-      :type:  Optional[Callable[[Any], str]]
+      :type:  collections.abc.Callable[[Any], str] | None
+      :value: None
+
+
+
+   .. py:attribute:: _max_rows
       :value: None
 
 
@@ -294,19 +295,36 @@ Module Contents
 
 
 
+   .. py:property:: max_rows
+      :type: int
+
+
+      Get the maximum number of rows to display.
+
+      :returns: The maximum number of rows to display in repr output
+
+
    .. py:attribute:: max_width
       :value: 1000
 
 
 
-   .. py:attribute:: min_rows_display
-      :value: 20
-
-
-
-   .. py:attribute:: repr_rows
+   .. py:attribute:: min_rows
       :value: 10
 
+
+
+   .. py:property:: repr_rows
+      :type: int
+
+
+      Get the maximum number of rows (deprecated name).
+
+      .. deprecated::
+          Use :attr:`max_rows` instead. This property is provided for
+          backward compatibility.
+
+      :returns: The maximum number of rows to display
 
 
    .. py:attribute:: show_truncation_message
@@ -408,6 +426,30 @@ Module Contents
    :param param_name: Name of the parameter (used in error message)
 
    :raises TypeError: If the value is not a boolean
+
+
+.. py:function:: _validate_formatter_parameters(max_cell_length: int, max_width: int, max_height: int, max_memory_bytes: int, min_rows: int, max_rows: int | None, repr_rows: int | None, enable_cell_expansion: bool, show_truncation_message: bool, use_shared_styles: bool, custom_css: str | None, style_provider: Any) -> int
+
+   Validate all formatter parameters and return resolved max_rows value.
+
+   :param max_cell_length: Maximum cell length value to validate
+   :param max_width: Maximum width value to validate
+   :param max_height: Maximum height value to validate
+   :param max_memory_bytes: Maximum memory bytes value to validate
+   :param min_rows: Minimum rows to display value to validate
+   :param max_rows: Maximum rows value to validate (None means use default)
+   :param repr_rows: Deprecated repr_rows value to validate
+   :param enable_cell_expansion: Boolean expansion flag to validate
+   :param show_truncation_message: Boolean message flag to validate
+   :param use_shared_styles: Boolean styles flag to validate
+   :param custom_css: Custom CSS string to validate
+   :param style_provider: Style provider object to validate
+
+   :returns: The resolved max_rows value after handling repr_rows deprecation
+
+   :raises ValueError: If any numeric parameter is invalid or constraints are violated
+   :raises TypeError: If any parameter has invalid type
+   :raises DeprecationWarning: If repr_rows parameter is used
 
 
 .. py:function:: _validate_positive_int(value: Any, param_name: str) -> None

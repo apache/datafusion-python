@@ -28,6 +28,7 @@ Submodules
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
    /autoapi/datafusion/object_store/index
+   /autoapi/datafusion/options/index
    /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
@@ -43,10 +44,6 @@ Attributes
    datafusion.DFSchema
    datafusion.col
    datafusion.column
-   datafusion.udaf
-   datafusion.udf
-   datafusion.udtf
-   datafusion.udwf
 
 
 Classes
@@ -54,12 +51,13 @@ Classes
 
 .. autoapisummary::
 
-   datafusion.Accumulator
-   datafusion.AggregateUDF
    datafusion.Catalog
+   datafusion.CsvReadOptions
+   datafusion.DataFrameWriteOptions
    datafusion.Database
    datafusion.ExecutionPlan
    datafusion.Expr
+   datafusion.InsertOp
    datafusion.LogicalPlan
    datafusion.ParquetColumnOptions
    datafusion.ParquetWriterOptions
@@ -67,12 +65,9 @@ Classes
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
    datafusion.SQLOptions
-   datafusion.ScalarUDF
    datafusion.SessionConfig
    datafusion.Table
-   datafusion.TableFunction
    datafusion.WindowFrame
-   datafusion.WindowUDF
 
 
 Functions
@@ -91,160 +86,6 @@ Functions
 
 Package Contents
 ----------------
-
-.. py:class:: Accumulator
-
-   Defines how an :py:class:`AggregateUDF` accumulates values.
-
-
-   .. py:method:: evaluate() -> pyarrow.Scalar
-      :abstractmethod:
-
-
-      Return the resultant value.
-
-
-
-   .. py:method:: merge(states: list[pyarrow.Array]) -> None
-      :abstractmethod:
-
-
-      Merge a set of states.
-
-
-
-   .. py:method:: state() -> list[pyarrow.Scalar]
-      :abstractmethod:
-
-
-      Return the current state.
-
-
-
-   .. py:method:: update(*values: pyarrow.Array) -> None
-      :abstractmethod:
-
-
-      Evaluate an array of values and update state.
-
-
-
-.. py:class:: AggregateUDF(name: str, accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Aggregate UDFs operate on a group of rows and return a single value. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined aggregate function (UDAF).
-
-   See :py:func:`udaf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDAF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Aggregate UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable) -> AggregateUDF
-      :staticmethod:
-
-
-      Create an Aggregate UDF from AggregateUDF PyCapsule object.
-
-      This function will instantiate a Aggregate UDF that uses a DataFusion
-      AggregateUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
-                  udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Aggregate Function (UDAF).
-
-      This class allows you to define an aggregate function that can be used in
-      data aggregation or window function calls.
-
-      Usage:
-          - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
-          - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
-            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
-
-      Function example:
-
-      If your :py:class:`Accumulator` can be instantiated with no arguments, you
-      can simply pass it's type as `accum`. If you need to pass additional
-      arguments to it's constructor, you can define a lambda or a factory method.
-      During runtime the :py:class:`Accumulator` will be constructed for every
-      instance in which this UDAF is used. The following examples are all valid::
-
-          import pyarrow as pa
-          import pyarrow.compute as pc
-
-          class Summarize(Accumulator):
-              def __init__(self, bias: float = 0.0):
-                  self._sum = pa.scalar(bias)
-
-              def state(self) -> list[pa.Scalar]:
-                  return [self._sum]
-
-              def update(self, values: pa.Array) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
-
-              def merge(self, states: list[pa.Array]) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
-
-              def evaluate(self) -> pa.Scalar:
-                  return self._sum
-
-          def sum_bias_10() -> Summarize:
-              return Summarize(10.0)
-
-          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
-              [pa.float64()], "immutable")
-
-      Decorator example:::
-
-          @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
-          def udf4() -> Summarize:
-              return Summarize(10.0)
-
-      :param accum: The accumulator python function. Only needed when calling as a
-                    function. Skip this argument when using ``udaf`` as a decorator.
-                    If you have a Rust backed AggregateUDF within a PyCapsule, you can
-                    pass this parameter and ignore the rest. They will be determined
-                    directly from the underlying function. See the online documentation
-                    for more information.
-      :param input_types: The data types of the arguments to ``accum``.
-      :param return_type: The data type of the return value.
-      :param state_type: The data types of the intermediate accumulation.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined aggregate function, which can be used in either data
-                aggregation or window function calls.
-
-
-
-   .. py:attribute:: _udaf
-
 
 .. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
@@ -271,7 +112,7 @@ Package Contents
 
 
 
-   .. py:method:: memory_catalog() -> Catalog
+   .. py:method:: memory_catalog(ctx: datafusion.SessionContext | None = None) -> Catalog
       :staticmethod:
 
 
@@ -285,7 +126,7 @@ Package Contents
 
 
 
-   .. py:method:: register_schema(name, schema) -> Schema | None
+   .. py:method:: register_schema(name: str, schema: Schema | SchemaProvider | SchemaProviderExportable) -> Schema | None
 
       Register a schema with this catalog.
 
@@ -304,6 +145,239 @@ Package Contents
 
 
    .. py:attribute:: catalog
+
+
+.. py:class:: CsvReadOptions(*, has_header: bool = True, delimiter: str = ',', quote: str = '"', terminator: str | None = None, escape: str | None = None, comment: str | None = None, newlines_in_values: bool = False, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, pyarrow.DataType]] | None = None, file_compression_type: str = '', file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None, null_regex: str | None = None, truncated_rows: bool = False)
+
+   Options for reading CSV files.
+
+   This class provides a builder pattern for configuring CSV reading options.
+   All methods starting with ``with_`` return ``self`` to allow method chaining.
+
+   Initialize CsvReadOptions.
+
+   :param has_header: Does the CSV file have a header row? If schema inference
+                      is run on a file with no headers, default column names are created.
+   :param delimiter: Column delimiter character. Must be a single ASCII character.
+   :param quote: Quote character for fields containing delimiters or newlines.
+                 Must be a single ASCII character.
+   :param terminator: Optional line terminator character. If ``None``, uses CRLF.
+                      Must be a single ASCII character.
+   :param escape: Optional escape character for quotes. Must be a single ASCII
+                  character.
+   :param comment: If specified, lines beginning with this character are ignored.
+                   Must be a single ASCII character.
+   :param newlines_in_values: Whether newlines in quoted values are supported.
+                              Parsing newlines in quoted values may be affected by execution
+                              behavior such as parallel file scanning. Setting this to ``True``
+                              ensures that newlines in values are parsed successfully, which may
+                              reduce performance.
+   :param schema: Optional PyArrow schema representing the CSV files. If ``None``,
+                  the CSV reader will try to infer it based on data in the file.
+   :param schema_infer_max_records: Maximum number of rows to read from CSV files
+                                    for schema inference if needed.
+   :param file_extension: File extension; only files with this extension are
+                          selected for data input.
+   :param table_partition_cols: Partition columns as a list of tuples of
+                                (column_name, data_type).
+   :param file_compression_type: File compression type. Supported values are
+                                 ``"gzip"``, ``"bz2"``, ``"xz"``, ``"zstd"``, or empty string for
+                                 uncompressed.
+   :param file_sort_order: Optional sort order of the files as a list of sort
+                           expressions per file.
+   :param null_regex: Optional regex pattern to match null values in the CSV.
+   :param truncated_rows: Whether to allow truncated rows when parsing. By default
+                          this is ``False`` and will error if the CSV rows have different
+                          lengths. When set to ``True``, it will allow records with less than
+                          the expected number of columns and fill the missing columns with
+                          nulls. If the record's schema is not nullable, it will still return
+                          an error.
+
+
+   .. py:method:: to_inner() -> datafusion._internal.options.CsvReadOptions
+
+      Convert this object into the underlying Rust structure.
+
+      This is intended for internal use only.
+
+
+
+   .. py:method:: with_comment(comment: str | None) -> CsvReadOptions
+
+      Configure the comment character.
+
+
+
+   .. py:method:: with_delimiter(delimiter: str) -> CsvReadOptions
+
+      Configure the column delimiter.
+
+
+
+   .. py:method:: with_escape(escape: str | None) -> CsvReadOptions
+
+      Configure the escape character.
+
+
+
+   .. py:method:: with_file_compression_type(file_compression_type: str) -> CsvReadOptions
+
+      Configure file compression type.
+
+
+
+   .. py:method:: with_file_extension(file_extension: str) -> CsvReadOptions
+
+      Configure the file extension filter.
+
+
+
+   .. py:method:: with_file_sort_order(file_sort_order: list[list[datafusion.expr.SortExpr]]) -> CsvReadOptions
+
+      Configure file sort order.
+
+
+
+   .. py:method:: with_has_header(has_header: bool) -> CsvReadOptions
+
+      Configure whether the CSV has a header row.
+
+
+
+   .. py:method:: with_newlines_in_values(newlines_in_values: bool) -> CsvReadOptions
+
+      Configure whether newlines in values are supported.
+
+
+
+   .. py:method:: with_null_regex(null_regex: str | None) -> CsvReadOptions
+
+      Configure null value regex pattern.
+
+
+
+   .. py:method:: with_quote(quote: str) -> CsvReadOptions
+
+      Configure the quote character.
+
+
+
+   .. py:method:: with_schema(schema: pyarrow.Schema | None) -> CsvReadOptions
+
+      Configure the schema.
+
+
+
+   .. py:method:: with_schema_infer_max_records(schema_infer_max_records: int) -> CsvReadOptions
+
+      Configure maximum records for schema inference.
+
+
+
+   .. py:method:: with_table_partition_cols(table_partition_cols: list[tuple[str, pyarrow.DataType]]) -> CsvReadOptions
+
+      Configure table partition columns.
+
+
+
+   .. py:method:: with_terminator(terminator: str | None) -> CsvReadOptions
+
+      Configure the line terminator character.
+
+
+
+   .. py:method:: with_truncated_rows(truncated_rows: bool) -> CsvReadOptions
+
+      Configure whether to allow truncated rows.
+
+
+
+   .. py:attribute:: comment
+      :value: None
+
+
+
+   .. py:attribute:: delimiter
+      :value: ','
+
+
+
+   .. py:attribute:: escape
+      :value: None
+
+
+
+   .. py:attribute:: file_compression_type
+      :value: ''
+
+
+
+   .. py:attribute:: file_extension
+      :value: '.csv'
+
+
+
+   .. py:attribute:: file_sort_order
+      :value: []
+
+
+
+   .. py:attribute:: has_header
+      :value: True
+
+
+
+   .. py:attribute:: newlines_in_values
+      :value: False
+
+
+
+   .. py:attribute:: null_regex
+      :value: None
+
+
+
+   .. py:attribute:: quote
+      :value: '"'
+
+
+
+   .. py:attribute:: schema
+      :value: None
+
+
+
+   .. py:attribute:: schema_infer_max_records
+      :value: 1000
+
+
+
+   .. py:attribute:: table_partition_cols
+      :value: []
+
+
+
+   .. py:attribute:: terminator
+      :value: None
+
+
+
+   .. py:attribute:: truncated_rows
+      :value: False
+
+
+
+.. py:class:: DataFrameWriteOptions(insert_operation: InsertOp | None = None, single_file_output: bool = False, partition_by: str | collections.abc.Sequence[str] | None = None, sort_by: datafusion.expr.Expr | datafusion.expr.SortExpr | collections.abc.Sequence[datafusion.expr.Expr] | collections.abc.Sequence[datafusion.expr.SortExpr] | None = None)
+
+   Writer options for DataFrame.
+
+   There is no guarantee the table provider supports all writer options.
+   See the individual implementation and documentation for details.
+
+   Instantiate writer options for DataFrame.
+
+
+   .. py:attribute:: _raw_write_options
 
 
 .. py:class:: Database(schema: datafusion._internal.catalog.RawSchema)
@@ -424,7 +498,12 @@ Package Contents
 
       If ``key`` is a string, returns the subfield of the struct.
       If ``key`` is an integer, retrieves the element in the array. Note that the
-      element index begins at ``0``, unlike `array_element` which begins at ``1``.
+      element index begins at ``0``, unlike
+      :py:func:`~datafusion.functions.array_element` which begins at ``1``.
+      If ``key`` is a slice, returns an array that contains a slice of the
+      original array. Similar to integer indexing, this follows Python convention
+      where the index begins at ``0`` unlike
+      :py:func:`~datafusion.functions.array_slice` which begins at ``1``.
 
 
 
@@ -544,7 +623,7 @@ Package Contents
 
 
 
-   .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
+   .. py:method:: alias(name: str, metadata: dict[str, str] | None = None) -> Expr
 
       Assign a name to the expression.
 
@@ -667,7 +746,7 @@ Package Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any] | type[float | int | str | bool]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | type) -> Expr
 
       Cast to a new data type.
 
@@ -995,7 +1074,7 @@ Package Contents
 
    .. py:method:: python_value() -> Any
 
-      Extracts the Expr value into a PyObject.
+      Extracts the Expr value into `Any`.
 
       This is only valid for literal expressions.
 
@@ -1219,6 +1298,34 @@ Package Contents
    .. py:attribute:: expr
 
 
+.. py:class:: InsertOp
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Insert operation mode.
+
+   These modes are used by the table writing feature to define how record
+   batches should be written to a table.
+
+
+   .. py:attribute:: APPEND
+
+      Appends new rows to the existing table without modifying any existing rows.
+
+
+   .. py:attribute:: OVERWRITE
+
+      Overwrites all existing rows in the table with the new rows.
+
+
+   .. py:attribute:: REPLACE
+
+      Replace existing rows that collide with the inserted rows.
+
+      Replacement is typically based on a unique key or primary key.
+
+
 .. py:class:: LogicalPlan(plan: datafusion._internal.LogicalPlan)
 
    Logical Plan.
@@ -1303,55 +1410,36 @@ Package Contents
    .. py:attribute:: _raw_plan
 
 
-.. py:class:: ParquetColumnOptions(encoding: Optional[str] = None, dictionary_enabled: Optional[bool] = None, compression: Optional[str] = None, statistics_enabled: Optional[str] = None, bloom_filter_enabled: Optional[bool] = None, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None)
+.. py:class:: ParquetColumnOptions(encoding: str | None = None, dictionary_enabled: bool | None = None, compression: str | None = None, statistics_enabled: str | None = None, bloom_filter_enabled: bool | None = None, bloom_filter_fpp: float | None = None, bloom_filter_ndv: int | None = None)
 
    Parquet options for individual columns.
 
    Contains the available options that can be applied for an individual Parquet column,
-   replacing the global options in `ParquetWriterOptions`.
-
-   .. attribute:: encoding
-
-      Sets encoding for the column path. Valid values are: `plain`,
-      `plain_dictionary`, `rle`, `bit_packed`, `delta_binary_packed`,
-      `delta_length_byte_array`, `delta_byte_array`, `rle_dictionary`, and
-      `byte_stream_split`. These values are not case-sensitive. If `None`, uses
-      the default parquet options
-
-   .. attribute:: dictionary_enabled
-
-      Sets if dictionary encoding is enabled for the column path.
-      If `None`, uses the default parquet options
-
-   .. attribute:: compression
-
-      Sets default parquet compression codec for the column path. Valid
-      values are `uncompressed`, `snappy`, `gzip(level)`, `lzo`, `brotli(level)`,
-      `lz4`, `zstd(level)`, and `lz4_raw`. These values are not case-sensitive. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: statistics_enabled
-
-      Sets if statistics are enabled for the column Valid values
-      are: `none`, `chunk`, and `page` These values are not case sensitive. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_enabled
-
-      Sets if bloom filter is enabled for the column path. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_fpp
-
-      Sets bloom filter false positive probability for the column
-      path. If `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_ndv
-
-      Sets bloom filter number of distinct values. If `None`, uses
-      the default parquet options.
+   replacing the global options in ``ParquetWriterOptions``.
 
    Initialize the ParquetColumnOptions.
+
+   :param encoding: Sets encoding for the column path. Valid values are: ``plain``,
+                    ``plain_dictionary``, ``rle``, ``bit_packed``, ``delta_binary_packed``,
+                    ``delta_length_byte_array``, ``delta_byte_array``, ``rle_dictionary``,
+                    and ``byte_stream_split``. These values are not case-sensitive. If
+                    ``None``, uses the default parquet options
+   :param dictionary_enabled: Sets if dictionary encoding is enabled for the column
+                              path. If `None`, uses the default parquet options
+   :param compression: Sets default parquet compression codec for the column path.
+                       Valid values are ``uncompressed``, ``snappy``, ``gzip(level)``, ``lzo``,
+                       ``brotli(level)``, ``lz4``, ``zstd(level)``, and ``lz4_raw``. These
+                       values are not case-sensitive. If ``None``, uses the default parquet
+                       options.
+   :param statistics_enabled: Sets if statistics are enabled for the column Valid
+                              values are: ``none``, ``chunk``, and ``page`` These values are not case
+                              sensitive. If ``None``, uses the default parquet options.
+   :param bloom_filter_enabled: Sets if bloom filter is enabled for the column path.
+                                If ``None``, uses the default parquet options.
+   :param bloom_filter_fpp: Sets bloom filter false positive probability for the
+                            column path. If ``None``, uses the default parquet options.
+   :param bloom_filter_ndv: Sets bloom filter number of distinct values. If ``None``,
+                            uses the default parquet options.
 
 
    .. py:attribute:: bloom_filter_enabled
@@ -1389,136 +1477,78 @@ Package Contents
 
 
 
-.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: Optional[str] = 'zstd(3)', compression_level: Optional[int] = None, dictionary_enabled: Optional[bool] = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: Optional[str] = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: Optional[int] = 64, statistics_truncate_length: Optional[int] = None, data_page_row_count_limit: int = 20000, encoding: Optional[str] = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None)
+.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: str | None = 'zstd(3)', compression_level: int | None = None, dictionary_enabled: bool | None = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: str | None = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: int | None = 64, statistics_truncate_length: int | None = None, data_page_row_count_limit: int = 20000, encoding: str | None = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: float | None = None, bloom_filter_ndv: int | None = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: dict[str, ParquetColumnOptions] | None = None)
 
    Advanced parquet writer options.
 
    Allows settings the writer options that apply to the entire file. Some options can
-   also be set on a column by column basis, with the field `column_specific_options`
-   (see `ParquetColumnOptions`).
-
-   .. attribute:: data_pagesize_limit
-
-      Sets best effort maximum size of data page in bytes.
-
-   .. attribute:: write_batch_size
-
-      Sets write_batch_size in bytes.
-
-   .. attribute:: writer_version
-
-      Sets parquet writer version. Valid values are `1.0` and
-      `2.0`.
-
-   .. attribute:: skip_arrow_metadata
-
-      Skip encoding the embedded arrow metadata in the
-      KV_meta.
-
-   .. attribute:: compression
-
-      Compression type to use. Default is "zstd(3)".
-      Available compression types are
-      - "uncompressed": No compression.
-      - "snappy": Snappy compression.
-      - "gzip(n)": Gzip compression with level n.
-      - "brotli(n)": Brotli compression with level n.
-      - "lz4": LZ4 compression.
-      - "lz4_raw": LZ4_RAW compression.
-      - "zstd(n)": Zstandard compression with level n.
-
-   .. attribute:: dictionary_enabled
-
-      Sets if dictionary encoding is enabled. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: dictionary_page_size_limit
-
-      Sets best effort maximum dictionary page size,
-      in bytes.
-
-   .. attribute:: statistics_enabled
-
-      Sets if statistics are enabled for any column Valid
-      values are `none`, `chunk`, and `page`. If None, uses the default
-      parquet writer setting.
-
-   .. attribute:: max_row_group_size
-
-      Target maximum number of rows in each row group
-      (defaults to 1M rows). Writing larger row groups requires more memory to
-      write, but can get better compression and be faster to read.
-
-   .. attribute:: created_by
-
-      Sets "created by" property.
-
-   .. attribute:: column_index_truncate_length
-
-      Sets column index truncate length.
-
-   .. attribute:: statistics_truncate_length
-
-      Sets statistics truncate length. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: data_page_row_count_limit
-
-      Sets best effort maximum number of rows in a data
-      page.
-
-   .. attribute:: encoding
-
-      Sets default encoding for any column. Valid values are `plain`,
-      `plain_dictionary`, `rle`, `bit_packed`, `delta_binary_packed`,
-      `delta_length_byte_array`, `delta_byte_array`, `rle_dictionary`, and
-      `byte_stream_split`. If None, uses the default parquet writer setting.
-
-   .. attribute:: bloom_filter_on_write
-
-      Write bloom filters for all columns when creating
-      parquet files.
-
-   .. attribute:: bloom_filter_fpp
-
-      Sets bloom filter false positive probability. If None,
-      uses the default parquet writer setting
-
-   .. attribute:: bloom_filter_ndv
-
-      Sets bloom filter number of distinct values. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: allow_single_file_parallelism
-
-      Controls whether DataFusion will attempt to
-      speed up writing parquet files by serializing them in parallel. Each
-      column in each row group in each output file are serialized in parallel
-      leveraging a maximum possible core count of n_files * n_row_groups *
-      n_columns.
-
-   .. attribute:: maximum_parallel_row_group_writers
-
-      By default parallel parquet writer is
-      tuned for minimum memory usage in a streaming execution plan. You may
-      see a performance benefit when writing large parquet files by increasing
-      `maximum_parallel_row_group_writers` and
-      `maximum_buffered_record_batches_per_stream` if your system has idle
-      cores and can tolerate additional memory usage. Boosting these values is
-      likely worthwhile when writing out already in-memory data, such as from
-      a cached data frame.
-
-   .. attribute:: maximum_buffered_record_batches_per_stream
-
-      See
-      `maximum_parallel_row_group_writers`.
-
-   .. attribute:: column_specific_options
-
-      Overrides options for specific columns. If a column
-      is not a part of this dictionary, it will use the parameters provided here.
+   also be set on a column by column basis, with the field ``column_specific_options``
+   (see ``ParquetColumnOptions``).
 
    Initialize the ParquetWriterOptions.
+
+   :param data_pagesize_limit: Sets best effort maximum size of data page in bytes.
+   :param write_batch_size: Sets write_batch_size in bytes.
+   :param writer_version: Sets parquet writer version. Valid values are ``1.0`` and
+                          ``2.0``.
+   :param skip_arrow_metadata: Skip encoding the embedded arrow metadata in the
+                               KV_meta.
+   :param compression: Compression type to use. Default is ``zstd(3)``.
+                       Available compression types are
+
+                       - ``uncompressed``: No compression.
+                       - ``snappy``: Snappy compression.
+                       - ``gzip(n)``: Gzip compression with level n.
+                       - ``brotli(n)``: Brotli compression with level n.
+                       - ``lz4``: LZ4 compression.
+                       - ``lz4_raw``: LZ4_RAW compression.
+                       - ``zstd(n)``: Zstandard compression with level n.
+   :param compression_level: Compression level to set.
+   :param dictionary_enabled: Sets if dictionary encoding is enabled. If ``None``,
+                              uses the default parquet writer setting.
+   :param dictionary_page_size_limit: Sets best effort maximum dictionary page size,
+                                      in bytes.
+   :param statistics_enabled: Sets if statistics are enabled for any column Valid
+                              values are ``none``, ``chunk``, and ``page``. If ``None``, uses the
+                              default parquet writer setting.
+   :param max_row_group_size: Target maximum number of rows in each row group
+                              (defaults to 1M rows). Writing larger row groups requires more memory
+                              to write, but can get better compression and be faster to read.
+   :param created_by: Sets "created by" property.
+   :param column_index_truncate_length: Sets column index truncate length.
+   :param statistics_truncate_length: Sets statistics truncate length. If ``None``,
+                                      uses the default parquet writer setting.
+   :param data_page_row_count_limit: Sets best effort maximum number of rows in a data
+                                     page.
+   :param encoding: Sets default encoding for any column. Valid values are ``plain``,
+                    ``plain_dictionary``, ``rle``, ``bit_packed``, ``delta_binary_packed``,
+                    ``delta_length_byte_array``, ``delta_byte_array``, ``rle_dictionary``,
+                    and ``byte_stream_split``. If ``None``, uses the default parquet writer
+                    setting.
+   :param bloom_filter_on_write: Write bloom filters for all columns when creating
+                                 parquet files.
+   :param bloom_filter_fpp: Sets bloom filter false positive probability. If ``None``,
+                            uses the default parquet writer setting
+   :param bloom_filter_ndv: Sets bloom filter number of distinct values. If ``None``,
+                            uses the default parquet writer setting.
+   :param allow_single_file_parallelism: Controls whether DataFusion will attempt to
+                                         speed up writing parquet files by serializing them in parallel. Each
+                                         column in each row group in each output file are serialized in parallel
+                                         leveraging a maximum possible core count of
+                                         ``n_files * n_row_groups * n_columns``.
+   :param maximum_parallel_row_group_writers: By default parallel parquet writer is
+                                              tuned for minimum memory usage in a streaming execution plan. You may
+                                              see a performance benefit when writing large parquet files by increasing
+                                              ``maximum_parallel_row_group_writers`` and
+                                              ``maximum_buffered_record_batches_per_stream`` if your system has idle
+                                              cores and can tolerate additional memory usage. Boosting these values is
+                                              likely worthwhile when writing out already in-memory data, such as from
+                                              a cached data frame.
+   :param maximum_buffered_record_batches_per_stream: See
+                                                      ``maximum_parallel_row_group_writers``.
+   :param column_specific_options: Overrides options for specific columns. If a column
+                                   is not a part of this dictionary, it will use the parameters provided
+                                   here.
 
 
    .. py:attribute:: allow_single_file_parallelism
@@ -1630,6 +1660,23 @@ Package Contents
    See the :py:class:`RecordBatchStream` iterator for generating this class.
 
 
+   .. py:method:: __arrow_c_array__(requested_schema: object | None = None) -> tuple[object, object]
+
+      Export the record batch via the Arrow C Data Interface.
+
+      This allows zero-copy interchange with libraries that support the
+      `Arrow PyCapsule interface <https://arrow.apache.org/docs/format/
+      CDataInterface/PyCapsuleInterface.html>`_.
+
+      :param requested_schema: Attempt to provide the record batch using this
+                               schema. Only straightforward projections such as column
+                               selection or reordering are applied.
+
+      :returns: Two Arrow PyCapsule objects representing the ``ArrowArray`` and
+                ``ArrowSchema``.
+
+
+
    .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
 
       Convert to :py:class:`pa.RecordBatch`.
@@ -1651,7 +1698,7 @@ Package Contents
 
    .. py:method:: __aiter__() -> typing_extensions.Self
 
-      Async iterator function.
+      Return an asynchronous iterator over record batches.
 
 
 
@@ -1659,19 +1706,19 @@ Package Contents
       :async:
 
 
-      Async iterator function.
+      Return the next :py:class:`RecordBatch` in the stream asynchronously.
 
 
 
    .. py:method:: __iter__() -> typing_extensions.Self
 
-      Iterator function.
+      Return an iterator over record batches.
 
 
 
    .. py:method:: __next__() -> RecordBatch
 
-      Iterator function.
+      Return the next :py:class:`RecordBatch` in the stream.
 
 
 
@@ -1850,97 +1897,6 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str, func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
-   operating on a group of rows.
-
-   Instantiate a scalar user-defined function (UDF).
-
-   See helper method :py:func:`udf` for argument details.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Scalar UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a Scalar UDF from ScalarUDF PyCapsule object.
-
-      This function will instantiate a Scalar UDF that uses a DataFusion
-      ScalarUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, ScalarUDF]
-                  udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
-                  udf(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Function (UDF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
-            When used a decorator, do **not** pass ``func`` explicitly.
-
-      :param func: Only needed when calling as a function.
-                   Skip this argument when using `udf` as a decorator. If you have a Rust
-                   backed ScalarUDF within a PyCapsule, you can pass this parameter
-                   and ignore the rest. They will be determined directly from the
-                   underlying function. See the online documentation for more information.
-      :type func: Callable, optional
-      :param input_types: The data types of the arguments
-                          to ``func``. This list must be of the same length as the number of
-                          arguments.
-      :type input_types: list[pa.DataType]
-      :param return_type: The data type of the return value from the function.
-      :type return_type: _R
-      :param volatility: See `Volatility` for allowed values.
-      :type volatility: Volatility | str
-      :param name: A descriptive name for the function.
-      :type name: Optional[str]
-
-      :returns: A user-defined function that can be used in SQL expressions,
-                data aggregation, or window function calls.
-
-      Example: Using ``udf`` as a function::
-
-          def double_func(x):
-              return x * 2
-          double_udf = udf(double_func, [pa.int32()], pa.int32(),
-          "volatile", "double_it")
-
-      Example: Using ``udf`` as a decorator::
-
-          @udf([pa.int32()], pa.int32(), "volatile", "double_it")
-          def double_udf(x):
-              return x * 2
-
-
-
-   .. py:attribute:: _udf
-
-
 .. py:class:: SessionConfig(config_options: dict[str, str] | None = None)
 
    Session configuration options.
@@ -2097,11 +2053,20 @@ Package Contents
    .. py:attribute:: config_internal
 
 
-.. py:class:: Table(table: datafusion._internal.catalog.RawTable)
+.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset, ctx: datafusion.SessionContext | None = None)
 
-   DataFusion table.
+   A DataFusion table.
 
-   This constructor is not typically called by the end user.
+   Internally we currently support the following types of tables:
+
+   - Tables created using built-in DataFusion methods, such as
+     reading from CSV or Parquet
+   - pyarrow datasets
+   - DataFusion DataFrames, which will be converted into a view
+   - Externally provided tables implemented with the FFI PyCapsule
+     interface (advanced)
+
+   Constructor.
 
 
    .. py:method:: __repr__() -> str
@@ -2114,8 +2079,16 @@ Package Contents
       :staticmethod:
 
 
-      Turn a pyarrow Dataset into a Table.
+      Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`.
 
+
+
+   .. py:attribute:: __slots__
+      :value: ('_inner',)
+
+
+
+   .. py:attribute:: _inner
 
 
    .. py:property:: kind
@@ -2132,63 +2105,7 @@ Package Contents
       Returns the schema associated with this table.
 
 
-   .. py:attribute:: table
-
-
-.. py:class:: TableFunction(name: str, func: Callable[[], any])
-
-   Class for performing user-defined table functions (UDTF).
-
-   Table functions generate new table providers based on the
-   input expressions.
-
-   Instantiate a user-defined table function (UDTF).
-
-   See :py:func:`udtf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> Any
-
-      Execute the UDTF and return a table provider.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      User printable representation.
-
-
-
-   .. py:method:: _create_table_udf(func: Callable[Ellipsis, Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a TableFunction instance from function arguments.
-
-
-
-   .. py:method:: _create_table_udf_decorator(name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: udtf(name: str) -> Callable[Ellipsis, Any]
-                  udtf(func: Callable[[], Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a new User-Defined Table Function (UDTF).
-
-
-
-   .. py:attribute:: _udtf
-
-
-.. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
+.. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
 
@@ -2230,134 +2147,6 @@ Package Contents
    .. py:attribute:: window_frame
 
 
-.. py:class:: WindowUDF(name: str, func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
-
-   Class for performing window user-defined functions (UDF).
-
-   Window UDFs operate on a partition of rows. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined window function (UDWF).
-
-   See :py:func:`udwf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDWF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Window UDF.
-
-
-
-   .. py:method:: _create_window_udf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a WindowUDF instance from function arguments.
-
-
-
-   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: _get_default_name(func: Callable) -> str
-      :staticmethod:
-
-
-      Get the default name for a function based on its attributes.
-
-
-
-   .. py:method:: _normalize_input_types(input_types: pyarrow.DataType | list[pyarrow.DataType]) -> list[pyarrow.DataType]
-      :staticmethod:
-
-
-      Convert a single DataType to a list if needed.
-
-
-
-   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
-      :staticmethod:
-
-
-      Create a Window UDF from WindowUDF PyCapsule object.
-
-      This function will instantiate a Window UDF that uses a DataFusion
-      WindowUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, WindowUDF]
-                  udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Window Function (UDWF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udwf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
-            When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
-
-      Function example::
-
-          import pyarrow as pa
-
-          class BiasedNumbers(WindowEvaluator):
-              def __init__(self, start: int = 0) -> None:
-                  self.start = start
-
-              def evaluate_all(self, values: list[pa.Array],
-                  num_rows: int) -> pa.Array:
-                  return pa.array([self.start + i for i in range(num_rows)])
-
-          def bias_10() -> BiasedNumbers:
-              return BiasedNumbers(10)
-
-          udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
-          udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
-          udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
-
-
-      Decorator example::
-
-          @udwf(pa.int64(), pa.int64(), "immutable")
-          def biased_numbers() -> BiasedNumbers:
-              return BiasedNumbers(10)
-
-      :param func: Only needed when calling as a function. Skip this argument when
-                   using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
-                   within a PyCapsule, you can pass this parameter and ignore the rest.
-                   They will be determined directly from the underlying function. See
-                   the online documentation for more information.
-      :param input_types: The data types of the arguments.
-      :param return_type: The data type of the return value.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined window function that can be used in window function calls.
-
-
-
-   .. py:attribute:: _udwf
-
-
 .. py:function:: configure_formatter(**kwargs: Any) -> None
 
    Configure the global DataFrame HTML formatter.
@@ -2381,12 +2170,12 @@ Package Contents
    ... )
 
 
-.. py:function:: lit(value) -> expr.Expr
+.. py:function:: lit(value: Any) -> expr.Expr
 
    Create a literal expression.
 
 
-.. py:function:: literal(value) -> expr.Expr
+.. py:function:: literal(value: Any) -> expr.Expr
 
    Create a literal expression.
 
@@ -2407,7 +2196,7 @@ Package Contents
    :returns: DataFrame representation of the read Avro file
 
 
-.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
    Read a CSV data source.
 
@@ -2428,6 +2217,8 @@ Package Contents
                           selected for data input.
    :param table_partition_cols: Partition columns.
    :param file_compression_type: File compression type.
+   :param options: Set advanced options for CSV reading. This cannot be
+                   combined with any of the other options in this method.
 
    :returns: DataFrame representation of the read CSV files
 
@@ -2484,12 +2275,4 @@ Package Contents
 
 .. py:data:: column
    :type:  Col
-
-.. py:data:: udaf
-
-.. py:data:: udf
-
-.. py:data:: udtf
-
-.. py:data:: udwf
 

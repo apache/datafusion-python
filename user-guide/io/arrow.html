@@ -243,6 +243,11 @@
    SQL
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../upgrade-guides.html">
+   Upgrade Guides
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -352,6 +357,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
        datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
+       datafusion.options
       </a>
      </li>
      <li class="toctree-l3">
@@ -489,16 +499,16 @@ and returns a <code class="docutils literal notranslate"><span class="pre">Struc
 <h2>Exporting from DataFusion<a class="headerlink" href="#exporting-from-datafusion" title="Link to this heading">¶</a></h2>
 <p>DataFusion DataFrames implement <code class="docutils literal notranslate"><span class="pre">__arrow_c_stream__</span></code> PyCapsule interface, so any
 Python library that accepts these can import a DataFusion DataFrame directly.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It is important to note that this will cause the DataFrame execution to happen, which may be
-a time consuming task. That is, you will cause a
-<a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.dataframe.DataFrame.collect()</span></code></a> operation call to occur.</p>
-</div>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mf">1.5</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;df&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">))</span>
+<p>Invoking <code class="docutils literal notranslate"><span class="pre">__arrow_c_stream__</span></code> triggers execution of the underlying query, but
+batches are yielded incrementally rather than materialized all at once in memory.
+Consumers can process the stream as it arrives. The stream executes lazily,
+letting downstream readers pull batches on demand.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mf">1.5</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;df&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
 <span class="n">pyarrow</span><span class="o">.</span><span class="n">Table</span>
 <span class="n">c</span><span class="p">:</span> <span class="n">double</span>
 <span class="n">d</span><span class="p">:</span> <span class="n">string_view</span> <span class="ow">not</span> <span class="n">null</span>

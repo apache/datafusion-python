@@ -15,6 +15,8 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _ffi:
+
 Python Extensions
 =================
 
@@ -34,7 +36,7 @@ as performant as possible and to utilize the features of DataFusion, you may dec
 your source in Rust and then expose it through `PyO3 <https://pyo3.rs>`_ as a Python library.
 
 At first glance, it may appear the best way to do this is to add the ``datafusion-python``
-crate as a dependency, provide a ``PyTable``, and then to register it with the 
+crate as a dependency, provide a ``PyTable``, and then to register it with the
 ``SessionContext``. Unfortunately, this will not work.
 
 When you produce your code as a Python library and it needs to interact with the DataFusion
@@ -136,6 +138,67 @@ and you want to create a sharable FFI counterpart, you could write:
 
     let my_provider = MyTableProvider::default();
     let ffi_provider = FFI_TableProvider::new(Arc::new(my_provider), false, None);
+
+.. _ffi_pyclass_mutability:
+
+PyO3 class mutability guidelines
+--------------------------------
+
+PyO3 bindings should present immutable wrappers whenever a struct stores shared or
+interior-mutable state. In practice this means that any ``#[pyclass]`` containing an
+``Arc<RwLock<_>>`` or similar synchronized primitive must opt into ``#[pyclass(frozen)]``
+unless there is a compelling reason not to.
+
+The :mod:`datafusion` configuration helpers illustrate the preferred pattern. The
+``PyConfig`` class in :file:`src/config.rs` stores an ``Arc<RwLock<ConfigOptions>>`` and is
+explicitly frozen so callers interact with configuration state through provided methods
+instead of mutating the container directly:
+
+.. code-block:: rust
+
+    #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
+    #[derive(Clone)]
+    pub(crate) struct PyConfig {
+        config: Arc<RwLock<ConfigOptions>>,
+    }
+
+The same approach applies to execution contexts. ``PySessionContext`` in
+:file:`src/context.rs` stays frozen even though it shares mutable state internally via
+``SessionContext``. This ensures PyO3 tracks borrows correctly while Python-facing APIs
+clone the inner ``SessionContext`` or return new wrappers instead of mutating the
+existing instance in place:
+
+.. code-block:: rust
+
+    #[pyclass(frozen, name = "SessionContext", module = "datafusion", subclass)]
+    #[derive(Clone)]
+    pub struct PySessionContext {
+        pub ctx: SessionContext,
+    }
+
+Occasionally a type must remain mutable—for example when PyO3 attribute setters need to
+update fields directly. In these rare cases add an inline justification so reviewers and
+future contributors understand why ``frozen`` is unsafe to enable. ``DataTypeMap`` in
+:file:`src/common/data_type.rs` includes such a comment because PyO3 still needs to track
+field updates:
+
+.. code-block:: rust
+
+    // TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now
+    #[derive(Debug, Clone)]
+    #[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
+    pub struct DataTypeMap {
+        #[pyo3(get, set)]
+        pub arrow_type: PyDataType,
+        #[pyo3(get, set)]
+        pub python_type: PythonType,
+        #[pyo3(get, set)]
+        pub sql_type: SqlType,
+    }
+
+When reviewers encounter a mutable ``#[pyclass]`` without a comment, they should request
+an explanation or ask that ``frozen`` be added. Keeping these wrappers frozen by default
+helps avoid subtle bugs stemming from PyO3's interior mutability tracking.
 
 If you were interfacing with a library that provided the above ``FFI_TableProvider`` and
 you needed to turn it back into an ``TableProvider``, you can turn it into a
