@@ -18,8 +18,8 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::EmptyRelation;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

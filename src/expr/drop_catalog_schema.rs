@@ -21,9 +21,9 @@ use std::sync::Arc;
 use datafusion::common::SchemaReference;
 use datafusion::logical_expr::DropCatalogSchema;
 use datafusion::sql::TableReference;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

@@ -19,7 +19,7 @@ use std::any::Any;
 use std::ops::Range;
 use std::sync::Arc;
 
-use arrow::array::{make_array, Array, ArrayData, ArrayRef};
+use arrow::array::{Array, ArrayData, ArrayRef, make_array};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
@@ -36,7 +36,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 

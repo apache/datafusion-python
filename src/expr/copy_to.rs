@@ -21,8 +21,8 @@ use std::sync::Arc;
 
 use datafusion::common::file_options::file_type::FileType;
 use datafusion::logical_expr::dml::CopyTo;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;

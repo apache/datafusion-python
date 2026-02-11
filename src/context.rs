@@ -27,13 +27,14 @@ use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::catalog::{CatalogProvider, CatalogProviderList};
-use datafusion::common::{exec_err, ScalarValue, TableReference};
+use datafusion::common::{ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
 use datafusion::datasource::{MemTable, TableProvider};
+use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -42,7 +43,6 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
-use datafusion::execution::TaskContextProvider;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
@@ -52,10 +52,10 @@ use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use object_store::ObjectStore;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
-use pyo3::IntoPyObjectExt;
 use url::Url;
 use uuid::Uuid;
 
@@ -66,7 +66,7 @@ use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{
-    from_datafusion_error, py_datafusion_err, PyDataFusionError, PyDataFusionResult,
+    PyDataFusionError, PyDataFusionResult, from_datafusion_error, py_datafusion_err,
 };
 use crate::expr::sort_expr::PySortExpr;
 use crate::options::PyCsvReadOptions;
@@ -939,10 +939,10 @@ impl PySessionContext {
         match res {
             Ok(df) => Ok(PyDataFrame::new(df)),
             Err(e) => {
-                if let datafusion::error::DataFusionError::Plan(msg) = &e {
-                    if msg.contains("No table named") {
-                        return Err(PyKeyError::new_err(msg.to_string()));
-                    }
+                if let datafusion::error::DataFusionError::Plan(msg) = &e
+                    && msg.contains("No table named")
+                {
+                    return Err(PyKeyError::new_err(msg.to_string()));
                 }
                 Err(py_datafusion_err(e))
             }

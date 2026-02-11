@@ -25,7 +25,7 @@ use datafusion_expr::{Accumulator, AggregateUDF, AggregateUDFImpl, Signature};
 use datafusion_ffi::udaf::FFI_AggregateUDF;
 use datafusion_functions_aggregate::sum::Sum;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
 #[pyclass(name = "MySumUDF", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

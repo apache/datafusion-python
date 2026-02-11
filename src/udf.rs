@@ -21,7 +21,7 @@ use std::sync::Arc;
 
 use arrow::datatypes::{Field, FieldRef};
 use arrow::pyarrow::ToPyArrow;
-use datafusion::arrow::array::{make_array, ArrayData};
+use datafusion::arrow::array::{ArrayData, make_array};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType};
 use datafusion::common::internal_err;
@@ -35,7 +35,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
 use crate::array::PyArrowArrayExportable;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 
