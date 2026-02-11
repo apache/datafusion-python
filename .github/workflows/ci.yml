@@ -15,19 +15,27 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[build-system]
-requires = ["maturin>=1.6,<2.0"]
-build-backend = "maturin"
+# CI workflow for pull requests - runs tests in DEBUG mode for faster feedback
 
-[project]
-name = "datafusion_ffi_example"
-requires-python = ">=3.9"
-classifiers = [
-  "Programming Language :: Rust",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
-]
-dynamic = ["version"]
+name: CI
 
-[tool.maturin]
-features = ["pyo3/extension-module"]
+on:
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      build_mode: debug
+      run_wheels: false
+    secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    secrets: inherit

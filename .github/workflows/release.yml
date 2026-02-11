@@ -15,19 +15,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[build-system]
-requires = ["maturin>=1.6,<2.0"]
-build-backend = "maturin"
+# Release workflow - runs tests in RELEASE mode and builds distribution wheels
+# Triggered on:
+#   - Merges to main
+#   - Release candidate tags (*-rc*)
+#   - Release tags (e.g., 45.0.0)
 
-[project]
-name = "datafusion_ffi_example"
-requires-python = ">=3.9"
-classifiers = [
-  "Programming Language :: Rust",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
-]
-dynamic = ["version"]
+name: Release Build
 
-[tool.maturin]
-features = ["pyo3/extension-module"]
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "*-rc*"      # Release candidates (e.g., 45.0.0-rc1)
+      - "[0-9]+.*"   # Release tags (e.g., 45.0.0)
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      build_mode: release
+      run_wheels: true
+    secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
