@@ -67,6 +67,26 @@ class Plan:
         """
         return self.plan_internal.encode()
 
+    def to_json(self) -> str:
+        """Get the JSON representation of the Substrait plan.
+
+        Returns:
+            A JSON representation of the Substrait plan.
+        """
+        return self.plan_internal.to_json()
+
+    @staticmethod
+    def parse_json(json: str) -> Plan:
+        """
+        Parse a plan from a JSON string.
+
+        Args:
+            json: JSON representation of a Substrait plan.
+
+        Returns:
+            PyPlan object representing the Substrait plan.
+        """
+        return Plan(substrait_internal.Plan.parse_json(json))
 
 @deprecated("Use `Plan` instead.")
 class plan(Plan):  # noqa: N801

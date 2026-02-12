@@ -185,6 +185,8 @@ dev = [
   "toml>=0.10.2",
   "pygithub==2.5.0",
   "codespell==2.4.1",
+  "protobuf>=6.33.5",
+  "substrait>=0.27.0",
 ]
 docs = [
   "sphinx>=7.1.2",
