@@ -390,7 +390,7 @@ Module Contents
 
    For example::
 
-       df.select(array_agg(col("a"), order_by="b"))
+       df.aggregate([], array_agg(col("a"), order_by="b"))
 
 
 .. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1056,7 +1056,7 @@ Module Contents
 
    For example::
 
-       df.select(first_value(col("a"), order_by="ts"))
+       df.aggregate([], first_value(col("a"), order_by="ts"))
 
 
 .. py:function:: flatten(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1152,7 +1152,7 @@ Module Contents
 
    For example::
 
-       df.select(last_value(col("a"), order_by="ts"))
+       df.aggregate([], last_value(col("a"), order_by="ts"))
 
 
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1521,7 +1521,7 @@ Module Contents
 
 .. py:function:: min(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
-   Returns the minimum value of the argument.
+   Aggregate function that returns the minimum value of the argument.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
@@ -1565,7 +1565,7 @@ Module Contents
 
    For example::
 
-       df.select(nth_value(col("a"), 2, order_by="ts"))
+       df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
 
 
 .. py:function:: ntile(groups: int, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -2057,7 +2057,7 @@ Module Contents
 
    For example::
 
-       df.select(string_agg(col("a"), ",", order_by="b"))
+       df.aggregate([], string_agg(col("a"), ",", order_by="b"))
 
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
