@@ -23,7 +23,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 use crate::context::PySessionContext;
-use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, to_datafusion_err};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
@@ -41,6 +41,21 @@ impl PyPlan {
             .encode(&mut proto_bytes)
             .map_err(PyDataFusionError::EncodeError)?;
         Ok(PyBytes::new(py, &proto_bytes).into())
+    }
+
+    /// Get the JSON representation of the substrait plan
+    fn to_json(&self) -> PyDataFusionResult<String> {
+        let json = serde_json::to_string_pretty(&self.plan)
+            .map_err(|e| to_datafusion_err(e))?;
+        Ok(json)
+    }
+
+    /// Parse a Substrait Plan from its JSON representation
+    #[staticmethod]
+    fn from_json(json: &str) -> PyDataFusionResult<PyPlan> {
+        let plan: Plan = serde_json::from_str(json)
+            .map_err(|e| to_datafusion_err(e))?;
+        Ok(PyPlan { plan })
     }
 }
 
