@@ -23,7 +23,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
 use crate::context::PySessionContext;
-use crate::errors::{PyDataFusionError, PyDataFusionResult, to_datafusion_err};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
