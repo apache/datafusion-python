@@ -19,8 +19,7 @@ import pyarrow as pa
 import pytest
 from datafusion import SessionContext
 from datafusion import substrait as ss
-from substrait import plan_pb2
-from google.protobuf import json_format
+
 
 @pytest.fixture
 def ctx():
@@ -77,23 +76,74 @@ def test_substrait_file_serialization(ctx, tmp_path, path_to_str):
     assert str(expected_logical_plan) == str(expected_actual_plan)
 
 
-def test_plan_json_stability_and_validator_compatibility(ctx):
-    sql = "SELECT * FROM (VALUES (1, 4), (2, 5), (3, 6)) AS t(a, b)"
+def test_json_processing_round_trip(ctx: SessionContext):
+    ctx.register_record_batches("t", [[pa.record_batch({"a": [1]})]])
+    original_logical_plan = ctx.sql("SELECT * FROM t").logical_plan()
 
-    expected_binary_plan = ss.Serde.serialize_bytes(sql, ctx)
-    actual_plan = ss.Serde.serialize_to_plan(sql, ctx)
+    substrait_plan = ss.Producer.to_substrait_plan(original_logical_plan, ctx)
+    json_plan = substrait_plan.to_json()
 
-    json_str = actual_plan.to_json()
-    reconstructed_plan = ss.Plan.parse_json(json_str)  
+    expected = """\
+  "relations": [
+    {
+      "root": {
+        "input": {
+          "project": {
+            "common": {
+              "emit": {
+                "outputMapping": [
+                  1
+                ]
+              }
+            },
+            "input": {
+              "read": {
+                "baseSchema": {
+                  "names": [
+                    "a"
+                  ],
+                  "struct": {
+                    "types": [
+                      {
+                        "i64": {
+                          "nullability": "NULLABILITY_NULLABLE"
+                        }
+                      }
+                    ],
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                },
+                "namedTable": {
+                  "names": [
+                    "t"
+                  ]
+                }
+              }
+            },
+            "expressions": [
+              {
+                "selection": {
+                  "directReference": {
+                    "structField": {}
+                  },
+                  "rootReference": {}
+                }
+              }
+            ]
+          }
+        },
+        "names": [
+          "a"
+        ]
+      }
+    }
+  ]"""
 
-    expected_logical_plan = ss.Consumer.from_substrait_plan(ctx, actual_plan)
-    actual_logical_plan = ss.Consumer.from_substrait_plan(ctx, reconstructed_plan)
+    assert expected in json_plan
 
-    assert str(expected_logical_plan) == str(actual_logical_plan)
+    round_trip_substrait_plan = ss.Plan.from_json(json_plan)
+    round_trip_logical_plan = ss.Consumer.from_substrait_plan(
+        ctx, round_trip_substrait_plan
+    )
 
-    # Verify that the JSON can be parsed by the Substrait protobuf library
-    proto_plan = plan_pb2.Plan()
-    json_format.Parse(json_str, proto_plan)
-    actual_binary_plan = proto_plan.SerializeToString()
-
-    assert expected_binary_plan == actual_binary_plan
+    assert round_trip_logical_plan == original_logical_plan

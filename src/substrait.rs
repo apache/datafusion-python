@@ -45,16 +45,14 @@ impl PyPlan {
 
     /// Get the JSON representation of the substrait plan
     fn to_json(&self) -> PyDataFusionResult<String> {
-        let json = serde_json::to_string_pretty(&self.plan)
-            .map_err(|e| to_datafusion_err(e))?;
+        let json = serde_json::to_string_pretty(&self.plan).map_err(|e| to_datafusion_err(e))?;
         Ok(json)
     }
 
     /// Parse a Substrait Plan from its JSON representation
     #[staticmethod]
     fn from_json(json: &str) -> PyDataFusionResult<PyPlan> {
-        let plan: Plan = serde_json::from_str(json)
-            .map_err(|e| to_datafusion_err(e))?;
+        let plan: Plan = serde_json::from_str(json).map_err(|e| to_datafusion_err(e))?;
         Ok(PyPlan { plan })
     }
 }
