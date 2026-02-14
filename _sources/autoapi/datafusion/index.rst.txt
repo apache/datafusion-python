@@ -1509,6 +1509,12 @@ Package Contents
    This constructor should not be called by the end user.
 
 
+   .. py:method:: __eq__(other: LogicalPlan) -> bool
+
+      Test equality.
+
+
+
    .. py:method:: __repr__() -> str
 
       Generate a printable representation of the plan.
