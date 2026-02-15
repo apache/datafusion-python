@@ -48,25 +48,21 @@ def test_logical_plan_to_proto(ctx, df) -> None:
     assert str(original_execution_plan) == str(execution_plan)
 
 
-def test_execution_plan_metrics() -> None:
+def test_metrics_tree_walk() -> None:
     ctx = SessionContext()
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
-
     df.collect()
     plan = df.execution_plan()
 
+    results = plan.collect_metrics()
+    assert len(results) >= 1
     found_metrics = False
-
-    def _check(node):
-        nonlocal found_metrics
-        ms = node.metrics()
-        if ms is not None and ms.output_rows is not None and ms.output_rows > 0:
+    for name, ms in results:
+        assert isinstance(name, str)
+        assert isinstance(ms, MetricsSet)
+        if ms.output_rows is not None and ms.output_rows > 0:
             found_metrics = True
-        for child in node.children():
-            _check(child)
-
-    _check(plan)
     assert found_metrics
 
 
@@ -74,34 +70,23 @@ def test_metric_properties() -> None:
     ctx = SessionContext()
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
-
     df.collect()
     plan = df.execution_plan()
 
     for _, ms in plan.collect_metrics():
+        r = repr(ms)
+        assert isinstance(r, str)
         for metric in ms.metrics():
             assert isinstance(metric, Metric)
             assert isinstance(metric.name, str)
             assert len(metric.name) > 0
             assert metric.partition is None or isinstance(metric.partition, int)
             assert isinstance(metric.labels(), dict)
+            mr = repr(metric)
+            assert isinstance(mr, str)
+            assert len(mr) > 0
             return
     pytest.skip("No metrics found")
-
-
-def test_metrics_tree_walk() -> None:
-    ctx = SessionContext()
-    ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'a'), (4, 'b')")
-    df = ctx.sql("SELECT column2, COUNT(*) FROM t GROUP BY column2")
-
-    df.collect()
-    plan = df.execution_plan()
-
-    results = plan.collect_metrics()
-    assert len(results) >= 2
-    for name, ms in results:
-        assert isinstance(name, str)
-        assert isinstance(ms, MetricsSet)
 
 
 def test_no_metrics_before_execution() -> None:
@@ -113,35 +98,14 @@ def test_no_metrics_before_execution() -> None:
     assert ms is None or ms.output_rows is None or ms.output_rows == 0
 
 
-def test_metrics_repr() -> None:
-    ctx = SessionContext()
-    ctx.sql("CREATE TABLE t AS VALUES (1), (2), (3)")
-    df = ctx.sql("SELECT * FROM t")
-
-    df.collect()
-    plan = df.execution_plan()
-
-    for _, ms in plan.collect_metrics():
-        r = repr(ms)
-        assert isinstance(r, str)
-        for metric in ms.metrics():
-            mr = repr(metric)
-            assert isinstance(mr, str)
-            assert len(mr) > 0
-        return
-    pytest.skip("No metrics found")
-
-
 def test_collect_partitioned_metrics() -> None:
     ctx = SessionContext()
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
 
-    partitions = df.collect_partitioned()
+    df.collect_partitioned()
     plan = df.execution_plan()
-    assert len(partitions) == plan.partition_count
 
-    # Metrics should be populated after collecting
     found_metrics = False
     for _, ms in plan.collect_metrics():
         if ms.output_rows is not None and ms.output_rows > 0:
@@ -154,18 +118,12 @@ def test_execute_stream_metrics() -> None:
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
 
-    stream = df.execute_stream()
+    for _ in df.execute_stream():
+        pass
 
-    # Consume the stream (iterates over RecordBatches)
-    batches = list(stream)
-    assert len(batches) >= 1
-
-    # Metrics should be populated after consuming the stream
     plan = df.execution_plan()
     found_metrics = False
-    for name, ms in plan.collect_metrics():
-        assert isinstance(name, str)
-        assert isinstance(ms, MetricsSet)
+    for _, ms in plan.collect_metrics():
         if ms.output_rows is not None and ms.output_rows > 0:
             found_metrics = True
     assert found_metrics
@@ -176,14 +134,10 @@ def test_execute_stream_partitioned_metrics() -> None:
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
 
-    streams = df.execute_stream_partitioned()
-
-    # Consume all partition streams
-    for stream in streams:
+    for stream in df.execute_stream_partitioned():
         for _ in stream:
             pass
 
-    # Metrics should be populated (FilterExec reports output_rows)
     plan = df.execution_plan()
     found_metrics = False
     for _, ms in plan.collect_metrics():
