@@ -189,6 +189,29 @@ fn regexp_count(
     .into())
 }
 
+#[pyfunction]
+#[pyo3(signature = (values, regex, start=None, n=None, flags=None, subexpr=None))]
+/// Returns the position in a string where the specified occurrence of a regular expression is located
+fn regexp_instr(
+    values: PyExpr,
+    regex: PyExpr,
+    start: Option<PyExpr>,
+    n: Option<PyExpr>,
+    flags: Option<PyExpr>,
+    subexpr: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_instr(
+        values.into(),
+        regex.into(),
+        start.map(|x| x.expr).or(Some(lit(1))),
+        n.map(|x| x.expr).or(Some(lit(1))),
+        None,
+        flags.map(|x| x.expr).or(Some(lit(""))),
+        subexpr.map(|x| x.expr).or(Some(lit(0))),
+    )
+    .into())
+}
+
 /// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> {
@@ -988,6 +1011,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
     m.add_wrapped(wrap_pyfunction!(regexp_count))?;
+    m.add_wrapped(wrap_pyfunction!(regexp_instr))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;
     m.add_wrapped(wrap_pyfunction!(regexp_match))?;
     m.add_wrapped(wrap_pyfunction!(regexp_replace))?;

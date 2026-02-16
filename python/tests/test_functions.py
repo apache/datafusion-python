@@ -772,6 +772,14 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.regexp_count(column("a"), literal("(ell|orl)"), literal(1)),
             pa.array([1, 1, 0], type=pa.int64()),
         ),
+        (
+            f.regexp_instr(column("a"), literal("(ell|orl)")),
+            pa.array([2, 2, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), literal("([lr])"), n=literal(2)),
+            pa.array([4, 4, 0], type=pa.int64()),
+        ),
     ],
 )
 def test_string_functions(df, function, expected_result):
