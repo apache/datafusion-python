@@ -53,16 +53,6 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        id: rust-toolchain
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: '27.4'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
