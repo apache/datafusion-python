@@ -298,7 +298,16 @@ class Accumulator(metaclass=ABCMeta):
 
     @abstractmethod
     def state(self) -> list[pa.Scalar]:
-        """Return the current state."""
+        """Return the current state.
+
+        While this function template expects PyArrow Scalar values return type,
+        you can return any value that can be converted into a Scalar. This
+        includes basic Python data types such as integers and strings. In
+        addition to primitive types, we currently support PyArrow, nanoarrow,
+        and arro3 objects in addition to primitive data types. Other objects
+        that support the Arrow FFI standard will be given a "best attempt" at
+        conversion to scalar objects.
+        """
 
     @abstractmethod
     def update(self, *values: pa.Array) -> None:
@@ -312,18 +321,13 @@ class Accumulator(metaclass=ABCMeta):
     def evaluate(self) -> pa.Scalar:
         """Return the resultant value.
 
-        If you need to return a list, wrap it in a scalar with the correct
-        list type, for example::
-
-            import pyarrow as pa
-
-            return pa.scalar(
-                [pa.scalar("2024-01-01T00:00:00Z")],
-                type=pa.list_(pa.timestamp("ms")),
-            )
-
-        Returning a ``pyarrow.Array`` from ``evaluate`` is not supported unless
-        you explicitly convert it to a list-valued scalar.
+        While this function template expects a PyArrow Scalar value return type,
+        you can return any value that can be converted into a Scalar. This
+        includes basic Python data types such as integers and strings. In
+        addition to primitive types, we currently support PyArrow, nanoarrow,
+        and arro3 objects in addition to primitive data types. Other objects
+        that support the Arrow FFI standard will be given a "best attempt" at
+        conversion to scalar objects.
         """
 
 

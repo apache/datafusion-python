@@ -31,6 +31,9 @@ use pyo3::{Bound, FromPyObject, PyAny, PyResult, Python};
 use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionError;
 
+/// Helper function to turn an Array into a ScalarValue. If ``as_list_array`` is true,
+/// the array will be turned into a ``ListArray``. Otherwise, we extract the first value
+/// from the array.
 fn array_to_scalar_value(array: ArrayRef, as_list_array: bool) -> PyResult<PyScalarValue> {
     if as_list_array {
         let field = Arc::new(Field::new_list_field(
@@ -46,6 +49,10 @@ fn array_to_scalar_value(array: ArrayRef, as_list_array: bool) -> PyResult<PySca
     }
 }
 
+/// Helper function to take any Python object that contains an Arrow PyCapsule
+/// interface and attempt to extract a scalar value from it. If `as_list_array`
+/// is true, the array will be turned into a ``ListArray``. Otherwise, we extract
+/// the first value from the array.
 fn pyobj_extract_scalar_via_capsule(
     value: &Bound<'_, PyAny>,
     as_list_array: bool,
