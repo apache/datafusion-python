@@ -28,23 +28,28 @@ from datafusion import Accumulator, column, udaf
 class Summarize(Accumulator):
     """Interface of a user-defined accumulation."""
 
-    def __init__(self, initial_value: float = 0.0):
-        self._sum = pa.scalar(initial_value)
+    def __init__(self, initial_value: float = 0.0, as_scalar: bool = False):
+        self._sum = initial_value
+        self.as_scalar = as_scalar
 
     def state(self) -> list[pa.Scalar]:
+        if self.as_scalar:
+            return [pa.scalar(self._sum)]
         return [self._sum]
 
     def update(self, values: pa.Array) -> None:
         # Not nice since pyarrow scalars can't be summed yet.
         # This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
+        self._sum = self._sum + pc.sum(values).as_py()
 
     def merge(self, states: list[pa.Array]) -> None:
         # Not nice since pyarrow scalars can't be summed yet.
         # This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
+        self._sum = self._sum + pc.sum(states[0]).as_py()
 
     def evaluate(self) -> pa.Scalar:
+        if self.as_scalar:
+            return pa.scalar(self._sum)
         return self._sum
 
 
@@ -163,11 +168,12 @@ def test_udaf_decorator_aggregate(df):
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
 
-def test_udaf_aggregate_with_arguments(df):
+@pytest.mark.parametrize("as_scalar", [True, False])
+def test_udaf_aggregate_with_arguments(df, as_scalar):
     bias = 10.0
 
     summarize = udaf(
-        lambda: Summarize(bias),
+        lambda: Summarize(initial_value=bias, as_scalar=as_scalar),
         pa.float64(),
         pa.float64(),
         [pa.float64()],
