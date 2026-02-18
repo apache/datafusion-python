@@ -123,7 +123,7 @@ also see how the inputs to ``update`` and ``merge`` differ.
 
 .. code-block:: python
 
-    import pyarrow
+    import pyarrow as pa
     import pyarrow.compute
     import datafusion
     from datafusion import col, udaf, Accumulator
@@ -136,16 +136,16 @@ also see how the inputs to ``update`` and ``merge`` differ.
         def __init__(self):
             self._sum = 0.0
 
-        def update(self, values_a: pyarrow.Array, values_b: pyarrow.Array) -> None:
+        def update(self, values_a: pa.Array, values_b: pa.Array) -> None:
             self._sum = self._sum + pyarrow.compute.sum(values_a).as_py() - pyarrow.compute.sum(values_b).as_py()
 
-        def merge(self, states: List[pyarrow.Array]) -> None:
+        def merge(self, states: list[pa.Array]) -> None:
             self._sum = self._sum + pyarrow.compute.sum(states[0]).as_py()
 
-        def state(self) -> pyarrow.Array:
-            return pyarrow.array([self._sum])
+        def state(self) -> list[pa.Scalar]:
+            return [pyarrow.scalar(self._sum)]
 
-        def evaluate(self) -> pyarrow.Scalar:
+        def evaluate(self) -> pa.Scalar:
             return pyarrow.scalar(self._sum)
 
     ctx = datafusion.SessionContext()
@@ -156,9 +156,28 @@ also see how the inputs to ``update`` and ``merge`` differ.
         }
     )
 
-    my_udaf = udaf(MyAccumulator, [pyarrow.float64(), pyarrow.float64()], pyarrow.float64(), [pyarrow.float64()], 'stable')
+    my_udaf = udaf(MyAccumulator, [pa.float64(), pa.float64()], pa.float64(), [pa.float64()], 'stable')
 
     df.aggregate([], [my_udaf(col("a"), col("b")).alias("col_diff")])
+
+FAQ
+^^^
+
+**How do I return a list from a UDAF?**
+
+Both the ``evaluate`` and the ``state`` functions expect to return scalar values.
+If you wish to return a list array as a scalar value, the best practice is to
+wrap the values in a ``pyarrow.Scalar`` object. For example, you can return a
+timestamp list with ``pa.scalar([...], type=pa.list_(pa.timestamp("ms")))`` and
+register the appropriate return or state types as
+``return_type=pa.list_(pa.timestamp("ms"))`` and
+``state_type=[pa.list_(pa.timestamp("ms"))]``, respectively.
+
+As of DataFusion 52.0.0 , you can pass return any Python object, including a
+PyArrow array, as the return value(s) for these functions and DataFusion will
+attempt to create a scalar type from the value. DataFusion has been tested to
+convert PyArrow, nanoarrow, and arro3 objects as well as primitive data types
+like integers, strings, and so on.
 
 Window Functions
 ----------------

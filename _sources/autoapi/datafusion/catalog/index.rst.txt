@@ -15,7 +15,9 @@ Classes
 .. autoapisummary::
 
    datafusion.catalog.Catalog
+   datafusion.catalog.CatalogList
    datafusion.catalog.CatalogProvider
+   datafusion.catalog.CatalogProviderList
    datafusion.catalog.Schema
    datafusion.catalog.SchemaProvider
    datafusion.catalog.Table
@@ -84,6 +86,54 @@ Module Contents
    .. py:attribute:: catalog
 
 
+.. py:class:: CatalogList(catalog_list: datafusion._internal.catalog.RawCatalogList)
+
+   DataFusion data catalog list.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the catalog list.
+
+
+
+   .. py:method:: catalog(name: str = 'datafusion') -> Catalog
+
+      Returns the catalog with the given ``name`` from this catalog.
+
+
+
+   .. py:method:: catalog_names() -> set[str]
+
+      Returns the list of schemas in this catalog.
+
+
+
+   .. py:method:: memory_catalog(ctx: datafusion.SessionContext | None = None) -> CatalogList
+      :staticmethod:
+
+
+      Create an in-memory catalog provider list.
+
+
+
+   .. py:method:: names() -> set[str]
+
+      This is an alias for `catalog_names`.
+
+
+
+   .. py:method:: register_catalog(name: str, catalog: Catalog | CatalogProvider | CatalogProviderExportable) -> Catalog | None
+
+      Register a catalog with this catalog list.
+
+
+
+   .. py:attribute:: catalog_list
+
+
 .. py:class:: CatalogProvider
 
    Bases: :py:obj:`abc.ABC`
@@ -126,6 +176,39 @@ Module Contents
 
 
       Set of the names of all schemas in this catalog.
+
+
+
+.. py:class:: CatalogProviderList
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract class for defining a Python based Catalog Provider List.
+
+
+   .. py:method:: catalog(name: str) -> CatalogProviderExportable | CatalogProvider | Catalog | None
+      :abstractmethod:
+
+
+      Retrieve a specific catalog from this catalog list.
+
+
+
+   .. py:method:: catalog_names() -> set[str]
+      :abstractmethod:
+
+
+      Set of the names of all catalogs in this catalog list.
+
+
+
+   .. py:method:: register_catalog(name: str, catalog: CatalogProviderExportable | CatalogProvider | Catalog) -> None
+
+      Add a catalog to this catalog list.
+
+      This method is optional. If your catalog provides a fixed list of catalogs, you
+      do not need to implement this method.
 
 
 

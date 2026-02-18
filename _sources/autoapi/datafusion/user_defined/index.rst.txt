@@ -62,6 +62,14 @@ Module Contents
 
       Return the resultant value.
 
+      While this function template expects a PyArrow Scalar value return type,
+      you can return any value that can be converted into a Scalar. This
+      includes basic Python data types such as integers and strings. In
+      addition to primitive types, we currently support PyArrow, nanoarrow,
+      and arro3 objects in addition to primitive data types. Other objects
+      that support the Arrow FFI standard will be given a "best attempt" at
+      conversion to scalar objects.
+
 
 
    .. py:method:: merge(states: list[pyarrow.Array]) -> None
@@ -77,6 +85,14 @@ Module Contents
 
 
       Return the current state.
+
+      While this function template expects PyArrow Scalar values return type,
+      you can return any value that can be converted into a Scalar. This
+      includes basic Python data types such as integers and strings. In
+      addition to primitive types, we currently support PyArrow, nanoarrow,
+      and arro3 objects in addition to primitive data types. Other objects
+      that support the Arrow FFI standard will be given a "best attempt" at
+      conversion to scalar objects.
 
 
 
@@ -378,7 +394,7 @@ Module Contents
    .. py:attribute:: _udtf
 
 
-.. py:class:: Volatility(*args, **kwds)
+.. py:class:: Volatility
 
    Bases: :py:obj:`enum.Enum`
 

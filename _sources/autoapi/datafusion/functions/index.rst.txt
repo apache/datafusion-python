@@ -195,6 +195,7 @@ Functions
    datafusion.functions.range
    datafusion.functions.rank
    datafusion.functions.regexp_count
+   datafusion.functions.regexp_instr
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -390,7 +391,7 @@ Module Contents
 
    For example::
 
-       df.select(array_agg(col("a"), order_by="b"))
+       df.aggregate([], array_agg(col("a"), order_by="b"))
 
 
 .. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1056,7 +1057,7 @@ Module Contents
 
    For example::
 
-       df.select(first_value(col("a"), order_by="ts"))
+       df.aggregate([], first_value(col("a"), order_by="ts"))
 
 
 .. py:function:: flatten(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1152,7 +1153,7 @@ Module Contents
 
    For example::
 
-       df.select(last_value(col("a"), order_by="ts"))
+       df.aggregate([], last_value(col("a"), order_by="ts"))
 
 
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1521,7 +1522,7 @@ Module Contents
 
 .. py:function:: min(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
-   Returns the minimum value of the argument.
+   Aggregate function that returns the minimum value of the argument.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
@@ -1565,7 +1566,7 @@ Module Contents
 
    For example::
 
-       df.select(nth_value(col("a"), 2, order_by="ts"))
+       df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
 
 
 .. py:function:: ntile(groups: int, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -1718,12 +1719,22 @@ Module Contents
        rank(order_by="points")
 
 
-.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the number of matches in a string.
 
    Optional start position (the first position is 1) to search for the regular
    expression.
+
+
+.. py:function:: regexp_instr(values: datafusion.expr.Expr, regex: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, n: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None, sub_expr: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns the position of a regular expression match in a string.
+
+   Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
+   ``start`` (the first position is 1). Returns the starting or ending position based
+   on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
+   return the position of a specific capture group instead of the entire match.
 
 
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2057,7 +2068,7 @@ Module Contents
 
    For example::
 
-       df.select(string_agg(col("a"), ",", order_by="b"))
+       df.aggregate([], string_agg(col("a"), ",", order_by="b"))
 
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr

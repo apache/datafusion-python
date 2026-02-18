@@ -63,6 +63,26 @@ Module Contents
 
 
 
+   .. py:method:: from_json(json: str) -> Plan
+      :staticmethod:
+
+
+      Parse a plan from a JSON string representation.
+
+      :param json: JSON representation of a Substrait plan.
+
+      :returns: Plan object representing the Substrait plan.
+
+
+
+   .. py:method:: to_json() -> str
+
+      Get the JSON representation of the Substrait plan.
+
+      :returns: A JSON representation of the Substrait plan.
+
+
+
    .. py:attribute:: plan_internal
 
 

@@ -16,7 +16,6 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
-   datafusion.context.CatalogProviderExportable
    datafusion.context.RuntimeConfig
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
@@ -52,19 +51,6 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
-
-
-.. py:class:: CatalogProviderExportable
-
-   Bases: :py:obj:`Protocol`
-
-
-   Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
-
-   https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
-
-
-   .. py:method:: __datafusion_catalog_provider__(session: Any) -> object
 
 
 .. py:class:: RuntimeConfig
@@ -698,9 +684,15 @@ Module Contents
 
 
 
-   .. py:method:: register_catalog_provider(name: str, provider: CatalogProviderExportable | datafusion.catalog.CatalogProvider | datafusion.catalog.Catalog) -> None
+   .. py:method:: register_catalog_provider(name: str, provider: datafusion.catalog.CatalogProviderExportable | datafusion.catalog.CatalogProvider | datafusion.catalog.Catalog) -> None
 
       Register a catalog provider.
+
+
+
+   .. py:method:: register_catalog_provider_list(provider: datafusion.catalog.CatalogProviderListExportable | datafusion.catalog.CatalogProviderList | datafusion.catalog.CatalogList) -> None
+
+      Register a catalog provider list.
 
 
 

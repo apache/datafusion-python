@@ -520,6 +520,80 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CatalogList
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.catalog_names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.memory_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.memory_catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.register_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.register_catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog_list">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogList.catalog_list
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -560,6 +634,44 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          CatalogProvider.schema_names()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CatalogProviderList
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogProviderList.catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.catalog_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogProviderList.catalog_names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.register_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogProviderList.register_catalog()
         </span>
        </code>
       </a>
@@ -821,8 +933,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Catalog</span></code></a></p></td>
 <td><p>DataFusion data catalog.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CatalogProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.CatalogList" title="datafusion.catalog.CatalogList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CatalogList</span></code></a></p></td>
+<td><p>DataFusion data catalog list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CatalogProvider</span></code></a></p></td>
 <td><p>Abstract class for defining a Python based Catalog Provider.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.CatalogProviderList" title="datafusion.catalog.CatalogProviderList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CatalogProviderList</span></code></a></p></td>
+<td><p>Abstract class for defining a Python based Catalog Provider List.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Schema</span></code></a></p></td>
 <td><p>DataFusion Schema.</p></td>
@@ -899,6 +1017,54 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">CatalogList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawCatalogList</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.CatalogList" title="Link to this definition">¶</a></dt>
+<dd><p>DataFusion data catalog list.</p>
+<p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the catalog list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.catalog">
+<span class="sig-name descname"><span class="pre">catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'datafusion'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the catalog with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.catalog_names">
+<span class="sig-name descname"><span class="pre">catalog_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.catalog_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of schemas in this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.memory_catalog">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.SessionContext</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.CatalogList" title="datafusion.catalog.CatalogList"><span class="pre">CatalogList</span></a></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.memory_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Create an in-memory catalog provider list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.names" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <cite>catalog_names</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.register_catalog">
+<span class="sig-name descname"><span class="pre">register_catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><span class="pre">CatalogProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CatalogProviderExportable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.register_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Register a catalog with this catalog list.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogList.catalog_list">
+<span class="sig-name descname"><span class="pre">catalog_list</span></span><a class="headerlink" href="#datafusion.catalog.CatalogList.catalog_list" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">CatalogProvider</span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
@@ -937,6 +1103,33 @@ do not need to implement this method.</p>
 <dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider.schema_names">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider.schema_names" title="Link to this definition">¶</a></dt>
 <dd><p>Set of the names of all schemas in this catalog.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProviderList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">CatalogProviderList</span></span><a class="headerlink" href="#datafusion.catalog.CatalogProviderList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract class for defining a Python based Catalog Provider List.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProviderList.catalog">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CatalogProviderExportable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><span class="pre">CatalogProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProviderList.catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a specific catalog from this catalog list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProviderList.catalog_names">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">catalog_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProviderList.catalog_names" title="Link to this definition">¶</a></dt>
+<dd><p>Set of the names of all catalogs in this catalog list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProviderList.register_catalog">
+<span class="sig-name descname"><span class="pre">register_catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CatalogProviderExportable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><span class="pre">CatalogProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProviderList.register_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Add a catalog to this catalog list.</p>
+<p>This method is optional. If your catalog provides a fixed list of catalogs, you
+do not need to implement this method.</p>
 </dd></dl>
 
 </dd></dl>

@@ -27,7 +27,7 @@ Classes
 Module Contents
 ---------------
 
-.. py:class:: Compression(*args, **kwds)
+.. py:class:: Compression
 
    Bases: :py:obj:`enum.Enum`
 
@@ -891,7 +891,7 @@ Module Contents
    .. py:attribute:: _raw_write_options
 
 
-.. py:class:: InsertOp(*args, **kwds)
+.. py:class:: InsertOp
 
    Bases: :py:obj:`enum.Enum`
 
