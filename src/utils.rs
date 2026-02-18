@@ -19,7 +19,6 @@ use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
-use datafusion::common::ScalarValue;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
@@ -34,7 +33,6 @@ use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
 use crate::TokioRuntime;
-use crate::common::data_type::PyScalarValue;
 use crate::context::PySessionContext;
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 
@@ -197,22 +195,6 @@ pub(crate) fn table_provider_from_pycapsule<'py>(
     } else {
         Ok(None)
     }
-}
-
-pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<ScalarValue> {
-    // convert Python object to PyScalarValue to ScalarValue
-
-    let pa = py.import("pyarrow")?;
-
-    // Convert Python object to PyArrow scalar
-    let scalar = pa.call_method1("scalar", (obj,))?;
-
-    // Convert PyArrow scalar to PyScalarValue
-    let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
-        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
-
-    // Convert PyScalarValue to ScalarValue
-    Ok(py_scalar.into())
 }
 
 pub(crate) fn extract_logical_extension_codec(
