@@ -61,11 +61,14 @@ class MissingMethods(Accumulator):
 
 
 class CollectTimestamps(Accumulator):
-    def __init__(self):
+    def __init__(self, wrap_in_scalar: bool):
         self._values: list[datetime] = []
+        self.wrap_in_scalar = wrap_in_scalar
 
     def state(self) -> list[pa.Scalar]:
-        return [pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))]
+        if self.wrap_in_scalar:
+            return [pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))]
+        return [pa.array(self._values, type=pa.timestamp("ns"))]
 
     def update(self, values: pa.Array) -> None:
         self._values.extend(values.to_pylist())
@@ -76,7 +79,9 @@ class CollectTimestamps(Accumulator):
                 self._values.extend(state)
 
     def evaluate(self) -> pa.Scalar:
-        return pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))
+        if self.wrap_in_scalar:
+            return pa.scalar(self._values, type=pa.list_(pa.timestamp("ns")))
+        return pa.array(self._values, type=pa.timestamp("ns"))
 
 
 @pytest.fixture
@@ -240,28 +245,46 @@ def test_register_udaf(ctx, df) -> None:
     assert df_result.collect()[0][0][0].as_py() == 14.0
 
 
-def test_udaf_list_timestamp_return(ctx) -> None:
-    timestamps = [
+@pytest.mark.parametrize("wrap_in_scalar", [True, False])
+def test_udaf_list_timestamp_return(ctx, wrap_in_scalar) -> None:
+    timestamps1 = [
         datetime(2024, 1, 1, tzinfo=timezone.utc),
         datetime(2024, 1, 2, tzinfo=timezone.utc),
     ]
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array(timestamps, type=pa.timestamp("ns"))],
+    timestamps2 = [
+        datetime(2024, 1, 3, tzinfo=timezone.utc),
+        datetime(2024, 1, 4, tzinfo=timezone.utc),
+    ]
+    batch1 = pa.RecordBatch.from_arrays(
+        [pa.array(timestamps1, type=pa.timestamp("ns"))],
         names=["ts"],
     )
-    df = ctx.create_dataframe([[batch]], name="timestamp_table")
+    batch2 = pa.RecordBatch.from_arrays(
+        [pa.array(timestamps2, type=pa.timestamp("ns"))],
+        names=["ts"],
+    )
+    df = ctx.create_dataframe([[batch1], [batch2]], name="timestamp_table")
+
+    list_type = pa.list_(
+        pa.field("item", type=pa.timestamp("ns"), nullable=wrap_in_scalar)
+    )
 
     collect = udaf(
-        CollectTimestamps,
+        lambda: CollectTimestamps(wrap_in_scalar),
         pa.timestamp("ns"),
-        pa.list_(pa.timestamp("ns")),
-        [pa.list_(pa.timestamp("ns"))],
+        list_type,
+        [list_type],
         volatility="immutable",
     )
 
     result = df.aggregate([], [collect(column("ts"))]).collect()[0]
 
-    assert result.column(0) == pa.array(
-        [timestamps],
-        type=pa.list_(pa.timestamp("ns")),
+    # There is no guarantee about the ordering of the batches, so perform a sort
+    # to get consistent results. Alternatively we could sort on evaluate().
+    assert (
+        result.column(0).values.sort()
+        == pa.array(
+            [[*timestamps1, *timestamps2]],
+            type=list_type,
+        ).values
     )
