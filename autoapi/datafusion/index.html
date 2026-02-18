@@ -3572,6 +3572,13 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <dt class="sig sig-object py" id="datafusion.Accumulator.evaluate">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Scalar</span></span></span><a class="headerlink" href="#datafusion.Accumulator.evaluate" title="Link to this definition">¶</a></dt>
 <dd><p>Return the resultant value.</p>
+<p>While this function template expects a PyArrow Scalar value return type,
+you can return any value that can be converted into a Scalar. This
+includes basic Python data types such as integers and strings. In
+addition to primitive types, we currently support PyArrow, nanoarrow,
+and arro3 objects in addition to primitive data types. Other objects
+that support the Arrow FFI standard will be given a “best attempt” at
+conversion to scalar objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3584,6 +3591,13 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <dt class="sig sig-object py" id="datafusion.Accumulator.state">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Scalar</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Accumulator.state" title="Link to this definition">¶</a></dt>
 <dd><p>Return the current state.</p>
+<p>While this function template expects PyArrow Scalar values return type,
+you can return any value that can be converted into a Scalar. This
+includes basic Python data types such as integers and strings. In
+addition to primitive types, we currently support PyArrow, nanoarrow,
+and arro3 objects in addition to primitive data types. Other objects
+that support the Arrow FFI standard will be given a “best attempt” at
+conversion to scalar objects.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -426,6 +426,13 @@
   <a class="reference internal nav-link" href="#aggregate-functions">
    Aggregate Functions
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#faq">
+     FAQ
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#window-functions">
@@ -582,7 +589,7 @@ different states. Finally <code class="docutils literal notranslate"><span class
 <p>In the following example we want to define a custom aggregate function that will return the
 difference between the sum of two columns. The state can be represented by a single value and we can
 also see how the inputs to <code class="docutils literal notranslate"><span class="pre">update</span></code> and <code class="docutils literal notranslate"><span class="pre">merge</span></code> differ.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">udaf</span><span class="p">,</span> <span class="n">Accumulator</span>
@@ -595,16 +602,16 @@ also see how the inputs to <code class="docutils literal notranslate"><span clas
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values_a</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">values_b</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values_a</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">values_b</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values_a</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">-</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values_b</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">])</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">)]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">)</span>
 
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
@@ -615,11 +622,27 @@ also see how the inputs to <code class="docutils literal notranslate"><span clas
     <span class="p">}</span>
 <span class="p">)</span>
 
-<span class="n">my_udaf</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">MyAccumulator</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+<span class="n">my_udaf</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">MyAccumulator</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
 
 <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([],</span> <span class="p">[</span><span class="n">my_udaf</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;col_diff&quot;</span><span class="p">)])</span>
 </pre></div>
 </div>
+<section id="faq">
+<h3>FAQ<a class="headerlink" href="#faq" title="Link to this heading">¶</a></h3>
+<p><strong>How do I return a list from a UDAF?</strong></p>
+<p>Both the <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> and the <code class="docutils literal notranslate"><span class="pre">state</span></code> functions expect to return scalar values.
+If you wish to return a list array as a scalar value, the best practice is to
+wrap the values in a <code class="docutils literal notranslate"><span class="pre">pyarrow.Scalar</span></code> object. For example, you can return a
+timestamp list with <code class="docutils literal notranslate"><span class="pre">pa.scalar([...],</span> <span class="pre">type=pa.list_(pa.timestamp(&quot;ms&quot;)))</span></code> and
+register the appropriate return or state types as
+<code class="docutils literal notranslate"><span class="pre">return_type=pa.list_(pa.timestamp(&quot;ms&quot;))</span></code> and
+<code class="docutils literal notranslate"><span class="pre">state_type=[pa.list_(pa.timestamp(&quot;ms&quot;))]</span></code>, respectively.</p>
+<p>As of DataFusion 52.0.0 , you can pass return any Python object, including a
+PyArrow array, as the return value(s) for these functions and DataFusion will
+attempt to create a scalar type from the value. DataFusion has been tested to
+convert PyArrow, nanoarrow, and arro3 objects as well as primitive data types
+like integers, strings, and so on.</p>
+</section>
 </section>
 <section id="window-functions">
 <h2>Window Functions<a class="headerlink" href="#window-functions" title="Link to this heading">¶</a></h2>
