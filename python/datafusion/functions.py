@@ -817,7 +817,7 @@ def regexp_replace(
 
 
 def regexp_count(
-    string: Expr, pattern: Expr, start: Expr, flags: Expr | None = None
+    string: Expr, pattern: Expr, start: Expr | None = None, flags: Expr | None = None
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -826,7 +826,7 @@ def regexp_count(
     """
     if flags is not None:
         flags = flags.expr
-    start = start.expr if start is not None else Expr.expr
+    start = start.expr if start is not None else start
     return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
 
 

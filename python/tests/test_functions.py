@@ -769,7 +769,11 @@ def test_array_function_obj_tests(stmt, py_expr):
             pa.array(["H-o", "W-d", "!"], type=pa.string_view()),
         ),
         (
-            f.regexp_count(column("a"), literal("(ell|orl)"), literal(1)),
+            f.regexp_count(column("a"), literal("(ell|orl)"), start=literal(1)),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_count(column("a"), literal("(ell|orl)")),
             pa.array([1, 1, 0], type=pa.int64()),
         ),
         (
