@@ -15,32 +15,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "datafusion-ffi-example"
-version = "0.2.0"
-edition = "2024"
+# Release workflow - runs tests in RELEASE mode and builds distribution wheels
+# Triggered on:
+#   - Merges to main
+#   - Release candidate tags (*-rc*)
+#   - Release tags (e.g., 45.0.0)
 
-[dependencies]
-datafusion-catalog = { version = "52", default-features = false }
-datafusion-common = { version = "52", default-features = false }
-datafusion-functions-aggregate = { version = "52" }
-datafusion-functions-window = { version = "52" }
-datafusion-expr = { version = "52" }
-datafusion-ffi = { version = "52" }
+name: Release Build
 
-pyo3 = { version = "0.26", features = [
-  "extension-module",
-  "abi3",
-  "abi3-py39",
-] }
-arrow = { version = "57" }
-arrow-array = { version = "57" }
-arrow-schema = { version = "57" }
-async-trait = "0.1.89"
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "*-rc*"      # Release candidates (e.g., 45.0.0-rc1)
+      - "[0-9]+.*"   # Release tags (e.g., 45.0.0)
 
-[build-dependencies]
-pyo3-build-config = "0.26"
+concurrency:
+  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
+  cancel-in-progress: true
 
-[lib]
-name = "datafusion_ffi_example"
-crate-type = ["cdylib", "rlib"]
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      build_mode: release
+      run_wheels: true
+    secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    secrets: inherit

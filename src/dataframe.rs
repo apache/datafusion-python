@@ -20,7 +20,7 @@ use std::ffi::{CStr, CString};
 use std::str::FromStr;
 use std::sync::Arc;
 
-use arrow::array::{new_null_array, Array, ArrayRef, RecordBatch, RecordBatchReader};
+use arrow::array::{Array, ArrayRef, RecordBatch, RecordBatchReader, new_null_array};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
@@ -36,24 +36,24 @@ use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, Table
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
-use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::SortExpr;
+use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
 use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
+use pyo3::PyErr;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
-use pyo3::PyErr;
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err};
 use crate::expr::PyExpr;
+use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
 use crate::physical_plan::PyExecutionPlan;
-use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
+use crate::record_batch::{PyRecordBatchStream, poll_next_batch};
 use crate::sql::logical::PyLogicalPlan;
 use crate::table::{PyTable, TempViewTable};
 use crate::utils::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
@@ -1327,7 +1327,10 @@ fn record_batch_into_schema(
             } else if field.is_nullable() {
                 data_arrays.push(new_null_array(desired_data_type, array_size));
             } else {
-                return Err(ArrowError::CastError(format!("Attempting to cast to non-nullable and non-castable field {} during schema projection.", field.name())));
+                return Err(ArrowError::CastError(format!(
+                    "Attempting to cast to non-nullable and non-castable field {} during schema projection.",
+                    field.name()
+                )));
             }
         } else {
             if !field.is_nullable() {

@@ -22,14 +22,15 @@ use std::sync::Arc;
 use arrow::datatypes::Schema;
 use async_trait::async_trait;
 use datafusion_catalog::{
-    CatalogProvider, MemTable, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider,
-    TableProvider,
+    CatalogProvider, CatalogProviderList, MemTable, MemoryCatalogProvider,
+    MemoryCatalogProviderList, MemorySchemaProvider, SchemaProvider, TableProvider,
 };
 use datafusion_common::error::{DataFusionError, Result};
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
+use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::utils::ffi_logical_codec_from_pycapsule;
 
@@ -199,6 +200,70 @@ impl MyCatalogProvider {
 
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider = FFI_CatalogProvider::new_with_ffi_codec(provider, None, codec);
+
+        PyCapsule::new(py, provider, Some(name))
+    }
+}
+
+/// This catalog provider list is intended only for unit tests.
+/// It pre-populates with a single catalog.
+#[pyclass(
+    name = "MyCatalogProviderList",
+    module = "datafusion_ffi_example",
+    subclass
+)]
+#[derive(Debug, Clone)]
+pub(crate) struct MyCatalogProviderList {
+    inner: Arc<MemoryCatalogProviderList>,
+}
+
+impl CatalogProviderList for MyCatalogProviderList {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn catalog_names(&self) -> Vec<String> {
+        self.inner.catalog_names()
+    }
+
+    fn catalog(&self, name: &str) -> Option<Arc<dyn CatalogProvider>> {
+        self.inner.catalog(name)
+    }
+
+    fn register_catalog(
+        &self,
+        name: String,
+        catalog: Arc<dyn CatalogProvider>,
+    ) -> Option<Arc<dyn CatalogProvider>> {
+        self.inner.register_catalog(name, catalog)
+    }
+}
+
+#[pymethods]
+impl MyCatalogProviderList {
+    #[new]
+    pub fn new() -> PyResult<Self> {
+        let inner = Arc::new(MemoryCatalogProviderList::new());
+
+        inner.register_catalog(
+            "auto_ffi_catalog".to_owned(),
+            Arc::new(MyCatalogProvider::new()?),
+        );
+
+        Ok(Self { inner })
+    }
+
+    pub fn __datafusion_catalog_provider_list__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Bound<PyAny>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = cr"datafusion_catalog_provider_list".into();
+
+        let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProviderList + Send>;
+
+        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let provider = FFI_CatalogProviderList::new_with_ffi_codec(provider, None, codec);
 
         PyCapsule::new(py, provider, Some(name))
     }

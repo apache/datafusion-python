@@ -16,8 +16,8 @@
 // under the License.
 
 use datafusion::logical_expr::Extension;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;

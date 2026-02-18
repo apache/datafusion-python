@@ -26,14 +26,15 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::CatalogProvider;
-use datafusion::common::{exec_err, ScalarValue, TableReference};
+use datafusion::catalog::{CatalogProvider, CatalogProviderList};
+use datafusion::common::{ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
 use datafusion::datasource::{MemTable, TableProvider};
+use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -42,31 +43,35 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
-use datafusion::execution::TaskContextProvider;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
+use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use object_store::ObjectStore;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
-use pyo3::IntoPyObjectExt;
 use url::Url;
 use uuid::Uuid;
 
-use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
+use crate::catalog::{
+    PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
+};
 use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{
+    PyDataFusionError, PyDataFusionResult, from_datafusion_error, py_datafusion_err,
+};
 use crate::expr::sort_expr::PySortExpr;
+use crate::options::PyCsvReadOptions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
-use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
@@ -462,7 +467,8 @@ impl PySessionContext {
 
         let mut df = wait_for_future(py, async {
             self.ctx.sql_with_options(&query, options).await
-        })??;
+        })?
+        .map_err(from_datafusion_error)?;
 
         if !param_values.is_empty() {
             df = df.with_param_values(param_values)?;
@@ -627,6 +633,40 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn register_catalog_provider_list(
+        &self,
+        mut provider: Bound<PyAny>,
+    ) -> PyDataFusionResult<()> {
+        if provider.hasattr("__datafusion_catalog_provider_list__")? {
+            let py = provider.py();
+            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            provider = provider
+                .getattr("__datafusion_catalog_provider_list__")?
+                .call1((codec_capsule,))?;
+        }
+
+        let provider =
+            if let Ok(capsule) = provider.downcast::<PyCapsule>().map_err(py_datafusion_err) {
+                validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
+
+                let provider = unsafe { capsule.reference::<FFI_CatalogProviderList>() };
+                let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
+                provider as Arc<dyn CatalogProviderList>
+            } else {
+                match provider.extract::<PyCatalogList>() {
+                    Ok(py_catalog_list) => py_catalog_list.catalog_list,
+                    Err(_) => Arc::new(RustWrappedPyCatalogProviderList::new(
+                        provider.into(),
+                        Arc::clone(&self.logical_codec),
+                    )) as Arc<dyn CatalogProviderList>,
+                }
+            };
+
+        self.ctx.register_catalog_list(provider);
+
+        Ok(())
+    }
+
     pub fn register_catalog_provider(
         &self,
         name: &str,
@@ -724,41 +764,20 @@ impl PySessionContext {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name,
                         path,
-                        schema=None,
-                        has_header=true,
-                        delimiter=",",
-                        schema_infer_max_records=1000,
-                        file_extension=".csv",
-                        file_compression_type=None))]
+                        options=None))]
     pub fn register_csv(
         &self,
         name: &str,
         path: &Bound<'_, PyAny>,
-        schema: Option<PyArrowType<Schema>>,
-        has_header: bool,
-        delimiter: &str,
-        schema_infer_max_records: usize,
-        file_extension: &str,
-        file_compression_type: Option<String>,
+        options: Option<&PyCsvReadOptions>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
-            return Err(PyDataFusionError::PythonError(py_value_err(
-                "Delimiter must be a single character",
-            )));
-        }
-
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        let options = options
+            .map(|opts| opts.try_into())
+            .transpose()?
+            .unwrap_or_default();
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
@@ -920,10 +939,10 @@ impl PySessionContext {
         match res {
             Ok(df) => Ok(PyDataFrame::new(df)),
             Err(e) => {
-                if let datafusion::error::DataFusionError::Plan(msg) = &e {
-                    if msg.contains("No table named") {
-                        return Err(PyKeyError::new_err(msg.to_string()));
-                    }
+                if let datafusion::error::DataFusionError::Plan(msg) = &e
+                    && msg.contains("No table named")
+                {
+                    return Err(PyKeyError::new_err(msg.to_string()));
                 }
                 Err(py_datafusion_err(e))
             }
@@ -978,48 +997,19 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (
         path,
-        schema=None,
-        has_header=true,
-        delimiter=",",
-        schema_infer_max_records=1000,
-        file_extension=".csv",
-        table_partition_cols=vec![],
-        file_compression_type=None))]
+        options=None))]
     pub fn read_csv(
         &self,
         path: &Bound<'_, PyAny>,
-        schema: Option<PyArrowType<Schema>>,
-        has_header: bool,
-        delimiter: &str,
-        schema_infer_max_records: usize,
-        file_extension: &str,
-        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
-        file_compression_type: Option<String>,
+        options: Option<&PyCsvReadOptions>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
-            return Err(PyDataFusionError::PythonError(py_value_err(
-                "Delimiter must be a single character",
-            )));
-        };
-
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .table_partition_cols(
-                table_partition_cols
-                    .into_iter()
-                    .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>(),
-            )
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        let options = options
+            .map(|opts| opts.try_into())
+            .transpose()?
+            .unwrap_or_default();
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;

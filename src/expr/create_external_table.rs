@@ -20,8 +20,8 @@ use std::fmt::{self, Display, Formatter};
 use std::sync::Arc;
 
 use datafusion::logical_expr::CreateExternalTable;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use super::sort_expr::PySortExpr;

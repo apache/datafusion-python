@@ -17,10 +17,10 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion::logical_expr::logical_plan::Explain;
 use datafusion::logical_expr::LogicalPlan;
-use pyo3::prelude::*;
+use datafusion::logical_expr::logical_plan::Explain;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

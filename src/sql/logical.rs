@@ -66,8 +66,8 @@ use crate::expr::unnest::PyUnnest;
 use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
 
-#[pyclass(frozen, name = "LogicalPlan", module = "datafusion", subclass)]
-#[derive(Debug, Clone)]
+#[pyclass(frozen, name = "LogicalPlan", module = "datafusion", subclass, eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PyLogicalPlan {
     pub(crate) plan: Arc<LogicalPlan>,
 }

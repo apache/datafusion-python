@@ -31,9 +31,20 @@ except ImportError:
 
 import pyarrow as pa
 
-from datafusion.catalog import Catalog
+from datafusion.catalog import (
+    Catalog,
+    CatalogList,
+    CatalogProviderExportable,
+    CatalogProviderList,
+    CatalogProviderListExportable,
+)
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
+from datafusion.options import (
+    DEFAULT_MAX_INFER_SCHEMA,
+    CsvReadOptions,
+    _convert_table_partition_cols,
+)
 from datafusion.record_batch import RecordBatchStream
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
@@ -89,15 +100,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class CatalogProviderExportable(Protocol):
-    """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
-
-    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
-    """
-
-    def __datafusion_catalog_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -584,7 +586,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_listing_table(
             name,
             str(path),
@@ -832,6 +834,16 @@ class SessionContext:
         """Returns the list of catalogs in this context."""
         return self.ctx.catalog_names()
 
+    def register_catalog_provider_list(
+        self,
+        provider: CatalogProviderListExportable | CatalogProviderList | CatalogList,
+    ) -> None:
+        """Register a catalog provider list."""
+        if isinstance(provider, CatalogList):
+            self.ctx.register_catalog_provider_list(provider.catalog)
+        else:
+            self.ctx.register_catalog_provider_list(provider)
+
     def register_catalog_provider(
         self, name: str, provider: CatalogProviderExportable | CatalogProvider | Catalog
     ) -> None:
@@ -905,7 +917,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_parquet(
             name,
             str(path),
@@ -924,9 +936,10 @@ class SessionContext:
         schema: pa.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
-        schema_infer_max_records: int = 1000,
+        schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA,
         file_extension: str = ".csv",
         file_compression_type: str | None = None,
+        options: CsvReadOptions | None = None,
     ) -> None:
         """Register a CSV file as a table.
 
@@ -946,18 +959,46 @@ class SessionContext:
             file_extension: File extension; only files with this extension are
                 selected for data input.
             file_compression_type: File compression type.
+            options: Set advanced options for CSV reading. This cannot be
+                combined with any of the other options in this method.
         """
-        path = [str(p) for p in path] if isinstance(path, list) else str(path)
+        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
+
+        if options is not None and (
+            schema is not None
+            or not has_header
+            or delimiter != ","
+            or schema_infer_max_records != DEFAULT_MAX_INFER_SCHEMA
+            or file_extension != ".csv"
+            or file_compression_type is not None
+        ):
+            message = (
+                "Combining CsvReadOptions parameter with additional options "
+                "is not supported. Use CsvReadOptions to set parameters."
+            )
+            warnings.warn(
+                message,
+                category=UserWarning,
+                stacklevel=2,
+            )
+
+        options = (
+            options
+            if options is not None
+            else CsvReadOptions(
+                schema=schema,
+                has_header=has_header,
+                delimiter=delimiter,
+                schema_infer_max_records=schema_infer_max_records,
+                file_extension=file_extension,
+                file_compression_type=file_compression_type,
+            )
+        )
 
         self.ctx.register_csv(
             name,
-            path,
-            schema,
-            has_header,
-            delimiter,
-            schema_infer_max_records,
-            file_extension,
-            file_compression_type,
+            path_arg,
+            options.to_inner(),
         )
 
     def register_json(
@@ -988,7 +1029,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_json(
             name,
             str(path),
@@ -1021,7 +1062,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_avro(
             name, str(path), schema, file_extension, table_partition_cols
         )
@@ -1101,7 +1142,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         return DataFrame(
             self.ctx.read_json(
                 str(path),
@@ -1119,10 +1160,11 @@ class SessionContext:
         schema: pa.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
-        schema_infer_max_records: int = 1000,
+        schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA,
         file_extension: str = ".csv",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        options: CsvReadOptions | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
 
@@ -1140,26 +1182,51 @@ class SessionContext:
                 selected for data input.
             table_partition_cols:  Partition columns.
             file_compression_type:  File compression type.
+            options: Set advanced options for CSV reading. This cannot be
+                combined with any of the other options in this method.
 
         Returns:
             DataFrame representation of the read CSV files
         """
-        if table_partition_cols is None:
-            table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
 
-        path = [str(p) for p in path] if isinstance(path, list) else str(path)
+        if options is not None and (
+            schema is not None
+            or not has_header
+            or delimiter != ","
+            or schema_infer_max_records != DEFAULT_MAX_INFER_SCHEMA
+            or file_extension != ".csv"
+            or table_partition_cols is not None
+            or file_compression_type is not None
+        ):
+            message = (
+                "Combining CsvReadOptions parameter with additional options "
+                "is not supported. Use CsvReadOptions to set parameters."
+            )
+            warnings.warn(
+                message,
+                category=UserWarning,
+                stacklevel=2,
+            )
+
+        options = (
+            options
+            if options is not None
+            else CsvReadOptions(
+                schema=schema,
+                has_header=has_header,
+                delimiter=delimiter,
+                schema_infer_max_records=schema_infer_max_records,
+                file_extension=file_extension,
+                table_partition_cols=table_partition_cols,
+                file_compression_type=file_compression_type,
+            )
+        )
 
         return DataFrame(
             self.ctx.read_csv(
-                path,
-                schema,
-                has_header,
-                delimiter,
-                schema_infer_max_records,
-                file_extension,
-                table_partition_cols,
-                file_compression_type,
+                path_arg,
+                options.to_inner(),
             )
         )
 
@@ -1197,7 +1264,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         file_sort_order = self._convert_file_sort_order(file_sort_order)
         return DataFrame(
             self.ctx.read_parquet(
@@ -1231,7 +1298,7 @@ class SessionContext:
         """
         if file_partition_cols is None:
             file_partition_cols = []
-        file_partition_cols = self._convert_table_partition_cols(file_partition_cols)
+        file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )

@@ -22,11 +22,9 @@ import json
 import subprocess
 from pathlib import Path
 
-subprocess.check_output(["cargo", "install", "cargo-license"])
 data = subprocess.check_output(
     [
-        "cargo",
-        "license",
+        "cargo-license",
         "--avoid-build-deps",
         "--avoid-dev-deps",
         "--do-not-bundle",

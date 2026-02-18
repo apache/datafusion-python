@@ -17,14 +17,14 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion::logical_expr::logical_plan::Projection;
 use datafusion::logical_expr::Expr;
-use pyo3::prelude::*;
+use datafusion::logical_expr::logical_plan::Projection;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use crate::common::df_schema::PyDFSchema;
-use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
+use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "Projection", module = "datafusion.expr", subclass)]

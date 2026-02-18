@@ -19,8 +19,8 @@ use std::fmt::{self, Display, Formatter};
 use std::sync::Arc;
 
 use datafusion::logical_expr::CreateCatalog;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;

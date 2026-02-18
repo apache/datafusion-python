@@ -15,32 +15,27 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "datafusion-ffi-example"
-version = "0.2.0"
-edition = "2024"
+# CI workflow for pull requests - runs tests in DEBUG mode for faster feedback
 
-[dependencies]
-datafusion-catalog = { version = "52", default-features = false }
-datafusion-common = { version = "52", default-features = false }
-datafusion-functions-aggregate = { version = "52" }
-datafusion-functions-window = { version = "52" }
-datafusion-expr = { version = "52" }
-datafusion-ffi = { version = "52" }
+name: CI
 
-pyo3 = { version = "0.26", features = [
-  "extension-module",
-  "abi3",
-  "abi3-py39",
-] }
-arrow = { version = "57" }
-arrow-array = { version = "57" }
-arrow-schema = { version = "57" }
-async-trait = "0.1.89"
+on:
+  pull_request:
+    branches: ["main"]
 
-[build-dependencies]
-pyo3-build-config = "0.26"
+concurrency:
+  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
+  cancel-in-progress: true
 
-[lib]
-name = "datafusion_ffi_example"
-crate-type = ["cdylib", "rlib"]
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      build_mode: debug
+      run_wheels: false
+    secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    secrets: inherit

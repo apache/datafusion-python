@@ -19,7 +19,7 @@
 
 use std::sync::Arc;
 
-use arrow::array::{make_array, Array, ArrayData, ArrayRef, ListArray};
+use arrow::array::{Array, ArrayData, ArrayRef, ListArray, make_array};
 use arrow::buffer::OffsetBuffer;
 use arrow::datatypes::Field;
 use arrow::pyarrow::{FromPyArrow, ToPyArrow};
