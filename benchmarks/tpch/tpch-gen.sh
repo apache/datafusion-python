@@ -34,21 +34,11 @@ fi
 #popd
 
 # Generate data into the ./data directory if it does not already exist
-FILE=./data/supplier.tbl
+FILE=./data/supplier.csv
 if test -f "$FILE"; then
     echo "$FILE exists."
 else
-  docker run -v `pwd`/data:/data $TERMINAL_FLAG --rm ghcr.io/scalytics/tpch-docker:main $VERBOSE_OUTPUT -s $1
-
-  # workaround for https://github.com/apache/arrow-datafusion/issues/6147
-  mv data/customer.tbl data/customer.csv
-  mv data/lineitem.tbl data/lineitem.csv
-  mv data/nation.tbl data/nation.csv
-  mv data/orders.tbl data/orders.csv
-  mv data/part.tbl data/part.csv
-  mv data/partsupp.tbl data/partsupp.csv
-  mv data/region.tbl data/region.csv
-  mv data/supplier.tbl data/supplier.csv
+  tpchgen-cli -s $1 --format=csv --output-dir=./data
 
   ls -l data
 fi
