@@ -769,7 +769,38 @@ def test_array_function_obj_tests(stmt, py_expr):
             pa.array(["H-o", "W-d", "!"], type=pa.string_view()),
         ),
         (
-            f.regexp_count(column("a"), literal("(ell|orl)"), literal(1)),
+            f.regexp_count(column("a"), literal("(ell|orl)"), start=literal(1)),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_count(column("a"), literal("(ell|orl)")),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), literal("(ell|orl)")),
+            pa.array([2, 2, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), literal("([lr])"), n=literal(2)),
+            pa.array([4, 4, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(
+                column("a"),
+                literal("(x)?([hw])"),
+                start=literal(1),
+                n=literal(1),
+                flags=literal("i"),
+                sub_expr=literal(2),
+            ),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), literal("([hw])"), flags=literal("i")),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), literal("(x)?([HW])"), sub_expr=literal(2)),
             pa.array([1, 1, 0], type=pa.int64()),
         ),
     ],

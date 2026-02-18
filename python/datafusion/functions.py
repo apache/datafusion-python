@@ -225,6 +225,7 @@ __all__ = [
     "range",
     "rank",
     "regexp_count",
+    "regexp_instr",
     "regexp_like",
     "regexp_match",
     "regexp_replace",
@@ -816,7 +817,7 @@ def regexp_replace(
 
 
 def regexp_count(
-    string: Expr, pattern: Expr, start: Expr, flags: Expr | None = None
+    string: Expr, pattern: Expr, start: Expr | None = None, flags: Expr | None = None
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -825,8 +826,40 @@ def regexp_count(
     """
     if flags is not None:
         flags = flags.expr
-    start = start.expr if start is not None else Expr.expr
+    start = start.expr if start is not None else start
     return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
+
+
+def regexp_instr(
+    values: Expr,
+    regex: Expr,
+    start: Expr | None = None,
+    n: Expr | None = None,
+    flags: Expr | None = None,
+    sub_expr: Expr | None = None,
+) -> Expr:
+    """Returns the position of a regular expression match in a string.
+
+    Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
+    ``start`` (the first position is 1). Returns the starting or ending position based
+    on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
+    return the position of a specific capture group instead of the entire match.
+    """
+    start = start.expr if start is not None else None
+    n = n.expr if n is not None else None
+    flags = flags.expr if flags is not None else None
+    sub_expr = sub_expr.expr if sub_expr is not None else None
+
+    return Expr(
+        f.regexp_instr(
+            values.expr,
+            regex.expr,
+            start,
+            n,
+            flags,
+            sub_expr,
+        )
+    )
 
 
 def repeat(string: Expr, n: Expr) -> Expr:
