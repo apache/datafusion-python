@@ -195,6 +195,7 @@ Functions
    datafusion.functions.range
    datafusion.functions.rank
    datafusion.functions.regexp_count
+   datafusion.functions.regexp_instr
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -1718,12 +1719,22 @@ Module Contents
        rank(order_by="points")
 
 
-.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the number of matches in a string.
 
    Optional start position (the first position is 1) to search for the regular
    expression.
+
+
+.. py:function:: regexp_instr(values: datafusion.expr.Expr, regex: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, n: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None, sub_expr: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns the position of a regular expression match in a string.
+
+   Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
+   ``start`` (the first position is 1). Returns the starting or ending position based
+   on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
+   return the position of a specific capture group instead of the entire match.
 
 
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
