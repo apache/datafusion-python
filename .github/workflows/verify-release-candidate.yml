@@ -56,6 +56,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up protoc
+        uses: arduino/setup-protoc@v3
+
       - name: Run release candidate verification
         shell: bash
         run: ./dev/release/verify-release-candidate.sh "${{ inputs.version }}" "${{ inputs.rc_number }}"
