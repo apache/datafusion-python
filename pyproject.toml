@@ -16,9 +16,7 @@
 # under the License.
 
 [build-system]
-requires = [
-  "maturin>=1.8.1",
-]
+requires = ["maturin>=1.8.1"]
 build-backend = "maturin"
 
 [project]
@@ -27,12 +25,7 @@ description = "Build and run queries against data"
 readme = "README.md"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.10"
-keywords = [
-  "dataframe",
-  "datafusion",
-  "query-engine",
-  "rust",
-]
+keywords = ["dataframe", "datafusion", "query-engine", "rust"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -55,9 +48,7 @@ dependencies = [
   "pyarrow>=22.0.0;python_version>='3.14'",
   "typing-extensions;python_version<'3.13'",
 ]
-dynamic = [
-  "version",
-]
+dynamic = ["version"]
 
 [project.urls]
 homepage = "https://datafusion.apache.org/python"
@@ -70,19 +61,11 @@ profile = "black"
 [tool.maturin]
 python-source = "python"
 module-name = "datafusion._internal"
-include = [
-  { path = "Cargo.lock", format = "sdist" },
-]
-exclude = [
-  ".asf.yaml",
-  ".github/**",
-  "ci/**",
-]
+include = [{ path = "Cargo.lock", format = "sdist" }]
+exclude = [".asf.yaml", ".github/**", "ci/**"]
 # Require Cargo.lock is up to date
 locked = true
-features = [
-  "substrait",
-]
+features = ["substrait"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -90,9 +73,7 @@ asyncio_default_fixture_loop_scope = "function"
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = [
-  "ALL",
-]
+select = ["ALL"]
 ignore = [
   "A001",    # Allow using words like min as variable names
   "A002",    # Allow using words like filter as variable names
@@ -118,10 +99,7 @@ convention = "google"
 max-doc-length = 88
 
 [tool.ruff.lint.flake8-boolean-trap]
-extend-allowed-calls = [
-  "datafusion.lit",
-  "lit",
-]
+extend-allowed-calls = ["datafusion.lit", "lit"]
 
 # Disable docstring checking for these directories
 [tool.ruff.lint.per-file-ignores]
@@ -186,26 +164,13 @@ extend-allowed-calls = [
   "TRY",
   "UP",
 ]
-"docs/*" = [
-  "D",
-]
-"docs/source/conf.py" = [
-  "ANN001",
-  "ERA001",
-  "INP001",
-]
+"docs/*" = ["D"]
+"docs/source/conf.py" = ["ANN001", "ERA001", "INP001"]
 
 [tool.codespell]
-skip = [
-  "./python/tests/test_functions.py",
-  "./target",
-  "uv.lock",
-]
+skip = ["./python/tests/test_functions.py", "./target", "uv.lock"]
 count = true
-ignore-words-list = [
-  "IST",
-  "ans",
-]
+ignore-words-list = ["IST", "ans"]
 
 [dependency-groups]
 dev = [
