@@ -67,7 +67,7 @@ jobs:
       - name: Install dependencies
         uses: astral-sh/setup-uv@v7
         with:
-            enable-cache: true
+          enable-cache: true
 
       # Download the Linux wheel built in the build workflow
       - name: Download pre-built Linux wheel
