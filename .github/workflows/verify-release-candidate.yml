@@ -35,22 +35,31 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify RC (${{ matrix.runner }})
+    name: Verify RC (${{ matrix.os }}-${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:
         include:
           # Linux
-          - runner: ubuntu-22.04
-          - runner: ubuntu-24.04
-          - runner: ubuntu-24.04-arm
+          - os: linux
+            arch: x64
+            runner: ubuntu-latest
+          - os: linux
+            arch: arm64
+            runner: ubuntu-24.04-arm
 
           # macOS
-          - runner: macos-13
-          - runner: macos-14
+          - os: macos
+            arch: arm64
+            runner: macos-latest
+          - os: macos
+            arch: x64
+            runner: macos-15-intel
 
           # Windows (disabled for now)
-          # - runner: windows-latest
+          # - os: windows
+          #   arch: x64
+          #   runner: windows-latest
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
