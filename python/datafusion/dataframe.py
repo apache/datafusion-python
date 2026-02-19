@@ -330,7 +330,7 @@ class DataFrame:
             >>> df.collect()  # The DataFrame is still usable
             >>> ctx.sql("SELECT value FROM values_view").collect()
         """
-        from datafusion.catalog import Table as _Table  # noqa: PLC0415
+        from datafusion.catalog import Table as _Table
 
         return _Table(self.df.into_view(temporary))
 

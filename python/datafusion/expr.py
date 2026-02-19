@@ -342,7 +342,7 @@ def sort_list_to_raw_sort_list(
     return raw_sort_list
 
 
-class Expr:  # noqa: PLW1641
+class Expr:
     """Expression object.
 
     Expressions are one of the core concepts in DataFusion. See

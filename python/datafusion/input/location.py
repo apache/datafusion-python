@@ -46,7 +46,7 @@ class LocationInputPlugin(BaseInputSource):
         num_rows = 0  # Total number of rows in the file. Used for statistics
         columns = []
         if file_format == "parquet":
-            import pyarrow.parquet as pq  # noqa: PLC0415
+            import pyarrow.parquet as pq
 
             # Read the Parquet metadata
             metadata = pq.read_metadata(input_item)
@@ -61,7 +61,7 @@ class LocationInputPlugin(BaseInputSource):
             ]
 
         elif format == "csv":
-            import csv  # noqa: PLC0415
+            import csv
 
             # Consume header row and count number of rows for statistics.
             # TODO: Possibly makes sense to have the eager number of rows

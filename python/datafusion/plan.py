@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-class LogicalPlan:  # noqa: PLW1641
+class LogicalPlan:
     """Logical Plan.
 
     A `LogicalPlan` is a node in a tree of relational operators (such as
