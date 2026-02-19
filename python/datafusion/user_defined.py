@@ -583,11 +583,11 @@ class AggregateUDF:
         AggregateUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            aggregate = cast(AggregateUDF, object.__new__(AggregateUDF))
+            aggregate = cast("AggregateUDF", object.__new__(AggregateUDF))
             aggregate._udaf = df_internal.AggregateUDF.from_pycapsule(func)
             return aggregate
 
-        capsule = cast(AggregateUDFExportable, func)
+        capsule = cast("AggregateUDFExportable", func)
         name = str(capsule.__class__)
         return AggregateUDF(
             name=name,

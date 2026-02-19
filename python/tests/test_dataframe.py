@@ -2790,7 +2790,7 @@ def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, res
 def test_write_parquet_with_options_unsupported_encoding(df, tmp_path, encoding):
     """Test that unsupported Parquet encodings do not work."""
     # BaseException is used since this throws a Rust panic: https://github.com/PyO3/pyo3/issues/3519
-    with pytest.raises(BaseException, match="Encoding .*? is not supported"):
+    with pytest.raises(BaseException, match=r"Encoding .*? is not supported"):
         df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding))
 
 

@@ -31,7 +31,7 @@ from . import generic as helpers
 def test_no_table(ctx):
     with pytest.raises(
         ValueError,
-        match="^Error during planning: table 'datafusion.public.b' not found$",
+        match=r"^Error during planning: table 'datafusion.public.b' not found$",
     ):
         ctx.sql("SELECT a FROM b").collect()
 
@@ -188,7 +188,7 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_ty
     partition_data_type = "string" if legacy_data_type else pa.string()
 
     if legacy_data_type:
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning):  # noqa: PT030
             ctx.register_parquet(
                 "datapp",
                 dir_root,

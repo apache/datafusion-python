@@ -303,19 +303,19 @@ def py_flatten(arr):
             lambda data: [np.concatenate([arr, arr]) for arr in data],
         ),
         (
-            lambda col: f.array_dims(col),
+            f.array_dims,
             lambda data: [[len(r)] for r in data],
         ),
         (
-            lambda col: f.array_distinct(col),
+            f.array_distinct,
             lambda data: [list(set(r)) for r in data],
         ),
         (
-            lambda col: f.list_distinct(col),
+            f.list_distinct,
             lambda data: [list(set(r)) for r in data],
         ),
         (
-            lambda col: f.list_dims(col),
+            f.list_dims,
             lambda data: [[len(r)] for r in data],
         ),
         (
@@ -323,11 +323,11 @@ def py_flatten(arr):
             lambda data: [r[0] for r in data],
         ),
         (
-            lambda col: f.array_empty(col),
+            f.array_empty,
             lambda data: [len(r) == 0 for r in data],
         ),
         (
-            lambda col: f.empty(col),
+            f.empty,
             lambda data: [len(r) == 0 for r in data],
         ),
         (
@@ -343,11 +343,11 @@ def py_flatten(arr):
             lambda data: [r[0] for r in data],
         ),
         (
-            lambda col: f.array_length(col),
+            f.array_length,
             lambda data: [len(r) for r in data],
         ),
         (
-            lambda col: f.list_length(col),
+            f.list_length,
             lambda data: [len(r) for r in data],
         ),
         (
@@ -391,11 +391,11 @@ def py_flatten(arr):
             lambda data: [[i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data],
         ),
         (
-            lambda col: f.array_ndims(col),
+            f.array_ndims,
             lambda data: [np.array(r).ndim for r in data],
         ),
         (
-            lambda col: f.list_ndims(col),
+            f.list_ndims,
             lambda data: [np.array(r).ndim for r in data],
         ),
         (
@@ -415,11 +415,11 @@ def py_flatten(arr):
             lambda data: [np.insert(arr, 0, 99.0) for arr in data],
         ),
         (
-            lambda col: f.array_pop_back(col),
+            f.array_pop_back,
             lambda data: [arr[:-1] for arr in data],
         ),
         (
-            lambda col: f.array_pop_front(col),
+            f.array_pop_front,
             lambda data: [arr[1:] for arr in data],
         ),
         (

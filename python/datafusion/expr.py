@@ -20,6 +20,8 @@
 See :ref:`Expressions` in the online documentation for more details.
 """
 
+# ruff: noqa: PLC0415
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
@@ -340,7 +342,7 @@ def sort_list_to_raw_sort_list(
     return raw_sort_list
 
 
-class Expr:
+class Expr:  # noqa: PLW1641
     """Expression object.
 
     Expressions are one of the core concepts in DataFusion. See

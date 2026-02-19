@@ -15,7 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from uuid import UUID
+
 import pyarrow as pa
+import pyarrow.compute as pc
 import pytest
 from datafusion import SessionContext, column, udf
 from datafusion import functions as f
@@ -128,8 +131,6 @@ def test_udf_with_parameters_decorator(df) -> None:
 
 
 def test_udf_with_metadata(ctx) -> None:
-    from uuid import UUID
-
     @udf([pa.string()], pa.uuid(), "stable")
     def uuid_from_string(uuid_string):
         return pa.array((UUID(s).bytes for s in uuid_string.to_pylist()), pa.uuid())
@@ -151,8 +152,6 @@ def test_udf_with_metadata(ctx) -> None:
 
 
 def test_udf_with_nullability(ctx: SessionContext) -> None:
-    import pyarrow.compute as pc
-
     field_nullable_i64 = pa.field("with_nulls", type=pa.int64(), nullable=True)
     field_non_nullable_i64 = pa.field("no_nulls", type=pa.int64(), nullable=False)
 
