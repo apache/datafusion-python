@@ -42,7 +42,6 @@ except ImportError:
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
-
 __all__ = [
     "abs",
     "acos",
@@ -268,7 +267,11 @@ __all__ = [
     "sum",
     "tan",
     "tanh",
+    "to_char",
+    "to_date",
     "to_hex",
+    "to_local_time",
+    "to_time",
     "to_timestamp",
     "to_timestamp_micros",
     "to_timestamp_millis",
@@ -1010,6 +1013,58 @@ def now() -> Expr:
     return Expr(f.now())
 
 
+def to_char(arg: Expr, format: Expr) -> Expr:
+    """Returns a string representation of a date, time, timestamp or duration.
+
+    For usage of ``format`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    return Expr(f.to_char(arg.expr, format.expr))
+
+
+def to_date(arg: Expr, *formatters: Expr) -> Expr:
+    """Converts a value to a date (YYYY-MM-DD).
+
+    Supports strings, numeric and timestamp types as input.
+    Integers and doubles are interpreted as days since the unix epoch.
+    Strings are parsed as YYYY-MM-DD (e.g. '2023-07-20')
+    if ``formatters`` are not provided.
+
+    For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    if not formatters:
+        return Expr(f.to_date(arg.expr))
+    formatters = [fmt.expr for fmt in formatters]
+    return Expr(f.to_date(arg.expr, *formatters))
+
+
+def to_local_time(arg: Expr) -> Expr:
+    """Converts a timestamp with a timezone to a timestamp without a timezone.
+
+    This function handles daylight saving time changes.
+    """
+    return Expr(f.to_local_time(arg.expr))
+
+
+def to_time(arg: Expr, *formatters: Expr) -> Expr:
+    """Converts a value to a time. Supports strings and timestamps as input.
+
+    If ``formatters`` is not provided strings are parsed as HH:MM:SS, HH:MM or
+    HH:MM:SS.nnnnnnnnn;
+
+    For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    if not formatters:
+        return Expr(f.to_time(arg.expr))
+    formatters = [fmt.expr for fmt in formatters]
+    return Expr(f.to_time(arg.expr, *formatters))
+
+
 def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -1017,10 +1072,10 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
 
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
     """
-    if formatters is None:
-        return f.to_timestamp(arg.expr)
+    if not formatters:
+        return Expr(f.to_timestamp(arg.expr))
 
-    formatters = [f.expr for f in formatters]
+    formatters = [fmt.expr for fmt in formatters]
     return Expr(f.to_timestamp(arg.expr, *formatters))
 
 
@@ -1029,7 +1084,7 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters = [f.expr for f in formatters]
+    formatters = [fmt.expr for fmt in formatters]
     return Expr(f.to_timestamp_millis(arg.expr, *formatters))
 
 
@@ -1038,7 +1093,7 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters = [f.expr for f in formatters]
+    formatters = [fmt.expr for fmt in formatters]
     return Expr(f.to_timestamp_micros(arg.expr, *formatters))
 
 
@@ -1047,7 +1102,7 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters = [f.expr for f in formatters]
+    formatters = [fmt.expr for fmt in formatters]
     return Expr(f.to_timestamp_nanos(arg.expr, *formatters))
 
 
@@ -1056,19 +1111,22 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters = [f.expr for f in formatters]
+    formatters = [fmt.expr for fmt in formatters]
     return Expr(f.to_timestamp_seconds(arg.expr, *formatters))
 
 
 def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
     """Converts a string and optional formats to a Unixtime."""
-    args = [f.expr for f in format_arguments]
+    args = [fmt.expr for fmt in format_arguments]
     return Expr(f.to_unixtime(string.expr, *args))
 
 
 def current_date() -> Expr:
     """Returns current UTC date as a Date32 value."""
     return Expr(f.current_date())
+
+
+today = current_date
 
 
 def current_time() -> Expr:
