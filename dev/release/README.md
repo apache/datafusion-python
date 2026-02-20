@@ -154,6 +154,17 @@ This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to tes
 python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
 ```
 
+### Run Verify Release Candidate Workflow
+
+Before sending the vote email, run the manually triggered GitHub Actions workflow
+"Verify Release Candidate" and confirm all matrix jobs pass:
+
+1. Go to https://github.com/apache/datafusion-python/actions/workflows/verify-release-candidate.yml
+2. Click "Run workflow"
+3. Set `version` to the release version (for example, `52.0.0`)
+4. Set `rc_number` to the RC number (for example, `0`)
+5. Wait for all jobs to complete successfully
+
 ### Send the Email
 
 Send the email to start the vote.
