@@ -17,6 +17,8 @@
 
 name: Verify Release Candidate
 
+# NOTE: This workflow is intended to be run manually via workflow_dispatch.
+
 on:
   workflow_dispatch:
     inputs:
