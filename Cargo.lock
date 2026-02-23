@@ -1611,7 +1611,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-python"
-version = "51.0.0"
+version = "52.0.0"
 dependencies = [
  "arrow",
  "arrow-select",
