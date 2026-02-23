@@ -111,7 +111,7 @@ impl DatasetExec {
 
         let scanner = dataset.call_method("scanner", (), Some(&kwargs))?;
 
-        let schema = Arc::new(
+        let schema: SchemaRef = Arc::new(
             scanner
                 .getattr("projected_schema")?
                 .extract::<PyArrowType<_>>()?
