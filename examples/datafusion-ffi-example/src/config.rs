@@ -1,10 +1,13 @@
-use datafusion::common::{config_err, DataFusionError};
-use datafusion::config::{ConfigEntry, ConfigExtension, ConfigField, ExtensionOptions, Visit};
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::any::Any;
+
+use datafusion_common::config::{
+    ConfigEntry, ConfigExtension, ConfigField, ExtensionOptions, Visit,
+};
+use datafusion_common::{DataFusionError, config_err};
 use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::types::PyCapsule;
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
 /// My own config options.
 #[pyclass(name = "MyConfig", module = "datafusion_ffi_example", subclass)]
@@ -24,7 +27,6 @@ impl MyConfig {
         Self::default()
     }
 
-
     fn __datafusion_extension_options__<'py>(
         &self,
         py: Python<'py>,
@@ -32,7 +34,9 @@ impl MyConfig {
         let name = cr"datafusion_extension_options".into();
 
         let mut config = FFI_ExtensionOptions::default();
-        config.add_config(self).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+        config
+            .add_config(self)
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
 
         PyCapsule::new(py, config, Some(name))
     }
@@ -64,8 +68,8 @@ impl ExtensionOptions for MyConfig {
         Box::new(self.clone())
     }
 
-    fn set(&mut self, key: &str, value: &str) -> datafusion::common::Result<()> {
-        datafusion::config::ConfigField::set(self, key, value)
+    fn set(&mut self, key: &str, value: &str) -> datafusion_common::Result<()> {
+        datafusion_common::config::ConfigField::set(self, key, value)
     }
 
     fn entries(&self) -> Vec<ConfigEntry> {
@@ -103,6 +107,5 @@ impl ConfigField for MyConfig {
 
             _ => config_err!("Config value \"{}\" not found on MyConfig", key),
         }
-
     }
 }
