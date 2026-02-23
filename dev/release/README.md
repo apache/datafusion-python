@@ -158,7 +158,7 @@ python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
 
 Before sending the vote email, run the manually triggered GitHub Actions workflow
 "Verify Release Candidate" and confirm all matrix jobs pass across the OS/architecture matrix
-(for example, Linux and macOS runners):
+(for example, Linux, macOS, and Windows runners):
 
 1. Go to https://github.com/apache/datafusion-python/actions/workflows/verify-release-candidate.yml
 2. Click "Run workflow"
