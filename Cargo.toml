@@ -91,3 +91,9 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+[patch.crates-io]
+datafusion = { git = "https://github.com/timsaucer/datafusion", rev = "33ea91c5fa37aa0cfa787d58c6bf84ec4628db88" }
+datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", rev = "33ea91c5fa37aa0cfa787d58c6bf84ec4628db88" }
+datafusion-proto = { git = "https://github.com/timsaucer/datafusion", rev = "33ea91c5fa37aa0cfa787d58c6bf84ec4628db88" }
+datafusion-ffi = { git = "https://github.com/timsaucer/datafusion", rev = "33ea91c5fa37aa0cfa787d58c6bf84ec4628db88" }

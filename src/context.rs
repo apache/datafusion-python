@@ -44,10 +44,11 @@ use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
-    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
+use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
@@ -175,6 +176,27 @@ impl PySessionConfig {
 
     fn set(&self, key: &str, value: &str) -> Self {
         Self::from(self.config.clone().set_str(key, value))
+    }
+
+    pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
+        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+
+        validate_pycapsule(capsule, "datafusion_extension_options")?;
+
+        let mut extension = unsafe { capsule.reference::<FFI_ExtensionOptions>() }.clone();
+
+        let mut config = self.config.clone();
+        let options = config.options_mut();
+        if let Some(prior_extension) = options.extensions.get::<FFI_ExtensionOptions>() {
+            extension
+                .merge(prior_extension)
+                .map_err(py_datafusion_err)?;
+        }
+
+        options.extensions.insert(extension);
+
+        Ok(Self::from(config))
     }
 }
 
@@ -815,7 +837,7 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
             .table_partition_cols(
                 table_partition_cols
@@ -976,7 +998,7 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
                     .into_iter()
