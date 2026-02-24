@@ -44,3 +44,11 @@ pyo3-build-config = "0.26"
 [lib]
 name = "datafusion_ffi_example"
 crate-type = ["cdylib", "rlib"]
+
+[patch.crates-io]
+datafusion-catalog = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-common = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", branch = "main" }

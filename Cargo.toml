@@ -91,3 +91,9 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+[patch.crates-io]
+datafusion = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", branch = "main" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", branch = "main" }
