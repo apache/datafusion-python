@@ -243,6 +243,15 @@ class Table:
         return self._inner.kind
 
 
+class TableProviderFactoryExportable(Protocol):
+    """Type hint for object that has __datafusion_table_provider_factory__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.TableProviderFactory.html
+    """
+
+    def __datafusion_table_provider_factory__(self, session: Any) -> object: ...
+
+
 class CatalogProviderList(ABC):
     """Abstract class for defining a Python based Catalog Provider List."""
 

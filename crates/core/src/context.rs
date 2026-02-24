@@ -27,7 +27,7 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, CatalogProviderList};
+use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
 use datafusion::common::{ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
@@ -51,6 +51,7 @@ use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
@@ -656,6 +657,34 @@ impl PySessionContext {
 
     pub fn deregister_table(&self, name: &str) -> PyDataFusionResult<()> {
         self.ctx.deregister_table(name)?;
+        Ok(())
+    }
+
+    pub fn register_table_factory(
+        &self,
+        format: &str,
+        factory: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        let py = factory.py();
+        let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+
+        let capsule = factory
+            .getattr("__datafusion_table_provider_factory__")?
+            .call1((codec_capsule,))?;
+        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
+
+        let factory: NonNull<FFI_TableProviderFactory> = capsule
+            .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
+            .cast();
+        let factory = unsafe { factory.as_ref() };
+        let factory: Arc<dyn TableProviderFactory> = factory.into();
+
+        let st = self.ctx.state_ref();
+        let mut lock = st.write();
+        lock.table_factories_mut()
+            .insert(format.to_owned(), factory);
+
         Ok(())
     }
 
