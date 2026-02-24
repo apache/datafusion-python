@@ -44,7 +44,7 @@ use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
-    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
@@ -815,7 +815,7 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
             .table_partition_cols(
                 table_partition_cols
@@ -976,7 +976,7 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
                     .into_iter()

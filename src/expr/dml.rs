@@ -110,6 +110,7 @@ impl From<WriteOp> for PyWriteOp {
             WriteOp::Update => PyWriteOp::Update,
             WriteOp::Delete => PyWriteOp::Delete,
             WriteOp::Ctas => PyWriteOp::Ctas,
+            WriteOp::Truncate => todo!(),
         }
     }
 }
