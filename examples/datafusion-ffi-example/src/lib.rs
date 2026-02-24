@@ -22,6 +22,7 @@ use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider, MyCatalogP
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
+use crate::table_provider_factory::MyTableProviderFactory;
 use crate::window_udf::MyRankUDF;
 
 pub(crate) mod aggregate_udf;
@@ -29,12 +30,14 @@ pub(crate) mod catalog_provider;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
+pub(crate) mod table_provider_factory;
 pub(crate) mod utils;
 pub(crate) mod window_udf;
 
 #[pymodule]
 fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyTableProvider>()?;
+    m.add_class::<MyTableProviderFactory>()?;
     m.add_class::<MyTableFunction>()?;
     m.add_class::<MyCatalogProvider>()?;
     m.add_class::<MyCatalogProviderList>()?;
