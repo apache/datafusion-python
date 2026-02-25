@@ -210,6 +210,7 @@ impl PyExpr {
             Expr::Unnest(value) => {
                 Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?)
             }
+            Expr::SetComparison(_) => todo!(),
         })
     }
 
@@ -382,6 +383,7 @@ impl PyExpr {
             Expr::Wildcard { .. } => {
                 return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"));
             }
+            Expr::SetComparison(_) => todo!(),
         })
     }
 
@@ -518,6 +520,7 @@ impl PyExpr {
             Expr::Wildcard { .. } => {
                 Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
             }
+            Expr::SetComparison(_) => todo!(),
         }
     }
 

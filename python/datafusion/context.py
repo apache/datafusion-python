@@ -37,6 +37,7 @@ from datafusion.catalog import (
     CatalogProviderExportable,
     CatalogProviderList,
     CatalogProviderListExportable,
+    TableProviderFactoryExportable,
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
@@ -829,6 +830,23 @@ class SessionContext:
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
+
+    def register_table_factory(
+        self,
+        format: str,
+        factory: TableProviderFactoryExportable
+    ) -> None:
+        """Register a :py:class:`~datafusion.TableProviderFactoryExportable`
+        with this context.
+
+        The registered factory can be reference from SQL DDL statements executed
+        against this context.
+
+        Args:
+            format: The value to be used in `STORED AS ${format}` clause.
+            factory: A PyCapsule that implements TableProviderFactoryExportable"
+        """
+        self.ctx.register_table_factory(format, factory)
 
     def catalog_names(self) -> set[str]:
         """Returns the list of catalogs in this context."""

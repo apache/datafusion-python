@@ -26,7 +26,7 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, CatalogProviderList};
+use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
 use datafusion::common::{ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
@@ -44,12 +44,13 @@ use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
-    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -633,6 +634,32 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn register_table_factory(
+        &self,
+        format: &str,
+        factory: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        let py = factory.py();
+        let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+
+        let capsule = factory
+            .getattr("__datafusion_table_provider_factory__")?
+            .call1((codec_capsule,))?;
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
+
+        let factory = unsafe { capsule.reference::<FFI_TableProviderFactory>() };
+        let factory: Arc<dyn TableProviderFactory> = factory.into();
+        let factory = factory as Arc<dyn TableProviderFactory>;
+
+        let st = self.ctx.state_ref();
+        let mut lock = st.write();
+        lock.table_factories_mut()
+            .insert(format.to_owned(), factory);
+
+        Ok(())
+    }
+
     pub fn register_catalog_provider_list(
         &self,
         mut provider: Bound<PyAny>,
@@ -815,7 +842,7 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
             .table_partition_cols(
                 table_partition_cols
@@ -976,7 +1003,7 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
                     .into_iter()

@@ -31,7 +31,7 @@ use datafusion::physical_plan::execution_plan::{Boundedness, EmissionType};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
-    SendableRecordBatchStream, Statistics,
+    SendableRecordBatchStream,
 };
 use futures::{TryStreamExt, stream};
 /// Implements a Datafusion physical ExecutionPlan that delegates to a PyArrow Dataset
@@ -70,7 +70,6 @@ pub(crate) struct DatasetExec {
     fragments: Py<PyList>,
     columns: Option<Vec<String>>,
     filter_expr: Option<Py<PyAny>>,
-    projected_statistics: Statistics,
     plan_properties: datafusion::physical_plan::PlanProperties,
 }
 
@@ -111,7 +110,7 @@ impl DatasetExec {
 
         let scanner = dataset.call_method("scanner", (), Some(&kwargs))?;
 
-        let schema = Arc::new(
+        let schema: SchemaRef = Arc::new(
             scanner
                 .getattr("projected_schema")?
                 .extract::<PyArrowType<_>>()?
@@ -130,7 +129,6 @@ impl DatasetExec {
         let fragments_iter = pylist.call1((fragments_iterator,))?;
         let fragments = fragments_iter.downcast::<PyList>().map_err(PyErr::from)?;
 
-        let projected_statistics = Statistics::new_unknown(&schema);
         let plan_properties = datafusion::physical_plan::PlanProperties::new(
             EquivalenceProperties::new(schema.clone()),
             Partitioning::UnknownPartitioning(fragments.len()),
@@ -144,7 +142,6 @@ impl DatasetExec {
             fragments: fragments.clone().unbind(),
             columns,
             filter_expr,
-            projected_statistics,
             plan_properties,
         })
     }
@@ -233,10 +230,6 @@ impl ExecutionPlan for DatasetExec {
             );
             Ok(record_batch_stream)
         })
-    }
-
-    fn statistics(&self) -> DFResult<Statistics> {
-        Ok(self.projected_statistics.clone())
     }
 
     fn properties(&self) -> &datafusion::physical_plan::PlanProperties {
