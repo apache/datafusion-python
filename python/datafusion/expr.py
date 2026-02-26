@@ -20,6 +20,8 @@
 See :ref:`Expressions` in the online documentation for more details.
 """
 
+# ruff: noqa: PLC0415
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence

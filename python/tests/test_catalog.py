@@ -248,7 +248,7 @@ def test_exception_not_mangled(ctx: SessionContext):
 
     schema.register_table("test_table", create_dataset())
 
-    with pytest.raises(ValueError, match="^test_table is not an acceptable name$"):
+    with pytest.raises(ValueError, match=r"^test_table is not an acceptable name$"):
         ctx.sql(f"select * from {catalog_name}.{schema_name}.test_table")
 
 

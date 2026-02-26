@@ -15,12 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
-use datafusion::logical_expr::expr::{GetFieldAccess, GetIndexedField};
-use pyo3::prelude::*;
 use std::fmt::{Display, Formatter};
 
+use datafusion::logical_expr::expr::{GetFieldAccess, GetIndexedField};
+use pyo3::prelude::*;
+
 use super::literal::PyLiteral;
+use crate::expr::PyExpr;
 
 #[pyclass(frozen, name = "GetIndexedField", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
