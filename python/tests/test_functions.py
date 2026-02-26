@@ -1087,6 +1087,20 @@ def test_temporal_formatter_requires_expr():
         f.to_time(literal("12:30:45"), "not-an-expr")
 
 
+def test_today_returns_date32(df):
+    result = df.select(f.today().alias("today")).collect()[0]
+    assert result.column(0).type == pa.date32()
+
+
+def test_today_alias_matches_current_date(df):
+    result = df.select(
+        f.current_date().alias("current_date"),
+        f.today().alias("today"),
+    ).collect()[0]
+
+    assert result.column(0) == result.column(1)
+
+
 def test_arrow_cast(df):
     df = df.select(
         # we use `string_literal` to return utf8 instead of `literal` which returns
