@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 
 import numpy as np
 import pyarrow as pa
@@ -952,6 +952,12 @@ def test_temporal_functions(df):
         f.to_timestamp_nanos(
             literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
         ),
+        f.to_time(literal("12:30:45")),
+        f.to_time(literal("12-30-45"), literal("%H-%M-%S")),
+        f.to_date(literal("2017-05-31")),
+        f.to_date(literal("2017-05-31"), literal("%Y-%m-%d")),
+        f.to_local_time(column("d")),
+        f.to_char(column("d"), literal("%d-%m-%Y")),
     )
     result = df.collect()
     assert len(result) == 1
@@ -1026,6 +1032,73 @@ def test_temporal_functions(df):
         [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
         type=pa.timestamp("ns"),
     )
+    assert result.column(17) == pa.array(
+        [time(12, 30, 45)] * 3,
+        type=pa.time64("ns"),
+    )
+    assert result.column(18) == pa.array(
+        [time(12, 30, 45)] * 3,
+        type=pa.time64("ns"),
+    )
+    assert result.column(19) == pa.array(
+        [date(2017, 5, 31)] * 3,
+        type=pa.date32(),
+    )
+    assert result.column(20) == pa.array(
+        [date(2017, 5, 31)] * 3,
+        type=pa.date32(),
+    )
+    assert result.column(21) == pa.array(
+        [
+            datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+            datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
+            datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
+        ],
+        type=pa.timestamp("us"),
+    )
+
+    assert result.column(22) == pa.array(
+        [
+            "31-12-2022",
+            "26-06-2027",
+            "02-07-2020",
+        ],
+        type=pa.string(),
+    )
+
+
+def test_to_time_invalid_input(df):
+    with pytest.raises(Exception, match=r"Error parsing 'not-a-time' as time"):
+        df.select(f.to_time(literal("not-a-time"))).collect()
+
+
+def test_to_time_mismatched_formatter(df):
+    with pytest.raises(Exception, match=r"Error parsing '12:30:45' as time"):
+        df.select(f.to_time(literal("12:30:45"), literal("%Y-%m-%d"))).collect()
+
+
+def test_to_date_invalid_input(df):
+    with pytest.raises(Exception, match=r"Date32"):
+        df.select(f.to_date(literal("not-a-date"))).collect()
+
+
+def test_temporal_formatter_requires_expr():
+    with pytest.raises(AttributeError, match="'str' object has no attribute 'expr'"):
+        f.to_time(literal("12:30:45"), "not-an-expr")
+
+
+def test_today_returns_date32(df):
+    result = df.select(f.today().alias("today")).collect()[0]
+    assert result.column(0).type == pa.date32()
+
+
+def test_today_alias_matches_current_date(df):
+    result = df.select(
+        f.current_date().alias("current_date"),
+        f.today().alias("today"),
+    ).collect()[0]
+
+    assert result.column(0) == result.column(1)
 
 
 def test_arrow_cast(df):
