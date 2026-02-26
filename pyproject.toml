@@ -70,6 +70,9 @@ features = ["substrait"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+addopts = "--doctest-modules"
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+testpaths = ["python/tests", "python/datafusion"]
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
