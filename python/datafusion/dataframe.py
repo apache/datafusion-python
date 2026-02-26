@@ -327,8 +327,9 @@ class DataFrame:
             >>> df = ctx.sql("SELECT 1 AS value")
             >>> view = df.into_view()
             >>> ctx.register_table("values_view", view)
-            >>> df.collect()  # The DataFrame is still usable
-            >>> ctx.sql("SELECT value FROM values_view").collect()
+            >>> result = ctx.sql("SELECT value FROM values_view").collect()
+            >>> result[0].column("value").to_pylist()
+            [1]
         """
         from datafusion.catalog import Table as _Table
 
@@ -1389,9 +1390,12 @@ class DataFrame:
             DataFrame with null values replaced where type casting is possible
 
         Examples:
-            >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
-            >>> # Fill nulls in specific string columns
-            >>> df = df.fill_null("missing", subset=["name", "category"])
+            >>> from datafusion import SessionContext, col
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, None, 3], "b": [None, 5, 6]})
+            >>> filled = df.fill_null(0)
+            >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
+            [0, 1, 3]
 
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
