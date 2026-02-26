@@ -26,6 +26,7 @@ use pyo3::types::PyBytes;
 
 use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
+use crate::metrics::PyMetricsSet;
 
 #[pyclass(frozen, name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -88,6 +89,11 @@ impl PyExecutionPlan {
         let codec = DefaultPhysicalExtensionCodec {};
         let plan = proto_plan.try_into_physical_plan(ctx.ctx.task_ctx().as_ref(), &codec)?;
         Ok(Self::new(plan))
+    }
+
+    /// Returns metrics for this plan node after execution, or None if unavailable.
+    pub fn metrics(&self) -> Option<PyMetricsSet> {
+        self.plan.metrics().map(PyMetricsSet::new)
     }
 
     fn __repr__(&self) -> String {

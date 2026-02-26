@@ -49,6 +49,13 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 
 use crate::common::data_type::PyScalarValue;
+use datafusion::physical_plan::{
+    ExecutionPlan as DFExecutionPlan,
+    collect as df_collect,
+    collect_partitioned as df_collect_partitioned,
+    execute_stream as df_execute_stream,
+    execute_stream_partitioned as df_execute_stream_partitioned,
+};
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err};
 use crate::expr::PyExpr;
 use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
@@ -289,6 +296,9 @@ pub struct PyDataFrame {
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
     batches: SharedCachedBatches,
+
+    // Cache the last physical plan so that metrics are available after execution.
+    last_plan: Arc<Mutex<Option<Arc<dyn DFExecutionPlan>>>>,
 }
 
 impl PyDataFrame {
@@ -297,6 +307,7 @@ impl PyDataFrame {
         Self {
             df: Arc::new(df),
             batches: Arc::new(Mutex::new(None)),
+            last_plan: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -626,7 +637,12 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect<'py>(&self, py: Python<'py>) -> PyResult<Vec<Bound<'py, PyAny>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
+        let df = self.df.as_ref().clone();
+        let plan = wait_for_future(py, df.create_physical_plan())?
+            .map_err(PyDataFusionError::from)?;
+        *self.last_plan.lock() = Some(Arc::clone(&plan));
+        let task_ctx = Arc::new(self.df.as_ref().task_ctx());
+        let batches = wait_for_future(py, df_collect(plan, task_ctx))?
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
@@ -642,7 +658,12 @@ impl PyDataFrame {
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<Bound<'py, PyAny>>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
+        let df = self.df.as_ref().clone();
+        let plan = wait_for_future(py, df.create_physical_plan())?
+            .map_err(PyDataFusionError::from)?;
+        *self.last_plan.lock() = Some(Arc::clone(&plan));
+        let task_ctx = Arc::new(self.df.as_ref().task_ctx());
+        let batches = wait_for_future(py, df_collect_partitioned(plan, task_ctx))?
             .map_err(PyDataFusionError::from)?;
 
         batches
@@ -802,7 +823,13 @@ impl PyDataFrame {
     }
 
     /// Get the execution plan for this `DataFrame`
+    ///
+    /// If the DataFrame has already been executed (e.g. via `collect()`),
+    /// returns the cached plan which includes populated metrics.
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
+        if let Some(plan) = self.last_plan.lock().as_ref() {
+            return Ok(PyExecutionPlan::new(Arc::clone(plan)));
+        }
         let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())??;
         Ok(plan.into())
     }
@@ -1127,13 +1154,22 @@ impl PyDataFrame {
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
         let df = self.df.as_ref().clone();
-        let stream = spawn_future(py, async move { df.execute_stream().await })?;
+        let plan = wait_for_future(py, df.create_physical_plan())??;
+        *self.last_plan.lock() = Some(Arc::clone(&plan));
+        let task_ctx = Arc::new(self.df.as_ref().task_ctx());
+        let stream = spawn_future(py, async move { df_execute_stream(plan, task_ctx) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
         let df = self.df.as_ref().clone();
-        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
+        let plan = wait_for_future(py, df.create_physical_plan())?
+            .map_err(PyDataFusionError::from)?;
+        *self.last_plan.lock() = Some(Arc::clone(&plan));
+        let task_ctx = Arc::new(self.df.as_ref().task_ctx());
+        let streams = spawn_future(py, async move {
+            df_execute_stream_partitioned(plan, task_ctx)
+        })?;
         Ok(streams.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
