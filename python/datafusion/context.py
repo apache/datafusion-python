@@ -294,6 +294,10 @@ class SessionConfig:
         self.config_internal = self.config_internal.set(key, value)
         return self
 
+    def with_extension(self, extension: Any) -> SessionConfig:
+        self.config_internal = self.config_internal.with_extension(extension)
+        return self
+
 
 class RuntimeEnvBuilder:
     """Runtime configuration options."""

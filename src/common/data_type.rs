@@ -347,6 +347,7 @@ impl DataTypeMap {
             ScalarValue::Map(_) => Err(PyNotImplementedError::new_err(
                 "ScalarValue::Map".to_string(),
             )),
+            ScalarValue::RunEndEncoded(_, _, _) => todo!(),
         }
     }
 }
