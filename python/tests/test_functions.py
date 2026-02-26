@@ -1067,6 +1067,26 @@ def test_temporal_functions(df):
     )
 
 
+def test_to_time_invalid_input(df):
+    with pytest.raises(Exception, match=r"Error parsing 'not-a-time' as time"):
+        df.select(f.to_time(literal("not-a-time"))).collect()
+
+
+def test_to_time_mismatched_formatter(df):
+    with pytest.raises(Exception, match=r"Error parsing '12:30:45' as time"):
+        df.select(f.to_time(literal("12:30:45"), literal("%Y-%m-%d"))).collect()
+
+
+def test_to_date_invalid_input(df):
+    with pytest.raises(Exception, match=r"Date32"):
+        df.select(f.to_date(literal("not-a-date"))).collect()
+
+
+def test_temporal_formatter_requires_expr():
+    with pytest.raises(AttributeError, match="'str' object has no attribute 'expr'"):
+        f.to_time(literal("12:30:45"), "not-an-expr")
+
+
 def test_arrow_cast(df):
     df = df.select(
         # we use `string_literal` to return utf8 instead of `literal` which returns
