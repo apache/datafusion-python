@@ -123,6 +123,7 @@ jobs:
       - name: Run dbgen to create 1 Gb dataset
         if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
         run: |
+          uv tool install tpchgen-cli 
           cd benchmarks/tpch
           RUN_IN_CI=TRUE ./tpch-gen.sh 1
 

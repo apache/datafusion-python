@@ -121,22 +121,10 @@ for filename, curr_schema_val in all_schemas.items():
     # For convenience, go ahead and convert the schema column names to lowercase
     curr_schema = [(s[0].lower(), s[1]) for s in curr_schema_val]
 
-    # Pre-collect the output columns so we can ignore the null field we add
-    # in to handle the trailing | in the file
-    output_cols = [r[0] for r in curr_schema]
-
-    curr_schema = [pa.field(r[0], r[1], nullable=False) for r in curr_schema]
-
-    # Trailing | requires extra field for in processing
-    curr_schema.append(("some_null", pa.null()))
-
     schema = pa.schema(curr_schema)
 
     source_file = (curr_dir / f"../../benchmarks/tpch/data/{filename}.csv").resolve()
     dest_file = (curr_dir / f"./data/{filename}.parquet").resolve()
 
-    df = ctx.read_csv(source_file, schema=schema, has_header=False, delimiter="|")
-
-    df = df.select(*output_cols)
-
+    df = ctx.read_csv(source_file, schema=schema, has_header=True)
     df.write_parquet(dest_file, compression="snappy")
