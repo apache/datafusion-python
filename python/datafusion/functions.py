@@ -2062,7 +2062,11 @@ def now() -> Expr:
     >>> result = df.select(
     ...     dfn.functions.now().alias("now")
     ... )
-    >>> result.collect_column("now")[0].as_py() is not None
+
+    Use .value instead of .as_py() because nanosecond timestamps
+    require pandas to convert to Python datetime objects.
+
+    >>> result.collect_column("now")[0].value > 0
     True
     """
     return Expr(f.now())
@@ -2227,7 +2231,11 @@ def current_time() -> Expr:
     >>> result = df.select(
     ...     dfn.functions.current_time().alias("t")
     ... )
-    >>> result.collect_column("t")[0].as_py() is not None
+
+    Use .value instead of .as_py() because nanosecond timestamps
+    require pandas to convert to Python datetime objects.
+
+    >>> result.collect_column("t")[0].value > 0
     True
     """
     return Expr(f.current_time())
