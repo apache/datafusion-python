@@ -366,7 +366,7 @@ jobs:
             artifact-label: cp310-314
             wheel-mode: abi3
             maturin-features: protoc,substrait,py-limited-api
-          - interpreter: "3.13t 3.14t"
+          - interpreter: "python3.13t python3.14t"
             artifact-label: cp313t-314t
             wheel-mode: freethreaded
             maturin-features: protoc,substrait
@@ -403,6 +403,19 @@ jobs:
           # Use manylinux_2_28-cross because the manylinux2014-cross has GCC 4.8.5, which causes the build to fail
           manylinux: 2_28
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
+          before-script-linux: |
+            if [[ "${{ matrix.wheel-mode }}" == "freethreaded" ]]; then
+              set -euxo pipefail
+              if ! command -v python3.13t >/dev/null || ! command -v python3.14t >/dev/null; then
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                uv python install 3.13t 3.14t
+                ln -sf "$(uv python find 3.13t)" /usr/local/bin/python3.13t
+                ln -sf "$(uv python find 3.14t)" /usr/local/bin/python3.14t
+              fi
+              python3.13t --version
+              python3.14t --version
+            fi
           args: --release --features ${{ matrix.maturin-features }} -i ${{ matrix.interpreter }}
       - name: Archive wheels
         uses: actions/upload-artifact@v4
