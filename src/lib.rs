@@ -16,9 +16,9 @@
 // under the License.
 
 // Re-export Apache Arrow DataFusion dependencies
-pub use datafusion;
 pub use datafusion::{
-    common as datafusion_common, logical_expr as datafusion_expr, optimizer, sql as datafusion_sql,
+    self, common as datafusion_common, logical_expr as datafusion_expr, optimizer,
+    sql as datafusion_sql,
 };
 #[cfg(feature = "substrait")]
 pub use datafusion_substrait;
