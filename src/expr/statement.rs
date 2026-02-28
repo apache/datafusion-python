@@ -20,14 +20,14 @@ use std::sync::Arc;
 use arrow::datatypes::Field;
 use arrow::pyarrow::PyArrowType;
 use datafusion::logical_expr::{
-    Deallocate, Execute, Prepare, SetVariable, TransactionAccessMode, TransactionConclusion,
-    TransactionEnd, TransactionIsolationLevel, TransactionStart,
+    Deallocate, Execute, Prepare, ResetVariable, SetVariable, TransactionAccessMode,
+    TransactionConclusion, TransactionEnd, TransactionIsolationLevel, TransactionStart,
 };
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
-use super::logical_node::LogicalNode;
 use super::PyExpr;
+use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
@@ -256,6 +256,50 @@ impl PyTransactionEnd {
 
     pub fn chain(&self) -> bool {
         self.transaction_end.chain
+    }
+}
+
+#[pyclass(frozen, name = "ResetVariable", module = "datafusion.expr", subclass)]
+#[derive(Clone)]
+pub struct PyResetVariable {
+    reset_variable: ResetVariable,
+}
+
+impl From<ResetVariable> for PyResetVariable {
+    fn from(reset_variable: ResetVariable) -> PyResetVariable {
+        PyResetVariable { reset_variable }
+    }
+}
+
+impl TryFrom<PyResetVariable> for ResetVariable {
+    type Error = PyErr;
+
+    fn try_from(py: PyResetVariable) -> Result<Self, Self::Error> {
+        Ok(py.reset_variable)
+    }
+}
+
+impl LogicalNode for PyResetVariable {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
+        vec![]
+    }
+
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
+    }
+}
+
+#[pymethods]
+impl PyResetVariable {
+    #[new]
+    pub fn new(variable: String) -> Self {
+        PyResetVariable {
+            reset_variable: ResetVariable { variable },
+        }
+    }
+
+    pub fn variable(&self) -> String {
+        self.reset_variable.variable.clone()
     }
 }
 

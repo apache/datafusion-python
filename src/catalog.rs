@@ -21,67 +21,165 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use datafusion::catalog::{
-    CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider,
+    CatalogProvider, CatalogProviderList, MemoryCatalogProvider, MemoryCatalogProviderList,
+    MemorySchemaProvider, SchemaProvider,
 };
 use datafusion::common::DataFusionError;
 use datafusion::datasource::TableProvider;
-use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
+use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
+use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::schema_provider::FFI_SchemaProvider;
+use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
-use pyo3::IntoPyObjectExt;
 
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::table::PyTable;
-use crate::utils::{validate_pycapsule, wait_for_future};
+use crate::utils::{
+    create_logical_extension_capsule, extract_logical_extension_codec, validate_pycapsule,
+    wait_for_future,
+};
+
+#[pyclass(
+    frozen,
+    name = "RawCatalogList",
+    module = "datafusion.catalog",
+    subclass
+)]
+#[derive(Clone)]
+pub struct PyCatalogList {
+    pub catalog_list: Arc<dyn CatalogProviderList>,
+    codec: Arc<FFI_LogicalExtensionCodec>,
+}
 
 #[pyclass(frozen, name = "RawCatalog", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PyCatalog {
     pub catalog: Arc<dyn CatalogProvider>,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 #[pyclass(frozen, name = "RawSchema", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
-impl From<Arc<dyn CatalogProvider>> for PyCatalog {
-    fn from(catalog: Arc<dyn CatalogProvider>) -> Self {
-        Self { catalog }
+impl PyCatalog {
+    pub(crate) fn new_from_parts(
+        catalog: Arc<dyn CatalogProvider>,
+        codec: Arc<FFI_LogicalExtensionCodec>,
+    ) -> Self {
+        Self { catalog, codec }
     }
 }
 
-impl From<Arc<dyn SchemaProvider>> for PySchema {
-    fn from(schema: Arc<dyn SchemaProvider>) -> Self {
-        Self { schema }
+impl PySchema {
+    pub(crate) fn new_from_parts(
+        schema: Arc<dyn SchemaProvider>,
+        codec: Arc<FFI_LogicalExtensionCodec>,
+    ) -> Self {
+        Self { schema, codec }
+    }
+}
+
+#[pymethods]
+impl PyCatalogList {
+    #[new]
+    pub fn new(
+        py: Python,
+        catalog_list: Py<PyAny>,
+        session: Option<Bound<PyAny>>,
+    ) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let catalog_list = Arc::new(RustWrappedPyCatalogProviderList::new(
+            catalog_list,
+            codec.clone(),
+        )) as Arc<dyn CatalogProviderList>;
+        Ok(Self {
+            catalog_list,
+            codec,
+        })
+    }
+
+    #[staticmethod]
+    pub fn memory_catalog_list(py: Python, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let catalog_list =
+            Arc::new(MemoryCatalogProviderList::default()) as Arc<dyn CatalogProviderList>;
+        Ok(Self {
+            catalog_list,
+            codec,
+        })
+    }
+
+    pub fn catalog_names(&self) -> HashSet<String> {
+        self.catalog_list.catalog_names().into_iter().collect()
+    }
+
+    #[pyo3(signature = (name="public"))]
+    pub fn catalog(&self, name: &str) -> PyResult<Py<PyAny>> {
+        let catalog = self
+            .catalog_list
+            .catalog(name)
+            .ok_or(PyKeyError::new_err(format!(
+                "Schema with name {name} doesn't exist."
+            )))?;
+
+        Python::attach(|py| {
+            match catalog
+                .as_any()
+                .downcast_ref::<RustWrappedPyCatalogProvider>()
+            {
+                Some(wrapped_catalog) => Ok(wrapped_catalog.catalog_provider.clone_ref(py)),
+                None => PyCatalog::new_from_parts(catalog, self.codec.clone()).into_py_any(py),
+            }
+        })
+    }
+
+    pub fn register_catalog(&self, name: &str, catalog_provider: Bound<'_, PyAny>) -> PyResult<()> {
+        let provider = extract_catalog_provider_from_pyobj(catalog_provider, self.codec.as_ref())?;
+
+        let _ = self
+            .catalog_list
+            .register_catalog(name.to_owned(), provider);
+
+        Ok(())
+    }
+
+    pub fn __repr__(&self) -> PyResult<String> {
+        let mut names: Vec<String> = self.catalog_names().into_iter().collect();
+        names.sort();
+        Ok(format!("CatalogList(catalog_names=[{}])", names.join(", ")))
     }
 }
 
 #[pymethods]
 impl PyCatalog {
     #[new]
-    fn new(catalog: Py<PyAny>) -> Self {
-        let catalog_provider =
-            Arc::new(RustWrappedPyCatalogProvider::new(catalog)) as Arc<dyn CatalogProvider>;
-        catalog_provider.into()
+    pub fn new(py: Python, catalog: Py<PyAny>, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let catalog = Arc::new(RustWrappedPyCatalogProvider::new(catalog, codec.clone()))
+            as Arc<dyn CatalogProvider>;
+        Ok(Self { catalog, codec })
     }
 
     #[staticmethod]
-    fn memory_catalog() -> Self {
-        let catalog_provider =
-            Arc::new(MemoryCatalogProvider::default()) as Arc<dyn CatalogProvider>;
-        catalog_provider.into()
+    pub fn memory_catalog(py: Python, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let catalog = Arc::new(MemoryCatalogProvider::default()) as Arc<dyn CatalogProvider>;
+        Ok(Self { catalog, codec })
     }
 
-    fn schema_names(&self) -> HashSet<String> {
+    pub fn schema_names(&self) -> HashSet<String> {
         self.catalog.schema_names().into_iter().collect()
     }
 
     #[pyo3(signature = (name="public"))]
-    fn schema(&self, name: &str) -> PyResult<Py<PyAny>> {
+    pub fn schema(&self, name: &str) -> PyResult<Py<PyAny>> {
         let schema = self
             .catalog
             .schema(name)
@@ -95,29 +193,13 @@ impl PyCatalog {
                 .downcast_ref::<RustWrappedPySchemaProvider>()
             {
                 Some(wrapped_schema) => Ok(wrapped_schema.schema_provider.clone_ref(py)),
-                None => PySchema::from(schema).into_py_any(py),
+                None => PySchema::new_from_parts(schema, self.codec.clone()).into_py_any(py),
             }
         })
     }
 
-    fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {
-        let provider = if schema_provider.hasattr("__datafusion_schema_provider__")? {
-            let capsule = schema_provider
-                .getattr("__datafusion_schema_provider__")?
-                .call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_schema_provider")?;
-
-            let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-            let provider: ForeignSchemaProvider = provider.into();
-            Arc::new(provider) as Arc<dyn SchemaProvider>
-        } else {
-            match schema_provider.extract::<PySchema>() {
-                Ok(py_schema) => py_schema.schema,
-                Err(_) => Arc::new(RustWrappedPySchemaProvider::new(schema_provider.into()))
-                    as Arc<dyn SchemaProvider>,
-            }
-        };
+    pub fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {
+        let provider = extract_schema_provider_from_pyobj(schema_provider, self.codec.as_ref())?;
 
         let _ = self
             .catalog
@@ -127,7 +209,7 @@ impl PyCatalog {
         Ok(())
     }
 
-    fn deregister_schema(&self, name: &str, cascade: bool) -> PyResult<()> {
+    pub fn deregister_schema(&self, name: &str, cascade: bool) -> PyResult<()> {
         let _ = self
             .catalog
             .deregister_schema(name, cascade)
@@ -136,7 +218,7 @@ impl PyCatalog {
         Ok(())
     }
 
-    fn __repr__(&self) -> PyResult<String> {
+    pub fn __repr__(&self) -> PyResult<String> {
         let mut names: Vec<String> = self.schema_names().into_iter().collect();
         names.sort();
         Ok(format!("Catalog(schema_names=[{}])", names.join(", ")))
@@ -146,16 +228,22 @@ impl PyCatalog {
 #[pymethods]
 impl PySchema {
     #[new]
-    fn new(schema_provider: Py<PyAny>) -> Self {
-        let schema_provider =
+    pub fn new(
+        py: Python,
+        schema_provider: Py<PyAny>,
+        session: Option<Bound<PyAny>>,
+    ) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let schema =
             Arc::new(RustWrappedPySchemaProvider::new(schema_provider)) as Arc<dyn SchemaProvider>;
-        schema_provider.into()
+        Ok(Self { schema, codec })
     }
 
     #[staticmethod]
-    fn memory_schema() -> Self {
-        let schema_provider = Arc::new(MemorySchemaProvider::default()) as Arc<dyn SchemaProvider>;
-        schema_provider.into()
+    fn memory_schema(py: Python, session: Option<Bound<PyAny>>) -> PyResult<Self> {
+        let codec = extract_logical_extension_codec(py, session)?;
+        let schema = Arc::new(MemorySchemaProvider::default()) as Arc<dyn SchemaProvider>;
+        Ok(Self { schema, codec })
     }
 
     #[getter]
@@ -179,8 +267,13 @@ impl PySchema {
         Ok(format!("Schema(table_names=[{}])", names.join(";")))
     }
 
-    fn register_table(&self, name: &str, table_provider: &Bound<'_, PyAny>) -> PyResult<()> {
-        let table = PyTable::new(table_provider)?;
+    fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
+        let py = table_provider.py();
+        let codec_capsule = create_logical_extension_capsule(py, self.codec.as_ref())?
+            .as_any()
+            .clone();
+
+        let table = PyTable::new(table_provider, Some(codec_capsule))?;
 
         let _ = self
             .schema
@@ -197,6 +290,10 @@ impl PySchema {
             .map_err(py_datafusion_err)?;
 
         Ok(())
+    }
+
+    fn table_exist(&self, name: &str) -> bool {
+        self.schema.table_exist(name)
     }
 }
 
@@ -232,7 +329,7 @@ impl RustWrappedPySchemaProvider {
                 return Ok(None);
             }
 
-            let table = PyTable::new(&py_table)?;
+            let table = PyTable::new(py_table, None)?;
 
             Ok(Some(table.table))
         })
@@ -267,7 +364,8 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         &self,
         name: &str,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
-        self.table_inner(name).map_err(to_datafusion_err)
+        self.table_inner(name)
+            .map_err(|e| DataFusionError::External(Box::new(e)))
     }
 
     fn register_table(
@@ -326,11 +424,15 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
 #[derive(Debug)]
 pub(crate) struct RustWrappedPyCatalogProvider {
     pub(crate) catalog_provider: Py<PyAny>,
+    codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
 impl RustWrappedPyCatalogProvider {
-    pub fn new(catalog_provider: Py<PyAny>) -> Self {
-        Self { catalog_provider }
+    pub fn new(catalog_provider: Py<PyAny>, codec: Arc<FFI_LogicalExtensionCodec>) -> Self {
+        Self {
+            catalog_provider,
+            codec,
+        }
     }
 
     fn schema_inner(&self, name: &str) -> PyResult<Option<Arc<dyn SchemaProvider>>> {
@@ -342,32 +444,7 @@ impl RustWrappedPyCatalogProvider {
                 return Ok(None);
             }
 
-            if py_schema.hasattr("__datafusion_schema_provider__")? {
-                let capsule = provider
-                    .getattr("__datafusion_schema_provider__")?
-                    .call0()?;
-                let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-                validate_pycapsule(capsule, "datafusion_schema_provider")?;
-
-                let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-                let provider: ForeignSchemaProvider = provider.into();
-
-                Ok(Some(Arc::new(provider) as Arc<dyn SchemaProvider>))
-            } else {
-                if let Ok(inner_schema) = py_schema.getattr("schema") {
-                    if let Ok(inner_schema) = inner_schema.extract::<PySchema>() {
-                        return Ok(Some(inner_schema.schema));
-                    }
-                }
-                match py_schema.extract::<PySchema>() {
-                    Ok(inner_schema) => Ok(Some(inner_schema.schema)),
-                    Err(_) => {
-                        let py_schema = RustWrappedPySchemaProvider::new(py_schema.into());
-
-                        Ok(Some(Arc::new(py_schema) as Arc<dyn SchemaProvider>))
-                    }
-                }
-            }
+            extract_schema_provider_from_pyobj(py_schema, self.codec.as_ref()).map(Some)
         })
     }
 }
@@ -382,8 +459,9 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
         Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
             provider
-                .getattr("schema_names")
-                .and_then(|names| names.extract::<Vec<String>>())
+                .call_method0("schema_names")
+                .and_then(|names| names.extract::<HashSet<String>>())
+                .map(|names| names.into_iter().collect())
                 .unwrap_or_else(|err| {
                     log::error!("Unable to get schema_names: {err}");
                     Vec::default()
@@ -403,15 +481,13 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
         name: &str,
         schema: Arc<dyn SchemaProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
-        // JRIGHT HERE
-        // let py_schema: PySchema = schema.into();
         Python::attach(|py| {
             let py_schema = match schema
                 .as_any()
                 .downcast_ref::<RustWrappedPySchemaProvider>()
             {
                 Some(wrapped_schema) => wrapped_schema.schema_provider.as_any(),
-                None => &PySchema::from(schema)
+                None => &PySchema::new_from_parts(schema, self.codec.clone())
                     .into_py_any(py)
                     .map_err(to_datafusion_err)?,
             };
@@ -451,6 +527,167 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
             Ok(Some(schema))
         })
     }
+}
+
+#[derive(Debug)]
+pub(crate) struct RustWrappedPyCatalogProviderList {
+    pub(crate) catalog_provider_list: Py<PyAny>,
+    codec: Arc<FFI_LogicalExtensionCodec>,
+}
+
+impl RustWrappedPyCatalogProviderList {
+    pub fn new(catalog_provider_list: Py<PyAny>, codec: Arc<FFI_LogicalExtensionCodec>) -> Self {
+        Self {
+            catalog_provider_list,
+            codec,
+        }
+    }
+
+    fn catalog_inner(&self, name: &str) -> PyResult<Option<Arc<dyn CatalogProvider>>> {
+        Python::attach(|py| {
+            let provider = self.catalog_provider_list.bind(py);
+
+            let py_schema = provider.call_method1("catalog", (name,))?;
+            if py_schema.is_none() {
+                return Ok(None);
+            }
+
+            extract_catalog_provider_from_pyobj(py_schema, self.codec.as_ref()).map(Some)
+        })
+    }
+}
+
+#[async_trait]
+impl CatalogProviderList for RustWrappedPyCatalogProviderList {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn catalog_names(&self) -> Vec<String> {
+        Python::attach(|py| {
+            let provider = self.catalog_provider_list.bind(py);
+            provider
+                .call_method0("catalog_names")
+                .and_then(|names| names.extract::<HashSet<String>>())
+                .map(|names| names.into_iter().collect())
+                .unwrap_or_else(|err| {
+                    log::error!("Unable to get catalog_names: {err}");
+                    Vec::default()
+                })
+        })
+    }
+
+    fn catalog(&self, name: &str) -> Option<Arc<dyn CatalogProvider>> {
+        self.catalog_inner(name).unwrap_or_else(|err| {
+            log::error!("CatalogProvider catalog returned error: {err}");
+            None
+        })
+    }
+
+    fn register_catalog(
+        &self,
+        name: String,
+        catalog: Arc<dyn CatalogProvider>,
+    ) -> Option<Arc<dyn CatalogProvider>> {
+        Python::attach(|py| {
+            let py_catalog = match catalog
+                .as_any()
+                .downcast_ref::<RustWrappedPyCatalogProvider>()
+            {
+                Some(wrapped_schema) => wrapped_schema.catalog_provider.as_any().clone_ref(py),
+                None => {
+                    match PyCatalog::new_from_parts(catalog, self.codec.clone()).into_py_any(py) {
+                        Ok(c) => c,
+                        Err(err) => {
+                            log::error!(
+                                "register_catalog returned error during conversion to PyAny: {err}"
+                            );
+                            return None;
+                        }
+                    }
+                }
+            };
+
+            let provider = self.catalog_provider_list.bind(py);
+            let catalog = match provider.call_method1("register_catalog", (name, py_catalog)) {
+                Ok(c) => c,
+                Err(err) => {
+                    log::error!("register_catalog returned error: {err}");
+                    return None;
+                }
+            };
+            if catalog.is_none() {
+                return None;
+            }
+
+            let catalog = Arc::new(RustWrappedPyCatalogProvider::new(
+                catalog.into(),
+                self.codec.clone(),
+            )) as Arc<dyn CatalogProvider>;
+
+            Some(catalog)
+        })
+    }
+}
+
+fn extract_catalog_provider_from_pyobj(
+    mut catalog_provider: Bound<PyAny>,
+    codec: &FFI_LogicalExtensionCodec,
+) -> PyResult<Arc<dyn CatalogProvider>> {
+    if catalog_provider.hasattr("__datafusion_catalog_provider__")? {
+        let py = catalog_provider.py();
+        let codec_capsule = create_logical_extension_capsule(py, codec)?;
+        catalog_provider = catalog_provider
+            .getattr("__datafusion_catalog_provider__")?
+            .call1((codec_capsule,))?;
+    }
+
+    let provider = if let Ok(capsule) = catalog_provider.downcast::<PyCapsule>() {
+        validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+
+        let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+        let provider: Arc<dyn CatalogProvider + Send> = provider.into();
+        provider as Arc<dyn CatalogProvider>
+    } else {
+        match catalog_provider.extract::<PyCatalog>() {
+            Ok(py_catalog) => py_catalog.catalog,
+            Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
+                catalog_provider.into(),
+                Arc::new(codec.clone()),
+            )) as Arc<dyn CatalogProvider>,
+        }
+    };
+
+    Ok(provider)
+}
+
+fn extract_schema_provider_from_pyobj(
+    mut schema_provider: Bound<PyAny>,
+    codec: &FFI_LogicalExtensionCodec,
+) -> PyResult<Arc<dyn SchemaProvider>> {
+    if schema_provider.hasattr("__datafusion_schema_provider__")? {
+        let py = schema_provider.py();
+        let codec_capsule = create_logical_extension_capsule(py, codec)?;
+        schema_provider = schema_provider
+            .getattr("__datafusion_schema_provider__")?
+            .call1((codec_capsule,))?;
+    }
+
+    let provider = if let Ok(capsule) = schema_provider.downcast::<PyCapsule>() {
+        validate_pycapsule(capsule, "datafusion_schema_provider")?;
+
+        let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
+        let provider: Arc<dyn SchemaProvider + Send> = provider.into();
+        provider as Arc<dyn SchemaProvider>
+    } else {
+        match schema_provider.extract::<PySchema>() {
+            Ok(py_schema) => py_schema.schema,
+            Err(_) => Arc::new(RustWrappedPySchemaProvider::new(schema_provider.into()))
+                as Arc<dyn SchemaProvider>,
+        }
+    };
+
+    Ok(provider)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

@@ -15,19 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use arrow_schema::{DataType, FieldRef};
-use datafusion::error::Result as DataFusionResult;
-use datafusion::functions_window::rank::rank_udwf;
-use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
-use datafusion::logical_expr::{PartitionEvaluator, Signature, WindowUDF, WindowUDFImpl};
-use datafusion_ffi::udwf::FFI_WindowUDF;
-use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::any::Any;
 use std::sync::Arc;
 
+use arrow_schema::{DataType, FieldRef};
+use datafusion_common::error::Result as DataFusionResult;
+use datafusion_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
+use datafusion_expr::{PartitionEvaluator, Signature, WindowUDF, WindowUDFImpl};
+use datafusion_ffi::udwf::FFI_WindowUDF;
+use datafusion_functions_window::rank::rank_udwf;
+use pyo3::types::PyCapsule;
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
+
 #[pyclass(name = "MyRankUDF", module = "datafusion_ffi_example", subclass)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub(crate) struct MyRankUDF {
     inner: Arc<WindowUDF>,
 }
@@ -35,8 +36,8 @@ pub(crate) struct MyRankUDF {
 #[pymethods]
 impl MyRankUDF {
     #[new]
-    fn new() -> Self {
-        Self { inner: rank_udwf() }
+    fn new() -> PyResult<Self> {
+        Ok(Self { inner: rank_udwf() })
     }
 
     fn __datafusion_window_udf__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyCapsule>> {

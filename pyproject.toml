@@ -25,28 +25,28 @@ description = "Build and run queries against data"
 readme = "README.md"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.10"
-keywords = ["datafusion", "dataframe", "rust", "query-engine"]
+keywords = ["dataframe", "datafusion", "query-engine", "rust"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "License :: OSI Approved",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python",
-    "Programming Language :: Rust",
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "License :: OSI Approved",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python",
+  "Programming Language :: Rust",
 ]
 dependencies = [
-    "pyarrow>=16.0.0;python_version<'3.14'",
-    "pyarrow>=22.0.0;python_version>='3.14'",
-    "typing-extensions;python_version<'3.13'"
+  "pyarrow>=16.0.0;python_version<'3.14'",
+  "pyarrow>=22.0.0;python_version>='3.14'",
+  "typing-extensions;python_version<'3.13'",
 ]
 dynamic = ["version"]
 
@@ -62,7 +62,7 @@ profile = "black"
 python-source = "python"
 module-name = "datafusion._internal"
 include = [{ path = "Cargo.lock", format = "sdist" }]
-exclude = [".github/**", "ci/**", ".asf.yaml"]
+exclude = [".asf.yaml", ".github/**", "ci/**"]
 # Require Cargo.lock is up to date
 locked = true
 features = ["substrait"]
@@ -73,23 +73,23 @@ asyncio_default_fixture_loop_scope = "function"
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = ["ALL" ]
+select = ["ALL"]
 ignore = [
-    "A001",    # Allow using words like min as variable names
-    "A002",    # Allow using words like filter as variable names
-    "ANN401",  # Allow Any for wrapper classes
-    "COM812",  # Recommended to ignore these rules when using with ruff-format
-    "FIX002",  # Allow TODO lines - consider removing at some point
-    "FBT001",  # Allow boolean positional args
-    "FBT002",  # Allow boolean positional args
-    "ISC001",  # Recommended to ignore these rules when using with ruff-format
-    "SLF001",  # Allow accessing private members
-    "TD002",   # Do not require author names in TODO statements
-    "TD003",   # Allow TODO lines
-    "PLR0913", # Allow many arguments in function definition
-    "PD901",   # Allow variable name df
-    "N812",    # Allow importing functions as `F`
-    "A005",    # Allow module named io
+  "A001",    # Allow using words like min as variable names
+  "A002",    # Allow using words like filter as variable names
+  "A005",    # Allow module named io
+  "ANN401",  # Allow Any for wrapper classes
+  "COM812",  # Recommended to ignore these rules when using with ruff-format
+  "FBT001",  # Allow boolean positional args
+  "FBT002",  # Allow boolean positional args
+  "FIX002",  # Allow TODO lines - consider removing at some point
+  "ISC001",  # Recommended to ignore these rules when using with ruff-format
+  "N812",    # Allow importing functions as `F`
+  "PD901",   # Allow variable name df
+  "PLR0913", # Allow many arguments in function definition
+  "SLF001",  # Allow accessing private members
+  "TD002",   # Do not require author names in TODO statements
+  "TD003",   # Allow TODO lines
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -99,65 +99,104 @@ convention = "google"
 max-doc-length = 88
 
 [tool.ruff.lint.flake8-boolean-trap]
-extend-allowed-calls = ["lit", "datafusion.lit"]
+extend-allowed-calls = ["datafusion.lit", "lit"]
 
 # Disable docstring checking for these directories
 [tool.ruff.lint.per-file-ignores]
 "python/tests/*" = [
-    "ANN",
-    "ARG",
-    "BLE001",
-    "D",
-    "S101",
-    "SLF",
-    "PD",
-    "PLR2004",
-    "PT011",
-    "RUF015",
-    "S608",
-    "PLR0913",
-    "PT004",
+  "ANN",
+  "ARG",
+  "BLE001",
+  "D",
+  "PD",
+  "PLC0415",
+  "PLR0913",
+  "PLR2004",
+  "PT004",
+  "PT011",
+  "RUF015",
+  "S101",
+  "S608",
+  "SLF",
 ]
-"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004", "ANN001", "ANN202", "INP001", "DTZ007", "RUF015"]
-"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817", "ERA001", "ANN001"]
-"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP", "ERA001", "ANN001", "INP001"]
+"examples/*" = [
+  "ANN001",
+  "ANN202",
+  "D",
+  "DTZ007",
+  "E501",
+  "INP001",
+  "PLR2004",
+  "RUF015",
+  "S101",
+  "T201",
+  "W505",
+]
+"dev/*" = [
+  "ANN001",
+  "C",
+  "D",
+  "E",
+  "ERA001",
+  "EXE",
+  "N817",
+  "PLR",
+  "S",
+  "SIM",
+  "T",
+  "UP",
+]
+"benchmarks/*" = [
+  "ANN001",
+  "BLE",
+  "D",
+  "E",
+  "ERA001",
+  "EXE",
+  "F",
+  "FURB",
+  "INP001",
+  "PLR",
+  "S",
+  "SIM",
+  "T",
+  "TD",
+  "TRY",
+  "UP",
+]
 "docs/*" = ["D"]
-"docs/source/conf.py" = ["ERA001", "ANN001", "INP001"]
+"docs/source/conf.py" = ["ANN001", "ERA001", "INP001"]
 
 [tool.codespell]
-skip = [
-    "./target",
-    "uv.lock",
-    "./python/tests/test_functions.py"
-]
+skip = ["./python/tests/test_functions.py", "./target", "uv.lock"]
 count = true
-ignore-words-list = [
-    "ans",
-    "IST"
-]
+ignore-words-list = ["IST", "ans"]
 
 [dependency-groups]
 dev = [
-    "maturin>=1.8.1",
-    "numpy>1.25.0;python_version<'3.14'",
-    "numpy>=2.3.2;python_version>='3.14'",
-    "pre-commit>=4.3.0",
-    "pyyaml>=6.0.3",
-    "pytest>=7.4.4",
-    "pytest-asyncio>=0.23.3",
-    "ruff>=0.9.1",
-    "toml>=0.10.2",
-    "pygithub==2.5.0",
-    "codespell==2.4.1",
+  "arro3-core==0.6.5",
+  "codespell==2.4.1",
+  "maturin>=1.8.1",
+  "nanoarrow==0.8.0",
+  "numpy>1.25.0;python_version<'3.14'",
+  "numpy>=2.3.2;python_version>='3.14'",
+  "pre-commit>=4.3.0",
+  "pyarrow>=19.0.0",
+  "pygithub==2.5.0",
+  "pytest-asyncio>=0.23.3",
+  "pytest>=7.4.4",
+  "pyyaml>=6.0.3",
+  "ruff>=0.9.1",
+  "toml>=0.10.2",
 ]
 docs = [
-    "sphinx>=7.1.2",
-    "pydata-sphinx-theme==0.8.0",
-    "myst-parser>=3.0.1",
-    "jinja2>=3.1.5",
-    "ipython>=8.12.3",
-    "pandas>=2.0.3",
-    "pickleshare>=0.7.5",
-    "sphinx-autoapi>=3.4.0",
-    "setuptools>=75.3.0",
+  "ipython>=8.12.3",
+  "jinja2>=3.1.5",
+  "myst-parser>=3.0.1",
+  "pandas>=2.0.3",
+  "pickleshare>=0.7.5",
+  "pydata-sphinx-theme==0.8.0",
+  "setuptools>=75.3.0",
+  "sphinx-autoapi>=3.4.0",
+  "sphinx>=7.1.2",
 ]

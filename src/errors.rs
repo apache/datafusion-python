@@ -22,8 +22,8 @@ use std::fmt::Debug;
 use datafusion::arrow::error::ArrowError;
 use datafusion::error::DataFusionError as InnerDataFusionError;
 use prost::EncodeError;
-use pyo3::exceptions::PyException;
 use pyo3::PyErr;
+use pyo3::exceptions::{PyException, PyValueError};
 
 pub type PyDataFusionResult<T> = std::result::Result<T, PyDataFusionError>;
 
@@ -39,7 +39,7 @@ pub enum PyDataFusionError {
 impl fmt::Display for PyDataFusionError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PyDataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {e:?}"),
+            PyDataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {e}"),
             PyDataFusionError::ArrowError(e) => write!(f, "Arrow error: {e:?}"),
             PyDataFusionError::PythonError(e) => write!(f, "Python error {e:?}"),
             PyDataFusionError::Common(e) => write!(f, "{e}"),
@@ -95,4 +95,14 @@ pub fn py_unsupported_variant_err(e: impl Debug) -> PyErr {
 
 pub fn to_datafusion_err(e: impl Debug) -> InnerDataFusionError {
     InnerDataFusionError::Execution(format!("{e:?}"))
+}
+
+pub fn from_datafusion_error(err: InnerDataFusionError) -> PyErr {
+    match err {
+        InnerDataFusionError::External(boxed) => match boxed.downcast::<PyErr>() {
+            Ok(py_err) => *py_err,
+            Err(original_boxed) => PyValueError::new_err(format!("{original_boxed}")),
+        },
+        _ => PyValueError::new_err(format!("{err}")),
+    }
 }

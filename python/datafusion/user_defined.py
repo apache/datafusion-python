@@ -27,13 +27,14 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, TypeVar, cast, overl
 import pyarrow as pa
 
 import datafusion._internal as df_internal
+from datafusion import SessionContext
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
 
     _R = TypeVar("_R", bound=pa.DataType)
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
 
 class Volatility(Enum):
@@ -80,6 +81,27 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+def data_type_or_field_to_field(value: pa.DataType | pa.Field, name: str) -> pa.Field:
+    """Helper function to return a Field from either a Field or DataType."""
+    if isinstance(value, pa.Field):
+        return value
+    return pa.field(name, type=value)
+
+
+def data_types_or_fields_to_field_list(
+    inputs: Sequence[pa.Field | pa.DataType] | pa.Field | pa.DataType,
+) -> list[pa.Field]:
+    """Helper function to return a list of Fields."""
+    if isinstance(inputs, pa.DataType):
+        return [pa.field("value", type=inputs)]
+    if isinstance(inputs, pa.Field):
+        return [inputs]
+
+    return [
+        data_type_or_field_to_field(v, f"value_{idx}") for (idx, v) in enumerate(inputs)
+    ]
+
+
 class ScalarUDFExportable(Protocol):
     """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
 
@@ -102,8 +124,8 @@ class ScalarUDF:
         self,
         name: str,
         func: Callable[..., _R],
-        input_types: pa.DataType | list[pa.DataType],
-        return_type: _R,
+        input_fields: list[pa.Field],
+        return_field: _R,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
@@ -113,10 +135,10 @@ class ScalarUDF:
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
-        if isinstance(input_types, pa.DataType):
-            input_types = [input_types]
+        if isinstance(input_fields, pa.DataType):
+            input_fields = [input_fields]
         self._udf = df_internal.ScalarUDF(
-            name, func, input_types, return_type, str(volatility)
+            name, func, input_fields, return_field, str(volatility)
         )
 
     def __repr__(self) -> str:
@@ -135,8 +157,8 @@ class ScalarUDF:
     @overload
     @staticmethod
     def udf(
-        input_types: list[pa.DataType],
-        return_type: _R,
+        input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_field: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> Callable[..., ScalarUDF]: ...
@@ -145,8 +167,8 @@ class ScalarUDF:
     @staticmethod
     def udf(
         func: Callable[..., _R],
-        input_types: list[pa.DataType],
-        return_type: _R,
+        input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_field: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> ScalarUDF: ...
@@ -162,9 +184,13 @@ class ScalarUDF:
         This class can be used both as either a function or a decorator.
 
         Usage:
-            - As a function: ``udf(func, input_types, return_type, volatility, name)``.
-            - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
+            - As a function: ``udf(func, input_fields, return_field, volatility, name)``.
+            - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
               When used a decorator, do **not** pass ``func`` explicitly.
+
+        In lieu of passing a PyArrow Field, you can pass a DataType for simplicity.
+        When you do so, it will be assumed that the nullability of the inputs and
+        output are True and that they have no metadata.
 
         Args:
             func (Callable, optional): Only needed when calling as a function.
@@ -172,10 +198,10 @@ class ScalarUDF:
                 backed ScalarUDF within a PyCapsule, you can pass this parameter
                 and ignore the rest. They will be determined directly from the
                 underlying function. See the online documentation for more information.
-            input_types (list[pa.DataType]): The data types of the arguments
-                to ``func``. This list must be of the same length as the number of
-                arguments.
-            return_type (_R): The data type of the return value from the function.
+            input_fields (list[pa.Field | pa.DataType]): The data types or Fields
+                of the arguments to ``func``. This list must be of the same length
+                as the number of arguments.
+            return_field (_R): The field of the return value from the function.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 
@@ -195,12 +221,12 @@ class ScalarUDF:
             @udf([pa.int32()], pa.int32(), "volatile", "double_it")
             def double_udf(x):
                 return x * 2
-        """
+        """  # noqa: W505 E501
 
         def _function(
             func: Callable[..., _R],
-            input_types: list[pa.DataType],
-            return_type: _R,
+            input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+            return_field: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> ScalarUDF:
@@ -212,23 +238,25 @@ class ScalarUDF:
                     name = func.__qualname__.lower()
                 else:
                     name = func.__class__.__name__.lower()
+            input_fields = data_types_or_fields_to_field_list(input_fields)
+            return_field = data_type_or_field_to_field(return_field, "value")
             return ScalarUDF(
                 name=name,
                 func=func,
-                input_types=input_types,
-                return_type=return_type,
+                input_fields=input_fields,
+                return_field=return_field,
                 volatility=volatility,
             )
 
         def _decorator(
-            input_types: list[pa.DataType],
-            return_type: _R,
+            input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+            return_field: _R,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> Callable:
             def decorator(func: Callable) -> Callable:
                 udf_caller = ScalarUDF.udf(
-                    func, input_types, return_type, volatility, name
+                    func, input_fields, return_field, volatility, name
                 )
 
                 @functools.wraps(func)
@@ -259,8 +287,8 @@ class ScalarUDF:
         return ScalarUDF(
             name=name,
             func=func,
-            input_types=None,
-            return_type=None,
+            input_fields=None,
+            return_field=None,
             volatility=None,
         )
 
@@ -270,7 +298,16 @@ class Accumulator(metaclass=ABCMeta):
 
     @abstractmethod
     def state(self) -> list[pa.Scalar]:
-        """Return the current state."""
+        """Return the current state.
+
+        While this function template expects PyArrow Scalar values return type,
+        you can return any value that can be converted into a Scalar. This
+        includes basic Python data types such as integers and strings. In
+        addition to primitive types, we currently support PyArrow, nanoarrow,
+        and arro3 objects in addition to primitive data types. Other objects
+        that support the Arrow FFI standard will be given a "best attempt" at
+        conversion to scalar objects.
+        """
 
     @abstractmethod
     def update(self, *values: pa.Array) -> None:
@@ -282,7 +319,16 @@ class Accumulator(metaclass=ABCMeta):
 
     @abstractmethod
     def evaluate(self) -> pa.Scalar:
-        """Return the resultant value."""
+        """Return the resultant value.
+
+        While this function template expects a PyArrow Scalar value return type,
+        you can return any value that can be converted into a Scalar. This
+        includes basic Python data types such as integers and strings. In
+        addition to primitive types, we currently support PyArrow, nanoarrow,
+        and arro3 objects in addition to primitive data types. Other objects
+        that support the Arrow FFI standard will be given a "best attempt" at
+        conversion to scalar objects.
+        """
 
 
 class AggregateUDFExportable(Protocol):
@@ -537,11 +583,11 @@ class AggregateUDF:
         AggregateUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            aggregate = cast(AggregateUDF, object.__new__(AggregateUDF))
+            aggregate = cast("AggregateUDF", object.__new__(AggregateUDF))
             aggregate._udaf = df_internal.AggregateUDF.from_pycapsule(func)
             return aggregate
 
-        capsule = cast(AggregateUDFExportable, func)
+        capsule = cast("AggregateUDFExportable", func)
         name = str(capsule.__class__)
         return AggregateUDF(
             name=name,
@@ -923,16 +969,14 @@ class TableFunction:
     """
 
     def __init__(
-        self,
-        name: str,
-        func: Callable[[], any],
+        self, name: str, func: Callable[[], any], ctx: SessionContext | None = None
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.TableFunction(name, func)
+        self._udtf = df_internal.TableFunction(name, func, ctx)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""

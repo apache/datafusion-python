@@ -20,6 +20,8 @@
 See :ref:`Expressions` in the online documentation for more details.
 """
 
+# ruff: noqa: PLC0415
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
@@ -562,8 +564,6 @@ class Expr:
         """
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string_view())
-        if not isinstance(value, pa.Scalar):
-            value = pa.scalar(value)
         return Expr(expr_internal.RawExpr.literal(value))
 
     @staticmethod
@@ -576,7 +576,6 @@ class Expr:
         """
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string_view())
-        value = value if isinstance(value, pa.Scalar) else pa.scalar(value)
 
         return Expr(expr_internal.RawExpr.literal_with_metadata(value, metadata))
 

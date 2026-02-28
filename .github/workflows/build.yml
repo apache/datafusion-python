@@ -15,34 +15,66 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Python Release Build
+# Reusable workflow for running building
+# This ensures the same tests run for both debug (PRs) and release (main/tags) builds
+
+name: Build
+
 on:
-  pull_request:
-    branches: ["main"]
-  push:
-    tags: ["*-rc*"]
-    branches: ["branch-*"]
+  workflow_call:
+    inputs:
+      build_mode:
+        description: "Build mode: debug or release"
+        required: true
+        type: string
+      run_wheels:
+        description: "Whether to build distribution wheels"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
-  build:
+  # ============================================
+  # Linting Jobs
+  # ============================================
+  lint-rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "nightly"
+          components: rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo +nightly fmt --all -- --check
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
       - name: Install Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
 
-      # Use the --no-install-package to only install the dependencies
-      # but do not yet build the rust library
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
 
-      # Update output format to enable automatic inline annotations.
       - name: Run Ruff
         run: |
           uv run --no-project ruff check --output-format=github python/
@@ -52,24 +84,170 @@ jobs:
         run: |
           uv run --no-project codespell --toml pyproject.toml
 
+  lint-toml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install taplo
+        uses: taiki-e/install-action@v2
+        with:
+          tool: taplo-cli
+
+      # if you encounter an error, try running 'taplo format' to fix the formatting automatically.
+      - name: Check Cargo.toml formatting
+        run: taplo format --check
+
   generate-license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
 
+      - name: Install cargo-license
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-license
+
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
-      - uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v6
         with:
           name: python-wheel-license
           path: LICENSE.txt
 
+  # ============================================
+  # Build - Linux x86_64
+  # ============================================
+  build-manylinux-x86_64:
+    needs: [generate-license, lint-rust, lint-python]
+    name: ManyLinux x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: rm LICENSE.txt
+      - name: Download LICENSE.txt
+        uses: actions/download-artifact@v7
+        with:
+          name: python-wheel-license
+          path: .
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.build_mode }}
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build (release mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'release'
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          args: --release --strip --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Build (debug mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'debug'
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          args: --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Build FFI test library
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/datafusion-ffi-example
+          args: --out dist
+          rustup-components: rust-std
+
+      - name: Archive wheels
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist-manylinux-x86_64
+          path: dist/*
+
+      - name: Archive FFI test wheel
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-ffi-manylinux-x86_64
+          path: examples/datafusion-ffi-example/dist/*
+
+  # ============================================
+  # Build - Linux ARM64
+  # ============================================
+  build-manylinux-aarch64:
+    needs: [generate-license, lint-rust, lint-python]
+    name: ManyLinux arm64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: rm LICENSE.txt
+      - name: Download LICENSE.txt
+        uses: actions/download-artifact@v7
+        with:
+          name: python-wheel-license
+          path: .
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.build_mode }}
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build (release mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'release'
+        with:
+          target: aarch64-unknown-linux-gnu
+          manylinux: "2_28"
+          args: --release --strip --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Build (debug mode)
+        uses: PyO3/maturin-action@v1
+        if: inputs.build_mode == 'debug'
+        with:
+          target: aarch64-unknown-linux-gnu
+          manylinux: "2_28"
+          args: --features protoc,substrait --out dist
+          rustup-components: rust-std
+
+      - name: Archive wheels
+        uses: actions/upload-artifact@v6
+        if: inputs.build_mode == 'release'
+        with:
+          name: dist-manylinux-aarch64
+          path: dist/*
+
+  # ============================================
+  # Build - macOS arm64 / Windows
+  # ============================================
   build-python-mac-win:
-    needs: [generate-license]
-    name: Mac/Win
+    needs: [generate-license, lint-rust, lint-python]
+    name: macOS arm64 & Windows
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -118,7 +296,7 @@ jobs:
             python-version: "3.14t"
             python-tag: cp314t
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         id: setup-python
@@ -129,10 +307,19 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: python-wheel-license
           path: .
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.build_mode }}
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -140,49 +327,27 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --dev --no-install-package datafusion
 
-      - name: Validate interpreter/wheel mode
-        shell: bash
-        env:
-          WHEEL_MODE: ${{ endsWith(matrix.python-version, 't') && 'freethreaded' || 'abi3' }}
-          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
-        run: |
-          python - <<'PY'
-          import os
-          import sys
-          import sysconfig
+      # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
+      # exactly the features used by maturin. Linux maturin builds need to happen in a
+      # container so only run this for our mac runner.
+      - name: Run Clippy
+        if: matrix.os != 'windows-latest'
+        run: cargo clippy --no-deps --all-targets --features substrait -- -D warnings
 
-          mode = os.environ["WHEEL_MODE"]
-          features = os.environ["MATURIN_FEATURES"]
-          is_free_threaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
-
-          print(sys.version)
-          print(f"Py_GIL_DISABLED={int(is_free_threaded)}")
-          print(f"wheel_mode={mode}")
-          print(f"maturin_features={features}")
-
-          if mode == "abi3" and is_free_threaded:
-              raise SystemExit("Invalid matrix: free-threaded interpreter cannot build abi3 wheels")
-          if mode == "freethreaded" and not is_free_threaded:
-              raise SystemExit("Invalid matrix: freethreaded wheel mode requires a free-threaded interpreter")
-          PY
-
-      - name: Show resolved PyO3 versions
-        shell: bash
-        run: |
-          cargo tree -e no-dev -i pyo3
-          cargo tree -e no-dev -i pyo3-build-config
-
-      - name: Build Python package
-        shell: bash
+      - name: Build Python package (release mode)
+        if: inputs.build_mode == 'release'
         env:
           MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
-        run: |
-          uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features "${MATURIN_FEATURES}" --interpreter "${{ steps.setup-python.outputs.python-path }}"
+        run: uv run --no-project maturin build --release --strip --features "${MATURIN_FEATURES}" --interpreter "${{ steps.setup-python.outputs.python-path }}"
+
+      - name: Build Python package (debug mode)
+        if: inputs.build_mode != 'release'
+        env:
+          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
+        run: uv run --no-project maturin build --features "${MATURIN_FEATURES}" --interpreter "${{ steps.setup-python.outputs.python-path }}"
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -196,14 +361,18 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
+        if: inputs.build_mode == 'release'
         with:
           name: dist-${{ matrix.os }}-${{ matrix.python-tag }}
           path: target/wheels/*
 
+  # ============================================
+  # Build - macOS x86_64 (release only)
+  # ============================================
   build-macos-x86_64:
-    needs: [generate-license]
-    name: Mac x86_64
+    if: inputs.build_mode == 'release'
+    needs: [generate-license, lint-rust, lint-python]
     runs-on: macos-15-intel
     strategy:
       fail-fast: false
@@ -224,7 +393,7 @@ jobs:
           - python-version: "3.14t"
             python-tag: cp314t
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         id: setup-python
@@ -235,10 +404,19 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: python-wheel-license
           path: .
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.build_mode }}
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -246,192 +424,38 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --dev --no-install-package datafusion
 
-      - name: Validate interpreter/wheel mode
-        shell: bash
-        env:
-          WHEEL_MODE: ${{ endsWith(matrix.python-version, 't') && 'freethreaded' || 'abi3' }}
-          MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
-        run: |
-          python - <<'PY'
-          import os
-          import sys
-          import sysconfig
-
-          mode = os.environ["WHEEL_MODE"]
-          features = os.environ["MATURIN_FEATURES"]
-          is_free_threaded = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
-
-          print(sys.version)
-          print(f"Py_GIL_DISABLED={int(is_free_threaded)}")
-          print(f"wheel_mode={mode}")
-          print(f"maturin_features={features}")
-
-          if mode == "abi3" and is_free_threaded:
-              raise SystemExit("Invalid matrix: free-threaded interpreter cannot build abi3 wheels")
-          if mode == "freethreaded" and not is_free_threaded:
-              raise SystemExit("Invalid matrix: freethreaded wheel mode requires a free-threaded interpreter")
-          PY
-
-      - name: Show resolved PyO3 versions
-        shell: bash
-        run: |
-          cargo tree -e no-dev -i pyo3
-          cargo tree -e no-dev -i pyo3-build-config
-
-      - name: Build Python package
-        shell: bash
+      - name: Build (release mode)
         env:
           MATURIN_FEATURES: ${{ endsWith(matrix.python-version, 't') && 'substrait' || 'substrait,py-limited-api' }}
         run: |
-          uv sync --dev --no-install-package datafusion
           uv run --no-project maturin build --release --strip --features "${MATURIN_FEATURES}" --interpreter "${{ steps.setup-python.outputs.python-path }}"
 
       - name: List Mac wheels
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dist-macos-aarch64-${{ matrix.python-tag }}
           path: target/wheels/*
 
-  build-manylinux-x86_64:
-    needs: [generate-license]
-    name: Manylinux x86_64
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - interpreter: "3.10 3.11 3.12 3.13 3.14"
-            artifact-label: cp310-314
-            wheel-mode: abi3
-            maturin-features: protoc,substrait,py-limited-api
-          - interpreter: "3.13t 3.14t"
-            artifact-label: cp313t-314t
-            wheel-mode: freethreaded
-            maturin-features: protoc,substrait
-    steps:
-      - uses: actions/checkout@v5
-      - run: rm LICENSE.txt
-      - name: Download LICENSE.txt
-        uses: actions/download-artifact@v5
-        with:
-          name: python-wheel-license
-          path: .
-      - run: cat LICENSE.txt
-      - name: Validate wheel mode matrix
-        shell: bash
-        run: |
-          echo "interpreter=${{ matrix.interpreter }}"
-          echo "wheel_mode=${{ matrix.wheel-mode }}"
-          echo "maturin_features=${{ matrix.maturin-features }}"
-          if [[ "${{ matrix.wheel-mode }}" == "abi3" && "${{ matrix.interpreter }}" == *t* ]]; then
-            echo "Invalid matrix: abi3 mode cannot use free-threaded interpreters"
-            exit 1
-          fi
-          if [[ "${{ matrix.wheel-mode }}" == "freethreaded" && "${{ matrix.interpreter }}" != *t* ]]; then
-            echo "Invalid matrix: freethreaded mode requires free-threaded interpreters"
-            exit 1
-          fi
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        env:
-          RUST_BACKTRACE: 1
-        with:
-          rust-toolchain: nightly
-          target: x86_64
-          manylinux: auto
-          rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
-          args: --release --manylinux 2014 --features ${{ matrix.maturin-features }} -i ${{ matrix.interpreter }}
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-manylinux-x86_64-${{ matrix.artifact-label }}
-          path: target/wheels/*
-
-  build-manylinux-aarch64:
-    needs: [generate-license]
-    name: Manylinux arm64
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - interpreter: "3.10 3.11 3.12 3.13 3.14"
-            artifact-label: cp310-314
-            wheel-mode: abi3
-            maturin-features: protoc,substrait,py-limited-api
-          - interpreter: "python3.13t python3.14t"
-            artifact-label: cp313t-314t
-            wheel-mode: freethreaded
-            maturin-features: protoc,substrait
-    steps:
-      - uses: actions/checkout@v5
-      - run: rm LICENSE.txt
-      - name: Download LICENSE.txt
-        uses: actions/download-artifact@v5
-        with:
-          name: python-wheel-license
-          path: .
-      - run: cat LICENSE.txt
-      - name: Validate wheel mode matrix
-        shell: bash
-        run: |
-          echo "interpreter=${{ matrix.interpreter }}"
-          echo "wheel_mode=${{ matrix.wheel-mode }}"
-          echo "maturin_features=${{ matrix.maturin-features }}"
-          if [[ "${{ matrix.wheel-mode }}" == "abi3" && "${{ matrix.interpreter }}" == *t* ]]; then
-            echo "Invalid matrix: abi3 mode cannot use free-threaded interpreters"
-            exit 1
-          fi
-          if [[ "${{ matrix.wheel-mode }}" == "freethreaded" && "${{ matrix.interpreter }}" != *t* ]]; then
-            echo "Invalid matrix: freethreaded mode requires free-threaded interpreters"
-            exit 1
-          fi
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        env:
-          RUST_BACKTRACE: 1
-        with:
-          rust-toolchain: nightly
-          target: aarch64
-          # Use manylinux_2_28-cross because the manylinux2014-cross has GCC 4.8.5, which causes the build to fail
-          manylinux: 2_28
-          rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
-          before-script-linux: |
-            if [[ "${{ matrix.wheel-mode }}" == "freethreaded" ]]; then
-              set -euxo pipefail
-              if ! command -v python3.13t >/dev/null || ! command -v python3.14t >/dev/null; then
-                curl -LsSf https://astral.sh/uv/install.sh | sh
-                export PATH="$HOME/.local/bin:$PATH"
-                uv python install 3.13t 3.14t
-                ln -sf "$(uv python find 3.13t)" /usr/local/bin/python3.13t
-                ln -sf "$(uv python find 3.14t)" /usr/local/bin/python3.14t
-              fi
-              python3.13t --version
-              python3.14t --version
-            fi
-          args: --release --features ${{ matrix.maturin-features }} -i ${{ matrix.interpreter }}
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-manylinux-aarch64-${{ matrix.artifact-label }}
-          path: target/wheels/*
+  # ============================================
+  # Build - Source Distribution
+  # ============================================
 
   build-sdist:
     needs: [generate-license]
     name: Source distribution
+    if: inputs.build_mode == 'release'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: python-wheel-license
           path: .
@@ -453,8 +477,13 @@ jobs:
           fi
         shell: bash
 
+  # ============================================
+  # Build - Merge Artifacts
+  # ============================================
   merge-build-artifacts:
     runs-on: ubuntu-latest
+    name: Merge build artifacts
+    if: inputs.build_mode == 'release'
     needs:
       - build-python-mac-win
       - build-macos-x86_64
@@ -463,11 +492,14 @@ jobs:
       - build-sdist
     steps:
       - name: Merge Build Artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           name: dist
           pattern: dist-*
 
+  # ============================================
+  # Build - Documentation
+  # ============================================
   # Documentation build job that runs after wheels are built
   build-docs:
     name: Build docs
@@ -491,11 +523,11 @@ jobs:
           fi
 
       - name: Checkout docs sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Checkout docs target branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
@@ -504,7 +536,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: "3.10"
 
       - name: Install dependencies
         uses: astral-sh/setup-uv@v7
@@ -513,25 +545,26 @@ jobs:
 
       # Download the Linux wheel built in the previous job
       - name: Download pre-built Linux wheel
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: dist-manylinux-x86_64-cp310-314
           path: wheels/
 
-      # Install from the pre-built wheel
-      - name: Install from pre-built wheel
+      # Install from the pre-built wheels
+      - name: Install from pre-built wheels
         run: |
           set -x
           uv venv
           # Install documentation dependencies
           uv sync --dev --no-install-package datafusion --group docs
-          # Install the pre-built wheel
-          WHEEL=$(find wheels/ -name "*.whl" | head -1)
-          if [ -n "$WHEEL" ]; then
-            echo "Installing wheel: $WHEEL"
-            uv pip install "$WHEEL"
+          # Install all pre-built wheels
+          WHEELS=$(find wheels/ -name "*.whl")
+          if [ -n "$WHEELS" ]; then
+            echo "Installing wheels:"
+            echo "$WHEELS"
+            uv pip install wheels/*.whl
           else
-            echo "ERROR: No wheel found!"
+            echo "ERROR: No wheels found!"
             exit 1
           fi
 
@@ -560,16 +593,3 @@ jobs:
             git commit -m 'Publish built docs triggered by ${{ github.sha }}'
             git push || git push --force
           fi
-
-  # NOTE: PyPI publish needs to be done manually for now after release passed the vote
-  # release:
-  #   name: Publish in PyPI
-  #   needs: [build-manylinux, build-python-mac-win]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/download-artifact@v5
-  #     - name: Publish to PyPI
-  #       uses: pypa/gh-action-pypi-publish@master
-  #       with:
-  #         user: __token__
-  #         password: ${{ secrets.pypi_password }}

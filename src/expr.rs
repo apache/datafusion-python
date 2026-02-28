@@ -28,12 +28,12 @@ use datafusion::logical_expr::expr::{
 };
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
-    col, lit, lit_with_metadata, Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder,
-    ExprFunctionExt, Like, LogicalPlan, Operator, TryCast, WindowFunctionDefinition,
+    Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder, ExprFunctionExt, Like, LogicalPlan,
+    Operator, TryCast, WindowFunctionDefinition, col, lit, lit_with_metadata,
 };
+use pyo3::IntoPyObjectExt;
 use pyo3::basic::CompareOp;
 use pyo3::prelude::*;
-use pyo3::IntoPyObjectExt;
 use window::PyWindowFrame;
 
 use self::alias::PyAlias;
@@ -44,7 +44,7 @@ use self::bool_expr::{
 use self::like::{PyILike, PyLike, PySimilarTo};
 use self::scalar_variable::PyScalarVariable;
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
-use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_runtime_err, py_type_err, py_unsupported_variant_err};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -111,7 +111,7 @@ pub mod unnest_expr;
 pub mod values;
 pub mod window;
 
-use sort_expr::{to_sort_expressions, PySortExpr};
+use sort_expr::{PySortExpr, to_sort_expressions};
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(frozen, name = "RawExpr", module = "datafusion.expr", subclass)]
@@ -141,15 +141,18 @@ pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
 impl PyExpr {
     /// Return the specific expression
     fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        Python::attach(|_| {
-            match &self.expr {
+        Python::attach(|_| match &self.expr {
             Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_bound_py_any(py)?),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_bound_py_any(py)?),
-            Expr::ScalarVariable(data_type, variables) => {
-                Ok(PyScalarVariable::new(data_type, variables).into_bound_py_any(py)?)
+            Expr::ScalarVariable(field, variables) => {
+                Ok(PyScalarVariable::new(field, variables).into_bound_py_any(py)?)
             }
             Expr::Like(value) => Ok(PyLike::from(value.clone()).into_bound_py_any(py)?),
-            Expr::Literal(value, metadata) => Ok(PyLiteral::new_with_metadata(value.clone(), metadata.clone()).into_bound_py_any(py)?),
+            Expr::Literal(value, metadata) => Ok(PyLiteral::new_with_metadata(
+                value.clone(),
+                metadata.clone(),
+            )
+            .into_bound_py_any(py)?),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_bound_py_any(py)?),
             Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_bound_py_any(py)?),
@@ -159,13 +162,17 @@ impl PyExpr {
             Expr::IsUnknown(expr) => Ok(PyIsUnknown::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::IsNotTrue(expr) => Ok(PyIsNotTrue::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::IsNotFalse(expr) => Ok(PyIsNotFalse::new(*expr.clone()).into_bound_py_any(py)?),
-            Expr::IsNotUnknown(expr) => Ok(PyIsNotUnknown::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNotUnknown(expr) => {
+                Ok(PyIsNotUnknown::new(*expr.clone()).into_bound_py_any(py)?)
+            }
             Expr::Negative(expr) => Ok(PyNegative::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::AggregateFunction(expr) => {
                 Ok(PyAggregateFunction::from(expr.clone()).into_bound_py_any(py)?)
             }
             Expr::SimilarTo(value) => Ok(PySimilarTo::from(value.clone()).into_bound_py_any(py)?),
-            Expr::Between(value) => Ok(between::PyBetween::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Between(value) => {
+                Ok(between::PyBetween::from(value.clone()).into_bound_py_any(py)?)
+            }
             Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_bound_py_any(py)?),
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_bound_py_any(py)?),
@@ -175,7 +182,9 @@ impl PyExpr {
             Expr::WindowFunction(value) => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::WindowFunction to a Python object is not implemented: {value:?}"
             ))),
-            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_bound_py_any(py)?),
+            Expr::InList(value) => {
+                Ok(in_list::PyInList::from(value.clone()).into_bound_py_any(py)?)
+            }
             Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_bound_py_any(py)?),
             Expr::InSubquery(value) => {
                 Ok(in_subquery::PyInSubquery::from(value.clone()).into_bound_py_any(py)?)
@@ -193,11 +202,14 @@ impl PyExpr {
             Expr::Placeholder(value) => {
                 Ok(placeholder::PyPlaceholder::from(value.clone()).into_bound_py_any(py)?)
             }
-            Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {data_type:?} - {column:?}"
-            ))),
-            Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?),
-        }
+            Expr::OuterReferenceColumn(data_type, column) => {
+                Err(py_unsupported_variant_err(format!(
+                    "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {data_type:?} - {column:?}"
+                )))
+            }
+            Expr::Unnest(value) => {
+                Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?)
+            }
         })
     }
 
@@ -368,7 +380,7 @@ impl PyExpr {
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
             #[allow(deprecated)]
             Expr::Wildcard { .. } => {
-                return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
+                return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"));
             }
         })
     }
@@ -555,7 +567,7 @@ impl PyExpr {
                 return Err(py_type_err(format!(
                     "Catch all triggered in get_operator_name: {:?}",
                     &self.expr
-                )))
+                )));
             }
         })
     }

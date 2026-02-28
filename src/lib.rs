@@ -43,6 +43,7 @@ pub mod errors;
 pub mod expr;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
+mod options;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod pyarrow_util;
@@ -52,6 +53,7 @@ pub mod store;
 pub mod table;
 pub mod unparser;
 
+mod array;
 #[cfg(feature = "substrait")]
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
@@ -124,6 +126,10 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     let store = PyModule::new(py, "object_store")?;
     store::init_module(&store)?;
     m.add_submodule(&store)?;
+
+    let options = PyModule::new(py, "options")?;
+    options::init_module(&options)?;
+    m.add_submodule(&options)?;
 
     // Register substrait as a submodule
     #[cfg(feature = "substrait")]

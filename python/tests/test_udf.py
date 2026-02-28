@@ -15,9 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from uuid import UUID
+
 import pyarrow as pa
+import pyarrow.compute as pc
 import pytest
-from datafusion import column, udf
+from datafusion import SessionContext, column, udf
+from datafusion import functions as f
 
 
 @pytest.fixture
@@ -124,3 +128,82 @@ def test_udf_with_parameters_decorator(df) -> None:
     result = df2.collect()[0].column(0)
 
     assert result == pa.array([False, True, True])
+
+
+def test_udf_with_metadata(ctx) -> None:
+    @udf([pa.string()], pa.uuid(), "stable")
+    def uuid_from_string(uuid_string):
+        return pa.array((UUID(s).bytes for s in uuid_string.to_pylist()), pa.uuid())
+
+    @udf([pa.uuid()], pa.int64(), "stable")
+    def uuid_version(uuid):
+        return pa.array(s.version for s in uuid.to_pylist())
+
+    batch = pa.record_batch({"idx": pa.array(range(5))})
+    results = (
+        ctx.create_dataframe([[batch]])
+        .with_column("uuid_string", f.uuid())
+        .with_column("uuid", uuid_from_string(column("uuid_string")))
+        .select(uuid_version(column("uuid").alias("uuid_version")))
+        .collect()
+    )
+
+    assert results[0][0].to_pylist() == [4, 4, 4, 4, 4]
+
+
+def test_udf_with_nullability(ctx: SessionContext) -> None:
+    field_nullable_i64 = pa.field("with_nulls", type=pa.int64(), nullable=True)
+    field_non_nullable_i64 = pa.field("no_nulls", type=pa.int64(), nullable=False)
+
+    @udf([field_nullable_i64], field_nullable_i64, "stable")
+    def nullable_abs(input_col):
+        return pc.abs(input_col)
+
+    @udf([field_non_nullable_i64], field_non_nullable_i64, "stable")
+    def non_nullable_abs(input_col):
+        return pc.abs(input_col)
+
+    batch = pa.record_batch(
+        {
+            "with_nulls": pa.array([-2, None, 0, 1, 2]),
+            "no_nulls": pa.array([-2, -1, 0, 1, 2]),
+        },
+        schema=pa.schema(
+            [
+                field_nullable_i64,
+                field_non_nullable_i64,
+            ]
+        ),
+    )
+    ctx.register_record_batches("t", [[batch]])
+    df = ctx.table("t")
+
+    # Input matches expected, nullable
+    df_result = df.select(nullable_abs(column("with_nulls")))
+    returned_field = df_result.schema().field(0)
+    assert returned_field.nullable
+    results = df_result.collect()
+    assert results[0][0].to_pylist() == [2, None, 0, 1, 2]
+
+    # Input coercible to expected, nullable
+    df_result = df.select(nullable_abs(column("no_nulls")))
+    returned_field = df_result.schema().field(0)
+    assert returned_field.nullable
+    results = df_result.collect()
+    assert results[0][0].to_pylist() == [2, 1, 0, 1, 2]
+
+    # Input matches expected, no nulls
+    df_result = df.select(non_nullable_abs(column("no_nulls")))
+    returned_field = df_result.schema().field(0)
+    assert not returned_field.nullable
+    results = df_result.collect()
+    assert results[0][0].to_pylist() == [2, 1, 0, 1, 2]
+
+    # Invalid - requires non-nullable input but that is not possible
+    df_result = df.select(non_nullable_abs(column("with_nulls")))
+    returned_field = df_result.schema().field(0)
+    assert not returned_field.nullable
+
+    with pytest.raises(Exception) as e_info:
+        _results = df_result.collect()
+    assert "Invalid argument error" in str(e_info)

@@ -98,6 +98,12 @@ class LogicalPlan:
         """
         return self._raw_plan.to_proto()
 
+    def __eq__(self, other: LogicalPlan) -> bool:
+        """Test equality."""
+        if not isinstance(other, LogicalPlan):
+            return False
+        return self._raw_plan.__eq__(other._raw_plan)
+
 
 class ExecutionPlan:
     """Represent nodes in the DataFusion Physical Plan."""

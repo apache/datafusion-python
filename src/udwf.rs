@@ -19,7 +19,7 @@ use std::any::Any;
 use std::ops::Range;
 use std::sync::Arc;
 
-use arrow::array::{make_array, Array, ArrayData, ArrayRef};
+use arrow::array::{Array, ArrayData, ArrayRef, make_array};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
@@ -30,13 +30,13 @@ use datafusion::logical_expr::{
     PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::scalar::ScalarValue;
-use datafusion_ffi::udwf::{FFI_WindowUDF, ForeignWindowUDF};
+use datafusion_ffi::udwf::FFI_WindowUDF;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 
@@ -94,7 +94,6 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
-        println!("evaluate all called with number of values {}", values.len());
         Python::attach(|py| {
             let py_values = PyList::new(
                 py,
@@ -249,22 +248,21 @@ impl PyWindowUDF {
 
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        if func.hasattr("__datafusion_window_udf__")? {
-            let capsule = func.getattr("__datafusion_window_udf__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_window_udf")?;
-
-            let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
-            let udwf: ForeignWindowUDF = udwf.try_into()?;
-
-            Ok(Self {
-                function: udwf.into(),
-            })
+        let capsule = if func.hasattr("__datafusion_window_udf__")? {
+            func.getattr("__datafusion_window_udf__")?.call0()?
         } else {
-            Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_window_udf__ does not exist on WindowUDF object.".to_string(),
-            ))
-        }
+            func
+        };
+
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_window_udf")?;
+
+        let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
+        let udwf: Arc<dyn WindowUDFImpl> = udwf.into();
+
+        Ok(Self {
+            function: WindowUDF::new_from_shared_impl(udwf),
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {

@@ -15,19 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use arrow_schema::DataType;
-use datafusion::error::Result as DataFusionResult;
-use datafusion::functions_aggregate::sum::Sum;
-use datafusion::logical_expr::function::AccumulatorArgs;
-use datafusion::logical_expr::{Accumulator, AggregateUDF, AggregateUDFImpl, Signature};
-use datafusion_ffi::udaf::FFI_AggregateUDF;
-use pyo3::types::PyCapsule;
-use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::any::Any;
 use std::sync::Arc;
 
+use arrow_schema::DataType;
+use datafusion_common::error::Result as DataFusionResult;
+use datafusion_expr::function::AccumulatorArgs;
+use datafusion_expr::{Accumulator, AggregateUDF, AggregateUDFImpl, Signature};
+use datafusion_ffi::udaf::FFI_AggregateUDF;
+use datafusion_functions_aggregate::sum::Sum;
+use pyo3::types::PyCapsule;
+use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
+
 #[pyclass(name = "MySumUDF", module = "datafusion_ffi_example", subclass)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub(crate) struct MySumUDF {
     inner: Arc<Sum>,
 }
@@ -35,10 +36,10 @@ pub(crate) struct MySumUDF {
 #[pymethods]
 impl MySumUDF {
     #[new]
-    fn new() -> Self {
-        Self {
+    fn new() -> PyResult<Self> {
+        Ok(Self {
             inner: Arc::new(Sum::new()),
-        }
+        })
     }
 
     fn __datafusion_aggregate_udf__<'py>(

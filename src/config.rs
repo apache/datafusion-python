@@ -22,8 +22,8 @@ use parking_lot::RwLock;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionResult;
-use crate::utils::py_obj_to_scalar_value;
 #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
@@ -65,9 +65,9 @@ impl PyConfig {
 
     /// Set a configuration option
     pub fn set(&self, key: &str, value: Py<PyAny>, py: Python) -> PyDataFusionResult<()> {
-        let scalar_value = py_obj_to_scalar_value(py, value)?;
+        let scalar_value: PyScalarValue = value.extract(py)?;
         let mut options = self.config.write();
-        options.set(key, scalar_value.to_string().as_str())?;
+        options.set(key, scalar_value.0.to_string().as_str())?;
         Ok(())
     }
 

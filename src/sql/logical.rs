@@ -55,7 +55,8 @@ use crate::expr::recursive_query::PyRecursiveQuery;
 use crate::expr::repartition::PyRepartition;
 use crate::expr::sort::PySort;
 use crate::expr::statement::{
-    PyDeallocate, PyExecute, PyPrepare, PySetVariable, PyTransactionEnd, PyTransactionStart,
+    PyDeallocate, PyExecute, PyPrepare, PyResetVariable, PySetVariable, PyTransactionEnd,
+    PyTransactionStart,
 };
 use crate::expr::subquery::PySubquery;
 use crate::expr::subquery_alias::PySubqueryAlias;
@@ -65,8 +66,8 @@ use crate::expr::unnest::PyUnnest;
 use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
 
-#[pyclass(frozen, name = "LogicalPlan", module = "datafusion", subclass)]
-#[derive(Debug, Clone)]
+#[pyclass(frozen, name = "LogicalPlan", module = "datafusion", subclass, eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PyLogicalPlan {
     pub(crate) plan: Arc<LogicalPlan>,
 }
@@ -115,6 +116,9 @@ impl PyLogicalPlan {
                     PyTransactionEnd::from(plan.clone()).to_variant(py)
                 }
                 Statement::SetVariable(plan) => PySetVariable::from(plan.clone()).to_variant(py),
+                Statement::ResetVariable(plan) => {
+                    PyResetVariable::from(plan.clone()).to_variant(py)
+                }
                 Statement::Prepare(plan) => PyPrepare::from(plan.clone()).to_variant(py),
                 Statement::Execute(plan) => PyExecute::from(plan.clone()).to_variant(py),
                 Statement::Deallocate(plan) => PyDeallocate::from(plan.clone()).to_variant(py),

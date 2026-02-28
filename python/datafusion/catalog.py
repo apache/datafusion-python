@@ -27,7 +27,7 @@ import datafusion._internal as df_internal
 if TYPE_CHECKING:
     import pyarrow as pa
 
-    from datafusion import DataFrame
+    from datafusion import DataFrame, SessionContext
     from datafusion.context import TableProviderExportable
 
 try:
@@ -38,11 +38,59 @@ except ImportError:
 
 __all__ = [
     "Catalog",
+    "CatalogList",
     "CatalogProvider",
+    "CatalogProviderList",
     "Schema",
     "SchemaProvider",
     "Table",
 ]
+
+
+class CatalogList:
+    """DataFusion data catalog list."""
+
+    def __init__(self, catalog_list: df_internal.catalog.RawCatalogList) -> None:
+        """This constructor is not typically called by the end user."""
+        self.catalog_list = catalog_list
+
+    def __repr__(self) -> str:
+        """Print a string representation of the catalog list."""
+        return self.catalog_list.__repr__()
+
+    def names(self) -> set[str]:
+        """This is an alias for `catalog_names`."""
+        return self.catalog_names()
+
+    def catalog_names(self) -> set[str]:
+        """Returns the list of schemas in this catalog."""
+        return self.catalog_list.catalog_names()
+
+    @staticmethod
+    def memory_catalog(ctx: SessionContext | None = None) -> CatalogList:
+        """Create an in-memory catalog provider list."""
+        catalog_list = df_internal.catalog.RawCatalogList.memory_catalog(ctx)
+        return CatalogList(catalog_list)
+
+    def catalog(self, name: str = "datafusion") -> Catalog:
+        """Returns the catalog with the given ``name`` from this catalog."""
+        catalog = self.catalog_list.catalog(name)
+
+        return (
+            Catalog(catalog)
+            if isinstance(catalog, df_internal.catalog.RawCatalog)
+            else catalog
+        )
+
+    def register_catalog(
+        self,
+        name: str,
+        catalog: Catalog | CatalogProvider | CatalogProviderExportable,
+    ) -> Catalog | None:
+        """Register a catalog with this catalog list."""
+        if isinstance(catalog, Catalog):
+            return self.catalog_list.register_catalog(name, catalog.catalog)
+        return self.catalog_list.register_catalog(name, catalog)
 
 
 class Catalog:
@@ -65,9 +113,9 @@ class Catalog:
         return self.catalog.schema_names()
 
     @staticmethod
-    def memory_catalog() -> Catalog:
+    def memory_catalog(ctx: SessionContext | None = None) -> Catalog:
         """Create an in-memory catalog provider."""
-        catalog = df_internal.catalog.RawCatalog.memory_catalog()
+        catalog = df_internal.catalog.RawCatalog.memory_catalog(ctx)
         return Catalog(catalog)
 
     def schema(self, name: str = "public") -> Schema:
@@ -112,9 +160,9 @@ class Schema:
         return self._raw_schema.__repr__()
 
     @staticmethod
-    def memory_schema() -> Schema:
+    def memory_schema(ctx: SessionContext | None = None) -> Schema:
         """Create an in-memory schema provider."""
-        schema = df_internal.catalog.RawSchema.memory_schema()
+        schema = df_internal.catalog.RawSchema.memory_schema(ctx)
         return Schema(schema)
 
     def names(self) -> set[str]:
@@ -141,6 +189,10 @@ class Schema:
         """Deregister a table provider from this schema."""
         return self._raw_schema.deregister_table(name)
 
+    def table_exist(self, name: str) -> bool:
+        """Determines if a table exists in this schema."""
+        return self._raw_schema.table_exist(name)
+
 
 @deprecated("Use `Schema` instead.")
 class Database(Schema):
@@ -163,10 +215,12 @@ class Table:
     __slots__ = ("_inner",)
 
     def __init__(
-        self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
+        self,
+        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
+        ctx: SessionContext | None = None,
     ) -> None:
         """Constructor."""
-        self._inner = df_internal.catalog.RawTable(table)
+        self._inner = df_internal.catalog.RawTable(table, ctx)
 
     def __repr__(self) -> str:
         """Print a string representation of the table."""
@@ -187,6 +241,40 @@ class Table:
     def kind(self) -> str:
         """Returns the kind of table."""
         return self._inner.kind
+
+
+class CatalogProviderList(ABC):
+    """Abstract class for defining a Python based Catalog Provider List."""
+
+    @abstractmethod
+    def catalog_names(self) -> set[str]:
+        """Set of the names of all catalogs in this catalog list."""
+        ...
+
+    @abstractmethod
+    def catalog(
+        self, name: str
+    ) -> CatalogProviderExportable | CatalogProvider | Catalog | None:
+        """Retrieve a specific catalog from this catalog list."""
+        ...
+
+    def register_catalog(  # noqa: B027
+        self, name: str, catalog: CatalogProviderExportable | CatalogProvider | Catalog
+    ) -> None:
+        """Add a catalog to this catalog list.
+
+        This method is optional. If your catalog provides a fixed list of catalogs, you
+        do not need to implement this method.
+        """
+
+
+class CatalogProviderListExportable(Protocol):
+    """Type hint for object that has __datafusion_catalog_provider_list__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProviderList.html
+    """
+
+    def __datafusion_catalog_provider_list__(self, session: Any) -> object: ...
 
 
 class CatalogProvider(ABC):
@@ -221,6 +309,15 @@ class CatalogProvider(ABC):
             name: The name of the schema to remove.
             cascade: If true, deregister the tables within the schema.
         """
+
+
+class CatalogProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
+    """
+
+    def __datafusion_catalog_provider__(self, session: Any) -> object: ...
 
 
 class SchemaProvider(ABC):
@@ -271,4 +368,4 @@ class SchemaProviderExportable(Protocol):
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.SchemaProvider.html
     """
 
-    def __datafusion_schema_provider__(self) -> object: ...
+    def __datafusion_schema_provider__(self, session: Any) -> object: ...

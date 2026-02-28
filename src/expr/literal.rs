@@ -17,8 +17,8 @@
 
 use datafusion::common::ScalarValue;
 use datafusion::logical_expr::expr::FieldMetadata;
-use pyo3::prelude::*;
 use pyo3::IntoPyObjectExt;
+use pyo3::prelude::*;
 
 use crate::errors::PyDataFusionError;
 

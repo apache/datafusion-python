@@ -17,9 +17,10 @@
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::str::FromStr;
 use std::sync::Arc;
 
-use arrow::array::{new_null_array, Array, ArrayRef, RecordBatch, RecordBatchReader};
+use arrow::array::{Array, ArrayRef, RecordBatch, RecordBatchReader, new_null_array};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
@@ -35,28 +36,27 @@ use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, Table
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
-use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::SortExpr;
+use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
 use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
+use pyo3::PyErr;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
-use pyo3::PyErr;
 
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
+use crate::common::data_type::PyScalarValue;
+use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err};
 use crate::expr::PyExpr;
+use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
 use crate::physical_plan::PyExecutionPlan;
-use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
+use crate::record_batch::{PyRecordBatchStream, poll_next_batch};
 use crate::sql::logical::PyLogicalPlan;
 use crate::table::{PyTable, TempViewTable};
-use crate::utils::{
-    is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule, wait_for_future,
-};
+use crate::utils::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
 
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
@@ -71,18 +71,18 @@ type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
 pub struct FormatterConfig {
     /// Maximum memory in bytes to use for display (default: 2MB)
     pub max_bytes: usize,
-    /// Minimum number of rows to display (default: 20)
+    /// Minimum number of rows to display (default: 10)
     pub min_rows: usize,
-    /// Number of rows to include in __repr__ output (default: 10)
-    pub repr_rows: usize,
+    /// Maximum number of rows to include in __repr__ output (default: 10)
+    pub max_rows: usize,
 }
 
 impl Default for FormatterConfig {
     fn default() -> Self {
         Self {
             max_bytes: 2 * 1024 * 1024, // 2MB
-            min_rows: 20,
-            repr_rows: 10,
+            min_rows: 10,
+            max_rows: 10,
         }
     }
 }
@@ -102,8 +102,12 @@ impl FormatterConfig {
             return Err("min_rows must be a positive integer".to_string());
         }
 
-        if self.repr_rows == 0 {
-            return Err("repr_rows must be a positive integer".to_string());
+        if self.max_rows == 0 {
+            return Err("max_rows must be a positive integer".to_string());
+        }
+
+        if self.min_rows > self.max_rows {
+            return Err("min_rows must be less than or equal to max_rows".to_string());
         }
 
         Ok(())
@@ -147,13 +151,30 @@ where
 fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<FormatterConfig> {
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
-    let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
-    let repr_rows = get_attr(formatter, "repr_rows", default_config.repr_rows);
+    let min_rows = get_attr(formatter, "min_rows", default_config.min_rows);
+
+    // Backward compatibility: Try max_rows first (new name), fall back to repr_rows (deprecated),
+    // then use default. This ensures backward compatibility with custom formatter implementations
+    // during the deprecation period.
+    let max_rows = get_attr(formatter, "max_rows", 0usize);
+    let max_rows = if max_rows > 0 {
+        // max_rows attribute exists and has a value
+        max_rows
+    } else {
+        // Try the deprecated repr_rows attribute
+        let repr_rows = get_attr(formatter, "repr_rows", 0usize);
+        if repr_rows > 0 {
+            repr_rows
+        } else {
+            // Use default
+            default_config.max_rows
+        }
+    };
 
     let config = FormatterConfig {
         max_bytes,
         min_rows,
-        repr_rows,
+        max_rows,
     };
 
     // Return the validated config, converting String error to PyErr
@@ -175,7 +196,7 @@ impl PyParquetWriterOptions {
     pub fn new(
         data_pagesize_limit: usize,
         write_batch_size: usize,
-        writer_version: String,
+        writer_version: &str,
         skip_arrow_metadata: bool,
         compression: Option<String>,
         dictionary_enabled: Option<bool>,
@@ -193,8 +214,11 @@ impl PyParquetWriterOptions {
         allow_single_file_parallelism: bool,
         maximum_parallel_row_group_writers: usize,
         maximum_buffered_record_batches_per_stream: usize,
-    ) -> Self {
-        Self {
+    ) -> PyResult<Self> {
+        let writer_version =
+            datafusion::common::parquet_config::DFParquetWriterVersion::from_str(writer_version)
+                .map_err(py_datafusion_err)?;
+        Ok(Self {
             options: ParquetOptions {
                 data_pagesize_limit,
                 write_batch_size,
@@ -218,7 +242,7 @@ impl PyParquetWriterOptions {
                 maximum_buffered_record_batches_per_stream,
                 ..Default::default()
             },
-        }
+        })
     }
 }
 
@@ -1166,14 +1190,14 @@ impl PyDataFrame {
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {
-        let scalar_value = py_obj_to_scalar_value(py, value)?;
+        let scalar_value: PyScalarValue = value.extract(py)?;
 
         let cols = match columns {
             Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
             None => Vec::new(), // Empty vector means fill null for all columns
         };
 
-        let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
+        let df = self.df.as_ref().clone().fill_null(scalar_value.0, cols)?;
         Ok(Self::new(df))
     }
 }
@@ -1303,7 +1327,10 @@ fn record_batch_into_schema(
             } else if field.is_nullable() {
                 data_arrays.push(new_null_array(desired_data_type, array_size));
             } else {
-                return Err(ArrowError::CastError(format!("Attempting to cast to non-nullable and non-castable field {} during schema projection.", field.name())));
+                return Err(ArrowError::CastError(format!(
+                    "Attempting to cast to non-nullable and non-castable field {} during schema projection.",
+                    field.name()
+                )));
             }
         } else {
             if !field.is_nullable() {
@@ -1336,7 +1363,7 @@ async fn collect_record_batches_to_display(
     let FormatterConfig {
         max_bytes,
         min_rows,
-        repr_rows,
+        max_rows,
     } = config;
 
     let partitioned_stream = df.execute_stream_partitioned().await?;
@@ -1346,8 +1373,11 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    // ensure minimum rows even if memory/row limits are hit
-    while (size_estimate_so_far < max_bytes && rows_so_far < repr_rows) || rows_so_far < min_rows {
+    // Collect rows until we hit a limit (memory or max_rows) OR reach the guaranteed minimum.
+    // The minimum rows constraint overrides both memory and row limits to ensure a baseline
+    // of data is always displayed, even if it temporarily exceeds those limits.
+    // This provides better UX by guaranteeing users see at least min_rows rows.
+    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
                 break;
@@ -1360,11 +1390,14 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
+            // When memory limit is exceeded, scale back row count proportionally to stay within budget
             if size_estimate_so_far > max_bytes {
                 let ratio = max_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
+                // Calculate reduced rows maintaining the memory/data proportion
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
+                // Ensure we always respect the minimum rows guarantee
                 if reduced_row_num < min_rows {
                     reduced_row_num = min_rows.min(total_rows);
                 }
@@ -1377,8 +1410,8 @@ async fn collect_record_batches_to_display(
                 }
             }
 
-            if rows_in_rb + rows_so_far > repr_rows {
-                rb = rb.slice(0, repr_rows - rows_so_far);
+            if rows_in_rb + rows_so_far > max_rows {
+                rb = rb.slice(0, max_rows - rows_so_far);
                 has_more = true;
             }
 

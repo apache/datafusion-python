@@ -54,6 +54,7 @@ from .dataframe import (
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
+from .options import CsvReadOptions
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
@@ -75,6 +76,7 @@ __all__ = [
     "AggregateUDF",
     "Catalog",
     "Config",
+    "CsvReadOptions",
     "DFSchema",
     "DataFrame",
     "DataFrameWriteOptions",
@@ -106,6 +108,7 @@ __all__ = [
     "lit",
     "literal",
     "object_store",
+    "options",
     "read_avro",
     "read_csv",
     "read_json",

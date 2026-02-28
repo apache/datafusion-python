@@ -15,16 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Python test
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+# Reusable workflow for running tests
+# This ensures the same tests run for both debug (PRs) and release (main/tags) builds
 
-concurrency:
-  group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
-  cancel-in-progress: true
+name: Test
+
+on:
+  workflow_call:
 
 jobs:
   test-matrix:
@@ -42,7 +39,7 @@ jobs:
           - "stable"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Verify example datafusion version
         run: |
@@ -50,23 +47,11 @@ jobs:
           EXAMPLE_VERSION=$(grep -A 1 "name = \"datafusion-common\"" examples/datafusion-ffi-example/Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
           echo "Main crate datafusion version: $MAIN_VERSION"
           echo "FFI example datafusion version: $EXAMPLE_VERSION"
-          
+
           if [ "$MAIN_VERSION" != "$EXAMPLE_VERSION" ]; then
             echo "❌ Error: FFI example datafusion versions don't match!"
             exit 1
           fi
-
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        id: rust-toolchain
-        with:
-          components: clippy,rustfmt
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: '27.4'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -74,38 +59,63 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache Cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cargo
           key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
 
-      - name: Run Clippy
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
-        run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
-
-      - name: Install dependencies and build
+      - name: Install dependencies
         uses: astral-sh/setup-uv@v7
         with:
-            enable-cache: true
+          enable-cache: true
+
+      # Download the Linux wheel built in the build workflow
+      - name: Download pre-built Linux wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: dist-manylinux-x86_64
+          path: wheels/
+
+      # Download the FFI test wheel
+      - name: Download pre-built FFI test wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: test-ffi-manylinux-x86_64
+          path: wheels/
+
+      # Install from the pre-built wheels
+      - name: Install from pre-built wheels
+        run: |
+          set -x
+          uv venv
+          # Install development dependencies
+          uv sync --dev --no-install-package datafusion
+          # Install all pre-built wheels
+          WHEELS=$(find wheels/ -name "*.whl")
+          if [ -n "$WHEELS" ]; then
+            echo "Installing wheels:"
+            echo "$WHEELS"
+            uv pip install wheels/*.whl
+          else
+            echo "ERROR: No wheels found!"
+            exit 1
+          fi
 
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
         run: |
           git submodule update --init
-          uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin develop --uv
-          uv run --no-project pytest -v .
+          uv run --no-project pytest -v . --import-mode=importlib
 
       - name: FFI unit tests
         run: |
           cd examples/datafusion-ffi-example
-          uv run --no-project maturin develop --uv
           uv run --no-project pytest python/tests/_test*.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: benchmarks/tpch/data
           key: tpch-data-2.18.0
@@ -121,19 +131,3 @@ jobs:
           cd examples/tpch
           uv run --no-project python convert_data_to_parquet.py
           uv run --no-project pytest _tests.py
-
-  nightly-fmt:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        id: rust-toolchain
-        with:
-          toolchain: "nightly"
-          components: clippy,rustfmt
-
-      - name: Check Formatting
-        run: cargo +nightly fmt -- --check

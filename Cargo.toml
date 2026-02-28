@@ -17,23 +17,23 @@
 
 [package]
 name = "datafusion-python"
-version = "51.0.0"
+version = "52.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
 authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
 description = "Apache DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
 license = "Apache-2.0"
-edition = "2021"
-rust-version = "1.78"
+edition = "2024"
+rust-version = "1.88"
 include = [
-    "/src",
-    "/datafusion",
-    "/LICENSE.txt",
-    "build.rs",
-    "pyproject.toml",
-    "Cargo.toml",
-    "Cargo.lock",
+  "/src",
+  "/datafusion",
+  "/LICENSE.txt",
+  "build.rs",
+  "pyproject.toml",
+  "Cargo.toml",
+  "Cargo.lock",
 ]
 
 [features]
@@ -43,43 +43,42 @@ substrait = ["dep:datafusion-substrait"]
 py-limited-api = ["pyo3/abi3-py310"]
 
 [dependencies]
-tokio = { version = "1.47", features = [
-    "macros",
-    "rt",
-    "rt-multi-thread",
-    "sync",
+tokio = { version = "1.49", features = [
+  "macros",
+  "rt",
+  "rt-multi-thread",
+  "sync",
 ] }
-pyo3 = { version = "0.26", features = [
-    "extension-module",
-] }
+pyo3 = { version = "0.26", features = ["extension-module"] }
 pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }
-pyo3-log = "0.13.2"
+pyo3-log = "0.13.3"
 arrow = { version = "57", features = ["pyarrow"] }
 arrow-select = { version = "57" }
-datafusion = { version = "51", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "51", optional = true }
-datafusion-proto = { version = "51" }
-datafusion-ffi = { version = "51" }
-prost = "0.14.1" # keep in line with `datafusion-substrait`
-uuid = { version = "1.18", features = ["v4"] }
+datafusion = { version = "52", features = ["avro", "unicode_expressions"] }
+datafusion-substrait = { version = "52", optional = true }
+datafusion-proto = { version = "52" }
+datafusion-ffi = { version = "52" }
+prost = "0.14.3" # keep in line with `datafusion-substrait`
+serde_json = "1"
+uuid = { version = "1.21", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = [
-    "local_dynamic_tls",
+  "local_dynamic_tls",
 ] }
 async-trait = "0.1.89"
 futures = "0.3"
 cstr = "0.2"
 object_store = { version = "0.12.4", features = [
-    "aws",
-    "gcp",
-    "azure",
-    "http",
+  "aws",
+  "gcp",
+  "azure",
+  "http",
 ] }
 url = "2"
-log = "0.4.27"
+log = "0.4.29"
 parking_lot = "0.12"
 
 [build-dependencies]
-prost-types = "0.14.1"     # keep in line with `datafusion-substrait`
+prost-types = "0.14.3"     # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.26"
 
 [lib]

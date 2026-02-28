@@ -17,20 +17,20 @@
 
 use std::sync::Arc;
 
-use datafusion::arrow::array::{Array, ArrayRef};
+use datafusion::arrow::array::ArrayRef;
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::{
-    create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF,
+    Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, create_udaf,
 };
-use datafusion_ffi::udaf::{FFI_AggregateUDF, ForeignAggregateUDF};
+use datafusion_ffi::udaf::FFI_AggregateUDF;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 
@@ -47,24 +47,24 @@ impl RustAccumulator {
 
 impl Accumulator for RustAccumulator {
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
-        Python::attach(|py| {
-            self.accum
-                .bind(py)
-                .call_method0("state")?
-                .extract::<Vec<PyScalarValue>>()
+        Python::attach(|py| -> PyResult<Vec<ScalarValue>> {
+            let values = self.accum.bind(py).call_method0("state")?;
+            let mut scalars = Vec::new();
+            for item in values.try_iter()? {
+                let item: Bound<'_, PyAny> = item?;
+                let scalar = item.extract::<PyScalarValue>()?.0;
+                scalars.push(scalar);
+            }
+            Ok(scalars)
         })
-        .map(|v| v.into_iter().map(|x| x.0).collect())
         .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
-        Python::attach(|py| {
-            self.accum
-                .bind(py)
-                .call_method0("evaluate")?
-                .extract::<PyScalarValue>()
+        Python::attach(|py| -> PyResult<ScalarValue> {
+            let value = self.accum.bind(py).call_method0("evaluate")?;
+            value.extract::<PyScalarValue>().map(|v| v.0)
         })
-        .map(|v| v.0)
         .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
@@ -73,7 +73,7 @@ impl Accumulator for RustAccumulator {
             // 1. cast args to Pyarrow array
             let py_args = values
                 .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
+                .map(|arg| arg.to_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
@@ -94,7 +94,7 @@ impl Accumulator for RustAccumulator {
                 .iter()
                 .map(|state| {
                     state
-                        .into_data()
+                        .to_data()
                         .to_pyarrow(py)
                         .map_err(|e| DataFusionError::Execution(format!("{e}")))
                 })
@@ -119,7 +119,7 @@ impl Accumulator for RustAccumulator {
             // 1. cast args to Pyarrow array
             let py_args = values
                 .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
+                .map(|arg| arg.to_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
@@ -144,7 +144,7 @@ impl Accumulator for RustAccumulator {
 }
 
 pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
-    Arc::new(move |_| -> Result<Box<dyn Accumulator>> {
+    Arc::new(move |_args| -> Result<Box<dyn Accumulator>> {
         let accum = Python::attach(|py| {
             accum
                 .call0(py)
@@ -158,9 +158,9 @@ fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionRes
     validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
 
     let udaf = unsafe { capsule.reference::<FFI_AggregateUDF>() };
-    let udaf: ForeignAggregateUDF = udaf.try_into()?;
+    let udaf: Arc<dyn AggregateUDFImpl> = udaf.into();
 
-    Ok(udaf.into())
+    Ok(AggregateUDF::new_from_shared_impl(udaf))
 }
 
 /// Represents an AggregateUDF

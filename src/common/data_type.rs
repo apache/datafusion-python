@@ -22,6 +22,9 @@ use datafusion::logical_expr::expr::NullTreatment as DFNullTreatment;
 use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
 
+/// A [`ScalarValue`] wrapped in a Python object. This struct allows for conversion
+/// from a variety of Python objects into a [`ScalarValue`]. See
+/// ``FromPyArrow::from_pyarrow_bound`` conversion details.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd)]
 pub struct PyScalarValue(pub ScalarValue);
 
