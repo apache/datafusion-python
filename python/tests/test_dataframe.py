@@ -295,10 +295,17 @@ def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
     df = ctx.create_dataframe([[batch]])
-
-    # Both should work
+    # here we must quote to match the original column name
     assert df.drop('"ID_For_Students"').schema().names == []
-    assert df.drop("ID_For_Students").schema().names == []
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])], names=["a", "b"]
+    )
+    df = ctx.create_dataframe([[batch]])
+    # with a lower case column, both 'a' and '"a"' work
+    assert df.drop("a").schema().names == ["b"]
+    df = ctx.create_dataframe([[batch]])
+    assert df.drop('"a"').schema().names == ["b"]
 
 
 def test_select_mixed_expr_string(df):

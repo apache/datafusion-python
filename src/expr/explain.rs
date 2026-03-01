@@ -27,7 +27,13 @@ use crate::common::df_schema::PyDFSchema;
 use crate::errors::py_type_err;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "Explain", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Explain",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyExplain {
     explain: Explain,

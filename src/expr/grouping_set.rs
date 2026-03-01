@@ -18,7 +18,13 @@
 use datafusion::logical_expr::GroupingSet;
 use pyo3::prelude::*;
 
-#[pyclass(frozen, name = "GroupingSet", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "GroupingSet",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyGroupingSet {
     grouping_set: GroupingSet,

@@ -16,6 +16,7 @@
 // under the License.
 
 use std::future::Future;
+use std::ptr::NonNull;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
@@ -26,6 +27,7 @@ use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
 use tokio::runtime::Runtime;
@@ -158,7 +160,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
         )));
     }
 
-    let capsule_name = capsule_name.unwrap().to_str()?;
+    let capsule_name = unsafe { capsule_name.unwrap().as_cstr().to_str()? };
     if capsule_name != name {
         return Err(PyValueError::new_err(format!(
             "Expected name '{name}' in PyCapsule, instead got '{capsule_name}'"
@@ -185,10 +187,13 @@ pub(crate) fn table_provider_from_pycapsule<'py>(
         })?;
     }
 
-    if let Ok(capsule) = obj.downcast::<PyCapsule>().map_err(py_datafusion_err) {
+    if let Ok(capsule) = obj.cast::<PyCapsule>().map_err(py_datafusion_err) {
         validate_pycapsule(capsule, "datafusion_table_provider")?;
 
-        let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+        let data: NonNull<FFI_TableProvider> = capsule
+            .pointer_checked(Some(c_str!("datafusion_table_provider")))?
+            .cast();
+        let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn TableProvider> = provider.into();
 
         Ok(Some(provider))
@@ -211,11 +216,14 @@ pub(crate) fn extract_logical_extension_codec(
     } else {
         obj
     };
-    let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+    let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
 
     validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
 
-    let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+    let data: NonNull<FFI_LogicalExtensionCodec> = capsule
+        .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
     Ok(Arc::new(codec.clone()))
 }
 

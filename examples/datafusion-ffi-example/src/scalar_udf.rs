@@ -30,7 +30,12 @@ use datafusion_ffi::udf::FFI_ScalarUDF;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
-#[pyclass(name = "IsNullUDF", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "IsNullUDF",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct IsNullUDF {
     signature: Signature,

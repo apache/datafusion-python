@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::Arc;
+
 use datafusion::arrow::array::Array;
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
 use datafusion::common::ScalarValue;
@@ -40,7 +42,14 @@ impl From<PyScalarValue> for ScalarValue {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(frozen, eq, eq_int, name = "RexType", module = "datafusion.common")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    eq,
+    eq_int,
+    name = "RexType",
+    module = "datafusion.common"
+)]
 pub enum RexType {
     Alias,
     Literal,
@@ -61,7 +70,12 @@ pub enum RexType {
 /// to map types from one system to another.
 // TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now
 #[derive(Debug, Clone)]
-#[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "DataTypeMap",
+    module = "datafusion.common",
+    subclass
+)]
 pub struct DataTypeMap {
     #[pyo3(get, set)]
     pub arrow_type: PyDataType,
@@ -347,6 +361,10 @@ impl DataTypeMap {
             ScalarValue::Map(_) => Err(PyNotImplementedError::new_err(
                 "ScalarValue::Map".to_string(),
             )),
+            ScalarValue::RunEndEncoded(field1, field2, _) => Ok(DataType::RunEndEncoded(
+                Arc::clone(field1),
+                Arc::clone(field2),
+            )),
         }
     }
 }
@@ -587,7 +605,12 @@ impl DataTypeMap {
 /// Since `DataType` exists in another package we cannot make that happen here so we wrap
 /// `DataType` as `PyDataType` This exists solely to satisfy those constraints.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(frozen, name = "DataType", module = "datafusion.common")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "DataType",
+    module = "datafusion.common"
+)]
 pub struct PyDataType {
     pub data_type: DataType,
 }
@@ -645,7 +668,14 @@ impl From<DataType> for PyDataType {
 
 /// Represents the possible Python types that can be mapped to the SQL types
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(frozen, eq, eq_int, name = "PythonType", module = "datafusion.common")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    eq,
+    eq_int,
+    name = "PythonType",
+    module = "datafusion.common"
+)]
 pub enum PythonType {
     Array,
     Bool,
@@ -665,7 +695,14 @@ pub enum PythonType {
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(frozen, eq, eq_int, name = "SqlType", module = "datafusion.common")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    eq,
+    eq_int,
+    name = "SqlType",
+    module = "datafusion.common"
+)]
 pub enum SqlType {
     ANY,
     ARRAY,
@@ -724,6 +761,7 @@ pub enum SqlType {
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(
+    from_py_object,
     frozen,
     eq,
     eq_int,

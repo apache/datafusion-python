@@ -15,12 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ptr::NonNull;
 use std::sync::Arc;
 
 use arrow::array::{Array, ArrayRef};
 use arrow::datatypes::{Field, FieldRef};
 use arrow::ffi::{FFI_ArrowArray, FFI_ArrowSchema};
 use arrow::pyarrow::ToPyArrow;
+use pyo3::ffi::c_str;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
@@ -30,7 +32,12 @@ use crate::utils::validate_pycapsule;
 
 /// A Python object which implements the Arrow PyCapsule for importing
 /// into other libraries.
-#[pyclass(name = "ArrowArrayExportable", module = "datafusion", frozen)]
+#[pyclass(
+    from_py_object,
+    name = "ArrowArrayExportable",
+    module = "datafusion",
+    frozen
+)]
 #[derive(Clone)]
 pub struct PyArrowArrayExportable {
     array: ArrayRef,
@@ -48,7 +55,10 @@ impl PyArrowArrayExportable {
         let field = if let Some(schema_capsule) = requested_schema {
             validate_pycapsule(&schema_capsule, "arrow_schema")?;
 
-            let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
+            let data: NonNull<FFI_ArrowSchema> = schema_capsule
+                .pointer_checked(Some(c_str!("arrow_schema")))?
+                .cast();
+            let schema_ptr = unsafe { data.as_ref() };
             let desired_field = Field::try_from(schema_ptr)?;
 
             Arc::new(desired_field)

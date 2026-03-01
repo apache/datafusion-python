@@ -36,6 +36,7 @@ pub enum StorageContexts {
 }
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "LocalFileSystem",
     module = "datafusion.store",
@@ -66,7 +67,13 @@ impl PyLocalFileSystemContext {
     }
 }
 
-#[pyclass(frozen, name = "MicrosoftAzure", module = "datafusion.store", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "MicrosoftAzure",
+    module = "datafusion.store",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyMicrosoftAzureContext {
     pub inner: Arc<MicrosoftAzure>,
@@ -143,7 +150,13 @@ impl PyMicrosoftAzureContext {
     }
 }
 
-#[pyclass(frozen, name = "GoogleCloud", module = "datafusion.store", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "GoogleCloud",
+    module = "datafusion.store",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyGoogleCloudContext {
     pub inner: Arc<GoogleCloudStorage>,
@@ -173,7 +186,13 @@ impl PyGoogleCloudContext {
     }
 }
 
-#[pyclass(frozen, name = "AmazonS3", module = "datafusion.store", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "AmazonS3",
+    module = "datafusion.store",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyAmazonS3Context {
     pub inner: Arc<AmazonS3>,
@@ -237,7 +256,13 @@ impl PyAmazonS3Context {
     }
 }
 
-#[pyclass(frozen, name = "Http", module = "datafusion.store", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Http",
+    module = "datafusion.store",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyHttpContext {
     pub url: String,

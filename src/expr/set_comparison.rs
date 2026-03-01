@@ -15,40 +15,46 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::InList;
+use datafusion::logical_expr::expr::SetComparison;
 use pyo3::prelude::*;
 
 use crate::expr::PyExpr;
 
+use super::subquery::PySubquery;
+
 #[pyclass(
     from_py_object,
     frozen,
-    name = "InList",
-    module = "datafusion.expr",
+    name = "SetComparison",
+    module = "datafusion.set_comparison",
     subclass
 )]
 #[derive(Clone)]
-pub struct PyInList {
-    in_list: InList,
+pub struct PySetComparison {
+    set_comparison: SetComparison,
 }
 
-impl From<InList> for PyInList {
-    fn from(in_list: InList) -> Self {
-        PyInList { in_list }
+impl From<SetComparison> for PySetComparison {
+    fn from(set_comparison: SetComparison) -> Self {
+        PySetComparison { set_comparison }
     }
 }
 
 #[pymethods]
-impl PyInList {
+impl PySetComparison {
     fn expr(&self) -> PyExpr {
-        (*self.in_list.expr).clone().into()
+        (*self.set_comparison.expr).clone().into()
     }
 
-    fn list(&self) -> Vec<PyExpr> {
-        self.in_list.list.iter().map(|e| e.clone().into()).collect()
+    fn subquery(&self) -> PySubquery {
+        self.set_comparison.subquery.clone().into()
     }
 
-    fn negated(&self) -> bool {
-        self.in_list.negated
+    fn op(&self) -> String {
+        format!("{}", self.set_comparison.op)
+    }
+
+    fn quantifier(&self) -> String {
+        format!("{}", self.set_comparison.quantifier)
     }
 }

@@ -27,7 +27,13 @@ use pyo3::prelude::*;
 use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "CopyTo", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "CopyTo",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyCopyTo {
     copy: CopyTo,
@@ -113,7 +119,13 @@ impl PyCopyTo {
     }
 }
 
-#[pyclass(frozen, name = "FileType", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "FileType",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyFileType {
     file_type: Arc<dyn FileType>,

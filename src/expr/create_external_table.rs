@@ -31,6 +31,7 @@ use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "CreateExternalTable",
     module = "datafusion.expr",

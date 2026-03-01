@@ -23,7 +23,13 @@ use pyo3::prelude::*;
 use super::literal::PyLiteral;
 use crate::expr::PyExpr;
 
-#[pyclass(frozen, name = "GetIndexedField", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "GetIndexedField",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyGetIndexedField {
     indexed_field: GetIndexedField,

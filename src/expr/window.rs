@@ -32,13 +32,25 @@ use crate::expr::logical_node::LogicalNode;
 use crate::expr::sort_expr::{PySortExpr, py_sort_expr_list};
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "WindowExpr", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "WindowExpr",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyWindowExpr {
     window: Window,
 }
 
-#[pyclass(frozen, name = "WindowFrame", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "WindowFrame",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyWindowFrame {
     window_frame: WindowFrame,
@@ -57,6 +69,7 @@ impl From<WindowFrame> for PyWindowFrame {
 }
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "WindowFrameBound",
     module = "datafusion.expr",

@@ -759,7 +759,7 @@ def read_csv_with_options_inner(
     group_dir.mkdir(exist_ok=True)
 
     csv_path = group_dir / "test.csv"
-    csv_path.write_text(csv_content)
+    csv_path.write_text(csv_content, newline="\n")
 
     ctx = SessionContext()
 

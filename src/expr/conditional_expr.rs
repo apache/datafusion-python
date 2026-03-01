@@ -24,7 +24,13 @@ use crate::expr::PyExpr;
 
 // TODO(tsaucer) replace this all with CaseBuilder after it implements Clone
 #[derive(Clone, Debug)]
-#[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
+#[pyclass(
+    from_py_object,
+    name = "CaseBuilder",
+    module = "datafusion.expr",
+    subclass,
+    frozen
+)]
 pub struct PyCaseBuilder {
     expr: Option<Expr>,
     when: Vec<Expr>,

@@ -22,7 +22,13 @@ use datafusion::sql::unparser::dialect::{
 };
 use pyo3::prelude::*;
 
-#[pyclass(frozen, name = "Dialect", module = "datafusion.unparser", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Dialect",
+    module = "datafusion.unparser",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyDialect {
     pub dialect: Arc<dyn Dialect>,

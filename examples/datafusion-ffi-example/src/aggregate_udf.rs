@@ -27,7 +27,12 @@ use datafusion_functions_aggregate::sum::Sum;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
-#[pyclass(name = "MySumUDF", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MySumUDF",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub(crate) struct MySumUDF {
     inner: Arc<Sum>,

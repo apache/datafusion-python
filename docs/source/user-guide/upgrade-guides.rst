@@ -18,6 +18,24 @@
 Upgrade Guides
 ==============
 
+DataFusion 53.0.0
+-----------------
+
+This version includes an upgraded version of `pyo3`, which changed the way to extract an FFI object.
+Example:
+
+Before:
+.. code-block:: rust
+        let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+
+Now:
+.. code-block:: rust
+        let data: NonNull<FFI_LogicalExtensionCodec> = capsule
+            .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+            .cast();
+        let codec = unsafe { data.as_ref() };
+
+
 DataFusion 52.0.0
 -----------------
 

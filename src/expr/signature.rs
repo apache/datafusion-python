@@ -19,7 +19,13 @@ use datafusion::logical_expr::{TypeSignature, Volatility};
 use pyo3::prelude::*;
 
 #[allow(dead_code)]
-#[pyclass(frozen, name = "Signature", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Signature",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySignature {
     type_signature: TypeSignature,

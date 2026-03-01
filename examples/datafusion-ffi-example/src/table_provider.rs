@@ -30,7 +30,12 @@ use crate::utils::ffi_logical_codec_from_pycapsule;
 
 /// In order to provide a test that demonstrates different sized record batches,
 /// the first batch will have num_rows, the second batch num_rows+1, and so on.
-#[pyclass(name = "MyTableProvider", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MyTableProvider",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Clone)]
 pub(crate) struct MyTableProvider {
     num_cols: usize,

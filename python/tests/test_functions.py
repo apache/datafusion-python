@@ -307,12 +307,12 @@ def py_flatten(arr):
             lambda data: [[len(r)] for r in data],
         ),
         (
-            f.array_distinct,
-            lambda data: [list(set(r)) for r in data],
+            lambda col: f.array_sort(f.array_distinct(col)),
+            lambda data: [sorted(set(r)) for r in data],
         ),
         (
-            f.list_distinct,
-            lambda data: [list(set(r)) for r in data],
+            lambda col: f.list_sort(f.list_distinct(col)),
+            lambda data: [sorted(set(r)) for r in data],
         ),
         (
             f.list_dims,
@@ -519,19 +519,19 @@ def py_flatten(arr):
             lambda data: [arr[1:4:2] for arr in data],
         ),
         (
-            lambda col: f.array_intersect(col, literal([3.0, 4.0])),
+            lambda col: f.array_sort(f.array_intersect(col, literal([3.0, 4.0]))),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
         (
-            lambda col: f.list_intersect(col, literal([3.0, 4.0])),
+            lambda col: f.list_sort(f.list_intersect(col, literal([3.0, 4.0]))),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
         (
-            lambda col: f.array_union(col, literal([12.0, 999.0])),
+            lambda col: f.array_sort(f.array_union(col, literal([12.0, 999.0]))),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
         ),
         (
-            lambda col: f.list_union(col, literal([12.0, 999.0])),
+            lambda col: f.list_sort(f.list_union(col, literal([12.0, 999.0]))),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
         ),
         (
@@ -697,7 +697,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.initcap(column("c")),
             pa.array(["Hello ", " World ", " !"], type=pa.string_view()),
         ),
-        (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
+        (
+            f.left(column("a"), literal(3)),
+            pa.array(["Hel", "Wor", "!"], type=pa.string_view()),
+        ),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
         (f.lower(column("a")), pa.array(["hello", "world", "!"])),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
@@ -726,7 +729,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             pa.array(["He??o", "Wor?d", "!"]),
         ),
         (f.reverse(column("a")), pa.array(["olleH", "dlroW", "!"])),
-        (f.right(column("a"), literal(4)), pa.array(["ello", "orld", "!"])),
+        (
+            f.right(column("a"), literal(4)),
+            pa.array(["ello", "orld", "!"], type=pa.string_view()),
+        ),
         (
             f.rpad(column("a"), literal(8)),
             pa.array(["Hello   ", "World   ", "!       "]),
@@ -964,7 +970,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 1, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 1, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns", tz=DEFAULT_TZ),
+        type=pa.timestamp("us", tz=DEFAULT_TZ),
     )
     assert result.column(3) == pa.array(
         [
@@ -972,7 +978,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns", tz=DEFAULT_TZ),
+        type=pa.timestamp("us", tz=DEFAULT_TZ),
     )
     assert result.column(4) == pa.array(
         [

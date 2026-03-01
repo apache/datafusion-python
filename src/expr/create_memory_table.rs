@@ -25,6 +25,7 @@ use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "CreateMemoryTable",
     module = "datafusion.expr",
