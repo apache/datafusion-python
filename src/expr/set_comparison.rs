@@ -18,9 +18,8 @@
 use datafusion::logical_expr::expr::SetComparison;
 use pyo3::prelude::*;
 
-use crate::expr::PyExpr;
-
 use super::subquery::PySubquery;
+use crate::expr::PyExpr;
 
 #[pyclass(
     from_py_object,

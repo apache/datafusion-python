@@ -146,7 +146,7 @@ PyO3 class mutability guidelines
 
 PyO3 bindings should present immutable wrappers whenever a struct stores shared or
 interior-mutable state. In practice this means that any ``#[pyclass]`` containing an
-``Arc<RwLock<_>>`` or similar synchronized primitive must opt into ``#[pyclass(from_py_object, frozen)]``
+``Arc<RwLock<_>>`` or similar synchronized primitive must opt into ``#[pyclass(frozen)]``
 unless there is a compelling reason not to.
 
 The :mod:`datafusion` configuration helpers illustrate the preferred pattern. The
