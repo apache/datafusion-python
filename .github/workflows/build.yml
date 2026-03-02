@@ -328,6 +328,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
+        if: matrix.python-version != '3.14t'
         run: uv sync --dev --no-install-package datafusion
 
       # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
@@ -425,6 +426,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
+        if: matrix.python-version != '3.14t'
         run: uv sync --dev --no-install-package datafusion
 
       - name: Build (release mode)
