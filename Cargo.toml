@@ -91,3 +91,8 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+# We cannot publish to crates.io with any patches in the below section. Developers
+# must remove any entries in this section before creating a release candidate.
+[patch.crates-io]
+# datafusion = { git = "https://github.com/apache/datafusion.git", rev = "6713439497561fa74a94177e5b8632322fb7cea5" }
