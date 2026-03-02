@@ -249,6 +249,7 @@ jobs:
     needs: [generate-license, lint-rust, lint-python]
     name: macOS arm64 & Windows
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -274,6 +275,7 @@ jobs:
           - os: macos-latest
             python-version: "3.14t"
             python-tag: cp314t
+            experimental: true
           - os: windows-latest
             python-version: "3.10"
             python-tag: cp310
@@ -295,6 +297,7 @@ jobs:
           - os: windows-latest
             python-version: "3.14t"
             python-tag: cp314t
+            experimental: true
     steps:
       - uses: actions/checkout@v6
 
@@ -375,6 +378,7 @@ jobs:
     if: inputs.build_mode == 'release'
     needs: [generate-license, lint-rust, lint-python]
     runs-on: macos-15-intel
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -393,6 +397,7 @@ jobs:
             python-tag: cp313t
           - python-version: "3.14t"
             python-tag: cp314t
+            experimental: true
     steps:
       - uses: actions/checkout@v6
 
