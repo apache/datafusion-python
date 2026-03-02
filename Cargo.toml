@@ -40,6 +40,7 @@ include = [
 default = ["mimalloc"]
 protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
+py-limited-api = ["pyo3/abi3-py310"]
 
 [dependencies]
 tokio = { version = "1.49", features = [
@@ -48,11 +49,7 @@ tokio = { version = "1.49", features = [
   "rt-multi-thread",
   "sync",
 ] }
-pyo3 = { version = "0.26", features = [
-  "extension-module",
-  "abi3",
-  "abi3-py310",
-] }
+pyo3 = { version = "0.26", features = ["extension-module"] }
 pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }
 pyo3-log = "0.13.3"
 arrow = { version = "57", features = ["pyarrow"] }

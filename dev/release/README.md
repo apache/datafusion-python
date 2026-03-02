@@ -130,6 +130,10 @@ datafusion-22.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 datafusion-22.0.0-cp37-abi3-win_amd64.whl
 ```
 
+Note: PyO3's free-threaded CPython builds (3.13t/3.14t) use a distinct ABI and cannot use the limited API (`abi3`).
+The release workflow enables Cargo feature `py-limited-api` for GIL-enabled wheels and disables it for free-threaded
+builds, producing version-specific `cp313t`/`cp314t` wheels.
+
 Upload the wheels to testpypi.
 
 ```bash
@@ -236,6 +240,12 @@ cargo publish
 ```
 
 ### Publishing Python Artifacts to PyPi
+
+GitHub Actions groups wheel artifacts by platform and interpreter tag using the pattern `dist-<platform>-<python-tag>`.
+For example, standard manylinux wheels live under `dist-manylinux-x86_64-cp310-314` while the free-threaded builds
+use `dist-manylinux-x86_64-cp313t-314t`. macOS and Windows jobs publish one artifact per CPython version as well
+(`dist-macos-latest-cp311`, `dist-windows-latest-cp313t`, etc.). Download the exact tags you intend to push to PyPI,
+and remember that the docs workflow currently installs from the `cp310-314` manylinux artifact.
 
 Go to the Test PyPI page of Datafusion, and download
 [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
