@@ -73,7 +73,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --dev --no-install-package datafusion
+        run: uv sync --locked --dev --no-install-package datafusion
 
       - name: Run Ruff
         run: |
