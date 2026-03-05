@@ -1162,6 +1162,20 @@ def now() -> Expr:
     """Returns the current timestamp in nanoseconds.
 
     This will use the same value for all instances of now() in same statement.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.now().alias("now")
+    ... )
+
+    Use .value instead of .as_py() because nanosecond timestamps
+    require pandas to convert to Python datetime objects.
+
+    >>> result.collect_column("now")[0].value > 0
+    True
     """
     return Expr(f.now())
 
@@ -1222,6 +1236,18 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     For usage of ``formatters`` see the rust chrono package ``strftime`` package.
 
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+    >>> result = df.select(
+    ...     dfn.functions.to_timestamp(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1230,6 +1256,18 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in milliseconds.
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+    >>> result = df.select(
+    ...     dfn.functions.to_timestamp_millis(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_millis(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1238,6 +1276,18 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in microseconds.
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+    >>> result = df.select(
+    ...     dfn.functions.to_timestamp_micros(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_micros(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1246,6 +1296,18 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+    >>> result = df.select(
+    ...     dfn.functions.to_timestamp_nanos(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_nanos(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1254,17 +1316,49 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in seconds.
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+    >>> result = df.select(
+    ...     dfn.functions.to_timestamp_seconds(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_seconds(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
-    """Converts a string and optional formats to a Unixtime."""
+    """Converts a string and optional formats to a Unixtime.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["1970-01-01T00:00:00"]})
+    >>> result = df.select(dfn.functions.to_unixtime(dfn.col("a")).alias("u"))
+    >>> result.collect_column("u")[0].as_py()
+    0
+    """
     return Expr(f.to_unixtime(string.expr, *_unwrap_exprs(format_arguments)))
 
 
 def current_date() -> Expr:
-    """Returns current UTC date as a Date32 value."""
+    """Returns current UTC date as a Date32 value.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.current_date().alias("d")
+    ... )
+    >>> result.collect_column("d")[0].as_py() is not None
+    True
+    """
     return Expr(f.current_date())
 
 
@@ -1272,7 +1366,22 @@ today = current_date
 
 
 def current_time() -> Expr:
-    """Returns current UTC time as a Time64 value."""
+    """Returns current UTC time as a Time64 value.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.current_time().alias("t")
+    ... )
+
+    Use .value instead of .as_py() because nanosecond timestamps
+    require pandas to convert to Python datetime objects.
+
+    >>> result.collect_column("t")[0].value > 0
+    True
+    """
     return Expr(f.current_time())
 
 
@@ -1280,12 +1389,33 @@ def datepart(part: Expr, date: Expr) -> Expr:
     """Return a specified part of a date.
 
     This is an alias for :py:func:`date_part`.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+    >>> result = df.select(
+    ...     dfn.functions.datepart(dfn.lit("month"), dfn.col("a")).alias("m"))
+    >>> result.collect_column("m")[0].as_py()
+    7
     """
     return date_part(part, date)
 
 
 def date_part(part: Expr, date: Expr) -> Expr:
-    """Extracts a subfield from the date."""
+    """Extracts a subfield from the date.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+    >>> result = df.select(
+    ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
+    >>> result.collect_column("y")[0].as_py()
+    2021
+    """
     return Expr(f.date_part(part.expr, date.expr))
 
 
@@ -1293,12 +1423,36 @@ def extract(part: Expr, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     This is an alias for :py:func:`date_part`.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+    >>> result = df.select(
+    ...     dfn.functions.extract(dfn.lit("day"), dfn.col("a")).alias("d"))
+    >>> result.collect_column("d")[0].as_py()
+    15
     """
     return date_part(part, date)
 
 
 def date_trunc(part: Expr, date: Expr) -> Expr:
-    """Truncates the date to a specified level of precision."""
+    """Truncates the date to a specified level of precision.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+    >>> result = df.select(
+    ...     dfn.functions.date_trunc(
+    ...         dfn.lit("month"), dfn.col("a")
+    ...     ).alias("t")
+    ... )
+    >>> str(result.collect_column("t")[0].as_py())
+    '2021-07-01 00:00:00'
+    """
     return Expr(f.date_trunc(part.expr, date.expr))
 
 
@@ -1306,17 +1460,54 @@ def datetrunc(part: Expr, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     This is an alias for :py:func:`date_trunc`.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+    >>> result = df.select(
+    ...     dfn.functions.datetrunc(
+    ...         dfn.lit("year"), dfn.col("a")
+    ...     ).alias("t")
+    ... )
+    >>> str(result.collect_column("t")[0].as_py())
+    '2021-01-01 00:00:00'
     """
     return date_trunc(part, date)
 
 
 def date_bin(stride: Expr, source: Expr, origin: Expr) -> Expr:
-    """Coerces an arbitrary timestamp to the start of the nearest specified interval."""
+    """Coerces an arbitrary timestamp to the start of the nearest specified interval.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> result = ctx.sql(
+    ...     "SELECT date_bin(interval '1 day',"
+    ...     " timestamp '2021-07-15 12:34:56',"
+    ...     " timestamp '2021-01-01') as b"
+    ... )
+    >>> str(result.collect_column("b")[0].as_py())
+    '2021-07-15 00:00:00'
+    """
     return Expr(f.date_bin(stride.expr, source.expr, origin.expr))
 
 
 def make_date(year: Expr, month: Expr, day: Expr) -> Expr:
-    """Make a date from year, month and day component parts."""
+    """Make a date from year, month and day component parts.
+
+    Examples:
+    ---------
+    >>> from datetime import date
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"y": [2024], "m": [1], "d": [15]})
+    >>> result = df.select(
+    ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
+    ...     dfn.col("d")).alias("dt"))
+    >>> result.collect_column("dt")[0].as_py()
+    datetime.date(2024, 1, 15)
+    """
     return Expr(f.make_date(year.expr, month.expr, day.expr))
 
 
@@ -1393,7 +1584,20 @@ def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
 
 
 def from_unixtime(arg: Expr) -> Expr:
-    """Converts an integer to RFC3339 timestamp format string."""
+    """Converts an integer to RFC3339 timestamp format string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0]})
+    >>> result = df.select(
+    ...     dfn.functions.from_unixtime(
+    ...         dfn.col("a")
+    ...     ).alias("ts")
+    ... )
+    >>> str(result.collect_column("ts")[0].as_py())
+    '1970-01-01 00:00:00'
+    """
     return Expr(f.from_unixtime(arg.expr))
 
 
