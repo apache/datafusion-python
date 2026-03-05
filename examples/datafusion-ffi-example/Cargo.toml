@@ -37,6 +37,7 @@ arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
 async-trait = "0.1.89"
+pyo3-log = "0.13.2"
 
 [build-dependencies]
 pyo3-build-config = "0.28"
