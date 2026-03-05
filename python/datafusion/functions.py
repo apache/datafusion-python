@@ -2516,6 +2516,14 @@ def first_value(
     For example::
 
         df.aggregate([], first_value(col("a"), order_by="ts"))
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+    >>> result = df.aggregate([], [dfn.functions.first_value(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    10
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2553,6 +2561,14 @@ def last_value(
     For example::
 
         df.aggregate([], last_value(col("a"), order_by="ts"))
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+    >>> result = df.aggregate([], [dfn.functions.last_value(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    30
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2592,6 +2608,14 @@ def nth_value(
     For example::
 
         df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+    >>> result = df.aggregate([], [dfn.functions.nth_value(dfn.col("a"), 2).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    20
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2732,6 +2756,16 @@ def lead(
     For example::
 
         lead(col("b"), order_by="ts")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.lead(dfn.col("a"), shift_offset=1,
+    ...     default_value=0, order_by="a").alias("lead"))
+    >>> result.sort(dfn.col("a")).collect_column("lead").to_pylist()
+    [2, 3, 0]
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -2787,6 +2821,16 @@ def lag(
     For example::
 
         lag(col("b"), order_by="ts")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.lag(dfn.col("a"), shift_offset=1,
+    ...     default_value=0, order_by="a").alias("lag"))
+    >>> result.sort(dfn.col("a")).collect_column("lag").to_pylist()
+    [0, 1, 2]
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -2832,6 +2876,15 @@ def row_number(
     For example::
 
         row_number(order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.row_number(order_by="a").alias("rn"))
+    >>> result.sort(dfn.col("a")).collect_column("rn").to_pylist()
+    [1, 2, 3]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2876,6 +2929,14 @@ def rank(
     For example::
 
         rank(order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 10, 20]})
+    >>> result = df.select(dfn.col("a"), dfn.functions.rank(order_by="a").alias("rnk"))
+    >>> result.sort(dfn.col("a")).collect_column("rnk").to_pylist()
+    [1, 1, 3]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2915,6 +2976,15 @@ def dense_rank(
     For example::
 
         dense_rank(order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 10, 20]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.dense_rank(order_by="a").alias("dr"))
+    >>> result.sort(dfn.col("a")).collect_column("dr").to_pylist()
+    [1, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2955,6 +3025,15 @@ def percent_rank(
     For example::
 
         percent_rank(order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.percent_rank(order_by="a").alias("pr"))
+    >>> result.sort(dfn.col("a")).collect_column("pr").to_pylist()
+    [0.0, 0.5, 1.0]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2995,6 +3074,22 @@ def cume_dist(
     For example::
 
         cume_dist(order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 10, 20]})
+    >>> import builtins
+    >>> result = df.select(
+    ...     dfn.col("a"),
+    ...     dfn.functions.cume_dist(
+    ...         order_by="a"
+    ...     ).alias("cd")
+    ... )
+    >>> [builtins.round(x, 4) for x in
+    ...     result.sort(dfn.col("a")
+    ... ).collect_column("cd").to_pylist()]
+    [0.6667, 0.6667, 1.0]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -3039,6 +3134,15 @@ def ntile(
     For example::
 
         ntile(3, order_by="points")
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [10, 20, 30, 40]})
+    >>> result = df.select(
+    ...     dfn.col("a"), dfn.functions.ntile(2, order_by="a").alias("nt"))
+    >>> result.sort(dfn.col("a")).collect_column("nt").to_pylist()
+    [1, 1, 2, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
