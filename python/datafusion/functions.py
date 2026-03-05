@@ -484,10 +484,13 @@ def window(
 def abs(arg: Expr) -> Expr:
     """Return the absolute value of a given number.
 
-    Returns:
-    --------
-    Expr
-        A new expression representing the absolute value of the input expression.
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [-1, 0, 1]})
+    >>> result = df.select(dfn.functions.abs(dfn.col("a")).alias("abs"))
+    >>> result.collect_column("abs")[0].as_py()
+    1
     """
     return Expr(f.abs(arg.expr))
 
@@ -607,12 +610,30 @@ def btrim(arg: Expr) -> Expr:
 
 
 def cbrt(arg: Expr) -> Expr:
-    """Returns the cube root of a number."""
+    """Returns the cube root of a number.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [27]})
+    >>> cbrt_df = df.select(dfn.functions.cbrt(dfn.col("a")).alias("cbrt"))
+    >>> cbrt_df.collect_column("cbrt")[0].as_py()
+    3.0
+    """
     return Expr(f.cbrt(arg.expr))
 
 
 def ceil(arg: Expr) -> Expr:
-    """Returns the nearest integer greater than or equal to argument."""
+    """Returns the nearest integer greater than or equal to argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.9]})
+    >>> floor_df = df.select(dfn.functions.ceil(dfn.col("a")).alias("ceil"))
+    >>> floor_df.collect_column("ceil")[0].as_py()
+    2.0
+    """
     return Expr(f.ceil(arg.expr))
 
 
@@ -711,12 +732,32 @@ def ends_with(arg: Expr, suffix: Expr) -> Expr:
 
 
 def exp(arg: Expr) -> Expr:
-    """Returns the exponential of the argument."""
+    """Returns the exponential of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.exp(dfn.col("a")).alias("exp"))
+    >>> result.collect_column("exp")[0].as_py()
+    1.0
+    """
     return Expr(f.exp(arg.expr))
 
 
 def factorial(arg: Expr) -> Expr:
-    """Returns the factorial of the argument."""
+    """Returns the factorial of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [3]})
+    >>> result = df.select(
+    ...     dfn.functions.factorial(dfn.col("a")).alias("factorial")
+    ... )
+    >>> result.collect_column("factorial")[0].as_py()
+    6
+    """
     return Expr(f.factorial(arg.expr))
 
 
@@ -732,12 +773,30 @@ def find_in_set(string: Expr, string_list: Expr) -> Expr:
 
 
 def floor(arg: Expr) -> Expr:
-    """Returns the nearest integer less than or equal to the argument."""
+    """Returns the nearest integer less than or equal to the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.9]})
+    >>> floor_df = df.select(dfn.functions.floor(dfn.col("a")).alias("floor"))
+    >>> floor_df.collect_column("floor")[0].as_py()
+    1.0
+    """
     return Expr(f.floor(arg.expr))
 
 
 def gcd(x: Expr, y: Expr) -> Expr:
-    """Returns the greatest common divisor."""
+    """Returns the greatest common divisor.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [12], "b": [8]})
+    >>> result = df.select(dfn.functions.gcd(dfn.col("a"), dfn.col("b")).alias("gcd"))
+    >>> result.collect_column("gcd")[0].as_py()
+    4
+    """
     return Expr(f.gcd(x.expr, y.expr))
 
 
@@ -759,12 +818,30 @@ def instr(string: Expr, substring: Expr) -> Expr:
 
 
 def iszero(arg: Expr) -> Expr:
-    """Returns true if a given number is +0.0 or -0.0 otherwise returns false."""
+    """Returns true if a given number is +0.0 or -0.0 otherwise returns false.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0, 1.0]})
+    >>> result = df.select(dfn.functions.iszero(dfn.col("a")).alias("iz"))
+    >>> result.collect_column("iz")[0].as_py()
+    True
+    """
     return Expr(f.iszero(arg.expr))
 
 
 def lcm(x: Expr, y: Expr) -> Expr:
-    """Returns the least common multiple."""
+    """Returns the least common multiple.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [4], "b": [6]})
+    >>> result = df.select(dfn.functions.lcm(dfn.col("a"), dfn.col("b")).alias("lcm"))
+    >>> result.collect_column("lcm")[0].as_py()
+    12
+    """
     return Expr(f.lcm(x.expr, y.expr))
 
 
@@ -779,22 +856,58 @@ def levenshtein(string1: Expr, string2: Expr) -> Expr:
 
 
 def ln(arg: Expr) -> Expr:
-    """Returns the natural logarithm (base e) of the argument."""
+    """Returns the natural logarithm (base e) of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0]})
+    >>> result = df.select(dfn.functions.ln(dfn.col("a")).alias("ln"))
+    >>> result.collect_column("ln")[0].as_py()
+    0.0
+    """
     return Expr(f.ln(arg.expr))
 
 
 def log(base: Expr, num: Expr) -> Expr:
-    """Returns the logarithm of a number for a particular ``base``."""
+    """Returns the logarithm of a number for a particular ``base``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [100.0]})
+    >>> result = df.select(dfn.functions.log(dfn.lit(10.0), dfn.col("a")).alias("log"))
+    >>> result.collect_column("log")[0].as_py()
+    2.0
+    """
     return Expr(f.log(base.expr, num.expr))
 
 
 def log10(arg: Expr) -> Expr:
-    """Base 10 logarithm of the argument."""
+    """Base 10 logarithm of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [100.0]})
+    >>> result = df.select(dfn.functions.log10(dfn.col("a")).alias("log10"))
+    >>> result.collect_column("log10")[0].as_py()
+    2.0
+    """
     return Expr(f.log10(arg.expr))
 
 
 def log2(arg: Expr) -> Expr:
-    """Base 2 logarithm of the argument."""
+    """Base 2 logarithm of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [8.0]})
+    >>> result = df.select(dfn.functions.log2(dfn.col("a")).alias("log2"))
+    >>> result.collect_column("log2")[0].as_py()
+    3.0
+    """
     return Expr(f.log2(arg.expr))
 
 
@@ -825,7 +938,19 @@ def md5(arg: Expr) -> Expr:
 
 
 def nanvl(x: Expr, y: Expr) -> Expr:
-    """Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``."""
+    """Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [np.nan, 1.0], "b": [0.0, 0.0]})
+    >>> nanvl_df = df.select(
+    ...     dfn.functions.nanvl(dfn.col("a"), dfn.col("b")).alias("nanvl"))
+    >>> nanvl_df.collect_column("nanvl")[0].as_py()
+    0.0
+    >>> nanvl_df.collect_column("nanvl")[1].as_py()
+    1.0
+    """
     return Expr(f.nanvl(x.expr, y.expr))
 
 
@@ -853,7 +978,21 @@ def overlay(
 
 
 def pi() -> Expr:
-    """Returns an approximate value of π."""
+    """Returns an approximate value of π.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> import builtins
+    >>> result = df.select(
+    ...     dfn.functions.pi().alias("pi")
+    ... )
+    >>> builtins.round(
+    ...     result.collect_column("pi")[0].as_py(), 5
+    ... )
+    3.14159
+    """
     return Expr(f.pi())
 
 
@@ -866,7 +1005,16 @@ def position(string: Expr, substring: Expr) -> Expr:
 
 
 def power(base: Expr, exponent: Expr) -> Expr:
-    """Returns ``base`` raised to the power of ``exponent``."""
+    """Returns ``base`` raised to the power of ``exponent``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [2.0]})
+    >>> result = df.select(dfn.functions.power(dfn.col("a"), dfn.lit(3.0)).alias("pow"))
+    >>> result.collect_column("pow")[0].as_py()
+    8.0
+    """
     return Expr(f.power(base.expr, exponent.expr))
 
 
@@ -874,6 +1022,14 @@ def pow(base: Expr, exponent: Expr) -> Expr:
     """Returns ``base`` raised to the power of ``exponent``.
 
     This is an alias of :py:func:`power`.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [3.0]})
+    >>> result = df.select(dfn.functions.pow(dfn.col("a"), dfn.lit(2.0)).alias("pow"))
+    >>> result.collect_column("pow")[0].as_py()
+    9.0
     """
     return power(base, exponent)
 
@@ -1008,6 +1164,14 @@ def round(value: Expr, decimal_places: Expr | None = None) -> Expr:
     If the optional ``decimal_places`` is specified, round to the nearest number of
     decimal places. You can specify a negative number of decimal places. For example
     ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.567]})
+    >>> result = df.select(dfn.functions.round(dfn.col("a"), dfn.lit(2)).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    1.57
     """
     if decimal_places is None:
         decimal_places = Expr.literal(0)
@@ -1050,7 +1214,16 @@ def sha512(arg: Expr) -> Expr:
 
 
 def signum(arg: Expr) -> Expr:
-    """Returns the sign of the argument (-1, 0, +1)."""
+    """Returns the sign of the argument (-1, 0, +1).
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [-5.0, 0.0, 5.0]})
+    >>> result = df.select(dfn.functions.signum(dfn.col("a")).alias("s"))
+    >>> result.collect_column("s").to_pylist()
+    [-1.0, 0.0, 1.0]
+    """
     return Expr(f.signum(arg.expr))
 
 
@@ -1092,7 +1265,16 @@ def split_part(string: Expr, delimiter: Expr, index: Expr) -> Expr:
 
 
 def sqrt(arg: Expr) -> Expr:
-    """Returns the square root of the argument."""
+    """Returns the square root of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [9.0]})
+    >>> result = df.select(dfn.functions.sqrt(dfn.col("a")).alias("sqrt"))
+    >>> result.collect_column("sqrt")[0].as_py()
+    3.0
+    """
     return Expr(f.sqrt(arg.expr))
 
 
@@ -1331,7 +1513,16 @@ def trim(arg: Expr) -> Expr:
 
 
 def trunc(num: Expr, precision: Expr | None = None) -> Expr:
-    """Truncate the number toward zero with optional precision."""
+    """Truncate the number toward zero with optional precision.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.567]})
+    >>> result = df.select(dfn.functions.trunc(dfn.col("a")).alias("t"))
+    >>> result.collect_column("t")[0].as_py()
+    1.0
+    """
     if precision is not None:
         return Expr(f.trunc(num.expr, precision.expr))
     return Expr(f.trunc(num.expr))
@@ -1408,7 +1599,19 @@ def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
 
 
 def random() -> Expr:
-    """Returns a random value in the range ``0.0 <= x < 1.0``."""
+    """Returns a random value in the range ``0.0 <= x < 1.0``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.random().alias("r")
+    ... )
+    >>> val = result.collect_column("r")[0].as_py()
+    >>> 0.0 <= val < 1.0
+    True
+    """
     return Expr(f.random())
 
 
