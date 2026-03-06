@@ -98,6 +98,15 @@ jobs:
       - name: Check Cargo.toml formatting
         run: taplo format --check
 
+  check-crates-patch:
+    if: inputs.build_mode == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Ensure [patch.crates-io] is empty
+        run: python3 dev/check_crates_patch.py
+
   generate-license:
     runs-on: ubuntu-latest
     steps:

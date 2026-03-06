@@ -92,7 +92,8 @@ crate-type = ["cdylib", "rlib"]
 lto = true
 codegen-units = 1
 
-# TODO: remove when datafusion-53 is released
+# We cannot publish to crates.io with any patches in the below section. Developers
+# must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
 datafusion = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
 datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }

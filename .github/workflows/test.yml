@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cargo
-          key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-cache-${{ matrix.toolchain }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install dependencies
         uses: astral-sh/setup-uv@v7
@@ -106,7 +106,7 @@ jobs:
           RUST_BACKTRACE: 1
         run: |
           git submodule update --init
-          uv run --no-project pytest -v . --import-mode=importlib
+          uv run --no-project pytest -v --import-mode=importlib
 
       - name: FFI unit tests
         run: |
