@@ -418,6 +418,11 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion-53-0-0">
+   DataFusion 53.0.0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion-52-0-0">
    DataFusion 52.0.0
   </a>
@@ -445,6 +450,22 @@
                 
   <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">¶</a></h1>
+<section id="datafusion-53-0-0">
+<h2>DataFusion 53.0.0<a class="headerlink" href="#datafusion-53-0-0" title="Link to this heading">¶</a></h2>
+<p>This version includes an upgraded version of <code class="docutils literal notranslate"><span class="pre">pyo3</span></code>, which changed the way to extract an FFI
+object. Example:</p>
+<p>Before:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">reference</span><span class="p">::</span><span class="o">&lt;</span><span class="n">FFI_LogicalExtensionCodec</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+</pre></div>
+</div>
+<p>Now:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">data</span><span class="p">:</span><span class="w"> </span><span class="nc">NonNull</span><span class="o">&lt;</span><span class="n">FFI_LogicalExtensionCodec</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span>
+<span class="w">    </span><span class="p">.</span><span class="n">pointer_checked</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">c_str</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;datafusion_logical_extension_codec&quot;</span><span class="p">)))</span><span class="o">?</span>
+<span class="w">    </span><span class="p">.</span><span class="n">cast</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">as_ref</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+</pre></div>
+</div>
+</section>
 <section id="datafusion-52-0-0">
 <h2>DataFusion 52.0.0<a class="headerlink" href="#datafusion-52-0-0" title="Link to this heading">¶</a></h2>
 <p>This version includes a major update to the <a class="reference internal" href="../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> due to upgrades

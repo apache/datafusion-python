@@ -285,19 +285,16 @@ Module Contents
 
       Drop arbitrary amount of columns.
 
-      Column names are case-sensitive and do not require double quotes like
-      other operations such as `select`. Leading and trailing double quotes
-      are allowed and will be automatically stripped if present.
+      Column names are case-sensitive and require double quotes to be dropped
+      if the original name is not strictly lower case.
 
-      :param columns: Column names to drop from the dataframe. Both ``column_name``
-                      and ``"column_name"`` are accepted.
+      :param columns: Column names to drop from the dataframe.
 
       :returns: DataFrame with those columns removed in the projection.
 
       Example Usage::
-
-          df.drop('ID_For_Students')      # Works
-          df.drop('"ID_For_Students"')    # Also works (quotes stripped)
+          df.drop('a')                    # To drop a lower-cased column 'a'
+          df.drop('"a"')                  # To drop an upper-cased column 'A'
 
 
 

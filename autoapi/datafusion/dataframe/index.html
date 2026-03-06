@@ -1732,23 +1732,21 @@ for non-numeric datatypes.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.drop">
 <span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.drop" title="Link to this definition">¶</a></dt>
 <dd><p>Drop arbitrary amount of columns.</p>
-<p>Column names are case-sensitive and do not require double quotes like
-other operations such as <cite>select</cite>. Leading and trailing double quotes
-are allowed and will be automatically stripped if present.</p>
+<p>Column names are case-sensitive and require double quotes to be dropped
+if the original name is not strictly lower case.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>columns</strong> – Column names to drop from the dataframe. Both <code class="docutils literal notranslate"><span class="pre">column_name</span></code>
-and <code class="docutils literal notranslate"><span class="pre">&quot;column_name&quot;</span></code> are accepted.</p>
+<dd class="field-odd"><p><strong>columns</strong> – Column names to drop from the dataframe.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame with those columns removed in the projection.</p>
 </dd>
 </dl>
-<p>Example Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;ID_For_Students&#39;</span><span class="p">)</span>      <span class="c1"># Works</span>
-<span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;&quot;ID_For_Students&quot;&#39;</span><span class="p">)</span>    <span class="c1"># Also works (quotes stripped)</span>
-</pre></div>
-</div>
+<dl class="simple">
+<dt>Example Usage::</dt><dd><p>df.drop(‘a’)                    # To drop a lower-cased column ‘a’
+df.drop(‘“a”’)                  # To drop an upper-cased column ‘A’</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

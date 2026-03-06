@@ -586,7 +586,7 @@ unless there is a compelling reason not to.</p>
 <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code> class in <code class="file docutils literal notranslate"><span class="pre">src/config.rs</span></code> stores an <code class="docutils literal notranslate"><span class="pre">Arc&lt;RwLock&lt;ConfigOptions&gt;&gt;</span></code> and is
 explicitly frozen so callers interact with configuration state through provided methods
 instead of mutating the container directly:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(name = </span><span class="s">&quot;Config&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass, frozen)]</span>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(from_py_object, name = </span><span class="s">&quot;Config&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass, frozen)]</span>
 <span class="cp">#[derive(Clone)]</span>
 <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyConfig</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">config</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="n">RwLock</span><span class="o">&lt;</span><span class="n">ConfigOptions</span><span class="o">&gt;&gt;</span><span class="p">,</span>
@@ -598,7 +598,7 @@ instead of mutating the container directly:</p>
 <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>. This ensures PyO3 tracks borrows correctly while Python-facing APIs
 clone the inner <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> or return new wrappers instead of mutating the
 existing instance in place:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(frozen, name = </span><span class="s">&quot;SessionContext&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass)]</span>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pyclass(from_py_object, frozen, name = </span><span class="s">&quot;SessionContext&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion&quot;</span><span class="cp">, subclass)]</span>
 <span class="cp">#[derive(Clone)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PySessionContext</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="nc">SessionContext</span><span class="p">,</span>
@@ -612,7 +612,7 @@ future contributors understand why <code class="docutils literal notranslate"><s
 field updates:</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now</span>
 <span class="cp">#[derive(Debug, Clone)]</span>
-<span class="cp">#[pyclass(name = </span><span class="s">&quot;DataTypeMap&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion.common&quot;</span><span class="cp">, subclass)]</span>
+<span class="cp">#[pyclass(from_py_object, name = </span><span class="s">&quot;DataTypeMap&quot;</span><span class="cp">, module = </span><span class="s">&quot;datafusion.common&quot;</span><span class="cp">, subclass)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DataTypeMap</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="cp">#[pyo3(get, set)]</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">arrow_type</span><span class="p">:</span><span class="w"> </span><span class="nc">PyDataType</span><span class="p">,</span>
@@ -650,8 +650,11 @@ for our provider thusly:</p>
 </div>
 <p>On the receiving side, turn this pycapsule object into the <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code>, which
 can then be turned into a <code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code> the associated code is:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">capsule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">downcast</span><span class="p">::</span><span class="o">&lt;</span><span class="n">PyCapsule</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">reference</span><span class="p">::</span><span class="o">&lt;</span><span class="n">FFI_TableProvider</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">capsule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">cast</span><span class="p">::</span><span class="o">&lt;</span><span class="n">PyCapsule</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">data</span><span class="p">:</span><span class="w"> </span><span class="nc">NonNull</span><span class="o">&lt;</span><span class="n">FFI_TableProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span>
+<span class="w">    </span><span class="p">.</span><span class="n">pointer_checked</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">))</span><span class="o">?</span>
+<span class="w">    </span><span class="p">.</span><span class="n">cast</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">as_ref</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
 </pre></div>
 </div>
 <p>By convention the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> library expects a Python object that has a
