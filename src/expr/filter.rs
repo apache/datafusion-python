@@ -26,7 +26,13 @@ use crate::expr::PyExpr;
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "Filter", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Filter",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyFilter {
     filter: Filter,

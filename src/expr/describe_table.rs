@@ -28,7 +28,13 @@ use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "DescribeTable", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "DescribeTable",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyDescribeTable {
     describe: DescribeTable,

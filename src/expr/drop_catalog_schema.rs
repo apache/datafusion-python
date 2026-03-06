@@ -30,6 +30,7 @@ use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "DropCatalogSchema",
     module = "datafusion.expr",

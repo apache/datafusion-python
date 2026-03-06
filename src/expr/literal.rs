@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use crate::errors::PyDataFusionError;
 
-#[pyclass(name = "Literal", module = "datafusion.expr", subclass, frozen)]
+#[pyclass(
+    from_py_object,
+    name = "Literal",
+    module = "datafusion.expr",
+    subclass,
+    frozen
+)]
 #[derive(Clone)]
 pub struct PyLiteral {
     pub value: ScalarValue,

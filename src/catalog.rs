@@ -17,6 +17,7 @@
 
 use std::any::Any;
 use std::collections::HashSet;
+use std::ptr::NonNull;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -31,6 +32,7 @@ use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
@@ -43,6 +45,7 @@ use crate::utils::{
 };
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "RawCatalogList",
     module = "datafusion.catalog",
@@ -54,14 +57,26 @@ pub struct PyCatalogList {
     codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
-#[pyclass(frozen, name = "RawCatalog", module = "datafusion.catalog", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RawCatalog",
+    module = "datafusion.catalog",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyCatalog {
     pub catalog: Arc<dyn CatalogProvider>,
     codec: Arc<FFI_LogicalExtensionCodec>,
 }
 
-#[pyclass(frozen, name = "RawSchema", module = "datafusion.catalog", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RawSchema",
+    module = "datafusion.catalog",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
@@ -642,10 +657,12 @@ fn extract_catalog_provider_from_pyobj(
             .call1((codec_capsule,))?;
     }
 
-    let provider = if let Ok(capsule) = catalog_provider.downcast::<PyCapsule>() {
+    let provider = if let Ok(capsule) = catalog_provider.cast::<PyCapsule>() {
         validate_pycapsule(capsule, "datafusion_catalog_provider")?;
-
-        let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+        let data: NonNull<FFI_CatalogProvider> = capsule
+            .pointer_checked(Some(c_str!("datafusion_catalog_provider")))?
+            .cast();
+        let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn CatalogProvider + Send> = provider.into();
         provider as Arc<dyn CatalogProvider>
     } else {
@@ -673,10 +690,13 @@ fn extract_schema_provider_from_pyobj(
             .call1((codec_capsule,))?;
     }
 
-    let provider = if let Ok(capsule) = schema_provider.downcast::<PyCapsule>() {
+    let provider = if let Ok(capsule) = schema_provider.cast::<PyCapsule>() {
         validate_pycapsule(capsule, "datafusion_schema_provider")?;
 
-        let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
+        let data: NonNull<FFI_SchemaProvider> = capsule
+            .pointer_checked(Some(c_str!("datafusion_schema_provider")))?
+            .cast();
+        let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn SchemaProvider + Send> = provider.into();
         provider as Arc<dyn SchemaProvider>
     } else {

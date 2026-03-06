@@ -31,7 +31,7 @@ use datafusion::physical_plan::execution_plan::{Boundedness, EmissionType};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
-    SendableRecordBatchStream, Statistics,
+    PlanProperties, SendableRecordBatchStream, Statistics,
 };
 use futures::{TryStreamExt, stream};
 /// Implements a Datafusion physical ExecutionPlan that delegates to a PyArrow Dataset
@@ -71,7 +71,7 @@ pub(crate) struct DatasetExec {
     columns: Option<Vec<String>>,
     filter_expr: Option<Py<PyAny>>,
     projected_statistics: Statistics,
-    plan_properties: datafusion::physical_plan::PlanProperties,
+    plan_properties: Arc<PlanProperties>,
 }
 
 impl DatasetExec {
@@ -128,15 +128,15 @@ impl DatasetExec {
         )?;
 
         let fragments_iter = pylist.call1((fragments_iterator,))?;
-        let fragments = fragments_iter.downcast::<PyList>().map_err(PyErr::from)?;
+        let fragments = fragments_iter.cast::<PyList>().map_err(PyErr::from)?;
 
         let projected_statistics = Statistics::new_unknown(&schema);
-        let plan_properties = datafusion::physical_plan::PlanProperties::new(
+        let plan_properties = Arc::new(PlanProperties::new(
             EquivalenceProperties::new(schema.clone()),
             Partitioning::UnknownPartitioning(fragments.len()),
             EmissionType::Final,
             Boundedness::Bounded,
-        );
+        ));
 
         Ok(DatasetExec {
             dataset: dataset.clone().unbind(),
@@ -235,11 +235,11 @@ impl ExecutionPlan for DatasetExec {
         })
     }
 
-    fn statistics(&self) -> DFResult<Statistics> {
+    fn partition_statistics(&self, _partition: Option<usize>) -> DFResult<Statistics> {
         Ok(self.projected_statistics.clone())
     }
 
-    fn properties(&self) -> &datafusion::physical_plan::PlanProperties {
+    fn properties(&self) -> &Arc<PlanProperties> {
         &self.plan_properties
     }
 }

@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use crate::expr::PyExpr;
 
-#[pyclass(frozen, name = "Like", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Like",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyLike {
     like: Like,
@@ -80,7 +86,13 @@ impl PyLike {
     }
 }
 
-#[pyclass(frozen, name = "ILike", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ILike",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyILike {
     like: Like,
@@ -138,7 +150,13 @@ impl PyILike {
     }
 }
 
-#[pyclass(frozen, name = "SimilarTo", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "SimilarTo",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySimilarTo {
     like: Like,

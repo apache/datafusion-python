@@ -17,6 +17,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::ptr::NonNull;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -44,7 +45,7 @@ use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
-    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+    AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
@@ -54,6 +55,7 @@ use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -86,7 +88,13 @@ use crate::utils::{
 };
 
 /// Configuration options for a SessionContext
-#[pyclass(frozen, name = "SessionConfig", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "SessionConfig",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone, Default)]
 pub struct PySessionConfig {
     pub config: SessionConfig,
@@ -179,7 +187,13 @@ impl PySessionConfig {
 }
 
 /// Runtime options for a SessionContext
-#[pyclass(frozen, name = "RuntimeEnvBuilder", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RuntimeEnvBuilder",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyRuntimeEnvBuilder {
     pub builder: RuntimeEnvBuilder,
@@ -266,7 +280,13 @@ impl PyRuntimeEnvBuilder {
 }
 
 /// `PySQLOptions` allows you to specify options to the sql execution.
-#[pyclass(frozen, name = "SQLOptions", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "SQLOptions",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySQLOptions {
     pub options: SQLOptions,
@@ -305,7 +325,13 @@ impl PySQLOptions {
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
 /// multi-threaded execution engine to perform the execution.
-#[pyclass(frozen, name = "SessionContext", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "SessionContext",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySessionContext {
     pub ctx: Arc<SessionContext>,
@@ -645,22 +671,25 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider =
-            if let Ok(capsule) = provider.downcast::<PyCapsule>().map_err(py_datafusion_err) {
-                validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
+        {
+            validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
 
-                let provider = unsafe { capsule.reference::<FFI_CatalogProviderList>() };
-                let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
-                provider as Arc<dyn CatalogProviderList>
-            } else {
-                match provider.extract::<PyCatalogList>() {
-                    Ok(py_catalog_list) => py_catalog_list.catalog_list,
-                    Err(_) => Arc::new(RustWrappedPyCatalogProviderList::new(
-                        provider.into(),
-                        Arc::clone(&self.logical_codec),
-                    )) as Arc<dyn CatalogProviderList>,
-                }
-            };
+            let data: NonNull<FFI_CatalogProviderList> = capsule
+                .pointer_checked(Some(c_str!("datafusion_catalog_provider_list")))?
+                .cast();
+            let provider = unsafe { data.as_ref() };
+            let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
+            provider as Arc<dyn CatalogProviderList>
+        } else {
+            match provider.extract::<PyCatalogList>() {
+                Ok(py_catalog_list) => py_catalog_list.catalog_list,
+                Err(_) => Arc::new(RustWrappedPyCatalogProviderList::new(
+                    provider.into(),
+                    Arc::clone(&self.logical_codec),
+                )) as Arc<dyn CatalogProviderList>,
+            }
+        };
 
         self.ctx.register_catalog_list(provider);
 
@@ -680,22 +709,25 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider =
-            if let Ok(capsule) = provider.downcast::<PyCapsule>().map_err(py_datafusion_err) {
-                validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
+        {
+            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
 
-                let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
-                let provider: Arc<dyn CatalogProvider + Send> = provider.into();
-                provider as Arc<dyn CatalogProvider>
-            } else {
-                match provider.extract::<PyCatalog>() {
-                    Ok(py_catalog) => py_catalog.catalog,
-                    Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
-                        provider.into(),
-                        Arc::clone(&self.logical_codec),
-                    )) as Arc<dyn CatalogProvider>,
-                }
-            };
+            let data: NonNull<FFI_CatalogProvider> = capsule
+                .pointer_checked(Some(c_str!("datafusion_catalog_provider")))?
+                .cast();
+            let provider = unsafe { data.as_ref() };
+            let provider: Arc<dyn CatalogProvider + Send> = provider.into();
+            provider as Arc<dyn CatalogProvider>
+        } else {
+            match provider.extract::<PyCatalog>() {
+                Ok(py_catalog) => py_catalog.catalog,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
+                    provider.into(),
+                    Arc::clone(&self.logical_codec),
+                )) as Arc<dyn CatalogProvider>,
+            }
+        };
 
         let _ = self.ctx.register_catalog(name, provider);
 
@@ -815,7 +847,7 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
             .table_partition_cols(
                 table_partition_cols
@@ -976,7 +1008,7 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-        let mut options = NdJsonReadOptions::default()
+        let mut options = JsonReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
                     .into_iter()

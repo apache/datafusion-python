@@ -26,7 +26,7 @@ use arrow::pyarrow::{FromPyArrow, ToPyArrow};
 use datafusion::common::exec_err;
 use datafusion::scalar::ScalarValue;
 use pyo3::types::{PyAnyMethods, PyList};
-use pyo3::{Bound, FromPyObject, PyAny, PyResult, Python};
+use pyo3::{Borrowed, Bound, FromPyObject, PyAny, PyErr, PyResult, Python};
 
 use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionError;
@@ -142,9 +142,11 @@ impl FromPyArrow for PyScalarValue {
     }
 }
 
-impl<'source> FromPyObject<'source> for PyScalarValue {
-    fn extract_bound(value: &Bound<'source, PyAny>) -> PyResult<Self> {
-        Self::from_pyarrow_bound(value)
+impl<'source> FromPyObject<'_, 'source> for PyScalarValue {
+    type Error = PyErr;
+
+    fn extract(value: Borrowed<'_, 'source, PyAny>) -> Result<Self, Self::Error> {
+        Self::from_pyarrow_bound(&value)
     }
 }
 

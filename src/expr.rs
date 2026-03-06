@@ -24,7 +24,7 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::expr::{
     AggregateFunction, AggregateFunctionParams, FieldMetadata, InList, InSubquery, ScalarFunction,
-    WindowFunction,
+    SetComparison, WindowFunction,
 };
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
@@ -98,6 +98,7 @@ pub mod recursive_query;
 pub mod repartition;
 pub mod scalar_subquery;
 pub mod scalar_variable;
+pub mod set_comparison;
 pub mod signature;
 pub mod sort;
 pub mod sort_expr;
@@ -114,7 +115,13 @@ pub mod window;
 use sort_expr::{PySortExpr, to_sort_expressions};
 
 /// A PyExpr that can be used on a DataFrame
-#[pyclass(frozen, name = "RawExpr", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RawExpr",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
     pub expr: Expr,
@@ -209,6 +216,9 @@ impl PyExpr {
             }
             Expr::Unnest(value) => {
                 Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?)
+            }
+            Expr::SetComparison(value) => {
+                Ok(set_comparison::PySetComparison::from(value.clone()).into_bound_py_any(py)?)
             }
         })
     }
@@ -376,7 +386,8 @@ impl PyExpr {
             | Expr::Placeholder { .. }
             | Expr::OuterReferenceColumn(_, _)
             | Expr::Unnest(_)
-            | Expr::IsNotUnknown(_) => RexType::Call,
+            | Expr::IsNotUnknown(_)
+            | Expr::SetComparison(_) => RexType::Call,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
             #[allow(deprecated)]
             Expr::Wildcard { .. } => {
@@ -427,7 +438,10 @@ impl PyExpr {
             | Expr::Negative(expr)
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
-            | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
+            | Expr::InSubquery(InSubquery { expr, .. })
+            | Expr::SetComparison(SetComparison { expr, .. }) => {
+                Ok(vec![PyExpr::from(*expr.clone())])
+            }
 
             // Expr variants containing a collection of Expr(s) for operands
             Expr::AggregateFunction(AggregateFunction {
@@ -648,7 +662,13 @@ impl PyExpr {
     }
 }
 
-#[pyclass(frozen, name = "ExprFuncBuilder", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ExprFuncBuilder",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyExprFuncBuilder {
     pub builder: ExprFuncBuilder,

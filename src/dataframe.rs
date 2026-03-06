@@ -17,6 +17,7 @@
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::ptr::NonNull;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -44,6 +45,7 @@ use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
 use pyo3::PyErr;
 use pyo3::exceptions::PyValueError;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
@@ -139,11 +141,11 @@ fn import_python_formatter(py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
 // Helper function to extract attributes with fallback to default
 fn get_attr<'a, T>(py_object: &'a Bound<'a, PyAny>, attr_name: &str, default_value: T) -> T
 where
-    T: for<'py> pyo3::FromPyObject<'py> + Clone,
+    T: for<'py> pyo3::FromPyObject<'py, 'py> + Clone,
 {
     py_object
         .getattr(attr_name)
-        .and_then(|v| v.extract::<T>())
+        .and_then(|v| v.extract::<T>().map_err(Into::<PyErr>::into))
         .unwrap_or_else(|_| default_value.clone())
 }
 
@@ -183,7 +185,13 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 }
 
 /// Python mapping of `ParquetOptions` (includes just the writer-related options).
-#[pyclass(frozen, name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ParquetWriterOptions",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone, Default)]
 pub struct PyParquetWriterOptions {
     options: ParquetOptions,
@@ -247,7 +255,13 @@ impl PyParquetWriterOptions {
 }
 
 /// Python mapping of `ParquetColumnOptions`.
-#[pyclass(frozen, name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ParquetColumnOptions",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Clone, Default)]
 pub struct PyParquetColumnOptions {
     options: ParquetColumnOptions,
@@ -282,7 +296,13 @@ impl PyParquetColumnOptions {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
-#[pyclass(name = "DataFrame", module = "datafusion", subclass, frozen)]
+#[pyclass(
+    from_py_object,
+    name = "DataFrame",
+    module = "datafusion",
+    subclass,
+    frozen
+)]
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
@@ -450,7 +470,7 @@ impl PyDataFrame {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
             self.select_columns(vec![key])
-        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
+        } else if let Ok(tuple) = key.cast::<PyTuple>() {
             // df[col1, col2, col3]
             let keys = tuple
                 .iter()
@@ -1099,7 +1119,10 @@ impl PyDataFrame {
         if let Some(schema_capsule) = requested_schema {
             validate_pycapsule(&schema_capsule, "arrow_schema")?;
 
-            let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
+            let data: NonNull<FFI_ArrowSchema> = schema_capsule
+                .pointer_checked(Some(c_str!("arrow_schema")))?
+                .cast();
+            let schema_ptr = unsafe { data.as_ref() };
             let desired_schema = Schema::try_from(schema_ptr)?;
 
             schema = project_schema(schema, desired_schema)?;
@@ -1203,7 +1226,14 @@ impl PyDataFrame {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(frozen, eq, eq_int, name = "InsertOp", module = "datafusion")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    eq,
+    eq_int,
+    name = "InsertOp",
+    module = "datafusion"
+)]
 pub enum PyInsertOp {
     APPEND,
     REPLACE,
@@ -1221,7 +1251,12 @@ impl From<PyInsertOp> for InsertOp {
 }
 
 #[derive(Debug, Clone)]
-#[pyclass(frozen, name = "DataFrameWriteOptions", module = "datafusion")]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "DataFrameWriteOptions",
+    module = "datafusion"
+)]
 pub struct PyDataFrameWriteOptions {
     insert_operation: InsertOp,
     single_file_output: bool,

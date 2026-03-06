@@ -24,7 +24,13 @@ use pyo3::types::*;
 
 use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionResult;
-#[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
+#[pyclass(
+    from_py_object,
+    name = "Config",
+    module = "datafusion",
+    subclass,
+    frozen
+)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
     config: Arc<RwLock<ConfigOptions>>,

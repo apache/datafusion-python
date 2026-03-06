@@ -857,20 +857,20 @@ def test_alias_with_metadata(df):
         pytest.param(
             col("d").list_distinct(),
             pa.array(
-                [[-1, 0, 1], [5, 10, 15, 20], [], None], type=pa.list_(pa.int64())
+                [[-1, 1, 0], [5, 10, 15, 20], [], None], type=pa.list_(pa.int64())
             ),
             id="list_distinct",
         ),
         pytest.param(
             col("d").array_distinct(),
             pa.array(
-                [[-1, 0, 1], [5, 10, 15, 20], [], None], type=pa.list_(pa.int64())
+                [[-1, 1, 0], [5, 10, 15, 20], [], None], type=pa.list_(pa.int64())
             ),
             id="array_distinct",
         ),
         pytest.param(
             col("d").cardinality(),
-            pa.array([3, 4, None, None], type=pa.uint64()),
+            pa.array([3, 4, 0, None], type=pa.uint64()),
             id="cardinality",
         ),
         pytest.param(

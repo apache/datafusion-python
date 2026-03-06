@@ -27,7 +27,12 @@ use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 use crate::table_provider::MyTableProvider;
 use crate::utils::ffi_logical_codec_from_pycapsule;
 
-#[pyclass(name = "MyTableFunction", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MyTableFunction",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub(crate) struct MyTableFunction {}
 

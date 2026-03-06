@@ -27,7 +27,13 @@ use crate::expr::logical_node::LogicalNode;
 use crate::expr::sort_expr::PySortExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "Sort", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Sort",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySort {
     sort: Sort,

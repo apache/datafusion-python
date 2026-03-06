@@ -21,26 +21,35 @@ version = "0.2.0"
 edition = "2024"
 
 [dependencies]
-datafusion-catalog = { version = "52", default-features = false }
-datafusion-common = { version = "52", default-features = false }
-datafusion-functions-aggregate = { version = "52" }
-datafusion-functions-window = { version = "52" }
-datafusion-expr = { version = "52" }
-datafusion-ffi = { version = "52" }
+datafusion-catalog = { version = "53", default-features = false }
+datafusion-common = { version = "53", default-features = false }
+datafusion-functions-aggregate = { version = "53" }
+datafusion-functions-window = { version = "53" }
+datafusion-expr = { version = "53" }
+datafusion-ffi = { version = "53" }
 
-pyo3 = { version = "0.26", features = [
+pyo3 = { version = "0.28", features = [
   "extension-module",
   "abi3",
   "abi3-py39",
 ] }
-arrow = { version = "57" }
-arrow-array = { version = "57" }
-arrow-schema = { version = "57" }
+arrow = { version = "58" }
+arrow-array = { version = "58" }
+arrow-schema = { version = "58" }
 async-trait = "0.1.89"
 
 [build-dependencies]
-pyo3-build-config = "0.26"
+pyo3-build-config = "0.28"
 
 [lib]
 name = "datafusion_ffi_example"
 crate-type = ["cdylib", "rlib"]
+
+# TODO: remove when datafusion-53 is released
+[patch.crates-io]
+datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }

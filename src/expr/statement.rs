@@ -31,6 +31,7 @@ use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "TransactionStart",
     module = "datafusion.expr",
@@ -67,6 +68,7 @@ impl LogicalNode for PyTransactionStart {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(
+    from_py_object,
     frozen,
     eq,
     eq_int,
@@ -100,6 +102,7 @@ impl TryFrom<PyTransactionAccessMode> for TransactionAccessMode {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(
+    from_py_object,
     frozen,
     eq,
     eq_int,
@@ -178,7 +181,13 @@ impl PyTransactionStart {
     }
 }
 
-#[pyclass(frozen, name = "TransactionEnd", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "TransactionEnd",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyTransactionEnd {
     transaction_end: TransactionEnd,
@@ -210,6 +219,7 @@ impl LogicalNode for PyTransactionEnd {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(
+    from_py_object,
     frozen,
     eq,
     eq_int,
@@ -259,7 +269,13 @@ impl PyTransactionEnd {
     }
 }
 
-#[pyclass(frozen, name = "ResetVariable", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ResetVariable",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyResetVariable {
     reset_variable: ResetVariable,
@@ -303,7 +319,13 @@ impl PyResetVariable {
     }
 }
 
-#[pyclass(frozen, name = "SetVariable", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "SetVariable",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PySetVariable {
     set_variable: SetVariable,
@@ -351,7 +373,13 @@ impl PySetVariable {
     }
 }
 
-#[pyclass(frozen, name = "Prepare", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Prepare",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyPrepare {
     prepare: Prepare,
@@ -416,7 +444,13 @@ impl PyPrepare {
     }
 }
 
-#[pyclass(frozen, name = "Execute", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Execute",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyExecute {
     execute: Execute,
@@ -473,7 +507,13 @@ impl PyExecute {
     }
 }
 
-#[pyclass(frozen, name = "Deallocate", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Deallocate",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyDeallocate {
     deallocate: Deallocate,
