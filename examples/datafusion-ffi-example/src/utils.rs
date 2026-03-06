@@ -15,13 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ptr::NonNull;
+
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use pyo3::exceptions::PyValueError;
 use pyo3::ffi::c_str;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult};
-use std::ptr::NonNull;
 
 pub(crate) fn ffi_logical_codec_from_pycapsule(
     obj: Bound<PyAny>,

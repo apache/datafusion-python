@@ -95,7 +95,7 @@ codegen-units = 1
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-proto = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-proto = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
