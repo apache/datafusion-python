@@ -37,6 +37,7 @@ arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
 async-trait = "0.1.89"
+pyo3-log = "0.13.2"
 
 [build-dependencies]
 pyo3-build-config = "0.28"
@@ -47,9 +48,9 @@ crate-type = ["cdylib", "rlib"]
 
 # TODO: remove when datafusion-53 is released
 [patch.crates-io]
-datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "518560246e87d489eba6d511fa167aa429b06728" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }

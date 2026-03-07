@@ -779,7 +779,8 @@ impl PyExpr {
                 | Operator::AtQuestion
                 | Operator::Question
                 | Operator::QuestionAnd
-                | Operator::QuestionPipe => Err(py_type_err(format!("Unsupported expr: ${op}"))),
+                | Operator::QuestionPipe
+                | Operator::Colon => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
