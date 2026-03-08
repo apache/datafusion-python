@@ -1275,6 +1275,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "datafusion-ffi-example"
+version = "0.2.0"
+dependencies = [
+ "arrow",
+ "arrow-array",
+ "arrow-schema",
+ "async-trait",
+ "datafusion-catalog",
+ "datafusion-common",
+ "datafusion-expr",
+ "datafusion-ffi",
+ "datafusion-functions-aggregate",
+ "datafusion-functions-window",
+ "pyo3",
+ "pyo3-build-config",
+]
+
+[[package]]
 name = "datafusion-functions"
 version = "53.0.0"
 source = "git+https://github.com/apache/datafusion.git?rev=35749607f585b3bf25b66b7d2289c56c18d03e4f#35749607f585b3bf25b66b7d2289c56c18d03e4f"
@@ -1598,6 +1616,7 @@ dependencies = [
  "datafusion",
  "datafusion-ffi",
  "datafusion-proto",
+ "datafusion-python-util",
  "datafusion-substrait",
  "futures",
  "log",
@@ -1614,6 +1633,18 @@ dependencies = [
  "tokio",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "datafusion-python-util"
+version = "52.0.0"
+dependencies = [
+ "arrow",
+ "datafusion",
+ "datafusion-ffi",
+ "prost",
+ "pyo3",
+ "tokio",
 ]
 
 [[package]]

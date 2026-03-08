@@ -1246,7 +1246,7 @@ impl PySessionContext {
 
     fn default_logical_codec(ctx: &Arc<SessionContext>) -> Arc<FFI_LogicalExtensionCodec> {
         let codec = Arc::new(DefaultLogicalExtensionCodec {});
-        let runtime = get_tokio_runtime().0.handle().clone();
+        let runtime = get_tokio_runtime().handle().clone();
         let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
         Arc::new(FFI_LogicalExtensionCodec::new(
             codec,

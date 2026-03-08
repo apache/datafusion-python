@@ -16,32 +16,16 @@
 # under the License.
 
 [package]
-name = "datafusion-ffi-example"
-version = "0.2.0"
+name = "datafusion-python-util"
+version = "52.0.0"
 edition = "2024"
-publish = false
+rust-version = "1.88"
+license = "Apache-2.0"
 
 [dependencies]
-datafusion-catalog = { workspace = true, default-features = false }
-datafusion-common = { workspace = true, default-features = false }
-datafusion-functions-aggregate = { workspace = true }
-datafusion-functions-window = { workspace = true }
-datafusion-expr = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+pyo3 = { workspace = true }
+datafusion = { workspace = true }
 datafusion-ffi = { workspace = true }
-
-pyo3 = { workspace = true, features = [
-  "extension-module",
-  "abi3",
-  "abi3-py39",
-] }
 arrow = { workspace = true }
-arrow-array = { workspace = true }
-arrow-schema = { workspace = true }
-async-trait = { workspace = true }
-
-[build-dependencies]
-pyo3-build-config = { workspace = true }
-
-[lib]
-name = "datafusion_ffi_example"
-crate-type = ["cdylib", "rlib"]
+prost = { workspace = true }
