@@ -22,26 +22,26 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 include = [
-    "src",
-    "datafusion",
-    "../LICENSE.txt",
-    "build.rs",
-    "../pyproject.toml",
-    "Cargo.toml",
-    "../Cargo.lock",
+  "src",
+  "datafusion",
+  "../LICENSE.txt",
+  "build.rs",
+  "../pyproject.toml",
+  "Cargo.toml",
+  "../Cargo.lock",
 ]
 
 [dependencies]
 tokio = { workspace = true, features = [
-    "macros",
-    "rt",
-    "rt-multi-thread",
-    "sync",
+  "macros",
+  "rt",
+  "rt-multi-thread",
+  "sync",
 ] }
 pyo3 = { workspace = true, features = [
-    "extension-module",
-    "abi3",
-    "abi3-py310",
+  "extension-module",
+  "abi3",
+  "abi3-py310",
 ] }
 pyo3-async-runtimes = { workspace = true, features = ["tokio-runtime"] }
 pyo3-log = { workspace = true }
@@ -55,17 +55,12 @@ prost = { workspace = true } # keep in line with `datafusion-substrait`
 serde_json = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 mimalloc = { workspace = true, optional = true, features = [
-    "local_dynamic_tls",
+  "local_dynamic_tls",
 ] }
 async-trait = { workspace = true }
 futures = { workspace = true }
 cstr = { workspace = true }
-object_store = { workspace = true, features = [
-    "aws",
-    "gcp",
-    "azure",
-    "http",
-] }
+object_store = { workspace = true, features = ["aws", "gcp", "azure", "http"] }
 url = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
@@ -83,4 +78,3 @@ substrait = ["dep:datafusion-substrait"]
 [lib]
 name = "datafusion_python"
 crate-type = ["cdylib", "rlib"]
-

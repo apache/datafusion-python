@@ -59,7 +59,7 @@ object_store = { version = "0.13.1" }
 url = "2"
 log = "0.4.29"
 parking_lot = "0.12"
-prost-types = "0.14.3" # keep in line with `datafusion-substrait`
+prost-types = "0.14.3"                                            # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.28"
 datafusion-python-util = { path = "crates/util" }
 
