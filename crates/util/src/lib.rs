@@ -210,3 +210,22 @@ pub fn create_logical_extension_capsule<'py>(
 
     PyCapsule::new(py, codec, Some(name))
 }
+
+pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_LogicalExtensionCodec> {
+    let attr_name = "__datafusion_logical_extension_codec__";
+    let capsule = if obj.hasattr(attr_name)? {
+        obj.getattr(attr_name)?.call0()?
+    } else {
+        obj
+    };
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
+
+    let data: NonNull<FFI_LogicalExtensionCodec> = capsule
+        .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
+
+    Ok(codec.clone())
+}

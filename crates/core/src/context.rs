@@ -52,6 +52,10 @@ use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
+use datafusion_python_util::{
+    create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
+    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
+};
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -82,10 +86,6 @@ use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{
-    create_logical_extension_capsule, extract_logical_extension_codec, get_global_ctx,
-    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
-};
 
 /// Configuration options for a SessionContext
 #[pyclass(
@@ -1187,8 +1187,7 @@ impl PySessionContext {
         &self,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let py = codec.py();
-        let logical_codec = extract_logical_extension_codec(py, Some(codec))?;
+        let logical_codec = Arc::new(ffi_logical_codec_from_pycapsule(codec)?);
 
         Ok({
             Self {

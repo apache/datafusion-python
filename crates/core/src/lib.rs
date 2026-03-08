@@ -62,7 +62,6 @@ mod udaf;
 mod udf;
 pub mod udtf;
 mod udwf;
-pub mod utils;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]

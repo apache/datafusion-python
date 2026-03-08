@@ -22,13 +22,13 @@ use arrow::array::{Array, ArrayRef};
 use arrow::datatypes::{Field, FieldRef};
 use arrow::ffi::{FFI_ArrowArray, FFI_ArrowSchema};
 use arrow::pyarrow::ToPyArrow;
+use datafusion_python_util::validate_pycapsule;
 use pyo3::ffi::c_str;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::errors::PyDataFusionResult;
-use crate::utils::validate_pycapsule;
 
 /// A Python object which implements the Arrow PyCapsule for importing
 /// into other libraries.

@@ -1288,6 +1288,7 @@ dependencies = [
  "datafusion-ffi",
  "datafusion-functions-aggregate",
  "datafusion-functions-window",
+ "datafusion-python-util",
  "pyo3",
  "pyo3-build-config",
 ]

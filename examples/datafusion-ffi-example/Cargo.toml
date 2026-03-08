@@ -38,6 +38,7 @@ arrow = { workspace = true }
 arrow-array = { workspace = true }
 arrow-schema = { workspace = true }
 async-trait = { workspace = true }
+datafusion-python-util.workspace = true
 
 [build-dependencies]
 pyo3-build-config = { workspace = true }
