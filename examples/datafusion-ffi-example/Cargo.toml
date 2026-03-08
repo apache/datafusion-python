@@ -17,8 +17,8 @@
 
 [package]
 name = "datafusion-ffi-example"
-version = "0.2.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 publish = false
 
 [dependencies]
@@ -32,7 +32,7 @@ datafusion-ffi = { workspace = true }
 pyo3 = { workspace = true, features = [
   "extension-module",
   "abi3",
-  "abi3-py39",
+  "abi3-py310",
 ] }
 arrow = { workspace = true }
 arrow-array = { workspace = true }
