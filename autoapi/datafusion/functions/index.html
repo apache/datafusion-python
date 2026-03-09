@@ -418,6 +418,11 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#attributes">
+   Attributes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#functions">
    Functions
   </a>
@@ -2444,10 +2449,46 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.to_char">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       to_char()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.to_date">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       to_date()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.functions.to_hex">
      <code class="docutils literal notranslate">
       <span class="pre">
        to_hex()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.to_local_time">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       to_local_time()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.to_time">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       to_time()
       </span>
      </code>
     </a>
@@ -2605,6 +2646,15 @@
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.today">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       today
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -2631,6 +2681,16 @@
   <section id="module-datafusion.functions">
 <span id="datafusion-functions"></span><h1>datafusion.functions<a class="headerlink" href="#module-datafusion.functions" title="Link to this heading">¶</a></h1>
 <p>User functions for operating on <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.today" title="datafusion.functions.today"><code class="xref py py-obj docutils literal notranslate"><span class="pre">today</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
@@ -3307,8 +3367,20 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.tanh" title="datafusion.functions.tanh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tanh</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the hyperbolic tangent of the argument.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_char" title="datafusion.functions.to_char"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_char</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Returns a string representation of a date, time, timestamp or duration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_date" title="datafusion.functions.to_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_date</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Converts a value to a date (YYYY-MM-DD).</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_hex" title="datafusion.functions.to_hex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_hex</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts an integer to a hexadecimal string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_local_time" title="datafusion.functions.to_local_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_local_time</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Converts a timestamp with a timezone to a timestamp without a timezone.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_time" title="datafusion.functions.to_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_time</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Converts a value to a time. Supports strings and timestamps as input.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp" title="datafusion.functions.to_timestamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in nanoseconds.</p></td>
@@ -5536,9 +5608,46 @@ the options <code class="docutils literal notranslate"><span class="pre">order_b
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.to_char">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_char</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_char" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a string representation of a date, time, timestamp or duration.</p>
+<p>For usage of <code class="docutils literal notranslate"><span class="pre">formatter</span></code> see the rust chrono package <code class="docutils literal notranslate"><span class="pre">strftime</span></code> package.</p>
+<p>[Documentation here.](<a class="reference external" href="https://docs.rs/chrono/latest/chrono/format/strftime/index.html">https://docs.rs/chrono/latest/chrono/format/strftime/index.html</a>)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.to_date">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_date" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a value to a date (YYYY-MM-DD).</p>
+<p>Supports strings, numeric and timestamp types as input.
+Integers and doubles are interpreted as days since the unix epoch.
+Strings are parsed as YYYY-MM-DD (e.g. ‘2023-07-20’)
+if <code class="docutils literal notranslate"><span class="pre">formatters</span></code> are not provided.</p>
+<p>For usage of <code class="docutils literal notranslate"><span class="pre">formatters</span></code> see the rust chrono package <code class="docutils literal notranslate"><span class="pre">strftime</span></code> package.</p>
+<p>[Documentation here.](<a class="reference external" href="https://docs.rs/chrono/latest/chrono/format/strftime/index.html">https://docs.rs/chrono/latest/chrono/format/strftime/index.html</a>)</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.to_hex">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_hex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_hex" title="Link to this definition">¶</a></dt>
 <dd><p>Converts an integer to a hexadecimal string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.to_local_time">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_local_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_local_time" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a timestamp with a timezone to a timestamp without a timezone.</p>
+<p>This function handles daylight saving time changes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.to_time">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_time" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a value to a time. Supports strings and timestamps as input.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">formatters</span></code> is not provided strings are parsed as HH:MM:SS, HH:MM or
+HH:MM:SS.nnnnnnnnn;</p>
+<p>For usage of <code class="docutils literal notranslate"><span class="pre">formatters</span></code> see the rust chrono package <code class="docutils literal notranslate"><span class="pre">strftime</span></code> package.</p>
+<p>[Documentation here.](<a class="reference external" href="https://docs.rs/chrono/latest/chrono/format/strftime/index.html">https://docs.rs/chrono/latest/chrono/format/strftime/index.html</a>)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -5683,6 +5792,11 @@ lag use:</p>
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.functions.today">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">today</span></span><a class="headerlink" href="#datafusion.functions.today" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 </section>

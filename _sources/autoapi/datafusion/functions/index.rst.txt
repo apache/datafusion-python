@@ -9,6 +9,14 @@ datafusion.functions
 
 
 
+Attributes
+----------
+
+.. autoapisummary::
+
+   datafusion.functions.today
+
+
 Functions
 ---------
 
@@ -238,7 +246,11 @@ Functions
    datafusion.functions.sum
    datafusion.functions.tan
    datafusion.functions.tanh
+   datafusion.functions.to_char
+   datafusion.functions.to_date
    datafusion.functions.to_hex
+   datafusion.functions.to_local_time
+   datafusion.functions.to_time
    datafusion.functions.to_timestamp
    datafusion.functions.to_timestamp_micros
    datafusion.functions.to_timestamp_millis
@@ -2122,9 +2134,51 @@ Module Contents
    Returns the hyperbolic tangent of the argument.
 
 
+.. py:function:: to_char(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a string representation of a date, time, timestamp or duration.
+
+   For usage of ``formatter`` see the rust chrono package ``strftime`` package.
+
+   [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+
+.. py:function:: to_date(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a value to a date (YYYY-MM-DD).
+
+   Supports strings, numeric and timestamp types as input.
+   Integers and doubles are interpreted as days since the unix epoch.
+   Strings are parsed as YYYY-MM-DD (e.g. '2023-07-20')
+   if ``formatters`` are not provided.
+
+   For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+   [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+
 .. py:function:: to_hex(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts an integer to a hexadecimal string.
+
+
+.. py:function:: to_local_time(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a timestamp with a timezone to a timestamp without a timezone.
+
+   This function handles daylight saving time changes.
+
+
+.. py:function:: to_time(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a value to a time. Supports strings and timestamps as input.
+
+   If ``formatters`` is not provided strings are parsed as HH:MM:SS, HH:MM or
+   HH:MM:SS.nnnnnnnnn;
+
+   For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+   [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
 
 
 .. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2253,4 +2307,6 @@ Module Contents
 
        window("lag", [col("a")], order_by="ts")
 
+
+.. py:data:: today
 
