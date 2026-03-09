@@ -601,6 +601,9 @@ expr_fn!(
     "Converts the number to its equivalent hexadecimal representation."
 );
 expr_fn!(now);
+expr_fn_vec!(to_date);
+expr_fn_vec!(to_local_time);
+expr_fn_vec!(to_time);
 expr_fn_vec!(to_timestamp);
 expr_fn_vec!(to_timestamp_millis);
 expr_fn_vec!(to_timestamp_nanos);
@@ -613,6 +616,7 @@ expr_fn!(date_part, part date);
 expr_fn!(date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
 expr_fn!(make_date, year month day);
+expr_fn!(to_char, datetime format);
 
 expr_fn!(translate, string from to, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
 expr_fn_vec!(
@@ -1045,6 +1049,10 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(tan))?;
     m.add_wrapped(wrap_pyfunction!(tanh))?;
     m.add_wrapped(wrap_pyfunction!(to_hex))?;
+    m.add_wrapped(wrap_pyfunction!(to_char))?;
+    m.add_wrapped(wrap_pyfunction!(to_date))?;
+    m.add_wrapped(wrap_pyfunction!(to_local_time))?;
+    m.add_wrapped(wrap_pyfunction!(to_time))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_millis))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_nanos))?;
