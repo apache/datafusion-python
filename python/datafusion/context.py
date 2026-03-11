@@ -37,6 +37,7 @@ from datafusion.catalog import (
     CatalogProviderExportable,
     CatalogProviderList,
     CatalogProviderListExportable,
+    TableProviderFactory,
     TableProviderFactoryExportable,
 )
 from datafusion.dataframe import DataFrame
@@ -832,7 +833,9 @@ class SessionContext:
         self.ctx.deregister_table(name)
 
     def register_table_factory(
-        self, format: str, factory: TableProviderFactoryExportable
+        self,
+        format: str,
+        factory: TableProviderFactory | TableProviderFactoryExportable,
     ) -> None:
         """Register a :py:class:`~datafusion.TableProviderFactoryExportable`.
 

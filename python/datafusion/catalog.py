@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
     from datafusion import DataFrame, SessionContext
     from datafusion.context import TableProviderExportable
+    from datafusion.expr import CreateExternalTable
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -241,6 +242,15 @@ class Table:
     def kind(self) -> str:
         """Returns the kind of table."""
         return self._inner.kind
+
+
+class TableProviderFactory(ABC):
+    """Abstract class for defining a Python based Table Provider Factory."""
+
+    @abstractmethod
+    def create(self, cmd: CreateExternalTable) -> Table:
+        """Create a table using the :class:`CreateExternalTable`."""
+        ...
 
 
 class TableProviderFactoryExportable(Protocol):
