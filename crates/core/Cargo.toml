@@ -26,7 +26,6 @@ homepage.workspace = true
 repository.workspace = true
 include = [
   "src",
-  "datafusion",
   "../LICENSE.txt",
   "build.rs",
   "../pyproject.toml",
