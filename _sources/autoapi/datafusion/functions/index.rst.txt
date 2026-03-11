@@ -287,15 +287,26 @@ Module Contents
 
    Returns the arc cosine or inverse cosine of a number.
 
-   Returns:
-   --------
-   Expr
-       A new expression representing the arc cosine of the input expression.
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0]})
+   >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+   >>> result.collect_column("acos")[0].as_py()
+   0.0
 
 
 .. py:function:: acosh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns inverse hyperbolic cosine.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0]})
+   >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+   >>> result.collect_column("acosh")[0].as_py()
+   0.0
 
 
 .. py:function:: alias(expr: datafusion.expr.Expr, name: str, metadata: dict[str, str] | None = None) -> datafusion.expr.Expr
@@ -635,25 +646,66 @@ Module Contents
 
    Returns the arc sine or inverse sine of a number.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+   >>> result.collect_column("asin")[0].as_py()
+   0.0
+
 
 .. py:function:: asinh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns inverse hyperbolic sine.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+   >>> result.collect_column("asinh")[0].as_py()
+   0.0
 
 
 .. py:function:: atan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns inverse tangent of a number.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+   >>> result.collect_column("atan")[0].as_py()
+   0.0
+
 
 .. py:function:: atan2(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns inverse tangent of a division given in the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+   >>> result = df.select(
+   ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+   >>> result.collect_column("atan2")[0].as_py()
+   0.0
+
 
 .. py:function:: atanh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns inverse hyperbolic tangent.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+   >>> result.collect_column("atanh")[0].as_py()
+   0.0
 
 
 .. py:function:: avg(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -828,15 +880,45 @@ Module Contents
 
    Returns the cosine of the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0,-1,1]})
+   >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+   >>> cos_df.collect_column("cos")[0].as_py()
+   1.0
+
 
 .. py:function:: cosh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the hyperbolic cosine of the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0,-1,1]})
+   >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+   >>> cosh_df.collect_column("cosh")[0].as_py()
+   1.0
+
 
 .. py:function:: cot(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the cotangent of the argument.
+
+   Examples:
+   ---------
+   >>> from math import pi
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [pi / 4]})
+   >>> import builtins
+   >>> result = df.select(
+   ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+   ... )
+   >>> builtins.round(
+   ...     result.collect_column("cot")[0].as_py(), 1
+   ... )
+   1.0
 
 
 .. py:function:: count(expressions: datafusion.expr.Expr | list[datafusion.expr.Expr] | None = None, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -974,6 +1056,15 @@ Module Contents
 .. py:function:: degrees(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts the argument from radians to degrees.
+
+   Examples:
+   ---------
+   >>> from math import pi
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+   >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+   >>> deg_df.collect_column("deg")[2].as_py()
+   360.0
 
 
 .. py:function:: dense_rank(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -1689,6 +1780,20 @@ Module Contents
 
    Converts the argument from degrees to radians.
 
+   Examples:
+   ---------
+   >>> from math import pi
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [180.0]})
+   >>> import builtins
+   >>> result = df.select(
+   ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+   ... )
+   >>> builtins.round(
+   ...     result.collect_column("rad")[0].as_py(), 6
+   ... )
+   3.141593
+
 
 .. py:function:: random() -> datafusion.expr.Expr
 
@@ -2008,10 +2113,26 @@ Module Contents
 
    Returns the sine of the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+   >>> result.collect_column("sin")[0].as_py()
+   0.0
+
 
 .. py:function:: sinh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the hyperbolic sine of the argument.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+   >>> result.collect_column("sinh")[0].as_py()
+   0.0
 
 
 .. py:function:: split_part(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, index: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2128,10 +2249,26 @@ Module Contents
 
    Returns the tangent of the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+   >>> result.collect_column("tan")[0].as_py()
+   0.0
+
 
 .. py:function:: tanh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the hyperbolic tangent of the argument.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+   >>> result.collect_column("tanh")[0].as_py()
+   0.0
 
 
 .. py:function:: to_char(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr) -> datafusion.expr.Expr
