@@ -42,7 +42,6 @@ except ImportError:
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
-
 __all__ = [
     "abs",
     "acos",
@@ -268,13 +267,18 @@ __all__ = [
     "sum",
     "tan",
     "tanh",
+    "to_char",
+    "to_date",
     "to_hex",
+    "to_local_time",
+    "to_time",
     "to_timestamp",
     "to_timestamp_micros",
     "to_timestamp_millis",
     "to_timestamp_nanos",
     "to_timestamp_seconds",
     "to_unixtime",
+    "today",
     "translate",
     "trim",
     "trunc",
@@ -684,7 +688,6 @@ def acos(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [1.0]})
     >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
@@ -699,7 +702,6 @@ def acosh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [1.0]})
     >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
@@ -729,7 +731,6 @@ def asin(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
@@ -744,7 +745,6 @@ def asinh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
@@ -759,7 +759,6 @@ def atan(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
@@ -774,7 +773,6 @@ def atanh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
@@ -789,12 +787,10 @@ def atan2(y: Expr, x: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
     >>> result = df.select(
     ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result = result
     >>> result.collect_column("atan2")[0].as_py()
     0.0
     """
@@ -945,7 +941,6 @@ def cos(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0,-1,1]})
     >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
@@ -960,7 +955,6 @@ def cosh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0,-1,1]})
     >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
@@ -976,7 +970,6 @@ def cot(arg: Expr) -> Expr:
     Examples:
     ---------
     >>> from math import pi
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [pi / 4]})
     >>> import builtins
@@ -997,7 +990,6 @@ def degrees(arg: Expr) -> Expr:
     Examples:
     ---------
     >>> from math import pi
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
     >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
@@ -1486,7 +1478,6 @@ def radians(arg: Expr) -> Expr:
     Examples:
     ---------
     >>> from math import pi
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [180.0]})
     >>> import builtins
@@ -1857,7 +1848,6 @@ def sin(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
@@ -1872,7 +1862,6 @@ def sinh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
@@ -2009,7 +1998,6 @@ def tan(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
@@ -2024,7 +2012,6 @@ def tanh(arg: Expr) -> Expr:
 
     Examples:
     ---------
-    >>> import datafusion as dfn
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [0.0]})
     >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
@@ -2072,6 +2059,56 @@ def now() -> Expr:
     return Expr(f.now())
 
 
+def to_char(arg: Expr, formatter: Expr) -> Expr:
+    """Returns a string representation of a date, time, timestamp or duration.
+
+    For usage of ``formatter`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    return Expr(f.to_char(arg.expr, formatter.expr))
+
+
+def _unwrap_exprs(args: tuple[Expr, ...]) -> list:
+    return [arg.expr for arg in args]
+
+
+def to_date(arg: Expr, *formatters: Expr) -> Expr:
+    """Converts a value to a date (YYYY-MM-DD).
+
+    Supports strings, numeric and timestamp types as input.
+    Integers and doubles are interpreted as days since the unix epoch.
+    Strings are parsed as YYYY-MM-DD (e.g. '2023-07-20')
+    if ``formatters`` are not provided.
+
+    For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    return Expr(f.to_date(arg.expr, *_unwrap_exprs(formatters)))
+
+
+def to_local_time(*args: Expr) -> Expr:
+    """Converts a timestamp with a timezone to a timestamp without a timezone.
+
+    This function handles daylight saving time changes.
+    """
+    return Expr(f.to_local_time(*_unwrap_exprs(args)))
+
+
+def to_time(arg: Expr, *formatters: Expr) -> Expr:
+    """Converts a value to a time. Supports strings and timestamps as input.
+
+    If ``formatters`` is not provided strings are parsed as HH:MM:SS, HH:MM or
+    HH:MM:SS.nnnnnnnnn;
+
+    For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
+    return Expr(f.to_time(arg.expr, *_unwrap_exprs(formatters)))
+
+
 def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -2092,11 +2129,7 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     >>> str(result.collect_column("ts")[0].as_py())
     '2021-01-01 00:00:00'
     """
-    if formatters is None:
-        return f.to_timestamp(arg.expr)
-
-    formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp(arg.expr, *formatters))
+    return Expr(f.to_timestamp(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
@@ -2117,8 +2150,7 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
     >>> str(result.collect_column("ts")[0].as_py())
     '2021-01-01 00:00:00'
     """
-    formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_millis(arg.expr, *formatters))
+    return Expr(f.to_timestamp_millis(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
@@ -2139,8 +2171,7 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
     >>> str(result.collect_column("ts")[0].as_py())
     '2021-01-01 00:00:00'
     """
-    formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_micros(arg.expr, *formatters))
+    return Expr(f.to_timestamp_micros(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
@@ -2161,8 +2192,7 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
     >>> str(result.collect_column("ts")[0].as_py())
     '2021-01-01 00:00:00'
     """
-    formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_nanos(arg.expr, *formatters))
+    return Expr(f.to_timestamp_nanos(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
@@ -2183,8 +2213,7 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
     >>> str(result.collect_column("ts")[0].as_py())
     '2021-01-01 00:00:00'
     """
-    formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_seconds(arg.expr, *formatters))
+    return Expr(f.to_timestamp_seconds(arg.expr, *_unwrap_exprs(formatters)))
 
 
 def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
@@ -2199,8 +2228,7 @@ def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
     >>> result.collect_column("u")[0].as_py()
     0
     """
-    args = [f.expr for f in format_arguments]
-    return Expr(f.to_unixtime(string.expr, *args))
+    return Expr(f.to_unixtime(string.expr, *_unwrap_exprs(format_arguments)))
 
 
 def current_date() -> Expr:
@@ -2218,6 +2246,9 @@ def current_date() -> Expr:
     True
     """
     return Expr(f.current_date())
+
+
+today = current_date
 
 
 def current_time() -> Expr:

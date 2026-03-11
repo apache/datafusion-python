@@ -17,6 +17,7 @@
 
 use std::any::Any;
 use std::ops::Range;
+use std::ptr::NonNull;
 use std::sync::Arc;
 
 use arrow::array::{Array, ArrayData, ArrayRef, make_array};
@@ -32,6 +33,7 @@ use datafusion::logical_expr::{
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
 use pyo3::exceptions::PyValueError;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
 
@@ -209,7 +211,13 @@ pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFa
 }
 
 /// Represents an WindowUDF
-#[pyclass(frozen, name = "WindowUDF", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "WindowUDF",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyWindowUDF {
     pub(crate) function: WindowUDF,
@@ -254,10 +262,13 @@ impl PyWindowUDF {
             func
         };
 
-        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
         validate_pycapsule(capsule, "datafusion_window_udf")?;
 
-        let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
+        let data: NonNull<FFI_WindowUDF> = capsule
+            .pointer_checked(Some(c_str!("datafusion_window_udf")))?
+            .cast();
+        let udwf = unsafe { data.as_ref() };
         let udwf: Arc<dyn WindowUDFImpl> = udwf.into();
 
         Ok(Self {

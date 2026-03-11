@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 
 import numpy as np
 import pyarrow as pa
@@ -307,12 +307,12 @@ def py_flatten(arr):
             lambda data: [[len(r)] for r in data],
         ),
         (
-            f.array_distinct,
-            lambda data: [list(set(r)) for r in data],
+            lambda col: f.array_sort(f.array_distinct(col)),
+            lambda data: [sorted(set(r)) for r in data],
         ),
         (
-            f.list_distinct,
-            lambda data: [list(set(r)) for r in data],
+            lambda col: f.list_sort(f.list_distinct(col)),
+            lambda data: [sorted(set(r)) for r in data],
         ),
         (
             f.list_dims,
@@ -519,19 +519,19 @@ def py_flatten(arr):
             lambda data: [arr[1:4:2] for arr in data],
         ),
         (
-            lambda col: f.array_intersect(col, literal([3.0, 4.0])),
+            lambda col: f.array_sort(f.array_intersect(col, literal([3.0, 4.0]))),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
         (
-            lambda col: f.list_intersect(col, literal([3.0, 4.0])),
+            lambda col: f.list_sort(f.list_intersect(col, literal([3.0, 4.0]))),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
         (
-            lambda col: f.array_union(col, literal([12.0, 999.0])),
+            lambda col: f.array_sort(f.array_union(col, literal([12.0, 999.0]))),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
         ),
         (
-            lambda col: f.list_union(col, literal([12.0, 999.0])),
+            lambda col: f.list_sort(f.list_union(col, literal([12.0, 999.0]))),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
         ),
         (
@@ -697,7 +697,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.initcap(column("c")),
             pa.array(["Hello ", " World ", " !"], type=pa.string_view()),
         ),
-        (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
+        (
+            f.left(column("a"), literal(3)),
+            pa.array(["Hel", "Wor", "!"], type=pa.string_view()),
+        ),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
         (f.lower(column("a")), pa.array(["hello", "world", "!"])),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
@@ -726,7 +729,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             pa.array(["He??o", "Wor?d", "!"]),
         ),
         (f.reverse(column("a")), pa.array(["olleH", "dlroW", "!"])),
-        (f.right(column("a"), literal(4)), pa.array(["ello", "orld", "!"])),
+        (
+            f.right(column("a"), literal(4)),
+            pa.array(["ello", "orld", "!"], type=pa.string_view()),
+        ),
         (
             f.rpad(column("a"), literal(8)),
             pa.array(["Hello   ", "World   ", "!       "]),
@@ -952,6 +958,12 @@ def test_temporal_functions(df):
         f.to_timestamp_nanos(
             literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
         ),
+        f.to_time(literal("12:30:45")),
+        f.to_time(literal("12-30-45"), literal("%H-%M-%S")),
+        f.to_date(literal("2017-05-31")),
+        f.to_date(literal("2017-05-31"), literal("%Y-%m-%d")),
+        f.to_local_time(column("d")),
+        f.to_char(column("d"), literal("%d-%m-%Y")),
     )
     result = df.collect()
     assert len(result) == 1
@@ -964,7 +976,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 1, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 1, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns", tz=DEFAULT_TZ),
+        type=pa.timestamp("us", tz=DEFAULT_TZ),
     )
     assert result.column(3) == pa.array(
         [
@@ -972,7 +984,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns", tz=DEFAULT_TZ),
+        type=pa.timestamp("us", tz=DEFAULT_TZ),
     )
     assert result.column(4) == pa.array(
         [
@@ -1026,6 +1038,73 @@ def test_temporal_functions(df):
         [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
         type=pa.timestamp("ns"),
     )
+    assert result.column(17) == pa.array(
+        [time(12, 30, 45)] * 3,
+        type=pa.time64("ns"),
+    )
+    assert result.column(18) == pa.array(
+        [time(12, 30, 45)] * 3,
+        type=pa.time64("ns"),
+    )
+    assert result.column(19) == pa.array(
+        [date(2017, 5, 31)] * 3,
+        type=pa.date32(),
+    )
+    assert result.column(20) == pa.array(
+        [date(2017, 5, 31)] * 3,
+        type=pa.date32(),
+    )
+    assert result.column(21) == pa.array(
+        [
+            datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+            datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
+            datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
+        ],
+        type=pa.timestamp("us"),
+    )
+
+    assert result.column(22) == pa.array(
+        [
+            "31-12-2022",
+            "26-06-2027",
+            "02-07-2020",
+        ],
+        type=pa.string(),
+    )
+
+
+def test_to_time_invalid_input(df):
+    with pytest.raises(Exception, match=r"Error parsing 'not-a-time' as time"):
+        df.select(f.to_time(literal("not-a-time"))).collect()
+
+
+def test_to_time_mismatched_formatter(df):
+    with pytest.raises(Exception, match=r"Error parsing '12:30:45' as time"):
+        df.select(f.to_time(literal("12:30:45"), literal("%Y-%m-%d"))).collect()
+
+
+def test_to_date_invalid_input(df):
+    with pytest.raises(Exception, match=r"Date32"):
+        df.select(f.to_date(literal("not-a-date"))).collect()
+
+
+def test_temporal_formatter_requires_expr():
+    with pytest.raises(AttributeError, match="'str' object has no attribute 'expr'"):
+        f.to_time(literal("12:30:45"), "not-an-expr")
+
+
+def test_today_returns_date32(df):
+    result = df.select(f.today().alias("today")).collect()[0]
+    assert result.column(0).type == pa.date32()
+
+
+def test_today_alias_matches_current_date(df):
+    result = df.select(
+        f.current_date().alias("current_date"),
+        f.today().alias("today"),
+    ).collect()[0]
+
+    assert result.column(0) == result.column(1)
 
 
 def test_arrow_cast(df):

@@ -27,7 +27,13 @@ use crate::expr::PyExpr;
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "Projection", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Projection",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyProjection {
     pub projection: Projection,

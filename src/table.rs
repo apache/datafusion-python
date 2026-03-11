@@ -38,7 +38,13 @@ use crate::utils::table_provider_from_pycapsule;
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known
 /// implementation, a dataset, or a dataframe view.
-#[pyclass(frozen, name = "RawTable", module = "datafusion.catalog", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RawTable",
+    module = "datafusion.catalog",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyTable {
     pub table: Arc<dyn TableProvider>,
@@ -68,7 +74,7 @@ impl PyTable {
             Ok(py_table)
         } else if let Ok(py_table) = obj
             .getattr("_inner")
-            .and_then(|inner| inner.extract::<PyTable>())
+            .and_then(|inner| inner.extract::<PyTable>().map_err(Into::<PyErr>::into))
         {
             Ok(py_table)
         } else if let Ok(py_df) = obj.extract::<PyDataFrame>() {
@@ -76,7 +82,7 @@ impl PyTable {
             Ok(PyTable::from(provider))
         } else if let Ok(py_df) = obj
             .getattr("df")
-            .and_then(|inner| inner.extract::<PyDataFrame>())
+            .and_then(|inner| inner.extract::<PyDataFrame>().map_err(Into::<PyErr>::into))
         {
             let provider = py_df.inner_df().as_ref().clone().into_view();
             Ok(PyTable::from(provider))

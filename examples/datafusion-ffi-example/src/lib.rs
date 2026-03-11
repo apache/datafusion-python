@@ -34,6 +34,8 @@ pub(crate) mod window_udf;
 
 #[pymodule]
 fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    pyo3_log::init();
+
     m.add_class::<MyTableProvider>()?;
     m.add_class::<MyTableFunction>()?;
     m.add_class::<MyCatalogProvider>()?;

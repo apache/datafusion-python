@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use crate::expr::PyExpr;
 
-#[pyclass(frozen, name = "Between", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Between",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyBetween {
     between: Between,

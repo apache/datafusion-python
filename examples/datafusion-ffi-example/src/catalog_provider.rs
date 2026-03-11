@@ -60,6 +60,7 @@ pub fn my_table() -> Arc<dyn TableProvider + 'static> {
 }
 
 #[pyclass(
+    skip_from_py_object,
     name = "FixedSchemaProvider",
     module = "datafusion_ffi_example",
     subclass
@@ -138,6 +139,7 @@ impl SchemaProvider for FixedSchemaProvider {
 /// This catalog provider is intended only for unit tests. It prepopulates with one
 /// schema and only allows for schemas named after four types of fruit.
 #[pyclass(
+    skip_from_py_object,
     name = "MyCatalogProvider",
     module = "datafusion_ffi_example",
     subclass
@@ -208,6 +210,7 @@ impl MyCatalogProvider {
 /// This catalog provider list is intended only for unit tests.
 /// It pre-populates with a single catalog.
 #[pyclass(
+    skip_from_py_object,
     name = "MyCatalogProviderList",
     module = "datafusion_ffi_example",
     subclass

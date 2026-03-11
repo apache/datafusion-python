@@ -47,7 +47,7 @@ impl Dataset {
         // Ensure that we were passed an instance of pyarrow.dataset.Dataset
         let ds = PyModule::import(py, "pyarrow.dataset")?;
         let ds_attr = ds.getattr("Dataset")?;
-        let ds_type = ds_attr.downcast::<PyType>()?;
+        let ds_type = ds_attr.cast::<PyType>()?;
         if dataset.is_instance(ds_type)? {
             Ok(Dataset {
                 dataset: dataset.clone().unbind(),

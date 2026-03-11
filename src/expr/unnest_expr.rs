@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use super::PyExpr;
 
-#[pyclass(frozen, name = "UnnestExpr", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "UnnestExpr",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyUnnestExpr {
     unnest: Unnest,

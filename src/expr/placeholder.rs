@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use crate::common::data_type::PyDataType;
 
-#[pyclass(frozen, name = "Placeholder", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Placeholder",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyPlaceholder {
     placeholder: Placeholder,

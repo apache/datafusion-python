@@ -27,7 +27,13 @@ use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
-#[pyclass(frozen, name = "Plan", module = "datafusion.substrait", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Plan",
+    module = "datafusion.substrait",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyPlan {
     pub plan: Plan,
@@ -72,7 +78,13 @@ impl From<Plan> for PyPlan {
 /// A PySubstraitSerializer is a representation of a Serializer that is capable of both serializing
 /// a `LogicalPlan` instance to Substrait Protobuf bytes and also deserialize Substrait Protobuf bytes
 /// to a valid `LogicalPlan` instance.
-#[pyclass(frozen, name = "Serde", module = "datafusion.substrait", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Serde",
+    module = "datafusion.substrait",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitSerializer;
 
@@ -96,7 +108,7 @@ impl PySubstraitSerializer {
         py: Python,
     ) -> PyDataFusionResult<PyPlan> {
         PySubstraitSerializer::serialize_bytes(sql, ctx, py).and_then(|proto_bytes| {
-            let proto_bytes = proto_bytes.bind(py).downcast::<PyBytes>().unwrap();
+            let proto_bytes = proto_bytes.bind(py).cast::<PyBytes>().unwrap();
             PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
         })
     }
@@ -125,7 +137,13 @@ impl PySubstraitSerializer {
     }
 }
 
-#[pyclass(frozen, name = "Producer", module = "datafusion.substrait", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Producer",
+    module = "datafusion.substrait",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitProducer;
 
@@ -142,7 +160,13 @@ impl PySubstraitProducer {
     }
 }
 
-#[pyclass(frozen, name = "Consumer", module = "datafusion.substrait", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Consumer",
+    module = "datafusion.substrait",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitConsumer;
 

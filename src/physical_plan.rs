@@ -27,7 +27,13 @@ use pyo3::types::PyBytes;
 use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
 
-#[pyclass(frozen, name = "ExecutionPlan", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ExecutionPlan",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyExecutionPlan {
     pub plan: Arc<dyn ExecutionPlan>,
@@ -77,7 +83,7 @@ impl PyExecutionPlan {
         ctx: PySessionContext,
         proto_msg: Bound<'_, PyBytes>,
     ) -> PyDataFusionResult<Self> {
-        let bytes: &[u8] = proto_msg.extract()?;
+        let bytes: &[u8] = proto_msg.extract().map_err(Into::<PyErr>::into)?;
         let proto_plan =
             datafusion_proto::protobuf::PhysicalPlanNode::decode(bytes).map_err(|e| {
                 PyRuntimeError::new_err(format!(

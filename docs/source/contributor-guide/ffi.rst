@@ -156,7 +156,7 @@ instead of mutating the container directly:
 
 .. code-block:: rust
 
-    #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
+    #[pyclass(from_py_object, name = "Config", module = "datafusion", subclass, frozen)]
     #[derive(Clone)]
     pub(crate) struct PyConfig {
         config: Arc<RwLock<ConfigOptions>>,
@@ -170,7 +170,7 @@ existing instance in place:
 
 .. code-block:: rust
 
-    #[pyclass(frozen, name = "SessionContext", module = "datafusion", subclass)]
+    #[pyclass(from_py_object, frozen, name = "SessionContext", module = "datafusion", subclass)]
     #[derive(Clone)]
     pub struct PySessionContext {
         pub ctx: SessionContext,
@@ -186,7 +186,7 @@ field updates:
 
     // TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now
     #[derive(Debug, Clone)]
-    #[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
+    #[pyclass(from_py_object, name = "DataTypeMap", module = "datafusion.common", subclass)]
     pub struct DataTypeMap {
         #[pyo3(get, set)]
         pub arrow_type: PyDataType,
@@ -232,8 +232,11 @@ can then be turned into a ``ForeignTableProvider`` the associated code is:
 
 .. code-block:: rust
 
-    let capsule = capsule.downcast::<PyCapsule>()?;
-    let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+    let capsule = capsule.cast::<PyCapsule>()?;
+    let data: NonNull<FFI_TableProvider> = capsule
+        .pointer_checked(Some(name))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
 
 By convention the ``datafusion-python`` library expects a Python object that has a
 ``TableProvider`` PyCapsule to have this capsule accessible by calling a function named

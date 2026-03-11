@@ -141,14 +141,14 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         ),
         (
             f.approx_percentile_cont_with_weight(column("b"), lit(0.6), 0.5),
-            pa.array([6], type=pa.float64()),
+            pa.array([4], type=pa.float64()),
             False,
         ),
         (
             f.approx_percentile_cont_with_weight(
                 column("b").sort(ascending=False, nulls_first=False), lit(0.6), 0.5
             ),
-            pa.array([6], type=pa.float64()),
+            pa.array([4], type=pa.float64()),
             False,
         ),
         (

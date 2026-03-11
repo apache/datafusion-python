@@ -23,6 +23,7 @@ use pyo3::prelude::*;
 use crate::expr::PyExpr;
 
 #[pyclass(
+    from_py_object,
     frozen,
     name = "AggregateFunction",
     module = "datafusion.expr",

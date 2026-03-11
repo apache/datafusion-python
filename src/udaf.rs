@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ptr::NonNull;
 use std::sync::Arc;
 
 use datafusion::arrow::array::ArrayRef;
@@ -26,6 +27,7 @@ use datafusion::logical_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, create_udaf,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -157,14 +159,23 @@ pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
 fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
     validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
 
-    let udaf = unsafe { capsule.reference::<FFI_AggregateUDF>() };
+    let data: NonNull<FFI_AggregateUDF> = capsule
+        .pointer_checked(Some(c_str!("datafusion_aggregate_udf")))?
+        .cast();
+    let udaf = unsafe { data.as_ref() };
     let udaf: Arc<dyn AggregateUDFImpl> = udaf.into();
 
     Ok(AggregateUDF::new_from_shared_impl(udaf))
 }
 
 /// Represents an AggregateUDF
-#[pyclass(frozen, name = "AggregateUDF", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "AggregateUDF",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyAggregateUDF {
     pub(crate) function: AggregateUDF,
@@ -196,14 +207,14 @@ impl PyAggregateUDF {
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if func.is_instance_of::<PyCapsule>() {
-            let capsule = func.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            let capsule = func.cast::<PyCapsule>().map_err(py_datafusion_err)?;
             let function = aggregate_udf_from_capsule(capsule)?;
             return Ok(Self { function });
         }
 
         if func.hasattr("__datafusion_aggregate_udf__")? {
             let capsule = func.getattr("__datafusion_aggregate_udf__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
             let function = aggregate_udf_from_capsule(capsule)?;
             return Ok(Self { function });
         }

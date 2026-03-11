@@ -25,7 +25,13 @@ use crate::common::df_schema::PyDFSchema;
 use crate::common::schema::PyTableSource;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "DmlStatement", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "DmlStatement",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyDmlStatement {
     dml: DmlStatement,
@@ -89,15 +95,21 @@ impl PyDmlStatement {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "WriteOp", module = "datafusion.expr")]
+#[pyclass(
+    from_py_object,
+    eq,
+    eq_int,
+    name = "WriteOp",
+    module = "datafusion.expr"
+)]
 pub enum PyWriteOp {
     Append,
     Overwrite,
     Replace,
-
     Update,
     Delete,
     Ctas,
+    Truncate,
 }
 
 impl From<WriteOp> for PyWriteOp {
@@ -106,10 +118,10 @@ impl From<WriteOp> for PyWriteOp {
             WriteOp::Insert(InsertOp::Append) => PyWriteOp::Append,
             WriteOp::Insert(InsertOp::Overwrite) => PyWriteOp::Overwrite,
             WriteOp::Insert(InsertOp::Replace) => PyWriteOp::Replace,
-
             WriteOp::Update => PyWriteOp::Update,
             WriteOp::Delete => PyWriteOp::Delete,
             WriteOp::Ctas => PyWriteOp::Ctas,
+            WriteOp::Truncate => PyWriteOp::Truncate,
         }
     }
 }
@@ -120,10 +132,10 @@ impl From<PyWriteOp> for WriteOp {
             PyWriteOp::Append => WriteOp::Insert(InsertOp::Append),
             PyWriteOp::Overwrite => WriteOp::Insert(InsertOp::Overwrite),
             PyWriteOp::Replace => WriteOp::Insert(InsertOp::Replace),
-
             PyWriteOp::Update => WriteOp::Update,
             PyWriteOp::Delete => WriteOp::Delete,
             PyWriteOp::Ctas => WriteOp::Ctas,
+            PyWriteOp::Truncate => WriteOp::Truncate,
         }
     }
 }

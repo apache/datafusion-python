@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use crate::expr::PyExpr;
 
-#[pyclass(frozen, name = "Alias", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Alias",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyAlias {
     alias: Alias,

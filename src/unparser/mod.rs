@@ -27,7 +27,13 @@ use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "Unparser", module = "datafusion.unparser", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Unparser",
+    module = "datafusion.unparser",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyUnparser {
     dialect: Arc<dyn Dialect>,

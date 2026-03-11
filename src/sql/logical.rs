@@ -66,7 +66,14 @@ use crate::expr::unnest::PyUnnest;
 use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
 
-#[pyclass(frozen, name = "LogicalPlan", module = "datafusion", subclass, eq)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "LogicalPlan",
+    module = "datafusion",
+    subclass,
+    eq
+)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PyLogicalPlan {
     pub(crate) plan: Arc<LogicalPlan>,
@@ -203,7 +210,7 @@ impl PyLogicalPlan {
         ctx: PySessionContext,
         proto_msg: Bound<'_, PyBytes>,
     ) -> PyDataFusionResult<Self> {
-        let bytes: &[u8] = proto_msg.extract()?;
+        let bytes: &[u8] = proto_msg.extract().map_err(Into::<PyErr>::into)?;
         let proto_plan =
             datafusion_proto::protobuf::LogicalPlanNode::decode(bytes).map_err(|e| {
                 PyRuntimeError::new_err(format!(

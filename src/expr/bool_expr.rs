@@ -22,7 +22,13 @@ use pyo3::prelude::*;
 
 use super::PyExpr;
 
-#[pyclass(frozen, name = "Not", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Not",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyNot {
     expr: Expr,
@@ -52,7 +58,13 @@ impl PyNot {
     }
 }
 
-#[pyclass(frozen, name = "IsNotNull", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsNotNull",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsNotNull {
     expr: Expr,
@@ -82,7 +94,13 @@ impl PyIsNotNull {
     }
 }
 
-#[pyclass(frozen, name = "IsNull", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsNull",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsNull {
     expr: Expr,
@@ -112,7 +130,13 @@ impl PyIsNull {
     }
 }
 
-#[pyclass(frozen, name = "IsTrue", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsTrue",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsTrue {
     expr: Expr,
@@ -142,7 +166,13 @@ impl PyIsTrue {
     }
 }
 
-#[pyclass(frozen, name = "IsFalse", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsFalse",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsFalse {
     expr: Expr,
@@ -172,7 +202,13 @@ impl PyIsFalse {
     }
 }
 
-#[pyclass(frozen, name = "IsUnknown", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsUnknown",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsUnknown {
     expr: Expr,
@@ -202,7 +238,13 @@ impl PyIsUnknown {
     }
 }
 
-#[pyclass(frozen, name = "IsNotTrue", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsNotTrue",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsNotTrue {
     expr: Expr,
@@ -232,7 +274,13 @@ impl PyIsNotTrue {
     }
 }
 
-#[pyclass(frozen, name = "IsNotFalse", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsNotFalse",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsNotFalse {
     expr: Expr,
@@ -262,7 +310,13 @@ impl PyIsNotFalse {
     }
 }
 
-#[pyclass(frozen, name = "IsNotUnknown", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "IsNotUnknown",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyIsNotUnknown {
     expr: Expr,
@@ -292,7 +346,13 @@ impl PyIsNotUnknown {
     }
 }
 
-#[pyclass(frozen, name = "Negative", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "Negative",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct PyNegative {
     expr: Expr,

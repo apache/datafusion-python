@@ -15,8 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ptr::NonNull;
+
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use pyo3::exceptions::PyValueError;
+use pyo3::ffi::c_str;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult};
@@ -31,10 +34,13 @@ pub(crate) fn ffi_logical_codec_from_pycapsule(
         obj
     };
 
-    let capsule = capsule.downcast::<PyCapsule>()?;
+    let capsule = capsule.cast::<PyCapsule>()?;
     validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
 
-    let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+    let data: NonNull<FFI_LogicalExtensionCodec> = capsule
+        .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
 
     Ok(codec.clone())
 }
@@ -47,7 +53,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
         )));
     }
 
-    let capsule_name = capsule_name.unwrap().to_str()?;
+    let capsule_name = unsafe { capsule_name.unwrap().as_cstr().to_str()? };
     if capsule_name != name {
         return Err(PyValueError::new_err(format!(
             "Expected name '{name}' in PyCapsule, instead got '{capsule_name}'"

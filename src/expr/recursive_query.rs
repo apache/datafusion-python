@@ -24,7 +24,13 @@ use pyo3::prelude::*;
 use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(frozen, name = "RecursiveQuery", module = "datafusion.expr", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "RecursiveQuery",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyRecursiveQuery {
     query: RecursiveQuery,

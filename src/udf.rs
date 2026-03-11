@@ -17,6 +17,7 @@
 
 use std::any::Any;
 use std::hash::{Hash, Hasher};
+use std::ptr::NonNull;
 use std::sync::Arc;
 
 use arrow::datatypes::{Field, FieldRef};
@@ -31,6 +32,7 @@ use datafusion::logical_expr::{
     Volatility,
 };
 use datafusion_ffi::udf::FFI_ScalarUDF;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -153,7 +155,13 @@ impl ScalarUDFImpl for PythonFunctionScalarUDF {
 }
 
 /// Represents a PyScalarUDF
-#[pyclass(frozen, name = "ScalarUDF", module = "datafusion", subclass)]
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "ScalarUDF",
+    module = "datafusion",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyScalarUDF {
     pub(crate) function: ScalarUDF,
@@ -186,10 +194,13 @@ impl PyScalarUDF {
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if func.hasattr("__datafusion_scalar_udf__")? {
             let capsule = func.getattr("__datafusion_scalar_udf__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
             validate_pycapsule(capsule, "datafusion_scalar_udf")?;
 
-            let udf = unsafe { capsule.reference::<FFI_ScalarUDF>() };
+            let data: NonNull<FFI_ScalarUDF> = capsule
+                .pointer_checked(Some(c_str!("datafusion_scalar_udf")))?
+                .cast();
+            let udf = unsafe { data.as_ref() };
             let udf: Arc<dyn ScalarUDFImpl> = udf.into();
 
             Ok(Self {
