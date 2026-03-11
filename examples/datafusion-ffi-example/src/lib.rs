@@ -29,7 +29,6 @@ pub(crate) mod catalog_provider;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
-pub(crate) mod utils;
 pub(crate) mod window_udf;
 
 #[pymodule]
