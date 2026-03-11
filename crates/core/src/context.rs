@@ -82,7 +82,7 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
-use crate::table::PyTable;
+use crate::table::{PyTable, RustWrappedPyTableProviderFactory};
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
@@ -663,22 +663,31 @@ impl PySessionContext {
     pub fn register_table_factory(
         &self,
         format: &str,
-        factory: Bound<'_, PyAny>,
+        mut factory: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        let py = factory.py();
-        let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+        if factory.hasattr("__datafusion_table_provider_factory__")? {
+            let py = factory.py();
+            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            factory = factory
+                .getattr("__datafusion_table_provider_factory__")?
+                .call1((codec_capsule,))?;
+        }
 
-        let capsule = factory
-            .getattr("__datafusion_table_provider_factory__")?
-            .call1((codec_capsule,))?;
-        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-        validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
+        let factory: Arc<dyn TableProviderFactory> =
+            if let Ok(capsule) = factory.cast::<PyCapsule>().map_err(py_datafusion_err) {
+                validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
 
-        let factory: NonNull<FFI_TableProviderFactory> = capsule
-            .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
-            .cast();
-        let factory = unsafe { factory.as_ref() };
-        let factory: Arc<dyn TableProviderFactory> = factory.into();
+                let data: NonNull<FFI_TableProviderFactory> = capsule
+                    .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
+                    .cast();
+                let factory = unsafe { data.as_ref() };
+                factory.into()
+            } else {
+                Arc::new(RustWrappedPyTableProviderFactory::new(
+                    factory.into(),
+                    self.logical_codec.clone(),
+                ))
+            };
 
         let st = self.ctx.state_ref();
         let mut lock = st.write();

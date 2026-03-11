@@ -22,11 +22,11 @@ use datafusion_catalog::{Session, TableProvider, TableProviderFactory};
 use datafusion_common::error::Result as DataFusionResult;
 use datafusion_expr::CreateExternalTable;
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
+use datafusion_python_util::ffi_logical_codec_from_pycapsule;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::catalog_provider;
-use crate::utils::ffi_logical_codec_from_pycapsule;
 
 #[derive(Debug)]
 pub(crate) struct ExampleTableProviderFactory {}
