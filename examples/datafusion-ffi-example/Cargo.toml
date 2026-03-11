@@ -19,6 +19,10 @@
 name = "datafusion-ffi-example"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish = false
 
 [dependencies]
