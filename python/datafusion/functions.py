@@ -495,16 +495,28 @@ def abs(arg: Expr) -> Expr:
 def acos(arg: Expr) -> Expr:
     """Returns the arc cosine or inverse cosine of a number.
 
-    Returns:
-    --------
-    Expr
-        A new expression representing the arc cosine of the input expression.
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0]})
+    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+    >>> result.collect_column("acos")[0].as_py()
+    0.0
     """
     return Expr(f.acos(arg.expr))
 
 
 def acosh(arg: Expr) -> Expr:
-    """Returns inverse hyperbolic cosine."""
+    """Returns inverse hyperbolic cosine.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0]})
+    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+    >>> result.collect_column("acosh")[0].as_py()
+    0.0
+    """
     return Expr(f.acosh(arg.expr))
 
 
@@ -514,27 +526,73 @@ def ascii(arg: Expr) -> Expr:
 
 
 def asin(arg: Expr) -> Expr:
-    """Returns the arc sine or inverse sine of a number."""
+    """Returns the arc sine or inverse sine of a number.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+    >>> result.collect_column("asin")[0].as_py()
+    0.0
+    """
     return Expr(f.asin(arg.expr))
 
 
 def asinh(arg: Expr) -> Expr:
-    """Returns inverse hyperbolic sine."""
+    """Returns inverse hyperbolic sine.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+    >>> result.collect_column("asinh")[0].as_py()
+    0.0
+    """
     return Expr(f.asinh(arg.expr))
 
 
 def atan(arg: Expr) -> Expr:
-    """Returns inverse tangent of a number."""
+    """Returns inverse tangent of a number.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+    >>> result.collect_column("atan")[0].as_py()
+    0.0
+    """
     return Expr(f.atan(arg.expr))
 
 
 def atanh(arg: Expr) -> Expr:
-    """Returns inverse hyperbolic tangent."""
+    """Returns inverse hyperbolic tangent.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+    >>> result.collect_column("atanh")[0].as_py()
+    0.0
+    """
     return Expr(f.atanh(arg.expr))
 
 
 def atan2(y: Expr, x: Expr) -> Expr:
-    """Returns inverse tangent of a division given in the argument."""
+    """Returns inverse tangent of a division given in the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+    >>> result = df.select(
+    ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+    >>> result.collect_column("atan2")[0].as_py()
+    0.0
+    """
     return Expr(f.atan2(y.expr, x.expr))
 
 
@@ -585,22 +643,65 @@ def coalesce(*args: Expr) -> Expr:
 
 
 def cos(arg: Expr) -> Expr:
-    """Returns the cosine of the argument."""
+    """Returns the cosine of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0,-1,1]})
+    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+    >>> cos_df.collect_column("cos")[0].as_py()
+    1.0
+    """
     return Expr(f.cos(arg.expr))
 
 
 def cosh(arg: Expr) -> Expr:
-    """Returns the hyperbolic cosine of the argument."""
+    """Returns the hyperbolic cosine of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0,-1,1]})
+    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+    >>> cosh_df.collect_column("cosh")[0].as_py()
+    1.0
+    """
     return Expr(f.cosh(arg.expr))
 
 
 def cot(arg: Expr) -> Expr:
-    """Returns the cotangent of the argument."""
+    """Returns the cotangent of the argument.
+
+    Examples:
+    ---------
+    >>> from math import pi
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [pi / 4]})
+    >>> import builtins
+    >>> result = df.select(
+    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+    ... )
+    >>> builtins.round(
+    ...     result.collect_column("cot")[0].as_py(), 1
+    ... )
+    1.0
+    """
     return Expr(f.cot(arg.expr))
 
 
 def degrees(arg: Expr) -> Expr:
-    """Converts the argument from radians to degrees."""
+    """Converts the argument from radians to degrees.
+
+    Examples:
+    ---------
+    >>> from math import pi
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+    >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+    >>> deg_df.collect_column("deg")[2].as_py()
+    360.0
+    """
     return Expr(f.degrees(arg.expr))
 
 
@@ -778,7 +879,22 @@ def pow(base: Expr, exponent: Expr) -> Expr:
 
 
 def radians(arg: Expr) -> Expr:
-    """Converts the argument from degrees to radians."""
+    """Converts the argument from degrees to radians.
+
+    Examples:
+    ---------
+    >>> from math import pi
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [180.0]})
+    >>> import builtins
+    >>> result = df.select(
+    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+    ... )
+    >>> builtins.round(
+    ...     result.collect_column("rad")[0].as_py(), 6
+    ... )
+    3.141593
+    """
     return Expr(f.radians(arg.expr))
 
 
@@ -939,12 +1055,30 @@ def signum(arg: Expr) -> Expr:
 
 
 def sin(arg: Expr) -> Expr:
-    """Returns the sine of the argument."""
+    """Returns the sine of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+    >>> result.collect_column("sin")[0].as_py()
+    0.0
+    """
     return Expr(f.sin(arg.expr))
 
 
 def sinh(arg: Expr) -> Expr:
-    """Returns the hyperbolic sine of the argument."""
+    """Returns the hyperbolic sine of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+    >>> result.collect_column("sinh")[0].as_py()
+    0.0
+    """
     return Expr(f.sinh(arg.expr))
 
 
@@ -992,12 +1126,30 @@ def substring(string: Expr, position: Expr, length: Expr) -> Expr:
 
 
 def tan(arg: Expr) -> Expr:
-    """Returns the tangent of the argument."""
+    """Returns the tangent of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+    >>> result.collect_column("tan")[0].as_py()
+    0.0
+    """
     return Expr(f.tan(arg.expr))
 
 
 def tanh(arg: Expr) -> Expr:
-    """Returns the hyperbolic tangent of the argument."""
+    """Returns the hyperbolic tangent of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [0.0]})
+    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+    >>> result.collect_column("tanh")[0].as_py()
+    0.0
+    """
     return Expr(f.tanh(arg.expr))
 
 
