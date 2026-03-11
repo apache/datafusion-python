@@ -836,12 +836,12 @@ class SessionContext:
     ) -> None:
         """Register a :py:class:`~datafusion.TableProviderFactoryExportable`.
 
-        The registered factory can be reference from SQL DDL statements executed
+        The registered factory can be referenced from SQL DDL statements executed
         against this context.
 
         Args:
             format: The value to be used in `STORED AS ${format}` clause.
-            factory: A PyCapsule that implements TableProviderFactoryExportable"
+            factory: A PyCapsule that implements :class:`TableProviderFactoryExportable`
         """
         self.ctx.register_table_factory(format, factory)
 

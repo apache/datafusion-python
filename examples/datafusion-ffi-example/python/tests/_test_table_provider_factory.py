@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-import pyarrow as pa
-import pytest
 from datafusion import SessionContext
 from datafusion_ffi_example import MyTableProviderFactory
 
@@ -35,7 +33,7 @@ def test_table_provider_factory_ffi() -> None:
         foo
         STORED AS my_format
         LOCATION '';
-    """)
+    """).collect()
 
     # Query the pre-populated table
     result = ctx.sql("SELECT * FROM foo;").collect()
