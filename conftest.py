@@ -17,10 +17,9 @@
 
 """Pytest configuration for doctest namespace injection."""
 
+import datafusion as dfn
 import numpy as np
 import pytest
-
-import datafusion as dfn
 
 
 @pytest.fixture(autouse=True)
