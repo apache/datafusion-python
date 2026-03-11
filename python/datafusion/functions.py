@@ -586,7 +586,6 @@ def atan2(y: Expr, x: Expr) -> Expr:
     >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
     >>> result = df.select(
     ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result = result
     >>> result.collect_column("atan2")[0].as_py()
     0.0
     """
