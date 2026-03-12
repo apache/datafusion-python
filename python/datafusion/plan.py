@@ -29,6 +29,8 @@ if TYPE_CHECKING:
 __all__ = [
     "ExecutionPlan",
     "LogicalPlan",
+    "Metric",
+    "MetricsSet",
 ]
 
 
@@ -151,3 +153,107 @@ class ExecutionPlan:
         Tables created in memory from record batches are currently not supported.
         """
         return self._raw_plan.to_proto()
+
+    def metrics(self) -> MetricsSet | None:
+        """Return metrics for this plan node after execution, or None if unavailable."""
+        raw = self._raw_plan.metrics()
+        if raw is None:
+            return None
+        return MetricsSet(raw)
+
+    def collect_metrics(self) -> list[tuple[str, MetricsSet]]:
+        """Walk the plan tree and collect metrics from all operators.
+
+        Returns a list of (operator_name, MetricsSet) tuples.
+        """
+        result: list[tuple[str, MetricsSet]] = []
+
+        def _walk(node: ExecutionPlan) -> None:
+            ms = node.metrics()
+            if ms is not None:
+                result.append((node.display(), ms))
+            for child in node.children():
+                _walk(child)
+
+        _walk(self)
+        return result
+
+
+class MetricsSet:
+    """A set of metrics for a single execution plan operator.
+
+    Provides both individual metric access and convenience aggregations
+    across partitions.
+    """
+
+    def __init__(self, raw: df_internal.MetricsSet) -> None:
+        """This constructor should not be called by the end user."""
+        self._raw = raw
+
+    def metrics(self) -> list[Metric]:
+        """Return all individual metrics in this set."""
+        return [Metric(m) for m in self._raw.metrics()]
+
+    @property
+    def output_rows(self) -> int | None:
+        """Sum of output_rows across all partitions."""
+        return self._raw.output_rows()
+
+    @property
+    def elapsed_compute(self) -> int | None:
+        """Sum of elapsed_compute across all partitions, in nanoseconds."""
+        return self._raw.elapsed_compute()
+
+    @property
+    def spill_count(self) -> int | None:
+        """Sum of spill_count across all partitions."""
+        return self._raw.spill_count()
+
+    @property
+    def spilled_bytes(self) -> int | None:
+        """Sum of spilled_bytes across all partitions."""
+        return self._raw.spilled_bytes()
+
+    @property
+    def spilled_rows(self) -> int | None:
+        """Sum of spilled_rows across all partitions."""
+        return self._raw.spilled_rows()
+
+    def sum_by_name(self, name: str) -> int | None:
+        """Return the sum of metrics matching the given name."""
+        return self._raw.sum_by_name(name)
+
+    def __repr__(self) -> str:
+        """Return a string representation of the metrics set."""
+        return repr(self._raw)
+
+
+class Metric:
+    """A single execution metric with name, value, partition, and labels."""
+
+    def __init__(self, raw: df_internal.Metric) -> None:
+        """This constructor should not be called by the end user."""
+        self._raw = raw
+
+    @property
+    def name(self) -> str:
+        """The name of this metric (e.g. ``output_rows``)."""
+        return self._raw.name
+
+    @property
+    def value(self) -> int | None:
+        """The numeric value of this metric, or None for non-numeric types."""
+        return self._raw.value
+
+    @property
+    def partition(self) -> int | None:
+        """The partition this metric applies to, or None if global."""
+        return self._raw.partition
+
+    def labels(self) -> dict[str, str]:
+        """Return the labels associated with this metric."""
+        return self._raw.labels()
+
+    def __repr__(self) -> str:
+        """Return a string representation of the metric."""
+        return repr(self._raw)
