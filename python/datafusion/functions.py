@@ -1587,7 +1587,7 @@ def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
     ---------
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [1]})
-    >>> data_type = dfn.string_literal("Float64")).alias("c")
+    >>> data_type = dfn.string_literal("Float64")
     >>> result = df.select(dfn.functions.arrow_cast(dfn.col("a"), data_type).alias("c"))
     >>> result.collect_column("c")[0].as_py()
     1.0
