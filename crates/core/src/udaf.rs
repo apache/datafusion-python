@@ -27,8 +27,7 @@ use datafusion::logical_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, create_udaf,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
-use datafusion_python_util::{parse_volatility, validate_pycapsule};
-use pyo3::ffi::c_str;
+use datafusion_python_util::parse_volatility;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -157,10 +156,8 @@ pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
 }
 
 fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
-    validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
-
     let data: NonNull<FFI_AggregateUDF> = capsule
-        .pointer_checked(Some(c_str!("datafusion_aggregate_udf")))?
+        .pointer_checked(Some(c"datafusion_aggregate_udf"))?
         .cast();
     let udaf = unsafe { data.as_ref() };
     let udaf: Arc<dyn AggregateUDFImpl> = udaf.into();

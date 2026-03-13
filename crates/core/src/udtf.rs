@@ -22,10 +22,8 @@ use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
-use datafusion_python_util::validate_pycapsule;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError};
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple, PyType};
 
@@ -73,11 +71,9 @@ impl PyTableFunction {
                     err
                 }
             })?;
-            let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_function")?;
-
+            let capsule = capsule.cast::<PyCapsule>()?;
             let data: NonNull<FFI_TableFunction> = capsule
-                .pointer_checked(Some(c_str!("datafusion_table_function")))?
+                .pointer_checked(Some(c"datafusion_table_function"))?
                 .cast();
             let ffi_func = unsafe { data.as_ref() };
             let foreign_func: Arc<dyn TableFunctionImpl> = ffi_func.to_owned().into();

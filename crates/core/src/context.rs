@@ -55,12 +55,11 @@ use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
-    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
+    get_tokio_runtime, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -675,10 +674,8 @@ impl PySessionContext {
 
         let factory: Arc<dyn TableProviderFactory> =
             if let Ok(capsule) = factory.cast::<PyCapsule>().map_err(py_datafusion_err) {
-                validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
-
                 let data: NonNull<FFI_TableProviderFactory> = capsule
-                    .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
+                    .pointer_checked(Some(c"datafusion_table_provider_factory"))?
                     .cast();
                 let factory = unsafe { data.as_ref() };
                 factory.into()
@@ -709,12 +706,9 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
-        {
-            validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
-
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
             let data: NonNull<FFI_CatalogProviderList> = capsule
-                .pointer_checked(Some(c_str!("datafusion_catalog_provider_list")))?
+                .pointer_checked(Some(c"datafusion_catalog_provider_list"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
             let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
@@ -747,12 +741,9 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
-        {
-            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
-
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
             let data: NonNull<FFI_CatalogProvider> = capsule
-                .pointer_checked(Some(c_str!("datafusion_catalog_provider")))?
+                .pointer_checked(Some(c"datafusion_catalog_provider"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
             let provider: Arc<dyn CatalogProvider + Send> = provider.into();
