@@ -32,7 +32,6 @@ use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
@@ -40,8 +39,7 @@ use crate::dataset::Dataset;
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::table::PyTable;
 use crate::utils::{
-    create_logical_extension_capsule, extract_logical_extension_codec, validate_pycapsule,
-    wait_for_future,
+    create_logical_extension_capsule, extract_logical_extension_codec, wait_for_future,
 };
 
 #[pyclass(
@@ -658,9 +656,8 @@ fn extract_catalog_provider_from_pyobj(
     }
 
     let provider = if let Ok(capsule) = catalog_provider.cast::<PyCapsule>() {
-        validate_pycapsule(capsule, "datafusion_catalog_provider")?;
         let data: NonNull<FFI_CatalogProvider> = capsule
-            .pointer_checked(Some(c_str!("datafusion_catalog_provider")))?
+            .pointer_checked(Some(c"datafusion_catalog_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn CatalogProvider + Send> = provider.into();
@@ -691,10 +688,8 @@ fn extract_schema_provider_from_pyobj(
     }
 
     let provider = if let Ok(capsule) = schema_provider.cast::<PyCapsule>() {
-        validate_pycapsule(capsule, "datafusion_schema_provider")?;
-
         let data: NonNull<FFI_SchemaProvider> = capsule
-            .pointer_checked(Some(c_str!("datafusion_schema_provider")))?
+            .pointer_checked(Some(c"datafusion_schema_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn SchemaProvider + Send> = provider.into();

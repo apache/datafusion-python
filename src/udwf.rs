@@ -33,14 +33,13 @@ use datafusion::logical_expr::{
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
 use pyo3::exceptions::PyValueError;
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
+use crate::errors::{PyDataFusionResult, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, validate_pycapsule};
+use crate::utils::parse_volatility;
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {
@@ -262,11 +261,9 @@ impl PyWindowUDF {
             func
         };
 
-        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-        validate_pycapsule(capsule, "datafusion_window_udf")?;
-
+        let capsule = capsule.cast::<PyCapsule>().map_err(to_datafusion_err)?;
         let data: NonNull<FFI_WindowUDF> = capsule
-            .pointer_checked(Some(c_str!("datafusion_window_udf")))?
+            .pointer_checked(Some(c"datafusion_window_udf"))?
             .cast();
         let udwf = unsafe { data.as_ref() };
         let udwf: Arc<dyn WindowUDFImpl> = udwf.into();
