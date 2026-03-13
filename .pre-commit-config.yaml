@@ -53,5 +53,12 @@ repos:
             additional_dependencies:
               - tomli
 
+      - repo: https://github.com/astral-sh/uv-pre-commit
+        # uv version.
+        rev: 0.10.7
+        hooks:
+          # Update the uv lockfile
+          - id: uv-lock
+
 default_language_version:
       python: python3
