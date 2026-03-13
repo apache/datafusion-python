@@ -24,7 +24,6 @@ use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError};
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple, PyType};
 
@@ -32,7 +31,6 @@ use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTable;
-use crate::utils::validate_pycapsule;
 
 /// Represents a user defined table function
 #[pyclass(from_py_object, frozen, name = "TableFunction", module = "datafusion")]
@@ -73,11 +71,9 @@ impl PyTableFunction {
                     err
                 }
             })?;
-            let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_function")?;
-
+            let capsule = capsule.cast::<PyCapsule>()?;
             let data: NonNull<FFI_TableFunction> = capsule
-                .pointer_checked(Some(c_str!("datafusion_table_function")))?
+                .pointer_checked(Some(c"datafusion_table_function"))?
                 .cast();
             let ffi_func = unsafe { data.as_ref() };
             let foreign_func: Arc<dyn TableFunctionImpl> = ffi_func.to_owned().into();

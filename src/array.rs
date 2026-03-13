@@ -22,13 +22,11 @@ use arrow::array::{Array, ArrayRef};
 use arrow::datatypes::{Field, FieldRef};
 use arrow::ffi::{FFI_ArrowArray, FFI_ArrowSchema};
 use arrow::pyarrow::ToPyArrow;
-use pyo3::ffi::c_str;
 use pyo3::prelude::{PyAnyMethods, PyCapsuleMethods};
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::errors::PyDataFusionResult;
-use crate::utils::validate_pycapsule;
 
 /// A Python object which implements the Arrow PyCapsule for importing
 /// into other libraries.
@@ -53,10 +51,8 @@ impl PyArrowArrayExportable {
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<(Bound<'py, PyCapsule>, Bound<'py, PyCapsule>)> {
         let field = if let Some(schema_capsule) = requested_schema {
-            validate_pycapsule(&schema_capsule, "arrow_schema")?;
-
             let data: NonNull<FFI_ArrowSchema> = schema_capsule
-                .pointer_checked(Some(c_str!("arrow_schema")))?
+                .pointer_checked(Some(c"arrow_schema"))?
                 .cast();
             let schema_ptr = unsafe { data.as_ref() };
             let desired_field = Field::try_from(schema_ptr)?;

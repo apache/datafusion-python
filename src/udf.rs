@@ -32,14 +32,13 @@ use datafusion::logical_expr::{
     Volatility,
 };
 use datafusion_ffi::udf::FFI_ScalarUDF;
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
 use crate::array::PyArrowArrayExportable;
-use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
+use crate::errors::{PyDataFusionResult, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, validate_pycapsule};
+use crate::utils::parse_volatility;
 
 /// This struct holds the Python written function that is a
 /// ScalarUDF.
@@ -194,11 +193,9 @@ impl PyScalarUDF {
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if func.hasattr("__datafusion_scalar_udf__")? {
             let capsule = func.getattr("__datafusion_scalar_udf__")?.call0()?;
-            let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_scalar_udf")?;
-
+            let capsule = capsule.cast::<PyCapsule>().map_err(to_datafusion_err)?;
             let data: NonNull<FFI_ScalarUDF> = capsule
-                .pointer_checked(Some(c_str!("datafusion_scalar_udf")))?
+                .pointer_checked(Some(c"datafusion_scalar_udf"))?
                 .cast();
             let udf = unsafe { data.as_ref() };
             let udf: Arc<dyn ScalarUDFImpl> = udf.into();

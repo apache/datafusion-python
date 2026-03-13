@@ -45,7 +45,6 @@ use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
 use pyo3::PyErr;
 use pyo3::exceptions::PyValueError;
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
@@ -58,7 +57,7 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{PyRecordBatchStream, poll_next_batch};
 use crate::sql::logical::PyLogicalPlan;
 use crate::table::{PyTable, TempViewTable};
-use crate::utils::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
+use crate::utils::{is_ipython_env, spawn_future, wait_for_future};
 
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
@@ -1117,10 +1116,8 @@ impl PyDataFrame {
         let mut projection: Option<SchemaRef> = None;
 
         if let Some(schema_capsule) = requested_schema {
-            validate_pycapsule(&schema_capsule, "arrow_schema")?;
-
             let data: NonNull<FFI_ArrowSchema> = schema_capsule
-                .pointer_checked(Some(c_str!("arrow_schema")))?
+                .pointer_checked(Some(c"arrow_schema"))?
                 .cast();
             let schema_ptr = unsafe { data.as_ref() };
             let desired_schema = Schema::try_from(schema_ptr)?;
