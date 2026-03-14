@@ -496,12 +496,11 @@ def acos(arg: Expr) -> Expr:
     """Returns the arc cosine or inverse cosine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
-    >>> result.collect_column("acos")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+        >>> result.collect_column("acos")[0].as_py()
+        0.0
     """
     return Expr(f.acos(arg.expr))
 
@@ -510,12 +509,11 @@ def acosh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic cosine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
-    >>> result.collect_column("acosh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+        >>> result.collect_column("acosh")[0].as_py()
+        0.0
     """
     return Expr(f.acosh(arg.expr))
 
@@ -529,12 +527,11 @@ def asin(arg: Expr) -> Expr:
     """Returns the arc sine or inverse sine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
-    >>> result.collect_column("asin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+        >>> result.collect_column("asin")[0].as_py()
+        0.0
     """
     return Expr(f.asin(arg.expr))
 
@@ -543,12 +540,11 @@ def asinh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic sine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
-    >>> result.collect_column("asinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+        >>> result.collect_column("asinh")[0].as_py()
+        0.0
     """
     return Expr(f.asinh(arg.expr))
 
@@ -557,12 +553,11 @@ def atan(arg: Expr) -> Expr:
     """Returns inverse tangent of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
-    >>> result.collect_column("atan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+        >>> result.collect_column("atan")[0].as_py()
+        0.0
     """
     return Expr(f.atan(arg.expr))
 
@@ -571,12 +566,11 @@ def atanh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic tangent.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
-    >>> result.collect_column("atanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+        >>> result.collect_column("atanh")[0].as_py()
+        0.0
     """
     return Expr(f.atanh(arg.expr))
 
@@ -585,13 +579,12 @@ def atan2(y: Expr, x: Expr) -> Expr:
     """Returns inverse tangent of a division given in the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
-    >>> result = df.select(
-    ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result.collect_column("atan2")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+        >>> result.collect_column("atan2")[0].as_py()
+        0.0
     """
     return Expr(f.atan2(y.expr, x.expr))
 
@@ -646,12 +639,11 @@ def cos(arg: Expr) -> Expr:
     """Returns the cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
-    >>> cos_df.collect_column("cos")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+        >>> cos_df.collect_column("cos")[0].as_py()
+        1.0
     """
     return Expr(f.cos(arg.expr))
 
@@ -660,12 +652,11 @@ def cosh(arg: Expr) -> Expr:
     """Returns the hyperbolic cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
-    >>> cosh_df.collect_column("cosh")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+        >>> cosh_df.collect_column("cosh")[0].as_py()
+        1.0
     """
     return Expr(f.cosh(arg.expr))
 
@@ -674,18 +665,14 @@ def cot(arg: Expr) -> Expr:
     """Returns the cotangent of the argument.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [pi / 4]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("cot")[0].as_py(), 1
-    ... )
-    1.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [pi / 4]})
+        >>> result = df.select(
+        ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+        ... )
+        >>> result.collect_column("cot")[0].as_py()
+        1.0...
     """
     return Expr(f.cot(arg.expr))
 
@@ -694,13 +681,12 @@ def degrees(arg: Expr) -> Expr:
     """Converts the argument from radians to degrees.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
-    >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
-    >>> deg_df.collect_column("deg")[2].as_py()
-    360.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+        >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+        >>> deg_df.collect_column("deg")[2].as_py()
+        360.0
     """
     return Expr(f.degrees(arg.expr))
 
@@ -882,18 +868,14 @@ def radians(arg: Expr) -> Expr:
     """Converts the argument from degrees to radians.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [180.0]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("rad")[0].as_py(), 6
-    ... )
-    3.141593
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [180.0]})
+        >>> result = df.select(
+        ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+        ... )
+        >>> result.collect_column("rad")[0].as_py()
+        3.14159...
     """
     return Expr(f.radians(arg.expr))
 
@@ -1058,12 +1040,11 @@ def sin(arg: Expr) -> Expr:
     """Returns the sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
-    >>> result.collect_column("sin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+        >>> result.collect_column("sin")[0].as_py()
+        0.0
     """
     return Expr(f.sin(arg.expr))
 
@@ -1072,12 +1053,11 @@ def sinh(arg: Expr) -> Expr:
     """Returns the hyperbolic sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
-    >>> result.collect_column("sinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+        >>> result.collect_column("sinh")[0].as_py()
+        0.0
     """
     return Expr(f.sinh(arg.expr))
 
@@ -1129,12 +1109,11 @@ def tan(arg: Expr) -> Expr:
     """Returns the tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
-    >>> result.collect_column("tan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+        >>> result.collect_column("tan")[0].as_py()
+        0.0
     """
     return Expr(f.tan(arg.expr))
 
@@ -1143,12 +1122,11 @@ def tanh(arg: Expr) -> Expr:
     """Returns the hyperbolic tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
-    >>> result.collect_column("tanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+        >>> result.collect_column("tanh")[0].as_py()
+        0.0
     """
     return Expr(f.tanh(arg.expr))
 
@@ -2009,10 +1987,6 @@ def array_agg(
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values. Accepts column names or expressions.
-
-    For example::
-
-        df.aggregate([], array_agg(col("a"), order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2513,9 +2487,14 @@ def first_value(
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
 
-    For example::
-
-        df.aggregate([], first_value(col("a"), order_by="ts"))
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.first_value(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        10
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2550,9 +2529,14 @@ def last_value(
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
 
-    For example::
-
-        df.aggregate([], last_value(col("a"), order_by="ts"))
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.last_value(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        30
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2589,9 +2573,14 @@ def nth_value(
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
 
-    For example::
-
-        df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.nth_value(dfn.col("a"), 2).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        20
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2729,9 +2718,14 @@ def lead(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        lead(col("b"), order_by="ts")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.lead(dfn.col("a"), shift_offset=1,
+        ...     default_value=0, order_by="a").alias("lead"))
+        >>> result.sort(dfn.col("a")).collect_column("lead").to_pylist()
+        [2, 3, 0]
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -2784,9 +2778,14 @@ def lag(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        lag(col("b"), order_by="ts")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.lag(dfn.col("a"), shift_offset=1,
+        ...     default_value=0, order_by="a").alias("lag"))
+        >>> result.sort(dfn.col("a")).collect_column("lag").to_pylist()
+        [0, 1, 2]
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -2829,9 +2828,13 @@ def row_number(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        row_number(order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.row_number(order_by="a").alias("rn"))
+        >>> result.sort(dfn.col("a")).collect_column("rn").to_pylist()
+        [1, 2, 3]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2873,9 +2876,14 @@ def rank(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        rank(order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 10, 20]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.rank(order_by="a").alias("rnk")
+        ... )
+        >>> result.sort(dfn.col("a")).collect_column("rnk").to_pylist()
+        [1, 1, 3]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2912,9 +2920,13 @@ def dense_rank(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        dense_rank(order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 10, 20]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.dense_rank(order_by="a").alias("dr"))
+        >>> result.sort(dfn.col("a")).collect_column("dr").to_pylist()
+        [1, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2952,9 +2964,14 @@ def percent_rank(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
 
-        percent_rank(order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.percent_rank(order_by="a").alias("pr"))
+        >>> result.sort(dfn.col("a")).collect_column("pr").to_pylist()
+        [0.0, 0.5, 1.0]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2992,9 +3009,17 @@ def cume_dist(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        cume_dist(order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1., 2., 2., 3.]})
+        >>> result = df.select(
+        ...     dfn.col("a"),
+        ...     dfn.functions.cume_dist(
+        ...         order_by="a"
+        ...     ).alias("cd")
+        ... )
+        >>> result.collect_column("cd").to_pylist()
+        [0.25..., 0.75..., 0.75..., 1.0...]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -3036,9 +3061,13 @@ def ntile(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        ntile(3, order_by="points")
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [10, 20, 30, 40]})
+        >>> result = df.select(
+        ...     dfn.col("a"), dfn.functions.ntile(2, order_by="a").alias("nt"))
+        >>> result.sort(dfn.col("a")).collect_column("nt").to_pylist()
+        [1, 1, 2, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -3073,10 +3102,6 @@ def string_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
-
-    For example::
-
-        df.aggregate([], string_agg(col("a"), ",", order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
