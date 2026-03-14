@@ -1901,7 +1901,7 @@ def approx_distinct(
     >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
     >>> result = df.aggregate(
     ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py() >= 2
+    >>> result.collect_column("v")[0].as_py() == 3
     True
     """
     filter_raw = filter.expr if filter is not None else None
