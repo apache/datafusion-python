@@ -1130,8 +1130,8 @@ def sha224(arg: Expr) -> Expr:
     >>> result = df.select(
     ...     dfn.functions.sha224(dfn.col("a")).alias("h")
     ... )
-    >>> len(result.collect_column("h")[0].as_py()) > 0
-    True
+    >>> result.collect_column("h")[0].as_py().hex()
+    'ea09ae9cc6768c50fcee903ed054556e5bfc8347907f12598aa24193'
     """
     return Expr(f.sha224(arg.expr))
 
@@ -1146,8 +1146,8 @@ def sha256(arg: Expr) -> Expr:
     >>> result = df.select(
     ...     dfn.functions.sha256(dfn.col("a")).alias("h")
     ... )
-    >>> len(result.collect_column("h")[0].as_py()) > 0
-    True
+    >>> result.collect_column("h")[0].as_py().hex()
+    '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
     """
     return Expr(f.sha256(arg.expr))
 
@@ -1162,8 +1162,8 @@ def sha384(arg: Expr) -> Expr:
     >>> result = df.select(
     ...     dfn.functions.sha384(dfn.col("a")).alias("h")
     ... )
-    >>> len(result.collect_column("h")[0].as_py()) > 0
-    True
+    >>> result.collect_column("h")[0].as_py().hex()
+    '59e1748777448c69de6b800d7a33bbfb9ff1b...
     """
     return Expr(f.sha384(arg.expr))
 
@@ -1178,8 +1178,8 @@ def sha512(arg: Expr) -> Expr:
     >>> result = df.select(
     ...     dfn.functions.sha512(dfn.col("a")).alias("h")
     ... )
-    >>> len(result.collect_column("h")[0].as_py()) > 0
-    True
+    >>> result.collect_column("h")[0].as_py().hex()
+    '9b71d224bd62f3785d96d46ad3ea3d73319bfb...
     """
     return Expr(f.sha512(arg.expr))
 
