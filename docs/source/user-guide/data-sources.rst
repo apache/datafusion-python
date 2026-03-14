@@ -224,25 +224,33 @@ A common technique for organizing tables is using a three level hierarchical app
 supports this form of organizing using the :py:class:`~datafusion.catalog.Catalog`,
 :py:class:`~datafusion.catalog.Schema`, and :py:class:`~datafusion.catalog.Table`. By default,
 a :py:class:`~datafusion.context.SessionContext` comes with a single Catalog and a single Schema
-with the names ``datafusion`` and ``default``, respectively.
+with the names ``datafusion`` and ``public``, respectively.
 
 The default implementation uses an in-memory approach to the catalog and schema. We have support
-for adding additional in-memory catalogs and schemas. This can be done like in the following
+for adding additional in-memory catalogs and schemas. You can access tables registered in a schema 
+either through the Dataframe API or vial sql commands. This can be done like in the following
 example:
 
 .. code-block:: python
 
     from datafusion.catalog import Catalog, Schema
+    from datafusion import SessionContext
 
-    my_catalog = Catalog.memory_catalog()
-    my_schema = Schema.memory_schema()
+    ctx = SessionContext()
+
+    my_catalog  = Catalog.memory_catalog()
+    my_schema   = Schema.memory_schema()
 
     my_catalog.register_schema("my_schema_name", my_schema)
+    ctx.register_catalog_provider("my_catalog_name", my_catalog)
 
-    ctx.register_catalog("my_catalog_name", my_catalog)
+    df = ctx.read_csv("pokemon.csv")
 
-You could then register tables in ``my_schema`` and access them either through the DataFrame
-API or via sql commands such as ``"SELECT * from my_catalog_name.my_schema_name.my_table"``.
+    my_schema.register_table('pokemon',df)
+
+    pokemon = ctx.sql("SELECT * FROM my_catalog_name.my_schema_name.pokemon")
+
+    pokemon.show()
 
 User Defined Catalog and Schema
 -------------------------------
