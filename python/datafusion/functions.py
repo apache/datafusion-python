@@ -1362,14 +1362,6 @@ def make_list(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     This is an alias for :py:func:`make_array`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(dfn.functions.make_list(dfn.lit(4), dfn.lit(5)).alias("arr"))
-    >>> result.collect_column("arr")[0].as_py()
-    [4, 5]
     """
     return make_array(*args)
 
@@ -1378,14 +1370,6 @@ def array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     This is an alias for :py:func:`make_array`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(dfn.functions.array(dfn.lit(7), dfn.lit(8)).alias("arr"))
-    >>> result.collect_column("arr")[0].as_py()
-    [7, 8]
     """
     return make_array(*args)
 
@@ -1467,15 +1451,6 @@ def array_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     This is an alias for :py:func:`array_append`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_push_back(dfn.col("a"), dfn.lit(3)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3]
     """
     return array_append(array, element)
 
@@ -1484,15 +1459,6 @@ def list_append(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     This is an alias for :py:func:`array_append`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_append(dfn.col("a"), dfn.lit(3)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3]
     """
     return array_append(array, element)
 
@@ -1501,15 +1467,6 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     This is an alias for :py:func:`array_append`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_push_back(dfn.col("a"), dfn.lit(3)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3]
     """
     return array_append(array, element)
 
@@ -1534,15 +1491,6 @@ def array_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     This is an alias for :py:func:`array_concat`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_cat(dfn.col("a"), dfn.col("b")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3, 4]
     """
     return array_concat(*args)
 
@@ -1585,15 +1533,6 @@ def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_cat(dfn.col("a"), dfn.col("b")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3, 4]
     """
     return array_concat(*args)
 
@@ -1602,15 +1541,6 @@ def list_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_concat(dfn.col("a"), dfn.col("b")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3, 4]
     """
     return array_concat(*args)
 
@@ -1619,20 +1549,6 @@ def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
     This is an alias for :py:func:`array_distinct`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 1, 2, 3]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_distinct(
-    ...         dfn.col("a")
-    ...     ).alias("result")
-    ... )
-    >>> sorted(
-    ...     result.collect_column("result")[0].as_py()
-    ... )
-    [1, 2, 3]
     """
     return array_distinct(array)
 
@@ -1641,14 +1557,6 @@ def list_dims(array: Expr) -> Expr:
     """Returns an array of the array's dimensions.
 
     This is an alias for :py:func:`array_dims`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    >>> result = df.select(dfn.functions.list_dims(dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [3]
     """
     return array_dims(array)
 
@@ -1686,15 +1594,6 @@ def array_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
     This is an alias for :py:func:`array_element`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_extract(dfn.col("a"), dfn.lit(2)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    20
     """
     return array_element(array, n)
 
@@ -1703,15 +1602,6 @@ def list_element(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
     This is an alias for :py:func:`array_element`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_element(dfn.col("a"), dfn.lit(2)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    20
     """
     return array_element(array, n)
 
@@ -1720,15 +1610,6 @@ def list_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
     This is an alias for :py:func:`array_element`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_extract(dfn.col("a"), dfn.lit(2)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    20
     """
     return array_element(array, n)
 
@@ -1751,14 +1632,6 @@ def list_length(array: Expr) -> Expr:
     """Returns the length of the array.
 
     This is an alias for :py:func:`array_length`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    >>> result = df.select(dfn.functions.list_length(dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    3
     """
     return array_length(array)
 
@@ -1833,15 +1706,6 @@ def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for :py:func:`array_position`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_indexof(dfn.col("a"), dfn.lit(20)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    2
     """
     return array_position(array, element, index)
 
@@ -1850,15 +1714,6 @@ def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for :py:func:`array_position`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_position(dfn.col("a"), dfn.lit(20)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    2
     """
     return array_position(array, element, index)
 
@@ -1867,15 +1722,6 @@ def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for :py:func:`array_position`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_indexof(dfn.col("a"), dfn.lit(20)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    2
     """
     return array_position(array, element, index)
 
@@ -1899,15 +1745,6 @@ def list_positions(array: Expr, element: Expr) -> Expr:
     """Searches for an element in the array and returns all occurrences.
 
     This is an alias for :py:func:`array_positions`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_positions(dfn.col("a"), dfn.lit(1)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 3]
     """
     return array_positions(array, element)
 
@@ -1930,14 +1767,6 @@ def list_ndims(array: Expr) -> Expr:
     """Returns the number of dimensions of the array.
 
     This is an alias for :py:func:`array_ndims`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    >>> result = df.select(dfn.functions.list_ndims(dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    1
     """
     return array_ndims(array)
 
@@ -1961,15 +1790,6 @@ def array_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     This is an alias for :py:func:`array_prepend`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_push_front(dfn.lit(0), dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [0, 1, 2]
     """
     return array_prepend(element, array)
 
@@ -1978,15 +1798,6 @@ def list_prepend(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     This is an alias for :py:func:`array_prepend`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_prepend(dfn.lit(0), dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [0, 1, 2]
     """
     return array_prepend(element, array)
 
@@ -1995,15 +1806,6 @@ def list_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     This is an alias for :py:func:`array_prepend`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_push_front(dfn.lit(0), dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [0, 1, 2]
     """
     return array_prepend(element, array)
 
@@ -2055,15 +1857,6 @@ def list_remove(array: Expr, element: Expr) -> Expr:
     """Removes the first element from the array equal to the given value.
 
     This is an alias for :py:func:`array_remove`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_remove(dfn.col("a"), dfn.lit(1)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [2, 1]
     """
     return array_remove(array, element)
 
@@ -2088,16 +1881,6 @@ def list_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
     This is an alias for :py:func:`array_remove_n`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_remove_n(dfn.col("a"), dfn.lit(1),
-    ...     dfn.lit(2)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [2, 1]
     """
     return array_remove_n(array, element, max)
 
@@ -2121,15 +1904,6 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
     """Removes all elements from the array equal to the given value.
 
     This is an alias for :py:func:`array_remove_all`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_remove_all(dfn.col("a"), dfn.lit(1)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [2]
     """
     return array_remove_all(array, element)
 
@@ -2153,15 +1927,6 @@ def list_repeat(element: Expr, count: Expr) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
     This is an alias for :py:func:`array_repeat`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(
-    ...     dfn.functions.list_repeat(dfn.lit(3), dfn.lit(3)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [3, 3, 3]
     """
     return array_repeat(element, count)
 
@@ -2186,16 +1951,6 @@ def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces the first occurrence of ``from_val`` with ``to_val``.
 
     This is an alias for :py:func:`array_replace`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_replace(dfn.col("a"), dfn.lit(1),
-    ...     dfn.lit(9)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [9, 2, 1]
     """
     return array_replace(array, from_val, to_val)
 
@@ -2226,16 +1981,6 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr
     specified element.
 
     This is an alias for :py:func:`array_replace_n`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_replace_n(dfn.col("a"), dfn.lit(1), dfn.lit(9),
-    ...     dfn.lit(2)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [9, 2, 9, 1]
     """
     return array_replace_n(array, from_val, to_val, max)
 
@@ -2260,16 +2005,6 @@ def list_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces all occurrences of ``from_val`` with ``to_val``.
 
     This is an alias for :py:func:`array_replace_all`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_replace_all(dfn.col("a"), dfn.lit(1),
-    ...     dfn.lit(9)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [9, 2, 9]
     """
     return array_replace_all(array, from_val, to_val)
 
@@ -2302,16 +2037,7 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
 
 
 def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -> Expr:
-    """This is an alias for :py:func:`array_sort`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[3, 1, 2]]})
-    >>> result = df.select(dfn.functions.list_sort(dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 3]
-    """
+    """This is an alias for :py:func:`array_sort`."""
     return array_sort(array, descending=descending, null_first=null_first)
 
 
@@ -2339,16 +2065,6 @@ def list_slice(array: Expr, begin: Expr, end: Expr, stride: Expr | None = None) 
     """Returns a slice of the array.
 
     This is an alias for :py:func:`array_slice`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_slice(dfn.col("a"), dfn.lit(2),
-    ...     dfn.lit(3)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [2, 3]
     """
     return array_slice(array, begin, end, stride)
 
@@ -2377,20 +2093,6 @@ def list_intersect(array1: Expr, array2: Expr) -> Expr:
     """Returns an the intersection of ``array1`` and ``array2``.
 
     This is an alias for :py:func:`array_intersect`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_intersect(
-    ...         dfn.col("a"), dfn.col("b")
-    ...     ).alias("result")
-    ... )
-    >>> sorted(
-    ...     result.collect_column("result")[0].as_py()
-    ... )
-    [2, 3]
     """
     return array_intersect(array1, array2)
 
@@ -2423,20 +2125,6 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
     Duplicate rows will not be returned.
 
     This is an alias for :py:func:`array_union`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_union(
-    ...         dfn.col("a"), dfn.col("b")
-    ...     ).alias("result")
-    ... )
-    >>> sorted(
-    ...     result.collect_column("result")[0].as_py()
-    ... )
-    [1, 2, 3, 4]
     """
     return array_union(array1, array2)
 
@@ -2460,15 +2148,6 @@ def list_except(array1: Expr, array2: Expr) -> Expr:
     """Returns the elements that appear in ``array1`` but not in the ``array2``.
 
     This is an alias for :py:func:`array_except`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_except(dfn.col("a"), dfn.col("b")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1]
     """
     return array_except(array1, array2)
 
@@ -2497,16 +2176,6 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
 
     If ``size`` is greater than the ``array`` length, the additional entries will be
     filled with the given ``value``. This is an alias for :py:func:`array_resize`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_resize(dfn.col("a"), dfn.lit(4),
-    ...     dfn.lit(0)).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    [1, 2, 0, 0]
     """
     return array_resize(array, size, value)
 
@@ -2540,16 +2209,7 @@ def cardinality(array: Expr) -> Expr:
 
 
 def empty(array: Expr) -> Expr:
-    """This is an alias for :py:func:`array_empty`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2]]})
-    >>> result = df.select(dfn.functions.empty(dfn.col("a")).alias("result"))
-    >>> result.collect_column("result")[0].as_py()
-    False
-    """
+    """This is an alias for :py:func:`array_empty`."""
     return array_empty(array)
 
 
