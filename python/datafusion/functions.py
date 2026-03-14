@@ -1450,13 +1450,18 @@ def date_bin(stride: Expr, source: Expr, origin: Expr) -> Expr:
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
-    >>> result = ctx.sql(
-    ...     "SELECT date_bin(interval '1 day',"
-    ...     " timestamp '2021-07-15 12:34:56',"
-    ...     " timestamp '2021-01-01') as b"
+    >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
+    >>> result = df.select(
+    ...     dfn.functions.date_bin(
+    ...         dfn.string_literal("15 minutes"),
+    ...         dfn.col("timestamp"),
+    ...         dfn.string_literal("2001-01-01 00:00:00")
+    ...     ).alias("b")
     ... )
     >>> str(result.collect_column("b")[0].as_py())
-    '2021-07-15 00:00:00'
+    '2021-07-15 12:30:00'
+    >>> str(result.collect_column("b")[1].as_py())
+    '2021-01-01 00:00:00'
     """
     return Expr(f.date_bin(stride.expr, source.expr, origin.expr))
 
