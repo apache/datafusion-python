@@ -483,8 +483,7 @@ def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> So
 def alias(expr: Expr, name: str, metadata: dict[str, str] | None = None) -> Expr:
     """Creates an alias expression with an optional metadata dictionary.
 
-    Parameters:
-    -----------
+    Args:
         expr: The expression to alias
         name: The alias name
         metadata: Optional metadata to attach to the column
