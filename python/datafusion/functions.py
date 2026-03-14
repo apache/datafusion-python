@@ -678,14 +678,11 @@ def cot(arg: Expr) -> Expr:
     >>> from math import pi
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [pi / 4]})
-    >>> import builtins
     >>> result = df.select(
     ...     dfn.functions.cot(dfn.col("a")).alias("cot")
     ... )
-    >>> builtins.round(
-    ...     result.collect_column("cot")[0].as_py(), 1
-    ... )
-    1.0
+    >>> result.collect_column("cot")[0].as_py()
+    1.0...
     """
     return Expr(f.cot(arg.expr))
 
@@ -886,14 +883,11 @@ def radians(arg: Expr) -> Expr:
     >>> from math import pi
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [180.0]})
-    >>> import builtins
     >>> result = df.select(
     ...     dfn.functions.radians(dfn.col("a")).alias("rad")
     ... )
-    >>> builtins.round(
-    ...     result.collect_column("rad")[0].as_py(), 6
-    ... )
-    3.141593
+    >>> result.collect_column("rad")[0].as_py()
+    3.14159...
     """
     return Expr(f.radians(arg.expr))
 
@@ -3035,18 +3029,15 @@ def cume_dist(
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [10, 10, 20]})
-    >>> import builtins
+    >>> df = ctx.from_pydict({"a": [1., 2., 2., 3.]})
     >>> result = df.select(
     ...     dfn.col("a"),
     ...     dfn.functions.cume_dist(
     ...         order_by="a"
     ...     ).alias("cd")
     ... )
-    >>> [builtins.round(x, 4) for x in
-    ...     result.sort(dfn.col("a")
-    ... ).collect_column("cd").to_pylist()]
-    [0.6667, 0.6667, 1.0]
+    >>> result.collect_column("cd").to_pylist()
+    [0.25..., 0.75..., 0.75..., 1.0...]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
