@@ -2513,10 +2513,6 @@ def first_value(
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
 
-    For example::
-
-        df.aggregate([], first_value(col("a"), order_by="ts"))
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2557,10 +2553,6 @@ def last_value(
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
-
-    For example::
-
-        df.aggregate([], last_value(col("a"), order_by="ts"))
 
     Examples:
     ---------
