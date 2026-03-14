@@ -373,16 +373,8 @@ def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
 def array_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :py:func:`array_to_string`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    >>> result = df.select(
-    ...     dfn.functions.array_join(dfn.col("a"), dfn.lit("-")).alias("s"))
-    >>> result.collect_column("s")[0].as_py()
-    '1-2-3'
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -390,16 +382,8 @@ def array_join(expr: Expr, delimiter: Expr) -> Expr:
 def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :py:func:`array_to_string`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[4, 5, 6]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_to_string(dfn.col("a"), dfn.lit(",")).alias("s"))
-    >>> result.collect_column("s")[0].as_py()
-    '4,5,6'
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -409,14 +393,8 @@ def list_join(expr: Expr, delimiter: Expr) -> Expr:
 
     This is an alias for :py:func:`array_to_string`.
 
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [[7, 8, 9]]})
-    >>> result = df.select(
-    ...     dfn.functions.list_join(dfn.col("a"), dfn.lit("|")).alias("s"))
-    >>> result.collect_column("s")[0].as_py()
-    '7|8|9'
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
