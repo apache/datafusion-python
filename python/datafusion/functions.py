@@ -845,15 +845,6 @@ def instr(string: Expr, substring: Expr) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     This is an alias for :py:func:`strpos`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["hello world"]})
-    >>> result = df.select(
-    ...     dfn.functions.instr(dfn.col("a"), dfn.lit("world")).alias("pos"))
-    >>> result.collect_column("pos")[0].as_py()
-    7
     """
     return strpos(string, substring)
 
@@ -1027,15 +1018,6 @@ def position(string: Expr, substring: Expr) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     This is an alias for :py:func:`strpos`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["hello"]})
-    >>> result = df.select(
-    ...     dfn.functions.position(dfn.col("a"), dfn.lit("llo")).alias("pos"))
-    >>> result.collect_column("pos")[0].as_py()
-    3
     """
     return strpos(string, substring)
 
