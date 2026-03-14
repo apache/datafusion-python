@@ -2009,10 +2009,6 @@ def array_agg(
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values. Accepts column names or expressions.
-
-    For example::
-
-        df.aggregate([], array_agg(col("a"), order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2597,10 +2593,6 @@ def nth_value(
             column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
 
-    For example::
-
-        df.aggregate([], nth_value(col("a"), 2, order_by="ts"))
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2745,10 +2737,6 @@ def lead(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        lead(col("b"), order_by="ts")
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2810,10 +2798,6 @@ def lag(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        lag(col("b"), order_by="ts")
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2865,10 +2849,6 @@ def row_number(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        row_number(order_by="points")
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2918,10 +2898,6 @@ def rank(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        rank(order_by="points")
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -2964,10 +2940,6 @@ def dense_rank(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
-
-    For example::
-
-        dense_rank(order_by="points")
 
     Examples:
     ---------
@@ -3014,9 +2986,6 @@ def percent_rank(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        percent_rank(order_by="points")
 
     Examples:
     ---------
@@ -3062,10 +3031,6 @@ def cume_dist(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
-
-    For example::
-
-        cume_dist(order_by="points")
 
     Examples:
     ---------
@@ -3123,10 +3088,6 @@ def ntile(
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
 
-    For example::
-
-        ntile(3, order_by="points")
-
     Examples:
     ---------
     >>> ctx = dfn.SessionContext()
@@ -3169,10 +3130,6 @@ def string_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
-
-    For example::
-
-        df.aggregate([], string_agg(col("a"), ",", order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
