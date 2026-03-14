@@ -1036,10 +1036,13 @@ def regexp_instr(
 ) -> Expr:
     r"""Returns the position of a regular expression match in a string.
 
-    Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
-    ``start`` (the first position is 1). Returns the starting or ending position based
-    on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
-    return the position of a specific capture group instead of the entire match.
+    Args:
+        values: Data to search for the regular expression match.
+        regex: Regular expression to search for.
+        start: Optional position to start the search (the first position is 1).
+        n: Optional occurrence of the match to find (the first occurrence is 1).
+        flags: Optional regular expression flags to control regex behavior.
+        sub_expr: Optionally capture group position instead of the entire match.
 
     Examples:
     ---------
