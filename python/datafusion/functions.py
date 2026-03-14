@@ -630,8 +630,8 @@ def ceil(arg: Expr) -> Expr:
     ---------
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [1.9]})
-    >>> floor_df = df.select(dfn.functions.ceil(dfn.col("a")).alias("ceil"))
-    >>> floor_df.collect_column("ceil")[0].as_py()
+    >>> ceil_df = df.select(dfn.functions.ceil(dfn.col("a")).alias("ceil"))
+    >>> ceil_df.collect_column("ceil")[0].as_py()
     2.0
     """
     return Expr(f.ceil(arg.expr))
