@@ -496,12 +496,11 @@ def acos(arg: Expr) -> Expr:
     """Returns the arc cosine or inverse cosine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
-    >>> result.collect_column("acos")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+        >>> result.collect_column("acos")[0].as_py()
+        0.0
     """
     return Expr(f.acos(arg.expr))
 
@@ -510,12 +509,11 @@ def acosh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic cosine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
-    >>> result.collect_column("acosh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+        >>> result.collect_column("acosh")[0].as_py()
+        0.0
     """
     return Expr(f.acosh(arg.expr))
 
@@ -529,12 +527,11 @@ def asin(arg: Expr) -> Expr:
     """Returns the arc sine or inverse sine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
-    >>> result.collect_column("asin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+        >>> result.collect_column("asin")[0].as_py()
+        0.0
     """
     return Expr(f.asin(arg.expr))
 
@@ -543,12 +540,11 @@ def asinh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic sine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
-    >>> result.collect_column("asinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+        >>> result.collect_column("asinh")[0].as_py()
+        0.0
     """
     return Expr(f.asinh(arg.expr))
 
@@ -557,12 +553,11 @@ def atan(arg: Expr) -> Expr:
     """Returns inverse tangent of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
-    >>> result.collect_column("atan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+        >>> result.collect_column("atan")[0].as_py()
+        0.0
     """
     return Expr(f.atan(arg.expr))
 
@@ -571,12 +566,11 @@ def atanh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic tangent.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
-    >>> result.collect_column("atanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+        >>> result.collect_column("atanh")[0].as_py()
+        0.0
     """
     return Expr(f.atanh(arg.expr))
 
@@ -585,13 +579,12 @@ def atan2(y: Expr, x: Expr) -> Expr:
     """Returns inverse tangent of a division given in the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
-    >>> result = df.select(
-    ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result.collect_column("atan2")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+        >>> result.collect_column("atan2")[0].as_py()
+        0.0
     """
     return Expr(f.atan2(y.expr, x.expr))
 
@@ -637,7 +630,16 @@ def chr(arg: Expr) -> Expr:
 
 
 def coalesce(*args: Expr) -> Expr:
-    """Returns the value of the first expr in ``args`` which is not NULL."""
+    """Returns the value of the first expr in ``args`` which is not NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 1], "b": [2, 3]})
+        >>> result = df.select(
+        ...     dfn.functions.coalesce(dfn.col("a"), dfn.col("b")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        2
+    """
     args = [arg.expr for arg in args]
     return Expr(f.coalesce(*args))
 
@@ -646,12 +648,11 @@ def cos(arg: Expr) -> Expr:
     """Returns the cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
-    >>> cos_df.collect_column("cos")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+        >>> cos_df.collect_column("cos")[0].as_py()
+        1.0
     """
     return Expr(f.cos(arg.expr))
 
@@ -660,12 +661,11 @@ def cosh(arg: Expr) -> Expr:
     """Returns the hyperbolic cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
-    >>> cosh_df.collect_column("cosh")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+        >>> cosh_df.collect_column("cosh")[0].as_py()
+        1.0
     """
     return Expr(f.cosh(arg.expr))
 
@@ -674,18 +674,17 @@ def cot(arg: Expr) -> Expr:
     """Returns the cotangent of the argument.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [pi / 4]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("cot")[0].as_py(), 1
-    ... )
-    1.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [pi / 4]})
+        >>> import builtins
+        >>> result = df.select(
+        ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+        ... )
+        >>> builtins.round(
+        ...     result.collect_column("cot")[0].as_py(), 1
+        ... )
+        1.0
     """
     return Expr(f.cot(arg.expr))
 
@@ -694,13 +693,12 @@ def degrees(arg: Expr) -> Expr:
     """Converts the argument from radians to degrees.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
-    >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
-    >>> deg_df.collect_column("deg")[2].as_py()
-    360.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+        >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+        >>> deg_df.collect_column("deg")[2].as_py()
+        360.0
     """
     return Expr(f.degrees(arg.expr))
 
@@ -820,7 +818,15 @@ def ltrim(arg: Expr) -> Expr:
 
 
 def md5(arg: Expr) -> Expr:
-    """Computes an MD5 128-bit checksum for a string expression."""
+    """Computes an MD5 128-bit checksum for a string expression.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(dfn.functions.md5(dfn.col("a")).alias("md5"))
+        >>> result.collect_column("md5")[0].as_py()
+        '5d41402abc4b2a76b9719d911017c592'
+    """
     return Expr(f.md5(arg.expr))
 
 
@@ -830,7 +836,19 @@ def nanvl(x: Expr, y: Expr) -> Expr:
 
 
 def nvl(x: Expr, y: Expr) -> Expr:
-    """Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``."""
+    """Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 1], "b": [0, 0]})
+        >>> nvl_df = df.select(
+        ...     dfn.functions.nvl(dfn.col("a"), dfn.col("b")).alias("nvl")
+        ... )
+        >>> nvl_df.collect_column("nvl")[0].as_py()
+        0
+        >>> nvl_df.collect_column("nvl")[1].as_py()
+        1
+    """
     return Expr(f.nvl(x.expr, y.expr))
 
 
@@ -882,27 +900,37 @@ def radians(arg: Expr) -> Expr:
     """Converts the argument from degrees to radians.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [180.0]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("rad")[0].as_py(), 6
-    ... )
-    3.141593
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [180.0]})
+        >>> import builtins
+        >>> result = df.select(
+        ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+        ... )
+        >>> builtins.round(
+        ...     result.collect_column("rad")[0].as_py(), 6
+        ... )
+        3.141593
     """
     return Expr(f.radians(arg.expr))
 
 
 def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
-    """Find if any regular expression (regex) matches exist.
+    r"""Find if any regular expression (regex) matches exist.
 
     Tests a string using a regular expression returning true if at least one match,
     false otherwise.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello123"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_like(
+        ...         dfn.col("a"), dfn.lit("\\d+")
+        ...     ).alias("m")
+        ... )
+        >>> result.collect_column("m")[0].as_py()
+        True
     """
     if flags is not None:
         flags = flags.expr
@@ -910,10 +938,21 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
 
 
 def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
-    """Perform regular expression (regex) matching.
+    r"""Perform regular expression (regex) matching.
 
     Returns an array with each element containing the leftmost-first match of the
     corresponding index in ``regex`` to string in ``string``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_match(
+        ...         dfn.col("a"), dfn.lit("(\\d+)")
+        ...     ).alias("m")
+        ... )
+        >>> result.collect_column("m")[0].as_py()
+        ['42']
     """
     if flags is not None:
         flags = flags.expr
@@ -923,13 +962,25 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
 def regexp_replace(
     string: Expr, pattern: Expr, replacement: Expr, flags: Expr | None = None
 ) -> Expr:
-    """Replaces substring(s) matching a PCRE-like regular expression.
+    r"""Replaces substring(s) matching a PCRE-like regular expression.
 
     The full list of supported features and syntax can be found at
     <https://docs.rs/regex/latest/regex/#syntax>
 
     Supported flags with the addition of 'g' can be found at
     <https://docs.rs/regex/latest/regex/#grouping-and-flags>
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello 42"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_replace(
+        ...         dfn.col("a"), dfn.lit("\\d+"),
+        ...         dfn.lit("XX")
+        ...     ).alias("r")
+        ... )
+        >>> result.collect_column("r")[0].as_py()
+        'hello XX'
     """
     if flags is not None:
         flags = flags.expr
@@ -943,6 +994,14 @@ def regexp_count(
 
     Optional start position (the first position is 1) to search for the regular
     expression.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["abcabc"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_count(dfn.col("a"), dfn.lit("abc")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        2
     """
     if flags is not None:
         flags = flags.expr
@@ -958,12 +1017,26 @@ def regexp_instr(
     flags: Expr | None = None,
     sub_expr: Expr | None = None,
 ) -> Expr:
-    """Returns the position of a regular expression match in a string.
+    r"""Returns the position of a regular expression match in a string.
 
-    Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
-    ``start`` (the first position is 1). Returns the starting or ending position based
-    on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
-    return the position of a specific capture group instead of the entire match.
+    Args:
+        values: Data to search for the regular expression match.
+        regex: Regular expression to search for.
+        start: Optional position to start the search (the first position is 1).
+        n: Optional occurrence of the match to find (the first occurrence is 1).
+        flags: Optional regular expression flags to control regex behavior.
+        sub_expr: Optionally capture group position instead of the entire match.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_instr(
+        ...         dfn.col("a"), dfn.lit("\\d+")
+        ...     ).alias("pos")
+        ... )
+        >>> result.collect_column("pos")[0].as_py()
+        7
     """
     start = start.expr if start is not None else None
     n = n.expr if n is not None else None
@@ -1030,22 +1103,62 @@ def rtrim(arg: Expr) -> Expr:
 
 
 def sha224(arg: Expr) -> Expr:
-    """Computes the SHA-224 hash of a binary string."""
+    """Computes the SHA-224 hash of a binary string.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.sha224(dfn.col("a")).alias("h")
+        ... )
+        >>> result.collect_column("h")[0].as_py().hex()
+        'ea09ae9cc6768c50fcee903ed054556e5bfc8347907f12598aa24193'
+    """
     return Expr(f.sha224(arg.expr))
 
 
 def sha256(arg: Expr) -> Expr:
-    """Computes the SHA-256 hash of a binary string."""
+    """Computes the SHA-256 hash of a binary string.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.sha256(dfn.col("a")).alias("h")
+        ... )
+        >>> result.collect_column("h")[0].as_py().hex()
+        '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
+    """
     return Expr(f.sha256(arg.expr))
 
 
 def sha384(arg: Expr) -> Expr:
-    """Computes the SHA-384 hash of a binary string."""
+    """Computes the SHA-384 hash of a binary string.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.sha384(dfn.col("a")).alias("h")
+        ... )
+        >>> result.collect_column("h")[0].as_py().hex()
+        '59e1748777448c69de6b800d7a33bbfb9ff1b...
+    """
     return Expr(f.sha384(arg.expr))
 
 
 def sha512(arg: Expr) -> Expr:
-    """Computes the SHA-512 hash of a binary string."""
+    """Computes the SHA-512 hash of a binary string.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.sha512(dfn.col("a")).alias("h")
+        ... )
+        >>> result.collect_column("h")[0].as_py().hex()
+        '9b71d224bd62f3785d96d46ad3ea3d73319bfb...
+    """
     return Expr(f.sha512(arg.expr))
 
 
@@ -1058,12 +1171,11 @@ def sin(arg: Expr) -> Expr:
     """Returns the sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
-    >>> result.collect_column("sin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+        >>> result.collect_column("sin")[0].as_py()
+        0.0
     """
     return Expr(f.sin(arg.expr))
 
@@ -1072,12 +1184,11 @@ def sinh(arg: Expr) -> Expr:
     """Returns the hyperbolic sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
-    >>> result.collect_column("sinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+        >>> result.collect_column("sinh")[0].as_py()
+        0.0
     """
     return Expr(f.sinh(arg.expr))
 
@@ -1129,12 +1240,11 @@ def tan(arg: Expr) -> Expr:
     """Returns the tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
-    >>> result.collect_column("tan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+        >>> result.collect_column("tan")[0].as_py()
+        0.0
     """
     return Expr(f.tan(arg.expr))
 
@@ -1143,12 +1253,11 @@ def tanh(arg: Expr) -> Expr:
     """Returns the hyperbolic tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
-    >>> result.collect_column("tanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+        >>> result.collect_column("tanh")[0].as_py()
+        0.0
     """
     return Expr(f.tanh(arg.expr))
 
@@ -1370,18 +1479,56 @@ def range(start: Expr, stop: Expr, step: Expr) -> Expr:
 
 
 def uuid() -> Expr:
-    """Returns uuid v4 as a string value."""
+    """Returns uuid v4 as a string value.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.uuid().alias("u")
+        ... )
+        >>> len(result.collect_column("u")[0].as_py()) == 36
+        True
+    """
     return Expr(f.uuid())
 
 
 def struct(*args: Expr) -> Expr:
-    """Returns a struct with the given arguments."""
+    """Returns a struct with the given arguments.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1], "b": [2]})
+        >>> result = df.select(
+        ...     dfn.functions.struct(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("s")
+        ... )
+
+        Children in the new struct will always be `c0`, ..., `cN-1`
+        for `N` children.
+
+        >>> result.collect_column("s")[0].as_py() == {"c0": 1, "c1": 2}
+        True
+    """
     args = [arg.expr for arg in args]
     return Expr(f.struct(*args))
 
 
 def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
-    """Returns a struct with the given names and arguments pairs."""
+    """Returns a struct with the given names and arguments pairs.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.named_struct(
+        ...         [("x", dfn.lit(10)), ("y", dfn.lit(20))]
+        ...     ).alias("s")
+        ... )
+        >>> result.collect_column("s")[0].as_py() == {"x": 10, "y": 20}
+        True
+    """
     name_pair_exprs = [
         [Expr.literal(pa.scalar(pair[0], type=pa.string())), pair[1]]
         for pair in name_pairs
@@ -1398,12 +1545,31 @@ def from_unixtime(arg: Expr) -> Expr:
 
 
 def arrow_typeof(arg: Expr) -> Expr:
-    """Returns the Arrow type of the expression."""
+    """Returns the Arrow type of the expression.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(dfn.functions.arrow_typeof(dfn.col("a")).alias("t"))
+        >>> result.collect_column("t")[0].as_py()
+        'Int64'
+    """
     return Expr(f.arrow_typeof(arg.expr))
 
 
 def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
-    """Casts an expression to a specified data type."""
+    """Casts an expression to a specified data type.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> data_type = dfn.string_literal("Float64")
+        >>> result = df.select(
+        ...     dfn.functions.arrow_cast(dfn.col("a"), data_type).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py()
+        1.0
+    """
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
