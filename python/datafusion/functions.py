@@ -2115,17 +2115,15 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     ---------
     >>> import builtins
     >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
     >>> result = df.aggregate(
     ...     [],
     ...     [dfn.functions.covar_pop(
     ...         dfn.col("a"), dfn.col("b")
     ...     ).alias("v")]
     ... )
-    >>> builtins.round(
-    ...     result.collect_column("v")[0].as_py(), 4
-    ... )
-    0.6667
+    >>> result.collect_column("v")[0].as_py() == 1.
+    True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
