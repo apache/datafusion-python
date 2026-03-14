@@ -485,9 +485,8 @@ def abs(arg: Expr) -> Expr:
     """Return the absolute value of a given number.
 
     Returns:
-    --------
-    Expr
-        A new expression representing the absolute value of the input expression.
+        Expr
+            A new expression representing the absolute value of the input expression.
     """
     return Expr(f.abs(arg.expr))
 
@@ -496,12 +495,11 @@ def acos(arg: Expr) -> Expr:
     """Returns the arc cosine or inverse cosine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
-    >>> result.collect_column("acos")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+        >>> result.collect_column("acos")[0].as_py()
+        0.0
     """
     return Expr(f.acos(arg.expr))
 
@@ -510,12 +508,11 @@ def acosh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic cosine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
-    >>> result.collect_column("acosh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+        >>> result.collect_column("acosh")[0].as_py()
+        0.0
     """
     return Expr(f.acosh(arg.expr))
 
@@ -529,12 +526,11 @@ def asin(arg: Expr) -> Expr:
     """Returns the arc sine or inverse sine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
-    >>> result.collect_column("asin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+        >>> result.collect_column("asin")[0].as_py()
+        0.0
     """
     return Expr(f.asin(arg.expr))
 
@@ -543,12 +539,11 @@ def asinh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic sine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
-    >>> result.collect_column("asinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+        >>> result.collect_column("asinh")[0].as_py()
+        0.0
     """
     return Expr(f.asinh(arg.expr))
 
@@ -557,12 +552,11 @@ def atan(arg: Expr) -> Expr:
     """Returns inverse tangent of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
-    >>> result.collect_column("atan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+        >>> result.collect_column("atan")[0].as_py()
+        0.0
     """
     return Expr(f.atan(arg.expr))
 
@@ -571,12 +565,11 @@ def atanh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic tangent.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
-    >>> result.collect_column("atanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+        >>> result.collect_column("atanh")[0].as_py()
+        0.0
     """
     return Expr(f.atanh(arg.expr))
 
@@ -585,13 +578,12 @@ def atan2(y: Expr, x: Expr) -> Expr:
     """Returns inverse tangent of a division given in the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
-    >>> result = df.select(
-    ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result.collect_column("atan2")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+        >>> result.collect_column("atan2")[0].as_py()
+        0.0
     """
     return Expr(f.atan2(y.expr, x.expr))
 
@@ -646,12 +638,11 @@ def cos(arg: Expr) -> Expr:
     """Returns the cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
-    >>> cos_df.collect_column("cos")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+        >>> cos_df.collect_column("cos")[0].as_py()
+        1.0
     """
     return Expr(f.cos(arg.expr))
 
@@ -660,12 +651,11 @@ def cosh(arg: Expr) -> Expr:
     """Returns the hyperbolic cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
-    >>> cosh_df.collect_column("cosh")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+        >>> cosh_df.collect_column("cosh")[0].as_py()
+        1.0
     """
     return Expr(f.cosh(arg.expr))
 
@@ -674,18 +664,14 @@ def cot(arg: Expr) -> Expr:
     """Returns the cotangent of the argument.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [pi / 4]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("cot")[0].as_py(), 1
-    ... )
-    1.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [pi / 4]})
+        >>> result = df.select(
+        ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+        ... )
+        >>> result.collect_column("cot")[0].as_py()
+        1.0...
     """
     return Expr(f.cot(arg.expr))
 
@@ -694,13 +680,12 @@ def degrees(arg: Expr) -> Expr:
     """Converts the argument from radians to degrees.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
-    >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
-    >>> deg_df.collect_column("deg")[2].as_py()
-    360.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+        >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+        >>> deg_df.collect_column("deg")[2].as_py()
+        360.0
     """
     return Expr(f.degrees(arg.expr))
 
@@ -882,18 +867,14 @@ def radians(arg: Expr) -> Expr:
     """Converts the argument from degrees to radians.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [180.0]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("rad")[0].as_py(), 6
-    ... )
-    3.141593
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [180.0]})
+        >>> result = df.select(
+        ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+        ... )
+        >>> result.collect_column("rad")[0].as_py() == pi
+        True
     """
     return Expr(f.radians(arg.expr))
 
@@ -1058,12 +1039,11 @@ def sin(arg: Expr) -> Expr:
     """Returns the sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
-    >>> result.collect_column("sin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+        >>> result.collect_column("sin")[0].as_py()
+        0.0
     """
     return Expr(f.sin(arg.expr))
 
@@ -1072,12 +1052,11 @@ def sinh(arg: Expr) -> Expr:
     """Returns the hyperbolic sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
-    >>> result.collect_column("sinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+        >>> result.collect_column("sinh")[0].as_py()
+        0.0
     """
     return Expr(f.sinh(arg.expr))
 
@@ -1129,12 +1108,11 @@ def tan(arg: Expr) -> Expr:
     """Returns the tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
-    >>> result.collect_column("tan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+        >>> result.collect_column("tan")[0].as_py()
+        0.0
     """
     return Expr(f.tan(arg.expr))
 
@@ -1143,12 +1121,11 @@ def tanh(arg: Expr) -> Expr:
     """Returns the hyperbolic tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
-    >>> result.collect_column("tanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+        >>> result.collect_column("tanh")[0].as_py()
+        0.0
     """
     return Expr(f.tanh(arg.expr))
 
@@ -2057,13 +2034,12 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2112,18 +2088,16 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> import builtins
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [],
-    ...     [dfn.functions.covar_pop(
-    ...         dfn.col("a"), dfn.col("b")
-    ...     ).alias("v")]
-    ... )
-    >>> result.collect_column("v")[0].as_py() == 1.
-    True
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 5.0, 10.0], "b": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.covar_pop(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        3.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2143,13 +2117,12 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2158,16 +2131,8 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
 def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
-    This is an alias for :py:func:`covar_samp`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.covar(dfn.col("a"), dfn.col("b")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+    See Also:
+        This is an alias for :py:func:`covar_samp`.
     """
     return covar_samp(value_y, value_x, filter)
 
@@ -2258,12 +2223,11 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
-    >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+        >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.stddev(expression.expr, filter=filter_raw))
@@ -2280,12 +2244,13 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 3.0]})
-    >>> result = df.aggregate([], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
@@ -2297,12 +2262,13 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     This is an alias for :py:func:`stddev`.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
-    >>> result = df.aggregate([], [dfn.functions.stddev_samp(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev_samp(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     return stddev(arg, filter=filter)
 
@@ -2313,12 +2279,11 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
     This is an alias for :py:func:`var_samp`.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate([], [dfn.functions.var(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate([], [dfn.functions.var(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     return var_samp(expression, filter)
 
@@ -2334,12 +2299,11 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0, 2.0]})
-    >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0, 2.0]})
+        >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
@@ -2356,12 +2320,11 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_sample(expression.expr, filter=filter_raw))
@@ -2373,12 +2336,13 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     This is an alias for :py:func:`var_samp`.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate([], [dfn.functions.var_sample(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_sample(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     return var_samp(expression, filter)
 
@@ -2402,13 +2366,12 @@ def regr_avgx(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    5.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        5.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2434,13 +2397,12 @@ def regr_avgy(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2466,13 +2428,12 @@ def regr_count(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    3
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2498,13 +2459,13 @@ def regr_intercept(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2530,13 +2491,12 @@ def regr_r2(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2562,13 +2522,12 @@ def regr_slope(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2594,13 +2553,12 @@ def regr_sxx(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2626,13 +2584,12 @@ def regr_sxy(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2658,13 +2615,12 @@ def regr_syy(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate(
-    ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
