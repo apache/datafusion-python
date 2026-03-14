@@ -224,7 +224,7 @@ A common technique for organizing tables is using a three level hierarchical app
 supports this form of organizing using the :py:class:`~datafusion.catalog.Catalog`,
 :py:class:`~datafusion.catalog.Schema`, and :py:class:`~datafusion.catalog.Table`. By default,
 a :py:class:`~datafusion.context.SessionContext` comes with a single Catalog and a single Schema
-with the names ``datafusion`` and ``default``, respectively.
+with the names ``datafusion`` and ``public``, respectively.
 
 The default implementation uses an in-memory approach to the catalog and schema. We have support
 for adding additional in-memory catalogs and schemas. You can access tables registered in a schema 
