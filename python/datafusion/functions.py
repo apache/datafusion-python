@@ -1022,14 +1022,6 @@ def pow(base: Expr, exponent: Expr) -> Expr:
     """Returns ``base`` raised to the power of ``exponent``.
 
     This is an alias of :py:func:`power`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [3.0]})
-    >>> result = df.select(dfn.functions.pow(dfn.col("a"), dfn.lit(2.0)).alias("pow"))
-    >>> result.collect_column("pow")[0].as_py()
-    9.0
     """
     return power(base, exponent)
 
