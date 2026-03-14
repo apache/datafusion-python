@@ -1389,16 +1389,6 @@ def datepart(part: Expr, date: Expr) -> Expr:
     """Return a specified part of a date.
 
     This is an alias for :py:func:`date_part`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
-    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
-    >>> result = df.select(
-    ...     dfn.functions.datepart(dfn.lit("month"), dfn.col("a")).alias("m"))
-    >>> result.collect_column("m")[0].as_py()
-    7
     """
     return date_part(part, date)
 
@@ -1423,16 +1413,6 @@ def extract(part: Expr, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     This is an alias for :py:func:`date_part`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
-    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
-    >>> result = df.select(
-    ...     dfn.functions.extract(dfn.lit("day"), dfn.col("a")).alias("d"))
-    >>> result.collect_column("d")[0].as_py()
-    15
     """
     return date_part(part, date)
 
@@ -1460,19 +1440,6 @@ def datetrunc(part: Expr, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     This is an alias for :py:func:`date_trunc`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
-    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
-    >>> result = df.select(
-    ...     dfn.functions.datetrunc(
-    ...         dfn.lit("year"), dfn.col("a")
-    ...     ).alias("t")
-    ... )
-    >>> str(result.collect_column("t")[0].as_py())
-    '2021-01-01 00:00:00'
     """
     return date_trunc(part, date)
 
