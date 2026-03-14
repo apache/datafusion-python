@@ -1532,6 +1532,10 @@ def struct(*args: Expr) -> Expr:
     ...         dfn.col("a"), dfn.col("b")
     ...     ).alias("s")
     ... )
+
+    Children in the new struct will always be `c0`, ..., `cN-1`
+    for `N` children.
+
     >>> result.collect_column("s")[0].as_py() == {"c0": 1, "c1": 2}
     True
     """
