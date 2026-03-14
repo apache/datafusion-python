@@ -496,12 +496,11 @@ def acos(arg: Expr) -> Expr:
     """Returns the arc cosine or inverse cosine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
-    >>> result.collect_column("acos")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
+        >>> result.collect_column("acos")[0].as_py()
+        0.0
     """
     return Expr(f.acos(arg.expr))
 
@@ -510,12 +509,11 @@ def acosh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic cosine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0]})
-    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
-    >>> result.collect_column("acosh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0]})
+        >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
+        >>> result.collect_column("acosh")[0].as_py()
+        0.0
     """
     return Expr(f.acosh(arg.expr))
 
@@ -529,12 +527,11 @@ def asin(arg: Expr) -> Expr:
     """Returns the arc sine or inverse sine of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
-    >>> result.collect_column("asin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
+        >>> result.collect_column("asin")[0].as_py()
+        0.0
     """
     return Expr(f.asin(arg.expr))
 
@@ -543,12 +540,11 @@ def asinh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic sine.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
-    >>> result.collect_column("asinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
+        >>> result.collect_column("asinh")[0].as_py()
+        0.0
     """
     return Expr(f.asinh(arg.expr))
 
@@ -557,12 +553,11 @@ def atan(arg: Expr) -> Expr:
     """Returns inverse tangent of a number.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
-    >>> result.collect_column("atan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
+        >>> result.collect_column("atan")[0].as_py()
+        0.0
     """
     return Expr(f.atan(arg.expr))
 
@@ -571,12 +566,11 @@ def atanh(arg: Expr) -> Expr:
     """Returns inverse hyperbolic tangent.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
-    >>> result.collect_column("atanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
+        >>> result.collect_column("atanh")[0].as_py()
+        0.0
     """
     return Expr(f.atanh(arg.expr))
 
@@ -585,13 +579,12 @@ def atan2(y: Expr, x: Expr) -> Expr:
     """Returns inverse tangent of a division given in the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
-    >>> result = df.select(
-    ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
-    >>> result.collect_column("atan2")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.atan2(dfn.col("y"), dfn.col("x")).alias("atan2"))
+        >>> result.collect_column("atan2")[0].as_py()
+        0.0
     """
     return Expr(f.atan2(y.expr, x.expr))
 
@@ -646,12 +639,11 @@ def cos(arg: Expr) -> Expr:
     """Returns the cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
-    >>> cos_df.collect_column("cos")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
+        >>> cos_df.collect_column("cos")[0].as_py()
+        1.0
     """
     return Expr(f.cos(arg.expr))
 
@@ -660,12 +652,11 @@ def cosh(arg: Expr) -> Expr:
     """Returns the hyperbolic cosine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,-1,1]})
-    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
-    >>> cosh_df.collect_column("cosh")[0].as_py()
-    1.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,-1,1]})
+        >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
+        >>> cosh_df.collect_column("cosh")[0].as_py()
+        1.0
     """
     return Expr(f.cosh(arg.expr))
 
@@ -674,18 +665,17 @@ def cot(arg: Expr) -> Expr:
     """Returns the cotangent of the argument.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [pi / 4]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("cot")[0].as_py(), 1
-    ... )
-    1.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [pi / 4]})
+        >>> import builtins
+        >>> result = df.select(
+        ...     dfn.functions.cot(dfn.col("a")).alias("cot")
+        ... )
+        >>> builtins.round(
+        ...     result.collect_column("cot")[0].as_py(), 1
+        ... )
+        1.0
     """
     return Expr(f.cot(arg.expr))
 
@@ -694,13 +684,12 @@ def degrees(arg: Expr) -> Expr:
     """Converts the argument from radians to degrees.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
-    >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
-    >>> deg_df.collect_column("deg")[2].as_py()
-    360.0
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
+        >>> deg_df = df.select(dfn.functions.degrees(dfn.col("a")).alias("deg"))
+        >>> deg_df.collect_column("deg")[2].as_py()
+        360.0
     """
     return Expr(f.degrees(arg.expr))
 
@@ -882,18 +871,17 @@ def radians(arg: Expr) -> Expr:
     """Converts the argument from degrees to radians.
 
     Examples:
-    ---------
-    >>> from math import pi
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [180.0]})
-    >>> import builtins
-    >>> result = df.select(
-    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
-    ... )
-    >>> builtins.round(
-    ...     result.collect_column("rad")[0].as_py(), 6
-    ... )
-    3.141593
+        >>> from math import pi
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [180.0]})
+        >>> import builtins
+        >>> result = df.select(
+        ...     dfn.functions.radians(dfn.col("a")).alias("rad")
+        ... )
+        >>> builtins.round(
+        ...     result.collect_column("rad")[0].as_py(), 6
+        ... )
+        3.141593
     """
     return Expr(f.radians(arg.expr))
 
@@ -1058,12 +1046,11 @@ def sin(arg: Expr) -> Expr:
     """Returns the sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
-    >>> result.collect_column("sin")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
+        >>> result.collect_column("sin")[0].as_py()
+        0.0
     """
     return Expr(f.sin(arg.expr))
 
@@ -1072,12 +1059,11 @@ def sinh(arg: Expr) -> Expr:
     """Returns the hyperbolic sine of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
-    >>> result.collect_column("sinh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
+        >>> result.collect_column("sinh")[0].as_py()
+        0.0
     """
     return Expr(f.sinh(arg.expr))
 
@@ -1129,12 +1115,11 @@ def tan(arg: Expr) -> Expr:
     """Returns the tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
-    >>> result.collect_column("tan")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
+        >>> result.collect_column("tan")[0].as_py()
+        0.0
     """
     return Expr(f.tan(arg.expr))
 
@@ -1143,12 +1128,11 @@ def tanh(arg: Expr) -> Expr:
     """Returns the hyperbolic tangent of the argument.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0.0]})
-    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
-    >>> result.collect_column("tanh")[0].as_py()
-    0.0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0]})
+        >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
+        >>> result.collect_column("tanh")[0].as_py()
+        0.0
     """
     return Expr(f.tanh(arg.expr))
 
@@ -1164,18 +1148,17 @@ def now() -> Expr:
     This will use the same value for all instances of now() in same statement.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(
-    ...     dfn.functions.now().alias("now")
-    ... )
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.now().alias("now")
+        ... )
 
-    Use .value instead of .as_py() because nanosecond timestamps
-    require pandas to convert to Python datetime objects.
+        Use .value instead of .as_py() because nanosecond timestamps
+        require pandas to convert to Python datetime objects.
 
-    >>> result.collect_column("now")[0].value > 0
-    True
+        >>> result.collect_column("now")[0].value > 0
+        True
     """
     return Expr(f.now())
 
@@ -1238,16 +1221,15 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
-    >>> result = df.select(
-    ...     dfn.functions.to_timestamp(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_timestamp(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1258,16 +1240,15 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
     See :py:func:`to_timestamp` for a description on how to use formatters.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
-    >>> result = df.select(
-    ...     dfn.functions.to_timestamp_millis(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_timestamp_millis(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_millis(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1278,16 +1259,15 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
     See :py:func:`to_timestamp` for a description on how to use formatters.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
-    >>> result = df.select(
-    ...     dfn.functions.to_timestamp_micros(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_timestamp_micros(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_micros(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1298,16 +1278,15 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
     See :py:func:`to_timestamp` for a description on how to use formatters.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
-    >>> result = df.select(
-    ...     dfn.functions.to_timestamp_nanos(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_timestamp_nanos(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_nanos(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1318,16 +1297,15 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
     See :py:func:`to_timestamp` for a description on how to use formatters.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
-    >>> result = df.select(
-    ...     dfn.functions.to_timestamp_seconds(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_timestamp_seconds(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.to_timestamp_seconds(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1336,12 +1314,11 @@ def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
     """Converts a string and optional formats to a Unixtime.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["1970-01-01T00:00:00"]})
-    >>> result = df.select(dfn.functions.to_unixtime(dfn.col("a")).alias("u"))
-    >>> result.collect_column("u")[0].as_py()
-    0
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["1970-01-01T00:00:00"]})
+        >>> result = df.select(dfn.functions.to_unixtime(dfn.col("a")).alias("u"))
+        >>> result.collect_column("u")[0].as_py()
+        0
     """
     return Expr(f.to_unixtime(string.expr, *_unwrap_exprs(format_arguments)))
 
@@ -1350,14 +1327,13 @@ def current_date() -> Expr:
     """Returns current UTC date as a Date32 value.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(
-    ...     dfn.functions.current_date().alias("d")
-    ... )
-    >>> result.collect_column("d")[0].as_py() is not None
-    True
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.current_date().alias("d")
+        ... )
+        >>> result.collect_column("d")[0].as_py() is not None
+        True
     """
     return Expr(f.current_date())
 
@@ -1369,18 +1345,17 @@ def current_time() -> Expr:
     """Returns current UTC time as a Time64 value.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1]})
-    >>> result = df.select(
-    ...     dfn.functions.current_time().alias("t")
-    ... )
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.current_time().alias("t")
+        ... )
 
-    Use .value instead of .as_py() because nanosecond timestamps
-    require pandas to convert to Python datetime objects.
+        Use .value instead of .as_py() because nanosecond timestamps
+        require pandas to convert to Python datetime objects.
 
-    >>> result.collect_column("t")[0].value > 0
-    True
+        >>> result.collect_column("t")[0].value > 0
+        True
     """
     return Expr(f.current_time())
 
@@ -1397,14 +1372,13 @@ def date_part(part: Expr, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
-    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
-    >>> result = df.select(
-    ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
-    >>> result.collect_column("y")[0].as_py()
-    2021
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+        >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+        >>> result = df.select(
+        ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
+        >>> result.collect_column("y")[0].as_py()
+        2021
     """
     return Expr(f.date_part(part.expr, date.expr))
 
@@ -1421,17 +1395,16 @@ def date_trunc(part: Expr, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
-    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
-    >>> result = df.select(
-    ...     dfn.functions.date_trunc(
-    ...         dfn.lit("month"), dfn.col("a")
-    ...     ).alias("t")
-    ... )
-    >>> str(result.collect_column("t")[0].as_py())
-    '2021-07-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+        >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+        >>> result = df.select(
+        ...     dfn.functions.date_trunc(
+        ...         dfn.lit("month"), dfn.col("a")
+        ...     ).alias("t")
+        ... )
+        >>> str(result.collect_column("t")[0].as_py())
+        '2021-07-01 00:00:00'
     """
     return Expr(f.date_trunc(part.expr, date.expr))
 
@@ -1448,20 +1421,19 @@ def date_bin(stride: Expr, source: Expr, origin: Expr) -> Expr:
     """Coerces an arbitrary timestamp to the start of the nearest specified interval.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
-    >>> result = df.select(
-    ...     dfn.functions.date_bin(
-    ...         dfn.string_literal("15 minutes"),
-    ...         dfn.col("timestamp"),
-    ...         dfn.string_literal("2001-01-01 00:00:00")
-    ...     ).alias("b")
-    ... )
-    >>> str(result.collect_column("b")[0].as_py())
-    '2021-07-15 12:30:00'
-    >>> str(result.collect_column("b")[1].as_py())
-    '2021-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
+        >>> result = df.select(
+        ...     dfn.functions.date_bin(
+        ...         dfn.string_literal("15 minutes"),
+        ...         dfn.col("timestamp"),
+        ...         dfn.string_literal("2001-01-01 00:00:00")
+        ...     ).alias("b")
+        ... )
+        >>> str(result.collect_column("b")[0].as_py())
+        '2021-07-15 12:30:00'
+        >>> str(result.collect_column("b")[1].as_py())
+        '2021-01-01 00:00:00'
     """
     return Expr(f.date_bin(stride.expr, source.expr, origin.expr))
 
@@ -1470,15 +1442,14 @@ def make_date(year: Expr, month: Expr, day: Expr) -> Expr:
     """Make a date from year, month and day component parts.
 
     Examples:
-    ---------
-    >>> from datetime import date
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"y": [2024], "m": [1], "d": [15]})
-    >>> result = df.select(
-    ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
-    ...     dfn.col("d")).alias("dt"))
-    >>> result.collect_column("dt")[0].as_py()
-    datetime.date(2024, 1, 15)
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2024], "m": [1], "d": [15]})
+        >>> result = df.select(
+        ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
+        ...     dfn.col("d")).alias("dt"))
+        >>> result.collect_column("dt")[0].as_py()
+        datetime.date(2024, 1, 15)
     """
     return Expr(f.make_date(year.expr, month.expr, day.expr))
 
@@ -1559,16 +1530,15 @@ def from_unixtime(arg: Expr) -> Expr:
     """Converts an integer to RFC3339 timestamp format string.
 
     Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [0]})
-    >>> result = df.select(
-    ...     dfn.functions.from_unixtime(
-    ...         dfn.col("a")
-    ...     ).alias("ts")
-    ... )
-    >>> str(result.collect_column("ts")[0].as_py())
-    '1970-01-01 00:00:00'
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0]})
+        >>> result = df.select(
+        ...     dfn.functions.from_unixtime(
+        ...         dfn.col("a")
+        ...     ).alias("ts")
+        ... )
+        >>> str(result.collect_column("ts")[0].as_py())
+        '1970-01-01 00:00:00'
     """
     return Expr(f.from_unixtime(arg.expr))
 
