@@ -30,15 +30,15 @@ use datafusion::logical_expr::{
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
-use datafusion_python_util::table_provider_from_pycapsule;
+use datafusion_python_util::{create_logical_extension_capsule, table_provider_from_pycapsule};
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
+use crate::errors;
 use crate::expr::create_external_table::PyCreateExternalTable;
-use crate::{errors, utils};
 
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known
@@ -96,7 +96,7 @@ impl PyTable {
                 Some(session) => session,
                 None => PySessionContext::global_ctx()?.into_bound_py_any(obj.py())?,
             };
-            utils::table_provider_from_pycapsule(obj.clone(), session)?
+            table_provider_from_pycapsule(obj.clone(), session)?
         } {
             Ok(PyTable::from(provider))
         } else {
@@ -251,7 +251,7 @@ impl TableProviderFactory for RustWrappedPyTableProviderFactory {
         cmd: &CreateExternalTable,
     ) -> datafusion::common::Result<Arc<dyn TableProvider>> {
         Python::attach(|py| {
-            let codec = utils::create_logical_extension_capsule(py, self.codec.as_ref())
+            let codec = create_logical_extension_capsule(py, self.codec.as_ref())
                 .map_err(errors::to_datafusion_err)?;
 
             self.create_inner(cmd.clone(), codec.into_any())
