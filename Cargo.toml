@@ -15,8 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "datafusion-python"
+[workspace.package]
 version = "52.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
@@ -26,67 +25,43 @@ readme = "README.md"
 license = "Apache-2.0"
 edition = "2024"
 rust-version = "1.88"
-include = [
-  "/src",
-  "/datafusion",
-  "/LICENSE.txt",
-  "build.rs",
-  "pyproject.toml",
-  "Cargo.toml",
-  "Cargo.lock",
-]
 
-[features]
-default = ["mimalloc"]
-protoc = ["datafusion-substrait/protoc"]
-substrait = ["dep:datafusion-substrait"]
+[workspace]
+members = ["crates/core", "crates/util", "examples/datafusion-ffi-example"]
+resolver = "3"
 
-[dependencies]
-tokio = { version = "1.49", features = [
-  "macros",
-  "rt",
-  "rt-multi-thread",
-  "sync",
-] }
-pyo3 = { version = "0.28", features = [
-  "extension-module",
-  "abi3",
-  "abi3-py310",
-] }
-pyo3-async-runtimes = { version = "0.28", features = ["tokio-runtime"] }
+[workspace.dependencies]
+tokio = { version = "1.49" }
+pyo3 = { version = "0.28" }
+pyo3-async-runtimes = { version = "0.28" }
 pyo3-log = "0.13.3"
-arrow = { version = "58", features = ["pyarrow"] }
+arrow = { version = "58" }
+arrow-array = { version = "58" }
+arrow-schema = { version = "58" }
 arrow-select = { version = "58" }
-datafusion = { version = "53", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "53", optional = true }
+datafusion = { version = "53" }
+datafusion-substrait = { version = "53" }
 datafusion-proto = { version = "53" }
 datafusion-ffi = { version = "53" }
-prost = "0.14.3" # keep in line with `datafusion-substrait`
+datafusion-catalog = { version = "53", default-features = false }
+datafusion-common = { version = "53", default-features = false }
+datafusion-functions-aggregate = { version = "53" }
+datafusion-functions-window = { version = "53" }
+datafusion-expr = { version = "53" }
+prost = "0.14.3"
 serde_json = "1"
-uuid = { version = "1.21", features = ["v4"] }
-mimalloc = { version = "0.1", optional = true, default-features = false, features = [
-  "local_dynamic_tls",
-] }
+uuid = { version = "1.21" }
+mimalloc = { version = "0.1", default-features = false }
 async-trait = "0.1.89"
 futures = "0.3"
 cstr = "0.2"
-object_store = { version = "0.13.1", features = [
-  "aws",
-  "gcp",
-  "azure",
-  "http",
-] }
+object_store = { version = "0.13.1" }
 url = "2"
 log = "0.4.29"
 parking_lot = "0.12"
-
-[build-dependencies]
-prost-types = "0.14.3"     # keep in line with `datafusion-substrait`
+prost-types = "0.14.3"                                            # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.28"
-
-[lib]
-name = "datafusion_python"
-crate-type = ["cdylib", "rlib"]
+datafusion-python-util = { path = "crates/util" }
 
 [profile.release]
 lto = true
@@ -99,3 +74,8 @@ datafusion = { git = "https://github.com/apache/datafusion.git", rev = "35749607
 datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
 datafusion-proto = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
 datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
+datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }

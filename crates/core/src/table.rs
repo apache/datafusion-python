@@ -27,13 +27,13 @@ use datafusion::datasource::{TableProvider, TableType};
 use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPushDown};
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
+use datafusion_python_util::table_provider_from_pycapsule;
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::utils::table_provider_from_pycapsule;
 
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known

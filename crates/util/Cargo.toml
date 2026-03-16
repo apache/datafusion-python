@@ -16,38 +16,19 @@
 # under the License.
 
 [package]
-name = "datafusion-ffi-example"
+name = "datafusion-python-util"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description.workspace = true
 homepage.workspace = true
 repository.workspace = true
-publish = false
 
 [dependencies]
-datafusion-catalog = { workspace = true, default-features = false }
-datafusion-common = { workspace = true, default-features = false }
-datafusion-functions-aggregate = { workspace = true }
-datafusion-functions-window = { workspace = true }
-datafusion-expr = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+pyo3 = { workspace = true }
+datafusion = { workspace = true }
 datafusion-ffi = { workspace = true }
-
 arrow = { workspace = true }
-arrow-array = { workspace = true }
-arrow-schema = { workspace = true }
-async-trait = { workspace = true }
-datafusion-python-util.workspace = true
-pyo3 = { workspace = true, features = [
-  "extension-module",
-  "abi3",
-  "abi3-py310",
-] }
-pyo3-log = { workspace = true }
-
-[build-dependencies]
-pyo3-build-config = { workspace = true }
-
-[lib]
-name = "datafusion_ffi_example"
-crate-type = ["cdylib", "rlib"]
+prost = { workspace = true }
