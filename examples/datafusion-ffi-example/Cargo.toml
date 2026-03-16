@@ -21,12 +21,12 @@ version = "0.2.0"
 edition = "2024"
 
 [dependencies]
-datafusion-catalog = { version = "52", default-features = false }
-datafusion-common = { version = "52", default-features = false }
-datafusion-functions-aggregate = { version = "52" }
-datafusion-functions-window = { version = "52" }
-datafusion-expr = { version = "52" }
-datafusion-ffi = { version = "52" }
+datafusion-catalog = { version = "52.3.0", default-features = false }
+datafusion-common = { version = "52.3.0", default-features = false }
+datafusion-functions-aggregate = { version = "52.3.0" }
+datafusion-functions-window = { version = "52.3.0" }
+datafusion-expr = { version = "52.3.0" }
+datafusion-ffi = { version = "52.3.0" }
 
 pyo3 = { version = "0.26", features = [
   "extension-module",
