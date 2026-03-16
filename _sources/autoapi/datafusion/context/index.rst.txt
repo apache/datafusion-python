@@ -825,6 +825,18 @@ Module Contents
 
 
 
+   .. py:method:: register_table_factory(format: str, factory: datafusion.catalog.TableProviderFactory | datafusion.catalog.TableProviderFactoryExportable) -> None
+
+      Register a :py:class:`~datafusion.TableProviderFactoryExportable`.
+
+      The registered factory can be referenced from SQL DDL statements executed
+      against this context.
+
+      :param format: The value to be used in `STORED AS ${format}` clause.
+      :param factory: A PyCapsule that implements :class:`TableProviderFactoryExportable`
+
+
+
    .. py:method:: register_table_provider(name: str, provider: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
       Register a table provider.
