@@ -22,6 +22,7 @@ use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
+use datafusion_python_util::validate_pycapsule;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError};
 use pyo3::ffi::c_str;
@@ -32,7 +33,6 @@ use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTable;
-use crate::utils::validate_pycapsule;
 
 /// Represents a user defined table function
 #[pyclass(from_py_object, frozen, name = "TableFunction", module = "datafusion")]

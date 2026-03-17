@@ -21,19 +21,24 @@ use std::sync::Arc;
 use arrow::datatypes::SchemaRef;
 use arrow::pyarrow::ToPyArrow;
 use async_trait::async_trait;
-use datafusion::catalog::Session;
+use datafusion::catalog::{Session, TableProviderFactory};
 use datafusion::common::Column;
 use datafusion::datasource::{TableProvider, TableType};
-use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPushDown};
+use datafusion::logical_expr::{
+    CreateExternalTable, Expr, LogicalPlanBuilder, TableProviderFilterPushDown,
+};
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
+use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_python_util::{create_logical_extension_capsule, table_provider_from_pycapsule};
 use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::utils::table_provider_from_pycapsule;
+use crate::errors;
+use crate::expr::create_external_table::PyCreateExternalTable;
 
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known
@@ -204,5 +209,53 @@ impl TableProvider for TempViewTable {
         filters: &[&Expr],
     ) -> datafusion::common::Result<Vec<TableProviderFilterPushDown>> {
         Ok(vec![TableProviderFilterPushDown::Exact; filters.len()])
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct RustWrappedPyTableProviderFactory {
+    pub(crate) table_provider_factory: Py<PyAny>,
+    pub(crate) codec: Arc<FFI_LogicalExtensionCodec>,
+}
+
+impl RustWrappedPyTableProviderFactory {
+    pub fn new(table_provider_factory: Py<PyAny>, codec: Arc<FFI_LogicalExtensionCodec>) -> Self {
+        Self {
+            table_provider_factory,
+            codec,
+        }
+    }
+
+    fn create_inner(
+        &self,
+        cmd: CreateExternalTable,
+        codec: Bound<PyAny>,
+    ) -> PyResult<Arc<dyn TableProvider>> {
+        Python::attach(|py| {
+            let provider = self.table_provider_factory.bind(py);
+            let cmd = PyCreateExternalTable::from(cmd);
+
+            provider
+                .call_method1("create", (cmd,))
+                .and_then(|t| PyTable::new(t, Some(codec)))
+                .map(|t| t.table())
+        })
+    }
+}
+
+#[async_trait]
+impl TableProviderFactory for RustWrappedPyTableProviderFactory {
+    async fn create(
+        &self,
+        _: &dyn Session,
+        cmd: &CreateExternalTable,
+    ) -> datafusion::common::Result<Arc<dyn TableProvider>> {
+        Python::attach(|py| {
+            let codec = create_logical_extension_capsule(py, self.codec.as_ref())
+                .map_err(errors::to_datafusion_err)?;
+
+            self.create_inner(cmd.clone(), codec.into_any())
+                .map_err(errors::to_datafusion_err)
+        })
     }
 }

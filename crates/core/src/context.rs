@@ -27,7 +27,7 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, CatalogProviderList};
+use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
 use datafusion::common::{ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
@@ -51,7 +51,12 @@ use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
+use datafusion_python_util::{
+    create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
+    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
+};
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -77,15 +82,11 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
-use crate::table::PyTable;
+use crate::table::{PyTable, RustWrappedPyTableProviderFactory};
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{
-    create_logical_extension_capsule, extract_logical_extension_codec, get_global_ctx,
-    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
-};
 
 /// Configuration options for a SessionContext
 #[pyclass(
@@ -659,6 +660,43 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn register_table_factory(
+        &self,
+        format: &str,
+        mut factory: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        if factory.hasattr("__datafusion_table_provider_factory__")? {
+            let py = factory.py();
+            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            factory = factory
+                .getattr("__datafusion_table_provider_factory__")?
+                .call1((codec_capsule,))?;
+        }
+
+        let factory: Arc<dyn TableProviderFactory> =
+            if let Ok(capsule) = factory.cast::<PyCapsule>().map_err(py_datafusion_err) {
+                validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
+
+                let data: NonNull<FFI_TableProviderFactory> = capsule
+                    .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
+                    .cast();
+                let factory = unsafe { data.as_ref() };
+                factory.into()
+            } else {
+                Arc::new(RustWrappedPyTableProviderFactory::new(
+                    factory.into(),
+                    self.logical_codec.clone(),
+                ))
+            };
+
+        let st = self.ctx.state_ref();
+        let mut lock = st.write();
+        lock.table_factories_mut()
+            .insert(format.to_owned(), factory);
+
+        Ok(())
+    }
+
     pub fn register_catalog_provider_list(
         &self,
         mut provider: Bound<PyAny>,
@@ -1187,8 +1225,7 @@ impl PySessionContext {
         &self,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let py = codec.py();
-        let logical_codec = extract_logical_extension_codec(py, Some(codec))?;
+        let logical_codec = Arc::new(ffi_logical_codec_from_pycapsule(codec)?);
 
         Ok({
             Self {
@@ -1246,7 +1283,7 @@ impl PySessionContext {
 
     fn default_logical_codec(ctx: &Arc<SessionContext>) -> Arc<FFI_LogicalExtensionCodec> {
         let codec = Arc::new(DefaultLogicalExtensionCodec {});
-        let runtime = get_tokio_runtime().0.handle().clone();
+        let runtime = get_tokio_runtime().handle().clone();
         let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
         Arc::new(FFI_LogicalExtensionCodec::new(
             codec,
