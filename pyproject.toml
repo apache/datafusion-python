@@ -59,6 +59,7 @@ repository = "https://github.com/apache/datafusion-python"
 profile = "black"
 
 [tool.maturin]
+manifest-path = "crates/core/Cargo.toml"
 python-source = "python"
 module-name = "datafusion._internal"
 include = [{ path = "Cargo.lock", format = "sdist" }]

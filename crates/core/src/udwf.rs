@@ -32,6 +32,7 @@ use datafusion::logical_expr::{
 };
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
+use datafusion_python_util::{parse_volatility, validate_pycapsule};
 use pyo3::exceptions::PyValueError;
 use pyo3::ffi::c_str;
 use pyo3::prelude::*;
@@ -40,7 +41,6 @@ use pyo3::types::{PyCapsule, PyList, PyTuple};
 use crate::common::data_type::PyScalarValue;
 use crate::errors::{PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, validate_pycapsule};
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {

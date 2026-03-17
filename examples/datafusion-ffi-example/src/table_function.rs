@@ -21,11 +21,11 @@ use datafusion_catalog::{TableFunctionImpl, TableProvider};
 use datafusion_common::error::Result as DataFusionResult;
 use datafusion_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
+use datafusion_python_util::ffi_logical_codec_from_pycapsule;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::table_provider::MyTableProvider;
-use crate::utils::ffi_logical_codec_from_pycapsule;
 
 #[pyclass(
     from_py_object,

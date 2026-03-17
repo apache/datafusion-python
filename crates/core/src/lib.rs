@@ -62,14 +62,10 @@ mod udaf;
 mod udf;
 pub mod udtf;
 mod udwf;
-pub mod utils;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
-
-// Used to define Tokio Runtime as a Python module attribute
-pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
 
 /// Low-level DataFusion internal package.
 ///
