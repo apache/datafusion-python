@@ -344,6 +344,15 @@ Module Contents
    :param expression: Values to check for distinct entries
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py() == 3
+   True
+
 
 .. py:function:: approx_median(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -357,6 +366,15 @@ Module Contents
 
    :param expression: Values to find the median for
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_median(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: approx_percentile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, num_centroids: int | None = None, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -381,6 +399,15 @@ Module Contents
    :param num_centroids: Max bin size for the t-digest algorithm
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_percentile_cont(dfn.col("a"), 0.5).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3.0
+
 
 .. py:function:: approx_percentile_cont_with_weight(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, weight: datafusion.expr.Expr, percentile: float, num_centroids: int | None = None, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -397,6 +424,16 @@ Module Contents
    :param percentile: This must be between 0.0 and 1.0, inclusive
    :param num_centroids: Max bin size for the t-digest algorithm
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "w": [1.0, 1.0, 1.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_percentile_cont_with_weight(dfn.col("a"),
+   ...     dfn.col("w"), 0.5).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -758,6 +795,14 @@ Module Contents
    :param expression: Values to combine into an array
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.avg(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: bit_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -770,6 +815,14 @@ Module Contents
 
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [7, 3]})
+   >>> result = df.aggregate([], [dfn.functions.bit_and(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
 
 
 .. py:function:: bit_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -789,6 +842,14 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2]})
+   >>> result = df.aggregate([], [dfn.functions.bit_or(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: bit_xor(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -802,6 +863,14 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param distinct: If True, evaluate each unique value of expression only once
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [5, 3]})
+   >>> result = df.aggregate([], [dfn.functions.bit_xor(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: bool_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -817,6 +886,14 @@ Module Contents
    :param expression: Argument to perform calculation on
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [True, True, False]})
+   >>> result = df.aggregate([], [dfn.functions.bool_and(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   False
+
 
 .. py:function:: bool_or(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -830,6 +907,14 @@ Module Contents
 
    :param expression: Argument to perform calculation on
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [False, False, True]})
+   >>> result = df.aggregate([], [dfn.functions.bool_or(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   True
 
 
 .. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1032,6 +1117,14 @@ Module Contents
    :param expressions: Argument to perform bitwise calculation on
    :param distinct: If True, a single entry for each distinct value will be in the result
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.count(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
 
 
 .. py:function:: count_star(filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1839,6 +1932,14 @@ Module Contents
    :param expression: The value to find the maximum of
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.max(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: md5(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1859,6 +1960,14 @@ Module Contents
 
    This is an alias for :py:func:`avg`.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.mean(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: median(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1874,6 +1983,14 @@ Module Contents
    :param distinct: If True, a single entry for each distinct value will be in the result
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.median(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: min(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1884,6 +2001,14 @@ Module Contents
 
    :param expression: The value to find the minimum of
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.min(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1
 
 
 .. py:function:: named_struct(name_pairs: list[tuple[str, datafusion.expr.Expr]]) -> datafusion.expr.Expr
@@ -2663,6 +2788,15 @@ Module Contents
 
        df.aggregate([], string_agg(col("a"), ",", order_by="b"))
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["x", "y", "z"]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.string_agg(dfn.col("a"), ",", order_by="a").alias("s")])
+   >>> result.collect_column("s")[0].as_py()
+   'x,y,z'
+
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2719,6 +2853,14 @@ Module Contents
 
    :param expression: Values to combine into an array
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.sum(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
