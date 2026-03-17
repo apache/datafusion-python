@@ -41,6 +41,7 @@ use datafusion::logical_expr::SortExpr;
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
+use datafusion_python_util::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
 use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
 use pyo3::PyErr;
@@ -58,7 +59,6 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{PyRecordBatchStream, poll_next_batch};
 use crate::sql::logical::PyLogicalPlan;
 use crate::table::{PyTable, TempViewTable};
-use crate::utils::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
 
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");

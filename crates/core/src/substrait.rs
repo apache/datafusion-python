@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_python_util::wait_for_future;
 use datafusion_substrait::logical_plan::{consumer, producer};
 use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
@@ -25,7 +26,6 @@ use pyo3::types::PyBytes;
 use crate::context::PySessionContext;
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::wait_for_future;
 
 #[pyclass(
     from_py_object,
