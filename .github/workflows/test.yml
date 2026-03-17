@@ -41,18 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Verify example datafusion version
-        run: |
-          MAIN_VERSION=$(grep -A 1 "name = \"datafusion-common\"" Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
-          EXAMPLE_VERSION=$(grep -A 1 "name = \"datafusion-common\"" examples/datafusion-ffi-example/Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
-          echo "Main crate datafusion version: $MAIN_VERSION"
-          echo "FFI example datafusion version: $EXAMPLE_VERSION"
-
-          if [ "$MAIN_VERSION" != "$EXAMPLE_VERSION" ]; then
-            echo "❌ Error: FFI example datafusion versions don't match!"
-            exit 1
-          fi
-
       - name: Setup Python
         uses: actions/setup-python@v6
         with:

@@ -30,19 +30,20 @@ use datafusion::datasource::TableProvider;
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
+use datafusion_python_util::{
+    create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, validate_pycapsule,
+    wait_for_future,
+};
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
 use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
+use crate::context::PySessionContext;
 use crate::dataset::Dataset;
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
 use crate::table::PyTable;
-use crate::utils::{
-    create_logical_extension_capsule, extract_logical_extension_codec, validate_pycapsule,
-    wait_for_future,
-};
 
 #[pyclass(
     from_py_object,
@@ -708,6 +709,17 @@ fn extract_schema_provider_from_pyobj(
     };
 
     Ok(provider)
+}
+
+fn extract_logical_extension_codec(
+    py: Python,
+    obj: Option<Bound<PyAny>>,
+) -> PyResult<Arc<FFI_LogicalExtensionCodec>> {
+    let obj = match obj {
+        Some(obj) => obj,
+        None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
+    };
+    ffi_logical_codec_from_pycapsule(obj).map(Arc::new)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
