@@ -295,7 +295,15 @@ __all__ = [
 
 
 def isnan(expr: Expr) -> Expr:
-    """Returns true if a given number is +NaN or -NaN otherwise returns false."""
+    """Returns true if a given number is +NaN or -NaN otherwise returns false.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, np.nan]})
+        >>> result = df.select(dfn.functions.isnan(dfn.col("a")).alias("isnan"))
+        >>> result.collect_column("isnan")[1].as_py()
+        True
+    """
     return Expr(f.isnan(expr.expr))
 
 
@@ -303,29 +311,65 @@ def nullif(expr1: Expr, expr2: Expr) -> Expr:
     """Returns NULL if expr1 equals expr2; otherwise it returns expr1.
 
     This can be used to perform the inverse operation of the COALESCE expression.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2], "b": [1, 3]})
+        >>> result = df.select(
+        ...     dfn.functions.nullif(dfn.col("a"), dfn.col("b")).alias("nullif"))
+        >>> result.collect_column("nullif").to_pylist()
+        [None, 2]
     """
     return Expr(f.nullif(expr1.expr, expr2.expr))
 
 
 def encode(expr: Expr, encoding: Expr) -> Expr:
-    """Encode the ``input``, using the ``encoding``. encoding can be base64 or hex."""
+    """Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.encode(dfn.col("a"), dfn.lit("base64")).alias("enc"))
+        >>> result.collect_column("enc")[0].as_py()
+        'aGVsbG8'
+    """
     return Expr(f.encode(expr.expr, encoding.expr))
 
 
 def decode(expr: Expr, encoding: Expr) -> Expr:
-    """Decode the ``input``, using the ``encoding``. encoding can be base64 or hex."""
+    """Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["aGVsbG8="]})
+        >>> result = df.select(
+        ...     dfn.functions.decode(dfn.col("a"), dfn.lit("base64")).alias("dec"))
+        >>> result.collect_column("dec")[0].as_py()
+        b'hello'
+    """
     return Expr(f.decode(expr.expr, encoding.expr))
 
 
 def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
-    """Converts each element to its text representation."""
+    """Converts each element to its text representation.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_to_string(dfn.col("a"), dfn.lit(",")).alias("s"))
+        >>> result.collect_column("s")[0].as_py()
+        '1,2,3'
+    """
     return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
 
 
 def array_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :py:func:`array_to_string`.
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -333,7 +377,8 @@ def array_join(expr: Expr, delimiter: Expr) -> Expr:
 def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :py:func:`array_to_string`.
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -342,12 +387,27 @@ def list_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
     This is an alias for :py:func:`array_to_string`.
+
+    See Also:
+        This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
 
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
-    """Returns whether the argument is contained within the list ``values``."""
+    """Returns whether the argument is contained within the list ``values``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.functions.in_list(
+        ...         dfn.col("a"), [dfn.lit(1), dfn.lit(3)]
+        ...     ).alias("in")
+        ... )
+        >>> result.collect_column("in").to_pylist()
+        [True, False, True]
+    """
     values = [v.expr for v in values]
     return Expr(f.in_list(arg.expr, values, negated))
 
@@ -357,6 +417,14 @@ def digest(value: Expr, method: Expr) -> Expr:
 
     Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s,
     blake2b, and blake3.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"]})
+        >>> result = df.select(
+        ...     dfn.functions.digest(dfn.col("a"), dfn.lit("md5")).alias("d"))
+        >>> len(result.collect_column("d")[0].as_py()) > 0
+        True
     """
     return Expr(f.digest(value.expr, method.expr))
 
@@ -365,6 +433,15 @@ def concat(*args: Expr) -> Expr:
     """Concatenates the text representations of all the arguments.
 
     NULL arguments are ignored.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"], "b": [" world"]})
+        >>> result = df.select(
+        ...     dfn.functions.concat(dfn.col("a"), dfn.col("b")).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py()
+        'hello world'
     """
     args = [arg.expr for arg in args]
     return Expr(f.concat(args))
@@ -374,13 +451,27 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
     """Concatenates the list ``args`` with the separator.
 
     ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello"], "b": ["world"]})
+        >>> result = df.select(
+        ...     dfn.functions.concat_ws("-", dfn.col("a"), dfn.col("b")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        'hello-world'
     """
     args = [arg.expr for arg in args]
     return Expr(f.concat_ws(separator, args))
 
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
-    """Creates a new sort expression."""
+    """Creates a new sort expression.
+
+    Examples:
+        >>> sort_expr = dfn.functions.order_by(dfn.col("a"), ascending=False)
+        >>> sort_expr.ascending()
+        False
+    """
     return SortExpr(expr, ascending=ascending, nulls_first=nulls_first)
 
 
@@ -392,14 +483,26 @@ def alias(expr: Expr, name: str, metadata: dict[str, str] | None = None) -> Expr
         name: The alias name
         metadata: Optional metadata to attach to the column
 
-    Returns:
-        An expression with the given alias
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2]})
+        >>> df.select(
+        ...     dfn.functions.alias(dfn.col("a"), "b")
+        ... ).collect_column("b")[0].as_py()
+        1
     """
     return Expr(f.alias(expr.expr, name, metadata))
 
 
 def col(name: str) -> Expr:
-    """Creates a column reference expression."""
+    """Creates a column reference expression.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> df.select(dfn.functions.col("a")).collect_column("a")[0].as_py()
+        1
+    """
     return Expr(f.col(name))
 
 
@@ -413,6 +516,13 @@ def count_star(filter: Expr | None = None) -> Expr:
 
     Args:
         filter: If provided, only count rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.aggregate([], [dfn.functions.count_star().alias("cnt")])
+        >>> result.collect_column("cnt")[0].as_py()
+        3
     """
     return count(Expr.literal(1), filter=filter)
 
@@ -423,6 +533,15 @@ def case(expr: Expr) -> CaseBuilder:
     Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
     expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
     detailed usage.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.functions.case(dfn.col("a")).when(dfn.lit(1),
+        ...     dfn.lit("one")).otherwise(dfn.lit("other")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        'one'
     """
     return CaseBuilder(f.case(expr.expr))
 
@@ -433,6 +552,15 @@ def when(when: Expr, then: Expr) -> CaseBuilder:
     Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
     expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
     detailed usage.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.functions.when(dfn.col("a") > dfn.lit(2),
+        ...     dfn.lit("big")).otherwise(dfn.lit("small")).alias("c"))
+        >>> result.collect_column("c")[2].as_py()
+        'big'
     """
     return CaseBuilder(f.when(when.expr, then.expr))
 
