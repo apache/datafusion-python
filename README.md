@@ -278,6 +278,15 @@ uv run --no-project maturin develop --uv
 uv run --no-project pytest .
 ```
 
+To run the FFI tests within the examples folder, after you have built
+`datafusion-python` with the previous commands:
+
+```bash
+cd examples/datafusion-ffi-example
+uv run --no-project maturin develop --uv
+uv run --no-project pytest python/tests/_test_*py
+```
+
 ### Running & Installing pre-commit hooks
 
 `datafusion-python` takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce
