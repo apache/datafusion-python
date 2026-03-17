@@ -320,7 +320,14 @@ Module Contents
    :param name: The alias name
    :param metadata: Optional metadata to attach to the column
 
-   :returns: An expression with the given alias
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2]})
+   >>> df.select(
+   ...     dfn.functions.alias(dfn.col("a"), "b")
+   ... ).collect_column("b")[0].as_py()
+   1
 
 
 .. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -337,6 +344,15 @@ Module Contents
    :param expression: Values to check for distinct entries
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py() == 3
+   True
+
 
 .. py:function:: approx_median(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -350,6 +366,15 @@ Module Contents
 
    :param expression: Values to find the median for
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_median(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: approx_percentile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, num_centroids: int | None = None, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -374,6 +399,15 @@ Module Contents
    :param num_centroids: Max bin size for the t-digest algorithm
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_percentile_cont(dfn.col("a"), 0.5).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3.0
+
 
 .. py:function:: approx_percentile_cont_with_weight(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, weight: datafusion.expr.Expr, percentile: float, num_centroids: int | None = None, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -390,6 +424,16 @@ Module Contents
    :param percentile: This must be between 0.0 and 1.0, inclusive
    :param num_centroids: Max bin size for the t-digest algorithm
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "w": [1.0, 1.0, 1.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.approx_percentile_cont_with_weight(dfn.col("a"),
+   ...     dfn.col("w"), 0.5).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -506,7 +550,7 @@ Module Contents
 
    Converts each element to its text representation.
 
-   This is an alias for :py:func:`array_to_string`.
+   .. seealso:: This is an alias for :py:func:`array_to_string`.
 
 
 .. py:function:: array_length(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -621,6 +665,15 @@ Module Contents
 .. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_to_string(dfn.col("a"), dfn.lit(",")).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   '1,2,3'
 
 
 .. py:function:: array_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -742,6 +795,14 @@ Module Contents
    :param expression: Values to combine into an array
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.avg(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: bit_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -754,6 +815,14 @@ Module Contents
 
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [7, 3]})
+   >>> result = df.aggregate([], [dfn.functions.bit_and(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
 
 
 .. py:function:: bit_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -773,6 +842,14 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2]})
+   >>> result = df.aggregate([], [dfn.functions.bit_or(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: bit_xor(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -786,6 +863,14 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param distinct: If True, evaluate each unique value of expression only once
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [5, 3]})
+   >>> result = df.aggregate([], [dfn.functions.bit_xor(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: bool_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -801,6 +886,14 @@ Module Contents
    :param expression: Argument to perform calculation on
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [True, True, False]})
+   >>> result = df.aggregate([], [dfn.functions.bool_and(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   False
+
 
 .. py:function:: bool_or(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -814,6 +907,14 @@ Module Contents
 
    :param expression: Argument to perform calculation on
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [False, False, True]})
+   >>> result = df.aggregate([], [dfn.functions.bool_or(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   True
 
 
 .. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -833,6 +934,16 @@ Module Contents
    Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
    expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
    detailed usage.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.case(dfn.col("a")).when(dfn.lit(1),
+   ...     dfn.lit("one")).otherwise(dfn.lit("other")).alias("c"))
+   >>> result.collect_column("c")[0].as_py()
+   'one'
 
 
 .. py:function:: cbrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -894,6 +1005,13 @@ Module Contents
 
    Creates a column reference expression.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> df.select(dfn.functions.col("a")).collect_column("a")[0].as_py()
+   1
+
 
 .. py:function:: concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -901,12 +1019,31 @@ Module Contents
 
    NULL arguments are ignored.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"], "b": [" world"]})
+   >>> result = df.select(
+   ...     dfn.functions.concat(dfn.col("a"), dfn.col("b")).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py()
+   'hello world'
+
 
 .. py:function:: concat_ws(separator: str, *args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Concatenates the list ``args`` with the separator.
 
    ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"], "b": ["world"]})
+   >>> result = df.select(
+   ...     dfn.functions.concat_ws("-", dfn.col("a"), dfn.col("b")).alias("c"))
+   >>> result.collect_column("c")[0].as_py()
+   'hello-world'
 
 
 .. py:function:: corr(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -981,6 +1118,14 @@ Module Contents
    :param distinct: If True, a single entry for each distinct value will be in the result
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.count(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: count_star(filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -992,6 +1137,14 @@ Module Contents
    the options ``order_by``, ``distinct``, and ``null_treatment``.
 
    :param filter: If provided, only count rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.count_star().alias("cnt")])
+   >>> result.collect_column("cnt")[0].as_py()
+   3
 
 
 .. py:function:: covar(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1099,6 +1252,15 @@ Module Contents
 
    Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["aGVsbG8="]})
+   >>> result = df.select(
+   ...     dfn.functions.decode(dfn.col("a"), dfn.lit("base64")).alias("dec"))
+   >>> result.collect_column("dec")[0].as_py()
+   b'hello'
+
 
 .. py:function:: degrees(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1147,6 +1309,15 @@ Module Contents
    Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s,
    blake2b, and blake3.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.digest(dfn.col("a"), dfn.lit("md5")).alias("d"))
+   >>> len(result.collect_column("d")[0].as_py()) > 0
+   True
+
 
 .. py:function:: empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1156,6 +1327,15 @@ Module Contents
 .. py:function:: encode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.encode(dfn.col("a"), dfn.lit("base64")).alias("enc"))
+   >>> result.collect_column("enc")[0].as_py()
+   'aGVsbG8'
 
 
 .. py:function:: ends_with(arg: datafusion.expr.Expr, suffix: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1270,6 +1450,18 @@ Module Contents
 
    Returns whether the argument is contained within the list ``values``.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.in_list(
+   ...         dfn.col("a"), [dfn.lit(1), dfn.lit(3)]
+   ...     ).alias("in")
+   ... )
+   >>> result.collect_column("in").to_pylist()
+   [True, False, True]
+
 
 .. py:function:: initcap(string: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1282,6 +1474,14 @@ Module Contents
 .. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if a given number is +NaN or -NaN otherwise returns false.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, np.nan]})
+   >>> result = df.select(dfn.functions.isnan(dfn.col("a")).alias("isnan"))
+   >>> result.collect_column("isnan")[1].as_py()
+   True
 
 
 .. py:function:: iszero(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1492,6 +1692,8 @@ Module Contents
 
    This is an alias for :py:func:`array_to_string`.
 
+   .. seealso:: This is an alias for :py:func:`array_to_string`.
+
 
 .. py:function:: list_length(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1618,7 +1820,7 @@ Module Contents
 
    Converts each element to its text representation.
 
-   This is an alias for :py:func:`array_to_string`.
+   .. seealso:: This is an alias for :py:func:`array_to_string`.
 
 
 .. py:function:: list_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1730,6 +1932,14 @@ Module Contents
    :param expression: The value to find the maximum of
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.max(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: md5(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1750,6 +1960,14 @@ Module Contents
 
    This is an alias for :py:func:`avg`.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.mean(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: median(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1765,6 +1983,14 @@ Module Contents
    :param distinct: If True, a single entry for each distinct value will be in the result
    :param filter: If provided, only compute against rows for which the filter is True
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.median(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: min(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1775,6 +2001,14 @@ Module Contents
 
    :param expression: The value to find the minimum of
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.min(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1
 
 
 .. py:function:: named_struct(name_pairs: list[tuple[str, datafusion.expr.Expr]]) -> datafusion.expr.Expr
@@ -1874,6 +2108,15 @@ Module Contents
 
    This can be used to perform the inverse operation of the COALESCE expression.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2], "b": [1, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.nullif(dfn.col("a"), dfn.col("b")).alias("nullif"))
+   >>> result.collect_column("nullif").to_pylist()
+   [None, 2]
+
 
 .. py:function:: nvl(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1900,6 +2143,12 @@ Module Contents
 .. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.SortExpr
 
    Creates a new sort expression.
+
+   .. rubric:: Examples
+
+   >>> sort_expr = dfn.functions.order_by(dfn.col("a"), ascending=False)
+   >>> sort_expr.ascending()
+   False
 
 
 .. py:function:: overlay(string: datafusion.expr.Expr, substring: datafusion.expr.Expr, start: datafusion.expr.Expr, length: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2539,6 +2788,15 @@ Module Contents
 
        df.aggregate([], string_agg(col("a"), ",", order_by="b"))
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["x", "y", "z"]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.string_agg(dfn.col("a"), ",", order_by="a").alias("s")])
+   >>> result.collect_column("s")[0].as_py()
+   'x,y,z'
+
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2595,6 +2853,14 @@ Module Contents
 
    :param expression: Values to combine into an array
    :param filter: If provided, only compute against rows for which the filter is True
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.sum(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2798,6 +3064,16 @@ Module Contents
    Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
    expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
    detailed usage.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.when(dfn.col("a") > dfn.lit(2),
+   ...     dfn.lit("big")).otherwise(dfn.lit("small")).alias("c"))
+   >>> result.collect_column("c")[2].as_py()
+   'big'
 
 
 .. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, window_frame: datafusion.expr.WindowFrame | None = None, filter: datafusion.expr.Expr | None = None, distinct: bool = False, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
