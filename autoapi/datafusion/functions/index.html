@@ -3442,13 +3442,14 @@
 <dt class="sig sig-object py" id="datafusion.functions.abs">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.abs" title="Link to this definition">¶</a></dt>
 <dd><p>Return the absolute value of a given number.</p>
-<section id="returns">
-<h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h3>
-<dl class="simple">
-<dt>Expr</dt><dd><p>A new expression representing the absolute value of the input expression.</p>
-</dd>
-</dl>
-</section>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4097,12 +4098,28 @@ detailed usage.</p>
 <dt class="sig sig-object py" id="datafusion.functions.cbrt">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">cbrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.cbrt" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the cube root of a number.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">27</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbrt_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">cbrt</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;cbrt&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbrt_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;cbrt&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">3.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.ceil">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">ceil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.ceil" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the nearest integer greater than or equal to argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.9</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ceil_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;ceil&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ceil_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;ceil&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4459,6 +4476,14 @@ blake2b, and blake3.</p>
 <dt class="sig sig-object py" id="datafusion.functions.exp">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.exp" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the exponential of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;exp&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;exp&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4472,6 +4497,16 @@ blake2b, and blake3.</p>
 <dt class="sig sig-object py" id="datafusion.functions.factorial">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">factorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.factorial" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the factorial of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;factorial&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;factorial&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">6</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4517,6 +4552,14 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.floor">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.floor" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the nearest integer less than or equal to the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.9</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">floor_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;floor&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">floor_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;floor&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4529,6 +4572,16 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.gcd">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">gcd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.gcd" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the greatest common divisor.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">gcd</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;gcd&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;gcd&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">4</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4555,6 +4608,14 @@ characters to lowercase.</p>
 <dt class="sig sig-object py" id="datafusion.functions.iszero">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">iszero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.iszero" title="Link to this definition">¶</a></dt>
 <dd><p>Returns true if a given number is +0.0 or -0.0 otherwise returns false.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">iszero</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;iz&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;iz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4623,6 +4684,16 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.lcm">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">lcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.lcm" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the least common multiple.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">lcm</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;lcm&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;lcm&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">12</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4900,24 +4971,58 @@ filled with the given <code class="docutils literal notranslate"><span class="pr
 <dt class="sig sig-object py" id="datafusion.functions.ln">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.ln" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the natural logarithm (base e) of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">ln</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;ln&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;ln&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.log">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.log" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the logarithm of a number for a particular <code class="docutils literal notranslate"><span class="pre">base</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mf">10.0</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.log10">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">log10</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.log10" title="Link to this definition">¶</a></dt>
 <dd><p>Base 10 logarithm of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;log10&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;log10&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.log2">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">log2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.log2" title="Link to this definition">¶</a></dt>
 <dd><p>Base 2 logarithm of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">8.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;log2&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;log2&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">3.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5054,6 +5159,17 @@ the options <code class="docutils literal notranslate"><span class="pre">order_b
 <dt class="sig sig-object py" id="datafusion.functions.nanvl">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">nanvl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.nanvl" title="Link to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">x</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not <code class="docutils literal notranslate"><span class="pre">NaN</span></code>. Otherwise returns <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nanvl_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">nanvl</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;nanvl&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nanvl_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;nanvl&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nanvl_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;nanvl&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5206,6 +5322,19 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.pi">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">pi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.pi" title="Link to this definition">¶</a></dt>
 <dd><p>Returns an approximate value of π.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">builtins</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">pi</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;pi&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">builtins</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;pi&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">(),</span> <span class="mi">5</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">3.14159</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5219,6 +5348,16 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.power">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.power" title="Link to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">base</span></code> raised to the power of <code class="docutils literal notranslate"><span class="pre">exponent</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mf">3.0</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;pow&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;pow&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">8.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5245,6 +5384,17 @@ column names or expressions.</p></li>
 <dt class="sig sig-object py" id="datafusion.functions.random">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.random" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a random value in the range <code class="docutils literal notranslate"><span class="pre">0.0</span> <span class="pre">&lt;=</span> <span class="pre">x</span> <span class="pre">&lt;</span> <span class="pre">1.0</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">random</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">val</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mf">0.0</span> <span class="o">&lt;=</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5601,6 +5751,14 @@ the options <code class="docutils literal notranslate"><span class="pre">order_b
 <p>If the optional <code class="docutils literal notranslate"><span class="pre">decimal_places</span></code> is specified, round to the nearest number of
 decimal places. You can specify a negative number of decimal places. For example
 <code class="docutils literal notranslate"><span class="pre">round(lit(125.2345),</span> <span class="pre">lit(-2))</span></code> would yield a value of <code class="docutils literal notranslate"><span class="pre">100.0</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.567</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1.57</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5716,6 +5874,14 @@ by default). If the string is already longer than length then it is truncated.</
 <dt class="sig sig-object py" id="datafusion.functions.signum">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">signum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.signum" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the sign of the argument (-1, 0, +1).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">signum</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()</span>
+<span class="go">[-1.0, 0.0, 1.0]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -5758,6 +5924,14 @@ on the index.</p>
 <dt class="sig sig-object py" id="datafusion.functions.sqrt">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">sqrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.sqrt" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the square root of the argument.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;sqrt&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;sqrt&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">3.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -6025,6 +6199,14 @@ HH:MM:SS.nnnnnnnnn;</p>
 <dt class="sig sig-object py" id="datafusion.functions.trunc">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">trunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.trunc" title="Link to this definition">¶</a></dt>
 <dd><p>Truncate the number toward zero with optional precision.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.567</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

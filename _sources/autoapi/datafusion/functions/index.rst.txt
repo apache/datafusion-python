@@ -277,10 +277,13 @@ Module Contents
 
    Return the absolute value of a given number.
 
-   Returns:
-   --------
-   Expr
-       A new expression representing the absolute value of the input expression.
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [-1, 0, 1]})
+   >>> result = df.select(dfn.functions.abs(dfn.col("a")).alias("abs"))
+   >>> result.collect_column("abs")[0].as_py()
+   1
 
 
 .. py:function:: acos(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -836,10 +839,26 @@ Module Contents
 
    Returns the cube root of a number.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [27]})
+   >>> cbrt_df = df.select(dfn.functions.cbrt(dfn.col("a")).alias("cbrt"))
+   >>> cbrt_df.collect_column("cbrt")[0].as_py()
+   3.0
+
 
 .. py:function:: ceil(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the nearest integer greater than or equal to argument.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.9]})
+   >>> ceil_df = df.select(dfn.functions.ceil(dfn.col("a")).alias("ceil"))
+   >>> ceil_df.collect_column("ceil")[0].as_py()
+   2.0
 
 
 .. py:function:: char_length(string: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1148,6 +1167,14 @@ Module Contents
 
    Returns the exponential of the argument.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0]})
+   >>> result = df.select(dfn.functions.exp(dfn.col("a")).alias("exp"))
+   >>> result.collect_column("exp")[0].as_py()
+   1.0
+
 
 .. py:function:: extract(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1159,6 +1186,16 @@ Module Contents
 .. py:function:: factorial(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the factorial of the argument.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [3]})
+   >>> result = df.select(
+   ...     dfn.functions.factorial(dfn.col("a")).alias("factorial")
+   ... )
+   >>> result.collect_column("factorial")[0].as_py()
+   6
 
 
 .. py:function:: find_in_set(string: datafusion.expr.Expr, string_list: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1200,6 +1237,14 @@ Module Contents
 
    Returns the nearest integer less than or equal to the argument.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.9]})
+   >>> floor_df = df.select(dfn.functions.floor(dfn.col("a")).alias("floor"))
+   >>> floor_df.collect_column("floor")[0].as_py()
+   1.0
+
 
 .. py:function:: from_unixtime(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1209,6 +1254,16 @@ Module Contents
 .. py:function:: gcd(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the greatest common divisor.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [12], "b": [8]})
+   >>> result = df.select(
+   ...     dfn.functions.gcd(dfn.col("a"), dfn.col("b")).alias("gcd")
+   ... )
+   >>> result.collect_column("gcd")[0].as_py()
+   4
 
 
 .. py:function:: in_list(arg: datafusion.expr.Expr, values: list[datafusion.expr.Expr], negated: bool = False) -> datafusion.expr.Expr
@@ -1232,6 +1287,14 @@ Module Contents
 .. py:function:: iszero(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if a given number is +0.0 or -0.0 otherwise returns false.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0, 1.0]})
+   >>> result = df.select(dfn.functions.iszero(dfn.col("a")).alias("iz"))
+   >>> result.collect_column("iz")[0].as_py()
+   True
 
 
 .. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -1290,6 +1353,16 @@ Module Contents
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the least common multiple.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [4], "b": [6]})
+   >>> result = df.select(
+   ...     dfn.functions.lcm(dfn.col("a"), dfn.col("b")).alias("lcm")
+   ... )
+   >>> result.collect_column("lcm")[0].as_py()
+   12
 
 
 .. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -1561,20 +1634,54 @@ Module Contents
 
    Returns the natural logarithm (base e) of the argument.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0]})
+   >>> result = df.select(dfn.functions.ln(dfn.col("a")).alias("ln"))
+   >>> result.collect_column("ln")[0].as_py()
+   0.0
+
 
 .. py:function:: log(base: datafusion.expr.Expr, num: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the logarithm of a number for a particular ``base``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [100.0]})
+   >>> result = df.select(
+   ...     dfn.functions.log(dfn.lit(10.0), dfn.col("a")).alias("log")
+   ... )
+   >>> result.collect_column("log")[0].as_py()
+   2.0
 
 
 .. py:function:: log10(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Base 10 logarithm of the argument.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [100.0]})
+   >>> result = df.select(dfn.functions.log10(dfn.col("a")).alias("log10"))
+   >>> result.collect_column("log10")[0].as_py()
+   2.0
+
 
 .. py:function:: log2(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Base 2 logarithm of the argument.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [8.0]})
+   >>> result = df.select(dfn.functions.log2(dfn.col("a")).alias("log2"))
+   >>> result.collect_column("log2")[0].as_py()
+   3.0
 
 
 .. py:function:: lower(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1690,6 +1797,17 @@ Module Contents
 .. py:function:: nanvl(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [np.nan, 1.0], "b": [0.0, 0.0]})
+   >>> nanvl_df = df.select(
+   ...     dfn.functions.nanvl(dfn.col("a"), dfn.col("b")).alias("nanvl"))
+   >>> nanvl_df.collect_column("nanvl")[0].as_py()
+   0.0
+   >>> nanvl_df.collect_column("nanvl")[1].as_py()
+   1.0
 
 
 .. py:function:: now() -> datafusion.expr.Expr
@@ -1823,6 +1941,19 @@ Module Contents
 
    Returns an approximate value of π.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> import builtins
+   >>> result = df.select(
+   ...     dfn.functions.pi().alias("pi")
+   ... )
+   >>> builtins.round(
+   ...     result.collect_column("pi")[0].as_py(), 5
+   ... )
+   3.14159
+
 
 .. py:function:: pow(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1834,6 +1965,16 @@ Module Contents
 .. py:function:: power(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns ``base`` raised to the power of ``exponent``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [2.0]})
+   >>> result = df.select(
+   ...     dfn.functions.power(dfn.col("a"), dfn.lit(3.0)).alias("pow")
+   ... )
+   >>> result.collect_column("pow")[0].as_py()
+   8.0
 
 
 .. py:function:: radians(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1858,6 +1999,17 @@ Module Contents
 .. py:function:: random() -> datafusion.expr.Expr
 
    Returns a random value in the range ``0.0 <= x < 1.0``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.random().alias("r")
+   ... )
+   >>> val = result.collect_column("r")[0].as_py()
+   >>> 0.0 <= val < 1.0
+   True
 
 
 .. py:function:: range(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2164,6 +2316,14 @@ Module Contents
    decimal places. You can specify a negative number of decimal places. For example
    ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.567]})
+   >>> result = df.select(dfn.functions.round(dfn.col("a"), dfn.lit(2)).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   1.57
+
 
 .. py:function:: row_number(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
 
@@ -2268,6 +2428,14 @@ Module Contents
 
    Returns the sign of the argument (-1, 0, +1).
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [-5.0, 0.0, 5.0]})
+   >>> result = df.select(dfn.functions.signum(dfn.col("a")).alias("s"))
+   >>> result.collect_column("s").to_pylist()
+   [-1.0, 0.0, 1.0]
+
 
 .. py:function:: sin(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2306,6 +2474,14 @@ Module Contents
 .. py:function:: sqrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the square root of the argument.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [9.0]})
+   >>> result = df.select(dfn.functions.sqrt(dfn.col("a")).alias("sqrt"))
+   >>> result.collect_column("sqrt")[0].as_py()
+   3.0
 
 
 .. py:function:: starts_with(string: datafusion.expr.Expr, prefix: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2549,6 +2725,14 @@ Module Contents
 .. py:function:: trunc(num: datafusion.expr.Expr, precision: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Truncate the number toward zero with optional precision.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.567]})
+   >>> result = df.select(dfn.functions.trunc(dfn.col("a")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   1.0
 
 
 .. py:function:: upper(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
