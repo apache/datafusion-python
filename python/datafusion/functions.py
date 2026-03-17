@@ -631,11 +631,6 @@ def acos(arg: Expr) -> Expr:
         >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
         >>> result.collect_column("acos")[0].as_py()
         0.0
-        >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1.0]})
-        >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
-        >>> result.collect_column("acos")[0].as_py()
-        0.0
     """
     return Expr(f.acos(arg.expr))
 
