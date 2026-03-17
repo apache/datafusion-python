@@ -89,12 +89,18 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
+      - name: Run unit tests
         env:
           RUST_BACKTRACE: 1
         run: |
           git submodule update --init
-          uv run --no-project pytest -v --import-mode=importlib
+          uv run --no-project pytest -v --import-mode=importlib python/tests
+
+      - name: Run doctests
+        env:
+          RUST_BACKTRACE: 1
+        run: |
+          uv run --no-project pytest -v --import-mode=importlib --doctest-modules python/datafusion
 
       - name: FFI unit tests
         run: |
