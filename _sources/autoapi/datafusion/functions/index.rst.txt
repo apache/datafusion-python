@@ -287,8 +287,8 @@ Module Contents
 
    Returns the arc cosine or inverse cosine of a number.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1.0]})
    >>> result = df.select(dfn.functions.acos(dfn.col("a")).alias("acos"))
@@ -300,8 +300,8 @@ Module Contents
 
    Returns inverse hyperbolic cosine.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1.0]})
    >>> result = df.select(dfn.functions.acosh(dfn.col("a")).alias("acosh"))
@@ -631,10 +631,29 @@ Module Contents
 
    Casts an expression to a specified data type.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> data_type = dfn.string_literal("Float64")
+   >>> result = df.select(
+   ...     dfn.functions.arrow_cast(dfn.col("a"), data_type).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py()
+   1.0
+
 
 .. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the Arrow type of the expression.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(dfn.functions.arrow_typeof(dfn.col("a")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   'Int64'
 
 
 .. py:function:: ascii(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -646,8 +665,8 @@ Module Contents
 
    Returns the arc sine or inverse sine of a number.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.asin(dfn.col("a")).alias("asin"))
@@ -659,8 +678,8 @@ Module Contents
 
    Returns inverse hyperbolic sine.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.asinh(dfn.col("a")).alias("asinh"))
@@ -672,8 +691,8 @@ Module Contents
 
    Returns inverse tangent of a number.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.atan(dfn.col("a")).alias("atan"))
@@ -685,8 +704,8 @@ Module Contents
 
    Returns inverse tangent of a division given in the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"y": [0.0], "x": [1.0]})
    >>> result = df.select(
@@ -699,8 +718,8 @@ Module Contents
 
    Returns inverse hyperbolic tangent.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.atanh(dfn.col("a")).alias("atanh"))
@@ -842,6 +861,15 @@ Module Contents
 
    Returns the value of the first expr in ``args`` which is not NULL.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [None, 1], "b": [2, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.coalesce(dfn.col("a"), dfn.col("b")).alias("c"))
+   >>> result.collect_column("c")[0].as_py()
+   2
+
 
 .. py:function:: col(name: str) -> datafusion.expr.Expr
 
@@ -880,8 +908,8 @@ Module Contents
 
    Returns the cosine of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0,-1,1]})
    >>> cos_df = df.select(dfn.functions.cos(dfn.col("a")).alias("cos"))
@@ -893,8 +921,8 @@ Module Contents
 
    Returns the hyperbolic cosine of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0,-1,1]})
    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
@@ -906,8 +934,8 @@ Module Contents
 
    Returns the cotangent of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> from math import pi
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [pi / 4]})
@@ -1057,8 +1085,8 @@ Module Contents
 
    Converts the argument from radians to degrees.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> from math import pi
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0,pi,2*pi]})
@@ -1600,6 +1628,14 @@ Module Contents
 
    Computes an MD5 128-bit checksum for a string expression.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.md5(dfn.col("a")).alias("md5"))
+   >>> result.collect_column("md5")[0].as_py()
+   '5d41402abc4b2a76b9719d911017c592'
+
 
 .. py:function:: mean(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1637,6 +1673,18 @@ Module Contents
 .. py:function:: named_struct(name_pairs: list[tuple[str, datafusion.expr.Expr]]) -> datafusion.expr.Expr
 
    Returns a struct with the given names and arguments pairs.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.named_struct(
+   ...         [("x", dfn.lit(10)), ("y", dfn.lit(20))]
+   ...     ).alias("s")
+   ... )
+   >>> result.collect_column("s")[0].as_py() == {"x": 10, "y": 20}
+   True
 
 
 .. py:function:: nanvl(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1713,6 +1761,18 @@ Module Contents
 
    Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [None, 1], "b": [0, 0]})
+   >>> nvl_df = df.select(
+   ...     dfn.functions.nvl(dfn.col("a"), dfn.col("b")).alias("nvl")
+   ... )
+   >>> nvl_df.collect_column("nvl")[0].as_py()
+   0
+   >>> nvl_df.collect_column("nvl")[1].as_py()
+   1
+
 
 .. py:function:: octet_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1780,8 +1840,8 @@ Module Contents
 
    Converts the argument from degrees to radians.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> from math import pi
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [180.0]})
@@ -1843,15 +1903,38 @@ Module Contents
    Optional start position (the first position is 1) to search for the regular
    expression.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["abcabc"]})
+   >>> result = df.select(
+   ...     dfn.functions.regexp_count(dfn.col("a"), dfn.lit("abc")).alias("c"))
+   >>> result.collect_column("c")[0].as_py()
+   2
+
 
 .. py:function:: regexp_instr(values: datafusion.expr.Expr, regex: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, n: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None, sub_expr: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the position of a regular expression match in a string.
 
-   Searches ``values`` for the ``n``-th occurrence of ``regex``, starting at position
-   ``start`` (the first position is 1). Returns the starting or ending position based
-   on ``end_position``. Use ``flags`` to control regex behavior and ``sub_expr`` to
-   return the position of a specific capture group instead of the entire match.
+   :param values: Data to search for the regular expression match.
+   :param regex: Regular expression to search for.
+   :param start: Optional position to start the search (the first position is 1).
+   :param n: Optional occurrence of the match to find (the first occurrence is 1).
+   :param flags: Optional regular expression flags to control regex behavior.
+   :param sub_expr: Optionally capture group position instead of the entire match.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
+   >>> result = df.select(
+   ...     dfn.functions.regexp_instr(
+   ...         dfn.col("a"), dfn.lit("\\d+")
+   ...     ).alias("pos")
+   ... )
+   >>> result.collect_column("pos")[0].as_py()
+   7
 
 
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1861,6 +1944,18 @@ Module Contents
    Tests a string using a regular expression returning true if at least one match,
    false otherwise.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello123"]})
+   >>> result = df.select(
+   ...     dfn.functions.regexp_like(
+   ...         dfn.col("a"), dfn.lit("\\d+")
+   ...     ).alias("m")
+   ... )
+   >>> result.collect_column("m")[0].as_py()
+   True
+
 
 .. py:function:: regexp_match(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1868,6 +1963,18 @@ Module Contents
 
    Returns an array with each element containing the leftmost-first match of the
    corresponding index in ``regex`` to string in ``string``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
+   >>> result = df.select(
+   ...     dfn.functions.regexp_match(
+   ...         dfn.col("a"), dfn.lit("(\\d+)")
+   ...     ).alias("m")
+   ... )
+   >>> result.collect_column("m")[0].as_py()
+   ['42']
 
 
 .. py:function:: regexp_replace(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, replacement: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1879,6 +1986,19 @@ Module Contents
 
    Supported flags with the addition of 'g' can be found at
    <https://docs.rs/regex/latest/regex/#grouping-and-flags>
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello 42"]})
+   >>> result = df.select(
+   ...     dfn.functions.regexp_replace(
+   ...         dfn.col("a"), dfn.lit("\\d+"),
+   ...         dfn.lit("XX")
+   ...     ).alias("r")
+   ... )
+   >>> result.collect_column("r")[0].as_py()
+   'hello XX'
 
 
 .. py:function:: regr_avgx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2088,20 +2208,60 @@ Module Contents
 
    Computes the SHA-224 hash of a binary string.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.sha224(dfn.col("a")).alias("h")
+   ... )
+   >>> result.collect_column("h")[0].as_py().hex()
+   'ea09ae9cc6768c50fcee903ed054556e5bfc8347907f12598aa24193'
+
 
 .. py:function:: sha256(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the SHA-256 hash of a binary string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.sha256(dfn.col("a")).alias("h")
+   ... )
+   >>> result.collect_column("h")[0].as_py().hex()
+   '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
 
 
 .. py:function:: sha384(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the SHA-384 hash of a binary string.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.sha384(dfn.col("a")).alias("h")
+   ... )
+   >>> result.collect_column("h")[0].as_py().hex()
+   '59e1748777448c69de6b800d7a33bbfb9ff1b...
+
 
 .. py:function:: sha512(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the SHA-512 hash of a binary string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.sha512(dfn.col("a")).alias("h")
+   ... )
+   >>> result.collect_column("h")[0].as_py().hex()
+   '9b71d224bd62f3785d96d46ad3ea3d73319bfb...
 
 
 .. py:function:: signum(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2113,8 +2273,8 @@ Module Contents
 
    Returns the sine of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.sin(dfn.col("a")).alias("sin"))
@@ -2126,8 +2286,8 @@ Module Contents
 
    Returns the hyperbolic sine of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.sinh(dfn.col("a")).alias("sinh"))
@@ -2213,6 +2373,22 @@ Module Contents
 
    Returns a struct with the given arguments.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1], "b": [2]})
+   >>> result = df.select(
+   ...     dfn.functions.struct(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("s")
+   ... )
+
+   Children in the new struct will always be `c0`, ..., `cN-1`
+   for `N` children.
+
+   >>> result.collect_column("s")[0].as_py() == {"c0": 1, "c1": 2}
+   True
+
 
 .. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2249,8 +2425,8 @@ Module Contents
 
    Returns the tangent of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.tan(dfn.col("a")).alias("tan"))
@@ -2262,8 +2438,8 @@ Module Contents
 
    Returns the hyperbolic tangent of the argument.
 
-   Examples:
-   ---------
+   .. rubric:: Examples
+
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0.0]})
    >>> result = df.select(dfn.functions.tanh(dfn.col("a")).alias("tanh"))
@@ -2383,6 +2559,16 @@ Module Contents
 .. py:function:: uuid() -> datafusion.expr.Expr
 
    Returns uuid v4 as a string value.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.uuid().alias("u")
+   ... )
+   >>> len(result.collect_column("u")[0].as_py()) == 36
+   True
 
 
 .. py:function:: var(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
