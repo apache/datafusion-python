@@ -2370,6 +2370,15 @@ def approx_distinct(
     Args:
         expression: Values to check for distinct entries
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+    >>> result = df.aggregate(
+    ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py() == 3
+    True
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2388,6 +2397,15 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: Values to find the median for
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    >>> result = df.aggregate(
+    ...     [], [dfn.functions.approx_median(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    2.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.approx_median(expression.expr, filter=filter_raw))
@@ -2419,6 +2437,15 @@ def approx_percentile_cont(
         percentile: This must be between 0.0 and 1.0, inclusive
         num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    >>> result = df.aggregate(
+    ...     [], [dfn.functions.approx_percentile_cont(dfn.col("a"), 0.5).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    3.0
     """
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
@@ -2451,6 +2478,15 @@ def approx_percentile_cont_with_weight(
         num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
 
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "w": [1.0, 1.0, 1.0]})
+    >>> result = df.aggregate(
+    ...     [], [dfn.functions.approx_percentile_cont_with_weight(dfn.col("a"),
+    ...     dfn.col("w"), 0.5).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    2.0
     """
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
@@ -2514,6 +2550,14 @@ def avg(
     Args:
         expression: Values to combine into an array
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    >>> result = df.aggregate([], [dfn.functions.avg(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    2.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.avg(expression.expr, filter=filter_raw))
@@ -2552,6 +2596,14 @@ def count(
         expressions: Argument to perform bitwise calculation on
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.aggregate([], [dfn.functions.count(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    3
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -2616,6 +2668,14 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The value to find the maximum of
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.aggregate([], [dfn.functions.max(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    3
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.max(expression.expr, filter=filter_raw))
@@ -2625,6 +2685,14 @@ def mean(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     This is an alias for :py:func:`avg`.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    >>> result = df.aggregate([], [dfn.functions.mean(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    2.0
     """
     return avg(expression, filter)
 
@@ -2644,6 +2712,14 @@ def median(
         expression: The value to compute the median of
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    >>> result = df.aggregate([], [dfn.functions.median(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    2.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
@@ -2658,6 +2734,14 @@ def min(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The value to find the minimum of
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.aggregate([], [dfn.functions.min(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    1
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.min(expression.expr, filter=filter_raw))
@@ -2677,6 +2761,14 @@ def sum(
     Args:
         expression: Values to combine into an array
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.aggregate([], [dfn.functions.sum(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    6
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.sum(expression.expr, filter=filter_raw))
@@ -3094,6 +3186,14 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [7, 3]})
+    >>> result = df.aggregate([], [dfn.functions.bit_and(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    3
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_and(expression.expr, filter=filter_raw))
@@ -3110,6 +3210,14 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2]})
+    >>> result = df.aggregate([], [dfn.functions.bit_or(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    3
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_or(expression.expr, filter=filter_raw))
@@ -3129,6 +3237,14 @@ def bit_xor(
         expression: Argument to perform bitwise calculation on
         distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [5, 3]})
+    >>> result = df.aggregate([], [dfn.functions.bit_xor(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    6
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
@@ -3146,6 +3262,14 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: Argument to perform calculation on
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [True, True, False]})
+    >>> result = df.aggregate([], [dfn.functions.bool_and(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    False
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_and(expression.expr, filter=filter_raw))
@@ -3163,6 +3287,14 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: Argument to perform calculation on
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [False, False, True]})
+    >>> result = df.aggregate([], [dfn.functions.bool_or(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_or(expression.expr, filter=filter_raw))
@@ -3553,6 +3685,15 @@ def string_agg(
     For example::
 
         df.aggregate([], string_agg(col("a"), ",", order_by="b"))
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["x", "y", "z"]})
+    >>> result = df.aggregate(
+    ...     [], [dfn.functions.string_agg(dfn.col("a"), ",", order_by="a").alias("s")])
+    >>> result.collect_column("s")[0].as_py()
+    'x,y,z'
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
