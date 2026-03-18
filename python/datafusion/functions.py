@@ -649,7 +649,16 @@ def acosh(arg: Expr) -> Expr:
 
 
 def ascii(arg: Expr) -> Expr:
-    """Returns the numeric code of the first character of the argument."""
+    """Returns the numeric code of the first character of the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["a","b","c"]})
+    >>> ascii_df = df.select(dfn.functions.ascii(dfn.col("a")).alias("ascii"))
+    >>> ascii_df.collect_column("ascii")[0].as_py()
+    97
+    """
     return Expr(f.ascii(arg.expr))
 
 
@@ -720,12 +729,30 @@ def atan2(y: Expr, x: Expr) -> Expr:
 
 
 def bit_length(arg: Expr) -> Expr:
-    """Returns the number of bits in the string argument."""
+    """Returns the number of bits in the string argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["a","b","c"]})
+    >>> bit_df = df.select(dfn.functions.bit_length(dfn.col("a")).alias("bit_len"))
+    >>> bit_df.collect_column("bit_len")[0].as_py()
+    8
+    """
     return Expr(f.bit_length(arg.expr))
 
 
 def btrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string."""
+    """Removes all characters, spaces by default, from both sides of a string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [" a  "]})
+    >>> trim_df = df.select(dfn.functions.btrim(dfn.col("a")).alias("trimmed"))
+    >>> trim_df.collect_column("trimmed")[0].as_py()
+    'a'
+    """
     return Expr(f.btrim(arg.expr))
 
 
@@ -756,22 +783,59 @@ def ceil(arg: Expr) -> Expr:
 
 
 def character_length(arg: Expr) -> Expr:
-    """Returns the number of characters in the argument."""
+    """Returns the number of characters in the argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
+    >>> char_len_df = df.select(
+    ...     dfn.functions.character_length(dfn.col("a")).alias("char_len"))
+    >>> char_len_df.collect_column("char_len")[0].as_py()
+    3
+    """
     return Expr(f.character_length(arg.expr))
 
 
 def length(string: Expr) -> Expr:
-    """The number of characters in the ``string``."""
+    """The number of characters in the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.length(dfn.col("a")).alias("len"))
+    >>> result.collect_column("len")[0].as_py()
+    5
+    """
     return Expr(f.length(string.expr))
 
 
 def char_length(string: Expr) -> Expr:
-    """The number of characters in the ``string``."""
+    """The number of characters in the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.char_length(dfn.col("a")).alias("len"))
+    >>> result.collect_column("len")[0].as_py()
+    5
+    """
     return Expr(f.char_length(string.expr))
 
 
 def chr(arg: Expr) -> Expr:
-    """Converts the Unicode code point to a UTF8 character."""
+    """Converts the Unicode code point to a UTF8 character.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [65]})
+    >>> result = df.select(dfn.functions.chr(dfn.col("a")).alias("chr"))
+    >>> result.collect_column("chr")[0].as_py()
+    'A'
+    """
     return Expr(f.chr(arg.expr))
 
 
@@ -847,7 +911,17 @@ def degrees(arg: Expr) -> Expr:
 
 
 def ends_with(arg: Expr, suffix: Expr) -> Expr:
-    """Returns true if the ``string`` ends with the ``suffix``, false otherwise."""
+    """Returns true if the ``string`` ends with the ``suffix``, false otherwise.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
+    >>> ends_with_df = df.select(
+    ...     dfn.functions.ends_with(dfn.col("a"), dfn.lit("c")).alias("ends_with"))
+    >>> ends_with_df.collect_column("ends_with")[0].as_py()
+    True
+    """
     return Expr(f.ends_with(arg.expr, suffix.expr))
 
 
@@ -886,6 +960,15 @@ def find_in_set(string: Expr, string_list: Expr) -> Expr:
     ``string_list`` consisting of N substrings.
 
     The string list is a string composed of substrings separated by ``,`` characters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["b"]})
+    >>> result = df.select(
+    ...     dfn.functions.find_in_set(dfn.col("a"), dfn.lit("a,b,c")).alias("pos"))
+    >>> result.collect_column("pos")[0].as_py()
+    2
     """
     return Expr(f.find_in_set(string.expr, string_list.expr))
 
@@ -923,6 +1006,14 @@ def initcap(string: Expr) -> Expr:
 
     Converts the first letter of each word in ``string`` to uppercase and the remaining
     characters to lowercase.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["the cat"]})
+    >>> cap_df = df.select(dfn.functions.initcap(dfn.col("a")).alias("cap"))
+    >>> cap_df.collect_column("cap")[0].as_py()
+    'The Cat'
     """
     return Expr(f.initcap(string.expr))
 
@@ -964,12 +1055,31 @@ def lcm(x: Expr, y: Expr) -> Expr:
 
 
 def left(string: Expr, n: Expr) -> Expr:
-    """Returns the first ``n`` characters in the ``string``."""
+    """Returns the first ``n`` characters in the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["the cat"]})
+    >>> left_df = df.select(dfn.functions.left(dfn.col("a"), dfn.lit(3)).alias("left"))
+    >>> left_df.collect_column("left")[0].as_py()
+    'the'
+    """
     return Expr(f.left(string.expr, n.expr))
 
 
 def levenshtein(string1: Expr, string2: Expr) -> Expr:
-    """Returns the Levenshtein distance between the two given strings."""
+    """Returns the Levenshtein distance between the two given strings.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["kitten"]})
+    >>> result = df.select(
+    ...     dfn.functions.levenshtein(dfn.col("a"), dfn.lit("sitting")).alias("d"))
+    >>> result.collect_column("d")[0].as_py()
+    3
+    """
     return Expr(f.levenshtein(string1.expr, string2.expr))
 
 
@@ -1028,7 +1138,16 @@ def log2(arg: Expr) -> Expr:
 
 
 def lower(arg: Expr) -> Expr:
-    """Converts a string to lowercase."""
+    """Converts a string to lowercase.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["THE CaT"]})
+    >>> lower_df = df.select(dfn.functions.lower(dfn.col("a")).alias("lower"))
+    >>> lower_df.collect_column("lower")[0].as_py()
+    'the cat'
+    """
     return Expr(f.lower(arg.expr))
 
 
@@ -1038,13 +1157,32 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
     Extends the string to length length by prepending the characters fill (a
     space by default). If the string is already longer than length then it is
     truncated (on the right).
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["the cat", "a hat"]})
+    >>> lpad_df = df.select(dfn.functions.lpad(dfn.col("a"), dfn.lit(6)).alias("lpad"))
+    >>> lpad_df.collect_column("lpad")[0].as_py()
+    'the ca'
+    >>> lpad_df.collect_column("lpad")[1].as_py()
+    ' a hat'
     """
     characters = characters if characters is not None else Expr.literal(" ")
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
 
 def ltrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the beginning of a string."""
+    """Removes all characters, spaces by default, from the beginning of a string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [" a  "]})
+    >>> trim_df = df.select(dfn.functions.ltrim(dfn.col("a")).alias("trimmed"))
+    >>> trim_df.collect_column("trimmed")[0].as_py()
+    'a  '
+    """
     return Expr(f.ltrim(arg.expr))
 
 
@@ -1095,7 +1233,16 @@ def nvl(x: Expr, y: Expr) -> Expr:
 
 
 def octet_length(arg: Expr) -> Expr:
-    """Returns the number of bytes of a string."""
+    """Returns the number of bytes of a string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.octet_length(dfn.col("a")).alias("len"))
+    >>> result.collect_column("len")[0].as_py()
+    5
+    """
     return Expr(f.octet_length(arg.expr))
 
 
@@ -1106,6 +1253,16 @@ def overlay(
 
     Replace the substring of string that starts at the ``start``'th character and
     extends for ``length`` characters with new substring.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["abcdef"]})
+    >>> result = df.select(
+    ...     dfn.functions.overlay(dfn.col("a"), dfn.lit("XY"), dfn.lit(3),
+    ...     dfn.lit(2)).alias("o"))
+    >>> result.collect_column("o")[0].as_py()
+    'abXYef'
     """
     if length is None:
         return Expr(f.overlay(string.expr, substring.expr, start.expr))
@@ -1318,22 +1475,60 @@ def regexp_instr(
 
 
 def repeat(string: Expr, n: Expr) -> Expr:
-    """Repeats the ``string`` to ``n`` times."""
+    """Repeats the ``string`` to ``n`` times.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["ha"]})
+    >>> result = df.select(dfn.functions.repeat(dfn.col("a"), dfn.lit(3)).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    'hahaha'
+    """
     return Expr(f.repeat(string.expr, n.expr))
 
 
 def replace(string: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``."""
+    """Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello world"]})
+    >>> result = df.select(
+    ...     dfn.functions.replace(dfn.col("a"), dfn.lit("world"),
+    ...     dfn.lit("there")).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    'hello there'
+    """
     return Expr(f.replace(string.expr, from_val.expr, to_val.expr))
 
 
 def reverse(arg: Expr) -> Expr:
-    """Reverse the string argument."""
+    """Reverse the string argument.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.reverse(dfn.col("a")).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    'olleh'
+    """
     return Expr(f.reverse(arg.expr))
 
 
 def right(string: Expr, n: Expr) -> Expr:
-    """Returns the last ``n`` characters in the ``string``."""
+    """Returns the last ``n`` characters in the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.right(dfn.col("a"), dfn.lit(3)).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    'llo'
+    """
     return Expr(f.right(string.expr, n.expr))
 
 
@@ -1361,13 +1556,31 @@ def rpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
 
     Extends the string to length length by appending the characters fill (a space
     by default). If the string is already longer than length then it is truncated.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hi"]})
+    >>> result = df.select(
+    ...     dfn.functions.rpad(dfn.col("a"), dfn.lit(5), dfn.lit("!")).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    'hi!!!'
     """
     characters = characters if characters is not None else Expr.literal(" ")
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
 
 def rtrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the end of a string."""
+    """Removes all characters, spaces by default, from the end of a string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [" a  "]})
+    >>> trim_df = df.select(dfn.functions.rtrim(dfn.col("a")).alias("trimmed"))
+    >>> trim_df.collect_column("trimmed")[0].as_py()
+    ' a'
+    """
     return Expr(f.rtrim(arg.expr))
 
 
@@ -1475,6 +1688,15 @@ def split_part(string: Expr, delimiter: Expr, index: Expr) -> Expr:
 
     Splits a string based on a delimiter and picks out the desired field based
     on the index.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["a,b,c"]})
+    >>> result = df.select(
+    ...     dfn.functions.split_part(dfn.col("a"), dfn.lit(","), dfn.lit(2)).alias("s"))
+    >>> result.collect_column("s")[0].as_py()
+    'b'
     """
     return Expr(f.split_part(string.expr, delimiter.expr, index.expr))
 
@@ -1493,17 +1715,46 @@ def sqrt(arg: Expr) -> Expr:
 
 
 def starts_with(string: Expr, prefix: Expr) -> Expr:
-    """Returns true if string starts with prefix."""
+    """Returns true if string starts with prefix.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello_from_datafusion"]})
+    >>> result = df.select(
+    ...     dfn.functions.starts_with(dfn.col("a"), dfn.lit("hello")).alias("sw"))
+    >>> result.collect_column("sw")[0].as_py()
+    True
+    """
     return Expr(f.starts_with(string.expr, prefix.expr))
 
 
 def strpos(string: Expr, substring: Expr) -> Expr:
-    """Finds the position from where the ``substring`` matches the ``string``."""
+    """Finds the position from where the ``substring`` matches the ``string``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(
+    ...     dfn.functions.strpos(dfn.col("a"), dfn.lit("llo")).alias("pos"))
+    >>> result.collect_column("pos")[0].as_py()
+    3
+    """
     return Expr(f.strpos(string.expr, substring.expr))
 
 
 def substr(string: Expr, position: Expr) -> Expr:
-    """Substring from the ``position`` to the end."""
+    """Substring from the ``position`` to the end.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.substr(dfn.col("a"), dfn.lit(3)).alias("s"))
+    >>> result.collect_column("s")[0].as_py()
+    'llo'
+    """
     return Expr(f.substr(string.expr, position.expr))
 
 
@@ -1512,12 +1763,32 @@ def substr_index(string: Expr, delimiter: Expr, count: Expr) -> Expr:
 
     The return will be the ``string`` from before ``count`` occurrences of
     ``delimiter``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["a.b.c"]})
+    >>> result = df.select(
+    ...     dfn.functions.substr_index(dfn.col("a"), dfn.lit("."),
+    ...     dfn.lit(2)).alias("s"))
+    >>> result.collect_column("s")[0].as_py()
+    'a.b'
     """
     return Expr(f.substr_index(string.expr, delimiter.expr, count.expr))
 
 
 def substring(string: Expr, position: Expr, length: Expr) -> Expr:
-    """Substring from the ``position`` with ``length`` characters."""
+    """Substring from the ``position`` with ``length`` characters.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello world"]})
+    >>> result = df.select(
+    ...     dfn.functions.substring(dfn.col("a"), dfn.lit(1), dfn.lit(5)).alias("s"))
+    >>> result.collect_column("s")[0].as_py()
+    'hello'
+    """
     return Expr(f.substring(string.expr, position.expr, length.expr))
 
 
@@ -1548,7 +1819,16 @@ def tanh(arg: Expr) -> Expr:
 
 
 def to_hex(arg: Expr) -> Expr:
-    """Converts an integer to a hexadecimal string."""
+    """Converts an integer to a hexadecimal string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [255]})
+    >>> result = df.select(dfn.functions.to_hex(dfn.col("a")).alias("hex"))
+    >>> result.collect_column("hex")[0].as_py()
+    'ff'
+    """
     return Expr(f.to_hex(arg.expr))
 
 
@@ -1865,12 +2145,32 @@ def make_date(year: Expr, month: Expr, day: Expr) -> Expr:
 
 
 def translate(string: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces the characters in ``from_val`` with the counterpart in ``to_val``."""
+    """Replaces the characters in ``from_val`` with the counterpart in ``to_val``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(
+    ...     dfn.functions.translate(dfn.col("a"), dfn.lit("helo"),
+    ...     dfn.lit("HELO")).alias("t"))
+    >>> result.collect_column("t")[0].as_py()
+    'HELLO'
+    """
     return Expr(f.translate(string.expr, from_val.expr, to_val.expr))
 
 
 def trim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string."""
+    """Removes all characters, spaces by default, from both sides of a string.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["  hello  "]})
+    >>> result = df.select(dfn.functions.trim(dfn.col("a")).alias("t"))
+    >>> result.collect_column("t")[0].as_py()
+    'hello'
+    """
     return Expr(f.trim(arg.expr))
 
 
@@ -1890,7 +2190,16 @@ def trunc(num: Expr, precision: Expr | None = None) -> Expr:
 
 
 def upper(arg: Expr) -> Expr:
-    """Converts a string to uppercase."""
+    """Converts a string to uppercase.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": ["hello"]})
+    >>> result = df.select(dfn.functions.upper(dfn.col("a")).alias("u"))
+    >>> result.collect_column("u")[0].as_py()
+    'HELLO'
+    """
     return Expr(f.upper(arg.expr))
 
 
