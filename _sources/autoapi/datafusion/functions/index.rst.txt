@@ -1059,6 +1059,15 @@ Module Contents
    :param value_x: The independent variable for correlation
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
+
 
 .. py:function:: cos(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1095,14 +1104,11 @@ Module Contents
    >>> from math import pi
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [pi / 4]})
-   >>> import builtins
    >>> result = df.select(
    ...     dfn.functions.cot(dfn.col("a")).alias("cot")
    ... )
-   >>> builtins.round(
-   ...     result.collect_column("cot")[0].as_py(), 1
-   ... )
-   1.0
+   >>> result.collect_column("cot")[0].as_py()
+   1.0...
 
 
 .. py:function:: count(expressions: datafusion.expr.Expr | list[datafusion.expr.Expr] | None = None, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1151,7 +1157,7 @@ Module Contents
 
    Computes the sample covariance.
 
-   This is an alias for :py:func:`covar_samp`.
+   .. seealso:: This is an alias for :py:func:`covar_samp`.
 
 
 .. py:function:: covar_pop(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1167,6 +1173,19 @@ Module Contents
    :param value_x: The independent variable for covariance
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 5.0, 10.0], "b": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [],
+   ...     [dfn.functions.covar_pop(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   3.0
+
 
 .. py:function:: covar_samp(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1180,6 +1199,15 @@ Module Contents
    :param value_y: The dependent variable for covariance
    :param value_x: The independent variable for covariance
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
 
 
 .. py:function:: cume_dist(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -2335,14 +2363,11 @@ Module Contents
    >>> from math import pi
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [180.0]})
-   >>> import builtins
    >>> result = df.select(
    ...     dfn.functions.radians(dfn.col("a")).alias("rad")
    ... )
-   >>> builtins.round(
-   ...     result.collect_column("rad")[0].as_py(), 6
-   ... )
-   3.141593
+   >>> result.collect_column("rad")[0].as_py() == pi
+   True
 
 
 .. py:function:: random() -> datafusion.expr.Expr
@@ -2516,6 +2541,15 @@ Module Contents
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   5.0
+
 
 .. py:function:: regr_avgy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2530,6 +2564,15 @@ Module Contents
    :param y: The linear regression dependent variable
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: regr_count(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2546,6 +2589,15 @@ Module Contents
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3
+
 
 .. py:function:: regr_intercept(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2560,6 +2612,16 @@ Module Contents
    :param y: The linear regression dependent variable
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [],
+   ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   0.0
 
 
 .. py:function:: regr_r2(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2576,6 +2638,15 @@ Module Contents
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
+
 
 .. py:function:: regr_slope(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2590,6 +2661,15 @@ Module Contents
    :param y: The linear regression dependent variable
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: regr_sxx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -2606,6 +2686,15 @@ Module Contents
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: regr_sxy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2621,6 +2710,15 @@ Module Contents
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: regr_syy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2635,6 +2733,15 @@ Module Contents
    :param y: The linear regression dependent variable
    :param x: The linear regression independent variable
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: repeat(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2848,6 +2955,14 @@ Module Contents
    :param expression: The value to find the minimum of
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+   >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
+
 
 .. py:function:: stddev_pop(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2859,12 +2974,32 @@ Module Contents
    :param expression: The value to find the minimum of
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   1.0
+
 
 .. py:function:: stddev_samp(arg: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the sample standard deviation of the argument.
 
    This is an alias for :py:func:`stddev`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.stddev_samp(dfn.col("a")).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -3195,6 +3330,14 @@ Module Contents
 
    This is an alias for :py:func:`var_samp`.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.var(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
+
 
 .. py:function:: var_pop(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -3205,6 +3348,14 @@ Module Contents
 
    :param expression: The variable to compute the variance for
    :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0.0, 2.0]})
+   >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
 
 
 .. py:function:: var_samp(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -3217,12 +3368,30 @@ Module Contents
    :param expression: The variable to compute the variance for
    :param filter: If provided, only compute against rows for which the filter is True
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   1.0
+
 
 .. py:function:: var_sample(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the sample variance of the argument.
 
    This is an alias for :py:func:`var_samp`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.var_sample(dfn.col("a")).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   1.0
 
 
 .. py:function:: when(when: datafusion.expr.Expr, then: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
