@@ -1259,14 +1259,12 @@ def pi() -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
-        >>> import builtins
+        >>> from math import pi
         >>> result = df.select(
         ...     dfn.functions.pi().alias("pi")
         ... )
-        >>> builtins.round(
-        ...     result.collect_column("pi")[0].as_py(), 5
-        ... )
-        3.14159
+        >>> result.collect_column("pi")[0].as_py() == pi
+        True
     """
     return Expr(f.pi())
 
