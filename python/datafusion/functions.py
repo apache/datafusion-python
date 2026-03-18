@@ -823,14 +823,11 @@ def cot(arg: Expr) -> Expr:
         >>> from math import pi
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [pi / 4]})
-        >>> import builtins
         >>> result = df.select(
         ...     dfn.functions.cot(dfn.col("a")).alias("cot")
         ... )
-        >>> builtins.round(
-        ...     result.collect_column("cot")[0].as_py(), 1
-        ... )
-        1.0
+        >>> result.collect_column("cot")[0].as_py()
+        1.0...
     """
     return Expr(f.cot(arg.expr))
 
@@ -1171,14 +1168,11 @@ def radians(arg: Expr) -> Expr:
         >>> from math import pi
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [180.0]})
-        >>> import builtins
         >>> result = df.select(
         ...     dfn.functions.radians(dfn.col("a")).alias("rad")
         ... )
-        >>> builtins.round(
-        ...     result.collect_column("rad")[0].as_py(), 6
-        ... )
-        3.141593
+        >>> result.collect_column("rad")[0].as_py() == pi
+        True
     """
     return Expr(f.radians(arg.expr))
 
@@ -2737,6 +2731,14 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         value_y: The dependent variable for correlation
         value_x: The independent variable for correlation
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2791,6 +2793,18 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         value_y: The dependent variable for covariance
         value_x: The independent variable for covariance
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 5.0, 10.0], "b": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.covar_pop(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        3.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2808,6 +2822,14 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
         value_y: The dependent variable for covariance
         value_x: The independent variable for covariance
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
@@ -2816,7 +2838,8 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
 def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
-    This is an alias for :py:func:`covar_samp`.
+    See Also:
+        This is an alias for :py:func:`covar_samp`.
     """
     return covar_samp(value_y, value_x, filter)
 
@@ -2945,6 +2968,13 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The value to find the minimum of
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+        >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.stddev(expression.expr, filter=filter_raw))
@@ -2959,6 +2989,15 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The value to find the minimum of
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
@@ -2968,6 +3007,15 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     This is an alias for :py:func:`stddev`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev_samp(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     return stddev(arg, filter=filter)
 
@@ -2976,6 +3024,13 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate([], [dfn.functions.var(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     return var_samp(expression, filter)
 
@@ -2989,6 +3044,13 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The variable to compute the variance for
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0.0, 2.0]})
+        >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
@@ -3003,6 +3065,13 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
     Args:
         expression: The variable to compute the variance for
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_sample(expression.expr, filter=filter_raw))
@@ -3012,6 +3081,15 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_sample(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     return var_samp(expression, filter)
 
@@ -3033,6 +3111,14 @@ def regr_avgx(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        5.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3056,6 +3142,14 @@ def regr_avgy(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3079,6 +3173,14 @@ def regr_count(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3102,6 +3204,15 @@ def regr_intercept(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3125,6 +3236,14 @@ def regr_r2(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3148,6 +3267,14 @@ def regr_slope(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3171,6 +3298,14 @@ def regr_sxx(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3194,6 +3329,14 @@ def regr_sxy(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3217,6 +3360,14 @@ def regr_syy(
         y: The linear regression dependent variable
         x: The linear regression independent variable
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
 
