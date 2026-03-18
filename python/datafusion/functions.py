@@ -405,6 +405,15 @@ def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
         ... )
         >>> result.collect_column("in").to_pylist()
         [True, False, True]
+
+        >>> result = df.select(
+        ...     dfn.functions.in_list(
+        ...         dfn.col("a"), [dfn.lit(1), dfn.lit(3)],
+        ...         negated=True,
+        ...     ).alias("not_in")
+        ... )
+        >>> result.collect_column("not_in").to_pylist()
+        [False, True, False]
     """
     values = [v.expr for v in values]
     return Expr(f.in_list(arg.expr, values, negated))
@@ -469,6 +478,11 @@ def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> So
         >>> sort_expr = dfn.functions.order_by(dfn.col("a"), ascending=False)
         >>> sort_expr.ascending()
         False
+
+        >>> sort_expr = dfn.functions.order_by(
+        ...     dfn.col("a"), ascending=True, nulls_first=False)
+        >>> sort_expr.nulls_first()
+        False
     """
     return SortExpr(expr, ascending=ascending, nulls_first=nulls_first)
 
@@ -486,6 +500,13 @@ def alias(expr: Expr, name: str, metadata: dict[str, str] | None = None) -> Expr
         >>> df = ctx.from_pydict({"a": [1, 2]})
         >>> df.select(
         ...     dfn.functions.alias(dfn.col("a"), "b")
+        ... ).collect_column("b")[0].as_py()
+        1
+
+        >>> df.select(
+        ...     dfn.functions.alias(
+        ...         dfn.col("a"), "b", metadata={"info": "test"}
+        ...     )
         ... ).collect_column("b")[0].as_py()
         1
     """
@@ -1161,6 +1182,13 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
         'the ca'
         >>> lpad_df.collect_column("lpad")[1].as_py()
         ' a hat'
+
+        >>> result = df.select(
+        ...     dfn.functions.lpad(
+        ...         dfn.col("a"), dfn.lit(10), dfn.lit(".")
+        ...     ).alias("lpad"))
+        >>> result.collect_column("lpad")[0].as_py()
+        '...the cat'
     """
     characters = characters if characters is not None else Expr.literal(" ")
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
@@ -1341,6 +1369,17 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         ... )
         >>> result.collect_column("m")[0].as_py()
         True
+
+        Use ``flags`` for case-insensitive matching:
+
+        >>> result = df.select(
+        ...     dfn.functions.regexp_like(
+        ...         dfn.col("a"), dfn.lit("HELLO"),
+        ...         flags=dfn.lit("i"),
+        ...     ).alias("m")
+        ... )
+        >>> result.collect_column("m")[0].as_py()
+        True
     """
     if flags is not None:
         flags = flags.expr
@@ -1363,6 +1402,17 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         ... )
         >>> result.collect_column("m")[0].as_py()
         ['42']
+
+        Use ``flags`` for case-insensitive matching:
+
+        >>> result = df.select(
+        ...     dfn.functions.regexp_match(
+        ...         dfn.col("a"), dfn.lit("(HELLO)"),
+        ...         flags=dfn.lit("i"),
+        ...     ).alias("m")
+        ... )
+        >>> result.collect_column("m")[0].as_py()
+        ['hello']
     """
     if flags is not None:
         flags = flags.expr
@@ -1391,6 +1441,18 @@ def regexp_replace(
         ... )
         >>> result.collect_column("r")[0].as_py()
         'hello XX'
+
+        Use the ``g`` flag to replace all occurrences:
+
+        >>> df = ctx.from_pydict({"a": ["a1 b2 c3"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_replace(
+        ...         dfn.col("a"), dfn.lit("\\d+"),
+        ...         dfn.lit("X"), flags=dfn.lit("g"),
+        ...     ).alias("r")
+        ... )
+        >>> result.collect_column("r")[0].as_py()
+        'aX bX cX'
     """
     if flags is not None:
         flags = flags.expr
@@ -1412,6 +1474,17 @@ def regexp_count(
         ...     dfn.functions.regexp_count(dfn.col("a"), dfn.lit("abc")).alias("c"))
         >>> result.collect_column("c")[0].as_py()
         2
+
+        Use ``start`` to begin searching from a position, and
+        ``flags`` for case-insensitive matching:
+
+        >>> result = df.select(
+        ...     dfn.functions.regexp_count(
+        ...         dfn.col("a"), dfn.lit("ABC"),
+        ...         start=dfn.lit(4), flags=dfn.lit("i"),
+        ...     ).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        1
     """
     if flags is not None:
         flags = flags.expr
@@ -1447,6 +1520,31 @@ def regexp_instr(
         ... )
         >>> result.collect_column("pos")[0].as_py()
         7
+
+        Use ``start`` to search from a position, ``n`` for the
+        nth occurrence, and ``flags`` for case-insensitive mode:
+
+        >>> df = ctx.from_pydict({"a": ["abc ABC abc"]})
+        >>> result = df.select(
+        ...     dfn.functions.regexp_instr(
+        ...         dfn.col("a"), dfn.lit("abc"),
+        ...         start=dfn.lit(2), n=dfn.lit(1),
+        ...         flags=dfn.lit("i"),
+        ...     ).alias("pos")
+        ... )
+        >>> result.collect_column("pos")[0].as_py()
+        5
+
+        Use ``sub_expr`` to get the position of a capture group:
+
+        >>> result = df.select(
+        ...     dfn.functions.regexp_instr(
+        ...         dfn.col("a"), dfn.lit("(abc)"),
+        ...         sub_expr=dfn.lit(1),
+        ...     ).alias("pos")
+        ... )
+        >>> result.collect_column("pos")[0].as_py()
+        1
     """
     start = start.expr if start is not None else None
     n = n.expr if n is not None else None
@@ -2196,6 +2294,13 @@ def trunc(num: Expr, precision: Expr | None = None) -> Expr:
         >>> result = df.select(dfn.functions.trunc(dfn.col("a")).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         1.0
+
+        >>> result = df.select(
+        ...     dfn.functions.trunc(
+        ...         dfn.col("a"), precision=dfn.lit(2)
+        ...     ).alias("t"))
+        >>> result.collect_column("t")[0].as_py()
+        1.56
     """
     if precision is not None:
         return Expr(f.trunc(num.expr, precision.expr))
