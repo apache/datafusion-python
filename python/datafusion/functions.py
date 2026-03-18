@@ -521,6 +521,13 @@ def count_star(filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.count_star().alias("cnt")])
         >>> result.collect_column("cnt")[0].as_py()
         3
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.count_star(
+        ...         filter=dfn.col("a") > dfn.lit(1)
+        ...     ).alias("cnt")])
+        >>> result.collect_column("cnt")[0].as_py()
+        2
     """
     return count(Expr.literal(1), filter=filter)
 
@@ -3201,6 +3208,14 @@ def approx_distinct(
         ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py() == 3
         True
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.approx_distinct(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py() == 2
+        True
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3227,6 +3242,14 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
         ...     [], [dfn.functions.approx_median(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.approx_median(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.approx_median(expression.expr, filter=filter_raw))
@@ -3382,6 +3405,14 @@ def avg(
         >>> result = df.aggregate([], [dfn.functions.avg(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.avg(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.avg(expression.expr, filter=filter_raw))
@@ -3405,6 +3436,14 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.corr(
+        ...         dfn.col("a"), dfn.col("b"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
     """
@@ -3472,6 +3511,18 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         ... )
         >>> result.collect_column("v")[0].as_py()
         3.0
+
+        >>> df = ctx.from_pydict(
+        ...     {"a": [0.0, 1.0, 3.0], "b": [0.0, 1.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.covar_pop(
+        ...         dfn.col("a"), dfn.col("b"),
+        ...         filter=dfn.col("a") > dfn.lit(0.0)
+        ...     ).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
@@ -3497,6 +3548,14 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
         ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.covar_samp(
+        ...         dfn.col("a"), dfn.col("b"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
@@ -3527,6 +3586,14 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.max(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.max(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") < dfn.lit(3)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.max(expression.expr, filter=filter_raw))
@@ -3584,6 +3651,14 @@ def min(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.min(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.min(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.min(expression.expr, filter=filter_raw))
@@ -3610,6 +3685,14 @@ def sum(
         >>> result = df.aggregate([], [dfn.functions.sum(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         6
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.sum(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.sum(expression.expr, filter=filter_raw))
@@ -3629,6 +3712,15 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
         >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
+
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 4.0, 6.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
     """
@@ -3652,6 +3744,15 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate(
         ...     [], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")]
         ... )
+        >>> result.collect_column("v")[0].as_py()
+        1.0
+
+        >>> df = ctx.from_pydict({"a": [0.0, 1.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev_pop(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(0.0)
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
     """
@@ -3693,6 +3794,15 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
+
+        >>> df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_pop(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(-1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
@@ -3714,6 +3824,14 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_samp(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_sample(expression.expr, filter=filter_raw))
@@ -3753,6 +3871,14 @@ def regr_avgx(
         ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         5.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgx(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        5.5
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3784,6 +3910,14 @@ def regr_avgy(
         ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_avgy(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3815,6 +3949,14 @@ def regr_count(
         ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_count(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3845,6 +3987,15 @@ def regr_intercept(
         >>> result = df.aggregate(
         ...     [],
         ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.0
+
+        >>> result = df.aggregate(
+        ...     [],
+        ...     [dfn.functions.regr_intercept(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(2.0)
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         0.0
     """
@@ -3878,6 +4029,14 @@ def regr_r2(
         ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_r2(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(2.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.0
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3907,6 +4066,14 @@ def regr_slope(
         >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_slope(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(2.0)
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
     """
@@ -3940,6 +4107,14 @@ def regr_sxx(
         ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxx(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.5
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3971,6 +4146,14 @@ def regr_sxy(
         ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_sxy(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.5
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -4002,6 +4185,14 @@ def regr_syy(
         ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.regr_syy(
+        ...         dfn.col("y"), dfn.col("x"),
+        ...         filter=dfn.col("y") > dfn.lit(1.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        0.5
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -4155,6 +4346,15 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.bit_and(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
+
+        >>> df = ctx.from_pydict({"a": [7, 5, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_and(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(3)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_and(expression.expr, filter=filter_raw))
@@ -4178,6 +4378,15 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.bit_or(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
+
+        >>> df = ctx.from_pydict({"a": [1, 2, 4]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_or(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        6
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_or(expression.expr, filter=filter_raw))
@@ -4228,6 +4437,16 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.bool_and(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         False
+
+        >>> df = ctx.from_pydict(
+        ...     {"a": [True, True, False], "b": [1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bool_and(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("b") < dfn.lit(3)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_and(expression.expr, filter=filter_raw))
@@ -4252,6 +4471,16 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result = df.aggregate([], [dfn.functions.bool_or(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         True
+
+        >>> df = ctx.from_pydict(
+        ...     {"a": [False, False, True], "b": [1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bool_or(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("b") < dfn.lit(3)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        False
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_or(expression.expr, filter=filter_raw))
@@ -4688,6 +4917,15 @@ def string_agg(
         ...     ).alias("s")])
         >>> result.collect_column("s")[0].as_py()
         'x,y,z'
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.string_agg(
+        ...         dfn.col("a"), ",",
+        ...         filter=dfn.col("a") > dfn.lit("x"),
+        ...         order_by="a",
+        ...     ).alias("s")])
+        >>> result.collect_column("s")[0].as_py()
+        'y,z'
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
