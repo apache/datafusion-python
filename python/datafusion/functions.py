@@ -386,8 +386,6 @@ def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
 def list_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :py:func:`array_to_string`.
-
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
@@ -1021,7 +1019,8 @@ def initcap(string: Expr) -> Expr:
 def instr(string: Expr, substring: Expr) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
-    This is an alias for :py:func:`strpos`.
+    See Also:
+        This is an alias for :py:func:`strpos`.
     """
     return strpos(string, substring)
 
@@ -1290,7 +1289,8 @@ def pi() -> Expr:
 def position(string: Expr, substring: Expr) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
-    This is an alias for :py:func:`strpos`.
+    See Also:
+        This is an alias for :py:func:`strpos`.
     """
     return strpos(string, substring)
 
@@ -1313,7 +1313,8 @@ def power(base: Expr, exponent: Expr) -> Expr:
 def pow(base: Expr, exponent: Expr) -> Expr:
     """Returns ``base`` raised to the power of ``exponent``.
 
-    This is an alias of :py:func:`power`.
+    See Also:
+        This is an alias of :py:func:`power`.
     """
     return power(base, exponent)
 
@@ -2081,7 +2082,8 @@ def current_time() -> Expr:
 def datepart(part: Expr, date: Expr) -> Expr:
     """Return a specified part of a date.
 
-    This is an alias for :py:func:`date_part`.
+    See Also:
+        This is an alias for :py:func:`date_part`.
     """
     return date_part(part, date)
 
@@ -2104,7 +2106,8 @@ def date_part(part: Expr, date: Expr) -> Expr:
 def extract(part: Expr, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
-    This is an alias for :py:func:`date_part`.
+    See Also:
+        This is an alias for :py:func:`date_part`.
     """
     return date_part(part, date)
 
@@ -2130,7 +2133,8 @@ def date_trunc(part: Expr, date: Expr) -> Expr:
 def datetrunc(part: Expr, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
-    This is an alias for :py:func:`date_trunc`.
+    See Also:
+        This is an alias for :py:func:`date_trunc`.
     """
     return date_trunc(part, date)
 
@@ -2250,7 +2254,8 @@ def make_array(*args: Expr) -> Expr:
 def make_list(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
-    This is an alias for :py:func:`make_array`.
+    See Also:
+        This is an alias for :py:func:`make_array`.
     """
     return make_array(*args)
 
@@ -2258,7 +2263,8 @@ def make_list(*args: Expr) -> Expr:
 def array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
-    This is an alias for :py:func:`make_array`.
+    See Also:
+        This is an alias for :py:func:`make_array`.
     """
     return make_array(*args)
 
@@ -2419,7 +2425,8 @@ def array_append(array: Expr, element: Expr) -> Expr:
 def array_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
-    This is an alias for :py:func:`array_append`.
+    See Also:
+        This is an alias for :py:func:`array_append`.
     """
     return array_append(array, element)
 
@@ -2427,7 +2434,8 @@ def array_push_back(array: Expr, element: Expr) -> Expr:
 def list_append(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
-    This is an alias for :py:func:`array_append`.
+    See Also:
+        This is an alias for :py:func:`array_append`.
     """
     return array_append(array, element)
 
@@ -2435,7 +2443,8 @@ def list_append(array: Expr, element: Expr) -> Expr:
 def list_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
-    This is an alias for :py:func:`array_append`.
+    See Also:
+        This is an alias for :py:func:`array_append`.
     """
     return array_append(array, element)
 
@@ -2459,7 +2468,8 @@ def array_concat(*args: Expr) -> Expr:
 def array_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
-    This is an alias for :py:func:`array_concat`.
+    See Also:
+        This is an alias for :py:func:`array_concat`.
     """
     return array_concat(*args)
 
@@ -2501,7 +2511,8 @@ def array_distinct(array: Expr) -> Expr:
 def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
-    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    See Also:
+        This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
     """
     return array_concat(*args)
 
@@ -2509,7 +2520,8 @@ def list_cat(*args: Expr) -> Expr:
 def list_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
-    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    See Also:
+        This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
     """
     return array_concat(*args)
 
@@ -2517,7 +2529,8 @@ def list_concat(*args: Expr) -> Expr:
 def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
-    This is an alias for :py:func:`array_distinct`.
+    See Also:
+        This is an alias for :py:func:`array_distinct`.
     """
     return array_distinct(array)
 
@@ -2525,7 +2538,8 @@ def list_distinct(array: Expr) -> Expr:
 def list_dims(array: Expr) -> Expr:
     """Returns an array of the array's dimensions.
 
-    This is an alias for :py:func:`array_dims`.
+    See Also:
+        This is an alias for :py:func:`array_dims`.
     """
     return array_dims(array)
 
@@ -2562,7 +2576,8 @@ def array_empty(array: Expr) -> Expr:
 def array_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
-    This is an alias for :py:func:`array_element`.
+    See Also:
+        This is an alias for :py:func:`array_element`.
     """
     return array_element(array, n)
 
@@ -2570,7 +2585,8 @@ def array_extract(array: Expr, n: Expr) -> Expr:
 def list_element(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
-    This is an alias for :py:func:`array_element`.
+    See Also:
+        This is an alias for :py:func:`array_element`.
     """
     return array_element(array, n)
 
@@ -2578,7 +2594,8 @@ def list_element(array: Expr, n: Expr) -> Expr:
 def list_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
-    This is an alias for :py:func:`array_element`.
+    See Also:
+        This is an alias for :py:func:`array_element`.
     """
     return array_element(array, n)
 
@@ -2600,7 +2617,8 @@ def array_length(array: Expr) -> Expr:
 def list_length(array: Expr) -> Expr:
     """Returns the length of the array.
 
-    This is an alias for :py:func:`array_length`.
+    See Also:
+        This is an alias for :py:func:`array_length`.
     """
     return array_length(array)
 
@@ -2674,7 +2692,8 @@ def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
-    This is an alias for :py:func:`array_position`.
+    See Also:
+        This is an alias for :py:func:`array_position`.
     """
     return array_position(array, element, index)
 
@@ -2682,7 +2701,8 @@ def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
-    This is an alias for :py:func:`array_position`.
+    See Also:
+        This is an alias for :py:func:`array_position`.
     """
     return array_position(array, element, index)
 
@@ -2690,7 +2710,8 @@ def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
-    This is an alias for :py:func:`array_position`.
+    See Also:
+        This is an alias for :py:func:`array_position`.
     """
     return array_position(array, element, index)
 
@@ -2713,7 +2734,8 @@ def array_positions(array: Expr, element: Expr) -> Expr:
 def list_positions(array: Expr, element: Expr) -> Expr:
     """Searches for an element in the array and returns all occurrences.
 
-    This is an alias for :py:func:`array_positions`.
+    See Also:
+        This is an alias for :py:func:`array_positions`.
     """
     return array_positions(array, element)
 
@@ -2735,7 +2757,8 @@ def array_ndims(array: Expr) -> Expr:
 def list_ndims(array: Expr) -> Expr:
     """Returns the number of dimensions of the array.
 
-    This is an alias for :py:func:`array_ndims`.
+    See Also:
+        This is an alias for :py:func:`array_ndims`.
     """
     return array_ndims(array)
 
@@ -2758,7 +2781,8 @@ def array_prepend(element: Expr, array: Expr) -> Expr:
 def array_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
-    This is an alias for :py:func:`array_prepend`.
+    See Also:
+        This is an alias for :py:func:`array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -2766,7 +2790,8 @@ def array_push_front(element: Expr, array: Expr) -> Expr:
 def list_prepend(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
-    This is an alias for :py:func:`array_prepend`.
+    See Also:
+        This is an alias for :py:func:`array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -2774,7 +2799,8 @@ def list_prepend(element: Expr, array: Expr) -> Expr:
 def list_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
-    This is an alias for :py:func:`array_prepend`.
+    See Also:
+        This is an alias for :py:func:`array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -2825,7 +2851,8 @@ def array_remove(array: Expr, element: Expr) -> Expr:
 def list_remove(array: Expr, element: Expr) -> Expr:
     """Removes the first element from the array equal to the given value.
 
-    This is an alias for :py:func:`array_remove`.
+    See Also:
+        This is an alias for :py:func:`array_remove`.
     """
     return array_remove(array, element)
 
@@ -2849,7 +2876,8 @@ def array_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
 def list_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
-    This is an alias for :py:func:`array_remove_n`.
+    See Also:
+        This is an alias for :py:func:`array_remove_n`.
     """
     return array_remove_n(array, element, max)
 
@@ -2872,7 +2900,8 @@ def array_remove_all(array: Expr, element: Expr) -> Expr:
 def list_remove_all(array: Expr, element: Expr) -> Expr:
     """Removes all elements from the array equal to the given value.
 
-    This is an alias for :py:func:`array_remove_all`.
+    See Also:
+        This is an alias for :py:func:`array_remove_all`.
     """
     return array_remove_all(array, element)
 
@@ -2895,7 +2924,8 @@ def array_repeat(element: Expr, count: Expr) -> Expr:
 def list_repeat(element: Expr, count: Expr) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
-    This is an alias for :py:func:`array_repeat`.
+    See Also:
+        This is an alias for :py:func:`array_repeat`.
     """
     return array_repeat(element, count)
 
@@ -2919,7 +2949,8 @@ def array_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
 def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces the first occurrence of ``from_val`` with ``to_val``.
 
-    This is an alias for :py:func:`array_replace`.
+    See Also:
+        This is an alias for :py:func:`array_replace`.
     """
     return array_replace(array, from_val, to_val)
 
@@ -2949,7 +2980,8 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr
     Replaces the first ``max`` occurrences of the specified element with another
     specified element.
 
-    This is an alias for :py:func:`array_replace_n`.
+    See Also:
+        This is an alias for :py:func:`array_replace_n`.
     """
     return array_replace_n(array, from_val, to_val, max)
 
@@ -2973,7 +3005,8 @@ def array_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
 def list_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces all occurrences of ``from_val`` with ``to_val``.
 
-    This is an alias for :py:func:`array_replace_all`.
+    See Also:
+        This is an alias for :py:func:`array_replace_all`.
     """
     return array_replace_all(array, from_val, to_val)
 
@@ -3006,7 +3039,11 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
 
 
 def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -> Expr:
-    """This is an alias for :py:func:`array_sort`."""
+    """Sorts the array.
+
+    See Also:
+        This is an alias for :py:func:`array_sort`.
+    """
     return array_sort(array, descending=descending, null_first=null_first)
 
 
@@ -3033,7 +3070,8 @@ def array_slice(
 def list_slice(array: Expr, begin: Expr, end: Expr, stride: Expr | None = None) -> Expr:
     """Returns a slice of the array.
 
-    This is an alias for :py:func:`array_slice`.
+    See Also:
+        This is an alias for :py:func:`array_slice`.
     """
     return array_slice(array, begin, end, stride)
 
@@ -3061,7 +3099,8 @@ def array_intersect(array1: Expr, array2: Expr) -> Expr:
 def list_intersect(array1: Expr, array2: Expr) -> Expr:
     """Returns an the intersection of ``array1`` and ``array2``.
 
-    This is an alias for :py:func:`array_intersect`.
+    See Also:
+        This is an alias for :py:func:`array_intersect`.
     """
     return array_intersect(array1, array2)
 
@@ -3093,7 +3132,8 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
 
     Duplicate rows will not be returned.
 
-    This is an alias for :py:func:`array_union`.
+    See Also:
+        This is an alias for :py:func:`array_union`.
     """
     return array_union(array1, array2)
 
@@ -3116,7 +3156,8 @@ def array_except(array1: Expr, array2: Expr) -> Expr:
 def list_except(array1: Expr, array2: Expr) -> Expr:
     """Returns the elements that appear in ``array1`` but not in the ``array2``.
 
-    This is an alias for :py:func:`array_except`.
+    See Also:
+        This is an alias for :py:func:`array_except`.
     """
     return array_except(array1, array2)
 
@@ -3144,7 +3185,10 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
     """Returns an array with the specified size filled.
 
     If ``size`` is greater than the ``array`` length, the additional entries will be
-    filled with the given ``value``. This is an alias for :py:func:`array_resize`.
+    filled with the given ``value``.
+
+    See Also:
+        This is an alias for :py:func:`array_resize`.
     """
     return array_resize(array, size, value)
 
@@ -3178,7 +3222,11 @@ def cardinality(array: Expr) -> Expr:
 
 
 def empty(array: Expr) -> Expr:
-    """This is an alias for :py:func:`array_empty`."""
+    """Returns true if the array is empty.
+
+    See Also:
+        This is an alias for :py:func:`array_empty`.
+    """
     return array_empty(array)
 
 
@@ -3546,15 +3594,8 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
 def mean(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
-    This is an alias for :py:func:`avg`.
-
-    Examples:
-    ---------
-    >>> ctx = dfn.SessionContext()
-    >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-    >>> result = df.aggregate([], [dfn.functions.mean(dfn.col("a")).alias("v")])
-    >>> result.collect_column("v")[0].as_py()
-    2.0
+    See Also:
+        This is an alias for :py:func:`avg`.
     """
     return avg(expression, filter)
 
@@ -3683,16 +3724,8 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
 def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
-    This is an alias for :py:func:`stddev`.
-
-    Examples:
-        >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
-        >>> result = df.aggregate(
-        ...     [], [dfn.functions.stddev_samp(dfn.col("a")).alias("v")]
-        ... )
-        >>> result.collect_column("v")[0].as_py()
-        2.0
+    See Also:
+        This is an alias for :py:func:`stddev`.
     """
     return stddev(arg, filter=filter)
 
@@ -3700,14 +3733,8 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
 def var(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
-    This is an alias for :py:func:`var_samp`.
-
-    Examples:
-        >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-        >>> result = df.aggregate([], [dfn.functions.var(dfn.col("a")).alias("v")])
-        >>> result.collect_column("v")[0].as_py()
-        1.0
+    See Also:
+        This is an alias for :py:func:`var_samp`.
     """
     return var_samp(expression, filter)
 
@@ -3757,7 +3784,8 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
 def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
-    This is an alias for :py:func:`var_samp`.
+    See Also:
+        This is an alias for :py:func:`var_samp`.
     """
     return var_samp(expression, filter)
 
