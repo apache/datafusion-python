@@ -2759,6 +2759,16 @@ def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
         ...     dfn.functions.array_position(dfn.col("a"), dfn.lit(20)).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         2
+
+        Use ``index`` to start searching from a given position:
+
+        >>> df = ctx.from_pydict({"a": [[10, 20, 10, 20]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_position(
+        ...         dfn.col("a"), dfn.lit(20), index=3,
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        4
     """
     return Expr(f.array_position(array.expr, element.expr, index))
 
@@ -3091,6 +3101,14 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
         >>> result = df.select(dfn.functions.array_sort(dfn.col("a")).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3]
+
+        >>> df = ctx.from_pydict({"a": [[3, None, 1]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_sort(
+        ...         dfn.col("a"), descending=True, null_first=True,
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [None, 3, 1]
     """
     desc = "DESC" if descending else "ASC"
     nulls_first = "NULLS FIRST" if null_first else "NULLS LAST"
@@ -3125,6 +3143,16 @@ def array_slice(
         ...     dfn.lit(3)).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [2, 3]
+
+        Use ``stride`` to skip elements:
+
+        >>> result = df.select(
+        ...     dfn.functions.array_slice(
+        ...         dfn.col("a"), dfn.lit(1), dfn.lit(4),
+        ...         stride=dfn.lit(2),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [1, 3]
     """
     if stride is not None:
         stride = stride.expr
@@ -3396,6 +3424,15 @@ def approx_percentile_cont(
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.approx_percentile_cont(
+        ...         dfn.col("a"), 0.5,
+        ...         num_centroids=10,
+        ...         filter=dfn.col("a") > dfn.lit(1.0),
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3.5
     """
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
@@ -3436,6 +3473,15 @@ def approx_percentile_cont_with_weight(
         ...     dfn.col("w"), 0.5).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.approx_percentile_cont_with_weight(
+        ...         dfn.col("a"), dfn.col("w"), 0.5,
+        ...         num_centroids=10,
+        ...         filter=dfn.col("a") > dfn.lit(1.0),
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
@@ -3478,6 +3524,23 @@ def array_agg(
         ...     [], [dfn.functions.array_agg(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         [1, 2, 3]
+
+        >>> df = ctx.from_pydict({"a": [3, 1, 2, 1]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.array_agg(
+        ...         dfn.col("a"), distinct=True,
+        ...     ).alias("v")])
+        >>> sorted(result.collect_column("v")[0].as_py())
+        [1, 2, 3]
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.array_agg(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(1),
+        ...         order_by="a",
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        [2, 3]
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -3579,6 +3642,15 @@ def count(
         >>> result = df.aggregate([], [dfn.functions.count(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
+
+        >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.count(
+        ...         dfn.col("a"), distinct=True,
+        ...         filter=dfn.col("a") > dfn.lit(1),
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -3733,6 +3805,15 @@ def median(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate([], [dfn.functions.median(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
+
+        >>> df = ctx.from_pydict({"a": [1.0, 1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.median(
+        ...         dfn.col("a"), distinct=True,
+        ...         filter=dfn.col("a") > dfn.lit(0.0),
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
     """
@@ -4549,6 +4630,15 @@ def bit_xor(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [5, 3]})
         >>> result = df.aggregate([], [dfn.functions.bit_xor(dfn.col("a")).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        6
+
+        >>> df = ctx.from_pydict({"a": [5, 5, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_xor(
+        ...         dfn.col("a"), distinct=True,
+        ...         filter=dfn.col("a") > dfn.lit(0),
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         6
     """
