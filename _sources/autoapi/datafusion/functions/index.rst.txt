@@ -999,6 +999,14 @@ Module Contents
 
    Returns the numeric code of the first character of the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["a","b","c"]})
+   >>> ascii_df = df.select(dfn.functions.ascii(dfn.col("a")).alias("ascii"))
+   >>> ascii_df.collect_column("ascii")[0].as_py()
+   97
+
 
 .. py:function:: asin(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1112,6 +1120,14 @@ Module Contents
 
    Returns the number of bits in the string argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["a","b","c"]})
+   >>> bit_df = df.select(dfn.functions.bit_length(dfn.col("a")).alias("bit_len"))
+   >>> bit_df.collect_column("bit_len")[0].as_py()
+   8
+
 
 .. py:function:: bit_or(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -1204,6 +1220,14 @@ Module Contents
 
    Removes all characters, spaces by default, from both sides of a string.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [" a  "]})
+   >>> trim_df = df.select(dfn.functions.btrim(dfn.col("a")).alias("trimmed"))
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   'a'
+
 
 .. py:function:: cardinality(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1267,15 +1291,40 @@ Module Contents
 
    The number of characters in the ``string``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.char_length(dfn.col("a")).alias("len"))
+   >>> result.collect_column("len")[0].as_py()
+   5
+
 
 .. py:function:: character_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the number of characters in the argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
+   >>> char_len_df = df.select(
+   ...     dfn.functions.character_length(dfn.col("a")).alias("char_len"))
+   >>> char_len_df.collect_column("char_len")[0].as_py()
+   3
+
 
 .. py:function:: chr(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts the Unicode code point to a UTF8 character.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [65]})
+   >>> result = df.select(dfn.functions.chr(dfn.col("a")).alias("chr"))
+   >>> result.collect_column("chr")[0].as_py()
+   'A'
 
 
 .. py:function:: coalesce(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1724,6 +1773,15 @@ Module Contents
 
    Returns true if the ``string`` ends with the ``suffix``, false otherwise.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
+   >>> ends_with_df = df.select(
+   ...     dfn.functions.ends_with(dfn.col("a"), dfn.lit("c")).alias("ends_with"))
+   >>> ends_with_df.collect_column("ends_with")[0].as_py()
+   True
+
 
 .. py:function:: exp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -1768,6 +1826,15 @@ Module Contents
    ``string_list`` consisting of N substrings.
 
    The string list is a string composed of substrings separated by ``,`` characters.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["b"]})
+   >>> result = df.select(
+   ...     dfn.functions.find_in_set(dfn.col("a"), dfn.lit("a,b,c")).alias("pos"))
+   >>> result.collect_column("pos")[0].as_py()
+   2
 
 
 .. py:function:: first_value(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
@@ -1871,6 +1938,14 @@ Module Contents
 
    Converts the first letter of each word in ``string`` to uppercase and the remaining
    characters to lowercase.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["the cat"]})
+   >>> cap_df = df.select(dfn.functions.initcap(dfn.col("a")).alias("cap"))
+   >>> cap_df.collect_column("cap")[0].as_py()
+   'The Cat'
 
 
 .. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2007,15 +2082,40 @@ Module Contents
 
    Returns the first ``n`` characters in the ``string``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["the cat"]})
+   >>> left_df = df.select(dfn.functions.left(dfn.col("a"), dfn.lit(3)).alias("left"))
+   >>> left_df.collect_column("left")[0].as_py()
+   'the'
+
 
 .. py:function:: length(string: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    The number of characters in the ``string``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.length(dfn.col("a")).alias("len"))
+   >>> result.collect_column("len")[0].as_py()
+   5
+
 
 .. py:function:: levenshtein(string1: datafusion.expr.Expr, string2: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the Levenshtein distance between the two given strings.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["kitten"]})
+   >>> result = df.select(
+   ...     dfn.functions.levenshtein(dfn.col("a"), dfn.lit("sitting")).alias("d"))
+   >>> result.collect_column("d")[0].as_py()
+   3
 
 
 .. py:function:: list_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2292,6 +2392,14 @@ Module Contents
 
    Converts a string to lowercase.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["THE CaT"]})
+   >>> lower_df = df.select(dfn.functions.lower(dfn.col("a")).alias("lower"))
+   >>> lower_df.collect_column("lower")[0].as_py()
+   'the cat'
+
 
 .. py:function:: lpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
@@ -2301,10 +2409,28 @@ Module Contents
    space by default). If the string is already longer than length then it is
    truncated (on the right).
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["the cat", "a hat"]})
+   >>> lpad_df = df.select(dfn.functions.lpad(dfn.col("a"), dfn.lit(6)).alias("lpad"))
+   >>> lpad_df.collect_column("lpad")[0].as_py()
+   'the ca'
+   >>> lpad_df.collect_column("lpad")[1].as_py()
+   ' a hat'
+
 
 .. py:function:: ltrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes all characters, spaces by default, from the beginning of a string.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [" a  "]})
+   >>> trim_df = df.select(dfn.functions.ltrim(dfn.col("a")).alias("trimmed"))
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   'a  '
 
 
 .. py:function:: make_array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2575,6 +2701,14 @@ Module Contents
 
    Returns the number of bytes of a string.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.octet_length(dfn.col("a")).alias("len"))
+   >>> result.collect_column("len")[0].as_py()
+   5
+
 
 .. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.SortExpr
 
@@ -2593,6 +2727,16 @@ Module Contents
 
    Replace the substring of string that starts at the ``start``'th character and
    extends for ``length`` characters with new substring.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["abcdef"]})
+   >>> result = df.select(
+   ...     dfn.functions.overlay(dfn.col("a"), dfn.lit("XY"), dfn.lit(3),
+   ...     dfn.lit(2)).alias("o"))
+   >>> result.collect_column("o")[0].as_py()
+   'abXYef'
 
 
 .. py:function:: percent_rank(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
@@ -3065,20 +3209,54 @@ Module Contents
 
    Repeats the ``string`` to ``n`` times.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["ha"]})
+   >>> result = df.select(dfn.functions.repeat(dfn.col("a"), dfn.lit(3)).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   'hahaha'
+
 
 .. py:function:: replace(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello world"]})
+   >>> result = df.select(
+   ...     dfn.functions.replace(dfn.col("a"), dfn.lit("world"),
+   ...     dfn.lit("there")).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   'hello there'
 
 
 .. py:function:: reverse(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Reverse the string argument.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.reverse(dfn.col("a")).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   'olleh'
+
 
 .. py:function:: right(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the last ``n`` characters in the ``string``.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.right(dfn.col("a"), dfn.lit(3)).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   'llo'
 
 
 .. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -3131,10 +3309,27 @@ Module Contents
    Extends the string to length length by appending the characters fill (a space
    by default). If the string is already longer than length then it is truncated.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hi"]})
+   >>> result = df.select(
+   ...     dfn.functions.rpad(dfn.col("a"), dfn.lit(5), dfn.lit("!")).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   'hi!!!'
+
 
 .. py:function:: rtrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes all characters, spaces by default, from the end of a string.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [" a  "]})
+   >>> trim_df = df.select(dfn.functions.rtrim(dfn.col("a")).alias("trimmed"))
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   ' a'
 
 
 .. py:function:: sha224(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3243,6 +3438,15 @@ Module Contents
    Splits a string based on a delimiter and picks out the desired field based
    on the index.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["a,b,c"]})
+   >>> result = df.select(
+   ...     dfn.functions.split_part(dfn.col("a"), dfn.lit(","), dfn.lit(2)).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   'b'
+
 
 .. py:function:: sqrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -3260,6 +3464,15 @@ Module Contents
 .. py:function:: starts_with(string: datafusion.expr.Expr, prefix: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if string starts with prefix.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello_from_datafusion"]})
+   >>> result = df.select(
+   ...     dfn.functions.starts_with(dfn.col("a"), dfn.lit("hello")).alias("sw"))
+   >>> result.collect_column("sw")[0].as_py()
+   True
 
 
 .. py:function:: stddev(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -3354,6 +3567,15 @@ Module Contents
 
    Finds the position from where the ``substring`` matches the ``string``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.strpos(dfn.col("a"), dfn.lit("llo")).alias("pos"))
+   >>> result.collect_column("pos")[0].as_py()
+   3
+
 
 .. py:function:: struct(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -3380,6 +3602,14 @@ Module Contents
 
    Substring from the ``position`` to the end.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.substr(dfn.col("a"), dfn.lit(3)).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   'llo'
+
 
 .. py:function:: substr_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -3388,10 +3618,29 @@ Module Contents
    The return will be the ``string`` from before ``count`` occurrences of
    ``delimiter``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["a.b.c"]})
+   >>> result = df.select(
+   ...     dfn.functions.substr_index(dfn.col("a"), dfn.lit("."),
+   ...     dfn.lit(2)).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   'a.b'
+
 
 .. py:function:: substring(string: datafusion.expr.Expr, position: datafusion.expr.Expr, length: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Substring from the ``position`` with ``length`` characters.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello world"]})
+   >>> result = df.select(
+   ...     dfn.functions.substring(dfn.col("a"), dfn.lit(1), dfn.lit(5)).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   'hello'
 
 
 .. py:function:: sum(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -3467,6 +3716,14 @@ Module Contents
 .. py:function:: to_hex(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts an integer to a hexadecimal string.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [255]})
+   >>> result = df.select(dfn.functions.to_hex(dfn.col("a")).alias("hex"))
+   >>> result.collect_column("hex")[0].as_py()
+   'ff'
 
 
 .. py:function:: to_local_time(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3602,10 +3859,28 @@ Module Contents
 
    Replaces the characters in ``from_val`` with the counterpart in ``to_val``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(
+   ...     dfn.functions.translate(dfn.col("a"), dfn.lit("helo"),
+   ...     dfn.lit("HELO")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   'HELLO'
+
 
 .. py:function:: trim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes all characters, spaces by default, from both sides of a string.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["  hello  "]})
+   >>> result = df.select(dfn.functions.trim(dfn.col("a")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   'hello'
 
 
 .. py:function:: trunc(num: datafusion.expr.Expr, precision: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -3624,6 +3899,14 @@ Module Contents
 .. py:function:: upper(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string to uppercase.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello"]})
+   >>> result = df.select(dfn.functions.upper(dfn.col("a")).alias("u"))
+   >>> result.collect_column("u")[0].as_py()
+   'HELLO'
 
 
 .. py:function:: uuid() -> datafusion.expr.Expr
