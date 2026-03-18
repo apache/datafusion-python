@@ -1895,7 +1895,17 @@ def upper(arg: Expr) -> Expr:
 
 
 def make_array(*args: Expr) -> Expr:
-    """Returns an array using the specified input expressions."""
+    """Returns an array using the specified input expressions.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.make_array(dfn.lit(1), dfn.lit(2), dfn.lit(3)).alias("arr"))
+    >>> result.collect_column("arr")[0].as_py()
+    [1, 2, 3]
+    """
     args = [arg.expr for arg in args]
     return Expr(f.make_array(args))
 
@@ -1917,7 +1927,17 @@ def array(*args: Expr) -> Expr:
 
 
 def range(start: Expr, stop: Expr, step: Expr) -> Expr:
-    """Create a list of values in the range between start and stop."""
+    """Create a list of values in the range between start and stop.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.range(dfn.lit(0), dfn.lit(5), dfn.lit(2)).alias("r"))
+    >>> result.collect_column("r")[0].as_py()
+    [0, 2, 4]
+    """
     return Expr(f.range(start.expr, stop.expr, step.expr))
 
 
@@ -2045,7 +2065,17 @@ def random() -> Expr:
 
 
 def array_append(array: Expr, element: Expr) -> Expr:
-    """Appends an element to the end of an array."""
+    """Appends an element to the end of an array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_append(dfn.col("a"), dfn.lit(4)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2, 3, 4]
+    """
     return Expr(f.array_append(array.expr, element.expr))
 
 
@@ -2074,7 +2104,17 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
 
 
 def array_concat(*args: Expr) -> Expr:
-    """Concatenates the input arrays."""
+    """Concatenates the input arrays.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_concat(dfn.col("a"), dfn.col("b")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2, 3, 4]
+    """
     args = [arg.expr for arg in args]
     return Expr(f.array_concat(args))
 
@@ -2088,12 +2128,36 @@ def array_cat(*args: Expr) -> Expr:
 
 
 def array_dims(array: Expr) -> Expr:
-    """Returns an array of the array's dimensions."""
+    """Returns an array of the array's dimensions.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.array_dims(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [3]
+    """
     return Expr(f.array_dims(array.expr))
 
 
 def array_distinct(array: Expr) -> Expr:
-    """Returns distinct values from the array after removing duplicates."""
+    """Returns distinct values from the array after removing duplicates.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 1, 2, 3]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_distinct(
+    ...         dfn.col("a")
+    ...     ).alias("result")
+    ... )
+    >>> sorted(
+    ...     result.collect_column("result")[0].as_py()
+    ... )
+    [1, 2, 3]
+    """
     return Expr(f.array_distinct(array.expr))
 
 
@@ -2130,12 +2194,31 @@ def list_dims(array: Expr) -> Expr:
 
 
 def array_element(array: Expr, n: Expr) -> Expr:
-    """Extracts the element with the index n from the array."""
+    """Extracts the element with the index n from the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_element(dfn.col("a"), dfn.lit(2)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    20
+    """
     return Expr(f.array_element(array.expr, n.expr))
 
 
 def array_empty(array: Expr) -> Expr:
-    """Returns a boolean indicating whether the array is empty."""
+    """Returns a boolean indicating whether the array is empty.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2]]})
+    >>> result = df.select(dfn.functions.array_empty(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    False
+    """
     return Expr(f.array_empty(array.expr))
 
 
@@ -2164,7 +2247,16 @@ def list_extract(array: Expr, n: Expr) -> Expr:
 
 
 def array_length(array: Expr) -> Expr:
-    """Returns the length of the array."""
+    """Returns the length of the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.array_length(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    3
+    """
     return Expr(f.array_length(array.expr))
 
 
@@ -2177,7 +2269,17 @@ def list_length(array: Expr) -> Expr:
 
 
 def array_has(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if the element appears in the first array, otherwise false."""
+    """Returns true if the element appears in the first array, otherwise false.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_has(dfn.col("a"), dfn.lit(2)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    True
+    """
     return Expr(f.array_has(first_array.expr, second_array.expr))
 
 
@@ -2186,6 +2288,15 @@ def array_has_all(first_array: Expr, second_array: Expr) -> Expr:
 
     Returns true if each element of the second array appears in the first array.
     Otherwise, it returns false.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[1, 2]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_has_all(dfn.col("a"), dfn.col("b")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    True
     """
     return Expr(f.array_has_all(first_array.expr, second_array.expr))
 
@@ -2195,12 +2306,31 @@ def array_has_any(first_array: Expr, second_array: Expr) -> Expr:
 
     Returns true if at least one element of the second array appears in the first
     array. Otherwise, it returns false.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 5]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_has_any(dfn.col("a"), dfn.col("b")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    True
     """
     return Expr(f.array_has_any(first_array.expr, second_array.expr))
 
 
 def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
-    """Return the position of the first occurrence of ``element`` in ``array``."""
+    """Return the position of the first occurrence of ``element`` in ``array``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_position(dfn.col("a"), dfn.lit(20)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    2
+    """
     return Expr(f.array_position(array.expr, element.expr, index))
 
 
@@ -2229,7 +2359,17 @@ def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 
 
 def array_positions(array: Expr, element: Expr) -> Expr:
-    """Searches for an element in the array and returns all occurrences."""
+    """Searches for an element in the array and returns all occurrences.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_positions(dfn.col("a"), dfn.lit(1)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 3]
+    """
     return Expr(f.array_positions(array.expr, element.expr))
 
 
@@ -2242,7 +2382,16 @@ def list_positions(array: Expr, element: Expr) -> Expr:
 
 
 def array_ndims(array: Expr) -> Expr:
-    """Returns the number of dimensions of the array."""
+    """Returns the number of dimensions of the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.array_ndims(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    1
+    """
     return Expr(f.array_ndims(array.expr))
 
 
@@ -2255,7 +2404,17 @@ def list_ndims(array: Expr) -> Expr:
 
 
 def array_prepend(element: Expr, array: Expr) -> Expr:
-    """Prepends an element to the beginning of an array."""
+    """Prepends an element to the beginning of an array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_prepend(dfn.lit(0), dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [0, 1, 2]
+    """
     return Expr(f.array_prepend(element.expr, array.expr))
 
 
@@ -2284,17 +2443,45 @@ def list_push_front(element: Expr, array: Expr) -> Expr:
 
 
 def array_pop_back(array: Expr) -> Expr:
-    """Returns the array without the last element."""
+    """Returns the array without the last element.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.array_pop_back(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2]
+    """
     return Expr(f.array_pop_back(array.expr))
 
 
 def array_pop_front(array: Expr) -> Expr:
-    """Returns the array without the first element."""
+    """Returns the array without the first element.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.array_pop_front(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [2, 3]
+    """
     return Expr(f.array_pop_front(array.expr))
 
 
 def array_remove(array: Expr, element: Expr) -> Expr:
-    """Removes the first element from the array equal to the given value."""
+    """Removes the first element from the array equal to the given value.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_remove(dfn.col("a"), dfn.lit(1)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [2, 1]
+    """
     return Expr(f.array_remove(array.expr, element.expr))
 
 
@@ -2307,7 +2494,18 @@ def list_remove(array: Expr, element: Expr) -> Expr:
 
 
 def array_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
-    """Removes the first ``max`` elements from the array equal to the given value."""
+    """Removes the first ``max`` elements from the array equal to the given value.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_remove_n(dfn.col("a"), dfn.lit(1),
+    ...     dfn.lit(2)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [2, 1]
+    """
     return Expr(f.array_remove_n(array.expr, element.expr, max.expr))
 
 
@@ -2320,7 +2518,17 @@ def list_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
 
 
 def array_remove_all(array: Expr, element: Expr) -> Expr:
-    """Removes all elements from the array equal to the given value."""
+    """Removes all elements from the array equal to the given value.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_remove_all(dfn.col("a"), dfn.lit(1)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [2]
+    """
     return Expr(f.array_remove_all(array.expr, element.expr))
 
 
@@ -2333,7 +2541,17 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
 
 
 def array_repeat(element: Expr, count: Expr) -> Expr:
-    """Returns an array containing ``element`` ``count`` times."""
+    """Returns an array containing ``element`` ``count`` times.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1]})
+    >>> result = df.select(
+    ...     dfn.functions.array_repeat(dfn.lit(3), dfn.lit(3)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [3, 3, 3]
+    """
     return Expr(f.array_repeat(element.expr, count.expr))
 
 
@@ -2346,7 +2564,18 @@ def list_repeat(element: Expr, count: Expr) -> Expr:
 
 
 def array_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces the first occurrence of ``from_val`` with ``to_val``."""
+    """Replaces the first occurrence of ``from_val`` with ``to_val``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_replace(dfn.col("a"), dfn.lit(1),
+    ...     dfn.lit(9)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [9, 2, 1]
+    """
     return Expr(f.array_replace(array.expr, from_val.expr, to_val.expr))
 
 
@@ -2363,6 +2592,16 @@ def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Exp
 
     Replaces the first ``max`` occurrences of the specified element with another
     specified element.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_replace_n(dfn.col("a"), dfn.lit(1), dfn.lit(9),
+    ...     dfn.lit(2)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [9, 2, 9, 1]
     """
     return Expr(f.array_replace_n(array.expr, from_val.expr, to_val.expr, max.expr))
 
@@ -2379,7 +2618,18 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr
 
 
 def array_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces all occurrences of ``from_val`` with ``to_val``."""
+    """Replaces all occurrences of ``from_val`` with ``to_val``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_replace_all(dfn.col("a"), dfn.lit(1),
+    ...     dfn.lit(9)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [9, 2, 9]
+    """
     return Expr(f.array_replace_all(array.expr, from_val.expr, to_val.expr))
 
 
@@ -2398,6 +2648,14 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
         array: The input array to sort.
         descending: If True, sorts in descending order.
         null_first: If True, nulls will be returned at the beginning of the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[3, 1, 2]]})
+    >>> result = df.select(dfn.functions.array_sort(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2, 3]
     """
     desc = "DESC" if descending else "ASC"
     nulls_first = "NULLS FIRST" if null_first else "NULLS LAST"
@@ -2418,7 +2676,18 @@ def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -
 def array_slice(
     array: Expr, begin: Expr, end: Expr, stride: Expr | None = None
 ) -> Expr:
-    """Returns a slice of the array."""
+    """Returns a slice of the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_slice(dfn.col("a"), dfn.lit(2),
+    ...     dfn.lit(3)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [2, 3]
+    """
     if stride is not None:
         stride = stride.expr
     return Expr(f.array_slice(array.expr, begin.expr, end.expr, stride))
@@ -2433,7 +2702,22 @@ def list_slice(array: Expr, begin: Expr, end: Expr, stride: Expr | None = None) 
 
 
 def array_intersect(array1: Expr, array2: Expr) -> Expr:
-    """Returns the intersection of ``array1`` and ``array2``."""
+    """Returns the intersection of ``array1`` and ``array2``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_intersect(
+    ...         dfn.col("a"), dfn.col("b")
+    ...     ).alias("result")
+    ... )
+    >>> sorted(
+    ...     result.collect_column("result")[0].as_py()
+    ... )
+    [2, 3]
+    """
     return Expr(f.array_intersect(array1.expr, array2.expr))
 
 
@@ -2449,6 +2733,20 @@ def array_union(array1: Expr, array2: Expr) -> Expr:
     """Returns an array of the elements in the union of array1 and array2.
 
     Duplicate rows will not be returned.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_union(
+    ...         dfn.col("a"), dfn.col("b")
+    ...     ).alias("result")
+    ... )
+    >>> sorted(
+    ...     result.collect_column("result")[0].as_py()
+    ... )
+    [1, 2, 3, 4]
     """
     return Expr(f.array_union(array1.expr, array2.expr))
 
@@ -2464,7 +2762,17 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
 
 
 def array_except(array1: Expr, array2: Expr) -> Expr:
-    """Returns the elements that appear in ``array1`` but not in ``array2``."""
+    """Returns the elements that appear in ``array1`` but not in ``array2``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_except(dfn.col("a"), dfn.col("b")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1]
+    """
     return Expr(f.array_except(array1.expr, array2.expr))
 
 
@@ -2481,6 +2789,16 @@ def array_resize(array: Expr, size: Expr, value: Expr) -> Expr:
 
     If ``size`` is greater than the ``array`` length, the additional entries will
     be filled with the given ``value``.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2]]})
+    >>> result = df.select(
+    ...     dfn.functions.array_resize(dfn.col("a"), dfn.lit(4),
+    ...     dfn.lit(0)).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2, 0, 0]
     """
     return Expr(f.array_resize(array.expr, size.expr, value.expr))
 
@@ -2495,12 +2813,30 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
 
 
 def flatten(array: Expr) -> Expr:
-    """Flattens an array of arrays into a single array."""
+    """Flattens an array of arrays into a single array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[[1, 2], [3, 4]]]})
+    >>> result = df.select(dfn.functions.flatten(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    [1, 2, 3, 4]
+    """
     return Expr(f.flatten(array.expr))
 
 
 def cardinality(array: Expr) -> Expr:
-    """Returns the total number of elements in the array."""
+    """Returns the total number of elements in the array.
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    >>> result = df.select(dfn.functions.cardinality(dfn.col("a")).alias("result"))
+    >>> result.collect_column("result")[0].as_py()
+    3
+    """
     return Expr(f.cardinality(array.expr))
 
 
@@ -2681,6 +3017,14 @@ def array_agg(
     For example::
 
         df.aggregate([], array_agg(col("a"), order_by="b"))
+
+    Examples:
+    ---------
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> result = df.aggregate([], [dfn.functions.array_agg(dfn.col("a")).alias("v")])
+    >>> result.collect_column("v")[0].as_py()
+    [1, 2, 3]
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
