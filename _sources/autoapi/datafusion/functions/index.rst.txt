@@ -1213,25 +1213,88 @@ Module Contents
 
    Returns current UTC date as a Date32 value.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.current_date().alias("d")
+   ... )
+   >>> result.collect_column("d")[0].as_py() is not None
+   True
+
 
 .. py:function:: current_time() -> datafusion.expr.Expr
 
    Returns current UTC time as a Time64 value.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.current_time().alias("t")
+   ... )
+
+   Use .value instead of .as_py() because nanosecond timestamps
+   require pandas to convert to Python datetime objects.
+
+   >>> result.collect_column("t")[0].value > 0
+   True
 
 
 .. py:function:: date_bin(stride: datafusion.expr.Expr, source: datafusion.expr.Expr, origin: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Coerces an arbitrary timestamp to the start of the nearest specified interval.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
+   >>> result = df.select(
+   ...     dfn.functions.date_bin(
+   ...         dfn.string_literal("15 minutes"),
+   ...         dfn.col("timestamp"),
+   ...         dfn.string_literal("2001-01-01 00:00:00")
+   ...     ).alias("b")
+   ... )
+   >>> str(result.collect_column("b")[0].as_py())
+   '2021-07-15 12:30:00'
+   >>> str(result.collect_column("b")[1].as_py())
+   '2021-01-01 00:00:00'
+
 
 .. py:function:: date_part(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Extracts a subfield from the date.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+   >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+   >>> result = df.select(
+   ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
+   >>> result.collect_column("y")[0].as_py()
+   2021
+
 
 .. py:function:: date_trunc(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Truncates the date to a specified level of precision.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+   >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+   >>> result = df.select(
+   ...     dfn.functions.date_trunc(
+   ...         dfn.lit("month"), dfn.col("a")
+   ...     ).alias("t")
+   ... )
+   >>> str(result.collect_column("t")[0].as_py())
+   '2021-07-01 00:00:00'
 
 
 .. py:function:: datepart(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1429,6 +1492,18 @@ Module Contents
 .. py:function:: from_unixtime(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts an integer to RFC3339 timestamp format string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0]})
+   >>> result = df.select(
+   ...     dfn.functions.from_unixtime(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '1970-01-01 00:00:00'
 
 
 .. py:function:: gcd(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1914,6 +1989,17 @@ Module Contents
 
    Make a date from year, month and day component parts.
 
+   .. rubric:: Examples
+
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"y": [2024], "m": [1], "d": [15]})
+   >>> result = df.select(
+   ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
+   ...     dfn.col("d")).alias("dt"))
+   >>> result.collect_column("dt")[0].as_py()
+   datetime.date(2024, 1, 15)
+
 
 .. py:function:: make_list(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2049,6 +2135,20 @@ Module Contents
    Returns the current timestamp in nanoseconds.
 
    This will use the same value for all instances of now() in same statement.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.now().alias("now")
+   ... )
+
+   Use .value instead of .as_py() because nanosecond timestamps
+   require pandas to convert to Python datetime objects.
+
+   >>> result.collect_column("now")[0].value > 0
+   True
 
 
 .. py:function:: nth_value(expression: datafusion.expr.Expr, n: int, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
@@ -2944,12 +3044,36 @@ Module Contents
 
    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
 
 .. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in microseconds.
 
    See :py:func:`to_timestamp` for a description on how to use formatters.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_micros(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
 
 
 .. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2958,12 +3082,36 @@ Module Contents
 
    See :py:func:`to_timestamp` for a description on how to use formatters.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_millis(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
 
 .. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
    See :py:func:`to_timestamp` for a description on how to use formatters.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_nanos(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
 
 
 .. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2972,10 +3120,30 @@ Module Contents
 
    See :py:func:`to_timestamp` for a description on how to use formatters.
 
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_seconds(
+   ...         dfn.col("a")
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
 
 .. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a Unixtime.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["1970-01-01T00:00:00"]})
+   >>> result = df.select(dfn.functions.to_unixtime(dfn.col("a")).alias("u"))
+   >>> result.collect_column("u")[0].as_py()
+   0
 
 
 .. py:function:: translate(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
