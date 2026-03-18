@@ -1859,6 +1859,18 @@ def to_char(arg: Expr, formatter: Expr) -> Expr:
     For usage of ``formatter`` see the rust chrono package ``strftime`` package.
 
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-01-01T00:00:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_char(
+        ...         dfn.functions.to_timestamp(dfn.col("a")),
+        ...         dfn.lit("%Y/%m/%d"),
+        ...     ).alias("formatted")
+        ... )
+        >>> result.collect_column("formatted")[0].as_py()
+        '2021/01/01'
     """
     return Expr(f.to_char(arg.expr, formatter.expr))
 
@@ -1878,6 +1890,14 @@ def to_date(arg: Expr, *formatters: Expr) -> Expr:
     For usage of ``formatters`` see the rust chrono package ``strftime`` package.
 
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["2021-07-20"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_date(dfn.col("a")).alias("dt"))
+        >>> str(result.collect_column("dt")[0].as_py())
+        '2021-07-20'
     """
     return Expr(f.to_date(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -1899,6 +1919,14 @@ def to_time(arg: Expr, *formatters: Expr) -> Expr:
     For usage of ``formatters`` see the rust chrono package ``strftime`` package.
 
     [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["14:30:00"]})
+        >>> result = df.select(
+        ...     dfn.functions.to_time(dfn.col("a")).alias("t"))
+        >>> str(result.collect_column("t")[0].as_py())
+        '14:30:00'
     """
     return Expr(f.to_time(arg.expr, *_unwrap_exprs(formatters)))
 
@@ -3730,15 +3758,6 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
-
-    Examples:
-        >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-        >>> result = df.aggregate(
-        ...     [], [dfn.functions.var_sample(dfn.col("a")).alias("v")]
-        ... )
-        >>> result.collect_column("v")[0].as_py()
-        1.0
     """
     return var_samp(expression, filter)
 
