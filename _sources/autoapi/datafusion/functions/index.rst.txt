@@ -463,10 +463,27 @@ Module Contents
 
        df.aggregate([], array_agg(col("a"), order_by="b"))
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.aggregate([], [dfn.functions.array_agg(dfn.col("a")).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   [1, 2, 3]
+
 
 .. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Appends an element to the end of an array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_append(dfn.col("a"), dfn.lit(4)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3, 4]
 
 
 .. py:function:: array_cat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -480,30 +497,87 @@ Module Contents
 
    Concatenates the input arrays.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_concat(dfn.col("a"), dfn.col("b")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3, 4]
+
 
 .. py:function:: array_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array of the array's dimensions.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.array_dims(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [3]
 
 
 .. py:function:: array_distinct(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns distinct values from the array after removing duplicates.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_distinct(
+   ...         dfn.col("a")
+   ...     ).alias("result")
+   ... )
+   >>> sorted(
+   ...     result.collect_column("result")[0].as_py()
+   ... )
+   [1, 2, 3]
+
 
 .. py:function:: array_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_element(dfn.col("a"), dfn.lit(2)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   20
 
 
 .. py:function:: array_empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns a boolean indicating whether the array is empty.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2]]})
+   >>> result = df.select(dfn.functions.array_empty(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   False
+
 
 .. py:function:: array_except(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the elements that appear in ``array1`` but not in ``array2``.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_except(dfn.col("a"), dfn.col("b")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1]
 
 
 .. py:function:: array_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -517,6 +591,15 @@ Module Contents
 
    Returns true if the element appears in the first array, otherwise false.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_has(dfn.col("a"), dfn.lit(2)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   True
+
 
 .. py:function:: array_has_all(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -525,6 +608,15 @@ Module Contents
    Returns true if each element of the second array appears in the first array.
    Otherwise, it returns false.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[1, 2]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_has_all(dfn.col("a"), dfn.col("b")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   True
+
 
 .. py:function:: array_has_any(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -532,6 +624,15 @@ Module Contents
 
    Returns true if at least one element of the second array appears in the first
    array. Otherwise, it returns false.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 5]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_has_any(dfn.col("a"), dfn.col("b")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   True
 
 
 .. py:function:: array_indexof(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
@@ -545,6 +646,20 @@ Module Contents
 
    Returns the intersection of ``array1`` and ``array2``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_intersect(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> sorted(
+   ...     result.collect_column("result")[0].as_py()
+   ... )
+   [2, 3]
+
 
 .. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -557,35 +672,94 @@ Module Contents
 
    Returns the length of the array.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.array_length(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   3
+
 
 .. py:function:: array_ndims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the number of dimensions of the array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.array_ndims(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   1
 
 
 .. py:function:: array_pop_back(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the array without the last element.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.array_pop_back(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2]
+
 
 .. py:function:: array_pop_front(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the array without the first element.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.array_pop_front(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [2, 3]
 
 
 .. py:function:: array_position(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
 
    Return the position of the first occurrence of ``element`` in ``array``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_position(dfn.col("a"), dfn.lit(20)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   2
+
 
 .. py:function:: array_positions(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Searches for an element in the array and returns all occurrences.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_positions(dfn.col("a"), dfn.lit(1)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 3]
+
 
 .. py:function:: array_prepend(element: datafusion.expr.Expr, array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Prepends an element to the beginning of an array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_prepend(dfn.lit(0), dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [0, 1, 2]
 
 
 .. py:function:: array_push_back(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -606,30 +780,87 @@ Module Contents
 
    Removes the first element from the array equal to the given value.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_remove(dfn.col("a"), dfn.lit(1)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [2, 1]
+
 
 .. py:function:: array_remove_all(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes all elements from the array equal to the given value.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_remove_all(dfn.col("a"), dfn.lit(1)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [2]
 
 
 .. py:function:: array_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes the first ``max`` elements from the array equal to the given value.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_remove_n(dfn.col("a"), dfn.lit(1),
+   ...     dfn.lit(2)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [2, 1]
+
 
 .. py:function:: array_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array containing ``element`` ``count`` times.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.array_repeat(dfn.lit(3), dfn.lit(3)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [3, 3, 3]
 
 
 .. py:function:: array_replace(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Replaces the first occurrence of ``from_val`` with ``to_val``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_replace(dfn.col("a"), dfn.lit(1),
+   ...     dfn.lit(9)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [9, 2, 1]
+
 
 .. py:function:: array_replace_all(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Replaces all occurrences of ``from_val`` with ``to_val``.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_replace_all(dfn.col("a"), dfn.lit(1),
+   ...     dfn.lit(9)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [9, 2, 9]
 
 
 .. py:function:: array_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -639,6 +870,16 @@ Module Contents
    Replaces the first ``max`` occurrences of the specified element with another
    specified element.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_replace_n(dfn.col("a"), dfn.lit(1), dfn.lit(9),
+   ...     dfn.lit(2)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [9, 2, 9, 1]
+
 
 .. py:function:: array_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr, value: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -647,10 +888,30 @@ Module Contents
    If ``size`` is greater than the ``array`` length, the additional entries will
    be filled with the given ``value``.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_resize(dfn.col("a"), dfn.lit(4),
+   ...     dfn.lit(0)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 0, 0]
+
 
 .. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_slice(dfn.col("a"), dfn.lit(2),
+   ...     dfn.lit(3)).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [2, 3]
 
 
 .. py:function:: array_sort(array: datafusion.expr.Expr, descending: bool = False, null_first: bool = False) -> datafusion.expr.Expr
@@ -660,6 +921,14 @@ Module Contents
    :param array: The input array to sort.
    :param descending: If True, sorts in descending order.
    :param null_first: If True, nulls will be returned at the beginning of the array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[3, 1, 2]]})
+   >>> result = df.select(dfn.functions.array_sort(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3]
 
 
 .. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -681,6 +950,20 @@ Module Contents
    Returns an array of the elements in the union of array1 and array2.
 
    Duplicate rows will not be returned.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[2, 3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_union(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> sorted(
+   ...     result.collect_column("result")[0].as_py()
+   ... )
+   [1, 2, 3, 4]
 
 
 .. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -925,6 +1208,14 @@ Module Contents
 .. py:function:: cardinality(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the total number of elements in the array.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(dfn.functions.cardinality(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   3
 
 
 .. py:function:: case(expr: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
@@ -1503,6 +1794,14 @@ Module Contents
 
    Flattens an array of arrays into a single array.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[[1, 2], [3, 4]]]})
+   >>> result = df.select(dfn.functions.flatten(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3, 4]
+
 
 .. py:function:: floor(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2012,6 +2311,15 @@ Module Contents
 
    Returns an array using the specified input expressions.
 
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.make_array(dfn.lit(1), dfn.lit(2), dfn.lit(3)).alias("arr"))
+   >>> result.collect_column("arr")[0].as_py()
+   [1, 2, 3]
+
 
 .. py:function:: make_date(year: datafusion.expr.Expr, month: datafusion.expr.Expr, day: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -2389,6 +2697,15 @@ Module Contents
 .. py:function:: range(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Create a list of values in the range between start and stop.
+
+   Examples:
+   ---------
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.range(dfn.lit(0), dfn.lit(5), dfn.lit(2)).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   [0, 2, 4]
 
 
 .. py:function:: rank(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
