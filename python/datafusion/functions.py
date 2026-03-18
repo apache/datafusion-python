@@ -4227,6 +4227,17 @@ def first_value(
         ... )
         >>> result.collect_column("v")[0].as_py()
         10
+
+        >>> df = ctx.from_pydict({"a": [None, 20, 10]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.first_value(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(10),
+        ...         order_by="a",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        20
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -4269,6 +4280,17 @@ def last_value(
         ... )
         >>> result.collect_column("v")[0].as_py()
         30
+
+        >>> df = ctx.from_pydict({"a": [None, 20, 10]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.last_value(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(10),
+        ...         order_by="a",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        20
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -4311,6 +4333,17 @@ def nth_value(
         >>> result = df.aggregate(
         ...     [], [dfn.functions.nth_value(dfn.col("a"), 2).alias("v")]
         ... )
+        >>> result.collect_column("v")[0].as_py()
+        20
+
+        >>> df = ctx.from_pydict({"a": [None, 20, 10]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.nth_value(
+        ...         dfn.col("a"), 1,
+        ...         filter=dfn.col("a") > dfn.lit(10),
+        ...         order_by="a",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         20
     """
@@ -4531,6 +4564,16 @@ def lead(
         ...     default_value=0, order_by="a").alias("lead"))
         >>> result.sort(dfn.col("a")).collect_column("lead").to_pylist()
         [2, 3, 0]
+
+        >>> df = ctx.from_pydict({"g": ["a", "a", "b"], "v": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.lead(
+        ...         dfn.col("v"), shift_offset=1, default_value=0,
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("lead"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lead").to_pylist()
+        [2, 0, 0]
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -4591,6 +4634,16 @@ def lag(
         ...     default_value=0, order_by="a").alias("lag"))
         >>> result.sort(dfn.col("a")).collect_column("lag").to_pylist()
         [0, 1, 2]
+
+        >>> df = ctx.from_pydict({"g": ["a", "a", "b"], "v": [1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.lag(
+        ...         dfn.col("v"), shift_offset=1, default_value=0,
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("lag"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lag").to_pylist()
+        [0, 1, 0]
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -4640,6 +4693,16 @@ def row_number(
         ...     dfn.col("a"), dfn.functions.row_number(order_by="a").alias("rn"))
         >>> result.sort(dfn.col("a")).collect_column("rn").to_pylist()
         [1, 2, 3]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "b", "b"], "v": [1, 2, 3, 4]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.row_number(
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("rn"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("rn").to_pylist()
+        [1, 2, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -4689,6 +4752,16 @@ def rank(
         ... )
         >>> result.sort(dfn.col("a")).collect_column("rnk").to_pylist()
         [1, 1, 3]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "b", "b"], "v": [1, 1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.rank(
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("rnk"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("rnk").to_pylist()
+        [1, 1, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -4732,6 +4805,16 @@ def dense_rank(
         ...     dfn.col("a"), dfn.functions.dense_rank(order_by="a").alias("dr"))
         >>> result.sort(dfn.col("a")).collect_column("dr").to_pylist()
         [1, 1, 2]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "b", "b"], "v": [1, 1, 2, 3]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.dense_rank(
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("dr"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("dr").to_pylist()
+        [1, 1, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -4777,6 +4860,16 @@ def percent_rank(
         ...     dfn.col("a"), dfn.functions.percent_rank(order_by="a").alias("pr"))
         >>> result.sort(dfn.col("a")).collect_column("pr").to_pylist()
         [0.0, 0.5, 1.0]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "a", "b", "b"], "v": [1, 2, 3, 4, 5]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.percent_rank(
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("pr"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("pr").to_pylist()
+        [0.0, 0.5, 1.0, 0.0, 1.0]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -4825,6 +4918,16 @@ def cume_dist(
         ... )
         >>> result.collect_column("cd").to_pylist()
         [0.25..., 0.75..., 0.75..., 1.0...]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "b", "b"], "v": [1, 2, 3, 4]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.cume_dist(
+        ...         partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("cd"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("cd").to_pylist()
+        [0.5, 1.0, 0.5, 1.0]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -4873,6 +4976,16 @@ def ntile(
         ...     dfn.col("a"), dfn.functions.ntile(2, order_by="a").alias("nt"))
         >>> result.sort(dfn.col("a")).collect_column("nt").to_pylist()
         [1, 1, 2, 2]
+
+        >>> df = ctx.from_pydict(
+        ...     {"g": ["a", "a", "b", "b"], "v": [1, 2, 3, 4]})
+        >>> result = df.select(
+        ...     dfn.col("g"), dfn.col("v"),
+        ...     dfn.functions.ntile(
+        ...         2, partition_by=dfn.col("g"), order_by="v",
+        ...     ).alias("nt"))
+        >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("nt").to_pylist()
+        [1, 2, 1, 2]
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
