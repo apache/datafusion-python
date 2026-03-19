@@ -233,24 +233,28 @@ example:
 
 .. code-block:: python
 
+    import pyarrow as pa
     from datafusion.catalog import Catalog, Schema
     from datafusion import SessionContext
 
     ctx = SessionContext()
 
-    my_catalog  = Catalog.memory_catalog()
-    my_schema   = Schema.memory_schema()
+    my_catalog = Catalog.memory_catalog()
+    my_schema  = Schema.memory_schema()
+    my_catalog.register_schema('my_schema_name', my_schema)
+    ctx.register_catalog_provider('my_catalog_name', my_catalog)
 
-    my_catalog.register_schema("my_schema_name", my_schema)
-    ctx.register_catalog_provider("my_catalog_name", my_catalog)
+    # Create an in-memory table
+    table = pa.table({
+        'name': ['Bulbasaur', 'Charmander', 'Squirtle'],
+        'type': ['Grass',    'Fire',       'Water'],
+        'hp':   [45,          39,           44],
+    })
+    df = ctx.create_dataframe([table.to_batches()], name='pokemon')
 
-    df = ctx.read_csv("pokemon.csv")
+    my_schema.register_table('pokemon', df)
 
-    my_schema.register_table('pokemon',df)
-
-    pokemon = ctx.sql("SELECT * FROM my_catalog_name.my_schema_name.pokemon")
-
-    pokemon.show()
+    ctx.sql('SELECT * FROM my_catalog_name.my_schema_name.pokemon').show()
 
 User Defined Catalog and Schema
 -------------------------------
