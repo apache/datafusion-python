@@ -228,7 +228,7 @@ with the names ``datafusion`` and ``public``, respectively.
 
 The default implementation uses an in-memory approach to the catalog and schema. We have support
 for adding additional in-memory catalogs and schemas. You can access tables registered in a schema 
-either through the Dataframe API or vial sql commands. This can be done like in the following
+either through the Dataframe API or via sql commands. This can be done like in the following
 example:
 
 .. code-block:: python
