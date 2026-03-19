@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest
 from datafusion import (
     ExecutionPlan,
     LogicalPlan,
@@ -57,13 +56,14 @@ def test_metrics_tree_walk() -> None:
 
     results = plan.collect_metrics()
     assert len(results) >= 1
-    found_metrics = False
+    output_rows_values = []
     for name, ms in results:
         assert isinstance(name, str)
         assert isinstance(ms, MetricsSet)
-        if ms.output_rows is not None and ms.output_rows > 0:
-            found_metrics = True
-    assert found_metrics
+        if ms.output_rows is not None:
+            output_rows_values.append(ms.output_rows)
+    # The filter passes rows where column1 > 1, so exactly 2 rows from (1,'a'),(2,'b'),(3,'c')
+    assert 2 in output_rows_values
 
 
 def test_metric_properties() -> None:
@@ -73,20 +73,22 @@ def test_metric_properties() -> None:
     df.collect()
     plan = df.execution_plan()
 
+    found_any_metric = False
     for _, ms in plan.collect_metrics():
         r = repr(ms)
         assert isinstance(r, str)
         for metric in ms.metrics():
+            found_any_metric = True
             assert isinstance(metric, Metric)
             assert isinstance(metric.name, str)
             assert len(metric.name) > 0
             assert metric.partition is None or isinstance(metric.partition, int)
+            assert metric.value is None or isinstance(metric.value, int)
             assert isinstance(metric.labels(), dict)
             mr = repr(metric)
             assert isinstance(mr, str)
             assert len(mr) > 0
-            return
-    pytest.skip("No metrics found")
+    assert found_any_metric, "Expected at least one metric after execution"
 
 
 def test_no_metrics_before_execution() -> None:
@@ -95,7 +97,8 @@ def test_no_metrics_before_execution() -> None:
     df = ctx.sql("SELECT * FROM t")
     plan = df.execution_plan()
     ms = plan.metrics()
-    assert ms is None or ms.output_rows is None or ms.output_rows == 0
+    # Before execution, the root plan node has no MetricsSet
+    assert ms is None
 
 
 def test_collect_partitioned_metrics() -> None:
@@ -106,11 +109,12 @@ def test_collect_partitioned_metrics() -> None:
     df.collect_partitioned()
     plan = df.execution_plan()
 
-    found_metrics = False
-    for _, ms in plan.collect_metrics():
-        if ms.output_rows is not None and ms.output_rows > 0:
-            found_metrics = True
-    assert found_metrics
+    output_rows_values = [
+        ms.output_rows
+        for _, ms in plan.collect_metrics()
+        if ms.output_rows is not None
+    ]
+    assert 2 in output_rows_values
 
 
 def test_execute_stream_metrics() -> None:
@@ -122,11 +126,12 @@ def test_execute_stream_metrics() -> None:
         pass
 
     plan = df.execution_plan()
-    found_metrics = False
-    for _, ms in plan.collect_metrics():
-        if ms.output_rows is not None and ms.output_rows > 0:
-            found_metrics = True
-    assert found_metrics
+    output_rows_values = [
+        ms.output_rows
+        for _, ms in plan.collect_metrics()
+        if ms.output_rows is not None
+    ]
+    assert 2 in output_rows_values
 
 
 def test_execute_stream_partitioned_metrics() -> None:
@@ -139,8 +144,9 @@ def test_execute_stream_partitioned_metrics() -> None:
             pass
 
     plan = df.execution_plan()
-    found_metrics = False
-    for _, ms in plan.collect_metrics():
-        if ms.output_rows is not None and ms.output_rows > 0:
-            found_metrics = True
-    assert found_metrics
+    output_rows_values = [
+        ms.output_rows
+        for _, ms in plan.collect_metrics()
+        if ms.output_rows is not None
+    ]
+    assert 2 in output_rows_values

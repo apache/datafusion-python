@@ -35,7 +35,6 @@ impl PyMetricsSet {
 
 #[pymethods]
 impl PyMetricsSet {
-    /// Returns all individual metrics in this set.
     fn metrics(&self) -> Vec<PyMetric> {
         self.metrics
             .iter()
@@ -43,32 +42,26 @@ impl PyMetricsSet {
             .collect()
     }
 
-    /// Returns the sum of all `output_rows` metrics, or None if not present.
     fn output_rows(&self) -> Option<usize> {
         self.metrics.output_rows()
     }
 
-    /// Returns the sum of all `elapsed_compute` metrics in nanoseconds, or None if not present.
     fn elapsed_compute(&self) -> Option<usize> {
         self.metrics.elapsed_compute()
     }
 
-    /// Returns the sum of all `spill_count` metrics, or None if not present.
     fn spill_count(&self) -> Option<usize> {
         self.metrics.spill_count()
     }
 
-    /// Returns the sum of all `spilled_bytes` metrics, or None if not present.
     fn spilled_bytes(&self) -> Option<usize> {
         self.metrics.spilled_bytes()
     }
 
-    /// Returns the sum of all `spilled_rows` metrics, or None if not present.
     fn spilled_rows(&self) -> Option<usize> {
         self.metrics.spilled_rows()
     }
 
-    /// Returns the sum of metrics matching the given name.
     fn sum_by_name(&self, name: &str) -> Option<usize> {
         self.metrics.sum_by_name(name).map(|v| v.as_usize())
     }
@@ -92,13 +85,20 @@ impl PyMetric {
 
 #[pymethods]
 impl PyMetric {
-    /// Returns the name of this metric.
     #[getter]
     fn name(&self) -> String {
         self.metric.value().name().to_string()
     }
 
-    /// Returns the numeric value of this metric, or None for non-numeric types.
+    /// Returns the numeric value of this metric as a `usize`, or `None` when the
+    /// value is not representable as an integer.
+    ///
+    /// # Note
+    /// `StartTimestamp` and `EndTimestamp` metrics are returned as nanoseconds
+    /// since the Unix epoch (via `timestamp_nanos_opt`), which may overflow
+    /// a `usize` on 32-bit platforms or return `None` if the timestamp is out
+    /// of range.  Non-numeric metric variants (unrecognised future variants)
+    /// also return `None`.
     #[getter]
     fn value(&self) -> Option<usize> {
         match self.metric.value() {
@@ -122,13 +122,11 @@ impl PyMetric {
         }
     }
 
-    /// Returns the partition this metric is for, or None if it applies to all partitions.
     #[getter]
     fn partition(&self) -> Option<usize> {
         self.metric.partition()
     }
 
-    /// Returns the labels associated with this metric as a dict.
     fn labels(&self) -> HashMap<String, String> {
         self.metric
             .labels()

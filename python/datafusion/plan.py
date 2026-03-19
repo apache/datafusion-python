@@ -162,9 +162,29 @@ class ExecutionPlan:
         return MetricsSet(raw)
 
     def collect_metrics(self) -> list[tuple[str, MetricsSet]]:
-        """Walk the plan tree and collect metrics from all operators.
+        """Return runtime statistics for each step of the query execution.
 
-        Returns a list of (operator_name, MetricsSet) tuples.
+        DataFusion executes a query as a pipeline of operators — for example a
+        data source scan, followed by a filter, followed by a projection. After
+        the DataFrame has been executed (via
+        :py:meth:`~datafusion.DataFrame.collect`,
+        :py:meth:`~datafusion.DataFrame.execute_stream`, etc.), each operator
+        records statistics such as how many rows it produced and how much CPU
+        time it consumed.
+
+        Each entry in the returned list corresponds to one operator that
+        recorded metrics. The first element of the tuple is the operator's
+        description string — the same text shown by
+        :py:meth:`display_indent` — which identifies both the operator type
+        and its key parameters, for example ``"FilterExec: column1@0 > 1"``
+        or ``"DataSourceExec: partitions=1"``.
+
+        Returns:
+            A list of ``(description, MetricsSet)`` tuples ordered from the
+            outermost operator (top of the execution tree) down to the
+            data-source leaves. Only operators that recorded at least one
+            metric are included. Returns an empty list if called before the
+            DataFrame has been executed.
         """
         result: list[tuple[str, MetricsSet]] = []
 
@@ -182,8 +202,11 @@ class ExecutionPlan:
 class MetricsSet:
     """A set of metrics for a single execution plan operator.
 
-    Provides both individual metric access and convenience aggregations
-    across partitions.
+    A physical plan operator runs independently across one or more partitions.
+    :py:meth:`metrics` returns the raw per-partition :py:class:`Metric` objects.
+    The convenience properties (:py:attr:`output_rows`, :py:attr:`elapsed_compute`,
+    etc.) automatically sum the named metric across *all* partitions, giving a
+    single aggregate value for the operator as a whole.
     """
 
     def __init__(self, raw: df_internal.MetricsSet) -> None:
@@ -201,12 +224,20 @@ class MetricsSet:
 
     @property
     def elapsed_compute(self) -> int | None:
-        """Sum of elapsed_compute across all partitions, in nanoseconds."""
+        """Total CPU time (in nanoseconds) spent inside this operator's execute loop.
+
+        Summed across all partitions. Returns ``None`` if no ``elapsed_compute``
+        metric was recorded.
+        """
         return self._raw.elapsed_compute()
 
     @property
     def spill_count(self) -> int | None:
-        """Sum of spill_count across all partitions."""
+        """Number of times this operator spilled data to disk due to memory pressure.
+
+        This is a count of spill events, not a byte count. Summed across all
+        partitions. Returns ``None`` if no ``spill_count`` metric was recorded.
+        """
         return self._raw.spill_count()
 
     @property
@@ -220,7 +251,14 @@ class MetricsSet:
         return self._raw.spilled_rows()
 
     def sum_by_name(self, name: str) -> int | None:
-        """Return the sum of metrics matching the given name."""
+        """Sum the named metric across all partitions.
+
+        Useful for accessing any metric not exposed as a first-class property.
+        Returns ``None`` if no metric with the given name was recorded.
+
+        Args:
+            name: The metric name, e.g. ``"output_rows"`` or ``"elapsed_compute"``.
+        """
         return self._raw.sum_by_name(name)
 
     def __repr__(self) -> str:
@@ -242,16 +280,33 @@ class Metric:
 
     @property
     def value(self) -> int | None:
-        """The numeric value of this metric, or None for non-numeric types."""
+        """The numeric value of this metric, or ``None`` when not representable.
+
+        ``None`` is returned for metric types whose value has not yet been set
+        (e.g. ``StartTimestamp`` / ``EndTimestamp`` before the operator runs)
+        and for any metric variant whose value cannot be expressed as an integer.
+        Timestamp metrics, when available, are returned as nanoseconds since the
+        Unix epoch.
+        """
         return self._raw.value
 
     @property
     def partition(self) -> int | None:
-        """The partition this metric applies to, or None if global."""
+        """The 0-based partition index this metric applies to.
+
+        Returns ``None`` for metrics that are not partition-specific (i.e. they
+        apply globally across all partitions of the operator).
+        """
         return self._raw.partition
 
     def labels(self) -> dict[str, str]:
-        """Return the labels associated with this metric."""
+        """Return the labels associated with this metric.
+
+        Labels provide additional context for a metric.  For example::
+
+            >>> metric.labels()
+            {'output_type': 'final'}
+        """
         return self._raw.labels()
 
     def __repr__(self) -> str:
