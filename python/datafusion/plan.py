@@ -19,6 +19,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from typing import TYPE_CHECKING, Any
 
 import datafusion._internal as df_internal
@@ -289,6 +291,11 @@ class Metric:
         Unix epoch.
         """
         return self._raw.value
+
+    @property
+    def value_as_datetime(self) -> datetime.datetime | None:
+        """The value as a UTC datetime for timestamp metrics, or ``None``."""
+        return self._raw.value_as_datetime()
 
     @property
     def partition(self) -> int | None:

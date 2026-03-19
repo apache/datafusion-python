@@ -15,6 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import datetime
+
+import pytest
+
 from datafusion import (
     ExecutionPlan,
     LogicalPlan,
@@ -150,3 +154,38 @@ def test_execute_stream_partitioned_metrics() -> None:
         if ms.output_rows is not None
     ]
     assert 2 in output_rows_values
+
+
+def test_value_as_datetime() -> None:
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
+    df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
+    df.collect()
+    plan = df.execution_plan()
+
+    for _, ms in plan.collect_metrics():
+        for metric in ms.metrics():
+            if metric.name in ("start_timestamp", "end_timestamp"):
+                dt = metric.value_as_datetime
+                assert dt is None or isinstance(dt, datetime.datetime)
+                if dt is not None:
+                    assert dt.tzinfo is not None
+            else:
+                assert metric.value_as_datetime is None
+
+
+def test_collect_twice_reuses_plan() -> None:
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
+    df = ctx.sql("SELECT * FROM t WHERE column1 > 1")
+
+    df.collect()
+    df.collect()
+
+    plan = df.execution_plan()
+    output_rows_values = [
+        ms.output_rows
+        for _, ms in plan.collect_metrics()
+        if ms.output_rows is not None
+    ]
+    assert len(output_rows_values) > 0
