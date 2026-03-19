@@ -20,6 +20,8 @@
 import datafusion as dfn
 import numpy as np
 import pytest
+from datafusion import col, lit
+from datafusion import functions as F
 
 
 @pytest.fixture(autouse=True)
@@ -27,3 +29,6 @@ def _doctest_namespace(doctest_namespace: dict) -> None:
     """Add common imports to the doctest namespace."""
     doctest_namespace["dfn"] = dfn
     doctest_namespace["np"] = np
+    doctest_namespace["col"] = col
+    doctest_namespace["lit"] = lit
+    doctest_namespace["F"] = F
