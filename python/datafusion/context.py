@@ -297,6 +297,15 @@ class SessionConfig:
         return self
 
     def with_extension(self, extension: Any) -> SessionConfig:
+        """Create a new configuration using an extension.
+
+        Args:
+            extension: A custom configuration extension object. These are
+            shared from another DataFusion extension library.
+
+        Returns:
+            A new :py:class:`SessionConfig` object with the updated setting.
+        """
         self.config_internal = self.config_internal.with_extension(extension)
         return self
 
