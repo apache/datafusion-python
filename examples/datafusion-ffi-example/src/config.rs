@@ -10,7 +10,12 @@ use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
 /// My own config options.
-#[pyclass(name = "MyConfig", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MyConfig",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Clone, Debug)]
 pub struct MyConfig {
     /// Should "foo" be replaced by "bar"?
