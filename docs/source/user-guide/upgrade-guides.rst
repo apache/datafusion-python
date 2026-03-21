@@ -52,6 +52,10 @@ parameter, which is a Python object that can be used to extract the
 ``FFI_LogicalExtensionCodec`` that is necessary.
 
 A complete example can be found in the `FFI example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
+Your FFI hook methods — ``__datafusion_catalog_provider__``,
+``__datafusion_schema_provider__``, ``__datafusion_table_provider__``, and
+``__datafusion_table_function__`` — need to be updated to accept an additional
+``session: Bound<PyAny>`` parameter, as shown in this example.
 
 .. code-block:: rust
 
@@ -95,38 +99,6 @@ can implement a helper method such as:
 
         Ok(codec.clone())
     }
-
-
-Your methods need to be updated to take an additional ``session`` parameter.
-For example, the ``__datafusion_catalog_provider__`` signature changed in
-DataFusion 52 from:
-
-.. code-block:: rust
-
-    pub fn __datafusion_catalog_provider__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>>
-
-to:
-
-.. code-block:: rust
-
-    pub fn __datafusion_catalog_provider__<'py>(
-        &self,
-        py: Python<'py>,
-        session: Bound<PyAny>,
-    ) -> PyResult<Bound<'py, PyCapsule>>
-
-The same additional ``session: Bound<PyAny>`` parameter is required for these
-FFI hook methods in DataFusion 52:
-
-- ``__datafusion_table_provider__``
-- ``__datafusion_schema_provider__``
-- ``__datafusion_table_function__``
-
-If your hook still uses the old no-``session`` signature, update it to accept
-``session``.
 
 
 The DataFusion FFI interface updates no longer depend directly on the
