@@ -228,7 +228,8 @@ jobs:
 
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
-        if: inputs.build_mode == 'release'
+        # temporarily comment out to verify it works in the PR
+        # if: inputs.build_mode == 'release'
         env:
           CARGO_BUILD_JOBS: 2
         with:
