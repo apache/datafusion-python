@@ -229,6 +229,8 @@ jobs:
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
         if: inputs.build_mode == 'release'
+        env:
+          CARGO_BUILD_JOBS: 2
         with:
           target: aarch64-unknown-linux-gnu
           manylinux: "2_28"
