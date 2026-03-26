@@ -172,7 +172,12 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
 "docs/source/conf.py" = ["ANN001", "ERA001", "INP001"]
 
 [tool.codespell]
-skip = ["./python/tests/test_functions.py", "./target", "uv.lock"]
+skip = [
+  "./python/tests/test_functions.py",
+  "./target",
+  "uv.lock",
+  "./examples/tpch/answers_sf1/*",
+]
 count = true
 ignore-words-list = ["IST", "ans"]
 

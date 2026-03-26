@@ -226,6 +226,19 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Add extra swap for release build
+        if: inputs.build_mode == 'release'
+        run: |
+          set -euxo pipefail
+          sudo swapoff -a || true
+          sudo rm -f /swapfile
+          sudo fallocate -l 16G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=16384
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+          swapon --show
+
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
         if: inputs.build_mode == 'release'
