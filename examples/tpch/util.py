@@ -31,4 +31,4 @@ def get_data_path(filename: str) -> Path:
 def get_answer_file(answer_file: str) -> Path:
     path = Path(__file__).resolve().parent
 
-    return path / "../../benchmarks/tpch/data/answers" / f"{answer_file}.out"
+    return path / "answers_sf1" / f"{answer_file}.tbl"
