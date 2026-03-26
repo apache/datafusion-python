@@ -176,7 +176,7 @@ skip = [
   "./python/tests/test_functions.py",
   "./target",
   "uv.lock",
-  "examples/tpch/answers_sf1/*",
+  "./examples/tpch/answers_sf1/*",
 ]
 count = true
 ignore-words-list = ["IST", "ans"]
