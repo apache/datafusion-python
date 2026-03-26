@@ -48,15 +48,6 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
 df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
-print("df_orders")
-df_orders.show()
-print("df_lineitem")
-df_lineitem.show()
-print("df_supplier")
-df_supplier.show()
-print("df_nation")
-df_nation.show()
-
 
 # Limit to suppliers in the nation of interest
 df_suppliers_of_interest = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
@@ -90,14 +81,10 @@ df = df.aggregate(
     [col("o_orderkey")],
     [
         F.array_agg(col("l_suppkey"), distinct=True).alias("all_suppliers"),
-        F.array_agg(col("failed_supp"), distinct=True).alias("failed_suppliers"),
+        F.array_agg(
+            col("failed_supp"), filter=col("failed_supp").is_not_null(), distinct=True
+        ).alias("failed_suppliers"),
     ],
-)
-
-# Remove the null entries that will get returned by array_agg so we can test to see where we only
-# have a single failed supplier in a multiple supplier order
-df = df.with_column(
-    "failed_suppliers", F.array_remove(col("failed_suppliers"), lit(None))
 )
 
 # This is the check described above which will identify single failed supplier in a multiple
