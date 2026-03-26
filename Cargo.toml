@@ -67,10 +67,6 @@ datafusion-python-util = { path = "crates/util" }
 lto = true
 codegen-units = 1
 
-[profile.release.package.substrait]
-opt-level = 1
-codegen-units = 16
-
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
