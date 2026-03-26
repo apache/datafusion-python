@@ -48,6 +48,15 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
 df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
+print("df_orders")
+df_orders.show()
+print("df_lineitem")
+df_lineitem.show()
+print("df_supplier")
+df_supplier.show()
+print("df_nation")
+df_nation.show()
+
 
 # Limit to suppliers in the nation of interest
 df_suppliers_of_interest = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
