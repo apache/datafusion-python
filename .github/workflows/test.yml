@@ -106,7 +106,7 @@ jobs:
           mkdir examples/tpch/data
           cd examples/tpch/data
           uv pip install tpchgen-cli
-          uv run tpchgen-cli -s 1 --format=parquet
+          uv run --no-project tpchgen-cli -s 1 --format=parquet
 
       - name: Run TPC-H examples
         run: |
