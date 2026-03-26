@@ -227,7 +227,7 @@ jobs:
           enable-cache: true
 
       - name: Add extra swap for release build
-        # if: inputs.build_mode == 'release'
+        if: inputs.build_mode == 'release'
         run: |
           set -euxo pipefail
           sudo swapoff -a || true
@@ -241,8 +241,7 @@ jobs:
 
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
-        # temporarily comment out to verify it works in the PR
-        # if: inputs.build_mode == 'release'
+        if: inputs.build_mode == 'release'
         with:
           target: aarch64-unknown-linux-gnu
           manylinux: "2_28"
