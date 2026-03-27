@@ -1185,7 +1185,7 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
 
         >>> result = df.select(
         ...     dfn.functions.lpad(
-        ...         dfn.col("a"), dfn.lit(10), dfn.lit(".")
+        ...         dfn.col("a"), dfn.lit(10), characters=dfn.lit(".")
         ...     ).alias("lpad"))
         >>> result.collect_column("lpad")[0].as_py()
         '...the cat'
@@ -3372,7 +3372,9 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.approx_median(dfn.col("a")).alias("v")])
+        ...     [], [dfn.functions.approx_median(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -3812,10 +3814,10 @@ def median(
         >>> result = df.aggregate(
         ...     [], [dfn.functions.median(
         ...         dfn.col("a"), distinct=True,
-        ...         filter=dfn.col("a") > dfn.lit(0.0),
+        ...         filter=dfn.col("a") < dfn.lit(3.0),
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        2.0
+        1.5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
@@ -3976,12 +3978,11 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [0.0, 2.0]})
+        >>> df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
         >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        1.0
+        1.555...
 
-        >>> df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.var_pop(
         ...         dfn.col("a"),
@@ -4169,12 +4170,12 @@ def regr_intercept(
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
         ...     [],
         ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        0.0
+        1.714...
 
         >>> result = df.aggregate(
         ...     [],
@@ -4183,7 +4184,7 @@ def regr_intercept(
         ...         filter=dfn.col("y") > dfn.lit(2.0)
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        0.0
+        2.4
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -4210,11 +4211,11 @@ def regr_r2(
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        1.0
+        0.9795...
 
         >>> result = df.aggregate(
         ...     [], [dfn.functions.regr_r2(
@@ -4249,11 +4250,11 @@ def regr_slope(
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [1.0, 2.0, 3.0]})
+        >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        2.0
+        0.122...
 
         >>> result = df.aggregate(
         ...     [], [dfn.functions.regr_slope(
@@ -4261,7 +4262,7 @@ def regr_slope(
         ...         filter=dfn.col("y") > dfn.lit(2.0)
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        2.0
+        0.1
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -4517,12 +4518,12 @@ def nth_value(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.nth_value(dfn.col("a"), 2).alias("v")]
+        ...     [], [dfn.functions.nth_value(dfn.col("a"), 1).alias("v")]
         ... )
         >>> result.collect_column("v")[0].as_py()
-        20
+        10
 
-        >>> df = ctx.from_pydict({"a": [None, 20, 10]})
+        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.nth_value(
         ...         dfn.col("a"), 1,
@@ -4637,10 +4638,10 @@ def bit_xor(
         >>> result = df.aggregate(
         ...     [], [dfn.functions.bit_xor(
         ...         dfn.col("a"), distinct=True,
-        ...         filter=dfn.col("a") > dfn.lit(0),
+        ...         filter=dfn.col("a") > dfn.lit(3),
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
-        6
+        5
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
