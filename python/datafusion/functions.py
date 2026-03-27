@@ -475,7 +475,8 @@ def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> So
     """Creates a new sort expression.
 
     Examples:
-        >>> sort_expr = dfn.functions.order_by(dfn.col("a"), ascending=False)
+        >>> sort_expr = dfn.functions.order_by(
+        ...     dfn.col("a"), ascending=False)
         >>> sort_expr.ascending()
         False
 
@@ -498,17 +499,23 @@ def alias(expr: Expr, name: str, metadata: dict[str, str] | None = None) -> Expr
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2]})
-        >>> df.select(
-        ...     dfn.functions.alias(dfn.col("a"), "b")
-        ... ).collect_column("b")[0].as_py()
+        >>> result = df.select(
+        ...     dfn.functions.alias(
+        ...         dfn.col("a"), "b"
+        ...     )
+        ... )
+        >>> result.collect_column("b")[0].as_py()
         1
 
-        >>> df.select(
+        >>> result = df.select(
         ...     dfn.functions.alias(
         ...         dfn.col("a"), "b", metadata={"info": "test"}
         ...     )
-        ... ).collect_column("b")[0].as_py()
-        1
+        ... )
+        >>> result.schema()
+        b: int64
+          -- field metadata --
+          info: 'test'
     """
     return Expr(f.alias(expr.expr, name, metadata))
 
@@ -539,7 +546,9 @@ def count_star(filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-        >>> result = df.aggregate([], [dfn.functions.count_star().alias("cnt")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.count_star(
+        ...     ).alias("cnt")])
         >>> result.collect_column("cnt")[0].as_py()
         3
 
@@ -1177,7 +1186,9 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["the cat", "a hat"]})
         >>> lpad_df = df.select(
-        ...     dfn.functions.lpad(dfn.col("a"), dfn.lit(6)).alias("lpad"))
+        ...     dfn.functions.lpad(
+        ...         dfn.col("a"), dfn.lit(6)
+        ...     ).alias("lpad"))
         >>> lpad_df.collect_column("lpad")[0].as_py()
         'the ca'
         >>> lpad_df.collect_column("lpad")[1].as_py()
@@ -1471,7 +1482,9 @@ def regexp_count(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["abcabc"]})
         >>> result = df.select(
-        ...     dfn.functions.regexp_count(dfn.col("a"), dfn.lit("abc")).alias("c"))
+        ...     dfn.functions.regexp_count(
+        ...         dfn.col("a"), dfn.lit("abc")
+        ...     ).alias("c"))
         >>> result.collect_column("c")[0].as_py()
         2
 
@@ -2291,7 +2304,10 @@ def trunc(num: Expr, precision: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.567]})
-        >>> result = df.select(dfn.functions.trunc(dfn.col("a")).alias("t"))
+        >>> result = df.select(
+        ...     dfn.functions.trunc(
+        ...         dfn.col("a")
+        ...     ).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         1.0
 
@@ -2756,7 +2772,9 @@ def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
         >>> result = df.select(
-        ...     dfn.functions.array_position(dfn.col("a"), dfn.lit(20)).alias("result"))
+        ...     dfn.functions.array_position(
+        ...         dfn.col("a"), dfn.lit(20)
+        ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         2
 
@@ -3098,7 +3116,10 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[3, 1, 2]]})
-        >>> result = df.select(dfn.functions.array_sort(dfn.col("a")).alias("result"))
+        >>> result = df.select(
+        ...     dfn.functions.array_sort(
+        ...         dfn.col("a")
+        ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3]
 
@@ -3139,8 +3160,9 @@ def array_slice(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
         >>> result = df.select(
-        ...     dfn.functions.array_slice(dfn.col("a"), dfn.lit(2),
-        ...     dfn.lit(3)).alias("result"))
+        ...     dfn.functions.array_slice(
+        ...         dfn.col("a"), dfn.lit(2), dfn.lit(3)
+        ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [2, 3]
 
@@ -3338,7 +3360,9 @@ def approx_distinct(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.approx_distinct(dfn.col("a")).alias("v")])
+        ...     [], [dfn.functions.approx_distinct(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py() == 3
         True
 
@@ -3471,8 +3495,9 @@ def approx_percentile_cont_with_weight(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "w": [1.0, 1.0, 1.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.approx_percentile_cont_with_weight(dfn.col("a"),
-        ...     dfn.col("w"), 0.5).alias("v")])
+        ...     [], [dfn.functions.approx_percentile_cont_with_weight(
+        ...         dfn.col("a"), dfn.col("w"), 0.5
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -3523,7 +3548,9 @@ def array_agg(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.array_agg(dfn.col("a")).alias("v")])
+        ...     [], [dfn.functions.array_agg(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         [1, 2, 3]
 
@@ -3572,7 +3599,10 @@ def avg(
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-        >>> result = df.aggregate([], [dfn.functions.avg(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.avg(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -3605,7 +3635,9 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.corr(dfn.col("a"), dfn.col("b")).alias("v")])
+        ...     [], [dfn.functions.corr(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
 
@@ -3641,7 +3673,10 @@ def count(
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-        >>> result = df.aggregate([], [dfn.functions.count(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.count(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
 
@@ -3724,7 +3759,9 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.covar_samp(dfn.col("a"), dfn.col("b")).alias("v")])
+        ...     [], [dfn.functions.covar_samp(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
 
@@ -3762,7 +3799,10 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-        >>> result = df.aggregate([], [dfn.functions.max(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.max(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
 
@@ -3806,7 +3846,10 @@ def median(
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-        >>> result = df.aggregate([], [dfn.functions.median(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.median(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -3836,7 +3879,10 @@ def min(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-        >>> result = df.aggregate([], [dfn.functions.min(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.min(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1
 
@@ -3870,7 +3916,10 @@ def sum(
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-        >>> result = df.aggregate([], [dfn.functions.sum(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.sum(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         6
 
@@ -3899,18 +3948,20 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [2.0, 4.0, 6.0]})
-        >>> result = df.aggregate([], [dfn.functions.stddev(dfn.col("a")).alias("v")])
-        >>> result.collect_column("v")[0].as_py()
-        2.0
-
-        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 4.0, 6.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.stddev(
-        ...         dfn.col("a"),
-        ...         filter=dfn.col("a") > dfn.lit(1.0)
+        ...         dfn.col("a")
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.stddev(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("a") > dfn.lit(2.0)
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        1.41...
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.stddev(expression.expr, filter=filter_raw))
@@ -3928,19 +3979,22 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1.0, 3.0]})
+        >>> df = ctx.from_pydict({"a": [0.0, 1.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.stddev_pop(dfn.col("a")).alias("v")]
+        ...     [], [dfn.functions.stddev_pop(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
         ... )
         >>> result.collect_column("v")[0].as_py()
-        1.0
+        1.247...
 
         >>> df = ctx.from_pydict({"a": [0.0, 1.0, 3.0]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.stddev_pop(
         ...         dfn.col("a"),
         ...         filter=dfn.col("a") > dfn.lit(0.0)
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         1.0
     """
@@ -3979,7 +4033,10 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
-        >>> result = df.aggregate([], [dfn.functions.var_pop(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_pop(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.555...
 
@@ -4008,7 +4065,10 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-        >>> result = df.aggregate([], [dfn.functions.var_samp(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.var_samp(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.0
 
@@ -4055,7 +4115,9 @@ def regr_avgx(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_avgx(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_avgx(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         5.0
 
@@ -4094,7 +4156,9 @@ def regr_avgy(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_avgy(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_avgy(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -4133,7 +4197,9 @@ def regr_count(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [4.0, 5.0, 6.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_count(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_count(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
 
@@ -4173,7 +4239,9 @@ def regr_intercept(
         >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
         ...     [],
-        ...     [dfn.functions.regr_intercept(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [dfn.functions.regr_intercept(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         1.714...
 
@@ -4213,7 +4281,9 @@ def regr_r2(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_r2(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_r2(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         0.9795...
 
@@ -4252,7 +4322,9 @@ def regr_slope(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [2.0, 4.0, 6.0], "x": [4.0, 16.0, 36.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_slope(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_slope(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         0.122...
 
@@ -4291,7 +4363,9 @@ def regr_sxx(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_sxx(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_sxx(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -4330,7 +4404,9 @@ def regr_sxy(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_sxy(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_sxy(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -4369,7 +4445,9 @@ def regr_syy(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"y": [1.0, 2.0, 3.0], "x": [1.0, 2.0, 3.0]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.regr_syy(dfn.col("y"), dfn.col("x")).alias("v")])
+        ...     [], [dfn.functions.regr_syy(
+        ...         dfn.col("y"), dfn.col("x")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.0
 
@@ -4410,7 +4488,9 @@ def first_value(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.first_value(dfn.col("a")).alias("v")]
+        ...     [], [dfn.functions.first_value(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
         ... )
         >>> result.collect_column("v")[0].as_py()
         10
@@ -4422,7 +4502,8 @@ def first_value(
         ...         filter=dfn.col("a") > dfn.lit(10),
         ...         order_by="a",
         ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         20
     """
@@ -4463,7 +4544,9 @@ def last_value(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.last_value(dfn.col("a")).alias("v")]
+        ...     [], [dfn.functions.last_value(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
         ... )
         >>> result.collect_column("v")[0].as_py()
         30
@@ -4475,7 +4558,8 @@ def last_value(
         ...         filter=dfn.col("a") > dfn.lit(10),
         ...         order_by="a",
         ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         20
     """
@@ -4518,7 +4602,9 @@ def nth_value(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
-        ...     [], [dfn.functions.nth_value(dfn.col("a"), 1).alias("v")]
+        ...     [], [dfn.functions.nth_value(
+        ...         dfn.col("a"), 1
+        ...     ).alias("v")]
         ... )
         >>> result.collect_column("v")[0].as_py()
         10
@@ -4530,7 +4616,8 @@ def nth_value(
         ...         filter=dfn.col("a") > dfn.lit(10),
         ...         order_by="a",
         ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         20
     """
@@ -4563,7 +4650,10 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [7, 3]})
-        >>> result = df.aggregate([], [dfn.functions.bit_and(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_and(
+        ...         dfn.col("a")
+        ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3
 
@@ -4595,7 +4685,11 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2]})
-        >>> result = df.aggregate([], [dfn.functions.bit_or(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_or(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         3
 
@@ -4604,7 +4698,8 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
         ...     [], [dfn.functions.bit_or(
         ...         dfn.col("a"),
         ...         filter=dfn.col("a") > dfn.lit(1)
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         6
     """
@@ -4630,7 +4725,11 @@ def bit_xor(
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [5, 3]})
-        >>> result = df.aggregate([], [dfn.functions.bit_xor(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bit_xor(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         6
 
@@ -4639,7 +4738,8 @@ def bit_xor(
         ...     [], [dfn.functions.bit_xor(
         ...         dfn.col("a"), distinct=True,
         ...         filter=dfn.col("a") > dfn.lit(3),
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         5
     """
@@ -4663,7 +4763,11 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [True, True, False]})
-        >>> result = df.aggregate([], [dfn.functions.bool_and(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bool_and(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         False
 
@@ -4673,7 +4777,8 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
         ...     [], [dfn.functions.bool_and(
         ...         dfn.col("a"),
         ...         filter=dfn.col("b") < dfn.lit(3)
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         True
     """
@@ -4697,7 +4802,11 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [False, False, True]})
-        >>> result = df.aggregate([], [dfn.functions.bool_or(dfn.col("a")).alias("v")])
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.bool_or(
+        ...         dfn.col("a")
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         True
 
@@ -4707,7 +4816,8 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
         ...     [], [dfn.functions.bool_or(
         ...         dfn.col("a"),
         ...         filter=dfn.col("b") < dfn.lit(3)
-        ...     ).alias("v")])
+        ...     ).alias("v")]
+        ... )
         >>> result.collect_column("v")[0].as_py()
         False
     """
@@ -4756,8 +4866,11 @@ def lead(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.lead(dfn.col("a"), shift_offset=1,
-        ...     default_value=0, order_by="a").alias("lead"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.lead(
+        ...         dfn.col("a"), shift_offset=1,
+        ...         default_value=0, order_by="a"
+        ...     ).alias("lead"))
         >>> result.sort(dfn.col("a")).collect_column("lead").to_pylist()
         [2, 3, 0]
 
@@ -4826,8 +4939,11 @@ def lag(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 2, 3]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.lag(dfn.col("a"), shift_offset=1,
-        ...     default_value=0, order_by="a").alias("lag"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.lag(
+        ...         dfn.col("a"), shift_offset=1,
+        ...         default_value=0, order_by="a"
+        ...     ).alias("lag"))
         >>> result.sort(dfn.col("a")).collect_column("lag").to_pylist()
         [0, 1, 2]
 
@@ -4886,7 +5002,10 @@ def row_number(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.row_number(order_by="a").alias("rn"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.row_number(
+        ...         order_by="a"
+        ...     ).alias("rn"))
         >>> result.sort(dfn.col("a")).collect_column("rn").to_pylist()
         [1, 2, 3]
 
@@ -4944,7 +5063,10 @@ def rank(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 10, 20]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.rank(order_by="a").alias("rnk")
+        ...     dfn.col("a"),
+        ...     dfn.functions.rank(
+        ...         order_by="a"
+        ...     ).alias("rnk")
         ... )
         >>> result.sort(dfn.col("a")).collect_column("rnk").to_pylist()
         [1, 1, 3]
@@ -4998,7 +5120,10 @@ def dense_rank(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 10, 20]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.dense_rank(order_by="a").alias("dr"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.dense_rank(
+        ...         order_by="a"
+        ...     ).alias("dr"))
         >>> result.sort(dfn.col("a")).collect_column("dr").to_pylist()
         [1, 1, 2]
 
@@ -5053,7 +5178,10 @@ def percent_rank(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.percent_rank(order_by="a").alias("pr"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.percent_rank(
+        ...         order_by="a"
+        ...     ).alias("pr"))
         >>> result.sort(dfn.col("a")).collect_column("pr").to_pylist()
         [0.0, 0.5, 1.0]
 
@@ -5169,7 +5297,10 @@ def ntile(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [10, 20, 30, 40]})
         >>> result = df.select(
-        ...     dfn.col("a"), dfn.functions.ntile(2, order_by="a").alias("nt"))
+        ...     dfn.col("a"),
+        ...     dfn.functions.ntile(
+        ...         2, order_by="a"
+        ...     ).alias("nt"))
         >>> result.sort(dfn.col("a")).collect_column("nt").to_pylist()
         [1, 1, 2, 2]
 
