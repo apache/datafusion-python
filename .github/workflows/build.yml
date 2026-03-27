@@ -124,7 +124,7 @@ jobs:
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: python-wheel-license
           path: LICENSE.txt
@@ -186,13 +186,13 @@ jobs:
           rustup-components: rust-std
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-manylinux-x86_64
           path: dist/*
 
       - name: Archive FFI test wheel
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-ffi-manylinux-x86_64
           path: examples/datafusion-ffi-example/dist/*
@@ -258,7 +258,7 @@ jobs:
           rustup-components: rust-std
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
           name: dist-manylinux-aarch64
@@ -333,7 +333,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
           name: dist-${{ matrix.os  }}
@@ -388,7 +388,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-macos-aarch64
           path: target/wheels/*
@@ -444,7 +444,7 @@ jobs:
       - build-sdist
     steps:
       - name: Merge Build Artifacts
-        uses: actions/upload-artifact/merge@v6
+        uses: actions/upload-artifact/merge@v7
         with:
           name: dist
           pattern: dist-*
