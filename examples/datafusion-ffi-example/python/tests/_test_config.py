@@ -19,7 +19,7 @@ from datafusion import SessionConfig, SessionContext
 from datafusion_ffi_example import MyConfig
 
 
-def test_catalog_provider():
+def test_config_extension_show_set():
     config = MyConfig()
     config = SessionConfig(
         {"datafusion.catalog.information_schema": "true"}
