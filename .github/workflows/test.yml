@@ -53,7 +53,7 @@ jobs:
           key: cargo-cache-${{ matrix.toolchain }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -101,21 +101,14 @@ jobs:
           cd examples/datafusion-ffi-example
           uv run --no-project pytest python/tests/_test*.py
 
-      - name: Cache the generated dataset
-        id: cache-tpch-dataset
-        uses: actions/cache@v5
-        with:
-          path: benchmarks/tpch/data
-          key: tpch-data-2.18.0
-
-      - name: Run dbgen to create 1 Gb dataset
-        if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
+      - name: Run tpchgen-cli to create 1 Gb dataset
         run: |
-          cd benchmarks/tpch
-          RUN_IN_CI=TRUE ./tpch-gen.sh 1
+          mkdir examples/tpch/data
+          cd examples/tpch/data
+          uv pip install tpchgen-cli
+          uv run --no-project tpchgen-cli -s 1 --format=parquet
 
       - name: Run TPC-H examples
         run: |
           cd examples/tpch
-          uv run --no-project python convert_data_to_parquet.py
           uv run --no-project pytest _tests.py

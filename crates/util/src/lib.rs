@@ -26,14 +26,13 @@ use datafusion::logical_expr::Volatility;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
-use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err};
+use crate::errors::{PyDataFusionError, PyDataFusionResult, to_datafusion_err};
 
 pub mod errors;
 
@@ -186,11 +185,9 @@ pub fn table_provider_from_pycapsule<'py>(
         })?;
     }
 
-    if let Ok(capsule) = obj.cast::<PyCapsule>().map_err(py_datafusion_err) {
-        validate_pycapsule(capsule, "datafusion_table_provider")?;
-
+    if let Ok(capsule) = obj.cast::<PyCapsule>() {
         let data: NonNull<FFI_TableProvider> = capsule
-            .pointer_checked(Some(c_str!("datafusion_table_provider")))?
+            .pointer_checked(Some(c"datafusion_table_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
         let provider: Arc<dyn TableProvider> = provider.into();
@@ -220,10 +217,8 @@ pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_Logic
     };
 
     let capsule = capsule.cast::<PyCapsule>()?;
-    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
-
     let data: NonNull<FFI_LogicalExtensionCodec> = capsule
-        .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+        .pointer_checked(Some(c"datafusion_logical_extension_codec"))?
         .cast();
     let codec = unsafe { data.as_ref() };
 

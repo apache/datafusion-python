@@ -41,12 +41,11 @@ use datafusion::logical_expr::SortExpr;
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use datafusion_python_util::{is_ipython_env, spawn_future, validate_pycapsule, wait_for_future};
+use datafusion_python_util::{is_ipython_env, spawn_future, wait_for_future};
 use futures::{StreamExt, TryStreamExt};
 use parking_lot::Mutex;
 use pyo3::PyErr;
 use pyo3::exceptions::PyValueError;
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
@@ -1117,10 +1116,8 @@ impl PyDataFrame {
         let mut projection: Option<SchemaRef> = None;
 
         if let Some(schema_capsule) = requested_schema {
-            validate_pycapsule(&schema_capsule, "arrow_schema")?;
-
             let data: NonNull<FFI_ArrowSchema> = schema_capsule
-                .pointer_checked(Some(c_str!("arrow_schema")))?
+                .pointer_checked(Some(c"arrow_schema"))?
                 .cast();
             let schema_ptr = unsafe { data.as_ref() };
             let desired_schema = Schema::try_from(schema_ptr)?;

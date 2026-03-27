@@ -70,12 +70,3 @@ codegen-units = 1
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-proto = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }
-datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f", submodules = false }

@@ -15,20 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""
-Common utilities for running TPC-H examples.
-"""
-
-from pathlib import Path
+from datafusion import SessionConfig, SessionContext
+from datafusion_ffi_example import MyConfig
 
 
-def get_data_path(filename: str) -> Path:
-    path = Path(__file__).resolve().parent
+def test_config_extension_show_set():
+    config = MyConfig()
+    config = SessionConfig(
+        {"datafusion.catalog.information_schema": "true"}
+    ).with_extension(config)
+    config.set("my_config.baz_count", "42")
+    ctx = SessionContext(config)
 
-    return path / "data" / filename
+    result = ctx.sql("SHOW my_config.baz_count;").collect()
+    assert result[0][1][0].as_py() == "42"
 
-
-def get_answer_file(answer_file: str) -> Path:
-    path = Path(__file__).resolve().parent
-
-    return path / "answers_sf1" / f"{answer_file}.tbl"
+    ctx.sql("SET my_config.baz_count=1;")
+    result = ctx.sql("SHOW my_config.baz_count;").collect()
+    assert result[0][1][0].as_py() == "1"

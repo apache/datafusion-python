@@ -48,3 +48,4 @@ benchmarks/tpch/create_tables.sql
 .cargo/config.toml
 **/.cargo/config.toml
 uv.lock
+examples/tpch/answers_sf1/*.tbl

@@ -49,18 +49,18 @@ use datafusion::prelude::{
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
+use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
-    get_tokio_runtime, spawn_future, validate_pycapsule, wait_for_future,
+    get_tokio_runtime, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
-use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -184,6 +184,33 @@ impl PySessionConfig {
 
     fn set(&self, key: &str, value: &str) -> Self {
         Self::from(self.config.clone().set_str(key, value))
+    }
+
+    pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
+        if !extension.hasattr("__datafusion_extension_options__")? {
+            return Err(pyo3::exceptions::PyAttributeError::new_err(
+                "Expected extension object to define __datafusion_extension_options__()",
+            ));
+        }
+        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        let capsule = capsule.cast::<PyCapsule>()?;
+
+        let extension: NonNull<FFI_ExtensionOptions> = capsule
+            .pointer_checked(Some(c"datafusion_extension_options"))?
+            .cast();
+        let mut extension = unsafe { extension.as_ref() }.clone();
+
+        let mut config = self.config.clone();
+        let options = config.options_mut();
+        if let Some(prior_extension) = options.extensions.get::<FFI_ExtensionOptions>() {
+            extension
+                .merge(prior_extension)
+                .map_err(py_datafusion_err)?;
+        }
+
+        options.extensions.insert(extension);
+
+        Ok(Self::from(config))
     }
 }
 
@@ -675,10 +702,8 @@ impl PySessionContext {
 
         let factory: Arc<dyn TableProviderFactory> =
             if let Ok(capsule) = factory.cast::<PyCapsule>().map_err(py_datafusion_err) {
-                validate_pycapsule(capsule, "datafusion_table_provider_factory")?;
-
                 let data: NonNull<FFI_TableProviderFactory> = capsule
-                    .pointer_checked(Some(c_str!("datafusion_table_provider_factory")))?
+                    .pointer_checked(Some(c"datafusion_table_provider_factory"))?
                     .cast();
                 let factory = unsafe { data.as_ref() };
                 factory.into()
@@ -709,12 +734,9 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
-        {
-            validate_pycapsule(capsule, "datafusion_catalog_provider_list")?;
-
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
             let data: NonNull<FFI_CatalogProviderList> = capsule
-                .pointer_checked(Some(c_str!("datafusion_catalog_provider_list")))?
+                .pointer_checked(Some(c"datafusion_catalog_provider_list"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
             let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
@@ -747,12 +769,9 @@ impl PySessionContext {
                 .call1((codec_capsule,))?;
         }
 
-        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>().map_err(py_datafusion_err)
-        {
-            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
-
+        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
             let data: NonNull<FFI_CatalogProvider> = capsule
-                .pointer_checked(Some(c_str!("datafusion_catalog_provider")))?
+                .pointer_checked(Some(c"datafusion_catalog_provider"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
             let provider: Arc<dyn CatalogProvider + Send> = provider.into();
