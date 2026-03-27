@@ -115,7 +115,7 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str) -> None:
         get_answer_file(answer_file),
         schema=read_schema,
         delimiter="|",
-        file_extension=".out",
+        file_extension=".tbl",
     )
 
     df_expected = df_expected.select(*expected_selections)

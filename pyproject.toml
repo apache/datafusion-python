@@ -59,6 +59,7 @@ repository = "https://github.com/apache/datafusion-python"
 profile = "black"
 
 [tool.maturin]
+manifest-path = "crates/core/Cargo.toml"
 python-source = "python"
 module-name = "datafusion._internal"
 include = [{ path = "Cargo.lock", format = "sdist" }]
@@ -88,7 +89,6 @@ ignore = [
   "FIX002",  # Allow TODO lines - consider removing at some point
   "ISC001",  # Recommended to ignore these rules when using with ruff-format
   "N812",    # Allow importing functions as `F`
-  "PD901",   # Allow variable name df
   "PLR0913", # Allow many arguments in function definition
   "SLF001",  # Allow accessing private members
   "TD002",   # Do not require author names in TODO statements
@@ -171,7 +171,12 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
 "docs/source/conf.py" = ["ANN001", "ERA001", "INP001"]
 
 [tool.codespell]
-skip = ["./python/tests/test_functions.py", "./target", "uv.lock"]
+skip = [
+  "./python/tests/test_functions.py",
+  "./target",
+  "uv.lock",
+  "./examples/tpch/answers_sf1/*",
+]
 count = true
 ignore-words-list = ["IST", "ans"]
 
@@ -189,7 +194,7 @@ dev = [
   "pytest-asyncio>=0.23.3",
   "pytest>=7.4.4",
   "pyyaml>=6.0.3",
-  "ruff>=0.9.1",
+  "ruff>=0.15.1",
   "toml>=0.10.2",
 ]
 docs = [

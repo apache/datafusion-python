@@ -17,40 +17,37 @@
 
 [package]
 name = "datafusion-ffi-example"
-version = "0.2.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+publish = false
 
 [dependencies]
-datafusion-catalog = { version = "53", default-features = false }
-datafusion-common = { version = "53", default-features = false }
-datafusion-functions-aggregate = { version = "53" }
-datafusion-functions-window = { version = "53" }
-datafusion-expr = { version = "53" }
-datafusion-ffi = { version = "53" }
+datafusion-catalog = { workspace = true, default-features = false }
+datafusion-common = { workspace = true, default-features = false }
+datafusion-functions-aggregate = { workspace = true }
+datafusion-functions-window = { workspace = true }
+datafusion-expr = { workspace = true }
+datafusion-ffi = { workspace = true }
 
-pyo3 = { version = "0.28", features = [
+arrow = { workspace = true }
+arrow-array = { workspace = true }
+arrow-schema = { workspace = true }
+async-trait = { workspace = true }
+datafusion-python-util.workspace = true
+pyo3 = { workspace = true, features = [
   "extension-module",
   "abi3",
-  "abi3-py39",
+  "abi3-py310",
 ] }
-arrow = { version = "58" }
-arrow-array = { version = "58" }
-arrow-schema = { version = "58" }
-async-trait = "0.1.89"
-pyo3-log = "0.13.2"
+pyo3-log = { workspace = true }
 
 [build-dependencies]
-pyo3-build-config = "0.28"
+pyo3-build-config = { workspace = true }
 
 [lib]
 name = "datafusion_ffi_example"
 crate-type = ["cdylib", "rlib"]
-
-# TODO: remove when datafusion-53 is released
-[patch.crates-io]
-datafusion-catalog = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
-datafusion-common = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
-datafusion-expr = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "35749607f585b3bf25b66b7d2289c56c18d03e4f" }

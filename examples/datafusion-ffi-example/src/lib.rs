@@ -19,17 +19,20 @@ use pyo3::prelude::*;
 
 use crate::aggregate_udf::MySumUDF;
 use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider, MyCatalogProviderList};
+use crate::config::MyConfig;
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
+use crate::table_provider_factory::MyTableProviderFactory;
 use crate::window_udf::MyRankUDF;
 
 pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
+pub(crate) mod config;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
-pub(crate) mod utils;
+pub(crate) mod table_provider_factory;
 pub(crate) mod window_udf;
 
 #[pymodule]
@@ -37,6 +40,7 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     pyo3_log::init();
 
     m.add_class::<MyTableProvider>()?;
+    m.add_class::<MyTableProviderFactory>()?;
     m.add_class::<MyTableFunction>()?;
     m.add_class::<MyCatalogProvider>()?;
     m.add_class::<MyCatalogProviderList>()?;
@@ -44,5 +48,6 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<IsNullUDF>()?;
     m.add_class::<MySumUDF>()?;
     m.add_class::<MyRankUDF>()?;
+    m.add_class::<MyConfig>()?;
     Ok(())
 }

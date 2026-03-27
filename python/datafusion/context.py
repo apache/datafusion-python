@@ -37,6 +37,8 @@ from datafusion.catalog import (
     CatalogProviderExportable,
     CatalogProviderList,
     CatalogProviderListExportable,
+    TableProviderFactory,
+    TableProviderFactoryExportable,
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
@@ -294,6 +296,19 @@ class SessionConfig:
         self.config_internal = self.config_internal.set(key, value)
         return self
 
+    def with_extension(self, extension: Any) -> SessionConfig:
+        """Create a new configuration using an extension.
+
+        Args:
+            extension: A custom configuration extension object. These are
+            shared from another DataFusion extension library.
+
+        Returns:
+            A new :py:class:`SessionConfig` object with the updated setting.
+        """
+        self.config_internal = self.config_internal.with_extension(extension)
+        return self
+
 
 class RuntimeEnvBuilder:
     """Runtime configuration options."""
@@ -369,9 +384,8 @@ class RuntimeEnvBuilder:
         Returns:
             A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-        Examples usage::
-
-            config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
+        Examples:
+            >>> config = dfn.RuntimeEnvBuilder().with_fair_spill_pool(1024)
         """
         self.config_internal = self.config_internal.with_fair_spill_pool(size)
         return self
@@ -389,9 +403,8 @@ class RuntimeEnvBuilder:
         Returns:
             A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-        Example usage::
-
-            config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
+        Examples:
+            >>> config = dfn.RuntimeEnvBuilder().with_greedy_memory_pool(1024)
         """
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
         return self
@@ -405,9 +418,8 @@ class RuntimeEnvBuilder:
         Returns:
             A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-        Example usage::
-
-            config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
+        Examples:
+            >>> config = dfn.RuntimeEnvBuilder().with_temp_file_path("/tmp")
         """
         self.config_internal = self.config_internal.with_temp_file_path(str(path))
         return self
@@ -442,9 +454,8 @@ class SQLOptions:
         Returns:
             A new :py:class:`SQLOptions` object with the updated setting.
 
-        Example usage::
-
-            options = SQLOptions().with_allow_ddl(True)
+        Examples:
+            >>> options = dfn.SQLOptions().with_allow_ddl(True)
         """
         self.options_internal = self.options_internal.with_allow_ddl(allow)
         return self
@@ -460,9 +471,8 @@ class SQLOptions:
         Returns:
             A new :py:class:`SQLOptions` object with the updated setting.
 
-        Example usage::
-
-            options = SQLOptions().with_allow_dml(True)
+        Examples:
+            >>> options = dfn.SQLOptions().with_allow_dml(True)
         """
         self.options_internal = self.options_internal.with_allow_dml(allow)
         return self
@@ -476,9 +486,8 @@ class SQLOptions:
         Returns:
             A new :py:class:SQLOptions` object with the updated setting.
 
-        Example usage::
-
-            options = SQLOptions().with_allow_statements(True)
+        Examples:
+            >>> options = dfn.SQLOptions().with_allow_statements(True)
         """
         self.options_internal = self.options_internal.with_allow_statements(allow)
         return self
@@ -829,6 +838,22 @@ class SessionContext:
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
+
+    def register_table_factory(
+        self,
+        format: str,
+        factory: TableProviderFactory | TableProviderFactoryExportable,
+    ) -> None:
+        """Register a :py:class:`~datafusion.TableProviderFactoryExportable`.
+
+        The registered factory can be referenced from SQL DDL statements executed
+        against this context.
+
+        Args:
+            format: The value to be used in `STORED AS ${format}` clause.
+            factory: A PyCapsule that implements :class:`TableProviderFactoryExportable`
+        """
+        self.ctx.register_table_factory(format, factory)
 
     def catalog_names(self) -> set[str]:
         """Returns the list of catalogs in this context."""
