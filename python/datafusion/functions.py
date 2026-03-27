@@ -4609,7 +4609,6 @@ def nth_value(
         >>> result.collect_column("v")[0].as_py()
         10
 
-        >>> df = ctx.from_pydict({"a": [10, 20, 30]})
         >>> result = df.aggregate(
         ...     [], [dfn.functions.nth_value(
         ...         dfn.col("a"), 1,
