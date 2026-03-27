@@ -59,14 +59,14 @@ jobs:
 
       # Download the Linux wheel built in the build workflow
       - name: Download pre-built Linux wheel
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: dist-manylinux-x86_64
           path: wheels/
 
       # Download the FFI test wheel
       - name: Download pre-built FFI test wheel
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: test-ffi-manylinux-x86_64
           path: wheels/
