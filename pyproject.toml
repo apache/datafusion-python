@@ -89,7 +89,6 @@ ignore = [
   "FIX002",  # Allow TODO lines - consider removing at some point
   "ISC001",  # Recommended to ignore these rules when using with ruff-format
   "N812",    # Allow importing functions as `F`
-  "PD901",   # Allow variable name df
   "PLR0913", # Allow many arguments in function definition
   "SLF001",  # Allow accessing private members
   "TD002",   # Do not require author names in TODO statements
@@ -195,7 +194,7 @@ dev = [
   "pytest-asyncio>=0.23.3",
   "pytest>=7.4.4",
   "pyyaml>=6.0.3",
-  "ruff>=0.9.1",
+  "ruff>=0.15.1",
   "toml>=0.10.2",
 ]
 docs = [
