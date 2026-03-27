@@ -1384,8 +1384,8 @@ doing so:</p>
 <dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
-<p>Examples usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1405,8 +1405,8 @@ multiple spillable operators that all will spill.</p>
 <dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1423,8 +1423,8 @@ multiple spillable operators that all will spill.</p>
 <dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1469,8 +1469,8 @@ multiple spillable operators that all will spill.</p>
 <dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_ddl</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">options</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_ddl</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1488,8 +1488,8 @@ multiple spillable operators that all will spill.</p>
 <dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_dml</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">options</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_dml</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1509,8 +1509,8 @@ multiple spillable operators that all will spill.</p>
 <dd class="field-odd"><p>A new</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_statements</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">options</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_statements</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

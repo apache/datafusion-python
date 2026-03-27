@@ -292,9 +292,21 @@ Module Contents
 
       :returns: DataFrame with those columns removed in the projection.
 
-      Example Usage::
-          df.drop('a')                    # To drop a lower-cased column 'a'
-          df.drop('"a"')                  # To drop an upper-cased column 'A'
+      .. rubric:: Examples
+
+      To drop a lower-cased column 'a'
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+      >>> df.drop("a").schema().names
+      ['b']
+
+      Or to drop an upper-cased column 'A'
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"A": [1, 2], "b": [3, 4]})
+      >>> df.drop('"A"').schema().names
+      ['b']
 
 
 
@@ -383,11 +395,14 @@ Module Contents
       that will be parsed against the DataFrame schema. If more complex logic is
       required, see the logical operations in :py:mod:`~datafusion.functions`.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.filter(col("a") > lit(1))
-          df.filter("a > 1")
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.filter(col("a") > lit(1)).to_pydict()
+      {'a': [2, 3]}
+      >>> df.filter("a > 1").to_pydict()
+      {'a': [2, 3]}
 
       :param predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
 
@@ -465,10 +480,15 @@ Module Contents
       built with :func:`datafusion.col`. On expressions are used to support
       in-equality predicates. Equality predicates are correctly optimized.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col
-          df.join_on(other_df, col("id") == col("other_id"))
+      >>> ctx = dfn.SessionContext()
+      >>> left = ctx.from_pydict({"a": [1, 2], "x": ["a", "b"]})
+      >>> right = ctx.from_pydict({"b": [1, 2], "y": ["c", "d"]})
+      >>> left.join_on(
+      ...     right, col("a") == col("b")
+      ... ).sort(col("x")).to_pydict()
+      {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
 
       :param right: Other DataFrame to join with.
       :param on_exprs: single or multiple (in)-equality predicates.
@@ -512,14 +532,13 @@ Module Contents
 
       The expression is created and processed against the current schema.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.parse_sql_expr("a > 1")
-
-          should produce:
-
-          col("a") > lit(1)
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> expr = df.parse_sql_expr("a > 1")
+      >>> df.filter(expr).to_pydict()
+      {'a': [2, 3]}
 
       :param expr: Expression string to be converted to datafusion expression
 
@@ -679,15 +698,18 @@ Module Contents
 
       Apply a function to the current DataFrame which returns another DataFrame.
 
-      This is useful for chaining together multiple functions. For example::
+      This is useful for chaining together multiple functions.
 
-          def add_3(df: DataFrame) -> DataFrame:
-              return df.with_column("modified", lit(3))
+      .. rubric:: Examples
 
-          def within_limit(df: DataFrame, limit: int) -> DataFrame:
-              return df.filter(col("a") < lit(limit)).distinct()
-
-          df = df.transform(modify_df).transform(within_limit, 4)
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> def add_3(df):
+      ...     return df.with_column("modified", dfn.lit(3))
+      >>> def within_limit(df: DataFrame, limit: int) -> DataFrame:
+      ...     return df.filter(col("a") < lit(limit)).distinct()
+      >>> df.transform(add_3).transform(within_limit, 4).sort("a").to_pydict()
+      {'a': [1, 2, 3], 'modified': [3, 3, 3]}
 
       :param func: A callable function that takes a DataFrame as it's first argument
       :param args: Zero or more arguments to pass to `func`
@@ -743,10 +765,12 @@ Module Contents
       :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
       string that will be parsed against the DataFrame schema.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.with_column("b", col("a") + lit(1))
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2]})
+      >>> df.with_column("b", col("a") + lit(10)).to_pydict()
+      {'a': [1, 2], 'b': [11, 12]}
 
       :param name: Name of the column to add.
       :param expr: Expression to compute the column.

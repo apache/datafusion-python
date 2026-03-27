@@ -118,9 +118,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Examples usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
+      >>> config = dfn.RuntimeEnvBuilder().with_fair_spill_pool(1024)
 
 
 
@@ -136,9 +136,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
+      >>> config = dfn.RuntimeEnvBuilder().with_greedy_memory_pool(1024)
 
 
 
@@ -150,9 +150,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
+      >>> config = dfn.RuntimeEnvBuilder().with_temp_file_path("/tmp")
 
 
 
@@ -189,9 +189,9 @@ Module Contents
 
       :returns: A new :py:class:`SQLOptions` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_ddl(True)
+      >>> options = dfn.SQLOptions().with_allow_ddl(True)
 
 
 
@@ -205,9 +205,9 @@ Module Contents
 
       :returns: A new :py:class:`SQLOptions` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_dml(True)
+      >>> options = dfn.SQLOptions().with_allow_dml(True)
 
 
 
@@ -220,9 +220,9 @@ Module Contents
       :returns: py:class:SQLOptions` object with the updated setting.
       :rtype: A new
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_statements(True)
+      >>> options = dfn.SQLOptions().with_allow_statements(True)
 
 
 

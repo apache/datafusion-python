@@ -128,16 +128,19 @@ Module Contents
 
    Builder class for constructing case statements.
 
-   An example usage would be as follows::
+   .. rubric:: Examples
 
-       import datafusion.functions as f
-       from datafusion import lit, col
-       df.select(
-           f.case(col("column_a"))
-           .when(lit(1), lit("One"))
-           .when(lit(2), lit("Two"))
-           .otherwise(lit("Unknown"))
-       )
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> result = df.select(
+   ...     dfn.functions.case(dfn.col("a"))
+   ...     .when(dfn.lit(1), dfn.lit("One"))
+   ...     .when(dfn.lit(2), dfn.lit("Two"))
+   ...     .otherwise(dfn.lit("Other"))
+   ...     .alias("label")
+   ... )
+   >>> result.to_pydict()
+   {'label': ['One', 'Two', 'Other']}
 
    Constructs a case builder.
 
