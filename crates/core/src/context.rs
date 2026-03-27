@@ -49,6 +49,7 @@ use datafusion::prelude::{
 };
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
+use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
@@ -183,6 +184,33 @@ impl PySessionConfig {
 
     fn set(&self, key: &str, value: &str) -> Self {
         Self::from(self.config.clone().set_str(key, value))
+    }
+
+    pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
+        if !extension.hasattr("__datafusion_extension_options__")? {
+            return Err(pyo3::exceptions::PyAttributeError::new_err(
+                "Expected extension object to define __datafusion_extension_options__()",
+            ));
+        }
+        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        let capsule = capsule.cast::<PyCapsule>()?;
+
+        let extension: NonNull<FFI_ExtensionOptions> = capsule
+            .pointer_checked(Some(c_str!("datafusion_extension_options")))?
+            .cast();
+        let mut extension = unsafe { extension.as_ref() }.clone();
+
+        let mut config = self.config.clone();
+        let options = config.options_mut();
+        if let Some(prior_extension) = options.extensions.get::<FFI_ExtensionOptions>() {
+            extension
+                .merge(prior_extension)
+                .map_err(py_datafusion_err)?;
+        }
+
+        options.extensions.insert(extension);
+
+        Ok(Self::from(config))
     }
 }
 
