@@ -52,8 +52,10 @@ parameter, which is a Python object that can be used to extract the
 ``FFI_LogicalExtensionCodec`` that is necessary.
 
 A complete example can be found in the `FFI example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
-Your methods need to be updated to take an additional parameter like in this
-example.
+Your FFI hook methods — ``__datafusion_catalog_provider__``,
+``__datafusion_schema_provider__``, ``__datafusion_table_provider__``, and
+``__datafusion_table_function__`` — need to be updated to accept an additional
+``session: Bound<PyAny>`` parameter, as shown in this example.
 
 .. code-block:: rust
 

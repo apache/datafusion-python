@@ -477,8 +477,10 @@ for the methods to get these <code class="docutils literal notranslate"><span cl
 parameter, which is a Python object that can be used to extract the
 <code class="docutils literal notranslate"><span class="pre">FFI_LogicalExtensionCodec</span></code> that is necessary.</p>
 <p>A complete example can be found in the <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example">FFI example</a>.
-Your methods need to be updated to take an additional parameter like in this
-example.</p>
+Your FFI hook methods — <code class="docutils literal notranslate"><span class="pre">__datafusion_catalog_provider__</span></code>,
+<code class="docutils literal notranslate"><span class="pre">__datafusion_schema_provider__</span></code>, <code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">__datafusion_table_function__</span></code> — need to be updated to accept an additional
+<code class="docutils literal notranslate"><span class="pre">session:</span> <span class="pre">Bound&lt;PyAny&gt;</span></code> parameter, as shown in this example.</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pymethods]</span>
 <span class="k">impl</span><span class="w"> </span><span class="n">MyCatalogProvider</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_catalog_provider__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
