@@ -189,7 +189,7 @@ impl PySessionConfig {
 
     pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
         let capsule = extension.call_method0("__datafusion_extension_options__")?;
-        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
+        let capsule = capsule.cast::<PyCapsule>()?;
 
         let extension: NonNull<FFI_ExtensionOptions> = capsule
             .pointer_checked(Some(c_str!("datafusion_extension_options")))?
