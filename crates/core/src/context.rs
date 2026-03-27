@@ -188,6 +188,11 @@ impl PySessionConfig {
     }
 
     pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
+        if !extension.hasattr("__datafusion_extension_options__")? {
+            return Err(pyo3::exceptions::PyAttributeError::new_err(
+                "Expected extension object to define __datafusion_extension_options__()",
+            ));
+        }
         let capsule = extension.call_method0("__datafusion_extension_options__")?;
         let capsule = capsule.cast::<PyCapsule>()?;
 
