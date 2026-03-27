@@ -2274,6 +2274,17 @@ Package Contents
 
 
 
+   .. py:method:: with_extension(extension: Any) -> SessionConfig
+
+      Create a new configuration using an extension.
+
+      :param extension: A custom configuration extension object. These are
+      :param shared from another DataFusion extension library.:
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
    .. py:method:: with_information_schema(enabled: bool = True) -> SessionConfig
 
       Enable or disable the inclusion of ``information_schema`` virtual tables.

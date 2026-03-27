@@ -2887,6 +2887,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_extension">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_extension()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_information_schema">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -5796,6 +5805,23 @@ automatically created.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>catalog</strong> – Catalog name.</p></li>
 <li><p><strong>schema</strong> – Schema name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_extension">
+<span class="sig-name descname"><span class="pre">with_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_extension" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new configuration using an extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>extension</strong> – A custom configuration extension object. These are</p></li>
+<li><p><strong>library.</strong> (<em>shared from another DataFusion extension</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

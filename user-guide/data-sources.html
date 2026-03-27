@@ -731,22 +731,35 @@ is provided in the DataFusion repository.</p>
 supports this form of organizing using the <a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalog</span></code></a>,
 <a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><code class="xref py py-class docutils literal notranslate"><span class="pre">Schema</span></code></a>, and <a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>. By default,
 a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> comes with a single Catalog and a single Schema
-with the names <code class="docutils literal notranslate"><span class="pre">datafusion</span></code> and <code class="docutils literal notranslate"><span class="pre">default</span></code>, respectively.</p>
+with the names <code class="docutils literal notranslate"><span class="pre">datafusion</span></code> and <code class="docutils literal notranslate"><span class="pre">public</span></code>, respectively.</p>
 <p>The default implementation uses an in-memory approach to the catalog and schema. We have support
-for adding additional in-memory catalogs and schemas. This can be done like in the following
+for adding additional in-memory catalogs and schemas. You can access tables registered in a schema
+either through the Dataframe API or via sql commands. This can be done like in the following
 example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">Schema</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">Schema</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
 <span class="n">my_catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">memory_catalog</span><span class="p">()</span>
-<span class="n">my_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">memory_schema</span><span class="p">()</span>
+<span class="n">my_schema</span>  <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">memory_schema</span><span class="p">()</span>
+<span class="n">my_catalog</span><span class="o">.</span><span class="n">register_schema</span><span class="p">(</span><span class="s1">&#39;my_schema_name&#39;</span><span class="p">,</span> <span class="n">my_schema</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_catalog_provider</span><span class="p">(</span><span class="s1">&#39;my_catalog_name&#39;</span><span class="p">,</span> <span class="n">my_catalog</span><span class="p">)</span>
 
-<span class="n">my_catalog</span><span class="o">.</span><span class="n">register_schema</span><span class="p">(</span><span class="s2">&quot;my_schema_name&quot;</span><span class="p">,</span> <span class="n">my_schema</span><span class="p">)</span>
+<span class="c1"># Create an in-memory table</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">({</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Bulbasaur&#39;</span><span class="p">,</span> <span class="s1">&#39;Charmander&#39;</span><span class="p">,</span> <span class="s1">&#39;Squirtle&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Grass&#39;</span><span class="p">,</span>    <span class="s1">&#39;Fire&#39;</span><span class="p">,</span>       <span class="s1">&#39;Water&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;hp&#39;</span><span class="p">:</span>   <span class="p">[</span><span class="mi">45</span><span class="p">,</span>          <span class="mi">39</span><span class="p">,</span>           <span class="mi">44</span><span class="p">],</span>
+<span class="p">})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([</span><span class="n">table</span><span class="o">.</span><span class="n">to_batches</span><span class="p">()],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;pokemon&#39;</span><span class="p">)</span>
 
-<span class="n">ctx</span><span class="o">.</span><span class="n">register_catalog</span><span class="p">(</span><span class="s2">&quot;my_catalog_name&quot;</span><span class="p">,</span> <span class="n">my_catalog</span><span class="p">)</span>
+<span class="n">my_schema</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s1">&#39;pokemon&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM my_catalog_name.my_schema_name.pokemon&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>You could then register tables in <code class="docutils literal notranslate"><span class="pre">my_schema</span></code> and access them either through the DataFrame
-API or via sql commands such as <code class="docutils literal notranslate"><span class="pre">&quot;SELECT</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">my_catalog_name.my_schema_name.my_table&quot;</span></code>.</p>
 <section id="user-defined-catalog-and-schema">
 <h2>User Defined Catalog and Schema<a class="headerlink" href="#user-defined-catalog-and-schema" title="Link to this heading">¶</a></h2>
 <p>If the in-memory catalogs are insufficient for your uses, there are two approaches you can take
