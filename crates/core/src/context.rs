@@ -196,7 +196,7 @@ impl PySessionConfig {
         let capsule = capsule.cast::<PyCapsule>()?;
 
         let extension: NonNull<FFI_ExtensionOptions> = capsule
-            .pointer_checked(Some(c_str!("datafusion_extension_options")))?
+            .pointer_checked(Some(c"datafusion_extension_options"))?
             .cast();
         let mut extension = unsafe { extension.as_ref() }.clone();
 
