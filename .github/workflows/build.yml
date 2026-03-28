@@ -36,6 +36,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  UV_LOCKED: true
 
 jobs:
   # ============================================
@@ -73,7 +74,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --locked --dev --no-install-package datafusion
+        run: uv sync --dev --no-install-package datafusion
 
       - name: Run Ruff
         run: |
