@@ -23,6 +23,9 @@ name: Test
 on:
   workflow_call:
 
+env:
+  UV_LOCKED: true
+
 jobs:
   test-matrix:
     runs-on: ubuntu-latest
