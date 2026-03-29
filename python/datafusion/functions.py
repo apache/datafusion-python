@@ -18,7 +18,6 @@
 
 from __future__ import annotations
 
-import builtins
 from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
@@ -3384,29 +3383,47 @@ def empty(array: Expr) -> Expr:
 # map functions
 
 
-def make_map(*args: Expr) -> Expr:
-    """Returns a map created from key and value expressions.
+def make_map(
+    data: dict[Any, Any] | None = None,
+    keys: list[Any] | None = None,
+    values: list[Any] | None = None,
+) -> Expr:
+    """Returns a map expression.
 
-    Accepts an even number of arguments, alternating between keys and values.
-    For example, ``make_map(k1, v1, k2, v2)`` creates a map ``{k1: v1, k2: v2}``.
+    Can be called with either a Python dictionary or separate ``keys``
+    and ``values`` lists.  Keys and values that are not already
+    :py:class:`~datafusion.expr.Expr` are automatically converted to
+    literal expressions.
+
+    Args:
+        data: A Python dictionary of key-value pairs.
+        keys: A list of keys (use with ``values`` for column expressions).
+        values: A list of values (use with ``keys``).
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
-        ...     dfn.functions.make_map(
-        ...         dfn.lit("a"), dfn.lit(1),
-        ...         dfn.lit("b"), dfn.lit(2),
-        ...     ).alias("map"))
+        ...     dfn.functions.make_map({"a": 1, "b": 2}).alias("map"))
         >>> result.collect_column("map")[0].as_py()
         [('a', 1), ('b', 2)]
     """
-    if len(args) % 2 != 0:
-        msg = "make_map requires an even number of arguments"
+    if data is not None:
+        if keys is not None or values is not None:
+            msg = "Cannot specify both data and keys/values"
+            raise ValueError(msg)
+        key_list = list(data.keys())
+        value_list = list(data.values())
+    elif keys is not None and values is not None:
+        key_list = keys
+        value_list = values
+    else:
+        msg = "Must specify either data or both keys and values"
         raise ValueError(msg)
-    keys = [args[i].expr for i in builtins.range(0, len(args), 2)]
-    values = [args[i].expr for i in builtins.range(1, len(args), 2)]
-    return Expr(f.make_map(keys, values))
+
+    key_exprs = [k if isinstance(k, Expr) else Expr.literal(k) for k in key_list]
+    val_exprs = [v if isinstance(v, Expr) else Expr.literal(v) for v in value_list]
+    return Expr(f.make_map([k.expr for k in key_exprs], [v.expr for v in val_exprs]))
 
 
 def map_keys(map: Expr) -> Expr:
@@ -3417,10 +3434,7 @@ def map_keys(map: Expr) -> Expr:
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
         ...     dfn.functions.map_keys(
-        ...         dfn.functions.make_map(
-        ...             dfn.lit("x"), dfn.lit(1),
-        ...             dfn.lit("y"), dfn.lit(2),
-        ...         )
+        ...         dfn.functions.make_map({"x": 1, "y": 2})
         ...     ).alias("keys"))
         >>> result.collect_column("keys")[0].as_py()
         ['x', 'y']
@@ -3436,10 +3450,7 @@ def map_values(map: Expr) -> Expr:
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
         ...     dfn.functions.map_values(
-        ...         dfn.functions.make_map(
-        ...             dfn.lit("x"), dfn.lit(1),
-        ...             dfn.lit("y"), dfn.lit(2),
-        ...         )
+        ...         dfn.functions.make_map({"x": 1, "y": 2})
         ...     ).alias("vals"))
         >>> result.collect_column("vals")[0].as_py()
         [1, 2]
@@ -3455,10 +3466,7 @@ def map_extract(map: Expr, key: Expr) -> Expr:
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
         ...     dfn.functions.map_extract(
-        ...         dfn.functions.make_map(
-        ...             dfn.lit("x"), dfn.lit(1),
-        ...             dfn.lit("y"), dfn.lit(2),
-        ...         ),
+        ...         dfn.functions.make_map({"x": 1, "y": 2}),
         ...         dfn.lit("x"),
         ...     ).alias("val"))
         >>> result.collect_column("val")[0].as_py()
@@ -3475,10 +3483,7 @@ def map_entries(map: Expr) -> Expr:
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
         ...     dfn.functions.map_entries(
-        ...         dfn.functions.make_map(
-        ...             dfn.lit("x"), dfn.lit(1),
-        ...             dfn.lit("y"), dfn.lit(2),
-        ...         )
+        ...         dfn.functions.make_map({"x": 1, "y": 2})
         ...     ).alias("entries"))
         >>> result.collect_column("entries")[0].as_py()
         [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
