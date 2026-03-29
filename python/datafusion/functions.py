@@ -3389,19 +3389,41 @@ def map(*args: Any) -> Expr:
     Supports three calling conventions:
 
     - ``map({"a": 1, "b": 2})`` — from a Python dictionary.
-    - ``map([keys], [values])`` — two lists that get zipped.
-    - ``map(k1, v1, k2, v2, ...)`` — variadic key-value pairs.
+    - ``map([keys], [values])`` — from a list of keys and a list of
+      their associated values.  Both lists must be the same length.
+    - ``map(k1, v1, k2, v2, ...)`` — from alternating keys and their
+      associated values.
 
     Keys and values that are not already :py:class:`~datafusion.expr.Expr`
     are automatically converted to literal expressions.
 
     Examples:
+        From a dictionary:
+
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
         ...     dfn.functions.map({"a": 1, "b": 2}).alias("m"))
         >>> result.collect_column("m")[0].as_py()
         [('a', 1), ('b', 2)]
+
+        From two lists:
+
+        >>> df = ctx.from_pydict({"key": ["x", "y"], "val": [10, 20]})
+        >>> df = df.select(
+        ...     dfn.functions.map(
+        ...         [dfn.col("key")], [dfn.col("val")]
+        ...     ).alias("m"))
+        >>> df.collect_column("m")[0].as_py()
+        [('x', 10)]
+
+        From alternating keys and values:
+
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.map("x", 1, "y", 2).alias("m"))
+        >>> result.collect_column("m")[0].as_py()
+        [('x', 1), ('y', 2)]
     """
     if len(args) == 1 and isinstance(args[0], dict):
         key_list = list(args[0].keys())
@@ -3440,10 +3462,10 @@ def map_keys(map: Expr) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.map({"x": 1, "y": 2}).alias("m"))
         >>> result = df.select(
-        ...     dfn.functions.map_keys(
-        ...         dfn.functions.map({"x": 1, "y": 2})
-        ...     ).alias("keys"))
+        ...     dfn.functions.map_keys(dfn.col("m")).alias("keys"))
         >>> result.collect_column("keys")[0].as_py()
         ['x', 'y']
     """
@@ -3456,10 +3478,10 @@ def map_values(map: Expr) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.map({"x": 1, "y": 2}).alias("m"))
         >>> result = df.select(
-        ...     dfn.functions.map_values(
-        ...         dfn.functions.map({"x": 1, "y": 2})
-        ...     ).alias("vals"))
+        ...     dfn.functions.map_values(dfn.col("m")).alias("vals"))
         >>> result.collect_column("vals")[0].as_py()
         [1, 2]
     """
@@ -3472,10 +3494,11 @@ def map_extract(map: Expr, key: Expr) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.map({"x": 1, "y": 2}).alias("m"))
         >>> result = df.select(
         ...     dfn.functions.map_extract(
-        ...         dfn.functions.map({"x": 1, "y": 2}),
-        ...         dfn.lit("x"),
+        ...         dfn.col("m"), dfn.lit("x")
         ...     ).alias("val"))
         >>> result.collect_column("val")[0].as_py()
         [1]
@@ -3489,10 +3512,10 @@ def map_entries(map: Expr) -> Expr:
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.map({"x": 1, "y": 2}).alias("m"))
         >>> result = df.select(
-        ...     dfn.functions.map_entries(
-        ...         dfn.functions.map({"x": 1, "y": 2})
-        ...     ).alias("entries"))
+        ...     dfn.functions.map_entries(dfn.col("m")).alias("entries"))
         >>> result.collect_column("entries")[0].as_py()
         [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
     """
