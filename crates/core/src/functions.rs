@@ -101,11 +101,6 @@ fn make_map(keys: Vec<PyExpr>, values: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
-fn element_at(map: PyExpr, key: PyExpr) -> PyExpr {
-    datafusion::functions_nested::expr_fn::map_extract(map.into(), key.into()).into()
-}
-
-#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -1150,7 +1145,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(map_values))?;
     m.add_wrapped(wrap_pyfunction!(map_extract))?;
     m.add_wrapped(wrap_pyfunction!(map_entries))?;
-    m.add_wrapped(wrap_pyfunction!(element_at))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;
