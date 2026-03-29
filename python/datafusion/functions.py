@@ -1056,18 +1056,8 @@ def greatest(*args: Expr) -> Expr:
 def ifnull(x: Expr, y: Expr) -> Expr:
     """Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
 
-    This is an alias for :py:func:`nvl`.
-
-    Examples:
-        >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [None, 1], "b": [0, 0]})
-        >>> result = df.select(
-        ...     dfn.functions.ifnull(dfn.col("a"), dfn.col("b")).alias("ifnull")
-        ... )
-        >>> result.collect_column("ifnull")[0].as_py()
-        0
-        >>> result.collect_column("ifnull")[1].as_py()
-        1
+    See Also:
+        This is an alias for :py:func:`nvl`.
     """
     return nvl(x, y)
 
