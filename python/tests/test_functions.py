@@ -668,6 +668,121 @@ def test_array_function_obj_tests(stmt, py_expr):
         assert a == b
 
 
+def test_make_map():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    result = (
+        df.select(
+            f.make_map(
+                literal("x"),
+                literal(1),
+                literal("y"),
+                literal(2),
+            ).alias("map")
+        )
+        .collect()[0]
+        .column(0)
+    )
+    assert result[0].as_py() == [("x", 1), ("y", 2)]
+
+
+def test_make_map_odd_args():
+    with pytest.raises(ValueError, match="even number of arguments"):
+        f.make_map(literal("x"), literal(1), literal("y"))
+
+
+def test_map_keys():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("x"), literal(1), literal("y"), literal(2))
+    result = df.select(f.map_keys(m).alias("keys")).collect()[0].column(0)
+    assert result[0].as_py() == ["x", "y"]
+
+
+def test_map_values():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("x"), literal(1), literal("y"), literal(2))
+    result = df.select(f.map_values(m).alias("vals")).collect()[0].column(0)
+    assert result[0].as_py() == [1, 2]
+
+
+def test_map_extract():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("x"), literal(1), literal("y"), literal(2))
+    result = (
+        df.select(f.map_extract(m, literal("x")).alias("val")).collect()[0].column(0)
+    )
+    assert result[0].as_py() == [1]
+
+
+def test_map_extract_missing_key():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("x"), literal(1))
+    result = (
+        df.select(f.map_extract(m, literal("z")).alias("val")).collect()[0].column(0)
+    )
+    assert result[0].as_py() == [None]
+
+
+def test_map_entries():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("x"), literal(1), literal("y"), literal(2))
+    result = df.select(f.map_entries(m).alias("entries")).collect()[0].column(0)
+    assert result[0].as_py() == [
+        {"key": "x", "value": 1},
+        {"key": "y", "value": 2},
+    ]
+
+
+def test_element_at():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(literal("a"), literal(10), literal("b"), literal(20))
+    result = (
+        df.select(f.element_at(m, literal("b")).alias("val")).collect()[0].column(0)
+    )
+    assert result[0].as_py() == [20]
+
+
+def test_map_functions_with_column_data():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["k1", "k2", "k3"]),
+            pa.array([10, 20, 30]),
+        ],
+        names=["keys", "vals"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map(column("keys"), column("vals"))
+    result = df.select(f.map_keys(m).alias("k")).collect()[0].column(0)
+    for i, expected in enumerate(["k1", "k2", "k3"]):
+        assert result[i].as_py() == [expected]
+
+    result = df.select(f.map_values(m).alias("v")).collect()[0].column(0)
+    for i, expected in enumerate([10, 20, 30]):
+        assert result[i].as_py() == [expected]
+
+
 @pytest.mark.parametrize(
     ("function", "expected_result"),
     [
