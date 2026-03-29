@@ -94,6 +94,18 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+fn make_map(keys: Vec<PyExpr>, values: Vec<PyExpr>) -> PyExpr {
+    let keys = keys.into_iter().map(|x| x.into()).collect();
+    let values = values.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::map::map(keys, values).into()
+}
+
+#[pyfunction]
+fn element_at(map: PyExpr, key: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::map_extract(map.into(), key.into()).into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -666,6 +678,12 @@ array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
+// Map Functions
+array_fn!(map_keys, map);
+array_fn!(map_values, map);
+array_fn!(map_extract, map key);
+array_fn!(map_entries, map);
+
 aggregate_function!(array_agg);
 aggregate_function!(max);
 aggregate_function!(min);
@@ -1125,6 +1143,14 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(cardinality))?;
+
+    // Map Functions
+    m.add_wrapped(wrap_pyfunction!(make_map))?;
+    m.add_wrapped(wrap_pyfunction!(map_keys))?;
+    m.add_wrapped(wrap_pyfunction!(map_values))?;
+    m.add_wrapped(wrap_pyfunction!(map_extract))?;
+    m.add_wrapped(wrap_pyfunction!(map_entries))?;
+    m.add_wrapped(wrap_pyfunction!(element_at))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

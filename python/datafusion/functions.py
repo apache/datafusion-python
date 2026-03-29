@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
@@ -139,6 +140,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "element_at",
     "empty",
     "encode",
     "ends_with",
@@ -202,7 +204,12 @@ __all__ = [
     "make_array",
     "make_date",
     "make_list",
+    "make_map",
     "make_time",
+    "map_entries",
+    "map_extract",
+    "map_keys",
+    "map_values",
     "max",
     "md5",
     "mean",
@@ -3372,6 +3379,120 @@ def empty(array: Expr) -> Expr:
         This is an alias for :py:func:`array_empty`.
     """
     return array_empty(array)
+
+
+# map functions
+
+
+def make_map(*args: Expr) -> Expr:
+    """Returns a map created from key and value expressions.
+
+    Accepts an even number of arguments, alternating between keys and values.
+    For example, ``make_map(k1, v1, k2, v2)`` creates a map ``{k1: v1, k2: v2}``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.make_map(
+        ...         dfn.lit("a"), dfn.lit(1),
+        ...         dfn.lit("b"), dfn.lit(2),
+        ...     ).alias("map"))
+        >>> result.collect_column("map")[0].as_py()
+        [('a', 1), ('b', 2)]
+    """
+    if len(args) % 2 != 0:
+        msg = "make_map requires an even number of arguments"
+        raise ValueError(msg)
+    keys = [args[i].expr for i in builtins.range(0, len(args), 2)]
+    values = [args[i].expr for i in builtins.range(1, len(args), 2)]
+    return Expr(f.make_map(keys, values))
+
+
+def map_keys(map: Expr) -> Expr:
+    """Returns a list of all keys in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.map_keys(
+        ...         dfn.functions.make_map(
+        ...             dfn.lit("x"), dfn.lit(1),
+        ...             dfn.lit("y"), dfn.lit(2),
+        ...         )
+        ...     ).alias("keys"))
+        >>> result.collect_column("keys")[0].as_py()
+        ['x', 'y']
+    """
+    return Expr(f.map_keys(map.expr))
+
+
+def map_values(map: Expr) -> Expr:
+    """Returns a list of all values in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.map_values(
+        ...         dfn.functions.make_map(
+        ...             dfn.lit("x"), dfn.lit(1),
+        ...             dfn.lit("y"), dfn.lit(2),
+        ...         )
+        ...     ).alias("vals"))
+        >>> result.collect_column("vals")[0].as_py()
+        [1, 2]
+    """
+    return Expr(f.map_values(map.expr))
+
+
+def map_extract(map: Expr, key: Expr) -> Expr:
+    """Returns the value for the given key in the map, or an empty list if absent.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.map_extract(
+        ...         dfn.functions.make_map(
+        ...             dfn.lit("x"), dfn.lit(1),
+        ...             dfn.lit("y"), dfn.lit(2),
+        ...         ),
+        ...         dfn.lit("x"),
+        ...     ).alias("val"))
+        >>> result.collect_column("val")[0].as_py()
+        [1]
+    """
+    return Expr(f.map_extract(map.expr, key.expr))
+
+
+def map_entries(map: Expr) -> Expr:
+    """Returns a list of all entries (key-value struct pairs) in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.map_entries(
+        ...         dfn.functions.make_map(
+        ...             dfn.lit("x"), dfn.lit(1),
+        ...             dfn.lit("y"), dfn.lit(2),
+        ...         )
+        ...     ).alias("entries"))
+        >>> result.collect_column("entries")[0].as_py()
+        [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
+    """
+    return Expr(f.map_entries(map.expr))
+
+
+def element_at(map: Expr, key: Expr) -> Expr:
+    """Returns the value for the given key in the map, or an empty list if absent.
+
+    See Also:
+        This is an alias for :py:func:`map_extract`.
+    """
+    return map_extract(map, key)
 
 
 # aggregate functions
