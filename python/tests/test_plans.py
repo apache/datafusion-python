@@ -95,14 +95,21 @@ def test_metric_properties() -> None:
     assert found_any_metric, "Expected at least one metric after execution"
 
 
-def test_no_metrics_before_execution() -> None:
+def test_no_meaningful_metrics_before_execution() -> None:
     ctx = SessionContext()
     ctx.sql("CREATE TABLE t AS VALUES (1), (2), (3)")
     df = ctx.sql("SELECT * FROM t")
     plan = df.execution_plan()
-    ms = plan.metrics()
-    # Before execution, the root plan node has no MetricsSet
-    assert ms is None
+
+    # Some plan nodes (e.g. DataSourceExec) eagerly initialize a MetricsSet,
+    # so metrics() may return a set even before execution.  However, no rows
+    # should have been processed yet.
+    output_rows_before = [
+        ms.output_rows
+        for _, ms in plan.collect_metrics()
+        if ms.output_rows is not None and ms.output_rows > 0
+    ]
+    assert len(output_rows_before) == 0, "Expected no output rows before execution"
 
 
 def test_collect_partitioned_metrics() -> None:
@@ -174,7 +181,7 @@ def test_value_as_datetime() -> None:
                 assert metric.value_as_datetime is None
 
 
-def test_collect_twice_reuses_plan() -> None:
+def test_collect_twice_has_metrics() -> None:
     ctx = SessionContext()
     ctx.sql("CREATE TABLE t AS VALUES (1, 'a'), (2, 'b'), (3, 'c')")
     df = ctx.sql("SELECT * FROM t WHERE column1 > 1")

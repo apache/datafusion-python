@@ -157,7 +157,13 @@ class ExecutionPlan:
         return self._raw_plan.to_proto()
 
     def metrics(self) -> MetricsSet | None:
-        """Return metrics for this plan node after execution, or None if unavailable."""
+        """Return metrics for this plan node, or None if this node has no MetricsSet.
+
+        Some operators (e.g. DataSourceExec) eagerly initialize a MetricsSet
+        when the plan is created, so this may return a set even before
+        execution.  Metric *values* (such as ``output_rows``) are only
+        meaningful after the DataFrame has been executed.
+        """
         raw = self._raw_plan.metrics()
         if raw is None:
             return None

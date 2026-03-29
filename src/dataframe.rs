@@ -387,21 +387,11 @@ impl PyDataFrame {
         &self,
         py: Python,
     ) -> PyDataFusionResult<(Arc<dyn DFExecutionPlan>, Arc<TaskContext>)> {
-        let plan = {
-            let cached = self.last_plan.lock();
-            cached.as_ref().map(Arc::clone)
-        };
-        let plan = match plan {
-            Some(p) => p,
-            None => {
-                let df = self.df.as_ref().clone();
-                let new_plan = wait_for_future(py, df.create_physical_plan())??;
-                *self.last_plan.lock() = Some(Arc::clone(&new_plan));
-                new_plan
-            }
-        };
+        let df = self.df.as_ref().clone();
+        let new_plan = wait_for_future(py, df.create_physical_plan())??;
+        *self.last_plan.lock() = Some(Arc::clone(&new_plan));
         let task_ctx = Arc::new(self.df.as_ref().task_ctx());
-        Ok((plan, task_ctx))
+        Ok((new_plan, task_ctx))
     }
 
     async fn collect_column_inner(&self, column: &str) -> Result<ArrayRef, DataFusionError> {
