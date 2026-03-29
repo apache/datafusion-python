@@ -112,8 +112,17 @@ test_source_distribution() {
 
   curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
 
-  export PATH=$RUSTUP_HOME/bin:$PATH
-  source $RUSTUP_HOME/env
+  # On Unix, rustup creates an env file. On Windows GitHub runners (MSYS bash),
+  # that file may not exist, so fall back to adding Cargo bin directly.
+  if [ -f "$CARGO_HOME/env" ]; then
+    # shellcheck disable=SC1090
+    source "$CARGO_HOME/env"
+  elif [ -f "$RUSTUP_HOME/env" ]; then
+    # shellcheck disable=SC1090
+    source "$RUSTUP_HOME/env"
+  else
+    export PATH="$CARGO_HOME/bin:$PATH"
+  fi
 
   # build and test rust
 
@@ -126,10 +135,20 @@ test_source_distribution() {
   git clone https://github.com/apache/parquet-testing.git parquet-testing
 
   python3 -m venv .venv
-  source .venv/bin/activate
-  python3 -m pip install -U pip
-  python3 -m pip install -U maturin
-  maturin develop
+  if [ -x ".venv/bin/python" ]; then
+    VENV_PYTHON=".venv/bin/python"
+  elif [ -x ".venv/Scripts/python.exe" ]; then
+    VENV_PYTHON=".venv/Scripts/python.exe"
+  elif [ -x ".venv/Scripts/python" ]; then
+    VENV_PYTHON=".venv/Scripts/python"
+  else
+    echo "Unable to find python executable in virtual environment"
+    exit 1
+  fi
+
+  "$VENV_PYTHON" -m pip install -U pip
+  "$VENV_PYTHON" -m pip install -U maturin
+  "$VENV_PYTHON" -m maturin develop
 
   #TODO: we should really run tests here as well
   #python3 -m pytest

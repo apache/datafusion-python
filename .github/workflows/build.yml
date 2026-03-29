@@ -36,6 +36,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  UV_LOCKED: true
 
 jobs:
   # ============================================
@@ -47,7 +48,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           toolchain: "nightly"
           components: rustfmt
@@ -68,7 +69,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -98,12 +99,21 @@ jobs:
       - name: Check Cargo.toml formatting
         run: taplo format --check
 
+  check-crates-patch:
+    if: inputs.build_mode == 'release' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Ensure [patch.crates-io] is empty
+        run: python3 dev/check_crates_patch.py
+
   generate-license:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -115,7 +125,7 @@ jobs:
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: python-wheel-license
           path: LICENSE.txt
@@ -132,20 +142,20 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: python-wheel-license
           path: .
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ inputs.build_mode }}
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -177,13 +187,13 @@ jobs:
           rustup-components: rust-std
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-manylinux-x86_64
           path: dist/*
 
       - name: Archive FFI test wheel
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-ffi-manylinux-x86_64
           path: examples/datafusion-ffi-example/dist/*
@@ -200,22 +210,35 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: python-wheel-license
           path: .
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ inputs.build_mode }}
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
+
+      - name: Add extra swap for release build
+        if: inputs.build_mode == 'release'
+        run: |
+          set -euxo pipefail
+          sudo swapoff -a || true
+          sudo rm -f /swapfile
+          sudo fallocate -l 16G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=16384
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+          swapon --show
 
       - name: Build (release mode)
         uses: PyO3/maturin-action@v1
@@ -236,7 +259,7 @@ jobs:
           rustup-components: rust-std
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
           name: dist-manylinux-aarch64
@@ -257,11 +280,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: python-wheel-license
           path: .
@@ -271,7 +294,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -311,7 +334,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
           name: dist-${{ matrix.os  }}
@@ -331,11 +354,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: python-wheel-license
           path: .
@@ -345,7 +368,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
@@ -366,7 +389,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-macos-aarch64
           path: target/wheels/*
@@ -384,7 +407,7 @@ jobs:
       - uses: actions/checkout@v6
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: python-wheel-license
           path: .
@@ -422,7 +445,7 @@ jobs:
       - build-sdist
     steps:
       - name: Merge Build Artifacts
-        uses: actions/upload-artifact/merge@v6
+        uses: actions/upload-artifact/merge@v7
         with:
           name: dist
           pattern: dist-*
@@ -469,13 +492,13 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098
         with:
           enable-cache: true
 
       # Download the Linux wheel built in the previous job
       - name: Download pre-built Linux wheel
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: dist-manylinux-x86_64
           path: wheels/

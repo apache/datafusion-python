@@ -22,7 +22,7 @@ repos:
           - id: actionlint-docker
       - repo: https://github.com/astral-sh/ruff-pre-commit
         # Ruff version.
-        rev: v0.9.10
+        rev: v0.15.1
         hooks:
           # Run the linter.
           - id: ruff
@@ -52,6 +52,13 @@ repos:
             args: [ --toml, "pyproject.toml"]
             additional_dependencies:
               - tomli
+
+      - repo: https://github.com/astral-sh/uv-pre-commit
+        # uv version.
+        rev: 0.10.7
+        hooks:
+          # Update the uv lockfile
+          - id: uv-lock
 
 default_language_version:
       python: python3

@@ -27,7 +27,12 @@ use datafusion_functions_window::rank::rank_udwf;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyResult, Python, pyclass, pymethods};
 
-#[pyclass(name = "MyRankUDF", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MyRankUDF",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub(crate) struct MyRankUDF {
     inner: Arc<WindowUDF>,

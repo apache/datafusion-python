@@ -295,10 +295,17 @@ def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
     df = ctx.create_dataframe([[batch]])
-
-    # Both should work
+    # here we must quote to match the original column name
     assert df.drop('"ID_For_Students"').schema().names == []
-    assert df.drop("ID_For_Students").schema().names == []
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])], names=["a", "b"]
+    )
+    df = ctx.create_dataframe([[batch]])
+    # with a lower case column, both 'a' and '"a"' work
+    assert df.drop("a").schema().names == ["b"]
+    df = ctx.create_dataframe([[batch]])
+    assert df.drop('"a"').schema().names == ["b"]
 
 
 def test_select_mixed_expr_string(df):
@@ -2790,7 +2797,7 @@ def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, res
 def test_write_parquet_with_options_unsupported_encoding(df, tmp_path, encoding):
     """Test that unsupported Parquet encodings do not work."""
     # BaseException is used since this throws a Rust panic: https://github.com/PyO3/pyo3/issues/3519
-    with pytest.raises(BaseException, match="Encoding .*? is not supported"):
+    with pytest.raises(BaseException, match=r"Encoding .*? is not supported"):
         df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding))
 
 

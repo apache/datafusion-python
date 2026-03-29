@@ -18,6 +18,27 @@
 Upgrade Guides
 ==============
 
+DataFusion 53.0.0
+-----------------
+
+This version includes an upgraded version of ``pyo3``, which changed the way to extract an FFI
+object. Example:
+
+Before:
+
+.. code-block:: rust
+
+    let codec = unsafe { capsule.reference::<FFI_LogicalExtensionCodec>() };
+
+Now:
+
+.. code-block:: rust
+
+    let data: NonNull<FFI_LogicalExtensionCodec> = capsule
+        .pointer_checked(Some(c_str!("datafusion_logical_extension_codec")))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
+
 DataFusion 52.0.0
 -----------------
 
@@ -31,8 +52,10 @@ parameter, which is a Python object that can be used to extract the
 ``FFI_LogicalExtensionCodec`` that is necessary.
 
 A complete example can be found in the `FFI example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
-Your methods need to be updated to take an additional parameter like in this
-example.
+Your FFI hook methods — ``__datafusion_catalog_provider__``,
+``__datafusion_schema_provider__``, ``__datafusion_table_provider__``, and
+``__datafusion_table_function__`` — need to be updated to accept an additional
+``session: Bound<PyAny>`` parameter, as shown in this example.
 
 .. code-block:: rust
 

@@ -58,10 +58,10 @@ jobs:
             arch: x64
             runner: macos-15-intel
 
-          # Windows (disabled for now)
-          # - os: windows
-          #   arch: x64
-          #   runner: windows-latest
+          # Windows
+          - os: windows
+            arch: x64
+            runner: windows-latest
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository

@@ -120,6 +120,12 @@ class CustomCatalogProviderList(dfn.catalog.CatalogProviderList):
         self.catalogs[name] = catalog
 
 
+class CustomTableProviderFactory(dfn.catalog.TableProviderFactory):
+    def create(self, cmd: dfn.expr.CreateExternalTable):
+        assert cmd.name() == "test_table_factory"
+        return create_dataset()
+
+
 def test_python_catalog_provider_list(ctx: SessionContext):
     ctx.register_catalog_provider_list(CustomCatalogProviderList())
 
@@ -248,7 +254,7 @@ def test_exception_not_mangled(ctx: SessionContext):
 
     schema.register_table("test_table", create_dataset())
 
-    with pytest.raises(ValueError, match="^test_table is not an acceptable name$"):
+    with pytest.raises(ValueError, match=r"^test_table is not an acceptable name$"):
         ctx.sql(f"select * from {catalog_name}.{schema_name}.test_table")
 
 
@@ -314,3 +320,24 @@ def test_register_python_function_as_udtf(ctx: SessionContext):
     assert len(result[0]) == 1
     assert len(result[0][0]) == 1
     assert result[0][0][0].as_py() == 3
+
+
+def test_register_python_table_provider_factory(ctx: SessionContext):
+    ctx.register_table_factory("CUSTOM_FACTORY", CustomTableProviderFactory())
+
+    ctx.sql("""
+        CREATE EXTERNAL TABLE test_table_factory
+        STORED AS CUSTOM_FACTORY
+        LOCATION foo;
+    """).collect()
+
+    result = ctx.sql("SELECT * FROM test_table_factory;").collect()
+
+    expect = [
+        pa.RecordBatch.from_arrays(
+            [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+            names=["a", "b"],
+        )
+    ]
+
+    assert result == expect

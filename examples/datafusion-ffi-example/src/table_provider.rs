@@ -22,15 +22,19 @@ use arrow_schema::{DataType, Field, Schema};
 use datafusion_catalog::MemTable;
 use datafusion_common::error::{DataFusionError, Result as DataFusionResult};
 use datafusion_ffi::table_provider::FFI_TableProvider;
+use datafusion_python_util::ffi_logical_codec_from_pycapsule;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
-use crate::utils::ffi_logical_codec_from_pycapsule;
-
 /// In order to provide a test that demonstrates different sized record batches,
 /// the first batch will have num_rows, the second batch num_rows+1, and so on.
-#[pyclass(name = "MyTableProvider", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    from_py_object,
+    name = "MyTableProvider",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Clone)]
 pub(crate) struct MyTableProvider {
     num_cols: usize,

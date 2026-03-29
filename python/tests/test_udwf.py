@@ -433,8 +433,8 @@ def test_udwf_functions(complex_window_df, name, expr, expected):
     [
         udwf(SimpleWindowCount, pa.int64(), pa.int64(), "immutable"),
         udwf(SimpleWindowCount, [pa.int64()], pa.int64(), "immutable"),
-        udwf([pa.int64()], pa.int64(), "immutable")(lambda: SimpleWindowCount()),
-        udwf(pa.int64(), pa.int64(), "immutable")(lambda: SimpleWindowCount()),
+        udwf([pa.int64()], pa.int64(), "immutable")(SimpleWindowCount),
+        udwf(pa.int64(), pa.int64(), "immutable")(SimpleWindowCount),
     ],
 )
 def test_udwf_overloads(udwf_func, count_window_df):

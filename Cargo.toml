@@ -15,8 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "datafusion-python"
+[workspace.package]
 version = "52.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
@@ -26,68 +25,48 @@ readme = "README.md"
 license = "Apache-2.0"
 edition = "2024"
 rust-version = "1.88"
-include = [
-  "/src",
-  "/datafusion",
-  "/LICENSE.txt",
-  "build.rs",
-  "pyproject.toml",
-  "Cargo.toml",
-  "Cargo.lock",
-]
 
-[features]
-default = ["mimalloc"]
-protoc = ["datafusion-substrait/protoc"]
-substrait = ["dep:datafusion-substrait"]
+[workspace]
+members = ["crates/core", "crates/util", "examples/datafusion-ffi-example"]
+resolver = "3"
 
-[dependencies]
-tokio = { version = "1.47", features = [
-  "macros",
-  "rt",
-  "rt-multi-thread",
-  "sync",
-] }
-pyo3 = { version = "0.26", features = [
-  "extension-module",
-  "abi3",
-  "abi3-py310",
-] }
-pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }
-pyo3-log = "0.13.2"
-arrow = { version = "57", features = ["pyarrow"] }
-arrow-select = { version = "57" }
-datafusion = { version = "52", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "52", optional = true }
-datafusion-proto = { version = "52" }
-datafusion-ffi = { version = "52" }
-prost = "0.14.1" # keep in line with `datafusion-substrait`
+[workspace.dependencies]
+tokio = { version = "1.50" }
+pyo3 = { version = "0.28" }
+pyo3-async-runtimes = { version = "0.28" }
+pyo3-log = "0.13.3"
+arrow = { version = "58" }
+arrow-array = { version = "58" }
+arrow-schema = { version = "58" }
+arrow-select = { version = "58" }
+datafusion = { version = "53" }
+datafusion-substrait = { version = "53" }
+datafusion-proto = { version = "53" }
+datafusion-ffi = { version = "53" }
+datafusion-catalog = { version = "53", default-features = false }
+datafusion-common = { version = "53", default-features = false }
+datafusion-functions-aggregate = { version = "53" }
+datafusion-functions-window = { version = "53" }
+datafusion-expr = { version = "53" }
+prost = "0.14.3"
 serde_json = "1"
-uuid = { version = "1.18", features = ["v4"] }
-mimalloc = { version = "0.1", optional = true, default-features = false, features = [
-  "local_dynamic_tls",
-] }
+uuid = { version = "1.23" }
+mimalloc = { version = "0.1", default-features = false }
 async-trait = "0.1.89"
 futures = "0.3"
 cstr = "0.2"
-object_store = { version = "0.12.4", features = [
-  "aws",
-  "gcp",
-  "azure",
-  "http",
-] }
+object_store = { version = "0.13.1" }
 url = "2"
-log = "0.4.27"
+log = "0.4.29"
 parking_lot = "0.12"
-
-[build-dependencies]
-prost-types = "0.14.1"     # keep in line with `datafusion-substrait`
-pyo3-build-config = "0.26"
-
-[lib]
-name = "datafusion_python"
-crate-type = ["cdylib", "rlib"]
+prost-types = "0.14.3"                                            # keep in line with `datafusion-substrait`
+pyo3-build-config = "0.28"
+datafusion-python-util = { path = "crates/util" }
 
 [profile.release]
 lto = true
 codegen-units = 1
+
+# We cannot publish to crates.io with any patches in the below section. Developers
+# must remove any entries in this section before creating a release candidate.
+[patch.crates-io]

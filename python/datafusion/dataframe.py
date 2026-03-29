@@ -327,10 +327,11 @@ class DataFrame:
             >>> df = ctx.sql("SELECT 1 AS value")
             >>> view = df.into_view()
             >>> ctx.register_table("values_view", view)
-            >>> df.collect()  # The DataFrame is still usable
-            >>> ctx.sql("SELECT value FROM values_view").collect()
+            >>> result = ctx.sql("SELECT value FROM values_view").collect()
+            >>> result[0].column("value").to_pylist()
+            [1]
         """
-        from datafusion.catalog import Table as _Table
+        from datafusion.catalog import Table as _Table  # noqa: PLC0415
 
         return _Table(self.df.into_view(temporary))
 
@@ -441,30 +442,31 @@ class DataFrame:
     def drop(self, *columns: str) -> DataFrame:
         """Drop arbitrary amount of columns.
 
-        Column names are case-sensitive and do not require double quotes like
-        other operations such as `select`. Leading and trailing double quotes
-        are allowed and will be automatically stripped if present.
+        Column names are case-sensitive and require double quotes to be dropped
+        if the original name is not strictly lower case.
 
         Args:
-            columns: Column names to drop from the dataframe. Both ``column_name``
-                    and ``"column_name"`` are accepted.
+            columns: Column names to drop from the dataframe.
 
         Returns:
             DataFrame with those columns removed in the projection.
 
-        Example Usage::
+        Examples:
+            To drop a lower-cased column 'a'
 
-            df.drop('ID_For_Students')      # Works
-            df.drop('"ID_For_Students"')    # Also works (quotes stripped)
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+            >>> df.drop("a").schema().names
+            ['b']
+
+            Or to drop an upper-cased column 'A'
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"A": [1, 2], "b": [3, 4]})
+            >>> df.drop('"A"').schema().names
+            ['b']
         """
-        normalized_columns = []
-        for col in columns:
-            if col.startswith('"') and col.endswith('"'):
-                normalized_columns.append(col.strip('"'))  # Strip double quotes
-            else:
-                normalized_columns.append(col)
-
-        return DataFrame(self.df.drop(*normalized_columns))
+        return DataFrame(self.df.drop(*columns))
 
     def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
@@ -477,11 +479,13 @@ class DataFrame:
         that will be parsed against the DataFrame schema. If more complex logic is
         required, see the logical operations in :py:mod:`~datafusion.functions`.
 
-        Example::
-
-            from datafusion import col, lit
-            df.filter(col("a") > lit(1))
-            df.filter("a > 1")
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.filter(col("a") > lit(1)).to_pydict()
+            {'a': [2, 3]}
+            >>> df.filter("a > 1").to_pydict()
+            {'a': [2, 3]}
 
         Args:
             predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
@@ -504,14 +508,12 @@ class DataFrame:
 
         The expression is created and processed against the current schema.
 
-        Example::
-
-            from datafusion import col, lit
-            df.parse_sql_expr("a > 1")
-
-            should produce:
-
-            col("a") > lit(1)
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> expr = df.parse_sql_expr("a > 1")
+            >>> df.filter(expr).to_pydict()
+            {'a': [2, 3]}
 
         Args:
             expr: Expression string to be converted to datafusion expression
@@ -528,10 +530,11 @@ class DataFrame:
         :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
         string that will be parsed against the DataFrame schema.
 
-        Example::
-
-            from datafusion import col, lit
-            df.with_column("b", col("a") + lit(1))
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2]})
+            >>> df.with_column("b", col("a") + lit(10)).to_pydict()
+            {'a': [1, 2], 'b': [11, 12]}
 
         Args:
             name: Name of the column to add.
@@ -894,10 +897,14 @@ class DataFrame:
         built with :func:`datafusion.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
-        Example::
-
-            from datafusion import col
-            df.join_on(other_df, col("id") == col("other_id"))
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> left = ctx.from_pydict({"a": [1, 2], "x": ["a", "b"]})
+            >>> right = ctx.from_pydict({"b": [1, 2], "y": ["c", "d"]})
+            >>> left.join_on(
+            ...     right, col("a") == col("b")
+            ... ).sort(col("x")).to_pydict()
+            {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
 
         Args:
             right: Other DataFrame to join with.
@@ -1359,15 +1366,17 @@ class DataFrame:
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.
 
-        This is useful for chaining together multiple functions. For example::
+        This is useful for chaining together multiple functions.
 
-            def add_3(df: DataFrame) -> DataFrame:
-                return df.with_column("modified", lit(3))
-
-            def within_limit(df: DataFrame, limit: int) -> DataFrame:
-                return df.filter(col("a") < lit(limit)).distinct()
-
-            df = df.transform(modify_df).transform(within_limit, 4)
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> def add_3(df):
+            ...     return df.with_column("modified", dfn.lit(3))
+            >>> def within_limit(df: DataFrame, limit: int) -> DataFrame:
+            ...     return df.filter(col("a") < lit(limit)).distinct()
+            >>> df.transform(add_3).transform(within_limit, 4).sort("a").to_pydict()
+            {'a': [1, 2, 3], 'modified': [3, 3, 3]}
 
         Args:
             func: A callable function that takes a DataFrame as it's first argument
@@ -1389,9 +1398,12 @@ class DataFrame:
             DataFrame with null values replaced where type casting is possible
 
         Examples:
-            >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
-            >>> # Fill nulls in specific string columns
-            >>> df = df.fill_null("missing", subset=["name", "category"])
+            >>> from datafusion import SessionContext, col
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, None, 3], "b": [None, 5, 6]})
+            >>> filled = df.fill_null(0)
+            >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
+            [0, 1, 3]
 
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
