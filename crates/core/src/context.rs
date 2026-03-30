@@ -390,7 +390,16 @@ impl PySessionContext {
             .with_runtime_env(runtime)
             .with_default_features()
             .build();
-        let ctx = Arc::new(SessionContext::new_with_state(session_state));
+        let mut ctx = SessionContext::new_with_state(session_state);
+
+        // Register JSON functions (json_extract, json_get, ->, ->>) when feature is enabled
+        #[cfg(feature = "json")]
+        datafusion_functions_json::register_all(&mut ctx)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to register JSON functions: {e}"),
+            ))?;
+
+        let ctx = Arc::new(ctx);
         let logical_codec = Self::default_logical_codec(&ctx);
         Ok(PySessionContext { ctx, logical_codec })
     }
