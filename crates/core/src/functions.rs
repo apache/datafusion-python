@@ -616,6 +616,7 @@ expr_fn!(date_part, part date);
 expr_fn!(date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
 expr_fn!(make_date, year month day);
+expr_fn!(make_time, hour minute second);
 expr_fn!(to_char, datetime format);
 
 expr_fn!(translate, string from to, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
@@ -974,6 +975,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(date_part))?;
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
     m.add_wrapped(wrap_pyfunction!(make_date))?;
+    m.add_wrapped(wrap_pyfunction!(make_time))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
     m.add_wrapped(wrap_pyfunction!(ends_with))?;
     m.add_wrapped(wrap_pyfunction!(exp))?;
