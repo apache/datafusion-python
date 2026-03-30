@@ -494,6 +494,11 @@ expr_fn!(length, string);
 expr_fn!(char_length, string);
 expr_fn!(chr, arg, "Returns the character with the given code.");
 expr_fn_vec!(coalesce);
+expr_fn!(
+    contains,
+    string search_str,
+    "Return true if search_str is found within string (case-sensitive)."
+);
 expr_fn!(cos, num);
 expr_fn!(cosh, num);
 expr_fn!(cot, num);
@@ -960,6 +965,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
+    m.add_wrapped(wrap_pyfunction!(contains))?;
     m.add_wrapped(wrap_pyfunction!(corr))?;
     m.add_wrapped(wrap_pyfunction!(cos))?;
     m.add_wrapped(wrap_pyfunction!(cosh))?;

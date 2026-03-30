@@ -116,6 +116,7 @@ __all__ = [
     "col",
     "concat",
     "concat_ws",
+    "contains",
     "corr",
     "cos",
     "cosh",
@@ -434,6 +435,20 @@ def digest(value: Expr, method: Expr) -> Expr:
         True
     """
     return Expr(f.digest(value.expr, method.expr))
+
+
+def contains(string: Expr, search_str: Expr) -> Expr:
+    """Return true if ``search_str`` is found within ``string`` (case-sensitive).
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["the quick brown fox"]})
+        >>> result = df.select(
+        ...     dfn.functions.contains(dfn.col("a"), dfn.lit("brown")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        True
+    """
+    return Expr(f.contains(string.expr, search_str.expr))
 
 
 def concat(*args: Expr) -> Expr:
