@@ -103,6 +103,57 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 3. Also check `crates/core/src/context.rs` for what's implemented
 4. Report SessionContext methods that exist upstream but are missing
 
+### 7. FFI Types (datafusion-ffi)
+
+**Upstream source of truth:**
+- Crate source: https://github.com/apache/datafusion/tree/main/datafusion/ffi/src
+- Rust docs: https://docs.rs/datafusion-ffi/latest/datafusion_ffi/
+
+**Where they are exposed in this project:**
+- Rust bindings: various files under `crates/core/src/` and `crates/util/src/`
+- FFI example: `examples/datafusion-ffi-example/src/`
+- Dependency declared in root `Cargo.toml` and `crates/core/Cargo.toml`
+
+**Currently supported FFI types:**
+- `FFI_ScalarUDF` — `crates/core/src/udf.rs`
+- `FFI_AggregateUDF` — `crates/core/src/udaf.rs`
+- `FFI_WindowUDF` — `crates/core/src/udwf.rs`
+- `FFI_TableFunction` — `crates/core/src/udtf.rs`
+- `FFI_TableProvider` — `crates/core/src/table.rs`, `crates/util/src/lib.rs`
+- `FFI_TableProviderFactory` — `crates/core/src/context.rs`
+- `FFI_CatalogProvider` — `crates/core/src/catalog.rs`, `crates/core/src/context.rs`
+- `FFI_CatalogProviderList` — `crates/core/src/context.rs`
+- `FFI_SchemaProvider` — `crates/core/src/catalog.rs`
+- `FFI_LogicalExtensionCodec` — multiple files
+- `FFI_ExtensionOptions` — `crates/core/src/context.rs`
+- `FFI_TaskContextProvider` — `crates/core/src/context.rs`
+
+**Evaluated and not requiring direct Python exposure:**
+These upstream FFI types have been reviewed and do not need to be independently exposed to end users:
+- `FFI_ExecutionPlan` — already used indirectly through table providers; no need for direct exposure
+- `FFI_PhysicalExpr` / `FFI_PhysicalSortExpr` — internal physical planning types not expected to be needed by end users
+- `FFI_RecordBatchStream` — one level deeper than FFI_ExecutionPlan, used internally when execution plans stream results
+- `FFI_SessionRef` / `ForeignSession` — session sharing across FFI; Python manages sessions natively via SessionContext
+- `FFI_SessionConfig` — Python can configure sessions natively without FFI
+- `FFI_ConfigOptions` / `FFI_TableOptions` — internal configuration plumbing
+- `FFI_PlanProperties` / `FFI_Boundedness` / `FFI_EmissionType` — read from existing plans, not user-facing
+- `FFI_Partitioning` — supporting type for physical planning
+- Supporting/utility types (`FFI_Option`, `FFI_Result`, `WrappedSchema`, `WrappedArray`, `FFI_ColumnarValue`, `FFI_Volatility`, `FFI_InsertOp`, `FFI_AccumulatorArgs`, `FFI_Accumulator`, `FFI_GroupsAccumulator`, `FFI_EmitTo`, `FFI_AggregateOrderSensitivity`, `FFI_PartitionEvaluator`, `FFI_PartitionEvaluatorArgs`, `FFI_Range`, `FFI_SortOptions`, `FFI_Distribution`, `FFI_ExprProperties`, `FFI_SortProperties`, `FFI_Interval`, `FFI_TableProviderFilterPushDown`, `FFI_TableType`) — used as building blocks within the types above, not independently exposed
+
+**How to check:**
+1. Compare the upstream `datafusion-ffi` crate's `lib.rs` exports against the lists above
+2. If new FFI types appear upstream, evaluate whether they represent a user-facing capability
+3. Check against the "evaluated and not requiring exposure" list before flagging as a gap
+4. Report any genuinely new types that enable user-facing functionality
+5. For each currently supported FFI type, verify the full pipeline is present using the checklist from "Adding a New FFI Type":
+   - Rust PyO3 wrapper with `from_pycapsule()` method
+   - Python Protocol type (e.g., `ScalarUDFExportable`) for FFI objects
+   - Python wrapper class with full type hints on all public methods
+   - ABC base class (if the type can be user-implemented)
+   - Registered in Rust `init_module()` and Python `__init__.py`
+   - FFI example in `examples/datafusion-ffi-example/`
+   - Type appears in union type hints where accepted
+
 ## Output Format
 
 For each area checked, produce a report like:
@@ -296,57 +347,6 @@ use datafusion_ffi::new_type::FFI_NewType;
 - [ ] Registered in Rust `init_module()` and Python `__init__.py`
 - [ ] FFI example in `examples/datafusion-ffi-example/`
 - [ ] Type appears in union type hints where accepted (e.g., `Table | TableProviderExportable`)
-
-### 7. FFI Types (datafusion-ffi)
-
-**Upstream source of truth:**
-- Crate source: https://github.com/apache/datafusion/tree/main/datafusion/ffi/src
-- Rust docs: https://docs.rs/datafusion-ffi/latest/datafusion_ffi/
-
-**Where they are exposed in this project:**
-- Rust bindings: various files under `crates/core/src/` and `crates/util/src/`
-- FFI example: `examples/datafusion-ffi-example/src/`
-- Dependency declared in root `Cargo.toml` and `crates/core/Cargo.toml`
-
-**Currently supported FFI types:**
-- `FFI_ScalarUDF` — `crates/core/src/udf.rs`
-- `FFI_AggregateUDF` — `crates/core/src/udaf.rs`
-- `FFI_WindowUDF` — `crates/core/src/udwf.rs`
-- `FFI_TableFunction` — `crates/core/src/udtf.rs`
-- `FFI_TableProvider` — `crates/core/src/table.rs`, `crates/util/src/lib.rs`
-- `FFI_TableProviderFactory` — `crates/core/src/context.rs`
-- `FFI_CatalogProvider` — `crates/core/src/catalog.rs`, `crates/core/src/context.rs`
-- `FFI_CatalogProviderList` — `crates/core/src/context.rs`
-- `FFI_SchemaProvider` — `crates/core/src/catalog.rs`
-- `FFI_LogicalExtensionCodec` — multiple files
-- `FFI_ExtensionOptions` — `crates/core/src/context.rs`
-- `FFI_TaskContextProvider` — `crates/core/src/context.rs`
-
-**Evaluated and not requiring direct Python exposure:**
-These upstream FFI types have been reviewed and do not need to be independently exposed to end users:
-- `FFI_ExecutionPlan` — already used indirectly through table providers; no need for direct exposure
-- `FFI_PhysicalExpr` / `FFI_PhysicalSortExpr` — internal physical planning types not expected to be needed by end users
-- `FFI_RecordBatchStream` — one level deeper than FFI_ExecutionPlan, used internally when execution plans stream results
-- `FFI_SessionRef` / `ForeignSession` — session sharing across FFI; Python manages sessions natively via SessionContext
-- `FFI_SessionConfig` — Python can configure sessions natively without FFI
-- `FFI_ConfigOptions` / `FFI_TableOptions` — internal configuration plumbing
-- `FFI_PlanProperties` / `FFI_Boundedness` / `FFI_EmissionType` — read from existing plans, not user-facing
-- `FFI_Partitioning` — supporting type for physical planning
-- Supporting/utility types (`FFI_Option`, `FFI_Result`, `WrappedSchema`, `WrappedArray`, `FFI_ColumnarValue`, `FFI_Volatility`, `FFI_InsertOp`, `FFI_AccumulatorArgs`, `FFI_Accumulator`, `FFI_GroupsAccumulator`, `FFI_EmitTo`, `FFI_AggregateOrderSensitivity`, `FFI_PartitionEvaluator`, `FFI_PartitionEvaluatorArgs`, `FFI_Range`, `FFI_SortOptions`, `FFI_Distribution`, `FFI_ExprProperties`, `FFI_SortProperties`, `FFI_Interval`, `FFI_TableProviderFilterPushDown`, `FFI_TableType`) — used as building blocks within the types above, not independently exposed
-
-**How to check:**
-1. Compare the upstream `datafusion-ffi` crate's `lib.rs` exports against the lists above
-2. If new FFI types appear upstream, evaluate whether they represent a user-facing capability
-3. Check against the "evaluated and not requiring exposure" list before flagging as a gap
-4. Report any genuinely new types that enable user-facing functionality
-5. For each currently supported FFI type, verify the full pipeline is present using the checklist from "Adding a New FFI Type":
-   - Rust PyO3 wrapper with `from_pycapsule()` method
-   - Python Protocol type (e.g., `ScalarUDFExportable`) for FFI objects
-   - Python wrapper class with full type hints on all public methods
-   - ABC base class (if the type can be user-implemented)
-   - Registered in Rust `init_module()` and Python `__init__.py`
-   - FFI example in `examples/datafusion-ffi-example/`
-   - Type appears in union type hints where accepted
 
 ## Important Notes
 
