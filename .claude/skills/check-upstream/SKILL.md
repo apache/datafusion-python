@@ -8,6 +8,8 @@ argument-hint: [area] (e.g., "scalar functions", "aggregate functions", "window 
 
 You are auditing the datafusion-python project to find features from the upstream Apache DataFusion Rust library that are **not yet exposed** in this Python binding project. Your goal is to identify gaps and, if asked, implement the missing bindings.
 
+**IMPORTANT: The Python API is the source of truth for coverage.** A function or method is considered "exposed" if it exists in the Python API (e.g., `python/datafusion/functions.py`), even if there is no corresponding entry in the Rust bindings. Many upstream functions are aliases of other functions — the Python layer can expose these aliases by calling a different underlying Rust binding. Do NOT report a function as missing if it appears in the Python `__all__` list and has a working implementation, regardless of whether a matching `#[pyfunction]` exists in Rust.
+
 ## Areas to Check
 
 The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" is given, check all areas.
@@ -24,9 +26,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream scalar function documentation page
-2. Compare against functions listed in `python/datafusion/functions.py` (check the `__all__` list)
-3. Also check `crates/core/src/functions.rs` for what's registered in `init_module()`
-4. Report functions that exist upstream but are missing from this project
+2. Compare against functions listed in `python/datafusion/functions.py` (check the `__all__` list and function definitions)
+3. A function is covered if it exists in the Python API — it does NOT need a dedicated Rust `#[pyfunction]`. Many functions are aliases that reuse another function's Rust binding.
+4. Only report functions that are missing from the Python `__all__` list / function definitions
 
 ### 2. Aggregate Functions
 
@@ -40,8 +42,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream aggregate function documentation page
-2. Compare against aggregate functions in `python/datafusion/functions.py`
-3. Report missing aggregate functions
+2. Compare against aggregate functions in `python/datafusion/functions.py` (check `__all__` list and function definitions)
+3. A function is covered if it exists in the Python API, even if it aliases another function's Rust binding
+4. Report only functions missing from the Python API
 
 ### 3. Window Functions
 
@@ -55,8 +58,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream window function documentation page
-2. Compare against window functions in `python/datafusion/functions.py`
-3. Report missing window functions
+2. Compare against window functions in `python/datafusion/functions.py` (check `__all__` list and function definitions)
+3. A function is covered if it exists in the Python API, even if it aliases another function's Rust binding
+4. Report only functions missing from the Python API
 
 ### 4. Table Functions
 
@@ -70,8 +74,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream table function documentation
-2. Compare against what's available in this project
-3. Report missing table functions
+2. Compare against what's available in the Python API
+3. A function is covered if it exists in the Python API, even if it aliases another function's Rust binding
+4. Report only functions missing from the Python API
 
 ### 5. DataFrame Operations
 
@@ -84,9 +89,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream DataFrame documentation page listing all methods
-2. Compare against methods in `python/datafusion/dataframe.py`
-3. Also check `crates/core/src/dataframe.rs` for what's implemented
-4. Report DataFrame methods that exist upstream but are missing
+2. Compare against methods in `python/datafusion/dataframe.py` — this is the source of truth for coverage
+3. The Rust bindings (`crates/core/src/dataframe.rs`) may be consulted for context, but a method is covered if it exists in the Python API
+4. Report only methods missing from the Python API
 
 ### 6. SessionContext Methods
 
@@ -99,9 +104,9 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 
 **How to check:**
 1. Fetch the upstream SessionContext documentation page listing all methods
-2. Compare against methods in `python/datafusion/context.py`
-3. Also check `crates/core/src/context.rs` for what's implemented
-4. Report SessionContext methods that exist upstream but are missing
+2. Compare against methods in `python/datafusion/context.py` — this is the source of truth for coverage
+3. The Rust bindings (`crates/core/src/context.rs`) may be consulted for context, but a method is covered if it exists in the Python API
+4. Report only methods missing from the Python API
 
 ### 7. FFI Types (datafusion-ffi)
 
