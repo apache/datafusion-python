@@ -53,10 +53,13 @@ __all__ = [
     "approx_percentile_cont_with_weight",
     "array",
     "array_agg",
+    "array_any_value",
     "array_append",
     "array_cat",
     "array_concat",
+    "array_contains",
     "array_dims",
+    "array_distance",
     "array_distinct",
     "array_element",
     "array_empty",
@@ -69,6 +72,8 @@ __all__ = [
     "array_intersect",
     "array_join",
     "array_length",
+    "array_max",
+    "array_min",
     "array_ndims",
     "array_pop_back",
     "array_pop_front",
@@ -85,10 +90,12 @@ __all__ = [
     "array_replace_all",
     "array_replace_n",
     "array_resize",
+    "array_reverse",
     "array_slice",
     "array_sort",
     "array_to_string",
     "array_union",
+    "arrays_zip",
     "arrow_cast",
     "arrow_typeof",
     "ascii",
@@ -152,6 +159,8 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
+    "gen_series",
+    "generate_series",
     "in_list",
     "initcap",
     "isnan",
@@ -163,19 +172,30 @@ __all__ = [
     "left",
     "length",
     "levenshtein",
+    "list_any_value",
     "list_append",
     "list_cat",
     "list_concat",
+    "list_contains",
     "list_dims",
+    "list_distance",
     "list_distinct",
     "list_element",
+    "list_empty",
     "list_except",
     "list_extract",
+    "list_has",
+    "list_has_all",
+    "list_has_any",
     "list_indexof",
     "list_intersect",
     "list_join",
     "list_length",
+    "list_max",
+    "list_min",
     "list_ndims",
+    "list_pop_back",
+    "list_pop_front",
     "list_position",
     "list_positions",
     "list_prepend",
@@ -189,10 +209,12 @@ __all__ = [
     "list_replace_all",
     "list_replace_n",
     "list_resize",
+    "list_reverse",
     "list_slice",
     "list_sort",
     "list_to_string",
     "list_union",
+    "list_zip",
     "ln",
     "log",
     "log2",
@@ -263,6 +285,8 @@ __all__ = [
     "stddev_pop",
     "stddev_samp",
     "string_agg",
+    "string_to_array",
+    "string_to_list",
     "strpos",
     "struct",
     "substr",
@@ -293,7 +317,6 @@ __all__ = [
     "var_samp",
     "var_sample",
     "when",
-    # Window Functions
     "window",
 ]
 
@@ -2719,6 +2742,15 @@ def array_empty(array: Expr) -> Expr:
     return Expr(f.array_empty(array.expr))
 
 
+def list_empty(array: Expr) -> Expr:
+    """Returns a boolean indicating whether the array is empty.
+
+    See Also:
+        This is an alias for :py:func:`array_empty`.
+    """
+    return array_empty(array)
+
+
 def array_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
@@ -2814,6 +2846,51 @@ def array_has_any(first_array: Expr, second_array: Expr) -> Expr:
         True
     """
     return Expr(f.array_has_any(first_array.expr, second_array.expr))
+
+
+def array_contains(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if the element appears in the first array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(first_array, second_array)
+
+
+def list_has(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if the element appears in the first array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(first_array, second_array)
+
+
+def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
+    """Determines if there is complete overlap ``second_array`` in ``first_array``.
+
+    See Also:
+        This is an alias for :py:func:`array_has_all`.
+    """
+    return array_has_all(first_array, second_array)
+
+
+def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
+    """Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def list_contains(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if the element appears in the first array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(first_array, second_array)
 
 
 def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
@@ -2981,6 +3058,24 @@ def array_pop_front(array: Expr) -> Expr:
         [2, 3]
     """
     return Expr(f.array_pop_front(array.expr))
+
+
+def list_pop_back(array: Expr) -> Expr:
+    """Returns the array without the last element.
+
+    See Also:
+        This is an alias for :py:func:`array_pop_back`.
+    """
+    return array_pop_back(array)
+
+
+def list_pop_front(array: Expr) -> Expr:
+    """Returns the array without the first element.
+
+    See Also:
+        This is an alias for :py:func:`array_pop_front`.
+    """
+    return array_pop_front(array)
 
 
 def array_remove(array: Expr, element: Expr) -> Expr:
@@ -3352,6 +3447,203 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
         This is an alias for :py:func:`array_resize`.
     """
     return array_resize(array, size, value)
+
+
+def array_any_value(array: Expr) -> Expr:
+    """Returns the first non-null element in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[None, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_any_value(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        2
+    """
+    return Expr(f.array_any_value(array.expr))
+
+
+def list_any_value(array: Expr) -> Expr:
+    """Returns the first non-null element in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_any_value`.
+    """
+    return array_any_value(array)
+
+
+def array_distance(array1: Expr, array2: Expr) -> Expr:
+    """Returns the Euclidean distance between two numeric arrays.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_distance(
+        ...         dfn.col("a"), dfn.col("b"),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        2.0
+    """
+    return Expr(f.array_distance(array1.expr, array2.expr))
+
+
+def list_distance(array1: Expr, array2: Expr) -> Expr:
+    """Returns the Euclidean distance between two numeric arrays.
+
+    See Also:
+        This is an alias for :py:func:`array_distance`.
+    """
+    return array_distance(array1, array2)
+
+
+def array_max(array: Expr) -> Expr:
+    """Returns the maximum value in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_max(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        3
+    """
+    return Expr(f.array_max(array.expr))
+
+
+def list_max(array: Expr) -> Expr:
+    """Returns the maximum value in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_max`.
+    """
+    return array_max(array)
+
+
+def array_min(array: Expr) -> Expr:
+    """Returns the minimum value in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_min(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        1
+    """
+    return Expr(f.array_min(array.expr))
+
+
+def list_min(array: Expr) -> Expr:
+    """Returns the minimum value in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_min`.
+    """
+    return array_min(array)
+
+
+def array_reverse(array: Expr) -> Expr:
+    """Reverses the order of elements in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_reverse(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [3, 2, 1]
+    """
+    return Expr(f.array_reverse(array.expr))
+
+
+def list_reverse(array: Expr) -> Expr:
+    """Reverses the order of elements in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_reverse`.
+    """
+    return array_reverse(array)
+
+
+def arrays_zip(*arrays: Expr) -> Expr:
+    """Combines multiple arrays into a single array of structs.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+        >>> result = df.select(
+        ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
+    """
+    args = [a.expr for a in arrays]
+    return Expr(f.arrays_zip(args))
+
+
+def list_zip(*arrays: Expr) -> Expr:
+    """Combines multiple arrays into a single array of structs.
+
+    See Also:
+        This is an alias for :py:func:`arrays_zip`.
+    """
+    return arrays_zip(*arrays)
+
+
+def string_to_array(string: Expr, delimiter: Expr, null_string: Expr) -> Expr:
+    """Splits a string based on a delimiter and returns an array of parts.
+
+    Any parts matching the ``null_string`` will be replaced with ``NULL``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello,world"]})
+        >>> result = df.select(
+        ...     dfn.functions.string_to_array(
+        ...         dfn.col("a"), dfn.lit(","), dfn.lit(""),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        ['hello', 'world']
+    """
+    return Expr(f.string_to_array(string.expr, delimiter.expr, null_string.expr))
+
+
+def string_to_list(string: Expr, delimiter: Expr, null_string: Expr) -> Expr:
+    """Splits a string based on a delimiter and returns an array of parts.
+
+    See Also:
+        This is an alias for :py:func:`string_to_array`.
+    """
+    return string_to_array(string, delimiter, null_string)
+
+
+def gen_series(start: Expr, stop: Expr, step: Expr) -> Expr:
+    """Creates a list of values in the range between start and stop.
+
+    Unlike :py:func:`range`, this includes the upper bound.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0]})
+        >>> result = df.select(
+        ...     dfn.functions.gen_series(
+        ...         dfn.lit(1), dfn.lit(5), dfn.lit(1),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [1, 2, 3, 4, 5]
+    """
+    return Expr(f.gen_series(start.expr, stop.expr, step.expr))
+
+
+def generate_series(start: Expr, stop: Expr, step: Expr) -> Expr:
+    """Creates a list of values in the range between start and stop.
+
+    Unlike :py:func:`range`, this includes the upper bound.
+
+    See Also:
+        This is an alias for :py:func:`gen_series`.
+    """
+    return gen_series(start, stop, step)
 
 
 def flatten(array: Expr) -> Expr:
