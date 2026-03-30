@@ -1,7 +1,7 @@
 ---
 name: check-upstream
-description: Check if upstream Apache DataFusion features (functions, DataFrame ops, SessionContext methods) are exposed in this Python project. Use when adding missing functions, auditing API coverage, or ensuring parity with upstream.
-argument-hint: [area] (e.g., "scalar functions", "aggregate functions", "window functions", "dataframe", "session context", "all")
+description: Check if upstream Apache DataFusion features (functions, DataFrame ops, SessionContext methods, FFI types) are exposed in this Python project. Use when adding missing functions, auditing API coverage, or ensuring parity with upstream.
+argument-hint: [area] (e.g., "scalar functions", "aggregate functions", "window functions", "dataframe", "session context", "ffi types", "all")
 ---
 
 # Check Upstream DataFusion Feature Coverage
@@ -339,6 +339,14 @@ These upstream FFI types have been reviewed and do not need to be independently 
 2. If new FFI types appear upstream, evaluate whether they represent a user-facing capability
 3. Check against the "evaluated and not requiring exposure" list before flagging as a gap
 4. Report any genuinely new types that enable user-facing functionality
+5. For each currently supported FFI type, verify the full pipeline is present using the checklist from "Adding a New FFI Type":
+   - Rust PyO3 wrapper with `from_pycapsule()` method
+   - Python Protocol type (e.g., `ScalarUDFExportable`) for FFI objects
+   - Python wrapper class with full type hints on all public methods
+   - ABC base class (if the type can be user-implemented)
+   - Registered in Rust `init_module()` and Python `__init__.py`
+   - FFI example in `examples/datafusion-ffi-example/`
+   - Type appears in union type hints where accepted
 
 ## Important Notes
 
