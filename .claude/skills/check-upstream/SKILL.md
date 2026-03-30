@@ -114,19 +114,8 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 - FFI example: `examples/datafusion-ffi-example/src/`
 - Dependency declared in root `Cargo.toml` and `crates/core/Cargo.toml`
 
-**Currently supported FFI types:**
-- `FFI_ScalarUDF` — `crates/core/src/udf.rs`
-- `FFI_AggregateUDF` — `crates/core/src/udaf.rs`
-- `FFI_WindowUDF` — `crates/core/src/udwf.rs`
-- `FFI_TableFunction` — `crates/core/src/udtf.rs`
-- `FFI_TableProvider` — `crates/core/src/table.rs`, `crates/util/src/lib.rs`
-- `FFI_TableProviderFactory` — `crates/core/src/context.rs`
-- `FFI_CatalogProvider` — `crates/core/src/catalog.rs`, `crates/core/src/context.rs`
-- `FFI_CatalogProviderList` — `crates/core/src/context.rs`
-- `FFI_SchemaProvider` — `crates/core/src/catalog.rs`
-- `FFI_LogicalExtensionCodec` — multiple files
-- `FFI_ExtensionOptions` — `crates/core/src/context.rs`
-- `FFI_TaskContextProvider` — `crates/core/src/context.rs`
+**Discovering currently supported FFI types:**
+Grep for `use datafusion_ffi::` in `crates/core/src/` and `crates/util/src/` to find all FFI types currently imported and used.
 
 **Evaluated and not requiring direct Python exposure:**
 These upstream FFI types have been reviewed and do not need to be independently exposed to end users:
@@ -141,7 +130,7 @@ These upstream FFI types have been reviewed and do not need to be independently 
 - Supporting/utility types (`FFI_Option`, `FFI_Result`, `WrappedSchema`, `WrappedArray`, `FFI_ColumnarValue`, `FFI_Volatility`, `FFI_InsertOp`, `FFI_AccumulatorArgs`, `FFI_Accumulator`, `FFI_GroupsAccumulator`, `FFI_EmitTo`, `FFI_AggregateOrderSensitivity`, `FFI_PartitionEvaluator`, `FFI_PartitionEvaluatorArgs`, `FFI_Range`, `FFI_SortOptions`, `FFI_Distribution`, `FFI_ExprProperties`, `FFI_SortProperties`, `FFI_Interval`, `FFI_TableProviderFilterPushDown`, `FFI_TableType`) — used as building blocks within the types above, not independently exposed
 
 **How to check:**
-1. Compare the upstream `datafusion-ffi` crate's `lib.rs` exports against the lists above
+1. Discover currently supported types by grepping for `use datafusion_ffi::` in `crates/core/src/` and `crates/util/src/`, then compare against the upstream `datafusion-ffi` crate's `lib.rs` exports
 2. If new FFI types appear upstream, evaluate whether they represent a user-facing capability
 3. Check against the "evaluated and not requiring exposure" list before flagging as a gap
 4. Report any genuinely new types that enable user-facing functionality
