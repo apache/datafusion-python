@@ -153,6 +153,7 @@ __all__ = [
     "from_unixtime",
     "gcd",
     "greatest",
+    "grouping",
     "ifnull",
     "in_list",
     "initcap",
@@ -224,6 +225,7 @@ __all__ = [
     "order_by",
     "overlay",
     "percent_rank",
+    "percentile_cont",
     "pi",
     "pow",
     "power",
@@ -294,6 +296,7 @@ __all__ = [
     "uuid",
     "var",
     "var_pop",
+    "var_population",
     "var_samp",
     "var_sample",
     "when",
@@ -3643,6 +3646,47 @@ def approx_percentile_cont_with_weight(
     )
 
 
+def percentile_cont(
+    sort_expression: Expr | SortExpr,
+    percentile: float,
+    filter: Expr | None = None,
+) -> Expr:
+    """Computes the exact percentile of input values using continuous interpolation.
+
+    Unlike :py:func:`approx_percentile_cont`, this function computes the exact
+    percentile value rather than an approximation.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        sort_expression: Values for which to find the percentile
+        percentile: This must be between 0.0 and 1.0, inclusive
+        filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5,
+        ...         filter=dfn.col("a") > dfn.lit(1.0),
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3.5
+    """
+    sort_expr_raw = sort_or_default(sort_expression)
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
+
+
 def array_agg(
     expression: Expr,
     distinct: bool = False,
@@ -3699,6 +3743,30 @@ def array_agg(
             expression.expr, distinct=distinct, filter=filter_raw, order_by=order_by_raw
         )
     )
+
+
+def grouping(
+    expression: Expr,
+    distinct: bool | None = None,
+    filter: Expr | None = None,
+) -> Expr:
+    """Returns 1 if the data is aggregated across the specified column, or 0 otherwise.
+
+    This function is used with ``GROUPING SETS``, ``CUBE``, or ``ROLLUP`` to
+    distinguish between aggregated and non-aggregated rows. In a regular
+    ``GROUP BY`` without grouping sets, it always returns 0.
+
+    Note: The ``grouping`` aggregate function is rewritten by the query
+    optimizer before execution, so it works correctly even though its
+    physical plan is not directly implemented.
+
+    Args:
+        expression: The column to check grouping status for
+        distinct: If True, compute on distinct values only
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def avg(
@@ -4170,6 +4238,15 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
+
+
+def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
+    """Computes the population variance of the argument.
+
+    See Also:
+        This is an alias for :py:func:`var_pop`.
+    """
+    return var_pop(expression, filter)
 
 
 def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:

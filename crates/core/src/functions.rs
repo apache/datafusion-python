@@ -709,9 +709,10 @@ aggregate_function!(var_pop);
 aggregate_function!(approx_distinct);
 aggregate_function!(approx_median);
 
-// Code is commented out since grouping is not yet implemented
-// https://github.com/apache/datafusion-python/issues/861
-// aggregate_function!(grouping);
+// The grouping function's physical plan is not implemented, but the
+// ResolveGroupingFunction analyzer rule rewrites it before the physical
+// planner sees it, so it works correctly at runtime.
+aggregate_function!(grouping);
 
 #[pyfunction]
 #[pyo3(signature = (sort_expression, percentile, num_centroids=None, filter=None))]
@@ -745,6 +746,19 @@ pub fn approx_percentile_cont_with_weight(
         lit(percentile),
         num_centroids.map(lit),
     );
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
+
+#[pyfunction]
+#[pyo3(signature = (sort_expression, percentile, filter=None))]
+pub fn percentile_cont(
+    sort_expression: PySortExpr,
+    percentile: f64,
+    filter: Option<PyExpr>,
+) -> PyDataFusionResult<PyExpr> {
+    let agg_fn =
+        functions_aggregate::expr_fn::percentile_cont(sort_expression.sort, lit(percentile));
 
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
@@ -949,6 +963,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(approx_median))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont_with_weight))?;
+    m.add_wrapped(wrap_pyfunction!(percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(range))?;
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
@@ -997,7 +1012,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
     m.add_wrapped(wrap_pyfunction!(greatest))?;
-    // m.add_wrapped(wrap_pyfunction!(grouping))?;
+    m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(isnan))?;

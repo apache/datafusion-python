@@ -1660,3 +1660,49 @@ def df_with_nulls():
 def test_conditional_functions(df_with_nulls, expr, expected):
     result = df_with_nulls.select(expr.alias("result")).collect()[0]
     assert result.column(0) == expected
+
+
+def test_percentile_cont():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    result = df.aggregate(
+        [], [f.percentile_cont(column("a"), 0.5).alias("v")]
+    ).collect()[0]
+    assert result.column(0)[0].as_py() == 3.0
+
+
+def test_percentile_cont_with_filter():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    result = df.aggregate(
+        [],
+        [
+            f.percentile_cont(
+                column("a"), 0.5, filter=column("a") > literal(1.0)
+            ).alias("v")
+        ],
+    ).collect()[0]
+    assert result.column(0)[0].as_py() == 3.5
+
+
+def test_grouping():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+    # In a simple GROUP BY (no grouping sets), grouping() returns 0 for all rows.
+    # Note: grouping() must not be aliased directly in the aggregate expression list
+    # due to an upstream DataFusion analyzer limitation (the ResolveGroupingFunction
+    # rule doesn't unwrap Alias nodes). Apply aliases via a follow-up select instead.
+    result = df.aggregate(
+        [column("a")], [f.grouping(column("a")), f.sum(column("b")).alias("s")]
+    ).collect()
+    grouping_col = pa.concat_arrays([batch.column(1) for batch in result]).to_pylist()
+    assert all(v == 0 for v in grouping_col)
+
+
+def test_var_population():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
+    result = df.aggregate([], [f.var_population(column("a")).alias("v")]).collect()[0]
+    # var_population is an alias for var_pop
+    expected = df.aggregate([], [f.var_pop(column("a")).alias("v")]).collect()[0]
+    assert abs(result.column(0)[0].as_py() - expected.column(0)[0].as_py()) < 1e-10
