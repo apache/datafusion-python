@@ -87,11 +87,16 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 - Python API: `python/datafusion/dataframe.py` — the `DataFrame` class
 - Rust bindings: `crates/core/src/dataframe.rs` — `PyDataFrame` with `#[pymethods]`
 
+**Evaluated and not requiring separate Python exposure:**
+- `show_limit` — already covered by `DataFrame.show()`, which provides the same functionality with a simpler API
+- `with_param_values` — already covered by the `param_values` argument on `SessionContext.sql()`, which accomplishes the same thing more robustly
+
 **How to check:**
 1. Fetch the upstream DataFrame documentation page listing all methods
 2. Compare against methods in `python/datafusion/dataframe.py` — this is the source of truth for coverage
 3. The Rust bindings (`crates/core/src/dataframe.rs`) may be consulted for context, but a method is covered if it exists in the Python API
-4. Report only methods missing from the Python API
+4. Check against the "evaluated and not requiring exposure" list before flagging as a gap
+5. Report only methods missing from the Python API
 
 ### 6. SessionContext Methods
 
