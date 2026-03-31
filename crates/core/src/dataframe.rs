@@ -804,9 +804,25 @@ impl PyDataFrame {
     }
 
     /// Print the query plan
-    #[pyo3(signature = (verbose=false, analyze=false))]
-    fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyDataFusionResult<()> {
-        let df = self.df.as_ref().clone().explain(verbose, analyze)?;
+    #[pyo3(signature = (verbose=false, analyze=false, format=None))]
+    fn explain(
+        &self,
+        py: Python,
+        verbose: bool,
+        analyze: bool,
+        format: Option<&str>,
+    ) -> PyDataFusionResult<()> {
+        let explain_format = match format {
+            Some(f) => f
+                .parse::<datafusion::common::format::ExplainFormat>()
+                .map_err(|e| PyDataFusionError::Common(e.to_string()))?,
+            None => datafusion::common::format::ExplainFormat::Indent,
+        };
+        let opts = datafusion::logical_expr::ExplainOption::default()
+            .with_verbose(verbose)
+            .with_analyze(analyze)
+            .with_format(explain_format);
+        let df = self.df.as_ref().clone().explain_with_options(opts)?;
         print_dataframe(py, df)
     }
 

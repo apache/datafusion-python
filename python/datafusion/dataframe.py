@@ -65,6 +65,25 @@ if TYPE_CHECKING:
 from enum import Enum
 
 
+class ExplainFormat(Enum):
+    """Output format for explain plans.
+
+    Controls how the query plan is rendered in :py:meth:`DataFrame.explain`.
+    """
+
+    INDENT = "indent"
+    """Default indented text format."""
+
+    TREE = "tree"
+    """Tree-style visual format with box-drawing characters."""
+
+    PGJSON = "pgjson"
+    """PostgreSQL-compatible JSON format for use with visualization tools."""
+
+    GRAPHVIZ = "graphviz"
+    """Graphviz DOT format for graph rendering."""
+
+
 # excerpt from deltalake
 # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
 class Compression(Enum):
@@ -918,7 +937,12 @@ class DataFrame:
         exprs = [ensure_expr(expr) for expr in on_exprs]
         return DataFrame(self.df.join_on(right.df, exprs, how))
 
-    def explain(self, verbose: bool = False, analyze: bool = False) -> None:
+    def explain(
+        self,
+        verbose: bool = False,
+        analyze: bool = False,
+        format: ExplainFormat | None = None,
+    ) -> None:
         """Print an explanation of the DataFrame's plan so far.
 
         If ``analyze`` is specified, runs the plan and reports metrics.
@@ -926,8 +950,11 @@ class DataFrame:
         Args:
             verbose: If ``True``, more details will be included.
             analyze: If ``True``, the plan will run and metrics reported.
+            format: Output format for the plan. Defaults to
+                :py:attr:`ExplainFormat.INDENT`.
         """
-        self.df.explain(verbose, analyze)
+        fmt = format.value if format is not None else None
+        self.df.explain(verbose, analyze, fmt)
 
     def logical_plan(self) -> LogicalPlan:
         """Return the unoptimized ``LogicalPlan``.

@@ -3632,3 +3632,25 @@ def test_sort_by():
     df = ctx.from_pydict({"a": [3, 1, 2]})
     result = df.sort_by(column("a")).collect()[0]
     assert result.column(0).to_pylist() == [1, 2, 3]
+
+
+def test_explain_with_format(capsys):
+    from datafusion import ExplainFormat
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+
+    # Default format works
+    df.explain()
+    captured = capsys.readouterr()
+    assert "plan_type" in captured.out
+
+    # Tree format produces box-drawing characters
+    df.explain(format=ExplainFormat.TREE)
+    captured = capsys.readouterr()
+    assert "\u250c" in captured.out or "plan_type" in captured.out
+
+    # Verbose + analyze still works with format
+    df.explain(verbose=True, analyze=True, format=ExplainFormat.INDENT)
+    captured = capsys.readouterr()
+    assert "plan_type" in captured.out
