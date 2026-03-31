@@ -487,6 +487,21 @@ class DataFrame:
         """
         return DataFrame(self.df.drop(*columns))
 
+    def window(self, *exprs: Expr) -> DataFrame:
+        """Add window function columns to the DataFrame.
+
+        Applies the given window function expressions and appends the results
+        as new columns.
+
+        Args:
+            exprs: Window function expressions to evaluate.
+
+        Returns:
+            DataFrame with new window function columns appended.
+        """
+        raw = expr_list_to_raw_expr_list(exprs)
+        return DataFrame(self.df.window(*raw))
+
     def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
@@ -1426,23 +1441,44 @@ class DataFrame:
         return self.df.count()
 
     @deprecated("Use :py:func:`unnest_columns` instead.")
-    def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
+    def unnest_column(
+        self,
+        column: str,
+        preserve_nulls: bool = True,
+        recursions: list[tuple[str, str, int]] | None = None,
+    ) -> DataFrame:
         """See :py:func:`unnest_columns`."""
-        return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
+        return DataFrame(
+            self.df.unnest_column(
+                column, preserve_nulls=preserve_nulls, recursions=recursions
+            )
+        )
 
-    def unnest_columns(self, *columns: str, preserve_nulls: bool = True) -> DataFrame:
+    def unnest_columns(
+        self,
+        *columns: str,
+        preserve_nulls: bool = True,
+        recursions: list[tuple[str, str, int]] | None = None,
+    ) -> DataFrame:
         """Expand columns of arrays into a single row per array element.
 
         Args:
             columns: Column names to perform unnest operation on.
             preserve_nulls: If False, rows with null entries will not be
                 returned.
+            recursions: Optional list of ``(input_column, output_column, depth)``
+                tuples that control how deeply nested columns are unnested. Any
+                column not mentioned here is unnested with depth 1.
 
         Returns:
             A DataFrame with the columns expanded.
         """
         columns = list(columns)
-        return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
+        return DataFrame(
+            self.df.unnest_columns(
+                columns, preserve_nulls=preserve_nulls, recursions=recursions
+            )
+        )
 
     def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
         """Export the DataFrame as an Arrow C Stream.

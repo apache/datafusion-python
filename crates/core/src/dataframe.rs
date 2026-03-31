@@ -582,6 +582,14 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    /// Apply window function expressions to the DataFrame
+    #[pyo3(signature = (*exprs))]
+    fn window(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+        let window_exprs = exprs.into_iter().map(|e| e.into()).collect();
+        let df = self.df.as_ref().clone().window(window_exprs)?;
+        Ok(Self::new(df))
+    }
+
     fn filter(&self, predicate: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))
@@ -891,11 +899,14 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
-    #[pyo3(signature = (column, preserve_nulls=true))]
-    fn unnest_column(&self, column: &str, preserve_nulls: bool) -> PyDataFusionResult<Self> {
-        // TODO: expose RecursionUnnestOptions
-        // REF: https://github.com/apache/datafusion/pull/11577
-        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+    #[pyo3(signature = (column, preserve_nulls=true, recursions=None))]
+    fn unnest_column(
+        &self,
+        column: &str,
+        preserve_nulls: bool,
+        recursions: Option<Vec<(String, String, usize)>>,
+    ) -> PyDataFusionResult<Self> {
+        let unnest_options = build_unnest_options(preserve_nulls, recursions);
         let df = self
             .df
             .as_ref()
@@ -904,15 +915,14 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    #[pyo3(signature = (columns, preserve_nulls=true))]
+    #[pyo3(signature = (columns, preserve_nulls=true, recursions=None))]
     fn unnest_columns(
         &self,
         columns: Vec<String>,
         preserve_nulls: bool,
+        recursions: Option<Vec<(String, String, usize)>>,
     ) -> PyDataFusionResult<Self> {
-        // TODO: expose RecursionUnnestOptions
-        // REF: https://github.com/apache/datafusion/pull/11577
-        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+        let unnest_options = build_unnest_options(preserve_nulls, recursions);
         let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self
             .df
@@ -1374,6 +1384,26 @@ impl PyDataFrameWriteOptions {
             sort_by,
         }
     }
+}
+
+fn build_unnest_options(
+    preserve_nulls: bool,
+    recursions: Option<Vec<(String, String, usize)>>,
+) -> UnnestOptions {
+    let mut opts = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+    if let Some(recs) = recursions {
+        opts.recursions = recs
+            .into_iter()
+            .map(
+                |(input, output, depth)| datafusion::common::RecursionUnnestOption {
+                    input_column: datafusion::common::Column::from(input.as_str()),
+                    output_column: datafusion::common::Column::from(output.as_str()),
+                    depth,
+                },
+            )
+            .collect();
+    }
+    opts
 }
 
 /// Print DataFrame

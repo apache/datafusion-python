@@ -3654,3 +3654,24 @@ def test_explain_with_format(capsys):
     df.explain(verbose=True, analyze=True, format=ExplainFormat.INDENT)
     captured = capsys.readouterr()
     assert "plan_type" in captured.out
+
+
+def test_window():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+    result = df.window(
+        f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias("rn")
+    ).collect()[0]
+    assert "rn" in result.schema.names
+    assert result.column(result.schema.get_field_index("rn")).to_pylist() == [1, 2, 1]
+
+
+def test_unnest_columns_with_recursions():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2], [3]], "b": ["x", "y"]})
+    # Basic unnest still works
+    result = df.unnest_columns("a").collect()[0]
+    assert result.column(0).to_pylist() == [1, 2, 3]
+    # With explicit recursion options
+    result = df.unnest_columns("a", recursions=[("a", "a", 1)]).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2, 3]
