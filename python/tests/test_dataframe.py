@@ -3569,3 +3569,66 @@ def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
     pa.parquet.write_table(table, path)
     df = ctx.read_parquet(path, file_sort_order=file_sort_order)
     assert df.collect()[0].column(0).to_pylist() == [1, 2]
+
+
+def test_except_distinct():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
+    df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+    result = (
+        df1.except_distinct(df2).sort(column("a").sort(ascending=True)).collect()[0]
+    )
+    assert result.column(0).to_pylist() == [3]
+    assert result.column(1).to_pylist() == [30]
+
+
+def test_intersect_distinct():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
+    df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
+    result = df1.intersect_distinct(df2).collect()[0]
+    assert result.column(0).to_pylist() == [1]
+    assert result.column(1).to_pylist() == [10]
+
+
+def test_union_by_name():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1], "b": [10]})
+    # Different column order
+    df2 = ctx.from_pydict({"b": [20], "a": [2]})
+    batches = df1.union_by_name(df2).sort(column("a").sort(ascending=True)).collect()
+    rows = pa.concat_arrays([b.column(0) for b in batches]).to_pylist()
+    assert rows == [1, 2]
+
+
+def test_union_by_name_distinct():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+    df2 = ctx.from_pydict({"b": [10], "a": [1]})
+    batches = df1.union_by_name_distinct(df2).collect()
+    total_rows = sum(b.num_rows for b in batches)
+    assert total_rows == 1
+
+
+def test_distinct_on():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})
+    result = (
+        df.distinct_on(
+            [column("a")],
+            [column("a"), column("b")],
+            [column("a").sort(ascending=True), column("b").sort(ascending=True)],
+        )
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
+    )
+    # Keeps the first row per group (smallest b per a)
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [10, 30]
+
+
+def test_sort_by():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [3, 1, 2]})
+    result = df.sort_by(column("a")).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2, 3]

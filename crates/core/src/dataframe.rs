@@ -922,6 +922,71 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
+    /// Calculate the set difference with deduplication
+    fn except_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .except_distinct(py_df.df.as_ref().clone())?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Calculate the intersection with deduplication
+    fn intersect_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .intersect_distinct(py_df.df.as_ref().clone())?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Union two DataFrames matching columns by name
+    fn union_by_name(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .union_by_name(py_df.df.as_ref().clone())?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Union two DataFrames by name with deduplication
+    fn union_by_name_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .union_by_name_distinct(py_df.df.as_ref().clone())?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Deduplicate rows based on specific columns, keeping the first row per group
+    fn distinct_on(
+        &self,
+        on_expr: Vec<PyExpr>,
+        select_expr: Vec<PyExpr>,
+        sort_expr: Option<Vec<PySortExpr>>,
+    ) -> PyDataFusionResult<Self> {
+        let on_expr = on_expr.into_iter().map(|e| e.into()).collect();
+        let select_expr = select_expr.into_iter().map(|e| e.into()).collect();
+        let sort_expr = sort_expr.map(to_sort_expressions);
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .distinct_on(on_expr, select_expr, sort_expr)?;
+        Ok(Self::new(df))
+    }
+
+    /// Sort by column expressions with ascending order and nulls last
+    fn sort_by(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+        let exprs = exprs.into_iter().map(|e| e.into()).collect();
+        let df = self.df.as_ref().clone().sort_by(exprs)?;
+        Ok(Self::new(df))
+    }
+
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(
         &self,

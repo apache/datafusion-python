@@ -1036,6 +1036,109 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
+    def except_distinct(self, other: DataFrame) -> DataFrame:
+        """Calculate the set difference with deduplication.
+
+        Returns rows that are in this DataFrame but not in ``other``,
+        removing any duplicates. This is the complement of :py:meth:`except_all`
+        which preserves duplicates.
+
+        The two :py:class:`DataFrame` must have exactly the same schema.
+
+        Args:
+            other: DataFrame to calculate exception with.
+
+        Returns:
+            DataFrame after set difference with deduplication.
+        """
+        return DataFrame(self.df.except_distinct(other.df))
+
+    def intersect_distinct(self, other: DataFrame) -> DataFrame:
+        """Calculate the intersection with deduplication.
+
+        Returns distinct rows that appear in both DataFrames. This is the
+        complement of :py:meth:`intersect` which preserves duplicates.
+
+        The two :py:class:`DataFrame` must have exactly the same schema.
+
+        Args:
+            other: DataFrame to intersect with.
+
+        Returns:
+            DataFrame after intersection with deduplication.
+        """
+        return DataFrame(self.df.intersect_distinct(other.df))
+
+    def union_by_name(self, other: DataFrame) -> DataFrame:
+        """Union two :py:class:`DataFrame` matching columns by name.
+
+        Unlike :py:meth:`union` which matches columns by position, this method
+        matches columns by their names, allowing DataFrames with different
+        column orders to be combined.
+
+        Args:
+            other: DataFrame to union with.
+
+        Returns:
+            DataFrame after union by name.
+        """
+        return DataFrame(self.df.union_by_name(other.df))
+
+    def union_by_name_distinct(self, other: DataFrame) -> DataFrame:
+        """Union two :py:class:`DataFrame` by name with deduplication.
+
+        Combines :py:meth:`union_by_name` with deduplication of rows.
+
+        Args:
+            other: DataFrame to union with.
+
+        Returns:
+            DataFrame after union by name with deduplication.
+        """
+        return DataFrame(self.df.union_by_name_distinct(other.df))
+
+    def distinct_on(
+        self,
+        on_expr: list[Expr],
+        select_expr: list[Expr],
+        sort_expr: list[SortKey] | None = None,
+    ) -> DataFrame:
+        """Deduplicate rows based on specific columns.
+
+        Returns a new DataFrame with one row per unique combination of the
+        ``on_expr`` columns, keeping the first row per group as determined by
+        ``sort_expr``.
+
+        Args:
+            on_expr: Expressions that determine uniqueness.
+            select_expr: Expressions to include in the output.
+            sort_expr: Optional sort expressions to determine which row to keep.
+
+        Returns:
+            DataFrame after deduplication.
+        """
+        on_raw = expr_list_to_raw_expr_list(on_expr)
+        select_raw = expr_list_to_raw_expr_list(select_expr)
+        sort_raw = sort_list_to_raw_sort_list(sort_expr) if sort_expr else None
+        return DataFrame(self.df.distinct_on(on_raw, select_raw, sort_raw))
+
+    def sort_by(self, *exprs: Expr | str) -> DataFrame:
+        """Sort the DataFrame by column expressions in ascending order.
+
+        This is a convenience method that sorts all columns in ascending order
+        with nulls last. For more control over sort direction and null ordering,
+        use :py:meth:`sort` instead.
+
+        Args:
+            exprs: Expressions or column names to sort by.
+
+        Returns:
+            DataFrame after sorting.
+        """
+        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        raw = expr_list_to_raw_expr_list(exprs)
+        return DataFrame(self.df.sort_by(raw))
+
     def write_csv(
         self,
         path: str | pathlib.Path,
