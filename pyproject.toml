@@ -170,14 +170,15 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
 "docs/*" = ["D"]
 "docs/source/conf.py" = ["ANN001", "ERA001", "INP001"]
 
-# Keep the `*/` prefix in these codespell paths because the CI invocation
-# differs from the pre-commit call.
+# CI and pre-commit invoke codespell with different paths, so we have a little
+# redundancy here, and we intentionally drop python in the path.
 [tool.codespell]
 skip = [
-  "*/python/tests/test_functions.py",
+  "*/tests/test_functions.py",
   "*/target",
-  "*/uv.lock",
-  "*/examples/tpch/answers_sf1/*",
+  "./uv.lock",
+  "uv.lock",
+  "*/tpch/answers_sf1/*",
 ]
 count = true
 ignore-words-list = ["IST", "ans"]
