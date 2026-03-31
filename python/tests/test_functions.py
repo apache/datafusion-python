@@ -1660,3 +1660,73 @@ def df_with_nulls():
 def test_conditional_functions(df_with_nulls, expr, expected):
     result = df_with_nulls.select(expr.alias("result")).collect()[0]
     assert result.column(0) == expected
+
+
+def test_get_field(df):
+    df = df.with_column(
+        "s",
+        f.named_struct(
+            [
+                ("x", column("a")),
+                ("y", column("b")),
+            ]
+        ),
+    )
+    result = df.select(
+        f.get_field(column("s"), string_literal("x")).alias("x_val"),
+        f.get_field(column("s"), string_literal("y")).alias("y_val"),
+    ).collect()[0]
+
+    assert result.column(0) == pa.array(["Hello", "World", "!"], type=pa.string_view())
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
+def test_arrow_metadata(df):
+    result = df.select(
+        f.arrow_metadata(column("a")).alias("meta"),
+    ).collect()[0]
+    # The metadata column should be returned as a map type (possibly empty)
+    assert result.column(0).type == pa.map_(pa.utf8(), pa.utf8())
+
+
+def test_version():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    result = df.select(f.version().alias("v")).collect()[0]
+    version_str = result.column(0)[0].as_py()
+    assert "Apache DataFusion" in version_str
+
+
+def test_row(df):
+    result = df.select(
+        f.row(column("a"), column("b")).alias("r"),
+        f.struct(column("a"), column("b")).alias("s"),
+    ).collect()[0]
+    # row is an alias for struct, so they should produce the same output
+    assert result.column(0) == result.column(1)
+
+
+def test_union_tag():
+    ctx = SessionContext()
+    types = pa.array([0, 1, 0], type=pa.int8())
+    offsets = pa.array([0, 0, 1], type=pa.int32())
+    children = [pa.array([1, 2]), pa.array(["hello"])]
+    arr = pa.UnionArray.from_dense(types, offsets, children, ["int", "str"], [0, 1])
+    df = ctx.create_dataframe([[pa.RecordBatch.from_arrays([arr], names=["u"])]])
+
+    result = df.select(f.union_tag(column("u")).alias("tag")).collect()[0]
+    assert result.column(0).to_pylist() == ["int", "str", "int"]
+
+
+def test_union_extract():
+    ctx = SessionContext()
+    types = pa.array([0, 1, 0], type=pa.int8())
+    offsets = pa.array([0, 0, 1], type=pa.int32())
+    children = [pa.array([1, 2]), pa.array(["hello"])]
+    arr = pa.UnionArray.from_dense(types, offsets, children, ["int", "str"], [0, 1])
+    df = ctx.create_dataframe([[pa.RecordBatch.from_arrays([arr], names=["u"])]])
+
+    result = df.select(
+        f.union_extract(column("u"), string_literal("int")).alias("val")
+    ).collect()[0]
+    assert result.column(0).to_pylist() == [1, None, 2]
