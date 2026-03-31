@@ -90,6 +90,7 @@ __all__ = [
     "array_to_string",
     "array_union",
     "arrow_cast",
+    "arrow_metadata",
     "arrow_typeof",
     "ascii",
     "asin",
@@ -152,6 +153,7 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
+    "get_field",
     "greatest",
     "ifnull",
     "in_list",
@@ -250,6 +252,7 @@ __all__ = [
     "reverse",
     "right",
     "round",
+    "row",
     "row_number",
     "rpad",
     "rtrim",
@@ -290,12 +293,15 @@ __all__ = [
     "translate",
     "trim",
     "trunc",
+    "union_extract",
+    "union_tag",
     "upper",
     "uuid",
     "var",
     "var_pop",
     "var_samp",
     "var_sample",
+    "version",
     "when",
     # Window Functions
     "window",
@@ -2610,6 +2616,86 @@ def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
         1.0
     """
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
+
+
+def arrow_metadata(*args: Expr) -> Expr:
+    """Returns the metadata of the input expression.
+
+    If called with one argument, returns a Map of all metadata key-value pairs.
+    If called with two arguments, returns the value for the specified metadata key.
+
+    Args:
+        args: An expression, optionally followed by a metadata key string.
+
+    Returns:
+        A Map of metadata or a specific metadata value.
+    """
+    args = [arg.expr for arg in args]
+    return Expr(f.arrow_metadata(*args))
+
+
+def get_field(expr: Expr, name: Expr) -> Expr:
+    """Extracts a field from a struct or map by name.
+
+    Args:
+        expr: A struct or map expression.
+        name: The field name to extract.
+
+    Returns:
+        The value of the named field.
+    """
+    return Expr(f.get_field(expr.expr, name.expr))
+
+
+def union_extract(union_expr: Expr, field_name: Expr) -> Expr:
+    """Extracts a value from a union type by field name.
+
+    Returns the value of the named field if it is the currently selected
+    variant, otherwise returns NULL.
+
+    Args:
+        union_expr: A union-typed expression.
+        field_name: The name of the field to extract.
+
+    Returns:
+        The extracted value or NULL.
+    """
+    return Expr(f.union_extract(union_expr.expr, field_name.expr))
+
+
+def union_tag(union_expr: Expr) -> Expr:
+    """Returns the tag (active field name) of a union type.
+
+    Args:
+        union_expr: A union-typed expression.
+
+    Returns:
+        The name of the currently selected field in the union.
+    """
+    return Expr(f.union_tag(union_expr.expr))
+
+
+def version() -> Expr:
+    """Returns the DataFusion version string.
+
+    Returns:
+        A string describing the DataFusion version.
+    """
+    return Expr(f.version())
+
+
+def row(*args: Expr) -> Expr:
+    """Returns a struct with the given arguments.
+
+    This is an alias for :py:func:`struct`.
+
+    Args:
+        args: The expressions to include in the struct.
+
+    Returns:
+        A struct expression.
+    """
+    return struct(*args)
 
 
 def random() -> Expr:
