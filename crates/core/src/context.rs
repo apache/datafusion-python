@@ -28,7 +28,7 @@ use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
-use datafusion::common::{ScalarValue, TableReference, exec_err};
+use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -70,11 +70,13 @@ use crate::catalog::{
     PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
 };
 use crate::common::data_type::PyScalarValue;
+use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{
     PyDataFusionError, PyDataFusionResult, from_datafusion_error, py_datafusion_err,
 };
+use crate::expr::PyExpr;
 use crate::expr::sort_expr::PySortExpr;
 use crate::options::PyCsvReadOptions;
 use crate::physical_plan::PyExecutionPlan;
@@ -1048,6 +1050,45 @@ impl PySessionContext {
 
     pub fn session_id(&self) -> String {
         self.ctx.session_id()
+    }
+
+    pub fn session_start_time(&self) -> String {
+        self.ctx.session_start_time().to_rfc3339()
+    }
+
+    pub fn enable_ident_normalization(&self) -> bool {
+        self.ctx.enable_ident_normalization()
+    }
+
+    pub fn parse_sql_expr(&self, sql: &str, schema: PyDFSchema) -> PyDataFusionResult<PyExpr> {
+        let df_schema: DFSchema = schema.into();
+        Ok(self.ctx.parse_sql_expr(sql, &df_schema)?.into())
+    }
+
+    pub fn execute_logical_plan(
+        &self,
+        plan: PyLogicalPlan,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let df = wait_for_future(
+            py,
+            self.ctx.execute_logical_plan(plan.plan.as_ref().clone()),
+        )??;
+        Ok(PyDataFrame::new(df))
+    }
+
+    pub fn refresh_catalogs(&self, py: Python) -> PyDataFusionResult<()> {
+        wait_for_future(py, self.ctx.refresh_catalogs())??;
+        Ok(())
+    }
+
+    pub fn remove_optimizer_rule(&self, name: &str) -> bool {
+        self.ctx.remove_optimizer_rule(name)
+    }
+
+    pub fn table_provider(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
+        let provider = wait_for_future(py, self.ctx.table_provider(name))??;
+        Ok(PyTable { table: provider })
     }
 
     #[allow(clippy::too_many_arguments)]
