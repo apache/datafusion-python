@@ -153,6 +153,13 @@ These upstream FFI types have been reviewed and do not need to be independently 
    - FFI example in `examples/datafusion-ffi-example/`
    - Type appears in union type hints where accepted
 
+## Checking for Existing GitHub Issues
+
+After identifying missing APIs, search the open issues at https://github.com/apache/datafusion-python/issues for each gap to see if an issue already exists requesting that API be exposed. Search using the function or method name as the query.
+
+- If an existing issue is found, include a link to it in the report. Do NOT create a new issue.
+- If no existing issue is found, note that no issue exists yet.
+
 ## Output Format
 
 For each area checked, produce a report like:
@@ -164,8 +171,8 @@ For each area checked, produce a report like:
 - list of what's already available
 
 ### Missing from Upstream (Y functions/methods)
-- function_name — brief description of what it does
-- function_name — brief description of what it does
+- function_name — brief description of what it does (existing issue: #123)
+- function_name — brief description of what it does (no existing issue)
 
 ### Notes
 - Any relevant observations about partial implementations, naming differences, etc.
