@@ -158,7 +158,7 @@ These upstream FFI types have been reviewed and do not need to be independently 
 After identifying missing APIs, search the open issues at https://github.com/apache/datafusion-python/issues for each gap to see if an issue already exists requesting that API be exposed. Search using the function or method name as the query.
 
 - If an existing issue is found, include a link to it in the report. Do NOT create a new issue.
-- If no existing issue is found, note that no issue exists yet.
+- If no existing issue is found, note that no issue exists yet. If the user asks to create issues for missing APIs, each issue should specify that Python test coverage is required as part of the implementation.
 
 ## Output Format
 
