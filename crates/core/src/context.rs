@@ -41,7 +41,7 @@ use datafusion::execution::context::{
 };
 use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
-use datafusion::execution::options::ReadOptions;
+use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
@@ -956,6 +956,39 @@ impl PySessionContext {
         Ok(())
     }
 
+    #[pyo3(signature = (name, path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
+    pub fn register_arrow(
+        &self,
+        name: &str,
+        path: &str,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let mut options = ArrowReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_arrow(name, path, options);
+        wait_for_future(py, result)??;
+        Ok(())
+    }
+
+    pub fn register_batch(
+        &self,
+        name: &str,
+        batch: PyArrowType<RecordBatch>,
+    ) -> PyDataFusionResult<()> {
+        self.ctx.register_batch(name, batch.0)?;
+        Ok(())
+    }
+
     // Registers a PyArrow.Dataset
     pub fn register_dataset(
         &self,
@@ -1181,6 +1214,34 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future)??
         };
+        Ok(PyDataFrame::new(df))
+    }
+
+    pub fn read_empty(&self) -> PyDataFusionResult<PyDataFrame> {
+        let df = self.ctx.read_empty()?;
+        Ok(PyDataFrame::new(df))
+    }
+
+    #[pyo3(signature = (path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
+    pub fn read_arrow(
+        &self,
+        path: &str,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let mut options = ArrowReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.read_arrow(path, options);
+        let df = wait_for_future(py, result)??;
         Ok(PyDataFrame::new(df))
     }
 

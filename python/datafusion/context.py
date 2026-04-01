@@ -894,6 +894,15 @@ class SessionContext:
         """Register a user defined table function."""
         self.ctx.register_udtf(func._udtf)
 
+    def register_batch(self, name: str, batch: pa.RecordBatch) -> None:
+        """Register a single :py:class:`pa.RecordBatch` as a table.
+
+        Args:
+            name: Name of the resultant table.
+            batch: Record batch to register as a table.
+        """
+        self.ctx.register_batch(name, batch)
+
     def register_record_batches(
         self, name: str, partitions: list[list[pa.RecordBatch]]
     ) -> None:
@@ -1089,6 +1098,33 @@ class SessionContext:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_avro(
+            name, str(path), schema, file_extension, table_partition_cols
+        )
+
+    def register_arrow(
+        self,
+        name: str,
+        path: str | pathlib.Path,
+        schema: pa.Schema | None = None,
+        file_extension: str = ".arrow",
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+    ) -> None:
+        """Register an Arrow IPC file as a table.
+
+        The registered table can be referenced from SQL statements executed
+        against this context.
+
+        Args:
+            name: Name of the table to register.
+            path: Path to the Arrow IPC file.
+            schema: The data source schema.
+            file_extension: File extension to select.
+            table_partition_cols: Partition columns.
+        """
+        if table_partition_cols is None:
+            table_partition_cols = []
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
+        self.ctx.register_arrow(
             name, str(path), schema, file_extension, table_partition_cols
         )
 
@@ -1327,6 +1363,39 @@ class SessionContext:
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
+
+    def read_arrow(
+        self,
+        path: str | pathlib.Path,
+        schema: pa.Schema | None = None,
+        file_extension: str = ".arrow",
+        file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+    ) -> DataFrame:
+        """Create a :py:class:`DataFrame` for reading an Arrow IPC data source.
+
+        Args:
+            path: Path to the Arrow IPC file.
+            schema: The data source schema.
+            file_extension: File extension to select.
+            file_partition_cols: Partition columns.
+
+        Returns:
+            DataFrame representation of the read Arrow IPC file.
+        """
+        if file_partition_cols is None:
+            file_partition_cols = []
+        file_partition_cols = _convert_table_partition_cols(file_partition_cols)
+        return DataFrame(
+            self.ctx.read_arrow(str(path), schema, file_extension, file_partition_cols)
+        )
+
+    def read_empty(self) -> DataFrame:
+        """Create an empty :py:class:`DataFrame` with no columns or rows.
+
+        Returns:
+            An empty DataFrame.
+        """
+        return DataFrame(self.ctx.read_empty())
 
     def read_table(
         self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset

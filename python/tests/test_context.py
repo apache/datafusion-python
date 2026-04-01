@@ -668,6 +668,45 @@ def test_read_avro(ctx):
     assert avro_df is not None
 
 
+def test_read_arrow(ctx, tmp_path):
+    # Write an Arrow IPC file, then read it back
+    table = pa.table({"a": [1, 2, 3], "b": ["x", "y", "z"]})
+    arrow_path = tmp_path / "test.arrow"
+    with pa.ipc.new_file(str(arrow_path), table.schema) as writer:
+        writer.write_table(table)
+
+    df = ctx.read_arrow(str(arrow_path))
+    result = df.collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+    assert result[0].column(1) == pa.array(["x", "y", "z"])
+
+
+def test_read_empty(ctx):
+    df = ctx.read_empty()
+    result = df.collect()
+    assert result[0].num_columns == 0
+
+
+def test_register_arrow(ctx, tmp_path):
+    # Write an Arrow IPC file, then register and query it
+    table = pa.table({"x": [10, 20, 30]})
+    arrow_path = tmp_path / "test.arrow"
+    with pa.ipc.new_file(str(arrow_path), table.schema) as writer:
+        writer.write_table(table)
+
+    ctx.register_arrow("arrow_tbl", str(arrow_path))
+    result = ctx.sql("SELECT * FROM arrow_tbl").collect()
+    assert result[0].column(0) == pa.array([10, 20, 30])
+
+
+def test_register_batch(ctx):
+    batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    ctx.register_batch("batch_tbl", batch)
+    result = ctx.sql("SELECT * FROM batch_tbl").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+    assert result[0].column(1) == pa.array([4, 5, 6])
+
+
 def test_create_sql_options():
     SQLOptions()
 
