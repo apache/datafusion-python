@@ -97,7 +97,6 @@ impl PyExecutionPlan {
         Ok(Self::new(plan))
     }
 
-    /// Returns metrics for this plan node after execution, or None if unavailable.
     pub fn metrics(&self) -> Option<PyMetricsSet> {
         self.plan.metrics().map(PyMetricsSet::new)
     }

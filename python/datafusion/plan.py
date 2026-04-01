@@ -287,20 +287,23 @@ class Metric:
         return self._raw.name
 
     @property
-    def value(self) -> int | None:
-        """The numeric value of this metric, or ``None`` when not representable.
+    def value(self) -> int | datetime.datetime | None:
+        """The value of this metric.
 
-        ``None`` is returned for metric types whose value has not yet been set
-        (e.g. ``StartTimestamp`` / ``EndTimestamp`` before the operator runs)
-        and for any metric variant whose value cannot be expressed as an integer.
-        Timestamp metrics, when available, are returned as nanoseconds since the
-        Unix epoch.
+        Returns an ``int`` for counters, gauges, and time-based metrics
+        (nanoseconds), a :py:class:`~datetime.datetime` (UTC) for
+        ``start_timestamp`` / ``end_timestamp`` metrics, or ``None``
+        when the value has not been set or is not representable.
         """
         return self._raw.value
 
     @property
     def value_as_datetime(self) -> datetime.datetime | None:
-        """The value as a UTC datetime for timestamp metrics, or ``None``."""
+        """The value as a UTC :py:class:`~datetime.datetime` for timestamp metrics.
+
+        Returns ``None`` for all non-timestamp metrics and for timestamp
+        metrics whose value has not been set (e.g. before execution).
+        """
         return self._raw.value_as_datetime()
 
     @property

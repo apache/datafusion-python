@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use datafusion::physical_plan::metrics::{MetricValue, MetricsSet, Metric};
+use datafusion::physical_plan::metrics::{MetricValue, MetricsSet, Metric, Timestamp};
 use pyo3::prelude::*;
 
 #[pyclass(frozen, name = "MetricsSet", module = "datafusion")]
@@ -81,6 +81,32 @@ impl PyMetric {
     pub fn new(metric: Arc<Metric>) -> Self {
         Self { metric }
     }
+
+    fn timestamp_to_pyobject<'py>(
+        py: Python<'py>,
+        ts: &Timestamp,
+    ) -> PyResult<Option<Bound<'py, PyAny>>> {
+        match ts.value() {
+            Some(dt) => {
+                let nanos = dt.timestamp_nanos_opt().ok_or_else(|| {
+                    PyErr::new::<pyo3::exceptions::PyOverflowError, _>(
+                        "timestamp out of range",
+                    )
+                })?;
+                let datetime_mod = py.import("datetime")?;
+                let datetime_cls = datetime_mod.getattr("datetime")?;
+                let tz_utc = datetime_mod.getattr("timezone")?.getattr("utc")?;
+                let secs = nanos / 1_000_000_000;
+                let micros = (nanos % 1_000_000_000) / 1_000;
+                let result = datetime_cls.call_method1(
+                    "fromtimestamp",
+                    (secs as f64 + micros as f64 / 1_000_000.0, tz_utc),
+                )?;
+                Ok(Some(result))
+            }
+            None => Ok(None),
+        }
+    }
 }
 
 #[pymethods]
@@ -90,62 +116,30 @@ impl PyMetric {
         self.metric.value().name().to_string()
     }
 
-    /// Returns the numeric value of this metric as a `usize`, or `None` when the
-    /// value is not representable as an integer.
-    ///
-    /// # Note
-    /// `StartTimestamp` and `EndTimestamp` metrics are returned as nanoseconds
-    /// since the Unix epoch (via `timestamp_nanos_opt`), which may overflow
-    /// a `usize` on 32-bit platforms or return `None` if the timestamp is out
-    /// of range.  Non-numeric metric variants (unrecognised future variants)
-    /// also return `None`.
     #[getter]
-    fn value(&self) -> Option<usize> {
+    fn value<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyAny>>> {
         match self.metric.value() {
-            MetricValue::OutputRows(c) => Some(c.value()),
-            MetricValue::OutputBytes(c) => Some(c.value()),
-            MetricValue::ElapsedCompute(t) => Some(t.value()),
-            MetricValue::SpillCount(c) => Some(c.value()),
-            MetricValue::SpilledBytes(c) => Some(c.value()),
-            MetricValue::SpilledRows(c) => Some(c.value()),
-            MetricValue::CurrentMemoryUsage(g) => Some(g.value()),
-            MetricValue::Count { count, .. } => Some(count.value()),
-            MetricValue::Gauge { gauge, .. } => Some(gauge.value()),
-            MetricValue::Time { time, .. } => Some(time.value()),
-            MetricValue::StartTimestamp(ts) => {
-                ts.value().and_then(|dt| dt.timestamp_nanos_opt().map(|n| n as usize))
+            MetricValue::OutputRows(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
+            MetricValue::OutputBytes(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
+            MetricValue::ElapsedCompute(t) => Ok(Some(t.value().into_pyobject(py)?.into_any())),
+            MetricValue::SpillCount(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
+            MetricValue::SpilledBytes(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
+            MetricValue::SpilledRows(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
+            MetricValue::CurrentMemoryUsage(g) => Ok(Some(g.value().into_pyobject(py)?.into_any())),
+            MetricValue::Count { count, .. } => Ok(Some(count.value().into_pyobject(py)?.into_any())),
+            MetricValue::Gauge { gauge, .. } => Ok(Some(gauge.value().into_pyobject(py)?.into_any())),
+            MetricValue::Time { time, .. } => Ok(Some(time.value().into_pyobject(py)?.into_any())),
+            MetricValue::StartTimestamp(ts) | MetricValue::EndTimestamp(ts) => {
+                Self::timestamp_to_pyobject(py, ts)
             }
-            MetricValue::EndTimestamp(ts) => {
-                ts.value().and_then(|dt| dt.timestamp_nanos_opt().map(|n| n as usize))
-            }
-            _ => None,
+            _ => Ok(None),
         }
     }
 
-    /// Returns the value as a Python `datetime` for `StartTimestamp` / `EndTimestamp`
-    /// metrics, or `None` for all other metric types.
     fn value_as_datetime<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyAny>>> {
         match self.metric.value() {
             MetricValue::StartTimestamp(ts) | MetricValue::EndTimestamp(ts) => {
-                match ts.value() {
-                    Some(dt) => {
-                        let nanos = dt.timestamp_nanos_opt()
-                            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyOverflowError, _>(
-                                "timestamp out of range"
-                            ))?;
-                        let datetime_mod = py.import("datetime")?;
-                        let datetime_cls = datetime_mod.getattr("datetime")?;
-                        let tz_utc = datetime_mod.getattr("timezone")?.getattr("utc")?;
-                        let secs = nanos / 1_000_000_000;
-                        let micros = (nanos % 1_000_000_000) / 1_000;
-                        let result = datetime_cls.call_method1(
-                            "fromtimestamp",
-                            (secs as f64 + micros as f64 / 1_000_000.0, tz_utc),
-                        )?;
-                        Ok(Some(result))
-                    }
-                    None => Ok(None),
-                }
+                Self::timestamp_to_pyobject(py, ts)
             }
             _ => Ok(None),
         }
