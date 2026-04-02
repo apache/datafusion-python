@@ -19,13 +19,13 @@
 
 from __future__ import annotations
 
-import datetime
-
 from typing import TYPE_CHECKING, Any
 
 import datafusion._internal as df_internal
 
 if TYPE_CHECKING:
+    import datetime
+
     from datafusion.context import SessionContext
 
 __all__ = [

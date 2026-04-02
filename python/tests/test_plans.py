@@ -18,7 +18,6 @@
 import datetime
 
 import pytest
-
 from datafusion import (
     ExecutionPlan,
     LogicalPlan,
@@ -67,7 +66,8 @@ def test_metrics_tree_walk() -> None:
         if ms.output_rows is not None:
             output_rows_by_op[name] = ms.output_rows
 
-    # The filter passes rows where column1 > 1, so exactly 2 rows from (1,'a'),(2,'b'),(3,'c').
+    # The filter passes rows where column1 > 1, so exactly
+    # 2 rows from (1,'a'),(2,'b'),(3,'c').
     # At least one operator must report exactly 2 output rows (the filter).
     assert 2 in output_rows_by_op.values(), (
         f"Expected an operator with output_rows=2, got {output_rows_by_op}"

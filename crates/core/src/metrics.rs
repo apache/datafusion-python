@@ -89,9 +89,7 @@ impl PyMetric {
         match ts.value() {
             Some(dt) => {
                 let nanos = dt.timestamp_nanos_opt().ok_or_else(|| {
-                    PyErr::new::<pyo3::exceptions::PyOverflowError, _>(
-                        "timestamp out of range",
-                    )
+                    PyErr::new::<pyo3::exceptions::PyOverflowError, _>("timestamp out of range")
                 })?;
                 let datetime_mod = py.import("datetime")?;
                 let datetime_cls = datetime_mod.getattr("datetime")?;
@@ -126,8 +124,12 @@ impl PyMetric {
             MetricValue::SpilledBytes(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
             MetricValue::SpilledRows(c) => Ok(Some(c.value().into_pyobject(py)?.into_any())),
             MetricValue::CurrentMemoryUsage(g) => Ok(Some(g.value().into_pyobject(py)?.into_any())),
-            MetricValue::Count { count, .. } => Ok(Some(count.value().into_pyobject(py)?.into_any())),
-            MetricValue::Gauge { gauge, .. } => Ok(Some(gauge.value().into_pyobject(py)?.into_any())),
+            MetricValue::Count { count, .. } => {
+                Ok(Some(count.value().into_pyobject(py)?.into_any()))
+            }
+            MetricValue::Gauge { gauge, .. } => {
+                Ok(Some(gauge.value().into_pyobject(py)?.into_any()))
+            }
             MetricValue::Time { time, .. } => Ok(Some(time.value().into_pyobject(py)?.into_any())),
             MetricValue::StartTimestamp(ts) | MetricValue::EndTimestamp(ts) => {
                 Self::timestamp_to_pyobject(py, ts)
