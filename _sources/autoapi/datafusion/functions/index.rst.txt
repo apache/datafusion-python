@@ -107,7 +107,9 @@ Functions
    datafusion.functions.cume_dist
    datafusion.functions.current_date
    datafusion.functions.current_time
+   datafusion.functions.current_timestamp
    datafusion.functions.date_bin
+   datafusion.functions.date_format
    datafusion.functions.date_part
    datafusion.functions.date_trunc
    datafusion.functions.datepart
@@ -179,6 +181,7 @@ Functions
    datafusion.functions.make_array
    datafusion.functions.make_date
    datafusion.functions.make_list
+   datafusion.functions.make_time
    datafusion.functions.max
    datafusion.functions.md5
    datafusion.functions.mean
@@ -1872,6 +1875,13 @@ Module Contents
    True
 
 
+.. py:function:: current_timestamp() -> datafusion.expr.Expr
+
+   Returns the current timestamp in nanoseconds.
+
+   .. seealso:: This is an alias for :py:func:`now`.
+
+
 .. py:function:: date_bin(stride: datafusion.expr.Expr, source: datafusion.expr.Expr, origin: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Coerces an arbitrary timestamp to the start of the nearest specified interval.
@@ -1891,6 +1901,13 @@ Module Contents
    '2021-07-15 12:30:00'
    >>> str(result.collect_column("b")[1].as_py())
    '2021-01-01 00:00:00'
+
+
+.. py:function:: date_format(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a string representation of a date, time, timestamp or duration.
+
+   .. seealso:: This is an alias for :py:func:`to_char`.
 
 
 .. py:function:: date_part(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2851,6 +2868,21 @@ Module Contents
    Returns an array using the specified input expressions.
 
    .. seealso:: This is an alias for :py:func:`make_array`.
+
+
+.. py:function:: make_time(hour: datafusion.expr.Expr, minute: datafusion.expr.Expr, second: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Make a time from hour, minute and second component parts.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"h": [12], "m": [30], "s": [0]})
+   >>> result = df.select(
+   ...     dfn.functions.make_time(dfn.col("h"), dfn.col("m"),
+   ...     dfn.col("s")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   datetime.time(12, 30)
 
 
 .. py:function:: max(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
