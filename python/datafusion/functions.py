@@ -128,7 +128,9 @@ __all__ = [
     "cume_dist",
     "current_date",
     "current_time",
+    "current_timestamp",
     "date_bin",
+    "date_format",
     "date_part",
     "date_trunc",
     "datepart",
@@ -200,6 +202,7 @@ __all__ = [
     "make_array",
     "make_date",
     "make_list",
+    "make_time",
     "max",
     "md5",
     "mean",
@@ -1948,6 +1951,15 @@ def now() -> Expr:
     return Expr(f.now())
 
 
+def current_timestamp() -> Expr:
+    """Returns the current timestamp in nanoseconds.
+
+    See Also:
+        This is an alias for :py:func:`now`.
+    """
+    return now()
+
+
 def to_char(arg: Expr, formatter: Expr) -> Expr:
     """Returns a string representation of a date, time, timestamp or duration.
 
@@ -1968,6 +1980,15 @@ def to_char(arg: Expr, formatter: Expr) -> Expr:
         '2021/01/01'
     """
     return Expr(f.to_char(arg.expr, formatter.expr))
+
+
+def date_format(arg: Expr, formatter: Expr) -> Expr:
+    """Returns a string representation of a date, time, timestamp or duration.
+
+    See Also:
+        This is an alias for :py:func:`to_char`.
+    """
+    return to_char(arg, formatter)
 
 
 def _unwrap_exprs(args: tuple[Expr, ...]) -> list:
@@ -2268,6 +2289,21 @@ def make_date(year: Expr, month: Expr, day: Expr) -> Expr:
         datetime.date(2024, 1, 15)
     """
     return Expr(f.make_date(year.expr, month.expr, day.expr))
+
+
+def make_time(hour: Expr, minute: Expr, second: Expr) -> Expr:
+    """Make a time from hour, minute and second component parts.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"h": [12], "m": [30], "s": [0]})
+        >>> result = df.select(
+        ...     dfn.functions.make_time(dfn.col("h"), dfn.col("m"),
+        ...     dfn.col("s")).alias("t"))
+        >>> result.collect_column("t")[0].as_py()
+        datetime.time(12, 30)
+    """
+    return Expr(f.make_time(hour.expr, minute.expr, second.expr))
 
 
 def translate(string: Expr, from_val: Expr, to_val: Expr) -> Expr:

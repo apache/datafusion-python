@@ -1107,6 +1107,39 @@ def test_today_alias_matches_current_date(df):
     assert result.column(0) == result.column(1)
 
 
+def test_current_timestamp_alias_matches_now(df):
+    result = df.select(
+        f.now().alias("now"),
+        f.current_timestamp().alias("current_timestamp"),
+    ).collect()[0]
+
+    assert result.column(0) == result.column(1)
+
+
+def test_date_format_alias_matches_to_char(df):
+    result = df.select(
+        f.to_char(
+            f.to_timestamp(literal("2021-01-01T00:00:00")), literal("%Y/%m/%d")
+        ).alias("to_char"),
+        f.date_format(
+            f.to_timestamp(literal("2021-01-01T00:00:00")), literal("%Y/%m/%d")
+        ).alias("date_format"),
+    ).collect()[0]
+
+    assert result.column(0) == result.column(1)
+    assert result.column(0)[0].as_py() == "2021/01/01"
+
+
+def test_make_time(df):
+    ctx = SessionContext()
+    df_time = ctx.from_pydict({"h": [12], "m": [30], "s": [0]})
+    result = df_time.select(
+        f.make_time(column("h"), column("m"), column("s")).alias("t")
+    ).collect()[0]
+
+    assert result.column(0)[0].as_py() == time(12, 30)
+
+
 def test_arrow_cast(df):
     df = df.select(
         # we use `string_literal` to return utf8 instead of `literal` which returns
