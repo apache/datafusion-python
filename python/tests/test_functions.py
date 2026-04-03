@@ -1507,22 +1507,15 @@ def test_coalesce(df):
     )
 
 
-def test_array_any_value():
+@pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
+def test_any_value_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[None, 2, 3], [None, None, None], [1, 2, 3]]})
-    result = df.select(f.array_any_value(column("a")).alias("v")).collect()
+    result = df.select(func(column("a")).alias("v")).collect()
     values = [row.as_py() for row in result[0].column(0)]
     assert values[0] == 2
     assert values[1] is None
     assert values[2] == 1
-
-
-@pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
-def test_any_value_aliases(func):
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[None, 5]]})
-    result = df.select(func(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == 5
 
 
 @pytest.mark.parametrize("func", [f.array_distance, f.list_distance])
