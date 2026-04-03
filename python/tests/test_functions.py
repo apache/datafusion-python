@@ -331,6 +331,10 @@ def py_flatten(arr):
             lambda data: [len(r) == 0 for r in data],
         ),
         (
+            f.list_empty,
+            lambda data: [len(r) == 0 for r in data],
+        ),
+        (
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
         ),
@@ -355,13 +359,37 @@ def py_flatten(arr):
             lambda data: [1.0 in r for r in data],
         ),
         (
+            lambda col: f.list_has(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.array_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.list_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
             lambda col: f.array_has_all(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ),
         (
+            lambda col: f.list_has_all(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
             lambda col: f.array_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_has_any(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
@@ -419,7 +447,15 @@ def py_flatten(arr):
             lambda data: [arr[:-1] for arr in data],
         ),
         (
+            f.list_pop_back,
+            lambda data: [arr[:-1] for arr in data],
+        ),
+        (
             f.array_pop_front,
+            lambda data: [arr[1:] for arr in data],
+        ),
+        (
+            f.list_pop_front,
             lambda data: [arr[1:] for arr in data],
         ),
         (
@@ -1565,58 +1601,3 @@ def test_gen_series_with_step():
         f.gen_series(literal(1), literal(10), literal(3)).alias("v")
     ).collect()
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
-
-
-@pytest.mark.parametrize(
-    ("func", "element", "expected"),
-    [
-        (f.array_contains, literal(2), True),
-        (f.list_contains, literal(99), False),
-        (f.list_has, literal(2), True),
-    ],
-)
-def test_element_containment(func, element, expected):
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(func(column("a"), element).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() is expected
-
-
-def test_list_has_all():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(
-        f.list_has_all(column("a"), f.make_array(literal(1), literal(2))).alias("v")
-    ).collect()
-    assert result[0].column(0)[0].as_py() is True
-
-
-def test_list_has_any():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(
-        f.list_has_any(column("a"), f.make_array(literal(5), literal(2))).alias("v")
-    ).collect()
-    assert result[0].column(0)[0].as_py() is True
-
-
-def test_list_empty():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[], [1, 2]]})
-    result = df.select(f.list_empty(column("a")).alias("v")).collect()
-    values = [row.as_py() for row in result[0].column(0)]
-    assert values == [True, False]
-
-
-@pytest.mark.parametrize(
-    ("func", "expected"),
-    [
-        (f.list_pop_back, [1, 2]),
-        (f.list_pop_front, [2, 3]),
-    ],
-)
-def test_list_pop(func, expected):
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(func(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == expected
