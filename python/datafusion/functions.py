@@ -152,6 +152,8 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
+    "greatest",
+    "ifnull",
     "in_list",
     "initcap",
     "isnan",
@@ -160,6 +162,7 @@ __all__ = [
     "last_value",
     "lcm",
     "lead",
+    "least",
     "left",
     "length",
     "levenshtein",
@@ -216,6 +219,7 @@ __all__ = [
     "ntile",
     "nullif",
     "nvl",
+    "nvl2",
     "octet_length",
     "order_by",
     "overlay",
@@ -1045,6 +1049,34 @@ def gcd(x: Expr, y: Expr) -> Expr:
     return Expr(f.gcd(x.expr, y.expr))
 
 
+def greatest(*args: Expr) -> Expr:
+    """Returns the greatest value from a list of expressions.
+
+    Returns NULL if all expressions are NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+        >>> result = df.select(
+        ...     dfn.functions.greatest(dfn.col("a"), dfn.col("b")).alias("greatest"))
+        >>> result.collect_column("greatest")[0].as_py()
+        2
+        >>> result.collect_column("greatest")[1].as_py()
+        3
+    """
+    exprs = [arg.expr for arg in args]
+    return Expr(f.greatest(*exprs))
+
+
+def ifnull(x: Expr, y: Expr) -> Expr:
+    """Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
+
+    See Also:
+        This is an alias for :py:func:`nvl`.
+    """
+    return nvl(x, y)
+
+
 def initcap(string: Expr) -> Expr:
     """Set the initial letter of each word to capital.
 
@@ -1096,6 +1128,25 @@ def lcm(x: Expr, y: Expr) -> Expr:
         12
     """
     return Expr(f.lcm(x.expr, y.expr))
+
+
+def least(*args: Expr) -> Expr:
+    """Returns the least value from a list of expressions.
+
+    Returns NULL if all expressions are NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+        >>> result = df.select(
+        ...     dfn.functions.least(dfn.col("a"), dfn.col("b")).alias("least"))
+        >>> result.collect_column("least")[0].as_py()
+        1
+        >>> result.collect_column("least")[1].as_py()
+        1
+    """
+    exprs = [arg.expr for arg in args]
+    return Expr(f.least(*exprs))
 
 
 def left(string: Expr, n: Expr) -> Expr:
@@ -1280,6 +1331,24 @@ def nvl(x: Expr, y: Expr) -> Expr:
         1
     """
     return Expr(f.nvl(x.expr, y.expr))
+
+
+def nvl2(x: Expr, y: Expr, z: Expr) -> Expr:
+    """Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 1], "b": [10, 20], "c": [30, 40]})
+        >>> result = df.select(
+        ...     dfn.functions.nvl2(
+        ...         dfn.col("a"), dfn.col("b"), dfn.col("c")).alias("nvl2")
+        ... )
+        >>> result.collect_column("nvl2")[0].as_py()
+        30
+        >>> result.collect_column("nvl2")[1].as_py()
+        20
+    """
+    return Expr(f.nvl2(x.expr, y.expr, z.expr))
 
 
 def octet_length(arg: Expr) -> Expr:
