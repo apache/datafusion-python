@@ -438,7 +438,7 @@ def digest(value: Expr, method: Expr) -> Expr:
 
 
 def contains(string: Expr, search_str: Expr) -> Expr:
-    """Return true if ``search_str`` is found within ``string`` (case-sensitive).
+    """Returns true if ``search_str`` is found within ``string`` (case-sensitive).
 
     Examples:
         >>> ctx = dfn.SessionContext()
