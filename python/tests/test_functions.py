@@ -668,29 +668,41 @@ def test_array_function_obj_tests(stmt, py_expr):
         assert a == b
 
 
-def test_map_from_dict():
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        pytest.param(
+            ({"x": 1, "y": 2},),
+            [("x", 1), ("y", 2)],
+            id="dict",
+        ),
+        pytest.param(
+            ({"x": literal(1), "y": literal(2)},),
+            [("x", 1), ("y", 2)],
+            id="dict_with_exprs",
+        ),
+        pytest.param(
+            ("x", 1, "y", 2),
+            [("x", 1), ("y", 2)],
+            id="variadic_pairs",
+        ),
+        pytest.param(
+            (literal("x"), literal(1), literal("y"), literal(2)),
+            [("x", 1), ("y", 2)],
+            id="variadic_with_exprs",
+        ),
+    ],
+)
+def test_make_map(args, expected):
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(f.make_map({"x": 1, "y": 2}).alias("m")).collect()[0].column(0)
-    assert result[0].as_py() == [("x", 1), ("y", 2)]
+    result = df.select(f.make_map(*args).alias("m")).collect()[0].column(0)
+    assert result[0].as_py() == expected
 
 
-def test_map_from_dict_with_expr_values():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    result = (
-        df.select(f.make_map({"x": literal(1), "y": literal(2)}).alias("m"))
-        .collect()[0]
-        .column(0)
-    )
-    assert result[0].as_py() == [("x", 1), ("y", 2)]
-
-
-def test_map_from_two_lists():
+def test_make_map_from_two_lists():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [
@@ -711,30 +723,6 @@ def test_map_from_two_lists():
         assert result[i].as_py() == [expected]
 
 
-def test_map_from_variadic_pairs():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    result = df.select(f.make_map("x", 1, "y", 2).alias("m")).collect()[0].column(0)
-    assert result[0].as_py() == [("x", 1), ("y", 2)]
-
-
-def test_map_variadic_with_exprs():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    result = (
-        df.select(
-            f.make_map(literal("x"), literal(1), literal("y"), literal(2)).alias("m")
-        )
-        .collect()[0]
-        .column(0)
-    )
-    assert result[0].as_py() == [("x", 1), ("y", 2)]
-
-
 def test_make_map_odd_args_raises():
     with pytest.raises(ValueError, match="make_map expects"):
         f.make_map("x", 1, "y")
@@ -745,73 +733,41 @@ def test_make_map_mismatched_lengths():
         f.make_map(["a", "b"], [1])
 
 
-def test_map_keys():
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        pytest.param(f.map_keys, ["x", "y"], id="map_keys"),
+        pytest.param(f.map_values, [1, 2], id="map_values"),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("x")),
+            [1],
+            id="map_extract",
+        ),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("z")),
+            [None],
+            id="map_extract_missing_key",
+        ),
+        pytest.param(
+            f.map_entries,
+            [{"key": "x", "value": 1}, {"key": "y", "value": 2}],
+            id="map_entries",
+        ),
+        pytest.param(
+            lambda m: f.element_at(m, literal("y")),
+            [2],
+            id="element_at",
+        ),
+    ],
+)
+def test_map_functions(func, expected):
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
     m = f.make_map({"x": 1, "y": 2})
-    result = df.select(f.map_keys(m).alias("keys")).collect()[0].column(0)
-    assert result[0].as_py() == ["x", "y"]
-
-
-def test_map_values():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    m = f.make_map({"x": 1, "y": 2})
-    result = df.select(f.map_values(m).alias("vals")).collect()[0].column(0)
-    assert result[0].as_py() == [1, 2]
-
-
-def test_map_extract():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    m = f.make_map({"x": 1, "y": 2})
-    result = (
-        df.select(f.map_extract(m, literal("x")).alias("val")).collect()[0].column(0)
-    )
-    assert result[0].as_py() == [1]
-
-
-def test_map_extract_missing_key():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    m = f.make_map({"x": 1})
-    result = (
-        df.select(f.map_extract(m, literal("z")).alias("val")).collect()[0].column(0)
-    )
-    assert result[0].as_py() == [None]
-
-
-def test_map_entries():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    m = f.make_map({"x": 1, "y": 2})
-    result = df.select(f.map_entries(m).alias("entries")).collect()[0].column(0)
-    assert result[0].as_py() == [
-        {"key": "x", "value": 1},
-        {"key": "y", "value": 2},
-    ]
-
-
-def test_element_at():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    m = f.make_map({"a": 10, "b": 20})
-    result = (
-        df.select(f.element_at(m, literal("b")).alias("val")).collect()[0].column(0)
-    )
-    assert result[0].as_py() == [20]
+    result = df.select(func(m).alias("out")).collect()[0].column(0)
+    assert result[0].as_py() == expected
 
 
 @pytest.mark.parametrize(
