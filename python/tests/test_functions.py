@@ -1409,224 +1409,253 @@ def test_alias_with_metadata(df):
     assert df.schema().field("b").metadata == {b"key": b"value"}
 
 
-def test_coalesce(df):
-    # Create a DataFrame with null values
+@pytest.fixture
+def df_with_nulls():
     ctx = SessionContext()
+    # Rows:
+    #   0: both values present
+    #   1: a/d/h/k null, b/e/i/l present
+    #   2: a/d/h/k present, b/e/i/l null
+    #   3: all null
     batch = pa.RecordBatch.from_arrays(
         [
-            pa.array(["Hello", None, "!"]),  # string column with null
-            pa.array([4, None, 6]),  # integer column with null
-            pa.array(["hello ", None, " !"]),  # string column with null
+            pa.array([1, None, 3, None], type=pa.int64()),
+            pa.array([5, 10, None, None], type=pa.int64()),
+            pa.array([20, 30, 40, None], type=pa.int64()),
+            pa.array(["apple", None, "cherry", None], type=pa.utf8()),
+            pa.array(["banana", "date", None, None], type=pa.utf8()),
+            pa.array(["x", "y", "z", None], type=pa.utf8()),
             pa.array(
                 [
-                    datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+                    datetime(2020, 1, 1, tzinfo=DEFAULT_TZ),
                     None,
-                    datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
-                ]
-            ),  # datetime with null
-            pa.array([False, None, True]),  # boolean column with null
+                    datetime(2025, 6, 15, tzinfo=DEFAULT_TZ),
+                    None,
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            pa.array(
+                [
+                    datetime(2022, 7, 4, tzinfo=DEFAULT_TZ),
+                    datetime(2023, 12, 25, tzinfo=DEFAULT_TZ),
+                    None,
+                    None,
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            pa.array([True, None, False, None], type=pa.bool_()),
+            pa.array([False, True, None, None], type=pa.bool_()),
         ],
-        names=["a", "b", "c", "d", "e"],
+        names=["a", "b", "c", "d", "e", "g", "h", "i", "k", "l"],
     )
-    df_with_nulls = ctx.create_dataframe([[batch]])
+    return ctx.create_dataframe([[batch]])
 
-    # Test coalesce with different data types
-    result_df = df_with_nulls.select(
-        f.coalesce(column("a"), literal("default")).alias("a_coalesced"),
-        f.coalesce(column("b"), literal(0)).alias("b_coalesced"),
-        f.coalesce(column("c"), literal("default")).alias("c_coalesced"),
-        f.coalesce(column("d"), literal(datetime(2000, 1, 1, tzinfo=DEFAULT_TZ))).alias(
-            "d_coalesced"
+
+@pytest.mark.parametrize(
+    ("expr", "expected"),
+    [
+        pytest.param(
+            f.greatest(column("a"), column("b")),
+            pa.array([5, 10, 3, None], type=pa.int64()),
+            id="greatest_int",
         ),
-        f.coalesce(column("e"), literal(value=False)).alias("e_coalesced"),
-    )
-
-    result = result_df.collect()[0]
-
-    # Verify results
-    assert result.column(0) == pa.array(
-        ["Hello", "default", "!"], type=pa.string_view()
-    )
-    assert result.column(1) == pa.array([4, 0, 6], type=pa.int64())
-    assert result.column(2) == pa.array(
-        ["hello ", "default", " !"], type=pa.string_view()
-    )
-    assert result.column(3).to_pylist() == [
-        datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
-        datetime(2000, 1, 1, tzinfo=DEFAULT_TZ),
-        datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
-    ]
-    assert result.column(4) == pa.array([False, False, True], type=pa.bool_())
-
-    # Test multiple arguments
-    result_df = df_with_nulls.select(
-        f.coalesce(column("a"), literal(None), literal("fallback")).alias(
-            "multi_coalesce"
-        )
-    )
-    result = result_df.collect()[0]
-    assert result.column(0) == pa.array(
-        ["Hello", "fallback", "!"], type=pa.string_view()
-    )
-
-
-def test_greatest():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [
-            pa.array([1, 5, None]),
-            pa.array([3, 2, None]),
-            pa.array([2, 8, None]),
-        ],
-        names=["a", "b", "c"],
-    )
-    df_test = ctx.create_dataframe([[batch]])
-
-    # Test greatest with two columns
-    result = df_test.select(
-        f.greatest(column("a"), column("b")).alias("greatest_ab")
-    ).collect()[0]
-    assert result.column(0) == pa.array([3, 5, None], type=pa.int64())
-
-    # Test greatest with three columns
-    result = df_test.select(
-        f.greatest(column("a"), column("b"), column("c")).alias("greatest_abc")
-    ).collect()[0]
-    assert result.column(0) == pa.array([3, 8, None], type=pa.int64())
-
-    # Test greatest with nulls mixed in (partial nulls)
-    batch2 = pa.RecordBatch.from_arrays(
-        [
-            pa.array([None, 10]),
-            pa.array([5, None]),
-        ],
-        names=["x", "y"],
-    )
-    df_test2 = ctx.create_dataframe([[batch2]])
-    result = df_test2.select(f.greatest(column("x"), column("y")).alias("g")).collect()[
-        0
-    ]
-    assert result.column(0) == pa.array([5, 10], type=pa.int64())
-
-    # Test greatest with string columns
-    batch3 = pa.RecordBatch.from_arrays(
-        [
-            pa.array(["apple", "cherry"]),
-            pa.array(["banana", "apricot"]),
-        ],
-        names=["s1", "s2"],
-    )
-    df_test3 = ctx.create_dataframe([[batch3]])
-    result = df_test3.select(
-        f.greatest(column("s1"), column("s2")).alias("g")
-    ).collect()[0]
-    assert result.column(0).to_pylist() == ["banana", "cherry"]
-
-
-def test_least():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [
-            pa.array([1, 5, None]),
-            pa.array([3, 2, None]),
-            pa.array([2, 8, None]),
-        ],
-        names=["a", "b", "c"],
-    )
-    df_test = ctx.create_dataframe([[batch]])
-
-    # Test least with two columns
-    result = df_test.select(
-        f.least(column("a"), column("b")).alias("least_ab")
-    ).collect()[0]
-    assert result.column(0) == pa.array([1, 2, None], type=pa.int64())
-
-    # Test least with three columns
-    result = df_test.select(
-        f.least(column("a"), column("b"), column("c")).alias("least_abc")
-    ).collect()[0]
-    assert result.column(0) == pa.array([1, 2, None], type=pa.int64())
-
-    # Test least with partial nulls
-    batch2 = pa.RecordBatch.from_arrays(
-        [
-            pa.array([None, 10]),
-            pa.array([5, None]),
-        ],
-        names=["x", "y"],
-    )
-    df_test2 = ctx.create_dataframe([[batch2]])
-    result = df_test2.select(f.least(column("x"), column("y")).alias("l")).collect()[0]
-    assert result.column(0) == pa.array([5, 10], type=pa.int64())
-
-    # Test least with string columns
-    batch3 = pa.RecordBatch.from_arrays(
-        [
-            pa.array(["apple", "cherry"]),
-            pa.array(["banana", "apricot"]),
-        ],
-        names=["s1", "s2"],
-    )
-    df_test3 = ctx.create_dataframe([[batch3]])
-    result = df_test3.select(f.least(column("s1"), column("s2")).alias("l")).collect()[
-        0
-    ]
-    assert result.column(0).to_pylist() == ["apple", "apricot"]
-
-
-def test_nvl2():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [
-            pa.array([None, 1, None, 4]),
-            pa.array([10, 20, 30, 40]),
-            pa.array([100, 200, 300, 400]),
-        ],
-        names=["a", "b", "c"],
-    )
-    df_test = ctx.create_dataframe([[batch]])
-
-    # nvl2 returns b when a is not null, c when a is null
-    result = df_test.select(
-        f.nvl2(column("a"), column("b"), column("c")).alias("result")
-    ).collect()[0]
-    assert result.column(0) == pa.array([100, 20, 300, 40], type=pa.int64())
-
-    # Test with string columns
-    batch2 = pa.RecordBatch.from_arrays(
-        [
-            pa.array(["x", None]),
-            pa.array(["not_null", "not_null"]),
-            pa.array(["is_null", "is_null"]),
-        ],
-        names=["a", "b", "c"],
-    )
-    df_test2 = ctx.create_dataframe([[batch2]])
-    result = df_test2.select(
-        f.nvl2(column("a"), column("b"), column("c")).alias("result")
-    ).collect()[0]
-    assert result.column(0).to_pylist() == ["not_null", "is_null"]
-
-
-def test_ifnull():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [
-            pa.array([None, 1, None, 4]),
-            pa.array([10, 20, 30, 40]),
-        ],
-        names=["a", "b"],
-    )
-    df_test = ctx.create_dataframe([[batch]])
-
-    # ifnull returns a when a is not null, b when a is null (same as nvl)
-    result = df_test.select(
-        f.ifnull(column("a"), column("b")).alias("result")
-    ).collect()[0]
-    assert result.column(0) == pa.array([10, 1, 30, 4], type=pa.int64())
-
-    # Verify ifnull matches nvl behavior
-    result_nvl = df_test.select(
-        f.nvl(column("a"), column("b")).alias("nvl_result")
-    ).collect()[0]
-    assert result.column(0) == result_nvl.column(0)
+        pytest.param(
+            f.greatest(column("d"), column("e")),
+            pa.array(["banana", "date", "cherry", None], type=pa.utf8()),
+            id="greatest_str",
+        ),
+        pytest.param(
+            f.least(column("a"), column("b")),
+            pa.array([1, 10, 3, None], type=pa.int64()),
+            id="least_int",
+        ),
+        pytest.param(
+            f.least(column("d"), column("e")),
+            pa.array(["apple", "date", "cherry", None], type=pa.utf8()),
+            id="least_str",
+        ),
+        pytest.param(
+            f.coalesce(column("a"), column("b"), column("c")),
+            pa.array([1, 10, 3, None], type=pa.int64()),
+            id="coalesce_int",
+        ),
+        pytest.param(
+            f.coalesce(column("d"), column("e"), column("g")),
+            pa.array(["apple", "date", "cherry", None], type=pa.utf8()),
+            id="coalesce_str",
+        ),
+        pytest.param(
+            f.nvl(column("a"), column("c")),
+            pa.array([1, 30, 3, None], type=pa.int64()),
+            id="nvl_int",
+        ),
+        pytest.param(
+            f.nvl(column("d"), column("g")),
+            pa.array(["apple", "y", "cherry", None], type=pa.utf8()),
+            id="nvl_str",
+        ),
+        pytest.param(
+            f.ifnull(column("a"), column("c")),
+            pa.array([1, 30, 3, None], type=pa.int64()),
+            id="ifnull_int",
+        ),
+        pytest.param(
+            f.ifnull(column("d"), column("g")),
+            pa.array(["apple", "y", "cherry", None], type=pa.utf8()),
+            id="ifnull_str",
+        ),
+        pytest.param(
+            f.nvl2(column("a"), column("b"), column("c")),
+            pa.array([5, 30, None, None], type=pa.int64()),
+            id="nvl2_int",
+        ),
+        pytest.param(
+            f.nvl2(column("d"), column("e"), column("g")),
+            pa.array(["banana", "y", None, None], type=pa.utf8()),
+            id="nvl2_str",
+        ),
+        pytest.param(
+            f.nullif(column("a"), column("b")),
+            pa.array([1, None, 3, None], type=pa.int64()),
+            id="nullif_int",
+        ),
+        pytest.param(
+            f.nullif(column("d"), column("e")),
+            pa.array(["apple", None, "cherry", None], type=pa.utf8()),
+            id="nullif_str",
+        ),
+        pytest.param(
+            f.nullif(column("a"), literal(1)),
+            pa.array([None, None, 3, None], type=pa.int64()),
+            id="nullif_equal_values",
+        ),
+        pytest.param(
+            f.greatest(column("a"), column("b"), column("c")),
+            pa.array([20, 30, 40, None], type=pa.int64()),
+            id="greatest_variadic",
+        ),
+        pytest.param(
+            f.least(column("a"), column("b"), column("c")),
+            pa.array([1, 10, 3, None], type=pa.int64()),
+            id="least_variadic",
+        ),
+        pytest.param(
+            f.greatest(column("a"), literal(2)),
+            pa.array([2, 2, 3, 2], type=pa.int64()),
+            id="greatest_literal",
+        ),
+        pytest.param(
+            f.least(column("a"), literal(2)),
+            pa.array([1, 2, 2, 2], type=pa.int64()),
+            id="least_literal",
+        ),
+        pytest.param(
+            f.coalesce(column("a"), literal(0)),
+            pa.array([1, 0, 3, 0], type=pa.int64()),
+            id="coalesce_literal_int",
+        ),
+        pytest.param(
+            f.coalesce(column("d"), literal("default")),
+            pa.array(["apple", "default", "cherry", "default"], type=pa.string_view()),
+            id="coalesce_literal_str",
+        ),
+        pytest.param(
+            f.nvl(column("a"), literal(99)),
+            pa.array([1, 99, 3, 99], type=pa.int64()),
+            id="nvl_literal",
+        ),
+        pytest.param(
+            f.ifnull(column("d"), literal("unknown")),
+            pa.array(["apple", "unknown", "cherry", "unknown"], type=pa.string_view()),
+            id="ifnull_literal",
+        ),
+        pytest.param(
+            f.nvl2(column("a"), literal(1), literal(0)),
+            pa.array([1, 0, 1, 0], type=pa.int64()),
+            id="nvl2_literal",
+        ),
+        pytest.param(
+            f.greatest(column("h"), column("i")),
+            pa.array(
+                [
+                    datetime(2022, 7, 4, tzinfo=DEFAULT_TZ),
+                    datetime(2023, 12, 25, tzinfo=DEFAULT_TZ),
+                    datetime(2025, 6, 15, tzinfo=DEFAULT_TZ),
+                    None,
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            id="greatest_datetime",
+        ),
+        pytest.param(
+            f.least(column("h"), column("i")),
+            pa.array(
+                [
+                    datetime(2020, 1, 1, tzinfo=DEFAULT_TZ),
+                    datetime(2023, 12, 25, tzinfo=DEFAULT_TZ),
+                    datetime(2025, 6, 15, tzinfo=DEFAULT_TZ),
+                    None,
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            id="least_datetime",
+        ),
+        pytest.param(
+            f.coalesce(column("h"), column("i")),
+            pa.array(
+                [
+                    datetime(2020, 1, 1, tzinfo=DEFAULT_TZ),
+                    datetime(2023, 12, 25, tzinfo=DEFAULT_TZ),
+                    datetime(2025, 6, 15, tzinfo=DEFAULT_TZ),
+                    None,
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            id="coalesce_datetime",
+        ),
+        pytest.param(
+            f.nvl(column("k"), column("l")),
+            pa.array([True, True, False, None], type=pa.bool_()),
+            id="nvl_bool",
+        ),
+        pytest.param(
+            f.coalesce(column("k"), column("l")),
+            pa.array([True, True, False, None], type=pa.bool_()),
+            id="coalesce_bool",
+        ),
+        pytest.param(
+            f.nvl2(column("k"), column("k"), column("l")),
+            pa.array([True, True, False, None], type=pa.bool_()),
+            id="nvl2_bool",
+        ),
+        pytest.param(
+            f.coalesce(
+                column("h"),
+                literal(datetime(2000, 1, 1, tzinfo=DEFAULT_TZ)),
+            ),
+            pa.array(
+                [
+                    datetime(2020, 1, 1, tzinfo=DEFAULT_TZ),
+                    datetime(2000, 1, 1, tzinfo=DEFAULT_TZ),
+                    datetime(2025, 6, 15, tzinfo=DEFAULT_TZ),
+                    datetime(2000, 1, 1, tzinfo=DEFAULT_TZ),
+                ],
+                type=pa.timestamp("us", tz="UTC"),
+            ),
+            id="coalesce_literal_datetime",
+        ),
+        pytest.param(
+            f.coalesce(column("k"), literal(value=False)),
+            pa.array([True, False, False, False], type=pa.bool_()),
+            id="coalesce_literal_bool",
+        ),
+        pytest.param(
+            f.coalesce(column("a"), literal(None), literal(99)),
+            pa.array([1, 99, 3, 99], type=pa.int64()),
+            id="coalesce_skip_null_literal",
+        ),
+    ],
+)
+def test_conditional_functions(df_with_nulls, expr, expected):
+    result = df_with_nulls.select(expr.alias("result")).collect()[0]
+    assert result.column(0) == expected
