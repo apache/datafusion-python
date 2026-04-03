@@ -3747,7 +3747,7 @@ def array_agg(
 
 def grouping(
     expression: Expr,
-    distinct: bool | None = None,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Returns 1 if the data is aggregated across the specified column, or 0 otherwise.
