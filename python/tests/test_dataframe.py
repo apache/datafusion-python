@@ -3571,43 +3571,52 @@ def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
     assert df.collect()[0].column(0).to_pylist() == [1, 2]
 
 
-def test_except_distinct():
+@pytest.mark.parametrize(
+    ("df1_data", "df2_data", "method", "expected_a", "expected_b"),
+    [
+        pytest.param(
+            {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
+            {"a": [1, 2], "b": [10, 20]},
+            "except_distinct",
+            [3],
+            [30],
+            id="except_distinct: removes matching rows and deduplicates",
+        ),
+        pytest.param(
+            {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
+            {"a": [1, 4], "b": [10, 40]},
+            "intersect_distinct",
+            [1],
+            [10],
+            id="intersect_distinct: keeps common rows and deduplicates",
+        ),
+        pytest.param(
+            {"a": [1], "b": [10]},
+            {"b": [20], "a": [2]},  # reversed column order tests matching by name
+            "union_by_name",
+            [1, 2],
+            [10, 20],
+            id="union_by_name: matches columns by name not position",
+        ),
+        pytest.param(
+            {"a": [1, 1], "b": [10, 10]},
+            {"b": [10], "a": [1]},  # reversed column order with duplicates
+            "union_by_name_distinct",
+            [1],
+            [10],
+            id="union_by_name_distinct: matches by name and deduplicates",
+        ),
+    ],
+)
+def test_set_operations_distinct(df1_data, df2_data, method, expected_a, expected_b):
     ctx = SessionContext()
-    df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
-    df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+    df1 = ctx.from_pydict(df1_data)
+    df2 = ctx.from_pydict(df2_data)
     result = (
-        df1.except_distinct(df2).sort(column("a").sort(ascending=True)).collect()[0]
+        getattr(df1, method)(df2).sort(column("a").sort(ascending=True)).collect()[0]
     )
-    assert result.column(0).to_pylist() == [3]
-    assert result.column(1).to_pylist() == [30]
-
-
-def test_intersect_distinct():
-    ctx = SessionContext()
-    df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
-    df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
-    result = df1.intersect_distinct(df2).collect()[0]
-    assert result.column(0).to_pylist() == [1]
-    assert result.column(1).to_pylist() == [10]
-
-
-def test_union_by_name():
-    ctx = SessionContext()
-    df1 = ctx.from_pydict({"a": [1], "b": [10]})
-    # Different column order
-    df2 = ctx.from_pydict({"b": [20], "a": [2]})
-    batches = df1.union_by_name(df2).sort(column("a").sort(ascending=True)).collect()
-    rows = pa.concat_arrays([b.column(0) for b in batches]).to_pylist()
-    assert rows == [1, 2]
-
-
-def test_union_by_name_distinct():
-    ctx = SessionContext()
-    df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
-    df2 = ctx.from_pydict({"b": [10], "a": [1]})
-    batches = df1.union_by_name_distinct(df2).collect()
-    total_rows = sum(b.num_rows for b in batches)
-    assert total_rows == 1
+    assert result.column(0).to_pylist() == expected_a
+    assert result.column(1).to_pylist() == expected_b
 
 
 def test_distinct_on():
@@ -3627,50 +3636,38 @@ def test_distinct_on():
     assert result.column(1).to_pylist() == [10, 30]
 
 
-def test_sort_by():
+@pytest.mark.parametrize(
+    "input_values",
+    [
+        [3, 1, 2],
+        [1, 2, 3],
+    ],
+)
+def test_sort_by(input_values):
+    """sort_by always sorts ascending with nulls last regardless of input order."""
     ctx = SessionContext()
-    df = ctx.from_pydict({"a": [3, 1, 2]})
+    df = ctx.from_pydict({"a": input_values})
     result = df.sort_by(column("a")).collect()[0]
-    # sort_by always sorts ascending with nulls last
     assert result.column(0).to_pylist() == [1, 2, 3]
 
 
-def test_sort_by_is_always_ascending():
-    """Verify sort_by uses ascending order regardless of input order."""
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1, 2, 3]})
-    result = df.sort_by(column("a")).collect()[0]
-    assert result.column(0).to_pylist() == [1, 2, 3]
-
-
-def test_explain_with_format(capsys):
+@pytest.mark.parametrize(
+    ("fmt", "verbose", "analyze"),
+    [
+        (None, False, False),
+        ("TREE", False, False),
+        ("INDENT", True, True),
+        ("PGJSON", False, False),
+        ("GRAPHVIZ", False, False),
+    ],
+)
+def test_explain_with_format(capsys, fmt, verbose, analyze):
     from datafusion import ExplainFormat
 
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1]})
-
-    # Default format works
-    df.explain()
-    captured = capsys.readouterr()
-    assert "plan_type" in captured.out
-
-    # Tree format produces box-drawing characters
-    df.explain(format=ExplainFormat.TREE)
-    captured = capsys.readouterr()
-    assert "\u250c" in captured.out or "plan_type" in captured.out
-
-    # Verbose + analyze still works with format
-    df.explain(verbose=True, analyze=True, format=ExplainFormat.INDENT)
-    captured = capsys.readouterr()
-    assert "plan_type" in captured.out
-
-    # PGJSON format produces valid output
-    df.explain(format=ExplainFormat.PGJSON)
-    captured = capsys.readouterr()
-    assert "plan_type" in captured.out
-
-    # Graphviz format produces DOT output
-    df.explain(format=ExplainFormat.GRAPHVIZ)
+    explain_fmt = ExplainFormat[fmt] if fmt is not None else None
+    df.explain(verbose=verbose, analyze=analyze, format=explain_fmt)
     captured = capsys.readouterr()
     assert "plan_type" in captured.out
 
