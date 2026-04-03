@@ -673,7 +673,7 @@ def test_map_from_dict():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(f.map({"x": 1, "y": 2}).alias("m")).collect()[0].column(0)
+    result = df.select(f.make_map({"x": 1, "y": 2}).alias("m")).collect()[0].column(0)
     assert result[0].as_py() == [("x", 1), ("y", 2)]
 
 
@@ -683,7 +683,7 @@ def test_map_from_dict_with_expr_values():
     df = ctx.create_dataframe([[batch]])
 
     result = (
-        df.select(f.map({"x": literal(1), "y": literal(2)}).alias("m"))
+        df.select(f.make_map({"x": literal(1), "y": literal(2)}).alias("m"))
         .collect()[0]
         .column(0)
     )
@@ -701,7 +701,7 @@ def test_map_from_two_lists():
     )
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map([column("keys")], [column("vals")])
+    m = f.make_map([column("keys")], [column("vals")])
     result = df.select(f.map_keys(m).alias("k")).collect()[0].column(0)
     for i, expected in enumerate(["k1", "k2", "k3"]):
         assert result[i].as_py() == [expected]
@@ -716,7 +716,7 @@ def test_map_from_variadic_pairs():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(f.map("x", 1, "y", 2).alias("m")).collect()[0].column(0)
+    result = df.select(f.make_map("x", 1, "y", 2).alias("m")).collect()[0].column(0)
     assert result[0].as_py() == [("x", 1), ("y", 2)]
 
 
@@ -726,25 +726,23 @@ def test_map_variadic_with_exprs():
     df = ctx.create_dataframe([[batch]])
 
     result = (
-        df.select(f.map(literal("x"), literal(1), literal("y"), literal(2)).alias("m"))
+        df.select(
+            f.make_map(literal("x"), literal(1), literal("y"), literal(2)).alias("m")
+        )
         .collect()[0]
         .column(0)
     )
     assert result[0].as_py() == [("x", 1), ("y", 2)]
 
 
-def test_map_odd_args_raises():
-    with pytest.raises(ValueError, match="map expects"):
-        f.map("x", 1, "y")
+def test_make_map_odd_args_raises():
+    with pytest.raises(ValueError, match="make_map expects"):
+        f.make_map("x", 1, "y")
 
 
-def test_make_map_is_alias():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
-    df = ctx.create_dataframe([[batch]])
-
-    result = df.select(f.make_map({"x": 1, "y": 2}).alias("m")).collect()[0].column(0)
-    assert result[0].as_py() == [("x", 1), ("y", 2)]
+def test_make_map_mismatched_lengths():
+    with pytest.raises(ValueError, match="same length"):
+        f.make_map(["a", "b"], [1])
 
 
 def test_map_keys():
@@ -752,7 +750,7 @@ def test_map_keys():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"x": 1, "y": 2})
+    m = f.make_map({"x": 1, "y": 2})
     result = df.select(f.map_keys(m).alias("keys")).collect()[0].column(0)
     assert result[0].as_py() == ["x", "y"]
 
@@ -762,7 +760,7 @@ def test_map_values():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"x": 1, "y": 2})
+    m = f.make_map({"x": 1, "y": 2})
     result = df.select(f.map_values(m).alias("vals")).collect()[0].column(0)
     assert result[0].as_py() == [1, 2]
 
@@ -772,7 +770,7 @@ def test_map_extract():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"x": 1, "y": 2})
+    m = f.make_map({"x": 1, "y": 2})
     result = (
         df.select(f.map_extract(m, literal("x")).alias("val")).collect()[0].column(0)
     )
@@ -784,7 +782,7 @@ def test_map_extract_missing_key():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"x": 1})
+    m = f.make_map({"x": 1})
     result = (
         df.select(f.map_extract(m, literal("z")).alias("val")).collect()[0].column(0)
     )
@@ -796,7 +794,7 @@ def test_map_entries():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"x": 1, "y": 2})
+    m = f.make_map({"x": 1, "y": 2})
     result = df.select(f.map_entries(m).alias("entries")).collect()[0].column(0)
     assert result[0].as_py() == [
         {"key": "x", "value": 1},
@@ -809,7 +807,7 @@ def test_element_at():
     batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
     df = ctx.create_dataframe([[batch]])
 
-    m = f.map({"a": 10, "b": 20})
+    m = f.make_map({"a": 10, "b": 20})
     result = (
         df.select(f.element_at(m, literal("b")).alias("val")).collect()[0].column(0)
     )
