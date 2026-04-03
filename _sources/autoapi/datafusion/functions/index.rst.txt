@@ -95,6 +95,7 @@ Functions
    datafusion.functions.col
    datafusion.functions.concat
    datafusion.functions.concat_ws
+   datafusion.functions.contains
    datafusion.functions.corr
    datafusion.functions.cos
    datafusion.functions.cosh
@@ -1576,6 +1577,20 @@ Module Contents
    ...     dfn.functions.concat_ws("-", dfn.col("a"), dfn.col("b")).alias("c"))
    >>> result.collect_column("c")[0].as_py()
    'hello-world'
+
+
+.. py:function:: contains(string: datafusion.expr.Expr, search_str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if ``search_str`` is found within ``string`` (case-sensitive).
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["the quick brown fox"]})
+   >>> result = df.select(
+   ...     dfn.functions.contains(dfn.col("a"), dfn.lit("brown")).alias("c"))
+   >>> result.collect_column("c")[0].as_py()
+   True
 
 
 .. py:function:: corr(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
