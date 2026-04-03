@@ -1082,8 +1082,8 @@ class DataFrame:
         """Calculate the set difference with deduplication.
 
         Returns rows that are in this DataFrame but not in ``other``,
-        removing any duplicates. This is the complement of :py:meth:`except_all`
-        which preserves duplicates.
+        removing any duplicates. In contrast, :py:meth:`except_all` preserves
+        duplicate rows.
 
         The two :py:class:`DataFrame` must have exactly the same schema.
 
@@ -1098,8 +1098,8 @@ class DataFrame:
     def intersect_distinct(self, other: DataFrame) -> DataFrame:
         """Calculate the intersection with deduplication.
 
-        Returns distinct rows that appear in both DataFrames. This is the
-        complement of :py:meth:`intersect` which preserves duplicates.
+        Returns distinct rows that appear in both DataFrames. In contrast,
+        :py:meth:`intersect` preserves duplicate rows.
 
         The two :py:class:`DataFrame` must have exactly the same schema.
 

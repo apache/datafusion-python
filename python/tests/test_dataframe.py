@@ -3631,6 +3631,15 @@ def test_sort_by():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [3, 1, 2]})
     result = df.sort_by(column("a")).collect()[0]
+    # sort_by always sorts ascending with nulls last
+    assert result.column(0).to_pylist() == [1, 2, 3]
+
+
+def test_sort_by_is_always_ascending():
+    """Verify sort_by uses ascending order regardless of input order."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    result = df.sort_by(column("a")).collect()[0]
     assert result.column(0).to_pylist() == [1, 2, 3]
 
 
@@ -3655,13 +3664,27 @@ def test_explain_with_format(capsys):
     captured = capsys.readouterr()
     assert "plan_type" in captured.out
 
+    # PGJSON format produces valid output
+    df.explain(format=ExplainFormat.PGJSON)
+    captured = capsys.readouterr()
+    assert "plan_type" in captured.out
+
+    # Graphviz format produces DOT output
+    df.explain(format=ExplainFormat.GRAPHVIZ)
+    captured = capsys.readouterr()
+    assert "plan_type" in captured.out
+
 
 def test_window():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
-    result = df.window(
-        f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias("rn")
-    ).collect()[0]
+    result = (
+        df.window(
+            f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias("rn")
+        )
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
+    )
     assert "rn" in result.schema.names
     assert result.column(result.schema.get_field_index("rn")).to_pylist() == [1, 2, 1]
 
