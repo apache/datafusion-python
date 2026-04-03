@@ -745,6 +745,7 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.split_part(column("a"), literal("l"), literal(1)),
             pa.array(["He", "Wor", "!"]),
         ),
+        (f.contains(column("a"), literal("ell")), pa.array([True, False, False])),
         (f.starts_with(column("a"), literal("Wor")), pa.array([False, True, False])),
         (f.strpos(column("a"), literal("o")), pa.array([5, 2, 0], type=pa.int32())),
         (
