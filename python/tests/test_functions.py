@@ -1143,11 +1143,8 @@ def test_make_time(df):
 
 def test_arrow_cast(df):
     df = df.select(
-        # we use `string_literal` to return utf8 instead of `literal` which returns
-        # utf8view because datafusion.arrow_cast expects a utf8 instead of utf8view
-        # https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
-        f.arrow_cast(column("b"), string_literal("Float64")).alias("b_as_float"),
-        f.arrow_cast(column("b"), string_literal("Int32")).alias("b_as_int"),
+        f.arrow_cast(column("b"), "Float64").alias("b_as_float"),
+        f.arrow_cast(column("b"), "Int32").alias("b_as_int"),
     )
     result = df.collect()
     assert len(result) == 1
@@ -1673,20 +1670,35 @@ def test_get_field(df):
         ),
     )
     result = df.select(
-        f.get_field(column("s"), string_literal("x")).alias("x_val"),
-        f.get_field(column("s"), string_literal("y")).alias("y_val"),
+        f.get_field(column("s"), "x").alias("x_val"),
+        f.get_field(column("s"), "y").alias("y_val"),
     ).collect()[0]
 
     assert result.column(0) == pa.array(["Hello", "World", "!"], type=pa.string_view())
     assert result.column(1) == pa.array([4, 5, 6])
 
 
-def test_arrow_metadata(df):
+def test_arrow_metadata():
+    ctx = SessionContext()
+    field = pa.field("val", pa.int64(), metadata={"key1": "value1", "key2": "value2"})
+    schema = pa.schema([field])
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], schema=schema)
+    df = ctx.create_dataframe([[batch]])
+
+    # One-argument form: returns a Map of all metadata key-value pairs
     result = df.select(
-        f.arrow_metadata(column("a")).alias("meta"),
+        f.arrow_metadata(column("val")).alias("meta"),
     ).collect()[0]
-    # The metadata column should be returned as a map type (possibly empty)
     assert result.column(0).type == pa.map_(pa.utf8(), pa.utf8())
+    meta = result.column(0)[0].as_py()
+    assert ("key1", "value1") in meta
+    assert ("key2", "value2") in meta
+
+    # Two-argument form: returns the value for a specific metadata key
+    result = df.select(
+        f.arrow_metadata(column("val"), string_literal("key1")).alias("meta_val"),
+    ).collect()[0]
+    assert result.column(0)[0].as_py() == "value1"
 
 
 def test_version():
@@ -1726,7 +1738,5 @@ def test_union_extract():
     arr = pa.UnionArray.from_dense(types, offsets, children, ["int", "str"], [0, 1])
     df = ctx.create_dataframe([[pa.RecordBatch.from_arrays([arr], names=["u"])]])
 
-    result = df.select(
-        f.union_extract(column("u"), string_literal("int")).alias("val")
-    ).collect()[0]
+    result = df.select(f.union_extract(column("u"), "int").alias("val")).collect()[0]
     assert result.column(0).to_pylist() == [1, None, 2]

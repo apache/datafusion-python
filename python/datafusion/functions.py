@@ -2602,19 +2602,20 @@ def arrow_typeof(arg: Expr) -> Expr:
     return Expr(f.arrow_typeof(arg.expr))
 
 
-def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
+def arrow_cast(expr: Expr, data_type: Expr | str) -> Expr:
     """Casts an expression to a specified data type.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
-        >>> data_type = dfn.string_literal("Float64")
         >>> result = df.select(
-        ...     dfn.functions.arrow_cast(dfn.col("a"), data_type).alias("c")
+        ...     dfn.functions.arrow_cast(dfn.col("a"), "Float64").alias("c")
         ... )
         >>> result.collect_column("c")[0].as_py()
         1.0
     """
+    if isinstance(data_type, str):
+        data_type = Expr.string_literal(data_type)
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
@@ -2630,11 +2631,10 @@ def arrow_metadata(*args: Expr) -> Expr:
     Returns:
         A Map of metadata or a specific metadata value.
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.arrow_metadata(*args))
+    return Expr(f.arrow_metadata(*[arg.expr for arg in args]))
 
 
-def get_field(expr: Expr, name: Expr) -> Expr:
+def get_field(expr: Expr, name: Expr | str) -> Expr:
     """Extracts a field from a struct or map by name.
 
     Args:
@@ -2644,10 +2644,12 @@ def get_field(expr: Expr, name: Expr) -> Expr:
     Returns:
         The value of the named field.
     """
+    if isinstance(name, str):
+        name = Expr.string_literal(name)
     return Expr(f.get_field(expr.expr, name.expr))
 
 
-def union_extract(union_expr: Expr, field_name: Expr) -> Expr:
+def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:
     """Extracts a value from a union type by field name.
 
     Returns the value of the named field if it is the currently selected
@@ -2660,6 +2662,8 @@ def union_extract(union_expr: Expr, field_name: Expr) -> Expr:
     Returns:
         The extracted value or NULL.
     """
+    if isinstance(field_name, str):
+        field_name = Expr.string_literal(field_name)
     return Expr(f.union_extract(union_expr.expr, field_name.expr))
 
 
