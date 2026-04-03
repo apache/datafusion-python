@@ -2619,19 +2619,24 @@ def arrow_cast(expr: Expr, data_type: Expr | str) -> Expr:
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
-def arrow_metadata(*args: Expr) -> Expr:
+def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     """Returns the metadata of the input expression.
 
     If called with one argument, returns a Map of all metadata key-value pairs.
     If called with two arguments, returns the value for the specified metadata key.
 
     Args:
-        args: An expression, optionally followed by a metadata key string.
+        expr: An expression whose metadata to retrieve.
+        key: Optional metadata key to look up. Can be a string or an Expr.
 
     Returns:
         A Map of metadata or a specific metadata value.
     """
-    return Expr(f.arrow_metadata(*[arg.expr for arg in args]))
+    if key is None:
+        return Expr(f.arrow_metadata(expr.expr))
+    if isinstance(key, str):
+        key = Expr.string_literal(key)
+    return Expr(f.arrow_metadata(expr.expr, key.expr))
 
 
 def get_field(expr: Expr, name: Expr | str) -> Expr:

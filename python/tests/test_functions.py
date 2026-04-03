@@ -20,7 +20,7 @@ from datetime import date, datetime, time, timezone
 import numpy as np
 import pyarrow as pa
 import pytest
-from datafusion import SessionContext, column, literal, string_literal
+from datafusion import SessionContext, column, literal
 from datafusion import functions as f
 
 np.seterr(invalid="ignore")
@@ -1696,7 +1696,7 @@ def test_arrow_metadata():
 
     # Two-argument form: returns the value for a specific metadata key
     result = df.select(
-        f.arrow_metadata(column("val"), string_literal("key1")).alias("meta_val"),
+        f.arrow_metadata(column("val"), "key1").alias("meta_val"),
     ).collect()[0]
     assert result.column(0)[0].as_py() == "value1"
 
