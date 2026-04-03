@@ -131,6 +131,8 @@ Functions
    datafusion.functions.floor
    datafusion.functions.from_unixtime
    datafusion.functions.gcd
+   datafusion.functions.greatest
+   datafusion.functions.ifnull
    datafusion.functions.in_list
    datafusion.functions.initcap
    datafusion.functions.isnan
@@ -139,6 +141,7 @@ Functions
    datafusion.functions.last_value
    datafusion.functions.lcm
    datafusion.functions.lead
+   datafusion.functions.least
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
@@ -195,6 +198,7 @@ Functions
    datafusion.functions.ntile
    datafusion.functions.nullif
    datafusion.functions.nvl
+   datafusion.functions.nvl2
    datafusion.functions.octet_length
    datafusion.functions.order_by
    datafusion.functions.overlay
@@ -2248,6 +2252,31 @@ Module Contents
    4
 
 
+.. py:function:: greatest(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the greatest value from a list of expressions.
+
+   Returns NULL if all expressions are NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+   >>> result = df.select(
+   ...     dfn.functions.greatest(dfn.col("a"), dfn.col("b")).alias("greatest"))
+   >>> result.collect_column("greatest")[0].as_py()
+   2
+   >>> result.collect_column("greatest")[1].as_py()
+   3
+
+
+.. py:function:: ifnull(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
+
+   .. seealso:: This is an alias for :py:func:`nvl`.
+
+
 .. py:function:: in_list(arg: datafusion.expr.Expr, values: list[datafusion.expr.Expr], negated: bool = False) -> datafusion.expr.Expr
 
    Returns whether the argument is contained within the list ``values``.
@@ -2476,6 +2505,24 @@ Module Contents
    ...     ).alias("lead"))
    >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lead").to_pylist()
    [2, 0, 0]
+
+
+.. py:function:: least(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the least value from a list of expressions.
+
+   Returns NULL if all expressions are NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+   >>> result = df.select(
+   ...     dfn.functions.least(dfn.col("a"), dfn.col("b")).alias("least"))
+   >>> result.collect_column("least")[0].as_py()
+   1
+   >>> result.collect_column("least")[1].as_py()
+   1
 
 
 .. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3188,6 +3235,24 @@ Module Contents
    0
    >>> nvl_df.collect_column("nvl")[1].as_py()
    1
+
+
+.. py:function:: nvl2(x: datafusion.expr.Expr, y: datafusion.expr.Expr, z: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [None, 1], "b": [10, 20], "c": [30, 40]})
+   >>> result = df.select(
+   ...     dfn.functions.nvl2(
+   ...         dfn.col("a"), dfn.col("b"), dfn.col("c")).alias("nvl2")
+   ... )
+   >>> result.collect_column("nvl2")[0].as_py()
+   30
+   >>> result.collect_column("nvl2")[1].as_py()
+   20
 
 
 .. py:function:: octet_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr

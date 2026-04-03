@@ -1414,6 +1414,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.greatest">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       greatest()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.ifnull">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ifnull()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.functions.in_list">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1481,6 +1499,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        lead()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.least">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       least()
       </span>
      </code>
     </a>
@@ -1985,6 +2012,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        nvl()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.nvl2">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       nvl2()
       </span>
      </code>
     </a>
@@ -3058,6 +3094,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.gcd" title="datafusion.functions.gcd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gcd</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the greatest common divisor.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.greatest" title="datafusion.functions.greatest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">greatest</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Returns the greatest value from a list of expressions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.ifnull" title="datafusion.functions.ifnull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ifnull</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Returns <code class="docutils literal notranslate"><span class="pre">x</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not NULL. Otherwise returns <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.in_list" title="datafusion.functions.in_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">in_list</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns whether the argument is contained within the list <code class="docutils literal notranslate"><span class="pre">values</span></code>.</p></td>
 </tr>
@@ -3082,173 +3124,179 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.lead" title="datafusion.functions.lead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lead</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Create a lead window function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.left" title="datafusion.functions.left"><code class="xref py py-obj docutils literal notranslate"><span class="pre">left</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.least" title="datafusion.functions.least"><code class="xref py py-obj docutils literal notranslate"><span class="pre">least</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Returns the least value from a list of expressions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.left" title="datafusion.functions.left"><code class="xref py py-obj docutils literal notranslate"><span class="pre">left</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the first <code class="docutils literal notranslate"><span class="pre">n</span></code> characters in the <code class="docutils literal notranslate"><span class="pre">string</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.length" title="datafusion.functions.length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">length</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.length" title="datafusion.functions.length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">length</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>The number of characters in the <code class="docutils literal notranslate"><span class="pre">string</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.levenshtein" title="datafusion.functions.levenshtein"><code class="xref py py-obj docutils literal notranslate"><span class="pre">levenshtein</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.levenshtein" title="datafusion.functions.levenshtein"><code class="xref py py-obj docutils literal notranslate"><span class="pre">levenshtein</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the Levenshtein distance between the two given strings.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_append" title="datafusion.functions.list_append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_append</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_append" title="datafusion.functions.list_append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_append</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Appends an element to the end of an array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_cat" title="datafusion.functions.list_cat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_cat</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_cat" title="datafusion.functions.list_cat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_cat</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Concatenates the input arrays.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_concat" title="datafusion.functions.list_concat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_concat</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_concat" title="datafusion.functions.list_concat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_concat</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Concatenates the input arrays.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_dims" title="datafusion.functions.list_dims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_dims</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_dims" title="datafusion.functions.list_dims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_dims</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array of the array's dimensions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_distinct" title="datafusion.functions.list_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_distinct</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_distinct" title="datafusion.functions.list_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_distinct</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns distinct values from the array after removing duplicates.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_element" title="datafusion.functions.list_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_element</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_element" title="datafusion.functions.list_element"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_element</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Extracts the element with the index n from the array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_except" title="datafusion.functions.list_except"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_except</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_except" title="datafusion.functions.list_except"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_except</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the elements that appear in <code class="docutils literal notranslate"><span class="pre">array1</span></code> but not in the <code class="docutils literal notranslate"><span class="pre">array2</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_extract" title="datafusion.functions.list_extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_extract</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_extract" title="datafusion.functions.list_extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_extract</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Extracts the element with the index n from the array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_indexof" title="datafusion.functions.list_indexof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_indexof</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_indexof" title="datafusion.functions.list_indexof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_indexof</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Return the position of the first occurrence of <code class="docutils literal notranslate"><span class="pre">element</span></code> in <code class="docutils literal notranslate"><span class="pre">array</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_intersect" title="datafusion.functions.list_intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_intersect</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_intersect" title="datafusion.functions.list_intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_intersect</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an the intersection of <code class="docutils literal notranslate"><span class="pre">array1</span></code> and <code class="docutils literal notranslate"><span class="pre">array2</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_join" title="datafusion.functions.list_join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_join</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_join" title="datafusion.functions.list_join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_join</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts each element to its text representation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_length" title="datafusion.functions.list_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_length</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_length" title="datafusion.functions.list_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_length</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the length of the array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_ndims" title="datafusion.functions.list_ndims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_ndims</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_ndims" title="datafusion.functions.list_ndims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_ndims</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the number of dimensions of the array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_position" title="datafusion.functions.list_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_position</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_position" title="datafusion.functions.list_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_position</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Return the position of the first occurrence of <code class="docutils literal notranslate"><span class="pre">element</span></code> in <code class="docutils literal notranslate"><span class="pre">array</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_positions" title="datafusion.functions.list_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_positions</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_positions" title="datafusion.functions.list_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_positions</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Searches for an element in the array and returns all occurrences.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_prepend" title="datafusion.functions.list_prepend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_prepend</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_prepend" title="datafusion.functions.list_prepend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_prepend</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Prepends an element to the beginning of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_push_back" title="datafusion.functions.list_push_back"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_push_back</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_push_back" title="datafusion.functions.list_push_back"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_push_back</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Appends an element to the end of an array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_push_front" title="datafusion.functions.list_push_front"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_push_front</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_push_front" title="datafusion.functions.list_push_front"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_push_front</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Prepends an element to the beginning of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_remove" title="datafusion.functions.list_remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_remove" title="datafusion.functions.list_remove"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Removes the first element from the array equal to the given value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_remove_all" title="datafusion.functions.list_remove_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove_all</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_remove_all" title="datafusion.functions.list_remove_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove_all</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Removes all elements from the array equal to the given value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_remove_n" title="datafusion.functions.list_remove_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove_n</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_remove_n" title="datafusion.functions.list_remove_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_remove_n</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Removes the first <code class="docutils literal notranslate"><span class="pre">max</span></code> elements from the array equal to the given value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_repeat" title="datafusion.functions.list_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_repeat</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_repeat" title="datafusion.functions.list_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_repeat</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array containing <code class="docutils literal notranslate"><span class="pre">element</span></code> <code class="docutils literal notranslate"><span class="pre">count</span></code> times.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_replace" title="datafusion.functions.list_replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_replace" title="datafusion.functions.list_replace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Replaces the first occurrence of <code class="docutils literal notranslate"><span class="pre">from_val</span></code> with <code class="docutils literal notranslate"><span class="pre">to_val</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_replace_all" title="datafusion.functions.list_replace_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace_all</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_replace_all" title="datafusion.functions.list_replace_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace_all</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Replaces all occurrences of <code class="docutils literal notranslate"><span class="pre">from_val</span></code> with <code class="docutils literal notranslate"><span class="pre">to_val</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_replace_n" title="datafusion.functions.list_replace_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace_n</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_replace_n" title="datafusion.functions.list_replace_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_replace_n</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Replace <code class="docutils literal notranslate"><span class="pre">n</span></code> occurrences of <code class="docutils literal notranslate"><span class="pre">from_val</span></code> with <code class="docutils literal notranslate"><span class="pre">to_val</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_resize" title="datafusion.functions.list_resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_resize</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_resize" title="datafusion.functions.list_resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_resize</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array with the specified size filled.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_slice" title="datafusion.functions.list_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_slice</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_slice" title="datafusion.functions.list_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_slice</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns a slice of the array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_sort" title="datafusion.functions.list_sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_sort</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_sort" title="datafusion.functions.list_sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_sort</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Sorts the array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_to_string" title="datafusion.functions.list_to_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_to_string</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_to_string" title="datafusion.functions.list_to_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_to_string</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts each element to its text representation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.list_union" title="datafusion.functions.list_union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_union</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.list_union" title="datafusion.functions.list_union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_union</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array of the elements in the union of array1 and array2.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.ln" title="datafusion.functions.ln"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ln</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.ln" title="datafusion.functions.ln"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ln</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the natural logarithm (base e) of the argument.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.log" title="datafusion.functions.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.log" title="datafusion.functions.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the logarithm of a number for a particular <code class="docutils literal notranslate"><span class="pre">base</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.log10" title="datafusion.functions.log10"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log10</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.log10" title="datafusion.functions.log10"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log10</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Base 10 logarithm of the argument.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.log2" title="datafusion.functions.log2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log2</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.log2" title="datafusion.functions.log2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log2</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Base 2 logarithm of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.lower" title="datafusion.functions.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.lower" title="datafusion.functions.lower"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lower</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string to lowercase.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.lpad" title="datafusion.functions.lpad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lpad</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.lpad" title="datafusion.functions.lpad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lpad</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Add left padding to a string.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.ltrim" title="datafusion.functions.ltrim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltrim</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.ltrim" title="datafusion.functions.ltrim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ltrim</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Removes all characters, spaces by default, from the beginning of a string.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.make_array" title="datafusion.functions.make_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_array</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.make_array" title="datafusion.functions.make_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_array</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array using the specified input expressions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.make_date" title="datafusion.functions.make_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_date</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.make_date" title="datafusion.functions.make_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_date</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Make a date from year, month and day component parts.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.make_list" title="datafusion.functions.make_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_list</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.make_list" title="datafusion.functions.make_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_list</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns an array using the specified input expressions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.make_time" title="datafusion.functions.make_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_time</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.make_time" title="datafusion.functions.make_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_time</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Make a time from hour, minute and second component parts.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.max" title="datafusion.functions.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.max" title="datafusion.functions.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Aggregate function that returns the maximum value of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.md5" title="datafusion.functions.md5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">md5</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.md5" title="datafusion.functions.md5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">md5</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes an MD5 128-bit checksum for a string expression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.mean" title="datafusion.functions.mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mean</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.mean" title="datafusion.functions.mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mean</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the average (mean) value of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.median" title="datafusion.functions.median"><code class="xref py py-obj docutils literal notranslate"><span class="pre">median</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.median" title="datafusion.functions.median"><code class="xref py py-obj docutils literal notranslate"><span class="pre">median</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the median of a set of numbers.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.min" title="datafusion.functions.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.min" title="datafusion.functions.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Aggregate function that returns the minimum value of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.named_struct" title="datafusion.functions.named_struct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_struct</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.named_struct" title="datafusion.functions.named_struct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_struct</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns a struct with the given names and arguments pairs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.nanvl" title="datafusion.functions.nanvl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nanvl</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.nanvl" title="datafusion.functions.nanvl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nanvl</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns <code class="docutils literal notranslate"><span class="pre">x</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not <code class="docutils literal notranslate"><span class="pre">NaN</span></code>. Otherwise returns <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.now" title="datafusion.functions.now"><code class="xref py py-obj docutils literal notranslate"><span class="pre">now</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.now" title="datafusion.functions.now"><code class="xref py py-obj docutils literal notranslate"><span class="pre">now</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the current timestamp in nanoseconds.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.nth_value" title="datafusion.functions.nth_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nth_value</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.nth_value" title="datafusion.functions.nth_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nth_value</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the n-th value in a group of values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.ntile" title="datafusion.functions.ntile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ntile</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.ntile" title="datafusion.functions.ntile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ntile</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Create a n-tile window function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.nullif" title="datafusion.functions.nullif"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nullif</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.nullif" title="datafusion.functions.nullif"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nullif</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns NULL if expr1 equals expr2; otherwise it returns expr1.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.nvl" title="datafusion.functions.nvl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nvl</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.nvl" title="datafusion.functions.nvl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nvl</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns <code class="docutils literal notranslate"><span class="pre">x</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not <code class="docutils literal notranslate"><span class="pre">NULL</span></code>. Otherwise returns <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.nvl2" title="datafusion.functions.nvl2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nvl2</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Returns <code class="docutils literal notranslate"><span class="pre">y</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not NULL. Otherwise returns <code class="docutils literal notranslate"><span class="pre">z</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.octet_length" title="datafusion.functions.octet_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">octet_length</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the number of bytes of a string.</p></td>
@@ -5674,6 +5722,34 @@ column names or expressions.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.greatest">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">greatest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.greatest" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the greatest value from a list of expressions.</p>
+<p>Returns NULL if all expressions are NULL.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">greatest</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;greatest&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;greatest&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;greatest&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.ifnull">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">ifnull</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.ifnull" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">x</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not NULL. Otherwise returns <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.functions.nvl" title="datafusion.functions.nvl"><code class="xref py py-func docutils literal notranslate"><span class="pre">nvl()</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.in_list">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.in_list" title="Link to this definition">¶</a></dt>
 <dd><p>Returns whether the argument is contained within the list <code class="docutils literal notranslate"><span class="pre">values</span></code>.</p>
@@ -5920,6 +5996,24 @@ column names or expressions.</p></li>
 <span class="gp">... </span>    <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;lead&quot;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;lead&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()</span>
 <span class="go">[2, 0, 0]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.least">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">least</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.least" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the least value from a list of expressions.</p>
+<p>Returns NULL if all expressions are NULL.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">least</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;least&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;least&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;least&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -6771,6 +6865,25 @@ column names or expressions.</p></li>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nvl_df</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;nvl&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 <span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.nvl2">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">nvl2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.nvl2" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">y</span></code> if <code class="docutils literal notranslate"><span class="pre">x</span></code> is not NULL. Otherwise returns <code class="docutils literal notranslate"><span class="pre">z</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">nvl2</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;nvl2&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;nvl2&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">30</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;nvl2&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">20</span>
 </pre></div>
 </div>
 </dd></dl>
