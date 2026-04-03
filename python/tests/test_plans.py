@@ -92,7 +92,7 @@ def test_metric_properties() -> None:
             assert len(metric.name) > 0
             assert metric.partition is None or isinstance(metric.partition, int)
             assert metric.value is None or isinstance(
-                metric.value, (int, datetime.datetime)
+                metric.value, int | datetime.datetime
             )
             assert isinstance(metric.labels(), dict)
             mr = repr(metric)
@@ -136,9 +136,7 @@ def test_collect_partitioned_metrics() -> None:
     plan = df.execution_plan()
 
     output_rows_values = [
-        ms.output_rows
-        for _, ms in plan.collect_metrics()
-        if ms.output_rows is not None
+        ms.output_rows for _, ms in plan.collect_metrics() if ms.output_rows is not None
     ]
     assert 2 in output_rows_values, f"Expected 2 in {output_rows_values}"
 
@@ -153,9 +151,7 @@ def test_execute_stream_metrics() -> None:
 
     plan = df.execution_plan()
     output_rows_values = [
-        ms.output_rows
-        for _, ms in plan.collect_metrics()
-        if ms.output_rows is not None
+        ms.output_rows for _, ms in plan.collect_metrics() if ms.output_rows is not None
     ]
     assert 2 in output_rows_values, f"Expected 2 in {output_rows_values}"
 
@@ -171,9 +167,7 @@ def test_execute_stream_partitioned_metrics() -> None:
 
     plan = df.execution_plan()
     output_rows_values = [
-        ms.output_rows
-        for _, ms in plan.collect_metrics()
-        if ms.output_rows is not None
+        ms.output_rows for _, ms in plan.collect_metrics() if ms.output_rows is not None
     ]
     assert 2 in output_rows_values, f"Expected 2 in {output_rows_values}"
 
@@ -233,8 +227,6 @@ def test_collect_twice_has_metrics() -> None:
 
     plan = df.execution_plan()
     output_rows_values = [
-        ms.output_rows
-        for _, ms in plan.collect_metrics()
-        if ms.output_rows is not None
+        ms.output_rows for _, ms in plan.collect_metrics() if ms.output_rows is not None
     ]
     assert len(output_rows_values) > 0

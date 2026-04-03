@@ -41,6 +41,11 @@ use datafusion::execution::context::TaskContext;
 use datafusion::logical_expr::SortExpr;
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
+use datafusion::physical_plan::{
+    ExecutionPlan as DFExecutionPlan, collect as df_collect,
+    collect_partitioned as df_collect_partitioned, execute_stream as df_execute_stream,
+    execute_stream_partitioned as df_execute_stream_partitioned,
+};
 use datafusion::prelude::*;
 use datafusion_python_util::{is_ipython_env, spawn_future, wait_for_future};
 use futures::{StreamExt, TryStreamExt};
@@ -52,13 +57,6 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 
 use crate::common::data_type::PyScalarValue;
-use datafusion::physical_plan::{
-    ExecutionPlan as DFExecutionPlan,
-    collect as df_collect,
-    collect_partitioned as df_collect_partitioned,
-    execute_stream as df_execute_stream,
-    execute_stream_partitioned as df_execute_stream_partitioned,
-};
 use crate::errors::{PyDataFusionError, PyDataFusionResult, py_datafusion_err};
 use crate::expr::PyExpr;
 use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
@@ -672,8 +670,8 @@ impl PyDataFrame {
     /// guarantee of the order of the result.
     fn collect<'py>(&self, py: Python<'py>) -> PyResult<Vec<Bound<'py, PyAny>>> {
         let (plan, task_ctx) = self.create_and_cache_plan(py)?;
-        let batches = wait_for_future(py, df_collect(plan, task_ctx))?
-            .map_err(PyDataFusionError::from)?;
+        let batches =
+            wait_for_future(py, df_collect(plan, task_ctx))?.map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
@@ -1187,9 +1185,10 @@ impl PyDataFrame {
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
         let (plan, task_ctx) = self.create_and_cache_plan(py)?;
-        let streams = spawn_future(py, async move {
-            df_execute_stream_partitioned(plan, task_ctx)
-        })?;
+        let streams = spawn_future(
+            py,
+            async move { df_execute_stream_partitioned(plan, task_ctx) },
+        )?;
         Ok(streams.into_iter().map(PyRecordBatchStream::new).collect())
     }
 

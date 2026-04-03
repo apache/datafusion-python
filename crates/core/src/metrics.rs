@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use datafusion::physical_plan::metrics::{MetricValue, MetricsSet, Metric, Timestamp};
+use datafusion::physical_plan::metrics::{Metric, MetricValue, MetricsSet, Timestamp};
 use pyo3::prelude::*;
 
 #[pyclass(frozen, name = "MetricsSet", module = "datafusion")]
