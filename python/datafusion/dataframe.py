@@ -1167,9 +1167,9 @@ class DataFrame:
     def sort_by(self, *exprs: Expr | str) -> DataFrame:
         """Sort the DataFrame by column expressions in ascending order.
 
-        This is a convenience method that sorts all columns in ascending order
-        with nulls last. For more control over sort direction and null ordering,
-        use :py:meth:`sort` instead.
+        This is a convenience method that sorts the DataFrame by the given
+        expressions in ascending order with nulls last. For more control over
+        sort direction and null ordering, use :py:meth:`sort` instead.
 
         Args:
             exprs: Expressions or column names to sort by.
