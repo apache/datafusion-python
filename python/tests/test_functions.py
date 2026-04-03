@@ -1481,94 +1481,62 @@ def test_array_any_value():
     assert values[2] == 1
 
 
-def test_list_any_value():
+@pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
+def test_any_value_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[None, 5]]})
-    result = df.select(f.list_any_value(column("a")).alias("v")).collect()
+    result = df.select(func(column("a")).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == 5
 
 
-def test_array_distance():
+@pytest.mark.parametrize("func", [f.array_distance, f.list_distance])
+def test_array_distance_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
-    result = df.select(f.array_distance(column("a"), column("b")).alias("v")).collect()
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == pytest.approx(2.0)
 
 
-def test_list_distance():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[3.0, 0.0]], "b": [[0.0, 4.0]]})
-    result = df.select(f.list_distance(column("a"), column("b")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == pytest.approx(5.0)
-
-
-def test_array_max():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 5, 3], [10, 2]]})
-    result = df.select(f.array_max(column("a")).alias("v")).collect()
-    values = [row.as_py() for row in result[0].column(0)]
-    assert values == [5, 10]
-
-
-def test_list_max():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[7, 2, 9]]})
-    result = df.select(f.list_max(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == 9
-
-
-def test_array_min():
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        (f.array_max, [5, 10]),
+        (f.list_max, [5, 10]),
+        (f.array_min, [1, 2]),
+        (f.list_min, [1, 2]),
+    ],
+)
+def test_array_min_max(func, expected):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 5, 3], [10, 2]]})
-    result = df.select(f.array_min(column("a")).alias("v")).collect()
+    result = df.select(func(column("a")).alias("v")).collect()
     values = [row.as_py() for row in result[0].column(0)]
-    assert values == [1, 2]
+    assert values == expected
 
 
-def test_list_min():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[7, 2, 9]]})
-    result = df.select(f.list_min(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == 2
-
-
-def test_array_reverse():
+@pytest.mark.parametrize("func", [f.array_reverse, f.list_reverse])
+def test_array_reverse_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
-    result = df.select(f.array_reverse(column("a")).alias("v")).collect()
+    result = df.select(func(column("a")).alias("v")).collect()
     values = [row.as_py() for row in result[0].column(0)]
     assert values == [[3, 2, 1], [5, 4]]
 
 
-def test_list_reverse():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[10, 20, 30]]})
-    result = df.select(f.list_reverse(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == [30, 20, 10]
-
-
-def test_arrays_zip():
+@pytest.mark.parametrize("func", [f.arrays_zip, f.list_zip])
+def test_arrays_zip_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
-    result = df.select(f.arrays_zip(column("a"), column("b")).alias("v")).collect()
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
     values = result[0].column(0)[0].as_py()
     assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
 
 
-def test_list_zip():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
-    result = df.select(f.list_zip(column("a"), column("b")).alias("v")).collect()
-    values = result[0].column(0)[0].as_py()
-    assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
-
-
-def test_string_to_array():
+@pytest.mark.parametrize("func", [f.string_to_array, f.string_to_list])
+def test_string_to_array_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": ["hello,world,foo"]})
-    result = df.select(
-        f.string_to_array(column("a"), literal(",")).alias("v")
-    ).collect()
+    result = df.select(func(column("a"), literal(",")).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == ["hello", "world", "foo"]
 
 
@@ -1582,17 +1550,11 @@ def test_string_to_array_with_null_string():
     assert values == ["hello", None, "world"]
 
 
-def test_string_to_list():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": ["a-b-c"]})
-    result = df.select(f.string_to_list(column("a"), literal("-")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == ["a", "b", "c"]
-
-
-def test_gen_series():
+@pytest.mark.parametrize("func", [f.gen_series, f.generate_series])
+def test_gen_series_aliases(func):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [0]})
-    result = df.select(f.gen_series(literal(1), literal(5)).alias("v")).collect()
+    result = df.select(func(literal(1), literal(5)).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == [1, 2, 3, 4, 5]
 
 
@@ -1605,54 +1567,19 @@ def test_gen_series_with_step():
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
 
 
-def test_generate_series():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [0]})
-    result = df.select(f.generate_series(literal(1), literal(3)).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == [1, 2, 3]
-
-
-def test_array_contains():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(f.array_contains(column("a"), literal(2)).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() is True
-
-
-def test_list_contains():
+@pytest.mark.parametrize(
+    ("func", "element", "expected"),
+    [
+        (f.array_contains, literal(2), True),
+        (f.list_contains, literal(99), False),
+        (f.list_has, literal(2), True),
+    ],
+)
+def test_element_containment(func, element, expected):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(f.list_contains(column("a"), literal(99)).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() is False
-
-
-def test_list_empty():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[], [1, 2]]})
-    result = df.select(f.list_empty(column("a")).alias("v")).collect()
-    values = [row.as_py() for row in result[0].column(0)]
-    assert values == [True, False]
-
-
-def test_list_pop_back():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(f.list_pop_back(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == [1, 2]
-
-
-def test_list_pop_front():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(f.list_pop_front(column("a")).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() == [2, 3]
-
-
-def test_list_has():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    result = df.select(f.list_has(column("a"), literal(2)).alias("v")).collect()
-    assert result[0].column(0)[0].as_py() is True
+    result = df.select(func(column("a"), element).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() is expected
 
 
 def test_list_has_all():
@@ -1671,3 +1598,25 @@ def test_list_has_any():
         f.list_has_any(column("a"), f.make_array(literal(5), literal(2))).alias("v")
     ).collect()
     assert result[0].column(0)[0].as_py() is True
+
+
+def test_list_empty():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[], [1, 2]]})
+    result = df.select(f.list_empty(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values == [True, False]
+
+
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        (f.list_pop_back, [1, 2]),
+        (f.list_pop_front, [2, 3]),
+    ],
+)
+def test_list_pop(func, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == expected
