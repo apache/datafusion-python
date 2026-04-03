@@ -1470,7 +1470,7 @@ def test_coalesce(df):
     )
 
 
-def test_greatest(df):
+def test_greatest():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [
@@ -1523,7 +1523,7 @@ def test_greatest(df):
     assert result.column(0).to_pylist() == ["banana", "cherry"]
 
 
-def test_least(df):
+def test_least():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [
@@ -1574,7 +1574,7 @@ def test_least(df):
     assert result.column(0).to_pylist() == ["apple", "apricot"]
 
 
-def test_nvl2(df):
+def test_nvl2():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [
@@ -1608,7 +1608,7 @@ def test_nvl2(df):
     assert result.column(0).to_pylist() == ["not_null", "is_null"]
 
 
-def test_ifnull(df):
+def test_ifnull():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [

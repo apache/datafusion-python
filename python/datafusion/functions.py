@@ -1049,8 +1049,8 @@ def greatest(*args: Expr) -> Expr:
         >>> result.collect_column("greatest")[1].as_py()
         3
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.greatest(*args))
+    exprs = [arg.expr for arg in args]
+    return Expr(f.greatest(*exprs))
 
 
 def ifnull(x: Expr, y: Expr) -> Expr:
@@ -1130,8 +1130,8 @@ def least(*args: Expr) -> Expr:
         >>> result.collect_column("least")[1].as_py()
         1
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.least(*args))
+    exprs = [arg.expr for arg in args]
+    return Expr(f.least(*exprs))
 
 
 def left(string: Expr, n: Expr) -> Expr:
