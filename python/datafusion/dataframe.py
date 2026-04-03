@@ -498,6 +498,21 @@ class DataFrame:
 
         Returns:
             DataFrame with new window function columns appended.
+
+        Examples:
+            Add a row number within each group:
+
+            >>> import datafusion.functions as f
+            >>> from datafusion import col
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+            >>> df = df.window(
+            ...     f.row_number(
+            ...         partition_by=[col("b")], order_by=[col("a")]
+            ...     ).alias("rn")
+            ... )
+            >>> "rn" in df.schema().names
+            True
         """
         raw = expr_list_to_raw_expr_list(exprs)
         return DataFrame(self.df.window(*raw))
@@ -967,6 +982,18 @@ class DataFrame:
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
                 :py:attr:`ExplainFormat.INDENT`.
+
+        Examples:
+            Show the plan in tree format:
+
+            >>> from datafusion import ExplainFormat
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.explain(format=ExplainFormat.TREE)  # doctest: +SKIP
+
+            Show plan with runtime metrics:
+
+            >>> df.explain(analyze=True)  # doctest: +SKIP
         """
         fmt = format.value if format is not None else None
         self.df.explain(verbose, analyze, fmt)
@@ -1092,6 +1119,15 @@ class DataFrame:
 
         Returns:
             DataFrame after set difference with deduplication.
+
+        Examples:
+            Remove rows present in ``df2`` and deduplicate:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
+            >>> df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+            >>> df1.except_distinct(df2).sort("a").to_pydict()
+            {'a': [3], 'b': [30]}
         """
         return DataFrame(self.df.except_distinct(other.df))
 
@@ -1108,6 +1144,15 @@ class DataFrame:
 
         Returns:
             DataFrame after intersection with deduplication.
+
+        Examples:
+            Find rows common to both DataFrames:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+            >>> df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
+            >>> df1.intersect_distinct(df2).to_pydict()
+            {'a': [1], 'b': [10]}
         """
         return DataFrame(self.df.intersect_distinct(other.df))
 
@@ -1123,6 +1168,15 @@ class DataFrame:
 
         Returns:
             DataFrame after union by name.
+
+        Examples:
+            Combine DataFrames with different column orders:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1], "b": [10]})
+            >>> df2 = ctx.from_pydict({"b": [20], "a": [2]})
+            >>> df1.union_by_name(df2).sort("a").to_pydict()
+            {'a': [1, 2], 'b': [10, 20]}
         """
         return DataFrame(self.df.union_by_name(other.df))
 
@@ -1136,6 +1190,15 @@ class DataFrame:
 
         Returns:
             DataFrame after union by name with deduplication.
+
+        Examples:
+            Union by name and remove duplicate rows:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+            >>> df2 = ctx.from_pydict({"b": [10], "a": [1]})
+            >>> df1.union_by_name_distinct(df2).to_pydict()
+            {'a': [1], 'b': [10]}
         """
         return DataFrame(self.df.union_by_name_distinct(other.df))
 
@@ -1158,6 +1221,19 @@ class DataFrame:
 
         Returns:
             DataFrame after deduplication.
+
+        Examples:
+            Keep the row with the smallest ``b`` for each unique ``a``:
+
+            >>> from datafusion import col
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})
+            >>> df.distinct_on(
+            ...     [col("a")],
+            ...     [col("a"), col("b")],
+            ...     [col("a").sort(ascending=True), col("b").sort(ascending=True)],
+            ... ).sort("a").to_pydict()
+            {'a': [1, 2], 'b': [10, 30]}
         """
         on_raw = expr_list_to_raw_expr_list(on_expr)
         select_raw = expr_list_to_raw_expr_list(select_expr)
@@ -1176,6 +1252,14 @@ class DataFrame:
 
         Returns:
             DataFrame after sorting.
+
+        Examples:
+            Sort by a single column:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [3, 1, 2]})
+            >>> df.sort_by("a").to_pydict()
+            {'a': [1, 2, 3]}
         """
         exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
         raw = expr_list_to_raw_expr_list(exprs)
@@ -1472,6 +1556,19 @@ class DataFrame:
 
         Returns:
             A DataFrame with the columns expanded.
+
+        Examples:
+            Unnest an array column:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [[1, 2], [3]], "b": ["x", "y"]})
+            >>> df.unnest_columns("a").to_pydict()
+            {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
+
+            With explicit recursion depth:
+
+            >>> df.unnest_columns("a", recursions=[("a", "a", 1)]).to_pydict()
+            {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
         """
         columns = list(columns)
         return DataFrame(
