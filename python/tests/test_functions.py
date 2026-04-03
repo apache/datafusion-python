@@ -1567,35 +1567,48 @@ def test_string_to_array():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": ["hello,world,foo"]})
     result = df.select(
-        f.string_to_array(column("a"), literal(","), literal("")).alias("v")
+        f.string_to_array(column("a"), literal(",")).alias("v")
     ).collect()
     assert result[0].column(0)[0].as_py() == ["hello", "world", "foo"]
+
+
+def test_string_to_array_with_null_string():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello,NA,world"]})
+    result = df.select(
+        f.string_to_array(column("a"), literal(","), literal("NA")).alias("v")
+    ).collect()
+    values = result[0].column(0)[0].as_py()
+    assert values == ["hello", None, "world"]
 
 
 def test_string_to_list():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": ["a-b-c"]})
-    result = df.select(
-        f.string_to_list(column("a"), literal("-"), literal("")).alias("v")
-    ).collect()
+    result = df.select(f.string_to_list(column("a"), literal("-")).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == ["a", "b", "c"]
 
 
 def test_gen_series():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [0]})
-    result = df.select(
-        f.gen_series(literal(1), literal(5), literal(1)).alias("v")
-    ).collect()
+    result = df.select(f.gen_series(literal(1), literal(5)).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == [1, 2, 3, 4, 5]
+
+
+def test_gen_series_with_step():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [0]})
+    result = df.select(
+        f.gen_series(literal(1), literal(10), literal(3)).alias("v")
+    ).collect()
+    assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
 
 
 def test_generate_series():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [0]})
-    result = df.select(
-        f.generate_series(literal(1), literal(3), literal(1)).alias("v")
-    ).collect()
+    result = df.select(f.generate_series(literal(1), literal(3)).alias("v")).collect()
     assert result[0].column(0)[0].as_py() == [1, 2, 3]
 
 

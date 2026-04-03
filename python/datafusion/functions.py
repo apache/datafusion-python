@@ -317,6 +317,7 @@ __all__ = [
     "var_samp",
     "var_sample",
     "when",
+    # Window Functions
     "window",
 ]
 
@@ -2848,22 +2849,22 @@ def array_has_any(first_array: Expr, second_array: Expr) -> Expr:
     return Expr(f.array_has_any(first_array.expr, second_array.expr))
 
 
-def array_contains(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if the element appears in the first array, otherwise false.
+def array_contains(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
 
     See Also:
         This is an alias for :py:func:`array_has`.
     """
-    return array_has(first_array, second_array)
+    return array_has(array, element)
 
 
-def list_has(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if the element appears in the first array, otherwise false.
+def list_has(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
 
     See Also:
         This is an alias for :py:func:`array_has`.
     """
-    return array_has(first_array, second_array)
+    return array_has(array, element)
 
 
 def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
@@ -2884,13 +2885,13 @@ def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
     return array_has_any(first_array, second_array)
 
 
-def list_contains(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if the element appears in the first array, otherwise false.
+def list_contains(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
 
     See Also:
         This is an alias for :py:func:`array_has`.
     """
-    return array_has(first_array, second_array)
+    return array_has(array, element)
 
 
 def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
@@ -3590,25 +3591,30 @@ def list_zip(*arrays: Expr) -> Expr:
     return arrays_zip(*arrays)
 
 
-def string_to_array(string: Expr, delimiter: Expr, null_string: Expr) -> Expr:
+def string_to_array(
+    string: Expr, delimiter: Expr, null_string: Expr | None = None
+) -> Expr:
     """Splits a string based on a delimiter and returns an array of parts.
 
-    Any parts matching the ``null_string`` will be replaced with ``NULL``.
+    Any parts matching the optional ``null_string`` will be replaced with ``NULL``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello,world"]})
         >>> result = df.select(
         ...     dfn.functions.string_to_array(
-        ...         dfn.col("a"), dfn.lit(","), dfn.lit(""),
+        ...         dfn.col("a"), dfn.lit(","),
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         ['hello', 'world']
     """
-    return Expr(f.string_to_array(string.expr, delimiter.expr, null_string.expr))
+    null_expr = null_string.expr if null_string is not None else None
+    return Expr(f.string_to_array(string.expr, delimiter.expr, null_expr))
 
 
-def string_to_list(string: Expr, delimiter: Expr, null_string: Expr) -> Expr:
+def string_to_list(
+    string: Expr, delimiter: Expr, null_string: Expr | None = None
+) -> Expr:
     """Splits a string based on a delimiter and returns an array of parts.
 
     See Also:
@@ -3617,7 +3623,7 @@ def string_to_list(string: Expr, delimiter: Expr, null_string: Expr) -> Expr:
     return string_to_array(string, delimiter, null_string)
 
 
-def gen_series(start: Expr, stop: Expr, step: Expr) -> Expr:
+def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
     Unlike :py:func:`range`, this includes the upper bound.
@@ -3627,15 +3633,16 @@ def gen_series(start: Expr, stop: Expr, step: Expr) -> Expr:
         >>> df = ctx.from_pydict({"a": [0]})
         >>> result = df.select(
         ...     dfn.functions.gen_series(
-        ...         dfn.lit(1), dfn.lit(5), dfn.lit(1),
+        ...         dfn.lit(1), dfn.lit(5),
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3, 4, 5]
     """
-    return Expr(f.gen_series(start.expr, stop.expr, step.expr))
+    step_expr = step.expr if step is not None else None
+    return Expr(f.gen_series(start.expr, stop.expr, step_expr))
 
 
-def generate_series(start: Expr, stop: Expr, step: Expr) -> Expr:
+def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
     Unlike :py:func:`range`, this includes the upper bound.

@@ -110,6 +110,34 @@ fn arrays_zip(exprs: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+#[pyo3(signature = (string, delimiter, null_string=None))]
+fn string_to_array(string: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![string.into(), delimiter.into()];
+    if let Some(null_string) = null_string {
+        args.push(null_string.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::string::string_to_array_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop, step=None))]
+fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![start.into(), stop.into()];
+    if let Some(step) = step {
+        args.push(step.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::range::gen_series_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -687,8 +715,6 @@ array_fn!(array_any_value, array);
 array_fn!(array_max, array);
 array_fn!(array_min, array);
 array_fn!(array_reverse, array);
-array_fn!(string_to_array, string delimiter null_string);
-array_fn!(gen_series, start stop step);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
