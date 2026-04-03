@@ -312,6 +312,33 @@ There are scripts in `ci/scripts` for running Rust and Python linters.
 ./ci/scripts/rust_toml_fmt.sh
 ```
 
+## Checking Upstream DataFusion Coverage
+
+This project includes an [AI agent skill](.ai/skills/check-upstream/SKILL.md) for auditing which
+features from the upstream Apache DataFusion Rust library are not yet exposed in these Python
+bindings. This is useful when adding missing functions, auditing API coverage, or ensuring parity
+with upstream.
+
+The skill accepts an optional area argument:
+
+```
+scalar functions
+aggregate functions
+window functions
+dataframe
+session context
+ffi types
+all
+```
+
+If no argument is provided, it defaults to checking all areas. The skill will fetch the upstream
+DataFusion documentation, compare it against the functions and methods exposed in this project, and
+produce a coverage report listing what is currently exposed and what is missing.
+
+The skill definition lives in `.ai/skills/check-upstream/SKILL.md` and follows the
+[Agent Skills](https://agentskills.io) open standard. It can be used by any AI coding agent that
+supports skill discovery, or followed manually.
+
 ## How to update dependencies
 
 To change test dependencies, change the `pyproject.toml` and run
