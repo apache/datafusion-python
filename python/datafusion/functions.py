@@ -95,6 +95,7 @@ __all__ = [
     "array_sort",
     "array_to_string",
     "array_union",
+    "arrays_overlap",
     "arrays_zip",
     "arrow_cast",
     "arrow_typeof",
@@ -194,6 +195,7 @@ __all__ = [
     "list_max",
     "list_min",
     "list_ndims",
+    "list_overlap",
     "list_pop_back",
     "list_pop_front",
     "list_position",
@@ -2878,6 +2880,24 @@ def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
 
 def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
     """Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def arrays_overlap(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if any element appears in both arrays.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def list_overlap(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if any element appears in both arrays.
 
     See Also:
         This is an alias for :py:func:`array_has_any`.

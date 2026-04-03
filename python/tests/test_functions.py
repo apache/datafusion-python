@@ -395,6 +395,18 @@ def py_flatten(arr):
             lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ),
         (
+            lambda col: f.arrays_overlap(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_overlap(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
             lambda col: f.array_position(col, literal(1.0)),
             lambda data: [py_indexof(r, 1.0) for r in data],
         ),
