@@ -119,6 +119,7 @@ Functions
    datafusion.functions.degrees
    datafusion.functions.dense_rank
    datafusion.functions.digest
+   datafusion.functions.element_at
    datafusion.functions.empty
    datafusion.functions.encode
    datafusion.functions.ends_with
@@ -185,7 +186,12 @@ Functions
    datafusion.functions.make_array
    datafusion.functions.make_date
    datafusion.functions.make_list
+   datafusion.functions.make_map
    datafusion.functions.make_time
+   datafusion.functions.map_entries
+   datafusion.functions.map_extract
+   datafusion.functions.map_keys
+   datafusion.functions.map_values
    datafusion.functions.max
    datafusion.functions.md5
    datafusion.functions.mean
@@ -2065,6 +2071,15 @@ Module Contents
    True
 
 
+.. py:function:: element_at(map: datafusion.expr.Expr, key: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the value for a given key in the map.
+
+   Returns ``[None]`` if the key is absent.
+
+   .. seealso:: This is an alias for :py:func:`map_extract`.
+
+
 .. py:function:: empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if the array is empty.
@@ -2932,6 +2947,51 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`make_array`.
 
 
+.. py:function:: make_map(*args: Any) -> datafusion.expr.Expr
+
+   Returns a map expression.
+
+   Supports three calling conventions:
+
+   - ``make_map({"a": 1, "b": 2})`` — from a Python dictionary.
+   - ``make_map([keys], [values])`` — from a list of keys and a list of
+     their associated values.  Both lists must be the same length.
+   - ``make_map(k1, v1, k2, v2, ...)`` — from alternating keys and their
+     associated values.
+
+   Keys and values that are not already :py:class:`~datafusion.expr.Expr`
+   are automatically converted to literal expressions.
+
+   .. rubric:: Examples
+
+   From a dictionary:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.make_map({"a": 1, "b": 2}).alias("m"))
+   >>> result.collect_column("m")[0].as_py()
+   [('a', 1), ('b', 2)]
+
+   From two lists:
+
+   >>> df = ctx.from_pydict({"key": ["x", "y"], "val": [10, 20]})
+   >>> df = df.select(
+   ...     dfn.functions.make_map(
+   ...         [dfn.col("key")], [dfn.col("val")]
+   ...     ).alias("m"))
+   >>> df.collect_column("m")[0].as_py()
+   [('x', 10)]
+
+   From alternating keys and values:
+
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.make_map("x", 1, "y", 2).alias("m"))
+   >>> result.collect_column("m")[0].as_py()
+   [('x', 1), ('y', 2)]
+
+
 .. py:function:: make_time(hour: datafusion.expr.Expr, minute: datafusion.expr.Expr, second: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Make a time from hour, minute and second component parts.
@@ -2945,6 +3005,74 @@ Module Contents
    ...     dfn.col("s")).alias("t"))
    >>> result.collect_column("t")[0].as_py()
    datetime.time(12, 30)
+
+
+.. py:function:: map_entries(map: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a list of all entries (key-value struct pairs) in the map.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> df = df.select(
+   ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+   >>> result = df.select(
+   ...     dfn.functions.map_entries(dfn.col("m")).alias("entries"))
+   >>> result.collect_column("entries")[0].as_py()
+   [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
+
+
+.. py:function:: map_extract(map: datafusion.expr.Expr, key: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the value for a given key in the map.
+
+   Returns ``[None]`` if the key is absent.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> df = df.select(
+   ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+   >>> result = df.select(
+   ...     dfn.functions.map_extract(
+   ...         dfn.col("m"), dfn.lit("x")
+   ...     ).alias("val"))
+   >>> result.collect_column("val")[0].as_py()
+   [1]
+
+
+.. py:function:: map_keys(map: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a list of all keys in the map.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> df = df.select(
+   ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+   >>> result = df.select(
+   ...     dfn.functions.map_keys(dfn.col("m")).alias("keys"))
+   >>> result.collect_column("keys")[0].as_py()
+   ['x', 'y']
+
+
+.. py:function:: map_values(map: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a list of all values in the map.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> df = df.select(
+   ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+   >>> result = df.select(
+   ...     dfn.functions.map_values(dfn.col("m")).alias("vals"))
+   >>> result.collect_column("vals")[0].as_py()
+   [1, 2]
 
 
 .. py:function:: max(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
