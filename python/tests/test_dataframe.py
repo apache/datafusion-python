@@ -3675,57 +3675,78 @@ def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
         assert expected_substring in captured.out
 
 
-def test_window():
+@pytest.mark.parametrize(
+    ("window_exprs", "expected_columns"),
+    [
+        pytest.param(
+            lambda: [
+                f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
+                    "rn"
+                ),
+            ],
+            {"rn": [1, 2, 1]},
+            id="single window expression",
+        ),
+        pytest.param(
+            lambda: [
+                f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
+                    "rn"
+                ),
+                f.rank(partition_by=[column("b")], order_by=[column("a")]).alias("rnk"),
+            ],
+            {"rn": [1, 2, 1], "rnk": [1, 2, 1]},
+            id="multiple window expressions",
+        ),
+    ],
+)
+def test_window(window_exprs, expected_columns):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
     result = (
-        df.window(
-            f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias("rn")
-        )
-        .sort(column("a").sort(ascending=True))
-        .collect()[0]
+        df.window(*window_exprs()).sort(column("a").sort(ascending=True)).collect()[0]
     )
-    assert "rn" in result.schema.names
-    assert result.column(result.schema.get_field_index("rn")).to_pylist() == [1, 2, 1]
-
-
-def test_unnest_columns_with_recursions():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2], [3]], "b": ["x", "y"]})
-    # Basic unnest still works
-    result = df.unnest_columns("a").collect()[0]
-    assert result.column(0).to_pylist() == [1, 2, 3]
-    # With explicit recursion options
-    result = df.unnest_columns("a", recursions=[("a", "a", 1)]).collect()[0]
-    assert result.column(0).to_pylist() == [1, 2, 3]
-
-
-def test_unnest_columns_with_deep_recursion():
-    ctx = SessionContext()
-    # Nested list of lists — requires depth > 1 to fully flatten
-    df = ctx.from_pydict({"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]})
-    # Depth 1 unnests the outer list, leaving inner lists intact
-    result = df.unnest_columns("a", recursions=[("a", "a", 1)]).collect()[0]
-    assert result.column(0).to_pylist() == [[1, 2], [3], [4]]
-    # Depth 2 fully flattens
-    result = df.unnest_columns("a", recursions=[("a", "a", 2)]).collect()[0]
-    assert result.column(0).to_pylist() == [1, 2, 3, 4]
-
-
-def test_window_multiple_expressions():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
-    result = (
-        df.window(
-            f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
-                "rn"
-            ),
-            f.rank(partition_by=[column("b")], order_by=[column("a")]).alias("rnk"),
+    for col_name, expected_values in expected_columns.items():
+        assert col_name in result.schema.names
+        assert (
+            result.column(result.schema.get_field_index(col_name)).to_pylist()
+            == expected_values
         )
-        .sort(column("a").sort(ascending=True))
-        .collect()[0]
-    )
-    assert "rn" in result.schema.names
-    assert "rnk" in result.schema.names
-    assert result.column(result.schema.get_field_index("rn")).to_pylist() == [1, 2, 1]
-    assert result.column(result.schema.get_field_index("rnk")).to_pylist() == [1, 2, 1]
+
+
+@pytest.mark.parametrize(
+    ("input_data", "recursions", "expected_a"),
+    [
+        pytest.param(
+            {"a": [[1, 2], [3]], "b": ["x", "y"]},
+            None,
+            [1, 2, 3],
+            id="basic unnest without recursions",
+        ),
+        pytest.param(
+            {"a": [[1, 2], [3]], "b": ["x", "y"]},
+            [("a", "a", 1)],
+            [1, 2, 3],
+            id="explicit depth 1 matches basic unnest",
+        ),
+        pytest.param(
+            {"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]},
+            [("a", "a", 1)],
+            [[1, 2], [3], [4]],
+            id="depth 1 on nested lists keeps inner lists",
+        ),
+        pytest.param(
+            {"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]},
+            [("a", "a", 2)],
+            [1, 2, 3, 4],
+            id="depth 2 fully flattens nested lists",
+        ),
+    ],
+)
+def test_unnest_columns_with_recursions(input_data, recursions, expected_a):
+    ctx = SessionContext()
+    df = ctx.from_pydict(input_data)
+    kwargs = {}
+    if recursions is not None:
+        kwargs["recursions"] = recursions
+    result = df.unnest_columns("a", **kwargs).collect()[0]
+    assert result.column(0).to_pylist() == expected_a
