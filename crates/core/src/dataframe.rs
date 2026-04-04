@@ -823,7 +823,12 @@ impl PyDataFrame {
         let explain_format = match format {
             Some(f) => f
                 .parse::<datafusion::common::format::ExplainFormat>()
-                .map_err(|e| PyDataFusionError::Common(e.to_string()))?,
+                .map_err(|_| {
+                    PyDataFusionError::Common(format!(
+                        "Invalid explain format: '{}'. Valid options: indent, tree, pgjson, graphviz",
+                        f
+                    ))
+                })?,
             None => datafusion::common::format::ExplainFormat::Indent,
         };
         let opts = datafusion::logical_expr::ExplainOption::default()

@@ -1529,14 +1529,9 @@ class DataFrame:
         self,
         column: str,
         preserve_nulls: bool = True,
-        recursions: list[tuple[str, str, int]] | None = None,
     ) -> DataFrame:
         """See :py:func:`unnest_columns`."""
-        return DataFrame(
-            self.df.unnest_column(
-                column, preserve_nulls=preserve_nulls, recursions=recursions
-            )
-        )
+        return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
     def unnest_columns(
         self,

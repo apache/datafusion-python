@@ -3637,31 +3637,32 @@ def test_distinct_on():
 
 
 @pytest.mark.parametrize(
-    "input_values",
+    ("input_values", "expected"),
     [
-        [3, 1, 2],
-        [1, 2, 3],
+        ([3, 1, 2], [1, 2, 3]),
+        ([1, 2, 3], [1, 2, 3]),
+        ([3, None, 1, 2], [1, 2, 3, None]),
     ],
 )
-def test_sort_by(input_values):
+def test_sort_by(input_values, expected):
     """sort_by always sorts ascending with nulls last regardless of input order."""
     ctx = SessionContext()
     df = ctx.from_pydict({"a": input_values})
     result = df.sort_by(column("a")).collect()[0]
-    assert result.column(0).to_pylist() == [1, 2, 3]
+    assert result.column(0).to_pylist() == expected
 
 
 @pytest.mark.parametrize(
-    ("fmt", "verbose", "analyze"),
+    ("fmt", "verbose", "analyze", "expected_substring"),
     [
-        (None, False, False),
-        ("TREE", False, False),
-        ("INDENT", True, True),
-        ("PGJSON", False, False),
-        ("GRAPHVIZ", False, False),
+        (None, False, False, None),
+        ("TREE", False, False, "---"),
+        ("INDENT", True, True, None),
+        ("PGJSON", False, False, '"Plan"'),
+        ("GRAPHVIZ", False, False, "digraph"),
     ],
 )
-def test_explain_with_format(capsys, fmt, verbose, analyze):
+def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
     from datafusion import ExplainFormat
 
     ctx = SessionContext()
@@ -3670,6 +3671,8 @@ def test_explain_with_format(capsys, fmt, verbose, analyze):
     df.explain(verbose=verbose, analyze=analyze, format=explain_fmt)
     captured = capsys.readouterr()
     assert "plan_type" in captured.out
+    if expected_substring is not None:
+        assert expected_substring in captured.out
 
 
 def test_window():
@@ -3695,3 +3698,34 @@ def test_unnest_columns_with_recursions():
     # With explicit recursion options
     result = df.unnest_columns("a", recursions=[("a", "a", 1)]).collect()[0]
     assert result.column(0).to_pylist() == [1, 2, 3]
+
+
+def test_unnest_columns_with_deep_recursion():
+    ctx = SessionContext()
+    # Nested list of lists — requires depth > 1 to fully flatten
+    df = ctx.from_pydict({"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]})
+    # Depth 1 unnests the outer list, leaving inner lists intact
+    result = df.unnest_columns("a", recursions=[("a", "a", 1)]).collect()[0]
+    assert result.column(0).to_pylist() == [[1, 2], [3], [4]]
+    # Depth 2 fully flattens
+    result = df.unnest_columns("a", recursions=[("a", "a", 2)]).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2, 3, 4]
+
+
+def test_window_multiple_expressions():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+    result = (
+        df.window(
+            f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
+                "rn"
+            ),
+            f.rank(partition_by=[column("b")], order_by=[column("a")]).alias("rnk"),
+        )
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
+    )
+    assert "rn" in result.schema.names
+    assert "rnk" in result.schema.names
+    assert result.column(result.schema.get_field_index("rn")).to_pylist() == [1, 2, 1]
+    assert result.column(result.schema.get_field_index("rnk")).to_pylist() == [1, 2, 1]
