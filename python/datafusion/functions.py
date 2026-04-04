@@ -3486,7 +3486,7 @@ def map_values(map: Expr) -> Expr:
 
 
 def map_extract(map: Expr, key: Expr) -> Expr:
-    """Return the value for a given key in the map.
+    """Returns the value for a given key in the map.
 
     Returns ``[None]`` if the key is absent.
 
