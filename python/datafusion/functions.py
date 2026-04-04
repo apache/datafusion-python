@@ -3522,7 +3522,7 @@ def map_entries(map: Expr) -> Expr:
 
 
 def element_at(map: Expr, key: Expr) -> Expr:
-    """Return the value for a given key in the map.
+    """Returns the value for a given key in the map.
 
     Returns ``[None]`` if the key is absent.
 
