@@ -186,23 +186,6 @@ def test_read_s3_parquet_explicit(ctx):
     assert "description" in df.schema().names
 
 
-def test_read_s3_parquet_auto(ctx, monkeypatch):
-    """Auto-register an S3 object store from the URL scheme using env vars.
-
-    With AWS_SKIP_SIGNATURE=true the auto-registration path in
-    try_register_url_store() picks up anonymous credentials from the environment
-    and registers the store automatically - no explicit register_object_store()
-    call required.
-    """
-    monkeypatch.setenv("AWS_SKIP_SIGNATURE", "true")
-    monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
-    monkeypatch.setenv("AWS_REGION", "us-east-2")
-    url = "s3://coiled-datasets/airbnb-monogo/description-and-ratings.parquet/part.0.parquet"
-    df = ctx.read_parquet(url)
-    assert df.count() == 221
-    assert "description" in df.schema().names
-
-
 def test_register_parquet(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)

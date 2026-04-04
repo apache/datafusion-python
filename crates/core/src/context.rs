@@ -1286,9 +1286,9 @@ impl PySessionContext {
     /// explicitly.  Supported schemes:
     ///
     /// * `http` / `https` – registers an [`HttpStore`] for the URL origin.
-    /// * `s3` – registers an [`AmazonS3`] store seeded from environment variables.
-    ///   When `AWS_SKIP_SIGNATURE=true` is set a credential-free builder is used
-    ///   so that no EC2 IMDS discovery is attempted (public-bucket anonymous access).
+    /// * `s3` – registers an anonymous [`AmazonS3`] store (no credentials / signature).
+    ///   Users requiring authenticated access should pass an explicit store via the
+    ///   `object_store` parameter instead.
     /// * `gs` / `gcs` – registers a [`GoogleCloudStorage`] store seeded from
     ///   environment variables.
     /// * `az` / `abfss` – registers a [`MicrosoftAzure`] store seeded from
@@ -1322,26 +1322,11 @@ impl PySessionContext {
             },
             "s3" => {
                 let bucket = url.host_str().unwrap_or_default();
-                // When the caller has set AWS_SKIP_SIGNATURE=true (anonymous /
-                // public-bucket access) avoid from_env() so that the default
-                // credential chain – which includes EC2 IMDS – is never started.
-                let skip_signature = std::env::var("AWS_SKIP_SIGNATURE")
-                    .map(|v| matches!(v.to_lowercase().as_str(), "true" | "1"))
-                    .unwrap_or(false);
-                let builder = if skip_signature {
-                    let mut b = AmazonS3Builder::new()
-                        .with_bucket_name(bucket)
-                        .with_skip_signature(true);
-                    if let Ok(region) =
-                        std::env::var("AWS_DEFAULT_REGION").or_else(|_| std::env::var("AWS_REGION"))
-                    {
-                        b = b.with_region(region);
-                    }
-                    b
-                } else {
-                    AmazonS3Builder::from_env().with_bucket_name(bucket)
-                };
-                match builder.build() {
+                match AmazonS3Builder::new()
+                    .with_bucket_name(bucket)
+                    .with_skip_signature(true)
+                    .build()
+                {
                     Ok(s) => Arc::new(s),
                     Err(_) => return,
                 }
