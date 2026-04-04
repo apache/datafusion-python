@@ -372,7 +372,7 @@ def test_deregister_udf():
 
     # Deregister and verify it's gone
     ctx.deregister_udf("my_is_null")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         ctx.sql("SELECT my_is_null(a) FROM t").collect()
 
 
@@ -414,7 +414,7 @@ def test_deregister_udaf():
     assert result[0].column(0) == pa.array([6.0])
 
     ctx.deregister_udaf("my_sum")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         ctx.sql("SELECT my_sum(a) FROM t").collect()
 
 
@@ -445,7 +445,7 @@ def test_deregister_udwf():
     assert result[0].column(0) == pa.array([1, 2, 3], type=pa.uint64())
 
     ctx.deregister_udwf("my_row_number")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         ctx.sql("SELECT my_row_number(a) OVER () FROM t").collect()
 
 
@@ -467,7 +467,7 @@ def test_deregister_udtf():
     assert result[0].column(0) == pa.array([1, 2, 3])
 
     ctx.deregister_udtf("my_table")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         ctx.sql("SELECT * FROM my_table()").collect()
 
 
