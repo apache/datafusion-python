@@ -31,6 +31,7 @@ from datafusion import (
     Table,
     column,
     literal,
+    udf,
 )
 
 
@@ -353,7 +354,6 @@ def test_deregister_table(ctx, database):
 
 def test_deregister_udf():
     ctx = SessionContext()
-    from datafusion import udf
 
     is_null = udf(
         lambda x: x.is_null(),
