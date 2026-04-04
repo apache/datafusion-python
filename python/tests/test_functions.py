@@ -715,8 +715,7 @@ def test_make_map_from_two_lists():
 
     m = f.make_map([column("keys")], [column("vals")])
     result = df.select(f.map_keys(m).alias("k")).collect()[0].column(0)
-    for i, expected in enumerate(["k1", "k2", "k3"]):
-        assert result[i].as_py() == [expected]
+    assert result.to_pylist() == [["k1"], ["k2"], ["k3"]]
 
     result = df.select(f.map_values(m).alias("v")).collect()[0].column(0)
     for i, expected in enumerate([10, 20, 30]):
