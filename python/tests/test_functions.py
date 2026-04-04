@@ -669,6 +669,106 @@ def test_array_function_obj_tests(stmt, py_expr):
 
 
 @pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        pytest.param(
+            ({"x": 1, "y": 2},),
+            [("x", 1), ("y", 2)],
+            id="dict",
+        ),
+        pytest.param(
+            ({"x": literal(1), "y": literal(2)},),
+            [("x", 1), ("y", 2)],
+            id="dict_with_exprs",
+        ),
+        pytest.param(
+            ("x", 1, "y", 2),
+            [("x", 1), ("y", 2)],
+            id="variadic_pairs",
+        ),
+        pytest.param(
+            (literal("x"), literal(1), literal("y"), literal(2)),
+            [("x", 1), ("y", 2)],
+            id="variadic_with_exprs",
+        ),
+    ],
+)
+def test_make_map(args, expected):
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(f.make_map(*args).alias("m")).collect()[0].column(0)
+    assert result[0].as_py() == expected
+
+
+def test_make_map_from_two_lists():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["k1", "k2", "k3"]),
+            pa.array([10, 20, 30]),
+        ],
+        names=["keys", "vals"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map([column("keys")], [column("vals")])
+    result = df.select(f.map_keys(m).alias("k")).collect()[0].column(0)
+    assert result.to_pylist() == [["k1"], ["k2"], ["k3"]]
+
+    result = df.select(f.map_values(m).alias("v")).collect()[0].column(0)
+    assert result.to_pylist() == [[10], [20], [30]]
+
+
+def test_make_map_odd_args_raises():
+    with pytest.raises(ValueError, match="make_map expects"):
+        f.make_map("x", 1, "y")
+
+
+def test_make_map_mismatched_lengths():
+    with pytest.raises(ValueError, match="same length"):
+        f.make_map(["a", "b"], [1])
+
+
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        pytest.param(f.map_keys, ["x", "y"], id="map_keys"),
+        pytest.param(f.map_values, [1, 2], id="map_values"),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("x")),
+            [1],
+            id="map_extract",
+        ),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("z")),
+            [None],
+            id="map_extract_missing_key",
+        ),
+        pytest.param(
+            f.map_entries,
+            [{"key": "x", "value": 1}, {"key": "y", "value": 2}],
+            id="map_entries",
+        ),
+        pytest.param(
+            lambda m: f.element_at(m, literal("y")),
+            [2],
+            id="element_at",
+        ),
+    ],
+)
+def test_map_functions(func, expected):
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map({"x": 1, "y": 2})
+    result = df.select(func(m).alias("out")).collect()[0].column(0)
+    assert result[0].as_py() == expected
+
+
+@pytest.mark.parametrize(
     ("function", "expected_result"),
     [
         (
