@@ -434,7 +434,7 @@ impl PySessionContext {
             &upstream_host
         };
         let url_string = format!("{scheme}{derived_host}");
-        let url = Url::parse(&url_string).unwrap();
+        let url = Url::parse(&url_string).map_err(|e| PyValueError::new_err(e.to_string()))?;
         self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())
     }
@@ -448,7 +448,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         let host = host.unwrap_or("");
         let url_string = format!("{scheme}{host}");
-        let url = Url::parse(&url_string).unwrap();
+        let url = Url::parse(&url_string).map_err(|e| PyDataFusionError::Common(e.to_string()))?;
         self.ctx.runtime_env().deregister_object_store(&url)?;
         Ok(())
     }
