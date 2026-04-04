@@ -202,7 +202,7 @@ pub struct PyAmazonS3Context {
 #[pymethods]
 impl PyAmazonS3Context {
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (bucket_name, region=None, access_key_id=None, secret_access_key=None, session_token=None, endpoint=None, allow_http=false, imdsv1_fallback=false))]
+    #[pyo3(signature = (bucket_name, region=None, access_key_id=None, secret_access_key=None, session_token=None, endpoint=None, allow_http=false, imdsv1_fallback=false, skip_signature=false))]
     #[new]
     fn new(
         bucket_name: String,
@@ -214,9 +214,16 @@ impl PyAmazonS3Context {
         //retry_config: RetryConfig,
         allow_http: bool,
         imdsv1_fallback: bool,
+        skip_signature: bool,
     ) -> Self {
-        // start w/ the options that come directly from the environment
-        let mut builder = AmazonS3Builder::from_env();
+        // When skip_signature is set (anonymous access to public buckets) start
+        // from a blank builder so that no credential provider chain (including
+        // EC2 IMDS) is established.  Otherwise seed from environment variables.
+        let mut builder = if skip_signature {
+            AmazonS3Builder::new()
+        } else {
+            AmazonS3Builder::from_env()
+        };
 
         if let Some(region) = region {
             builder = builder.with_region(region);
@@ -246,6 +253,7 @@ impl PyAmazonS3Context {
             .with_bucket_name(bucket_name.clone())
             //.with_retry_config(retry_config) #TODO: add later
             .with_allow_http(allow_http)
+            .with_skip_signature(skip_signature)
             .build()
             .expect("failed to build AmazonS3");
 

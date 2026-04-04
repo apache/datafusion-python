@@ -49,7 +49,6 @@ mod pyarrow_filter_expression;
 pub mod pyarrow_util;
 mod record_batch;
 pub mod sql;
-pub mod store;
 pub mod table;
 pub mod unparser;
 
@@ -119,9 +118,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     functions::init_module(&funcs)?;
     m.add_submodule(&funcs)?;
 
-    let store = PyModule::new(py, "object_store")?;
-    store::init_module(&store)?;
-    m.add_submodule(&store)?;
+    pyo3_object_store::register_store_module(py, &m, "datafusion._internal", "object_store")?;
 
     let options = PyModule::new(py, "options")?;
     options::init_module(&options)?;

@@ -63,6 +63,7 @@ async-trait = { workspace = true }
 futures = { workspace = true }
 cstr = { workspace = true }
 object_store = { workspace = true, features = ["aws", "gcp", "azure", "http"] }
+pyo3-object_store = { workspace = true }
 url = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
