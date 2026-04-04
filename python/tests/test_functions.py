@@ -718,8 +718,7 @@ def test_make_map_from_two_lists():
     assert result.to_pylist() == [["k1"], ["k2"], ["k3"]]
 
     result = df.select(f.map_values(m).alias("v")).collect()[0].column(0)
-    for i, expected in enumerate([10, 20, 30]):
-        assert result[i].as_py() == [expected]
+    assert result.to_pylist() == [[10], [20], [30]]
 
 
 def test_make_map_odd_args_raises():
