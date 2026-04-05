@@ -1392,10 +1392,12 @@ class SessionContext:
     def read_empty(self) -> DataFrame:
         """Create an empty :py:class:`DataFrame` with no columns or rows.
 
+        This is an alias for :meth:`empty_table`.
+
         Returns:
             An empty DataFrame.
         """
-        return DataFrame(self.ctx.read_empty())
+        return self.empty_table()
 
     def read_table(
         self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset

@@ -1217,11 +1217,6 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    pub fn read_empty(&self) -> PyDataFusionResult<PyDataFrame> {
-        let df = self.ctx.read_empty()?;
-        Ok(PyDataFrame::new(df))
-    }
-
     #[pyo3(signature = (path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
     pub fn read_arrow(
         &self,
