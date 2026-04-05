@@ -1143,11 +1143,22 @@ class SessionContext:
         return self.ctx.session_id()
 
     def session_start_time(self) -> str:
-        """Return the session start time as an RFC 3339 formatted string."""
+        """Return the session start time as an RFC 3339 formatted string.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> start_time = ctx.session_start_time()
+            >>> assert "T" in start_time  # RFC 3339 contains a 'T' separator
+        """
         return self.ctx.session_start_time()
 
     def enable_ident_normalization(self) -> bool:
-        """Return whether identifier normalization (lowercasing) is enabled."""
+        """Return whether identifier normalization (lowercasing) is enabled.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> assert isinstance(ctx.enable_ident_normalization(), bool)
+        """
         return self.ctx.enable_ident_normalization()
 
     def parse_sql_expr(self, sql: str, schema: DFSchema) -> Expr:
@@ -1159,6 +1170,13 @@ class SessionContext:
 
         Returns:
             Parsed expression.
+
+        Examples:
+            >>> from datafusion.common import DFSchema
+            >>> ctx = SessionContext()
+            >>> schema = DFSchema.empty()
+            >>> expr = ctx.parse_sql_expr("1 + 2", schema)
+            >>> assert "Int64(1) + Int64(2)" in str(expr)
         """
         from datafusion.expr import Expr  # noqa: PLC0415
 
@@ -1172,11 +1190,31 @@ class SessionContext:
 
         Returns:
             DataFrame resulting from the execution.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> plan = df.logical_plan()
+            >>> df2 = ctx.execute_logical_plan(plan)
+            >>> df2.collect()[0].column(0)
+            <pyarrow.lib.ChunkedArray object at ...>
+            [
+              [
+                1,
+                2,
+                3
+              ]
+            ]
         """
         return DataFrame(self.ctx.execute_logical_plan(plan._raw_plan))
 
     def refresh_catalogs(self) -> None:
-        """Refresh catalog metadata."""
+        """Refresh catalog metadata.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.refresh_catalogs()
+        """
         self.ctx.refresh_catalogs()
 
     def remove_optimizer_rule(self, name: str) -> bool:
@@ -1187,6 +1225,11 @@ class SessionContext:
 
         Returns:
             True if a rule with the given name was found and removed.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.remove_optimizer_rule("nonexistent_rule")
+            False
         """
         return self.ctx.remove_optimizer_rule(name)
 
@@ -1198,6 +1241,18 @@ class SessionContext:
 
         Returns:
             The table provider.
+
+        Raises:
+            KeyError: If the table is not found.
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> ctx = SessionContext()
+            >>> batch = pa.RecordBatch.from_pydict({"x": [1, 2]})
+            >>> ctx.register_record_batches("my_table", [[batch]])
+            >>> tbl = ctx.table_provider("my_table")
+            >>> tbl.schema
+            x: int64
         """
         from datafusion.catalog import Table  # noqa: PLC0415
 
