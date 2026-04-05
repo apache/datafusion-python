@@ -1197,13 +1197,11 @@ class SessionContext:
             >>> plan = df.logical_plan()
             >>> df2 = ctx.execute_logical_plan(plan)
             >>> df2.collect()[0].column(0)
-            <pyarrow.lib.ChunkedArray object at ...>
+            <pyarrow.lib.Int64Array object at ...>
             [
-              [
-                1,
-                2,
-                3
-              ]
+              1,
+              2,
+              3
             ]
         """
         return DataFrame(self.ctx.execute_logical_plan(plan._raw_plan))
