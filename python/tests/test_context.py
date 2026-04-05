@@ -689,7 +689,9 @@ def test_read_arrow(ctx, tmp_path):
 def test_read_empty(ctx):
     df = ctx.read_empty()
     result = df.collect()
+    assert len(result) == 1
     assert result[0].num_columns == 0
+    assert result[0].num_rows == 0
 
 
 def test_register_arrow(ctx, tmp_path):
