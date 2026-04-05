@@ -900,6 +900,17 @@ class SessionContext:
         Args:
             name: Name of the resultant table.
             batch: Record batch to register as a table.
+
+        Examples:
+            >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+            >>> ctx.register_batch("batch_tbl", batch)
+            >>> ctx.sql("SELECT * FROM batch_tbl").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
         """
         self.ctx.register_batch(name, batch)
 
@@ -1120,6 +1131,22 @@ class SessionContext:
             schema: The data source schema.
             file_extension: File extension to select.
             table_partition_cols: Partition columns.
+
+        Examples:
+            >>> import tempfile, os
+            >>> table = pa.table({"x": [10, 20, 30]})
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow("arrow_tbl", path)
+            ...     ctx.sql("SELECT * FROM arrow_tbl").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
         """
         if table_partition_cols is None:
             table_partition_cols = []
@@ -1381,6 +1408,22 @@ class SessionContext:
 
         Returns:
             DataFrame representation of the read Arrow IPC file.
+
+        Examples:
+            >>> import tempfile, os
+            >>> table = pa.table({"a": [1, 2, 3]})
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path)
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
         """
         if file_partition_cols is None:
             file_partition_cols = []
@@ -1396,6 +1439,14 @@ class SessionContext:
 
         Returns:
             An empty DataFrame.
+
+        Examples:
+            >>> df = ctx.read_empty()
+            >>> result = df.collect()
+            >>> len(result)
+            1
+            >>> result[0].num_columns
+            0
         """
         return self.empty_table()
 
