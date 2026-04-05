@@ -1086,8 +1086,10 @@ impl PySessionContext {
         self.ctx.remove_optimizer_rule(name)
     }
 
-    pub fn table_provider(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
-        let provider = wait_for_future(py, self.ctx.table_provider(name))??;
+    pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {
+        let provider = wait_for_future(py, self.ctx.table_provider(name))
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?;
         Ok(PyTable { table: provider })
     }
 

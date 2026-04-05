@@ -593,6 +593,11 @@ def test_table_provider(ctx):
     assert tbl.schema == pa.schema([("x", pa.int64())])
 
 
+def test_table_provider_not_found(ctx):
+    with pytest.raises(KeyError):
+        ctx.table_provider("nonexistent_table")
+
+
 def test_read_json(ctx):
     path = pathlib.Path(__file__).parent.resolve()
 
