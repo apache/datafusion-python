@@ -695,7 +695,28 @@ expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
 expr_fn!(arrow_cast, arg_1 datatype);
+expr_fn_vec!(arrow_metadata);
+expr_fn!(union_tag, arg1);
 expr_fn!(random);
+
+#[pyfunction]
+fn get_field(expr: PyExpr, name: PyExpr) -> PyExpr {
+    functions::core::get_field()
+        .call(vec![expr.into(), name.into()])
+        .into()
+}
+
+#[pyfunction]
+fn union_extract(union_expr: PyExpr, field_name: PyExpr) -> PyExpr {
+    functions::core::union_extract()
+        .call(vec![union_expr.into(), field_name.into()])
+        .into()
+}
+
+#[pyfunction]
+fn version() -> PyExpr {
+    functions::core::version().call(vec![]).into()
+}
 
 // Array Functions
 array_fn!(array_append, array element);
@@ -1014,6 +1035,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(arrow_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_metadata))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(asinh))?;
@@ -1142,6 +1164,10 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
+    m.add_wrapped(wrap_pyfunction!(get_field))?;
+    m.add_wrapped(wrap_pyfunction!(union_extract))?;
+    m.add_wrapped(wrap_pyfunction!(union_tag))?;
+    m.add_wrapped(wrap_pyfunction!(version))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_sample))?;

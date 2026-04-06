@@ -20,7 +20,7 @@ from datetime import date, datetime, time, timezone
 import numpy as np
 import pyarrow as pa
 import pytest
-from datafusion import SessionContext, column, literal, string_literal
+from datafusion import SessionContext, column, literal
 from datafusion import functions as f
 
 np.seterr(invalid="ignore")
@@ -1291,11 +1291,8 @@ def test_make_time(df):
 
 def test_arrow_cast(df):
     df = df.select(
-        # we use `string_literal` to return utf8 instead of `literal` which returns
-        # utf8view because datafusion.arrow_cast expects a utf8 instead of utf8view
-        # https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
-        f.arrow_cast(column("b"), string_literal("Float64")).alias("b_as_float"),
-        f.arrow_cast(column("b"), string_literal("Int32")).alias("b_as_int"),
+        f.arrow_cast(column("b"), "Float64").alias("b_as_float"),
+        f.arrow_cast(column("b"), "Int32").alias("b_as_int"),
     )
     result = df.collect()
     assert len(result) == 1
@@ -1303,6 +1300,19 @@ def test_arrow_cast(df):
 
     assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
     assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
+
+
+def test_arrow_cast_with_pyarrow_type(df):
+    df = df.select(
+        f.arrow_cast(column("b"), pa.float64()).alias("b_as_float"),
+        f.arrow_cast(column("b"), pa.int32()).alias("b_as_int"),
+        f.arrow_cast(column("b"), pa.string()).alias("b_as_str"),
+    )
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
+    assert result.column(2) == pa.array(["4", "5", "6"], type=pa.string())
 
 
 def test_case(df):
@@ -1808,6 +1818,89 @@ def df_with_nulls():
 def test_conditional_functions(df_with_nulls, expr, expected):
     result = df_with_nulls.select(expr.alias("result")).collect()[0]
     assert result.column(0) == expected
+
+
+def test_get_field(df):
+    df = df.with_column(
+        "s",
+        f.named_struct(
+            [
+                ("x", column("a")),
+                ("y", column("b")),
+            ]
+        ),
+    )
+    result = df.select(
+        f.get_field(column("s"), "x").alias("x_val"),
+        f.get_field(column("s"), "y").alias("y_val"),
+    ).collect()[0]
+
+    assert result.column(0) == pa.array(["Hello", "World", "!"], type=pa.string_view())
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
+def test_arrow_metadata():
+    ctx = SessionContext()
+    field = pa.field("val", pa.int64(), metadata={"key1": "value1", "key2": "value2"})
+    schema = pa.schema([field])
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], schema=schema)
+    df = ctx.create_dataframe([[batch]])
+
+    # One-argument form: returns a Map of all metadata key-value pairs
+    result = df.select(
+        f.arrow_metadata(column("val")).alias("meta"),
+    ).collect()[0]
+    assert result.column(0).type == pa.map_(pa.utf8(), pa.utf8())
+    meta = result.column(0)[0].as_py()
+    assert ("key1", "value1") in meta
+    assert ("key2", "value2") in meta
+
+    # Two-argument form: returns the value for a specific metadata key
+    result = df.select(
+        f.arrow_metadata(column("val"), "key1").alias("meta_val"),
+    ).collect()[0]
+    assert result.column(0)[0].as_py() == "value1"
+
+
+def test_version():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    result = df.select(f.version().alias("v")).collect()[0]
+    version_str = result.column(0)[0].as_py()
+    assert "Apache DataFusion" in version_str
+
+
+def test_row(df):
+    result = df.select(
+        f.row(column("a"), column("b")).alias("r"),
+        f.struct(column("a"), column("b")).alias("s"),
+    ).collect()[0]
+    # row is an alias for struct, so they should produce the same output
+    assert result.column(0) == result.column(1)
+
+
+def test_union_tag():
+    ctx = SessionContext()
+    types = pa.array([0, 1, 0], type=pa.int8())
+    offsets = pa.array([0, 0, 1], type=pa.int32())
+    children = [pa.array([1, 2]), pa.array(["hello"])]
+    arr = pa.UnionArray.from_dense(types, offsets, children, ["int", "str"], [0, 1])
+    df = ctx.create_dataframe([[pa.RecordBatch.from_arrays([arr], names=["u"])]])
+
+    result = df.select(f.union_tag(column("u")).alias("tag")).collect()[0]
+    assert result.column(0).to_pylist() == ["int", "str", "int"]
+
+
+def test_union_extract():
+    ctx = SessionContext()
+    types = pa.array([0, 1, 0], type=pa.int8())
+    offsets = pa.array([0, 0, 1], type=pa.int32())
+    children = [pa.array([1, 2]), pa.array(["hello"])]
+    arr = pa.UnionArray.from_dense(types, offsets, children, ["int", "str"], [0, 1])
+    df = ctx.create_dataframe([[pa.RecordBatch.from_arrays([arr], names=["u"])]])
+
+    result = df.select(f.union_extract(column("u"), "int").alias("val")).collect()[0]
+    assert result.column(0).to_pylist() == [1, None, 2]
 
 
 @pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
