@@ -1302,6 +1302,19 @@ def test_arrow_cast(df):
     assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
 
 
+def test_arrow_cast_with_pyarrow_type(df):
+    df = df.select(
+        f.arrow_cast(column("b"), pa.float64()).alias("b_as_float"),
+        f.arrow_cast(column("b"), pa.int32()).alias("b_as_int"),
+        f.arrow_cast(column("b"), pa.string()).alias("b_as_str"),
+    )
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
+    assert result.column(2) == pa.array(["4", "5", "6"], type=pa.string())
+
+
 def test_case(df):
     df = df.select(
         f.case(column("b")).when(literal(4), literal(10)).otherwise(literal(8)),

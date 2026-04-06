@@ -2634,10 +2634,10 @@ def arrow_typeof(arg: Expr) -> Expr:
     return Expr(f.arrow_typeof(arg.expr))
 
 
-def arrow_cast(expr: Expr, data_type: Expr | str) -> Expr:
+def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
     """Casts an expression to a specified data type.
 
-    The ``data_type`` can be a string or an ``Expr``.
+    The ``data_type`` can be a string, a ``pyarrow.DataType``, or an ``Expr``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2647,7 +2647,18 @@ def arrow_cast(expr: Expr, data_type: Expr | str) -> Expr:
         ... )
         >>> result.collect_column("c")[0].as_py()
         1.0
+
+        >>> import pyarrow as pa
+        >>> result = df.select(
+        ...     dfn.functions.arrow_cast(
+        ...         dfn.col("a"), data_type=pa.float64()
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py()
+        1.0
     """
+    if isinstance(data_type, pa.DataType):
+        data_type = str(data_type)
     if isinstance(data_type, str):
         data_type = Expr.string_literal(data_type)
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
