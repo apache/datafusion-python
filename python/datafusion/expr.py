@@ -91,7 +91,6 @@ Explain = expr_internal.Explain
 Extension = expr_internal.Extension
 FileType = expr_internal.FileType
 Filter = expr_internal.Filter
-_GroupingSetInternal = expr_internal.GroupingSet
 Join = expr_internal.Join
 ILike = expr_internal.ILike
 InList = expr_internal.InList
@@ -1478,7 +1477,7 @@ class GroupingSet:
             :py:func:`~datafusion.functions.grouping`
         """
         args = [e.expr for e in exprs]
-        return Expr(_GroupingSetInternal.rollup(*args))
+        return Expr(expr_internal.GroupingSet.rollup(*args))
 
     @staticmethod
     def cube(*exprs: Expr) -> Expr:
@@ -1516,7 +1515,7 @@ class GroupingSet:
             :py:func:`~datafusion.functions.grouping`
         """
         args = [e.expr for e in exprs]
-        return Expr(_GroupingSetInternal.cube(*args))
+        return Expr(expr_internal.GroupingSet.cube(*args))
 
     @staticmethod
     def grouping_sets(*expr_lists: list[Expr]) -> Expr:
@@ -1561,4 +1560,4 @@ class GroupingSet:
             :py:func:`~datafusion.functions.grouping`
         """
         raw_lists = [[e.expr for e in lst] for lst in expr_lists]
-        return Expr(_GroupingSetInternal.grouping_sets(*raw_lists))
+        return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))
