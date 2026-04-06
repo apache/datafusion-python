@@ -2637,6 +2637,8 @@ def arrow_typeof(arg: Expr) -> Expr:
 def arrow_cast(expr: Expr, data_type: Expr | str) -> Expr:
     """Casts an expression to a specified data type.
 
+    The ``data_type`` can be a string or an ``Expr``.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
@@ -2657,12 +2659,26 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     If called with one argument, returns a Map of all metadata key-value pairs.
     If called with two arguments, returns the value for the specified metadata key.
 
-    Args:
-        expr: An expression whose metadata to retrieve.
-        key: Optional metadata key to look up. Can be a string or an Expr.
+    Examples:
+        >>> import pyarrow as pa
+        >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+        >>> schema = pa.schema([field])
+        >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.create_dataframe([[batch]])
+        >>> result = df.select(
+        ...     dfn.functions.arrow_metadata(dfn.col("val")).alias("meta")
+        ... )
+        >>> ("k", "v") in result.collect_column("meta")[0].as_py()
+        True
 
-    Returns:
-        A Map of metadata or a specific metadata value.
+        >>> result = df.select(
+        ...     dfn.functions.arrow_metadata(
+        ...         dfn.col("val"), key="k"
+        ...     ).alias("meta_val")
+        ... )
+        >>> result.collect_column("meta_val")[0].as_py()
+        'v'
     """
     if key is None:
         return Expr(f.arrow_metadata(expr.expr))
@@ -2674,12 +2690,20 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
 def get_field(expr: Expr, name: Expr | str) -> Expr:
     """Extracts a field from a struct or map by name.
 
-    Args:
-        expr: A struct or map expression.
-        name: The field name to extract.
-
-    Returns:
-        The value of the named field.
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1], "b": [2]})
+        >>> df = df.with_column(
+        ...     "s",
+        ...     dfn.functions.named_struct(
+        ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
+        ...     ),
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+        ... )
+        >>> result.collect_column("x_val")[0].as_py()
+        1
     """
     if isinstance(name, str):
         name = Expr.string_literal(name)
@@ -2692,12 +2716,22 @@ def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:
     Returns the value of the named field if it is the currently selected
     variant, otherwise returns NULL.
 
-    Args:
-        union_expr: A union-typed expression.
-        field_name: The name of the field to extract.
-
-    Returns:
-        The extracted value or NULL.
+    Examples:
+        >>> import pyarrow as pa
+        >>> ctx = dfn.SessionContext()
+        >>> types = pa.array([0, 1, 0], type=pa.int8())
+        >>> offsets = pa.array([0, 0, 1], type=pa.int32())
+        >>> arr = pa.UnionArray.from_dense(
+        ...     types, offsets, [pa.array([1, 2]), pa.array(["hi"])],
+        ...     ["int", "str"], [0, 1],
+        ... )
+        >>> batch = pa.RecordBatch.from_arrays([arr], names=["u"])
+        >>> df = ctx.create_dataframe([[batch]])
+        >>> result = df.select(
+        ...     dfn.functions.union_extract(dfn.col("u"), "int").alias("val")
+        ... )
+        >>> result.collect_column("val").to_pylist()
+        [1, None, 2]
     """
     if isinstance(field_name, str):
         field_name = Expr.string_literal(field_name)
@@ -2707,11 +2741,22 @@ def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:
 def union_tag(union_expr: Expr) -> Expr:
     """Returns the tag (active field name) of a union type.
 
-    Args:
-        union_expr: A union-typed expression.
-
-    Returns:
-        The name of the currently selected field in the union.
+    Examples:
+        >>> import pyarrow as pa
+        >>> ctx = dfn.SessionContext()
+        >>> types = pa.array([0, 1, 0], type=pa.int8())
+        >>> offsets = pa.array([0, 0, 1], type=pa.int32())
+        >>> arr = pa.UnionArray.from_dense(
+        ...     types, offsets, [pa.array([1, 2]), pa.array(["hi"])],
+        ...     ["int", "str"], [0, 1],
+        ... )
+        >>> batch = pa.RecordBatch.from_arrays([arr], names=["u"])
+        >>> df = ctx.create_dataframe([[batch]])
+        >>> result = df.select(
+        ...     dfn.functions.union_tag(dfn.col("u")).alias("tag")
+        ... )
+        >>> result.collect_column("tag").to_pylist()
+        ['int', 'str', 'int']
     """
     return Expr(f.union_tag(union_expr.expr))
 
@@ -2719,8 +2764,12 @@ def union_tag(union_expr: Expr) -> Expr:
 def version() -> Expr:
     """Returns the DataFusion version string.
 
-    Returns:
-        A string describing the DataFusion version.
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(dfn.functions.version().alias("v"))
+        >>> "Apache DataFusion" in result.collect_column("v")[0].as_py()
+        True
     """
     return Expr(f.version())
 
@@ -2728,13 +2777,8 @@ def version() -> Expr:
 def row(*args: Expr) -> Expr:
     """Returns a struct with the given arguments.
 
-    This is an alias for :py:func:`struct`.
-
-    Args:
-        args: The expressions to include in the struct.
-
-    Returns:
-        A struct expression.
+    See Also:
+        This is an alias for :py:func:`struct`.
     """
     return struct(*args)
 
