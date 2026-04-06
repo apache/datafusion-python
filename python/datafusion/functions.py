@@ -4427,6 +4427,23 @@ def grouping(
         expression: The column to check grouping status for
         distinct: If True, compute on distinct values only
         filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        In a simple ``GROUP BY`` (no grouping sets), ``grouping()`` always
+        returns 0, indicating the column is part of the grouping key:
+
+        >>> import pyarrow as pa
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+        >>> result = df.aggregate(
+        ...     [dfn.col("a")],
+        ...     [dfn.functions.grouping(dfn.col("a")),
+        ...      dfn.functions.sum(dfn.col("b")).alias("s")])
+        >>> batches = result.collect()
+        >>> grouping_vals = pa.concat_arrays(
+        ...     [batch.column(1) for batch in batches]).to_pylist()
+        >>> all(v == 0 for v in grouping_vals)
+        True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))

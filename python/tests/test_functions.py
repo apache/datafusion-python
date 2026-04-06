@@ -1820,41 +1820,50 @@ def test_conditional_functions(df_with_nulls, expr, expected):
     assert result.column(0) == expected
 
 
-def test_percentile_cont():
+@pytest.mark.parametrize(
+    ("filter_expr", "expected"),
+    [
+        (None, 3.0),
+        (column("a") > literal(1.0), 3.5),
+    ],
+    ids=["no_filter", "with_filter"],
+)
+def test_percentile_cont(filter_expr, expected):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
     result = df.aggregate(
-        [], [f.percentile_cont(column("a"), 0.5).alias("v")]
+        [], [f.percentile_cont(column("a"), 0.5, filter=filter_expr).alias("v")]
     ).collect()[0]
-    assert result.column(0)[0].as_py() == 3.0
-
-
-def test_percentile_cont_with_filter():
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
-    result = df.aggregate(
-        [],
-        [
-            f.percentile_cont(
-                column("a"), 0.5, filter=column("a") > literal(1.0)
-            ).alias("v")
-        ],
-    ).collect()[0]
-    assert result.column(0)[0].as_py() == 3.5
+    assert result.column(0)[0].as_py() == expected
 
 
 def test_grouping():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
     # In a simple GROUP BY (no grouping sets), grouping() returns 0 for all rows.
-    # Note: grouping() must not be aliased directly in the aggregate expression list
-    # due to an upstream DataFusion analyzer limitation (the ResolveGroupingFunction
-    # rule doesn't unwrap Alias nodes). Apply aliases via a follow-up select instead.
     result = df.aggregate(
         [column("a")], [f.grouping(column("a")), f.sum(column("b")).alias("s")]
     ).collect()
     grouping_col = pa.concat_arrays([batch.column(1) for batch in result]).to_pylist()
     assert all(v == 0 for v in grouping_col)
+
+
+def test_grouping_multiple_columns():
+    # Verify grouping() works when multiple columns are in the GROUP BY clause.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 10, 30], "c": [100, 200, 300]})
+    result = df.aggregate(
+        [column("a"), column("b")],
+        [
+            f.grouping(column("a")),
+            f.grouping(column("b")),
+            f.sum(column("c")).alias("s"),
+        ],
+    ).collect()
+    grouping_a = pa.concat_arrays([batch.column(2) for batch in result]).to_pylist()
+    grouping_b = pa.concat_arrays([batch.column(3) for batch in result]).to_pylist()
+    assert all(v == 0 for v in grouping_a)
+    assert all(v == 0 for v in grouping_b)
 
 
 def test_var_population():
