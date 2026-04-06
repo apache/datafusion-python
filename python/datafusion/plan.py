@@ -320,8 +320,8 @@ class Metric:
 
         Labels provide additional context for a metric.  For example::
 
-            >>> metric.labels()
-            {'output_type': 'final'}
+            metric.labels()
+            # {'output_type': 'final'}
         """
         return self._raw.labels()
 
