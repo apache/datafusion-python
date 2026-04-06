@@ -4413,15 +4413,20 @@ def grouping(
     distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
-    """Returns 1 if the data is aggregated across the specified column, or 0 otherwise.
+    """Indicates whether a column is aggregated across in the current row.
 
-    This function is used with ``GROUPING SETS``, ``CUBE``, or ``ROLLUP`` to
-    distinguish between aggregated and non-aggregated rows. In a regular
-    ``GROUP BY`` without grouping sets, it always returns 0.
+    Returns 0 when the column is part of the grouping key for that row
+    (i.e., the row contains per-group results for that column). Returns 1
+    when the column is *not* part of the grouping key (i.e., the row's
+    aggregate spans all values of that column).
 
-    Note: The ``grouping`` aggregate function is rewritten by the query
-    optimizer before execution, so it works correctly even though its
-    physical plan is not directly implemented.
+    This function is meaningful with
+    :py:meth:`GroupingSet.rollup <datafusion.expr.GroupingSet.rollup>`,
+    :py:meth:`GroupingSet.cube <datafusion.expr.GroupingSet.cube>`, or
+    :py:meth:`GroupingSet.grouping_sets <datafusion.expr.GroupingSet.grouping_sets>`,
+    where different rows are grouped by different subsets of columns. In a
+    regular ``GROUP BY`` without grouping sets every column is always part
+    of the key, so ``grouping()`` always returns 0.
 
     Args:
         expression: The column to check grouping status for
@@ -4429,21 +4434,26 @@ def grouping(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-        In a simple ``GROUP BY`` (no grouping sets), ``grouping()`` always
-        returns 0, indicating the column is part of the grouping key:
+        With :py:meth:`~datafusion.expr.GroupingSet.rollup`, the result
+        includes both per-group rows (``grouping(a) = 0``) and a
+        grand-total row where ``a`` is aggregated across
+        (``grouping(a) = 1``):
 
         >>> import pyarrow as pa
+        >>> from datafusion.expr import GroupingSet
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
         >>> result = df.aggregate(
-        ...     [dfn.col("a")],
-        ...     [dfn.functions.grouping(dfn.col("a")),
-        ...      dfn.functions.sum(dfn.col("b")).alias("s")])
+        ...     [GroupingSet.rollup(dfn.col("a"))],
+        ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
+        ...      dfn.functions.grouping(dfn.col("a"))],
+        ... ).sort(dfn.col("a").sort(nulls_first=False))
         >>> batches = result.collect()
-        >>> grouping_vals = pa.concat_arrays(
-        ...     [batch.column(1) for batch in batches]).to_pylist()
-        >>> all(v == 0 for v in grouping_vals)
-        True
+        >>> pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
+        [0, 0, 1]
+
+    See Also:
+        :py:class:`~datafusion.expr.GroupingSet`
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))

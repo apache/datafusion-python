@@ -22,6 +22,7 @@ import pyarrow as pa
 import pytest
 from datafusion import SessionContext, column, literal
 from datafusion import functions as f
+from datafusion.expr import GroupingSet
 
 np.seterr(invalid="ignore")
 
@@ -1837,33 +1838,72 @@ def test_percentile_cont(filter_expr, expected):
     assert result.column(0)[0].as_py() == expected
 
 
-def test_grouping():
+def test_rollup():
+    # With ROLLUP, per-group rows have grouping()=0 and the grand-total row
+    # (where the column is aggregated across) has grouping()=1.
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
-    # In a simple GROUP BY (no grouping sets), grouping() returns 0 for all rows.
     result = df.aggregate(
-        [column("a")], [f.grouping(column("a")), f.sum(column("b")).alias("s")]
-    ).collect()
-    grouping_col = pa.concat_arrays([batch.column(1) for batch in result]).to_pylist()
-    assert all(v == 0 for v in grouping_col)
+        [GroupingSet.rollup(column("a"))],
+        [f.sum(column("b")).alias("s"), f.grouping(column("a"))],
+    ).sort(column("a").sort(ascending=True, nulls_first=False))
+    batches = result.collect()
+    g = pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
+    s = pa.concat_arrays([b.column("s") for b in batches]).to_pylist()
+    # Two per-group rows (g=0) plus one grand-total row (g=1)
+    assert g == [0, 0, 1]
+    assert s == [30, 30, 60]
 
 
-def test_grouping_multiple_columns():
-    # Verify grouping() works when multiple columns are in the GROUP BY clause.
+def test_rollup_multi_column():
+    # rollup(a, b) produces grouping sets (a, b), (a), ().
     ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 10, 30], "c": [100, 200, 300]})
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": ["x", "y", "x"], "c": [10, 20, 30]})
     result = df.aggregate(
-        [column("a"), column("b")],
+        [GroupingSet.rollup(column("a"), column("b"))],
+        [f.sum(column("c")).alias("s")],
+    )
+    total_rows = sum(b.num_rows for b in result.collect())
+    # 3 detail (a,b) + 2 subtotal (a) + 1 grand total = 6
+    assert total_rows == 6
+
+
+def test_cube():
+    # cube(a, b) produces all subsets: (a,b), (a), (b), ().
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": ["x", "y", "x"], "c": [10, 20, 30]})
+    result = df.aggregate(
+        [GroupingSet.cube(column("a"), column("b"))],
+        [f.sum(column("c")).alias("s")],
+    )
+    total_rows = sum(b.num_rows for b in result.collect())
+    # 3 (a,b) + 2 (a) + 2 (b) + 1 () = 8
+    assert total_rows == 8
+
+
+def test_grouping_sets():
+    # GROUPING SETS lets you choose exactly which column subsets to group by.
+    # Each row's grouping() value tells you which columns are aggregated across.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["x", "x", "y"], "b": ["m", "n", "m"], "c": [1, 2, 3]})
+    result = df.aggregate(
+        [GroupingSet.grouping_sets([column("a")], [column("b")])],
         [
+            f.sum(column("c")).alias("s"),
             f.grouping(column("a")),
             f.grouping(column("b")),
-            f.sum(column("c")).alias("s"),
         ],
-    ).collect()
-    grouping_a = pa.concat_arrays([batch.column(2) for batch in result]).to_pylist()
-    grouping_b = pa.concat_arrays([batch.column(3) for batch in result]).to_pylist()
-    assert all(v == 0 for v in grouping_a)
-    assert all(v == 0 for v in grouping_b)
+    ).sort(
+        column("a").sort(ascending=True, nulls_first=False),
+        column("b").sort(ascending=True, nulls_first=False),
+    )
+    batches = result.collect()
+    ga = pa.concat_arrays([b.column(3) for b in batches]).to_pylist()
+    gb = pa.concat_arrays([b.column(4) for b in batches]).to_pylist()
+    # Rows grouped by (a): ga=0 (a is a key), gb=1 (b is aggregated across)
+    # Rows grouped by (b): ga=1 (a is aggregated across), gb=0 (b is a key)
+    assert ga == [0, 0, 1, 1]
+    assert gb == [1, 1, 0, 0]
 
 
 def test_var_population():
