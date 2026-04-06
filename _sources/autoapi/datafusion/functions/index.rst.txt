@@ -77,6 +77,7 @@ Functions
    datafusion.functions.arrays_overlap
    datafusion.functions.arrays_zip
    datafusion.functions.arrow_cast
+   datafusion.functions.arrow_metadata
    datafusion.functions.arrow_typeof
    datafusion.functions.ascii
    datafusion.functions.asin
@@ -142,6 +143,7 @@ Functions
    datafusion.functions.gcd
    datafusion.functions.gen_series
    datafusion.functions.generate_series
+   datafusion.functions.get_field
    datafusion.functions.greatest
    datafusion.functions.ifnull
    datafusion.functions.in_list
@@ -259,6 +261,7 @@ Functions
    datafusion.functions.reverse
    datafusion.functions.right
    datafusion.functions.round
+   datafusion.functions.row
    datafusion.functions.row_number
    datafusion.functions.rpad
    datafusion.functions.rtrim
@@ -300,12 +303,15 @@ Functions
    datafusion.functions.translate
    datafusion.functions.trim
    datafusion.functions.trunc
+   datafusion.functions.union_extract
+   datafusion.functions.union_tag
    datafusion.functions.upper
    datafusion.functions.uuid
    datafusion.functions.var
    datafusion.functions.var_pop
    datafusion.functions.var_samp
    datafusion.functions.var_sample
+   datafusion.functions.version
    datafusion.functions.when
    datafusion.functions.window
 
@@ -1214,20 +1220,66 @@ Module Contents
    [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
 
 
-.. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr | str | pyarrow.DataType) -> datafusion.expr.Expr
 
    Casts an expression to a specified data type.
+
+   The ``data_type`` can be a string, a ``pyarrow.DataType``, or an
+   ``Expr``. For simple types, :py:meth:`Expr.cast()
+   <datafusion.expr.Expr.cast>` is more concise
+   (e.g., ``col("a").cast(pa.float64())``). Use ``arrow_cast`` when
+   you want to specify the target type as a string using DataFusion's
+   type syntax, which can be more readable for complex types like
+   ``"Timestamp(Nanosecond, None)"``.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1]})
-   >>> data_type = dfn.string_literal("Float64")
    >>> result = df.select(
-   ...     dfn.functions.arrow_cast(dfn.col("a"), data_type).alias("c")
+   ...     dfn.functions.arrow_cast(dfn.col("a"), "Float64").alias("c")
    ... )
    >>> result.collect_column("c")[0].as_py()
    1.0
+
+   >>> import pyarrow as pa
+   >>> result = df.select(
+   ...     dfn.functions.arrow_cast(
+   ...         dfn.col("a"), data_type=pa.float64()
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py()
+   1.0
+
+
+.. py:function:: arrow_metadata(expr: datafusion.expr.Expr, key: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
+
+   Returns the metadata of the input expression.
+
+   If called with one argument, returns a Map of all metadata key-value pairs.
+   If called with two arguments, returns the value for the specified metadata key.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+   >>> schema = pa.schema([field])
+   >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.create_dataframe([[batch]])
+   >>> result = df.select(
+   ...     dfn.functions.arrow_metadata(dfn.col("val")).alias("meta")
+   ... )
+   >>> ("k", "v") in result.collect_column("meta")[0].as_py()
+   True
+
+   >>> result = df.select(
+   ...     dfn.functions.arrow_metadata(
+   ...         dfn.col("val"), key="k"
+   ...     ).alias("meta_val")
+   ... )
+   >>> result.collect_column("meta_val")[0].as_py()
+   'v'
 
 
 .. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2427,6 +2479,39 @@ Module Contents
    Unlike :py:func:`range`, this includes the upper bound.
 
    .. seealso:: This is an alias for :py:func:`gen_series`.
+
+
+.. py:function:: get_field(expr: datafusion.expr.Expr, name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Extracts a field from a struct or map by name.
+
+   When the field name is a static string, the bracket operator
+   ``expr["field"]`` is a convenient shorthand. Use ``get_field``
+   when the field name is a dynamic expression.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1], "b": [2]})
+   >>> df = df.with_column(
+   ...     "s",
+   ...     dfn.functions.named_struct(
+   ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
+   ...     ),
+   ... )
+   >>> result = df.select(
+   ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+   ... )
+   >>> result.collect_column("x_val")[0].as_py()
+   1
+
+   Equivalent using bracket syntax:
+
+   >>> result = df.select(
+   ...     dfn.col("s")["x"].alias("x_val")
+   ... )
+   >>> result.collect_column("x_val")[0].as_py()
+   1
 
 
 .. py:function:: greatest(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -4427,6 +4512,13 @@ Module Contents
    1.57
 
 
+.. py:function:: row(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a struct with the given arguments.
+
+   .. seealso:: This is an alias for :py:func:`struct`.
+
+
 .. py:function:: row_number(partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
 
    Create a row number window function.
@@ -5176,6 +5268,55 @@ Module Contents
    1.56
 
 
+.. py:function:: union_extract(union_expr: datafusion.expr.Expr, field_name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Extracts a value from a union type by field name.
+
+   Returns the value of the named field if it is the currently selected
+   variant, otherwise returns NULL.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> ctx = dfn.SessionContext()
+   >>> types = pa.array([0, 1, 0], type=pa.int8())
+   >>> offsets = pa.array([0, 0, 1], type=pa.int32())
+   >>> arr = pa.UnionArray.from_dense(
+   ...     types, offsets, [pa.array([1, 2]), pa.array(["hi"])],
+   ...     ["int", "str"], [0, 1],
+   ... )
+   >>> batch = pa.RecordBatch.from_arrays([arr], names=["u"])
+   >>> df = ctx.create_dataframe([[batch]])
+   >>> result = df.select(
+   ...     dfn.functions.union_extract(dfn.col("u"), "int").alias("val")
+   ... )
+   >>> result.collect_column("val").to_pylist()
+   [1, None, 2]
+
+
+.. py:function:: union_tag(union_expr: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the tag (active field name) of a union type.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> ctx = dfn.SessionContext()
+   >>> types = pa.array([0, 1, 0], type=pa.int8())
+   >>> offsets = pa.array([0, 0, 1], type=pa.int32())
+   >>> arr = pa.UnionArray.from_dense(
+   ...     types, offsets, [pa.array([1, 2]), pa.array(["hi"])],
+   ...     ["int", "str"], [0, 1],
+   ... )
+   >>> batch = pa.RecordBatch.from_arrays([arr], names=["u"])
+   >>> df = ctx.create_dataframe([[batch]])
+   >>> result = df.select(
+   ...     dfn.functions.union_tag(dfn.col("u")).alias("tag")
+   ... )
+   >>> result.collect_column("tag").to_pylist()
+   ['int', 'str', 'int']
+
+
 .. py:function:: upper(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string to uppercase.
@@ -5276,6 +5417,19 @@ Module Contents
    Computes the sample variance of the argument.
 
    .. seealso:: This is an alias for :py:func:`var_samp`.
+
+
+.. py:function:: version() -> datafusion.expr.Expr
+
+   Returns the DataFusion version string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.empty_table()
+   >>> result = df.select(dfn.functions.version().alias("v"))
+   >>> "Apache DataFusion" in result.collect_column("v")[0].as_py()
+   True
 
 
 .. py:function:: when(when: datafusion.expr.Expr, then: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
