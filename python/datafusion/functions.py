@@ -2701,6 +2701,10 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
 def get_field(expr: Expr, name: Expr | str) -> Expr:
     """Extracts a field from a struct or map by name.
 
+    When the field name is a static string, the bracket operator
+    ``expr["field"]`` is a convenient shorthand. Use ``get_field``
+    when the field name is a dynamic expression.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1], "b": [2]})
@@ -2712,6 +2716,14 @@ def get_field(expr: Expr, name: Expr | str) -> Expr:
         ... )
         >>> result = df.select(
         ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+        ... )
+        >>> result.collect_column("x_val")[0].as_py()
+        1
+
+        Equivalent using bracket syntax:
+
+        >>> result = df.select(
+        ...     dfn.col("s")["x"].alias("x_val")
         ... )
         >>> result.collect_column("x_val")[0].as_py()
         1
