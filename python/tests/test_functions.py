@@ -1838,51 +1838,52 @@ def test_percentile_cont(filter_expr, expected):
     assert result.column(0)[0].as_py() == expected
 
 
-def test_rollup():
-    # With ROLLUP, per-group rows have grouping()=0 and the grand-total row
-    # (where the column is aggregated across) has grouping()=1.
+@pytest.mark.parametrize(
+    ("grouping_set_expr", "expected_grouping", "expected_sums"),
+    [
+        (GroupingSet.rollup(column("a")), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.cube(column("a")), [0, 0, 1], [30, 30, 60]),
+    ],
+    ids=["rollup", "cube"],
+)
+def test_grouping_set_single_column(
+    grouping_set_expr, expected_grouping, expected_sums
+):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
     result = df.aggregate(
-        [GroupingSet.rollup(column("a"))],
+        [grouping_set_expr],
         [f.sum(column("b")).alias("s"), f.grouping(column("a"))],
     ).sort(column("a").sort(ascending=True, nulls_first=False))
     batches = result.collect()
     g = pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
     s = pa.concat_arrays([b.column("s") for b in batches]).to_pylist()
-    # Two per-group rows (g=0) plus one grand-total row (g=1)
-    assert g == [0, 0, 1]
-    assert s == [30, 30, 60]
+    assert g == expected_grouping
+    assert s == expected_sums
 
 
-def test_rollup_multi_column():
-    # rollup(a, b) produces grouping sets (a, b), (a), ().
+@pytest.mark.parametrize(
+    ("grouping_set_expr", "expected_rows"),
+    [
+        # rollup(a, b) => (a,b), (a), () => 3 + 2 + 1 = 6
+        (GroupingSet.rollup(column("a"), column("b")), 6),
+        # cube(a, b) => (a,b), (a), (b), () => 3 + 2 + 2 + 1 = 8
+        (GroupingSet.cube(column("a"), column("b")), 8),
+    ],
+    ids=["rollup", "cube"],
+)
+def test_grouping_set_multi_column(grouping_set_expr, expected_rows):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 1, 2], "b": ["x", "y", "x"], "c": [10, 20, 30]})
     result = df.aggregate(
-        [GroupingSet.rollup(column("a"), column("b"))],
+        [grouping_set_expr],
         [f.sum(column("c")).alias("s")],
     )
     total_rows = sum(b.num_rows for b in result.collect())
-    # 3 detail (a,b) + 2 subtotal (a) + 1 grand total = 6
-    assert total_rows == 6
+    assert total_rows == expected_rows
 
 
-def test_cube():
-    # cube(a, b) produces all subsets: (a,b), (a), (b), ().
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1, 1, 2], "b": ["x", "y", "x"], "c": [10, 20, 30]})
-    result = df.aggregate(
-        [GroupingSet.cube(column("a"), column("b"))],
-        [f.sum(column("c")).alias("s")],
-    )
-    total_rows = sum(b.num_rows for b in result.collect())
-    # 3 (a,b) + 2 (a) + 2 (b) + 1 () = 8
-    assert total_rows == 8
-
-
-def test_grouping_sets():
-    # GROUPING SETS lets you choose exactly which column subsets to group by.
+def test_grouping_sets_explicit():
     # Each row's grouping() value tells you which columns are aggregated across.
     ctx = SessionContext()
     df = ctx.from_pydict({"a": ["x", "x", "y"], "b": ["m", "n", "m"], "c": [1, 2, 3]})
