@@ -32,10 +32,13 @@ Functions
    datafusion.functions.approx_percentile_cont_with_weight
    datafusion.functions.array
    datafusion.functions.array_agg
+   datafusion.functions.array_any_value
    datafusion.functions.array_append
    datafusion.functions.array_cat
    datafusion.functions.array_concat
+   datafusion.functions.array_contains
    datafusion.functions.array_dims
+   datafusion.functions.array_distance
    datafusion.functions.array_distinct
    datafusion.functions.array_element
    datafusion.functions.array_empty
@@ -48,6 +51,8 @@ Functions
    datafusion.functions.array_intersect
    datafusion.functions.array_join
    datafusion.functions.array_length
+   datafusion.functions.array_max
+   datafusion.functions.array_min
    datafusion.functions.array_ndims
    datafusion.functions.array_pop_back
    datafusion.functions.array_pop_front
@@ -64,10 +69,13 @@ Functions
    datafusion.functions.array_replace_all
    datafusion.functions.array_replace_n
    datafusion.functions.array_resize
+   datafusion.functions.array_reverse
    datafusion.functions.array_slice
    datafusion.functions.array_sort
    datafusion.functions.array_to_string
    datafusion.functions.array_union
+   datafusion.functions.arrays_overlap
+   datafusion.functions.arrays_zip
    datafusion.functions.arrow_cast
    datafusion.functions.arrow_typeof
    datafusion.functions.ascii
@@ -132,6 +140,8 @@ Functions
    datafusion.functions.floor
    datafusion.functions.from_unixtime
    datafusion.functions.gcd
+   datafusion.functions.gen_series
+   datafusion.functions.generate_series
    datafusion.functions.greatest
    datafusion.functions.ifnull
    datafusion.functions.in_list
@@ -146,19 +156,31 @@ Functions
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
+   datafusion.functions.list_any_value
    datafusion.functions.list_append
    datafusion.functions.list_cat
    datafusion.functions.list_concat
+   datafusion.functions.list_contains
    datafusion.functions.list_dims
+   datafusion.functions.list_distance
    datafusion.functions.list_distinct
    datafusion.functions.list_element
+   datafusion.functions.list_empty
    datafusion.functions.list_except
    datafusion.functions.list_extract
+   datafusion.functions.list_has
+   datafusion.functions.list_has_all
+   datafusion.functions.list_has_any
    datafusion.functions.list_indexof
    datafusion.functions.list_intersect
    datafusion.functions.list_join
    datafusion.functions.list_length
+   datafusion.functions.list_max
+   datafusion.functions.list_min
    datafusion.functions.list_ndims
+   datafusion.functions.list_overlap
+   datafusion.functions.list_pop_back
+   datafusion.functions.list_pop_front
    datafusion.functions.list_position
    datafusion.functions.list_positions
    datafusion.functions.list_prepend
@@ -172,10 +194,12 @@ Functions
    datafusion.functions.list_replace_all
    datafusion.functions.list_replace_n
    datafusion.functions.list_resize
+   datafusion.functions.list_reverse
    datafusion.functions.list_slice
    datafusion.functions.list_sort
    datafusion.functions.list_to_string
    datafusion.functions.list_union
+   datafusion.functions.list_zip
    datafusion.functions.ln
    datafusion.functions.log
    datafusion.functions.log10
@@ -252,6 +276,8 @@ Functions
    datafusion.functions.stddev_pop
    datafusion.functions.stddev_samp
    datafusion.functions.string_agg
+   datafusion.functions.string_to_array
+   datafusion.functions.string_to_list
    datafusion.functions.strpos
    datafusion.functions.struct
    datafusion.functions.substr
@@ -556,6 +582,20 @@ Module Contents
    [2, 3]
 
 
+.. py:function:: array_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the first non-null element in the array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[None, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_any_value(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   2
+
+
 .. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Appends an element to the end of an array.
@@ -591,6 +631,13 @@ Module Contents
    [1, 2, 3, 4]
 
 
+.. py:function:: array_contains(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if the element appears in the array, otherwise false.
+
+   .. seealso:: This is an alias for :py:func:`array_has`.
+
+
 .. py:function:: array_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array of the array's dimensions.
@@ -602,6 +649,22 @@ Module Contents
    >>> result = df.select(dfn.functions.array_dims(dfn.col("a")).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [3]
+
+
+.. py:function:: array_distance(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Euclidean distance between two numeric arrays.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_distance(
+   ...         dfn.col("a"), dfn.col("b"),
+   ...     ).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   2.0
 
 
 .. py:function:: array_distinct(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -763,6 +826,34 @@ Module Contents
    >>> result = df.select(dfn.functions.array_length(dfn.col("a")).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    3
+
+
+.. py:function:: array_max(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the maximum value in the array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_max(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   3
+
+
+.. py:function:: array_min(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the minimum value in the array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_min(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   1
 
 
 .. py:function:: array_ndims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -999,6 +1090,20 @@ Module Contents
    [1, 2, 0, 0]
 
 
+.. py:function:: array_reverse(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Reverses the order of elements in the array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_reverse(dfn.col("a")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [3, 2, 1]
+
+
 .. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
@@ -1086,6 +1191,27 @@ Module Contents
    ...     result.collect_column("result")[0].as_py()
    ... )
    [1, 2, 3, 4]
+
+
+.. py:function:: arrays_overlap(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if any element appears in both arrays.
+
+   .. seealso:: This is an alias for :py:func:`array_has_any`.
+
+
+.. py:function:: arrays_zip(*arrays: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Combines multiple arrays into a single array of structs.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+   >>> result = df.select(
+   ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
 
 
 .. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2267,6 +2393,42 @@ Module Contents
    4
 
 
+.. py:function:: gen_series(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Creates a list of values in the range between start and stop.
+
+   Unlike :py:func:`range`, this includes the upper bound.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [0]})
+   >>> result = df.select(
+   ...     dfn.functions.gen_series(
+   ...         dfn.lit(1), dfn.lit(5),
+   ...     ).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3, 4, 5]
+
+   Specify a custom ``step``:
+
+   >>> result = df.select(
+   ...     dfn.functions.gen_series(
+   ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
+   ...     ).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [1, 4, 7, 10]
+
+
+.. py:function:: generate_series(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Creates a list of values in the range between start and stop.
+
+   Unlike :py:func:`range`, this includes the upper bound.
+
+   .. seealso:: This is an alias for :py:func:`gen_series`.
+
+
 .. py:function:: greatest(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the greatest value from a list of expressions.
@@ -2581,6 +2743,13 @@ Module Contents
    3
 
 
+.. py:function:: list_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the first non-null element in the array.
+
+   .. seealso:: This is an alias for :py:func:`array_any_value`.
+
+
 .. py:function:: list_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Appends an element to the end of an array.
@@ -2602,11 +2771,25 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
 
 
+.. py:function:: list_contains(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if the element appears in the array, otherwise false.
+
+   .. seealso:: This is an alias for :py:func:`array_has`.
+
+
 .. py:function:: list_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array of the array's dimensions.
 
    .. seealso:: This is an alias for :py:func:`array_dims`.
+
+
+.. py:function:: list_distance(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Euclidean distance between two numeric arrays.
+
+   .. seealso:: This is an alias for :py:func:`array_distance`.
 
 
 .. py:function:: list_distinct(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2623,6 +2806,13 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_element`.
 
 
+.. py:function:: list_empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a boolean indicating whether the array is empty.
+
+   .. seealso:: This is an alias for :py:func:`array_empty`.
+
+
 .. py:function:: list_except(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the elements that appear in ``array1`` but not in the ``array2``.
@@ -2635,6 +2825,27 @@ Module Contents
    Extracts the element with the index n from the array.
 
    .. seealso:: This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: list_has(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if the element appears in the array, otherwise false.
+
+   .. seealso:: This is an alias for :py:func:`array_has`.
+
+
+.. py:function:: list_has_all(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Determines if there is complete overlap ``second_array`` in ``first_array``.
+
+   .. seealso:: This is an alias for :py:func:`array_has_all`.
+
+
+.. py:function:: list_has_any(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+   .. seealso:: This is an alias for :py:func:`array_has_any`.
 
 
 .. py:function:: list_indexof(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
@@ -2665,11 +2876,46 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_length`.
 
 
+.. py:function:: list_max(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the maximum value in the array.
+
+   .. seealso:: This is an alias for :py:func:`array_max`.
+
+
+.. py:function:: list_min(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the minimum value in the array.
+
+   .. seealso:: This is an alias for :py:func:`array_min`.
+
+
 .. py:function:: list_ndims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the number of dimensions of the array.
 
    .. seealso:: This is an alias for :py:func:`array_ndims`.
+
+
+.. py:function:: list_overlap(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if any element appears in both arrays.
+
+   .. seealso:: This is an alias for :py:func:`array_has_any`.
+
+
+.. py:function:: list_pop_back(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the array without the last element.
+
+   .. seealso:: This is an alias for :py:func:`array_pop_back`.
+
+
+.. py:function:: list_pop_front(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the array without the first element.
+
+   .. seealso:: This is an alias for :py:func:`array_pop_front`.
 
 
 .. py:function:: list_position(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
@@ -2769,6 +3015,13 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_resize`.
 
 
+.. py:function:: list_reverse(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Reverses the order of elements in the array.
+
+   .. seealso:: This is an alias for :py:func:`array_reverse`.
+
+
 .. py:function:: list_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
@@ -2797,6 +3050,13 @@ Module Contents
    Duplicate rows will not be returned.
 
    .. seealso:: This is an alias for :py:func:`array_union`.
+
+
+.. py:function:: list_zip(*arrays: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Combines multiple arrays into a single array of structs.
+
+   .. seealso:: This is an alias for :py:func:`arrays_zip`.
 
 
 .. py:function:: ln(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -4492,6 +4752,40 @@ Module Contents
    ...     ).alias("s")])
    >>> result.collect_column("s")[0].as_py()
    'y,z'
+
+
+.. py:function:: string_to_array(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, null_string: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Splits a string based on a delimiter and returns an array of parts.
+
+   Any parts matching the optional ``null_string`` will be replaced with ``NULL``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["hello,world"]})
+   >>> result = df.select(
+   ...     dfn.functions.string_to_array(
+   ...         dfn.col("a"), dfn.lit(","),
+   ...     ).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   ['hello', 'world']
+
+   Replace parts matching a ``null_string`` with ``NULL``:
+
+   >>> result = df.select(
+   ...     dfn.functions.string_to_array(
+   ...         dfn.col("a"), dfn.lit(","), null_string=dfn.lit("world"),
+   ...     ).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   ['hello', None]
+
+
+.. py:function:: string_to_list(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, null_string: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Splits a string based on a delimiter and returns an array of parts.
+
+   .. seealso:: This is an alias for :py:func:`string_to_array`.
 
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
