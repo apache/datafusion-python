@@ -2658,7 +2658,7 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
         1.0
     """
     if isinstance(data_type, pa.DataType):
-        data_type = str(data_type)
+        return expr.cast(data_type)
     if isinstance(data_type, str):
         data_type = Expr.string_literal(data_type)
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
@@ -2789,7 +2789,7 @@ def version() -> Expr:
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = ctx.empty_table()
         >>> result = df.select(dfn.functions.version().alias("v"))
         >>> "Apache DataFusion" in result.collect_column("v")[0].as_py()
         True
