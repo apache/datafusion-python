@@ -138,6 +138,13 @@ fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+fn make_map(keys: Vec<PyExpr>, values: Vec<PyExpr>) -> PyExpr {
+    let keys = keys.into_iter().map(|x| x.into()).collect();
+    let values = values.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::map::map(keys, values).into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -538,6 +545,8 @@ expr_fn!(length, string);
 expr_fn!(char_length, string);
 expr_fn!(chr, arg, "Returns the character with the given code.");
 expr_fn_vec!(coalesce);
+expr_fn_vec!(greatest);
+expr_fn_vec!(least);
 expr_fn!(
     contains,
     string search_str,
@@ -591,6 +600,11 @@ expr_fn!(
     nvl,
     x y,
     "Returns x if x is not NULL otherwise returns y."
+);
+expr_fn!(
+    nvl2,
+    x y z,
+    "Returns y if x is not NULL; otherwise returns z."
 );
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn!(
@@ -718,6 +732,12 @@ array_fn!(array_reverse, array);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
+
+// Map Functions
+array_fn!(map_keys, map);
+array_fn!(map_values, map);
+array_fn!(map_extract, map key);
+array_fn!(map_entries, map);
 
 aggregate_function!(array_agg);
 aggregate_function!(max);
@@ -1037,6 +1057,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
+    m.add_wrapped(wrap_pyfunction!(greatest))?;
     // m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
@@ -1044,6 +1065,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(iszero))?;
     m.add_wrapped(wrap_pyfunction!(levenshtein))?;
     m.add_wrapped(wrap_pyfunction!(lcm))?;
+    m.add_wrapped(wrap_pyfunction!(least))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
     m.add_wrapped(wrap_pyfunction!(ln))?;
@@ -1061,6 +1083,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(named_struct))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
     m.add_wrapped(wrap_pyfunction!(nvl))?;
+    m.add_wrapped(wrap_pyfunction!(nvl2))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
@@ -1187,6 +1210,13 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(gen_series))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(cardinality))?;
+
+    // Map Functions
+    m.add_wrapped(wrap_pyfunction!(make_map))?;
+    m.add_wrapped(wrap_pyfunction!(map_keys))?;
+    m.add_wrapped(wrap_pyfunction!(map_values))?;
+    m.add_wrapped(wrap_pyfunction!(map_extract))?;
+    m.add_wrapped(wrap_pyfunction!(map_entries))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

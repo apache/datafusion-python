@@ -148,6 +148,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "element_at",
     "empty",
     "encode",
     "ends_with",
@@ -162,6 +163,8 @@ __all__ = [
     "gcd",
     "gen_series",
     "generate_series",
+    "greatest",
+    "ifnull",
     "in_list",
     "initcap",
     "isnan",
@@ -170,6 +173,7 @@ __all__ = [
     "last_value",
     "lcm",
     "lead",
+    "least",
     "left",
     "length",
     "levenshtein",
@@ -227,7 +231,12 @@ __all__ = [
     "make_array",
     "make_date",
     "make_list",
+    "make_map",
     "make_time",
+    "map_entries",
+    "map_extract",
+    "map_keys",
+    "map_values",
     "max",
     "md5",
     "mean",
@@ -240,6 +249,7 @@ __all__ = [
     "ntile",
     "nullif",
     "nvl",
+    "nvl2",
     "octet_length",
     "order_by",
     "overlay",
@@ -1071,6 +1081,34 @@ def gcd(x: Expr, y: Expr) -> Expr:
     return Expr(f.gcd(x.expr, y.expr))
 
 
+def greatest(*args: Expr) -> Expr:
+    """Returns the greatest value from a list of expressions.
+
+    Returns NULL if all expressions are NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+        >>> result = df.select(
+        ...     dfn.functions.greatest(dfn.col("a"), dfn.col("b")).alias("greatest"))
+        >>> result.collect_column("greatest")[0].as_py()
+        2
+        >>> result.collect_column("greatest")[1].as_py()
+        3
+    """
+    exprs = [arg.expr for arg in args]
+    return Expr(f.greatest(*exprs))
+
+
+def ifnull(x: Expr, y: Expr) -> Expr:
+    """Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
+
+    See Also:
+        This is an alias for :py:func:`nvl`.
+    """
+    return nvl(x, y)
+
+
 def initcap(string: Expr) -> Expr:
     """Set the initial letter of each word to capital.
 
@@ -1122,6 +1160,25 @@ def lcm(x: Expr, y: Expr) -> Expr:
         12
     """
     return Expr(f.lcm(x.expr, y.expr))
+
+
+def least(*args: Expr) -> Expr:
+    """Returns the least value from a list of expressions.
+
+    Returns NULL if all expressions are NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 3], "b": [2, 1]})
+        >>> result = df.select(
+        ...     dfn.functions.least(dfn.col("a"), dfn.col("b")).alias("least"))
+        >>> result.collect_column("least")[0].as_py()
+        1
+        >>> result.collect_column("least")[1].as_py()
+        1
+    """
+    exprs = [arg.expr for arg in args]
+    return Expr(f.least(*exprs))
 
 
 def left(string: Expr, n: Expr) -> Expr:
@@ -1306,6 +1363,24 @@ def nvl(x: Expr, y: Expr) -> Expr:
         1
     """
     return Expr(f.nvl(x.expr, y.expr))
+
+
+def nvl2(x: Expr, y: Expr, z: Expr) -> Expr:
+    """Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 1], "b": [10, 20], "c": [30, 40]})
+        >>> result = df.select(
+        ...     dfn.functions.nvl2(
+        ...         dfn.col("a"), dfn.col("b"), dfn.col("c")).alias("nvl2")
+        ... )
+        >>> result.collect_column("nvl2")[0].as_py()
+        30
+        >>> result.collect_column("nvl2")[1].as_py()
+        20
+    """
+    return Expr(f.nvl2(x.expr, y.expr, z.expr))
 
 
 def octet_length(arg: Expr) -> Expr:
@@ -3706,6 +3781,158 @@ def empty(array: Expr) -> Expr:
         This is an alias for :py:func:`array_empty`.
     """
     return array_empty(array)
+
+
+# map functions
+
+
+def make_map(*args: Any) -> Expr:
+    """Returns a map expression.
+
+    Supports three calling conventions:
+
+    - ``make_map({"a": 1, "b": 2})`` — from a Python dictionary.
+    - ``make_map([keys], [values])`` — from a list of keys and a list of
+      their associated values.  Both lists must be the same length.
+    - ``make_map(k1, v1, k2, v2, ...)`` — from alternating keys and their
+      associated values.
+
+    Keys and values that are not already :py:class:`~datafusion.expr.Expr`
+    are automatically converted to literal expressions.
+
+    Examples:
+        From a dictionary:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.make_map({"a": 1, "b": 2}).alias("m"))
+        >>> result.collect_column("m")[0].as_py()
+        [('a', 1), ('b', 2)]
+
+        From two lists:
+
+        >>> df = ctx.from_pydict({"key": ["x", "y"], "val": [10, 20]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map(
+        ...         [dfn.col("key")], [dfn.col("val")]
+        ...     ).alias("m"))
+        >>> df.collect_column("m")[0].as_py()
+        [('x', 10)]
+
+        From alternating keys and values:
+
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.make_map("x", 1, "y", 2).alias("m"))
+        >>> result.collect_column("m")[0].as_py()
+        [('x', 1), ('y', 2)]
+    """
+    if len(args) == 1 and isinstance(args[0], dict):
+        key_list = list(args[0].keys())
+        value_list = list(args[0].values())
+    elif (
+        len(args) == 2  # noqa: PLR2004
+        and isinstance(args[0], list)
+        and isinstance(args[1], list)
+    ):
+        if len(args[0]) != len(args[1]):
+            msg = "make_map requires key and value lists to be the same length"
+            raise ValueError(msg)
+        key_list = args[0]
+        value_list = args[1]
+    elif len(args) >= 2 and len(args) % 2 == 0:  # noqa: PLR2004
+        key_list = list(args[0::2])
+        value_list = list(args[1::2])
+    else:
+        msg = (
+            "make_map expects a dict, two lists, or an even number of "
+            "key-value arguments"
+        )
+        raise ValueError(msg)
+
+    key_exprs = [k if isinstance(k, Expr) else Expr.literal(k) for k in key_list]
+    val_exprs = [v if isinstance(v, Expr) else Expr.literal(v) for v in value_list]
+    return Expr(f.make_map([k.expr for k in key_exprs], [v.expr for v in val_exprs]))
+
+
+def map_keys(map: Expr) -> Expr:
+    """Returns a list of all keys in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_keys(dfn.col("m")).alias("keys"))
+        >>> result.collect_column("keys")[0].as_py()
+        ['x', 'y']
+    """
+    return Expr(f.map_keys(map.expr))
+
+
+def map_values(map: Expr) -> Expr:
+    """Returns a list of all values in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_values(dfn.col("m")).alias("vals"))
+        >>> result.collect_column("vals")[0].as_py()
+        [1, 2]
+    """
+    return Expr(f.map_values(map.expr))
+
+
+def map_extract(map: Expr, key: Expr) -> Expr:
+    """Returns the value for a given key in the map.
+
+    Returns ``[None]`` if the key is absent.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_extract(
+        ...         dfn.col("m"), dfn.lit("x")
+        ...     ).alias("val"))
+        >>> result.collect_column("val")[0].as_py()
+        [1]
+    """
+    return Expr(f.map_extract(map.expr, key.expr))
+
+
+def map_entries(map: Expr) -> Expr:
+    """Returns a list of all entries (key-value struct pairs) in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_entries(dfn.col("m")).alias("entries"))
+        >>> result.collect_column("entries")[0].as_py()
+        [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
+    """
+    return Expr(f.map_entries(map.expr))
+
+
+def element_at(map: Expr, key: Expr) -> Expr:
+    """Returns the value for a given key in the map.
+
+    Returns ``[None]`` if the key is absent.
+
+    See Also:
+        This is an alias for :py:func:`map_extract`.
+    """
+    return map_extract(map, key)
 
 
 # aggregate functions
