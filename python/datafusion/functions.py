@@ -2637,7 +2637,13 @@ def arrow_typeof(arg: Expr) -> Expr:
 def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
     """Casts an expression to a specified data type.
 
-    The ``data_type`` can be a string, a ``pyarrow.DataType``, or an ``Expr``.
+    The ``data_type`` can be a string, a ``pyarrow.DataType``, or an
+    ``Expr``. For simple types, :py:meth:`Expr.cast()
+    <datafusion.expr.Expr.cast>` is more concise
+    (e.g., ``col("a").cast(pa.float64())``). Use ``arrow_cast`` when
+    you want to specify the target type as a string using DataFusion's
+    type syntax, which can be more readable for complex types like
+    ``"Timestamp(Nanosecond, None)"``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
