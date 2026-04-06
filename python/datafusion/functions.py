@@ -3702,6 +3702,15 @@ def string_to_array(
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         ['hello', 'world']
+
+        Replace parts matching a ``null_string`` with ``NULL``:
+
+        >>> result = df.select(
+        ...     dfn.functions.string_to_array(
+        ...         dfn.col("a"), dfn.lit(","), null_string=dfn.lit("world"),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        ['hello', None]
     """
     null_expr = null_string.expr if null_string is not None else None
     return Expr(f.string_to_array(string.expr, delimiter.expr, null_expr))
@@ -3732,6 +3741,15 @@ def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3, 4, 5]
+
+        Specify a custom ``step``:
+
+        >>> result = df.select(
+        ...     dfn.functions.gen_series(
+        ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [1, 4, 7, 10]
     """
     step_expr = step.expr if step is not None else None
     return Expr(f.gen_series(start.expr, stop.expr, step_expr))
