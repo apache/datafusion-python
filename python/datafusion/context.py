@@ -556,17 +556,30 @@ class SessionContext:
         obj.ctx = self.ctx.enable_url_table()
         return obj
 
-    def register_object_store(
-        self, schema: str, store: Any, host: str | None = None
-    ) -> None:
+    def register_object_store(self, url: str, store: Any) -> None:
         """Add a new object store into the session.
 
+        Registers ``store`` for all URLs whose prefix matches ``url``.  The
+        ``url`` should include the scheme and, where applicable, the bucket or
+        container name so that DataFusion can route requests correctly.
+
+        Example::
+
+            from datafusion import SessionContext
+            from datafusion.object_store import S3Store
+
+            ctx = SessionContext()
+            store = S3Store("my-bucket", region="us-east-1")
+            ctx.register_object_store("s3://my-bucket", store)
+            df = ctx.read_parquet("s3://my-bucket/path/to/file.parquet")
+
         Args:
-            schema: The data source schema.
-            store: The :py:class:`~datafusion.object_store.ObjectStore` to register.
-            host: URL for the host.
+            url: URL prefix that identifies the object store, e.g.
+                ``"s3://my-bucket"`` or
+                ``"https://my-account.blob.core.windows.net"``.
+            store: A :py:class:`~datafusion.object_store.ObjectStore` instance.
         """
-        self.ctx.register_object_store(schema, store, host)
+        self.ctx.register_object_store(url, store)
 
     def register_listing_table(
         self,
@@ -918,6 +931,7 @@ class SessionContext:
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -939,6 +953,10 @@ class SessionContext:
             file_sort_order: Sort order for the file. Each sort key can be
                 specified as a column name (``str``), an expression
                 (``Expr``), or a ``SortExpr``.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file. If ``None``, the store is
+                auto-detected from the URL scheme.
         """
         if table_partition_cols is None:
             table_partition_cols = []
@@ -952,6 +970,7 @@ class SessionContext:
             skip_metadata,
             schema,
             self._convert_file_sort_order(file_sort_order),
+            object_store,
         )
 
     def register_csv(
@@ -965,6 +984,7 @@ class SessionContext:
         file_extension: str = ".csv",
         file_compression_type: str | None = None,
         options: CsvReadOptions | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a CSV file as a table.
 
@@ -986,6 +1006,9 @@ class SessionContext:
             file_compression_type: File compression type.
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
         """
         path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
 
@@ -1024,6 +1047,7 @@ class SessionContext:
             name,
             path_arg,
             options.to_inner(),
+            object_store,
         )
 
     def register_json(
@@ -1035,6 +1059,7 @@ class SessionContext:
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a JSON file as a table.
 
@@ -1051,6 +1076,9 @@ class SessionContext:
                 selected for data input.
             table_partition_cols: Partition columns.
             file_compression_type: File compression type.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
         """
         if table_partition_cols is None:
             table_partition_cols = []
@@ -1063,6 +1091,7 @@ class SessionContext:
             file_extension,
             table_partition_cols,
             file_compression_type,
+            object_store,
         )
 
     def register_avro(
@@ -1072,6 +1101,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_extension: str = ".avro",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register an Avro file as a table.
 
@@ -1084,12 +1114,15 @@ class SessionContext:
             schema: The data source schema.
             file_extension: File extension to select.
             table_partition_cols:  Partition columns.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
         """
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_avro(
-            name, str(path), schema, file_extension, table_partition_cols
+            name, str(path), schema, file_extension, table_partition_cols, object_store
         )
 
     def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
@@ -1149,6 +1182,7 @@ class SessionContext:
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a line-delimited JSON data source.
 
@@ -1161,6 +1195,9 @@ class SessionContext:
                 selected for data input.
             table_partition_cols: Partition columns.
             file_compression_type: File compression type.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
 
         Returns:
             DataFrame representation of the read JSON files.
@@ -1176,6 +1213,7 @@ class SessionContext:
                 file_extension,
                 table_partition_cols,
                 file_compression_type,
+                object_store,
             )
         )
 
@@ -1190,6 +1228,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
         options: CsvReadOptions | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
 
@@ -1209,6 +1248,9 @@ class SessionContext:
             file_compression_type:  File compression type.
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
 
         Returns:
             DataFrame representation of the read CSV files
@@ -1252,6 +1294,7 @@ class SessionContext:
             self.ctx.read_csv(
                 path_arg,
                 options.to_inner(),
+                object_store,
             )
         )
 
@@ -1264,6 +1307,7 @@ class SessionContext:
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1283,6 +1327,9 @@ class SessionContext:
             file_sort_order: Sort order for the file. Each sort key can be
                 specified as a column name (``str``), an expression
                 (``Expr``), or a ``SortExpr``.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
 
         Returns:
             DataFrame representation of the read Parquet files
@@ -1300,6 +1347,7 @@ class SessionContext:
                 skip_metadata,
                 schema,
                 file_sort_order,
+                object_store,
             )
         )
 
@@ -1309,6 +1357,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".avro",
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading Avro data source.
 
@@ -1317,6 +1366,9 @@ class SessionContext:
             schema: The data source schema.
             file_partition_cols: Partition columns.
             file_extension: File extension to select.
+            object_store: An optional
+                :py:class:`~datafusion.object_store.ObjectStore` instance to
+                use for accessing the file.
 
         Returns:
             DataFrame representation of the read Avro file
@@ -1325,7 +1377,9 @@ class SessionContext:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
-            self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
+            self.ctx.read_avro(
+                str(path), schema, file_partition_cols, file_extension, object_store
+            )
         )
 
     def read_table(

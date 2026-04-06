@@ -59,10 +59,15 @@ use datafusion_python_util::{
     get_tokio_runtime, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
+use object_store::aws::AmazonS3Builder;
+use object_store::azure::MicrosoftAzureBuilder;
+use object_store::gcp::GoogleCloudStorageBuilder;
+use object_store::http::HttpBuilder;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
+use pyo3_object_store::PyObjectStore;
 use url::Url;
 use uuid::Uuid;
 
@@ -81,7 +86,6 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::sql::util::replace_placeholders_with_strings;
-use crate::store::StorageContexts;
 use crate::table::{PyTable, RustWrappedPyTableProviderFactory};
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
@@ -410,32 +414,19 @@ impl PySessionContext {
         Ok(Self { ctx, logical_codec })
     }
 
-    /// Register an object store with the given name
-    #[pyo3(signature = (scheme, store, host=None))]
-    pub fn register_object_store(
-        &self,
-        scheme: &str,
-        store: StorageContexts,
-        host: Option<&str>,
-    ) -> PyResult<()> {
-        // for most stores the "host" is the bucket name and can be inferred from the store
-        let (store, upstream_host): (Arc<dyn ObjectStore>, String) = match store {
-            StorageContexts::AmazonS3(s3) => (s3.inner, s3.bucket_name),
-            StorageContexts::GoogleCloudStorage(gcs) => (gcs.inner, gcs.bucket_name),
-            StorageContexts::MicrosoftAzure(azure) => (azure.inner, azure.container_name),
-            StorageContexts::LocalFileSystem(local) => (local.inner, "".to_string()),
-            StorageContexts::HTTP(http) => (http.store, http.url),
-        };
-
-        // let users override the host to match the api signature from upstream
-        let derived_host = if let Some(host) = host {
-            host
-        } else {
-            &upstream_host
-        };
-        let url_string = format!("{scheme}{derived_host}");
-        let url = Url::parse(&url_string).unwrap();
-        self.ctx.runtime_env().register_object_store(&url, store);
+    /// Register an object store for a given URL prefix.
+    ///
+    /// `url` is any URL whose scheme+host identifies the store prefix, e.g.
+    /// ``"s3://my-bucket"`` or ``"https://my-account.blob.core.windows.net"``.
+    /// The ``store`` must be a :py:class:`datafusion.object_store.ObjectStore`
+    /// instance, such as :py:class:`~datafusion.object_store.S3Store`.
+    #[pyo3(signature = (url, store))]
+    pub fn register_object_store(&self, url: &str, store: PyObjectStore) -> PyResult<()> {
+        let url = Url::parse(url)
+            .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("invalid URL: {e}")))?;
+        self.ctx
+            .runtime_env()
+            .register_object_store(&url, store.into_dyn());
         Ok(())
     }
 
@@ -818,7 +809,8 @@ impl PySessionContext {
                         file_extension=".parquet",
                         skip_metadata=true,
                         schema=None,
-                        file_sort_order=None))]
+                        file_sort_order=None,
+                        object_store=None))]
     pub fn register_parquet(
         &self,
         name: &str,
@@ -829,8 +821,10 @@ impl PySessionContext {
         skip_metadata: bool,
         schema: Option<PyArrowType<Schema>>,
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<()> {
+        self.prepare_store_for_path(path, object_store);
         let mut options = ParquetReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
@@ -855,12 +849,14 @@ impl PySessionContext {
 
     #[pyo3(signature = (name,
                         path,
-                        options=None))]
+                        options=None,
+                        object_store=None))]
     pub fn register_csv(
         &self,
         name: &str,
         path: &Bound<'_, PyAny>,
         options: Option<&PyCsvReadOptions>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let options = options
@@ -870,10 +866,14 @@ impl PySessionContext {
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
+            for p in &paths {
+                self.prepare_store_for_path(p, object_store.clone());
+            }
             let result = self.register_csv_from_multiple_paths(name, paths, options);
             wait_for_future(py, result)??;
         } else {
             let path = path.extract::<String>()?;
+            self.prepare_store_for_path(&path, object_store);
             let result = self.ctx.register_csv(name, &path, options);
             wait_for_future(py, result)??;
         }
@@ -888,7 +888,8 @@ impl PySessionContext {
                         schema_infer_max_records=1000,
                         file_extension=".json",
                         table_partition_cols=vec![],
-                        file_compression_type=None))]
+                        file_compression_type=None,
+                        object_store=None))]
     pub fn register_json(
         &self,
         name: &str,
@@ -898,11 +899,13 @@ impl PySessionContext {
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+        self.prepare_store_for_path(path, object_store);
 
         let mut options = JsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
@@ -927,7 +930,8 @@ impl PySessionContext {
                         path,
                         schema=None,
                         file_extension=".avro",
-                        table_partition_cols=vec![]))]
+                        table_partition_cols=vec![],
+                        object_store=None))]
     pub fn register_avro(
         &self,
         name: &str,
@@ -935,12 +939,14 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
+        self.prepare_store_for_path(path, object_store);
         let mut options = AvroReadOptions::default().table_partition_cols(
             table_partition_cols
                 .into_iter()
@@ -1051,7 +1057,7 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
+    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None, object_store=None))]
     pub fn read_json(
         &self,
         path: PathBuf,
@@ -1060,11 +1066,13 @@ impl PySessionContext {
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+        self.prepare_store_for_path(path, object_store);
         let mut options = JsonReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
@@ -1088,11 +1096,13 @@ impl PySessionContext {
 
     #[pyo3(signature = (
         path,
-        options=None))]
+        options=None,
+        object_store=None))]
     pub fn read_csv(
         &self,
         path: &Bound<'_, PyAny>,
         options: Option<&PyCsvReadOptions>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let options = options
@@ -1102,12 +1112,16 @@ impl PySessionContext {
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
+            for p in &paths {
+                self.prepare_store_for_path(p, object_store.clone());
+            }
             let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
             let result = self.ctx.read_csv(paths, options);
             let df = PyDataFrame::new(wait_for_future(py, result)??);
             Ok(df)
         } else {
             let path = path.extract::<String>()?;
+            self.prepare_store_for_path(&path, object_store);
             let result = self.ctx.read_csv(path, options);
             let df = PyDataFrame::new(wait_for_future(py, result)??);
             Ok(df)
@@ -1122,7 +1136,8 @@ impl PySessionContext {
         file_extension=".parquet",
         skip_metadata=true,
         schema=None,
-        file_sort_order=None))]
+        file_sort_order=None,
+        object_store=None))]
     pub fn read_parquet(
         &self,
         path: &str,
@@ -1132,8 +1147,10 @@ impl PySessionContext {
         skip_metadata: bool,
         schema: Option<PyArrowType<Schema>>,
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
+        self.prepare_store_for_path(path, object_store);
         let mut options = ParquetReadOptions::default()
             .table_partition_cols(
                 table_partition_cols
@@ -1157,15 +1174,17 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (path, schema=None, table_partition_cols=vec![], file_extension=".avro"))]
+    #[pyo3(signature = (path, schema=None, table_partition_cols=vec![], file_extension=".avro", object_store=None))]
     pub fn read_avro(
         &self,
         path: &str,
         schema: Option<PyArrowType<Schema>>,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
+        object_store: Option<PyObjectStore>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
+        self.prepare_store_for_path(path, object_store);
         let mut options = AvroReadOptions::default().table_partition_cols(
             table_partition_cols
                 .into_iter()
@@ -1258,6 +1277,100 @@ impl PySessionContext {
 impl PySessionContext {
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
+    }
+
+    /// Auto-detect and register the appropriate [`ObjectStore`] for a URL.
+    ///
+    /// Parses `url_str` and, based on its scheme, constructs and registers an
+    /// object store so callers do not have to call `register_object_store`
+    /// explicitly.  Supported schemes:
+    ///
+    /// * `http` / `https` – registers an [`HttpStore`] for the URL origin.
+    /// * `s3` – registers an anonymous [`AmazonS3`] store (no credentials / signature).
+    ///   Users requiring authenticated access should pass an explicit store via the
+    ///   `object_store` parameter instead.
+    /// * `gs` / `gcs` – registers a [`GoogleCloudStorage`] store seeded from
+    ///   environment variables.
+    /// * `az` / `abfss` – registers a [`MicrosoftAzure`] store seeded from
+    ///   environment variables.
+    ///
+    /// Errors from building cloud stores (e.g. missing credentials) are silently
+    /// ignored so that the subsequent DataFusion operation surfaces a meaningful
+    /// diagnostic.  Non-URL strings (local paths) are silently skipped.
+    fn try_register_url_store(&self, url_str: &str) {
+        let Ok(url) = Url::parse(url_str) else {
+            return; // local path or unparsable – nothing to do
+        };
+        // Skip auto-registration if a store is already registered for this URL
+        // (e.g. the user called register_object_store() explicitly beforehand).
+        if self
+            .ctx
+            .runtime_env()
+            .object_store_registry
+            .get_store(&url)
+            .is_ok()
+        {
+            return;
+        }
+        let store: Arc<dyn ObjectStore> = match url.scheme() {
+            "http" | "https" => match HttpBuilder::new()
+                .with_url(url.origin().ascii_serialization())
+                .build()
+            {
+                Ok(s) => Arc::new(s),
+                Err(_) => return,
+            },
+            "s3" => {
+                let bucket = url.host_str().unwrap_or_default();
+                match AmazonS3Builder::new()
+                    .with_bucket_name(bucket)
+                    .with_skip_signature(true)
+                    .build()
+                {
+                    Ok(s) => Arc::new(s),
+                    Err(_) => return,
+                }
+            }
+            "gs" | "gcs" => {
+                let bucket = url.host_str().unwrap_or_default();
+                match GoogleCloudStorageBuilder::from_env()
+                    .with_bucket_name(bucket)
+                    .build()
+                {
+                    Ok(s) => Arc::new(s),
+                    Err(_) => return,
+                }
+            }
+            "az" | "abfss" => {
+                let container = url.host_str().unwrap_or_default();
+                match MicrosoftAzureBuilder::from_env()
+                    .with_container_name(container)
+                    .build()
+                {
+                    Ok(s) => Arc::new(s),
+                    Err(_) => return,
+                }
+            }
+            _ => return, // unsupported scheme (e.g. "file://")
+        };
+        self.ctx.runtime_env().register_object_store(&url, store);
+    }
+
+    /// Register an object store for `path`, either using a caller-supplied
+    /// store or by auto-detecting one from the URL scheme via
+    /// [`try_register_url_store`][Self::try_register_url_store].
+    fn prepare_store_for_path(&self, path: &str, store: Option<PyObjectStore>) {
+        if let Some(store) = store {
+            // Caller supplied a store: register it directly and skip auto-detection.
+            let Ok(url) = Url::parse(path) else {
+                return;
+            };
+            self.ctx
+                .runtime_env()
+                .register_object_store(&url, store.into_dyn());
+        } else {
+            self.try_register_url_store(path);
+        }
     }
 
     async fn register_csv_from_multiple_paths(

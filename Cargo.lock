@@ -139,7 +139,7 @@ dependencies = [
  "snap",
  "strum",
  "strum_macros",
- "thiserror",
+ "thiserror 2.0.18",
  "uuid",
  "zstd",
 ]
@@ -660,8 +660,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link",
 ]
 
@@ -1684,6 +1686,7 @@ dependencies = [
  "pyo3-async-runtimes",
  "pyo3-build-config",
  "pyo3-log",
+ "pyo3-object_store",
  "serde_json",
  "tokio",
  "url",
@@ -2702,7 +2705,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "thiserror",
+ "thiserror 2.0.18",
  "tokio",
  "tracing",
  "url",
@@ -3007,6 +3010,8 @@ version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf85e27e86080aafd5a22eae58a162e133a589551542b3e5cee4beb27e54f8e1"
 dependencies = [
+ "chrono",
+ "indexmap",
  "libc",
  "once_cell",
  "portable-atomic",
@@ -3085,6 +3090,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyo3-object_store"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3056dc8a77db5d44d32e7f740db0b01e5b65a43d181487a6917576959c6eb9a"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "chrono",
+ "futures",
+ "http",
+ "humantime",
+ "itertools",
+ "object_store",
+ "percent-encoding",
+ "pyo3",
+ "pyo3-async-runtimes",
+ "serde",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "quad-rand"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3114,7 +3142,7 @@ dependencies = [
  "rustc-hash",
  "rustls",
  "socket2",
- "thiserror",
+ "thiserror 2.0.18",
  "tokio",
  "tracing",
  "web-time",
@@ -3135,7 +3163,7 @@ dependencies = [
  "rustls",
  "rustls-pki-types",
  "slab",
- "thiserror",
+ "thiserror 2.0.18",
  "tinyvec",
  "tracing",
  "web-time",
@@ -3859,11 +3887,31 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+dependencies = [
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
 version = "2.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4288b5bcbc7920c07a1149a35cf9590a2aa808e0bc1eafaade0b80947865fbc4"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 2.0.18",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -4130,7 +4178,7 @@ dependencies = [
  "serde",
  "serde_json",
  "syn 2.0.117",
- "thiserror",
+ "thiserror 2.0.18",
  "unicode-ident",
 ]
 

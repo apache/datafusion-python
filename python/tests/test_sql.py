@@ -22,7 +22,6 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 from datafusion import SessionContext, col, udf
-from datafusion.object_store import Http
 from pyarrow.csv import write_csv
 
 from . import generic as helpers
@@ -141,12 +140,50 @@ def test_register_csv_list(ctx, tmp_path):
 
 
 def test_register_http_csv(ctx):
+    """Object store is auto-registered from the URL scheme - no manual call needed."""
     url = "https://raw.githubusercontent.com/ibis-project/testing-data/refs/heads/master/csv/diamonds.csv"
-    ctx.register_object_store("", Http(url))
     ctx.register_csv("remote", url)
     assert ctx.table_exist("remote")
     res, *_ = ctx.sql("SELECT COUNT(*) AS total FROM remote").to_pylist()
     assert res["total"] > 0
+
+
+def test_read_http_csv(ctx):
+    """Reproduce the Polars test_read_web_file pattern using DataFusion.
+
+    Polars: pl.read_csv(url) where url is an HTTPS URL.
+    DataFusion: ctx.read_csv(url) - object store auto-registered from scheme.
+    """
+    url = "https://raw.githubusercontent.com/pola-rs/polars/main/examples/datasets/foods1.csv"
+    df = ctx.read_csv(url)
+    assert df.count() == 27
+
+
+def test_read_https_parquet(ctx):
+    """Read a Parquet file from GitHub via HTTPS - object store auto-registered.
+
+    Uses the canonical Apache parquet-testing reference file (8 rows, 9 columns).
+    """
+    url = "https://raw.githubusercontent.com/apache/parquet-testing/master/data/alltypes_plain.parquet"
+    df = ctx.read_parquet(url)
+    assert df.count() == 8
+    assert "id" in df.schema().names
+
+
+def test_read_s3_parquet_explicit(ctx):
+    """Read a Parquet file from a public S3 bucket using the object_store parameter.
+
+    Passes S3Store directly to read_parquet() - no separate register_object_store()
+    call needed.  Uses the coiled-datasets public bucket (region us-east-2).
+    The airbnb parquet part file is ~188 KB so the test stays fast.
+    """
+    from datafusion.object_store import S3Store
+
+    store = S3Store("coiled-datasets", region="us-east-2", skip_signature=True)
+    url = "s3://coiled-datasets/airbnb-monogo/description-and-ratings.parquet/part.0.parquet"
+    df = ctx.read_parquet(url, object_store=store)
+    assert df.count() == 221
+    assert "description" in df.schema().names
 
 
 def test_register_parquet(ctx, tmp_path):
