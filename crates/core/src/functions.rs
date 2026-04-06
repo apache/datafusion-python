@@ -94,6 +94,57 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+fn array_distance(array1: PyExpr, array2: PyExpr) -> PyExpr {
+    let args = vec![array1.into(), array2.into()];
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::distance::array_distance_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+fn arrays_zip(exprs: Vec<PyExpr>) -> PyExpr {
+    let exprs = exprs.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::expr_fn::arrays_zip(exprs).into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (string, delimiter, null_string=None))]
+fn string_to_array(string: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![string.into(), delimiter.into()];
+    if let Some(null_string) = null_string {
+        args.push(null_string.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::string::string_to_array_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop, step=None))]
+fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![start.into(), stop.into()];
+    if let Some(step) = step {
+        args.push(step.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::range::gen_series_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+fn make_map(keys: Vec<PyExpr>, values: Vec<PyExpr>) -> PyExpr {
+    let keys = keys.into_iter().map(|x| x.into()).collect();
+    let values = values.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::map::map(keys, values).into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -695,9 +746,19 @@ array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
 array_fn!(array_resize, array size value);
+array_fn!(array_any_value, array);
+array_fn!(array_max, array);
+array_fn!(array_min, array);
+array_fn!(array_reverse, array);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
+
+// Map Functions
+array_fn!(map_keys, map);
+array_fn!(map_values, map);
+array_fn!(map_extract, map key);
+array_fn!(map_entries, map);
 
 aggregate_function!(array_agg);
 aggregate_function!(max);
@@ -1165,8 +1226,23 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
+    m.add_wrapped(wrap_pyfunction!(array_any_value))?;
+    m.add_wrapped(wrap_pyfunction!(array_distance))?;
+    m.add_wrapped(wrap_pyfunction!(array_max))?;
+    m.add_wrapped(wrap_pyfunction!(array_min))?;
+    m.add_wrapped(wrap_pyfunction!(array_reverse))?;
+    m.add_wrapped(wrap_pyfunction!(arrays_zip))?;
+    m.add_wrapped(wrap_pyfunction!(string_to_array))?;
+    m.add_wrapped(wrap_pyfunction!(gen_series))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(cardinality))?;
+
+    // Map Functions
+    m.add_wrapped(wrap_pyfunction!(make_map))?;
+    m.add_wrapped(wrap_pyfunction!(map_keys))?;
+    m.add_wrapped(wrap_pyfunction!(map_values))?;
+    m.add_wrapped(wrap_pyfunction!(map_extract))?;
+    m.add_wrapped(wrap_pyfunction!(map_entries))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

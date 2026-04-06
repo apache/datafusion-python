@@ -53,10 +53,13 @@ __all__ = [
     "approx_percentile_cont_with_weight",
     "array",
     "array_agg",
+    "array_any_value",
     "array_append",
     "array_cat",
     "array_concat",
+    "array_contains",
     "array_dims",
+    "array_distance",
     "array_distinct",
     "array_element",
     "array_empty",
@@ -69,6 +72,8 @@ __all__ = [
     "array_intersect",
     "array_join",
     "array_length",
+    "array_max",
+    "array_min",
     "array_ndims",
     "array_pop_back",
     "array_pop_front",
@@ -85,10 +90,13 @@ __all__ = [
     "array_replace_all",
     "array_replace_n",
     "array_resize",
+    "array_reverse",
     "array_slice",
     "array_sort",
     "array_to_string",
     "array_union",
+    "arrays_overlap",
+    "arrays_zip",
     "arrow_cast",
     "arrow_metadata",
     "arrow_typeof",
@@ -141,6 +149,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "element_at",
     "empty",
     "encode",
     "ends_with",
@@ -153,6 +162,8 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
+    "gen_series",
+    "generate_series",
     "get_field",
     "greatest",
     "ifnull",
@@ -168,19 +179,31 @@ __all__ = [
     "left",
     "length",
     "levenshtein",
+    "list_any_value",
     "list_append",
     "list_cat",
     "list_concat",
+    "list_contains",
     "list_dims",
+    "list_distance",
     "list_distinct",
     "list_element",
+    "list_empty",
     "list_except",
     "list_extract",
+    "list_has",
+    "list_has_all",
+    "list_has_any",
     "list_indexof",
     "list_intersect",
     "list_join",
     "list_length",
+    "list_max",
+    "list_min",
     "list_ndims",
+    "list_overlap",
+    "list_pop_back",
+    "list_pop_front",
     "list_position",
     "list_positions",
     "list_prepend",
@@ -194,10 +217,12 @@ __all__ = [
     "list_replace_all",
     "list_replace_n",
     "list_resize",
+    "list_reverse",
     "list_slice",
     "list_sort",
     "list_to_string",
     "list_union",
+    "list_zip",
     "ln",
     "log",
     "log2",
@@ -208,7 +233,12 @@ __all__ = [
     "make_array",
     "make_date",
     "make_list",
+    "make_map",
     "make_time",
+    "map_entries",
+    "map_extract",
+    "map_keys",
+    "map_values",
     "max",
     "md5",
     "mean",
@@ -270,6 +300,8 @@ __all__ = [
     "stddev_pop",
     "stddev_samp",
     "string_agg",
+    "string_to_array",
+    "string_to_list",
     "strpos",
     "struct",
     "substr",
@@ -2883,6 +2915,15 @@ def array_empty(array: Expr) -> Expr:
     return Expr(f.array_empty(array.expr))
 
 
+def list_empty(array: Expr) -> Expr:
+    """Returns a boolean indicating whether the array is empty.
+
+    See Also:
+        This is an alias for :py:func:`array_empty`.
+    """
+    return array_empty(array)
+
+
 def array_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
@@ -2978,6 +3019,69 @@ def array_has_any(first_array: Expr, second_array: Expr) -> Expr:
         True
     """
     return Expr(f.array_has_any(first_array.expr, second_array.expr))
+
+
+def array_contains(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(array, element)
+
+
+def list_has(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(array, element)
+
+
+def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
+    """Determines if there is complete overlap ``second_array`` in ``first_array``.
+
+    See Also:
+        This is an alias for :py:func:`array_has_all`.
+    """
+    return array_has_all(first_array, second_array)
+
+
+def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
+    """Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def arrays_overlap(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if any element appears in both arrays.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def list_overlap(first_array: Expr, second_array: Expr) -> Expr:
+    """Returns true if any element appears in both arrays.
+
+    See Also:
+        This is an alias for :py:func:`array_has_any`.
+    """
+    return array_has_any(first_array, second_array)
+
+
+def list_contains(array: Expr, element: Expr) -> Expr:
+    """Returns true if the element appears in the array, otherwise false.
+
+    See Also:
+        This is an alias for :py:func:`array_has`.
+    """
+    return array_has(array, element)
 
 
 def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
@@ -3145,6 +3249,24 @@ def array_pop_front(array: Expr) -> Expr:
         [2, 3]
     """
     return Expr(f.array_pop_front(array.expr))
+
+
+def list_pop_back(array: Expr) -> Expr:
+    """Returns the array without the last element.
+
+    See Also:
+        This is an alias for :py:func:`array_pop_back`.
+    """
+    return array_pop_back(array)
+
+
+def list_pop_front(array: Expr) -> Expr:
+    """Returns the array without the first element.
+
+    See Also:
+        This is an alias for :py:func:`array_pop_front`.
+    """
+    return array_pop_front(array)
 
 
 def array_remove(array: Expr, element: Expr) -> Expr:
@@ -3518,6 +3640,227 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
     return array_resize(array, size, value)
 
 
+def array_any_value(array: Expr) -> Expr:
+    """Returns the first non-null element in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[None, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_any_value(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        2
+    """
+    return Expr(f.array_any_value(array.expr))
+
+
+def list_any_value(array: Expr) -> Expr:
+    """Returns the first non-null element in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_any_value`.
+    """
+    return array_any_value(array)
+
+
+def array_distance(array1: Expr, array2: Expr) -> Expr:
+    """Returns the Euclidean distance between two numeric arrays.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_distance(
+        ...         dfn.col("a"), dfn.col("b"),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        2.0
+    """
+    return Expr(f.array_distance(array1.expr, array2.expr))
+
+
+def list_distance(array1: Expr, array2: Expr) -> Expr:
+    """Returns the Euclidean distance between two numeric arrays.
+
+    See Also:
+        This is an alias for :py:func:`array_distance`.
+    """
+    return array_distance(array1, array2)
+
+
+def array_max(array: Expr) -> Expr:
+    """Returns the maximum value in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_max(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        3
+    """
+    return Expr(f.array_max(array.expr))
+
+
+def list_max(array: Expr) -> Expr:
+    """Returns the maximum value in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_max`.
+    """
+    return array_max(array)
+
+
+def array_min(array: Expr) -> Expr:
+    """Returns the minimum value in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_min(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        1
+    """
+    return Expr(f.array_min(array.expr))
+
+
+def list_min(array: Expr) -> Expr:
+    """Returns the minimum value in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_min`.
+    """
+    return array_min(array)
+
+
+def array_reverse(array: Expr) -> Expr:
+    """Reverses the order of elements in the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_reverse(dfn.col("a")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [3, 2, 1]
+    """
+    return Expr(f.array_reverse(array.expr))
+
+
+def list_reverse(array: Expr) -> Expr:
+    """Reverses the order of elements in the array.
+
+    See Also:
+        This is an alias for :py:func:`array_reverse`.
+    """
+    return array_reverse(array)
+
+
+def arrays_zip(*arrays: Expr) -> Expr:
+    """Combines multiple arrays into a single array of structs.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+        >>> result = df.select(
+        ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
+    """
+    args = [a.expr for a in arrays]
+    return Expr(f.arrays_zip(args))
+
+
+def list_zip(*arrays: Expr) -> Expr:
+    """Combines multiple arrays into a single array of structs.
+
+    See Also:
+        This is an alias for :py:func:`arrays_zip`.
+    """
+    return arrays_zip(*arrays)
+
+
+def string_to_array(
+    string: Expr, delimiter: Expr, null_string: Expr | None = None
+) -> Expr:
+    """Splits a string based on a delimiter and returns an array of parts.
+
+    Any parts matching the optional ``null_string`` will be replaced with ``NULL``.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["hello,world"]})
+        >>> result = df.select(
+        ...     dfn.functions.string_to_array(
+        ...         dfn.col("a"), dfn.lit(","),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        ['hello', 'world']
+
+        Replace parts matching a ``null_string`` with ``NULL``:
+
+        >>> result = df.select(
+        ...     dfn.functions.string_to_array(
+        ...         dfn.col("a"), dfn.lit(","), null_string=dfn.lit("world"),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        ['hello', None]
+    """
+    null_expr = null_string.expr if null_string is not None else None
+    return Expr(f.string_to_array(string.expr, delimiter.expr, null_expr))
+
+
+def string_to_list(
+    string: Expr, delimiter: Expr, null_string: Expr | None = None
+) -> Expr:
+    """Splits a string based on a delimiter and returns an array of parts.
+
+    See Also:
+        This is an alias for :py:func:`string_to_array`.
+    """
+    return string_to_array(string, delimiter, null_string)
+
+
+def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
+    """Creates a list of values in the range between start and stop.
+
+    Unlike :py:func:`range`, this includes the upper bound.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [0]})
+        >>> result = df.select(
+        ...     dfn.functions.gen_series(
+        ...         dfn.lit(1), dfn.lit(5),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [1, 2, 3, 4, 5]
+
+        Specify a custom ``step``:
+
+        >>> result = df.select(
+        ...     dfn.functions.gen_series(
+        ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
+        ...     ).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [1, 4, 7, 10]
+    """
+    step_expr = step.expr if step is not None else None
+    return Expr(f.gen_series(start.expr, stop.expr, step_expr))
+
+
+def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
+    """Creates a list of values in the range between start and stop.
+
+    Unlike :py:func:`range`, this includes the upper bound.
+
+    See Also:
+        This is an alias for :py:func:`gen_series`.
+    """
+    return gen_series(start, stop, step)
+
+
 def flatten(array: Expr) -> Expr:
     """Flattens an array of arrays into a single array.
 
@@ -3551,6 +3894,158 @@ def empty(array: Expr) -> Expr:
         This is an alias for :py:func:`array_empty`.
     """
     return array_empty(array)
+
+
+# map functions
+
+
+def make_map(*args: Any) -> Expr:
+    """Returns a map expression.
+
+    Supports three calling conventions:
+
+    - ``make_map({"a": 1, "b": 2})`` — from a Python dictionary.
+    - ``make_map([keys], [values])`` — from a list of keys and a list of
+      their associated values.  Both lists must be the same length.
+    - ``make_map(k1, v1, k2, v2, ...)`` — from alternating keys and their
+      associated values.
+
+    Keys and values that are not already :py:class:`~datafusion.expr.Expr`
+    are automatically converted to literal expressions.
+
+    Examples:
+        From a dictionary:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.make_map({"a": 1, "b": 2}).alias("m"))
+        >>> result.collect_column("m")[0].as_py()
+        [('a', 1), ('b', 2)]
+
+        From two lists:
+
+        >>> df = ctx.from_pydict({"key": ["x", "y"], "val": [10, 20]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map(
+        ...         [dfn.col("key")], [dfn.col("val")]
+        ...     ).alias("m"))
+        >>> df.collect_column("m")[0].as_py()
+        [('x', 10)]
+
+        From alternating keys and values:
+
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.make_map("x", 1, "y", 2).alias("m"))
+        >>> result.collect_column("m")[0].as_py()
+        [('x', 1), ('y', 2)]
+    """
+    if len(args) == 1 and isinstance(args[0], dict):
+        key_list = list(args[0].keys())
+        value_list = list(args[0].values())
+    elif (
+        len(args) == 2  # noqa: PLR2004
+        and isinstance(args[0], list)
+        and isinstance(args[1], list)
+    ):
+        if len(args[0]) != len(args[1]):
+            msg = "make_map requires key and value lists to be the same length"
+            raise ValueError(msg)
+        key_list = args[0]
+        value_list = args[1]
+    elif len(args) >= 2 and len(args) % 2 == 0:  # noqa: PLR2004
+        key_list = list(args[0::2])
+        value_list = list(args[1::2])
+    else:
+        msg = (
+            "make_map expects a dict, two lists, or an even number of "
+            "key-value arguments"
+        )
+        raise ValueError(msg)
+
+    key_exprs = [k if isinstance(k, Expr) else Expr.literal(k) for k in key_list]
+    val_exprs = [v if isinstance(v, Expr) else Expr.literal(v) for v in value_list]
+    return Expr(f.make_map([k.expr for k in key_exprs], [v.expr for v in val_exprs]))
+
+
+def map_keys(map: Expr) -> Expr:
+    """Returns a list of all keys in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_keys(dfn.col("m")).alias("keys"))
+        >>> result.collect_column("keys")[0].as_py()
+        ['x', 'y']
+    """
+    return Expr(f.map_keys(map.expr))
+
+
+def map_values(map: Expr) -> Expr:
+    """Returns a list of all values in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_values(dfn.col("m")).alias("vals"))
+        >>> result.collect_column("vals")[0].as_py()
+        [1, 2]
+    """
+    return Expr(f.map_values(map.expr))
+
+
+def map_extract(map: Expr, key: Expr) -> Expr:
+    """Returns the value for a given key in the map.
+
+    Returns ``[None]`` if the key is absent.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_extract(
+        ...         dfn.col("m"), dfn.lit("x")
+        ...     ).alias("val"))
+        >>> result.collect_column("val")[0].as_py()
+        [1]
+    """
+    return Expr(f.map_extract(map.expr, key.expr))
+
+
+def map_entries(map: Expr) -> Expr:
+    """Returns a list of all entries (key-value struct pairs) in the map.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> df = df.select(
+        ...     dfn.functions.make_map({"x": 1, "y": 2}).alias("m"))
+        >>> result = df.select(
+        ...     dfn.functions.map_entries(dfn.col("m")).alias("entries"))
+        >>> result.collect_column("entries")[0].as_py()
+        [{'key': 'x', 'value': 1}, {'key': 'y', 'value': 2}]
+    """
+    return Expr(f.map_entries(map.expr))
+
+
+def element_at(map: Expr, key: Expr) -> Expr:
+    """Returns the value for a given key in the map.
+
+    Returns ``[None]`` if the key is absent.
+
+    See Also:
+        This is an alias for :py:func:`map_extract`.
+    """
+    return map_extract(map, key)
 
 
 # aggregate functions

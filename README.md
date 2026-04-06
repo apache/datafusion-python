@@ -275,7 +275,7 @@ needing to activate the virtual environment:
 
 ```bash
 uv run --no-project maturin develop --uv
-uv run --no-project pytest .
+uv run --no-project pytest
 ```
 
 To run the FFI tests within the examples folder, after you have built

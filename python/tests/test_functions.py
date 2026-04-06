@@ -331,6 +331,10 @@ def py_flatten(arr):
             lambda data: [len(r) == 0 for r in data],
         ),
         (
+            f.list_empty,
+            lambda data: [len(r) == 0 for r in data],
+        ),
+        (
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
         ),
@@ -355,13 +359,49 @@ def py_flatten(arr):
             lambda data: [1.0 in r for r in data],
         ),
         (
+            lambda col: f.list_has(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.array_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.list_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
             lambda col: f.array_has_all(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ),
         (
+            lambda col: f.list_has_all(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
             lambda col: f.array_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.arrays_overlap(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_overlap(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
@@ -419,7 +459,15 @@ def py_flatten(arr):
             lambda data: [arr[:-1] for arr in data],
         ),
         (
+            f.list_pop_back,
+            lambda data: [arr[:-1] for arr in data],
+        ),
+        (
             f.array_pop_front,
+            lambda data: [arr[1:] for arr in data],
+        ),
+        (
+            f.list_pop_front,
             lambda data: [arr[1:] for arr in data],
         ),
         (
@@ -666,6 +714,106 @@ def test_array_function_obj_tests(stmt, py_expr):
     query_result = np.array(df.select(stmt).collect()[0].column(0))
     for a, b in zip(query_result, py_expr(data), strict=False):
         assert a == b
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        pytest.param(
+            ({"x": 1, "y": 2},),
+            [("x", 1), ("y", 2)],
+            id="dict",
+        ),
+        pytest.param(
+            ({"x": literal(1), "y": literal(2)},),
+            [("x", 1), ("y", 2)],
+            id="dict_with_exprs",
+        ),
+        pytest.param(
+            ("x", 1, "y", 2),
+            [("x", 1), ("y", 2)],
+            id="variadic_pairs",
+        ),
+        pytest.param(
+            (literal("x"), literal(1), literal("y"), literal(2)),
+            [("x", 1), ("y", 2)],
+            id="variadic_with_exprs",
+        ),
+    ],
+)
+def test_make_map(args, expected):
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(f.make_map(*args).alias("m")).collect()[0].column(0)
+    assert result[0].as_py() == expected
+
+
+def test_make_map_from_two_lists():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["k1", "k2", "k3"]),
+            pa.array([10, 20, 30]),
+        ],
+        names=["keys", "vals"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map([column("keys")], [column("vals")])
+    result = df.select(f.map_keys(m).alias("k")).collect()[0].column(0)
+    assert result.to_pylist() == [["k1"], ["k2"], ["k3"]]
+
+    result = df.select(f.map_values(m).alias("v")).collect()[0].column(0)
+    assert result.to_pylist() == [[10], [20], [30]]
+
+
+def test_make_map_odd_args_raises():
+    with pytest.raises(ValueError, match="make_map expects"):
+        f.make_map("x", 1, "y")
+
+
+def test_make_map_mismatched_lengths():
+    with pytest.raises(ValueError, match="same length"):
+        f.make_map(["a", "b"], [1])
+
+
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        pytest.param(f.map_keys, ["x", "y"], id="map_keys"),
+        pytest.param(f.map_values, [1, 2], id="map_values"),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("x")),
+            [1],
+            id="map_extract",
+        ),
+        pytest.param(
+            lambda m: f.map_extract(m, literal("z")),
+            [None],
+            id="map_extract_missing_key",
+        ),
+        pytest.param(
+            f.map_entries,
+            [{"key": "x", "value": 1}, {"key": "y", "value": 2}],
+            id="map_entries",
+        ),
+        pytest.param(
+            lambda m: f.element_at(m, literal("y")),
+            [2],
+            id="element_at",
+        ),
+    ],
+)
+def test_map_functions(func, expected):
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], names=["a"])
+    df = ctx.create_dataframe([[batch]])
+
+    m = f.make_map({"x": 1, "y": 2})
+    result = df.select(func(m).alias("out")).collect()[0].column(0)
+    assert result[0].as_py() == expected
 
 
 @pytest.mark.parametrize(
@@ -1740,3 +1888,92 @@ def test_union_extract():
 
     result = df.select(f.union_extract(column("u"), "int").alias("val")).collect()[0]
     assert result.column(0).to_pylist() == [1, None, 2]
+
+
+@pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
+def test_any_value_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[None, 2, 3], [None, None, None], [1, 2, 3]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values[0] == 2
+    assert values[1] is None
+    assert values[2] == 1
+
+
+@pytest.mark.parametrize("func", [f.array_distance, f.list_distance])
+def test_array_distance_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == pytest.approx(2.0)
+
+
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        (f.array_max, [5, 10]),
+        (f.list_max, [5, 10]),
+        (f.array_min, [1, 2]),
+        (f.list_min, [1, 2]),
+    ],
+)
+def test_array_min_max(func, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 5, 3], [10, 2]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values == expected
+
+
+@pytest.mark.parametrize("func", [f.array_reverse, f.list_reverse])
+def test_array_reverse_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values == [[3, 2, 1], [5, 4]]
+
+
+@pytest.mark.parametrize("func", [f.arrays_zip, f.list_zip])
+def test_arrays_zip_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
+    values = result[0].column(0)[0].as_py()
+    assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
+
+
+@pytest.mark.parametrize("func", [f.string_to_array, f.string_to_list])
+def test_string_to_array_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello,world,foo"]})
+    result = df.select(func(column("a"), literal(",")).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == ["hello", "world", "foo"]
+
+
+def test_string_to_array_with_null_string():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello,NA,world"]})
+    result = df.select(
+        f.string_to_array(column("a"), literal(","), literal("NA")).alias("v")
+    ).collect()
+    values = result[0].column(0)[0].as_py()
+    assert values == ["hello", None, "world"]
+
+
+@pytest.mark.parametrize("func", [f.gen_series, f.generate_series])
+def test_gen_series_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [0]})
+    result = df.select(func(literal(1), literal(5)).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == [1, 2, 3, 4, 5]
+
+
+def test_gen_series_with_step():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [0]})
+    result = df.select(
+        f.gen_series(literal(1), literal(10), literal(3)).alias("v")
+    ).collect()
+    assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
