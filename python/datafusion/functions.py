@@ -4425,8 +4425,18 @@ def grouping(
     :py:meth:`GroupingSet.cube <datafusion.expr.GroupingSet.cube>`, or
     :py:meth:`GroupingSet.grouping_sets <datafusion.expr.GroupingSet.grouping_sets>`,
     where different rows are grouped by different subsets of columns. In a
-    regular ``GROUP BY`` without grouping sets every column is always part
+    default aggregation without grouping sets every column is always part
     of the key, so ``grouping()`` always returns 0.
+
+    .. warning::
+
+        Due to an upstream DataFusion limitation
+        (`#21411 <https://github.com/apache/datafusion/issues/21411>`_),
+        ``.alias()`` cannot be applied directly to a ``grouping()``
+        expression. Doing so will raise an error at execution time. To
+        rename the column, use
+        :py:meth:`~datafusion.dataframe.DataFrame.with_column_renamed`
+        on the result DataFrame instead.
 
     Args:
         expression: The column to check grouping status for
