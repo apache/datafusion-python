@@ -21,7 +21,7 @@ use std::sync::Arc;
 use datafusion::physical_plan::metrics::{Metric, MetricValue, MetricsSet, Timestamp};
 use pyo3::prelude::*;
 
-#[pyclass(frozen, name = "MetricsSet", module = "datafusion")]
+#[pyclass(from_py_object, frozen, name = "MetricsSet", module = "datafusion")]
 #[derive(Debug, Clone)]
 pub struct PyMetricsSet {
     metrics: MetricsSet,
@@ -71,7 +71,7 @@ impl PyMetricsSet {
     }
 }
 
-#[pyclass(frozen, name = "Metric", module = "datafusion")]
+#[pyclass(from_py_object, frozen, name = "Metric", module = "datafusion")]
 #[derive(Debug, Clone)]
 pub struct PyMetric {
     metric: Arc<Metric>,
