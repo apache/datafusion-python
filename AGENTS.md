@@ -25,3 +25,20 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 
 - `SKILL.md` — The skill definition with YAML frontmatter (name, description, argument-hint) and detailed instructions.
 - Additional supporting files as needed.
+
+## Python Function Docstrings
+
+Every Python function must include a docstring with usage examples.
+
+- **Examples are required**: Each function needs at least one doctest-style example
+  demonstrating basic usage.
+- **Optional parameters**: If a function has optional parameters, include separate
+  examples that show usage both without and with the optional arguments. Pass
+  optional arguments using their keyword name (e.g., `step=dfn.lit(3)`) so readers
+  can immediately see which parameter is being demonstrated.
+- **Reuse input data**: Use the same input data across examples wherever possible.
+  The examples should demonstrate how different optional arguments change the output
+  for the same input, making the effect of each option easy to understand.
+- **Alias functions**: Functions that are simple aliases (e.g., `list_sort` aliasing
+  `array_sort`) only need a one-line description and a `See Also` reference to the
+  primary function. They do not need their own examples.

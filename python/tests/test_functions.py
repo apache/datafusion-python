@@ -331,6 +331,10 @@ def py_flatten(arr):
             lambda data: [len(r) == 0 for r in data],
         ),
         (
+            f.list_empty,
+            lambda data: [len(r) == 0 for r in data],
+        ),
+        (
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
         ),
@@ -355,13 +359,49 @@ def py_flatten(arr):
             lambda data: [1.0 in r for r in data],
         ),
         (
+            lambda col: f.list_has(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.array_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
+            lambda col: f.list_contains(col, literal(1.0)),
+            lambda data: [1.0 in r for r in data],
+        ),
+        (
             lambda col: f.array_has_all(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ),
         (
+            lambda col: f.list_has_all(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
             lambda col: f.array_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.arrays_overlap(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ),
+        (
+            lambda col: f.list_overlap(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
@@ -419,7 +459,15 @@ def py_flatten(arr):
             lambda data: [arr[:-1] for arr in data],
         ),
         (
+            f.list_pop_back,
+            lambda data: [arr[:-1] for arr in data],
+        ),
+        (
             f.array_pop_front,
+            lambda data: [arr[1:] for arr in data],
+        ),
+        (
+            f.list_pop_front,
             lambda data: [arr[1:] for arr in data],
         ),
         (
@@ -1760,3 +1808,92 @@ def df_with_nulls():
 def test_conditional_functions(df_with_nulls, expr, expected):
     result = df_with_nulls.select(expr.alias("result")).collect()[0]
     assert result.column(0) == expected
+
+
+@pytest.mark.parametrize("func", [f.array_any_value, f.list_any_value])
+def test_any_value_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[None, 2, 3], [None, None, None], [1, 2, 3]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values[0] == 2
+    assert values[1] is None
+    assert values[2] == 1
+
+
+@pytest.mark.parametrize("func", [f.array_distance, f.list_distance])
+def test_array_distance_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 4.0]]})
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == pytest.approx(2.0)
+
+
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [
+        (f.array_max, [5, 10]),
+        (f.list_max, [5, 10]),
+        (f.array_min, [1, 2]),
+        (f.list_min, [1, 2]),
+    ],
+)
+def test_array_min_max(func, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 5, 3], [10, 2]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values == expected
+
+
+@pytest.mark.parametrize("func", [f.array_reverse, f.list_reverse])
+def test_array_reverse_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
+    result = df.select(func(column("a")).alias("v")).collect()
+    values = [row.as_py() for row in result[0].column(0)]
+    assert values == [[3, 2, 1], [5, 4]]
+
+
+@pytest.mark.parametrize("func", [f.arrays_zip, f.list_zip])
+def test_arrays_zip_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
+    result = df.select(func(column("a"), column("b")).alias("v")).collect()
+    values = result[0].column(0)[0].as_py()
+    assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
+
+
+@pytest.mark.parametrize("func", [f.string_to_array, f.string_to_list])
+def test_string_to_array_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello,world,foo"]})
+    result = df.select(func(column("a"), literal(",")).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == ["hello", "world", "foo"]
+
+
+def test_string_to_array_with_null_string():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello,NA,world"]})
+    result = df.select(
+        f.string_to_array(column("a"), literal(","), literal("NA")).alias("v")
+    ).collect()
+    values = result[0].column(0)[0].as_py()
+    assert values == ["hello", None, "world"]
+
+
+@pytest.mark.parametrize("func", [f.gen_series, f.generate_series])
+def test_gen_series_aliases(func):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [0]})
+    result = df.select(func(literal(1), literal(5)).alias("v")).collect()
+    assert result[0].column(0)[0].as_py() == [1, 2, 3, 4, 5]
+
+
+def test_gen_series_with_step():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [0]})
+    result = df.select(
+        f.gen_series(literal(1), literal(10), literal(3)).alias("v")
+    ).collect()
+    assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
