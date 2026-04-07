@@ -748,7 +748,7 @@ def get_formatter() -> DataFrameHtmlFormatter:
         The global HTML formatter instance
 
     Example:
-        >>> from datafusion.html_formatter import get_formatter
+        >>> from datafusion.dataframe_formatter import get_formatter
         >>> formatter = get_formatter()
         >>> formatter.max_cell_length = 50  # Increase cell length
     """
@@ -762,7 +762,7 @@ def set_formatter(formatter: DataFrameHtmlFormatter) -> None:
         formatter: The formatter instance to use globally
 
     Example:
-        >>> from datafusion.html_formatter import get_formatter, set_formatter
+        >>> from datafusion.dataframe_formatter import get_formatter, set_formatter
         >>> custom_formatter = DataFrameHtmlFormatter(max_cell_length=100)
         >>> set_formatter(custom_formatter)
     """
@@ -783,7 +783,7 @@ def configure_formatter(**kwargs: Any) -> None:
         ValueError: If any invalid parameters are provided
 
     Example:
-        >>> from datafusion.html_formatter import configure_formatter
+        >>> from datafusion.dataframe_formatter import configure_formatter
         >>> configure_formatter(
         ...     max_cell_length=50,
         ...     max_height=500,
@@ -827,7 +827,7 @@ def reset_formatter() -> None:
     and sets it as the global formatter for all DataFrames.
 
     Example:
-        >>> from datafusion.html_formatter import reset_formatter
+        >>> from datafusion.dataframe_formatter import reset_formatter
         >>> reset_formatter()  # Reset formatter to default settings
     """
     formatter = DataFrameHtmlFormatter()
