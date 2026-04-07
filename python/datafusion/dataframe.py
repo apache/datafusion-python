@@ -44,6 +44,7 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
+    _to_raw_expr,
     ensure_expr,
     ensure_expr_list,
     expr_list_to_raw_expr_list,
@@ -63,6 +64,25 @@ if TYPE_CHECKING:
     from datafusion.catalog import Table
 
 from enum import Enum
+
+
+class ExplainFormat(Enum):
+    """Output format for explain plans.
+
+    Controls how the query plan is rendered in :py:meth:`DataFrame.explain`.
+    """
+
+    INDENT = "indent"
+    """Default indented text format."""
+
+    TREE = "tree"
+    """Tree-style visual format with box-drawing characters."""
+
+    PGJSON = "pgjson"
+    """PostgreSQL-compatible JSON format for use with visualization tools."""
+
+    GRAPHVIZ = "graphviz"
+    """Graphviz DOT format for graph rendering."""
 
 
 # excerpt from deltalake
@@ -395,6 +415,80 @@ class DataFrame:
         """
         return self.df.schema()
 
+    def column(self, name: str) -> Expr:
+        """Return a fully qualified column expression for ``name``.
+
+        Resolves an unqualified column name against this DataFrame's schema
+        and returns an :py:class:`Expr` whose underlying column reference
+        includes the table qualifier. This is especially useful after joins,
+        where the same column name may appear in multiple relations.
+
+        Args:
+            name: Unqualified column name to look up.
+
+        Returns:
+            A fully qualified column expression.
+
+        Raises:
+            Exception: If the column is not found or is ambiguous (exists in
+                multiple relations).
+
+        Examples:
+            Resolve a column from a simple DataFrame:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+            >>> expr = df.column("a")
+            >>> df.select(expr).to_pydict()
+            {'a': [1, 2]}
+
+            Resolve qualified columns after a join:
+
+            >>> left = ctx.from_pydict({"id": [1, 2], "x": [10, 20]})
+            >>> right = ctx.from_pydict({"id": [1, 2], "y": [30, 40]})
+            >>> joined = left.join(right, on="id", how="inner")
+            >>> expr = joined.column("y")
+            >>> joined.select("id", expr).sort("id").to_pydict()
+            {'id': [1, 2], 'y': [30, 40]}
+        """
+        return self.find_qualified_columns(name)[0]
+
+    def col(self, name: str) -> Expr:
+        """Alias for :py:meth:`column`.
+
+        See Also:
+            :py:meth:`column`
+        """
+        return self.column(name)
+
+    def find_qualified_columns(self, *names: str) -> list[Expr]:
+        """Return fully qualified column expressions for the given names.
+
+        This is a batch version of :py:meth:`column` — it resolves each
+        unqualified name against the DataFrame's schema and returns a list
+        of qualified column expressions.
+
+        Args:
+            names: Unqualified column names to look up.
+
+        Returns:
+            List of fully qualified column expressions, one per name.
+
+        Raises:
+            Exception: If any column is not found or is ambiguous.
+
+        Examples:
+            Resolve multiple columns at once:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4], "c": [5, 6]})
+            >>> exprs = df.find_qualified_columns("a", "c")
+            >>> df.select(*exprs).to_pydict()
+            {'a': [1, 2], 'c': [5, 6]}
+        """
+        raw_exprs = self.df.find_qualified_columns(list(names))
+        return [Expr(e) for e in raw_exprs]
+
     @deprecated(
         "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
     )
@@ -467,6 +561,36 @@ class DataFrame:
             ['b']
         """
         return DataFrame(self.df.drop(*columns))
+
+    def window(self, *exprs: Expr) -> DataFrame:
+        """Add window function columns to the DataFrame.
+
+        Applies the given window function expressions and appends the results
+        as new columns.
+
+        Args:
+            exprs: Window function expressions to evaluate.
+
+        Returns:
+            DataFrame with new window function columns appended.
+
+        Examples:
+            Add a row number within each group:
+
+            >>> import datafusion.functions as f
+            >>> from datafusion import col
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+            >>> df = df.window(
+            ...     f.row_number(
+            ...         partition_by=[col("b")], order_by=[col("a")]
+            ...     ).alias("rn")
+            ... )
+            >>> "rn" in df.schema().names
+            True
+        """
+        raw = expr_list_to_raw_expr_list(exprs)
+        return DataFrame(self.df.window(*raw))
 
     def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
@@ -837,7 +961,13 @@ class DataFrame:
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-        `on` has to be provided or both `left_on` and `right_on` in conjunction.
+        ``on`` has to be provided or both ``left_on`` and ``right_on`` in
+        conjunction.
+
+        When non-key columns share the same name in both DataFrames, use
+        :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        obtain fully qualified column references that can disambiguate them.
+        See :py:meth:`join_on` for an example.
 
         Args:
             right: Other DataFrame to join with.
@@ -911,7 +1041,14 @@ class DataFrame:
         built with :func:`datafusion.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
+        Use :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        obtain fully qualified column references. These qualified references
+        can then be used in the join predicate and to disambiguate columns
+        with the same name when selecting from the result.
+
         Examples:
+            Join with unique column names:
+
             >>> ctx = dfn.SessionContext()
             >>> left = ctx.from_pydict({"a": [1, 2], "x": ["a", "b"]})
             >>> right = ctx.from_pydict({"b": [1, 2], "y": ["c", "d"]})
@@ -919,6 +1056,18 @@ class DataFrame:
             ...     right, col("a") == col("b")
             ... ).sort(col("x")).to_pydict()
             {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
+
+            Use :py:meth:`col` to disambiguate shared column names:
+
+            >>> left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+            >>> right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
+            >>> joined = left.join_on(
+            ...     right, left.col("id") == right.col("id"), how="inner"
+            ... )
+            >>> joined.select(
+            ...     left.col("id"), left.col("val"), right.col("val").alias("rval")
+            ... ).sort(left.col("id")).to_pydict()
+            {'id': [1, 2], 'val': [10, 20], 'rval': [30, 40]}
 
         Args:
             right: Other DataFrame to join with.
@@ -932,7 +1081,12 @@ class DataFrame:
         exprs = [ensure_expr(expr) for expr in on_exprs]
         return DataFrame(self.df.join_on(right.df, exprs, how))
 
-    def explain(self, verbose: bool = False, analyze: bool = False) -> None:
+    def explain(
+        self,
+        verbose: bool = False,
+        analyze: bool = False,
+        format: ExplainFormat | None = None,
+    ) -> None:
         """Print an explanation of the DataFrame's plan so far.
 
         If ``analyze`` is specified, runs the plan and reports metrics.
@@ -940,8 +1094,23 @@ class DataFrame:
         Args:
             verbose: If ``True``, more details will be included.
             analyze: If ``True``, the plan will run and metrics reported.
+            format: Output format for the plan. Defaults to
+                :py:attr:`ExplainFormat.INDENT`.
+
+        Examples:
+            Show the plan in tree format:
+
+            >>> from datafusion import ExplainFormat
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.explain(format=ExplainFormat.TREE)  # doctest: +SKIP
+
+            Show plan with runtime metrics:
+
+            >>> df.explain(analyze=True)  # doctest: +SKIP
         """
-        self.df.explain(verbose, analyze)
+        fmt = format.value if format is not None else None
+        self.df.explain(verbose, analyze, fmt)
 
     def logical_plan(self) -> LogicalPlan:
         """Return the unoptimized ``LogicalPlan``.
@@ -1010,45 +1179,170 @@ class DataFrame:
         """
         return DataFrame(self.df.union(other.df, distinct))
 
+    @deprecated(
+        "union_distinct() is deprecated. Use union(other, distinct=True) instead."
+    )
     def union_distinct(self, other: DataFrame) -> DataFrame:
         """Calculate the distinct union of two :py:class:`DataFrame`.
 
-        The two :py:class:`DataFrame` must have exactly the same schema.
-        Any duplicate rows are discarded.
-
-        Args:
-            other: DataFrame to union with.
-
-        Returns:
-            DataFrame after union.
+        See Also:
+            :py:meth:`union`
         """
-        return DataFrame(self.df.union_distinct(other.df))
+        return self.union(other, distinct=True)
 
-    def intersect(self, other: DataFrame) -> DataFrame:
+    def intersect(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the intersection of two :py:class:`DataFrame`.
 
         The two :py:class:`DataFrame` must have exactly the same schema.
 
         Args:
-            other:  DataFrame to intersect with.
+            other: DataFrame to intersect with.
+            distinct: If ``True``, duplicate rows are removed from the result.
 
         Returns:
             DataFrame after intersection.
-        """
-        return DataFrame(self.df.intersect(other.df))
 
-    def except_all(self, other: DataFrame) -> DataFrame:
-        """Calculate the exception of two :py:class:`DataFrame`.
+        Examples:
+            Find rows common to both DataFrames:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+            >>> df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
+            >>> df1.intersect(df2).to_pydict()
+            {'a': [1], 'b': [10]}
+
+            Intersect with deduplication:
+
+            >>> df1 = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 10, 20]})
+            >>> df2 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+            >>> df1.intersect(df2, distinct=True).to_pydict()
+            {'a': [1], 'b': [10]}
+        """
+        return DataFrame(self.df.intersect(other.df, distinct))
+
+    def except_all(self, other: DataFrame, distinct: bool = False) -> DataFrame:
+        """Calculate the set difference of two :py:class:`DataFrame`.
+
+        Returns rows that are in this DataFrame but not in ``other``.
 
         The two :py:class:`DataFrame` must have exactly the same schema.
 
         Args:
             other: DataFrame to calculate exception with.
+            distinct: If ``True``, duplicate rows are removed from the result.
 
         Returns:
-            DataFrame after exception.
+            DataFrame after set difference.
+
+        Examples:
+            Remove rows present in ``df2``:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+            >>> df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+            >>> df1.except_all(df2).sort("a").to_pydict()
+            {'a': [3], 'b': [30]}
+
+            Remove rows present in ``df2`` and deduplicate:
+
+            >>> df1.except_all(df2, distinct=True).sort("a").to_pydict()
+            {'a': [3], 'b': [30]}
         """
-        return DataFrame(self.df.except_all(other.df))
+        return DataFrame(self.df.except_all(other.df, distinct))
+
+    def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
+        """Union two :py:class:`DataFrame` matching columns by name.
+
+        Unlike :py:meth:`union` which matches columns by position, this method
+        matches columns by their names, allowing DataFrames with different
+        column orders to be combined.
+
+        Args:
+            other: DataFrame to union with.
+            distinct: If ``True``, duplicate rows are removed from the result.
+
+        Returns:
+            DataFrame after union by name.
+
+        Examples:
+            Combine DataFrames with different column orders:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1], "b": [10]})
+            >>> df2 = ctx.from_pydict({"b": [20], "a": [2]})
+            >>> df1.union_by_name(df2).sort("a").to_pydict()
+            {'a': [1, 2], 'b': [10, 20]}
+
+            Union by name with deduplication:
+
+            >>> df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+            >>> df2 = ctx.from_pydict({"b": [10], "a": [1]})
+            >>> df1.union_by_name(df2, distinct=True).to_pydict()
+            {'a': [1], 'b': [10]}
+        """
+        return DataFrame(self.df.union_by_name(other.df, distinct))
+
+    def distinct_on(
+        self,
+        on_expr: list[Expr],
+        select_expr: list[Expr],
+        sort_expr: list[SortKey] | None = None,
+    ) -> DataFrame:
+        """Deduplicate rows based on specific columns.
+
+        Returns a new DataFrame with one row per unique combination of the
+        ``on_expr`` columns, keeping the first row per group as determined by
+        ``sort_expr``.
+
+        Args:
+            on_expr: Expressions that determine uniqueness.
+            select_expr: Expressions to include in the output.
+            sort_expr: Optional sort expressions to determine which row to keep.
+
+        Returns:
+            DataFrame after deduplication.
+
+        Examples:
+            Keep the row with the smallest ``b`` for each unique ``a``:
+
+            >>> from datafusion import col
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})
+            >>> df.distinct_on(
+            ...     [col("a")],
+            ...     [col("a"), col("b")],
+            ...     [col("a").sort(ascending=True), col("b").sort(ascending=True)],
+            ... ).sort("a").to_pydict()
+            {'a': [1, 2], 'b': [10, 30]}
+        """
+        on_raw = expr_list_to_raw_expr_list(on_expr)
+        select_raw = expr_list_to_raw_expr_list(select_expr)
+        sort_raw = sort_list_to_raw_sort_list(sort_expr) if sort_expr else None
+        return DataFrame(self.df.distinct_on(on_raw, select_raw, sort_raw))
+
+    def sort_by(self, *exprs: Expr | str) -> DataFrame:
+        """Sort the DataFrame by column expressions in ascending order.
+
+        This is a convenience method that sorts the DataFrame by the given
+        expressions in ascending order with nulls last. For more control over
+        sort direction and null ordering, use :py:meth:`sort` instead.
+
+        Args:
+            exprs: Expressions or column names to sort by.
+
+        Returns:
+            DataFrame after sorting.
+
+        Examples:
+            Sort by a single column:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [3, 1, 2]})
+            >>> df.sort_by("a").to_pydict()
+            {'a': [1, 2, 3]}
+        """
+        raw = [_to_raw_expr(e) for e in exprs]
+        return DataFrame(self.df.sort_by(raw))
 
     def write_csv(
         self,
@@ -1310,23 +1604,52 @@ class DataFrame:
         return self.df.count()
 
     @deprecated("Use :py:func:`unnest_columns` instead.")
-    def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
+    def unnest_column(
+        self,
+        column: str,
+        preserve_nulls: bool = True,
+    ) -> DataFrame:
         """See :py:func:`unnest_columns`."""
         return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
-    def unnest_columns(self, *columns: str, preserve_nulls: bool = True) -> DataFrame:
+    def unnest_columns(
+        self,
+        *columns: str,
+        preserve_nulls: bool = True,
+        recursions: list[tuple[str, str, int]] | None = None,
+    ) -> DataFrame:
         """Expand columns of arrays into a single row per array element.
 
         Args:
             columns: Column names to perform unnest operation on.
             preserve_nulls: If False, rows with null entries will not be
                 returned.
+            recursions: Optional list of ``(input_column, output_column, depth)``
+                tuples that control how deeply nested columns are unnested. Any
+                column not mentioned here is unnested with depth 1.
 
         Returns:
             A DataFrame with the columns expanded.
+
+        Examples:
+            Unnest an array column:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [[1, 2], [3]], "b": ["x", "y"]})
+            >>> df.unnest_columns("a").to_pydict()
+            {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
+
+            With explicit recursion depth:
+
+            >>> df.unnest_columns("a", recursions=[("a", "a", 1)]).to_pydict()
+            {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
         """
         columns = list(columns)
-        return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
+        return DataFrame(
+            self.df.unnest_columns(
+                columns, preserve_nulls=preserve_nulls, recursions=recursions
+            )
+        )
 
     def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
         """Export the DataFrame as an Arrow C Stream.

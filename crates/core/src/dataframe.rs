@@ -582,6 +582,14 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    /// Apply window function expressions to the DataFrame
+    #[pyo3(signature = (*exprs))]
+    fn window(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+        let window_exprs = exprs.into_iter().map(|e| e.into()).collect();
+        let df = self.df.as_ref().clone().window(window_exprs)?;
+        Ok(Self::new(df))
+    }
+
     fn filter(&self, predicate: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))
@@ -804,9 +812,27 @@ impl PyDataFrame {
     }
 
     /// Print the query plan
-    #[pyo3(signature = (verbose=false, analyze=false))]
-    fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyDataFusionResult<()> {
-        let df = self.df.as_ref().clone().explain(verbose, analyze)?;
+    #[pyo3(signature = (verbose=false, analyze=false, format=None))]
+    fn explain(
+        &self,
+        py: Python,
+        verbose: bool,
+        analyze: bool,
+        format: Option<&str>,
+    ) -> PyDataFusionResult<()> {
+        let explain_format = match format {
+            Some(f) => f
+                .parse::<datafusion::common::format::ExplainFormat>()
+                .map_err(|e| {
+                    PyDataFusionError::Common(format!("Invalid explain format '{}': {}", f, e))
+                })?,
+            None => datafusion::common::format::ExplainFormat::Indent,
+        };
+        let opts = datafusion::logical_expr::ExplainOption::default()
+            .with_verbose(verbose)
+            .with_analyze(analyze)
+            .with_format(explain_format);
+        let df = self.df.as_ref().clone().explain_with_options(opts)?;
         print_dataframe(py, df)
     }
 
@@ -864,22 +890,14 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
-    /// Calculate the distinct union of two `DataFrame`s.  The
-    /// two `DataFrame`s must have exactly the same schema
-    fn union_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .union_distinct(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
-    }
-
-    #[pyo3(signature = (column, preserve_nulls=true))]
-    fn unnest_column(&self, column: &str, preserve_nulls: bool) -> PyDataFusionResult<Self> {
-        // TODO: expose RecursionUnnestOptions
-        // REF: https://github.com/apache/datafusion/pull/11577
-        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+    #[pyo3(signature = (column, preserve_nulls=true, recursions=None))]
+    fn unnest_column(
+        &self,
+        column: &str,
+        preserve_nulls: bool,
+        recursions: Option<Vec<(String, String, usize)>>,
+    ) -> PyDataFusionResult<Self> {
+        let unnest_options = build_unnest_options(preserve_nulls, recursions);
         let df = self
             .df
             .as_ref()
@@ -888,15 +906,14 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    #[pyo3(signature = (columns, preserve_nulls=true))]
+    #[pyo3(signature = (columns, preserve_nulls=true, recursions=None))]
     fn unnest_columns(
         &self,
         columns: Vec<String>,
         preserve_nulls: bool,
+        recursions: Option<Vec<(String, String, usize)>>,
     ) -> PyDataFusionResult<Self> {
-        // TODO: expose RecursionUnnestOptions
-        // REF: https://github.com/apache/datafusion/pull/11577
-        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+        let unnest_options = build_unnest_options(preserve_nulls, recursions);
         let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self
             .df
@@ -907,19 +924,77 @@ impl PyDataFrame {
     }
 
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
-    fn intersect(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .intersect(py_df.df.as_ref().clone())?;
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn intersect(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.intersect_distinct(other)?
+        } else {
+            base.intersect(other)?
+        };
         Ok(Self::new(new_df))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
-    fn except_all(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn except_all(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.except_distinct(other)?
+        } else {
+            base.except(other)?
+        };
         Ok(Self::new(new_df))
+    }
+
+    /// Union two DataFrames matching columns by name
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn union_by_name(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.union_by_name_distinct(other)?
+        } else {
+            base.union_by_name(other)?
+        };
+        Ok(Self::new(new_df))
+    }
+
+    /// Deduplicate rows based on specific columns, keeping the first row per group
+    fn distinct_on(
+        &self,
+        on_expr: Vec<PyExpr>,
+        select_expr: Vec<PyExpr>,
+        sort_expr: Option<Vec<PySortExpr>>,
+    ) -> PyDataFusionResult<Self> {
+        let on_expr = on_expr.into_iter().map(|e| e.into()).collect();
+        let select_expr = select_expr.into_iter().map(|e| e.into()).collect();
+        let sort_expr = sort_expr.map(to_sort_expressions);
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .distinct_on(on_expr, select_expr, sort_expr)?;
+        Ok(Self::new(df))
+    }
+
+    /// Sort by column expressions with ascending order and nulls last
+    fn sort_by(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+        let exprs = exprs.into_iter().map(|e| e.into()).collect();
+        let df = self.df.as_ref().clone().sort_by(exprs)?;
+        Ok(Self::new(df))
+    }
+
+    /// Return fully qualified column expressions for the given column names
+    fn find_qualified_columns(&self, names: Vec<String>) -> PyDataFusionResult<Vec<PyExpr>> {
+        let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+        let qualified = self.df.find_qualified_columns(&name_refs)?;
+        Ok(qualified
+            .into_iter()
+            .map(|q| Expr::Column(Column::from(q)).into())
+            .collect())
     }
 
     /// Write a `DataFrame` to a CSV file.
@@ -1293,6 +1368,26 @@ impl PyDataFrameWriteOptions {
             sort_by,
         }
     }
+}
+
+fn build_unnest_options(
+    preserve_nulls: bool,
+    recursions: Option<Vec<(String, String, usize)>>,
+) -> UnnestOptions {
+    let mut opts = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
+    if let Some(recs) = recursions {
+        opts.recursions = recs
+            .into_iter()
+            .map(
+                |(input, output, depth)| datafusion::common::RecursionUnnestOption {
+                    input_column: datafusion::common::Column::from(input.as_str()),
+                    output_column: datafusion::common::Column::from(output.as_str()),
+                    depth,
+                },
+            )
+            .collect();
+    }
+    opts
 }
 
 /// Print DataFrame
