@@ -425,11 +425,6 @@ class RuntimeEnvBuilder:
         return self
 
 
-@deprecated("Use `RuntimeEnvBuilder` instead.")
-class RuntimeConfig(RuntimeEnvBuilder):
-    """See `RuntimeEnvBuilder`."""
-
-
 class SQLOptions:
     """Options to be used when performing SQL queries."""
 
