@@ -434,8 +434,22 @@ impl PySessionContext {
             &upstream_host
         };
         let url_string = format!("{scheme}{derived_host}");
-        let url = Url::parse(&url_string).unwrap();
+        let url = Url::parse(&url_string).map_err(|e| PyValueError::new_err(e.to_string()))?;
         self.ctx.runtime_env().register_object_store(&url, store);
+        Ok(())
+    }
+
+    /// Deregister an object store with the given url
+    #[pyo3(signature = (scheme, host=None))]
+    pub fn deregister_object_store(
+        &self,
+        scheme: &str,
+        host: Option<&str>,
+    ) -> PyDataFusionResult<()> {
+        let host = host.unwrap_or("");
+        let url_string = format!("{scheme}{host}");
+        let url = Url::parse(&url_string).map_err(|e| PyDataFusionError::Common(e.to_string()))?;
+        self.ctx.runtime_env().deregister_object_store(&url)?;
         Ok(())
     }
 
@@ -490,6 +504,10 @@ impl PySessionContext {
         let name = func.name.clone();
         let func = Arc::new(func);
         self.ctx.register_udtf(&name, func);
+    }
+
+    pub fn deregister_udtf(&self, name: &str) {
+        self.ctx.deregister_udtf(name);
     }
 
     #[pyo3(signature = (query, options=None, param_values=HashMap::default(), param_strings=HashMap::default()))]
@@ -975,14 +993,26 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn deregister_udf(&self, name: &str) {
+        self.ctx.deregister_udf(name);
+    }
+
     pub fn register_udaf(&self, udaf: PyAggregateUDF) -> PyResult<()> {
         self.ctx.register_udaf(udaf.function);
         Ok(())
     }
 
+    pub fn deregister_udaf(&self, name: &str) {
+        self.ctx.deregister_udaf(name);
+    }
+
     pub fn register_udwf(&self, udwf: PyWindowUDF) -> PyResult<()> {
         self.ctx.register_udwf(udwf.function);
         Ok(())
+    }
+
+    pub fn deregister_udwf(&self, name: &str) {
+        self.ctx.deregister_udwf(name);
     }
 
     #[pyo3(signature = (name="datafusion"))]
