@@ -30,6 +30,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 from datafusion import SessionContext, WindowFrame, col, lit
 from datafusion import functions as F
+from datafusion.expr import Window
 from util import get_data_path
 
 BRAND = "Brand#23"
@@ -58,11 +59,8 @@ df = df.join(df_lineitem, left_on=["p_partkey"], right_on=["l_partkey"], how="in
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(
     "avg_quantity",
-    F.window(
-        "avg",
-        [col("l_quantity")],
-        window_frame=window_frame,
-        partition_by=[col("l_partkey")],
+    F.avg(col("l_quantity")).over(
+        Window(partition_by=[col("l_partkey")], window_frame=window_frame)
     ),
 )
 

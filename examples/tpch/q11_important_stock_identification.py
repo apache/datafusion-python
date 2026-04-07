@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 from datafusion import SessionContext, WindowFrame, col, lit
 from datafusion import functions as F
+from datafusion.expr import Window
 from util import get_data_path
 
 NATION = "GERMANY"
@@ -71,7 +72,7 @@ df = df.aggregate([col("ps_partkey")], [F.sum(col("value")).alias("value")])
 window_frame = WindowFrame("rows", None, None)
 
 df = df.with_column(
-    "total_value", F.window("sum", [col("value")], window_frame=window_frame)
+    "total_value", F.sum(col("value")).over(Window(window_frame=window_frame))
 )
 
 # Limit to the parts for which there is a significant value based on the fraction of the total

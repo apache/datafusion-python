@@ -28,6 +28,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 from datafusion import SessionContext, WindowFrame, col, lit
 from datafusion import functions as F
+from datafusion.expr import Window
 from util import get_data_path
 
 NATION_CODES = [13, 31, 23, 29, 30, 18, 17]
@@ -55,7 +56,8 @@ df = df.filter(~F.array_position(nation_codes, col("cntrycode")).is_null())
 # current row. We want our frame to cover the entire data frame.
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(
-    "avg_balance", F.window("avg", [col("c_acctbal")], window_frame=window_frame)
+    "avg_balance",
+    F.avg(col("c_acctbal")).over(Window(window_frame=window_frame)),
 )
 
 df.show()
