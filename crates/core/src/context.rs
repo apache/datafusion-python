@@ -1007,21 +1007,6 @@ impl PySessionContext {
         self.ctx.catalog_names().into_iter().collect()
     }
 
-    pub fn tables(&self) -> HashSet<String> {
-        self.ctx
-            .catalog_names()
-            .into_iter()
-            .filter_map(|name| self.ctx.catalog(&name))
-            .flat_map(move |catalog| {
-                catalog
-                    .schema_names()
-                    .into_iter()
-                    .filter_map(move |name| catalog.schema(&name))
-            })
-            .flat_map(|schema| schema.table_names())
-            .collect()
-    }
-
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
         let res = wait_for_future(py, self.ctx.table(name))
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;

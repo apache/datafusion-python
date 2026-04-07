@@ -775,14 +775,6 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_arrow(data, name))
 
-    @deprecated("Use ``from_arrow`` instead.")
-    def from_arrow_table(self, data: pa.Table, name: str | None = None) -> DataFrame:
-        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
-
-        This is an alias for :py:func:`from_arrow`.
-        """
-        return self.from_arrow(data, name)
-
     def from_pandas(self, data: pd.DataFrame, name: str | None = None) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Pandas DataFrame.
 
@@ -1116,14 +1108,6 @@ class SessionContext:
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
         return Catalog(self.ctx.catalog(name))
-
-    @deprecated(
-        "Use the catalog provider interface ``SessionContext.Catalog`` to "
-        "examine available catalogs, schemas and tables"
-    )
-    def tables(self) -> set[str]:
-        """Deprecated."""
-        return self.ctx.tables()
 
     def table(self, name: str) -> DataFrame:
         """Retrieve a previously registered table by name."""
