@@ -3621,6 +3621,76 @@ def test_union_by_name_distinct():
     assert result.column(1).to_pylist() == [10]
 
 
+def test_column_qualified():
+    """DataFrame.column() returns a qualified column expression."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+    expr = df.column("a")
+    result = df.select(expr).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+
+
+def test_column_not_found():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="not found"):
+        df.column("z")
+
+
+def test_column_ambiguous():
+    """After a join, duplicate column names that cannot be resolved raise an error."""
+    ctx = SessionContext()
+    left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+    right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
+    joined = left.join(right, on="id", how="inner")
+    with pytest.raises(Exception, match="not found"):
+        joined.column("val")
+
+
+def test_column_after_join():
+    """Qualified column works for non-ambiguous columns after a join."""
+    ctx = SessionContext()
+    left = ctx.from_pydict({"id": [1, 2], "x": [10, 20]})
+    right = ctx.from_pydict({"id": [1, 2], "y": [30, 40]})
+    joined = left.join(right, on="id", how="inner")
+    expr = joined.column("y")
+    result = joined.select("id", expr).sort("id").collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [30, 40]
+
+
+def test_col_join_disambiguate():
+    """Use col() to disambiguate and select columns after a join."""
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"foo": [1, 2, 3], "bar": [5, 6, 7]})
+    df2 = ctx.from_pydict({"foo": [1, 2, 3], "baz": [8, 9, 10]})
+    joined = df1.join_on(df2, df1.col("foo") == df2.col("foo"), how="inner")
+    result = (
+        joined.select(df1.col("foo"), df1.col("bar"), df2.col("baz"))
+        .sort(df1.col("foo"))
+        .to_pydict()
+    )
+    assert result["bar"] == [5, 6, 7]
+    assert result["baz"] == [8, 9, 10]
+
+
+def test_find_qualified_columns():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2], "b": [3, 4], "c": [5, 6]})
+    exprs = df.find_qualified_columns("a", "c")
+    assert len(exprs) == 2
+    result = df.select(*exprs).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [5, 6]
+
+
+def test_find_qualified_columns_not_found():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="not found"):
+        df.find_qualified_columns("a", "z")
+
+
 def test_distinct_on():
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})

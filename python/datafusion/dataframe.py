@@ -415,6 +415,80 @@ class DataFrame:
         """
         return self.df.schema()
 
+    def column(self, name: str) -> Expr:
+        """Return a fully qualified column expression for ``name``.
+
+        Resolves an unqualified column name against this DataFrame's schema
+        and returns an :py:class:`Expr` whose underlying column reference
+        includes the table qualifier. This is especially useful after joins,
+        where the same column name may appear in multiple relations.
+
+        Args:
+            name: Unqualified column name to look up.
+
+        Returns:
+            A fully qualified column expression.
+
+        Raises:
+            Exception: If the column is not found or is ambiguous (exists in
+                multiple relations).
+
+        Examples:
+            Resolve a column from a simple DataFrame:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+            >>> expr = df.column("a")
+            >>> df.select(expr).to_pydict()
+            {'a': [1, 2]}
+
+            Resolve qualified columns after a join:
+
+            >>> left = ctx.from_pydict({"id": [1, 2], "x": [10, 20]})
+            >>> right = ctx.from_pydict({"id": [1, 2], "y": [30, 40]})
+            >>> joined = left.join(right, on="id", how="inner")
+            >>> expr = joined.column("y")
+            >>> joined.select("id", expr).sort("id").to_pydict()
+            {'id': [1, 2], 'y': [30, 40]}
+        """
+        return self.find_qualified_columns(name)[0]
+
+    def col(self, name: str) -> Expr:
+        """Alias for :py:meth:`column`.
+
+        See Also:
+            :py:meth:`column`
+        """
+        return self.column(name)
+
+    def find_qualified_columns(self, *names: str) -> list[Expr]:
+        """Return fully qualified column expressions for the given names.
+
+        This is a batch version of :py:meth:`column` — it resolves each
+        unqualified name against the DataFrame's schema and returns a list
+        of qualified column expressions.
+
+        Args:
+            names: Unqualified column names to look up.
+
+        Returns:
+            List of fully qualified column expressions, one per name.
+
+        Raises:
+            Exception: If any column is not found or is ambiguous.
+
+        Examples:
+            Resolve multiple columns at once:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4], "c": [5, 6]})
+            >>> exprs = df.find_qualified_columns("a", "c")
+            >>> df.select(*exprs).to_pydict()
+            {'a': [1, 2], 'c': [5, 6]}
+        """
+        raw_exprs = self.df.find_qualified_columns(list(names))
+        return [Expr(e) for e in raw_exprs]
+
     @deprecated(
         "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
     )
@@ -887,7 +961,13 @@ class DataFrame:
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-        `on` has to be provided or both `left_on` and `right_on` in conjunction.
+        ``on`` has to be provided or both ``left_on`` and ``right_on`` in
+        conjunction.
+
+        When non-key columns share the same name in both DataFrames, use
+        :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        obtain fully qualified column references that can disambiguate them.
+        See :py:meth:`join_on` for an example.
 
         Args:
             right: Other DataFrame to join with.
@@ -961,7 +1041,14 @@ class DataFrame:
         built with :func:`datafusion.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
+        Use :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        obtain fully qualified column references. These qualified references
+        can then be used in the join predicate and to disambiguate columns
+        with the same name when selecting from the result.
+
         Examples:
+            Join with unique column names:
+
             >>> ctx = dfn.SessionContext()
             >>> left = ctx.from_pydict({"a": [1, 2], "x": ["a", "b"]})
             >>> right = ctx.from_pydict({"b": [1, 2], "y": ["c", "d"]})
@@ -969,6 +1056,18 @@ class DataFrame:
             ...     right, col("a") == col("b")
             ... ).sort(col("x")).to_pydict()
             {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
+
+            Use :py:meth:`col` to disambiguate shared column names:
+
+            >>> left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+            >>> right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
+            >>> joined = left.join_on(
+            ...     right, left.col("id") == right.col("id"), how="inner"
+            ... )
+            >>> joined.select(
+            ...     left.col("id"), left.col("val"), right.col("val")
+            ... ).sort(left.col("id")).to_pydict()
+            {'id': [1, 2], 'val': [10, 20], 'val': [30, 40]}
 
         Args:
             right: Other DataFrame to join with.

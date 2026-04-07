@@ -1015,6 +1015,16 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    /// Return fully qualified column expressions for the given column names
+    fn find_qualified_columns(&self, names: Vec<String>) -> PyDataFusionResult<Vec<PyExpr>> {
+        let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+        let qualified = self.df.find_qualified_columns(&name_refs)?;
+        Ok(qualified
+            .into_iter()
+            .map(|q| Expr::Column(Column::from(q)).into())
+            .collect())
+    }
+
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(
         &self,
