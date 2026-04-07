@@ -445,6 +445,28 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#grouping-sets">
+   Grouping Sets
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#rollup">
+     Rollup
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#cube">
+     Cube
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#explicit-grouping-sets">
+     Explicit Grouping Sets
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#aggregate-functions">
    Aggregate Functions
   </a>
@@ -620,16 +642,16 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                      <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="p">,</span> <span class="n">Grass</span><span class="p">]</span>                        <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Steel</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Grass</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Steel</span><span class="p">,</span> <span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="p">[]</span>                                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">,</span> <span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
 </pre></div>
@@ -644,14 +666,14 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Grass</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Grass</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Steel</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Steel</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Ice</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span> <span class="o">|</span>
 <span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
@@ -663,15 +685,15 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Grass</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Grass</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Steel</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Fighting</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Dark</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
@@ -771,6 +793,263 @@ aggregate function without filtering rows from the entire DataFrame.</p>
 </div>
 </section>
 </section>
+<section id="grouping-sets">
+<h2>Grouping Sets<a class="headerlink" href="#grouping-sets" title="Link to this heading">¶</a></h2>
+<p>The default style of aggregation produces one row per group. Sometimes you want a single query to
+produce rows at multiple levels of detail — for example, totals per type <em>and</em> an overall grand
+total, or subtotals for every combination of two columns plus the individual column totals. Writing
+separate queries and concatenating them is tedious and runs the data multiple times. Grouping sets
+solve this by letting you specify several grouping levels in one pass.</p>
+<p>DataFusion supports three grouping set styles through the
+<a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupingSet</span></code></a> class:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rollup()</span></code></a> — hierarchical subtotals, like a drill-down report</p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cube()</span></code></a> — every possible subtotal combination, like a pivot table</p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">grouping_sets()</span></code></a> — explicitly list exactly which grouping levels you want</p></li>
+</ul>
+<p>Because result rows come from different grouping levels, a column that is <em>not</em> part of a
+particular level will be <code class="docutils literal notranslate"><span class="pre">null</span></code> in that row. Use <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.grouping" title="datafusion.functions.grouping"><code class="xref py py-func docutils literal notranslate"><span class="pre">grouping()</span></code></a> to
+distinguish a real <code class="docutils literal notranslate"><span class="pre">null</span></code> in the data from one that means “this column was aggregated across.”
+It returns <code class="docutils literal notranslate"><span class="pre">0</span></code> when the column is a grouping key for that row, and <code class="docutils literal notranslate"><span class="pre">1</span></code> when it is not.</p>
+<section id="rollup">
+<h3>Rollup<a class="headerlink" href="#rollup" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rollup()</span></code></a> creates a hierarchy. <code class="docutils literal notranslate"><span class="pre">rollup(a,</span> <span class="pre">b)</span></code> produces
+grouping sets <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b)</span></code>, <code class="docutils literal notranslate"><span class="pre">(a)</span></code>, and <code class="docutils literal notranslate"><span class="pre">()</span></code> — like nested subtotals in a report. This is useful
+when your columns have a natural hierarchy, such as region → city or type → subtype.</p>
+<p>Suppose we want to summarize Pokemon stats by <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> with subtotals and a grand total. With
+the default aggregation style we would need two separate queries. With <code class="docutils literal notranslate"><span class="pre">rollup</span></code> we get it all at
+once:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">GroupingSet</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">rollup</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Max Speed&quot;</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">22</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------+-------+-------------------+-----------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>         <span class="o">|</span> <span class="n">Max</span> <span class="n">Speed</span> <span class="o">|</span>
+<span class="o">+----------+-------+-------------------+-----------+</span>
+<span class="o">|</span>          <span class="o">|</span> <span class="mi">163</span>   <span class="o">|</span> <span class="mf">71.65030674846626</span> <span class="o">|</span> <span class="mi">150</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="mi">14</span>    <span class="o">|</span> <span class="mf">66.78571428571429</span> <span class="o">|</span> <span class="mi">145</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span> <span class="o">|</span> <span class="mi">80</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="mi">9</span>     <span class="o">|</span> <span class="mf">98.88888888888889</span> <span class="o">|</span> <span class="mi">140</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">47.5</span>              <span class="o">|</span> <span class="mi">60</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">7</span>     <span class="o">|</span> <span class="mf">66.14285714285714</span> <span class="o">|</span> <span class="mi">95</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="mi">14</span>    <span class="o">|</span> <span class="mf">86.28571428571429</span> <span class="o">|</span> <span class="mi">105</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="mi">4</span>     <span class="o">|</span> <span class="mf">103.75</span>            <span class="o">|</span> <span class="mi">130</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="mi">13</span>    <span class="o">|</span> <span class="mf">54.23076923076923</span> <span class="o">|</span> <span class="mi">80</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="mi">8</span>     <span class="o">|</span> <span class="mf">58.125</span>            <span class="o">|</span> <span class="mi">120</span>       <span class="o">|</span>
+<span class="o">+----------+-------+-------------------+-----------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>The first row — where <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code> — is the grand total across all types. But how do you
+tell a grand-total <code class="docutils literal notranslate"><span class="pre">null</span></code> apart from a Pokemon that genuinely has no type? The
+<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.grouping" title="datafusion.functions.grouping"><code class="xref py py-func docutils literal notranslate"><span class="pre">grouping()</span></code></a> function returns <code class="docutils literal notranslate"><span class="pre">0</span></code> when the column is a grouping key
+for that row and <code class="docutils literal notranslate"><span class="pre">1</span></code> when it is aggregated across.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Due to an upstream DataFusion limitation
+(<a class="reference external" href="https://github.com/apache/datafusion/issues/21411">apache/datafusion#21411</a>),
+<code class="docutils literal notranslate"><span class="pre">.alias()</span></code> cannot be applied directly to a <code class="docutils literal notranslate"><span class="pre">grouping()</span></code> expression — it will raise an
+error at execution time. Instead, use
+<a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.with_column_renamed" title="datafusion.dataframe.DataFrame.with_column_renamed"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_column_renamed()</span></code></a> on the result DataFrame to
+give the column a readable name. Once the upstream issue is resolved, you will be able to
+use <code class="docutils literal notranslate"><span class="pre">.alias()</span></code> directly and the workaround below will no longer be necessary.</p>
+</div>
+<p>The raw column name generated by <code class="docutils literal notranslate"><span class="pre">grouping()</span></code> contains internal identifiers, so we use
+<a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.with_column_renamed" title="datafusion.dataframe.DataFrame.with_column_renamed"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_column_renamed()</span></code></a> to clean it up:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">rollup</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">grouping</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">schema</span><span class="p">():</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;grouping(&quot;</span><span class="p">):</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">with_column_renamed</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;Is Total&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="n">result</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">25</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------+-------+-------------------+----------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>         <span class="o">|</span> <span class="n">Is</span> <span class="n">Total</span> <span class="o">|</span>
+<span class="o">+----------+-------+-------------------+----------+</span>
+<span class="o">|</span>          <span class="o">|</span> <span class="mi">163</span>   <span class="o">|</span> <span class="mf">71.65030674846626</span> <span class="o">|</span> <span class="mi">1</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="mi">14</span>    <span class="o">|</span> <span class="mf">66.78571428571429</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="mi">9</span>     <span class="o">|</span> <span class="mf">98.88888888888889</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">47.5</span>              <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">7</span>     <span class="o">|</span> <span class="mf">66.14285714285714</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="mi">14</span>    <span class="o">|</span> <span class="mf">86.28571428571429</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="mi">4</span>     <span class="o">|</span> <span class="mf">103.75</span>            <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="mi">13</span>    <span class="o">|</span> <span class="mf">54.23076923076923</span> <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="mi">8</span>     <span class="o">|</span> <span class="mf">58.125</span>            <span class="o">|</span> <span class="mi">0</span>        <span class="o">|</span>
+<span class="o">+----------+-------+-------------------+----------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>With two columns the hierarchy becomes more apparent. <code class="docutils literal notranslate"><span class="pre">rollup(Type</span> <span class="pre">1,</span> <span class="pre">Type</span> <span class="pre">2)</span></code> produces:</p>
+<ul class="simple">
+<li><p>one row per <code class="docutils literal notranslate"><span class="pre">(Type</span> <span class="pre">1,</span> <span class="pre">Type</span> <span class="pre">2)</span></code> pair — the most detailed level</p></li>
+<li><p>one row per <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> — subtotals</p></li>
+<li><p>one grand total row</p></li>
+</ul>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">rollup</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">,</span> <span class="n">col_type_2</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_2</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">26</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------+--------+-------+--------------------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>          <span class="o">|</span>
+<span class="o">+----------+--------+-------+--------------------+</span>
+<span class="o">|</span>          <span class="o">|</span>        <span class="o">|</span> <span class="mi">163</span>   <span class="o">|</span> <span class="mf">71.65030674846626</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span>        <span class="o">|</span> <span class="mi">14</span>    <span class="o">|</span> <span class="mf">66.78571428571429</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span>        <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">53.333333333333336</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">93.33333333333333</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">27.5</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">6</span>     <span class="o">|</span> <span class="mf">73.33333333333333</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span>        <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">60.0</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span>        <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">80.0</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span>        <span class="o">|</span> <span class="mi">9</span>     <span class="o">|</span> <span class="mf">98.88888888888889</span>  <span class="o">|</span>
+<span class="o">+----------+--------+-------+--------------------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="cube">
+<h3>Cube<a class="headerlink" href="#cube" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cube()</span></code></a> produces every possible subset. <code class="docutils literal notranslate"><span class="pre">cube(a,</span> <span class="pre">b)</span></code>
+produces grouping sets <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b)</span></code>, <code class="docutils literal notranslate"><span class="pre">(a)</span></code>, <code class="docutils literal notranslate"><span class="pre">(b)</span></code>, and <code class="docutils literal notranslate"><span class="pre">()</span></code> — one more than <code class="docutils literal notranslate"><span class="pre">rollup</span></code> because
+it also includes <code class="docutils literal notranslate"><span class="pre">(b)</span></code> alone. This is useful when neither column is “above” the other in a
+hierarchy and you want all cross-tabulations.</p>
+<p>For our Pokemon data, <code class="docutils literal notranslate"><span class="pre">cube(Type</span> <span class="pre">1,</span> <span class="pre">Type</span> <span class="pre">2)</span></code> gives us stats broken down by the type pair,
+by <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> alone, by <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> alone, and a grand total — all in one query:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">cube</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">,</span> <span class="n">col_type_2</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_2</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">27</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>          <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="o">|</span>        <span class="o">|</span>          <span class="o">|</span> <span class="mi">163</span>   <span class="o">|</span> <span class="mf">71.65030674846626</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span>          <span class="o">|</span> <span class="mi">86</span>    <span class="o">|</span> <span class="mf">72.46511627906976</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dark</span>     <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">81.0</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">100.0</span>              <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">51.666666666666664</span> <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">70.0</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Flying</span>   <span class="o">|</span> <span class="mi">23</span>    <span class="o">|</span> <span class="mf">91.08695652173913</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">27.5</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="mi">6</span>     <span class="o">|</span> <span class="mf">55.166666666666664</span> <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span>  <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Compared to the <code class="docutils literal notranslate"><span class="pre">rollup</span></code> example above, notice the extra rows where <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code> but
+<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> has a value — those are the per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> subtotals that <code class="docutils literal notranslate"><span class="pre">rollup</span></code> does not include.</p>
+</section>
+<section id="explicit-grouping-sets">
+<h3>Explicit Grouping Sets<a class="headerlink" href="#explicit-grouping-sets" title="Link to this heading">¶</a></h3>
+<p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">grouping_sets()</span></code></a> lets you list exactly which grouping levels
+you need when <code class="docutils literal notranslate"><span class="pre">rollup</span></code> or <code class="docutils literal notranslate"><span class="pre">cube</span></code> would produce too many or too few. Each argument is a list of
+columns forming one grouping set.</p>
+<p>For example, if we want only the per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> totals and per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> totals — but <em>not</em> the
+full <code class="docutils literal notranslate"><span class="pre">(Type</span> <span class="pre">1,</span> <span class="pre">Type</span> <span class="pre">2)</span></code> detail rows or the grand total — we can ask for exactly that:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">grouping_sets</span><span class="p">([</span><span class="n">col_type_1</span><span class="p">],</span> <span class="p">[</span><span class="n">col_type_2</span><span class="p">])],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_2</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">28</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>          <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="o">|</span>        <span class="o">|</span>          <span class="o">|</span> <span class="mi">86</span>    <span class="o">|</span> <span class="mf">72.46511627906976</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dark</span>     <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">81.0</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">100.0</span>              <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">51.666666666666664</span> <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">70.0</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Flying</span>   <span class="o">|</span> <span class="mi">23</span>    <span class="o">|</span> <span class="mf">91.08695652173913</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">27.5</span>               <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="mi">6</span>     <span class="o">|</span> <span class="mf">55.166666666666664</span> <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span>  <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="mi">22</span>    <span class="o">|</span> <span class="mf">71.5909090909091</span>   <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Each row belongs to exactly one grouping level. The <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.grouping" title="datafusion.functions.grouping"><code class="xref py py-func docutils literal notranslate"><span class="pre">grouping()</span></code></a>
+function tells you which level each row comes from:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">GroupingSet</span><span class="o">.</span><span class="n">grouping_sets</span><span class="p">([</span><span class="n">col_type_1</span><span class="p">],</span> <span class="p">[</span><span class="n">col_type_2</span><span class="p">])],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col_speed</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Avg Speed&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">grouping</span><span class="p">(</span><span class="n">col_type_1</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>      <span class="n">f</span><span class="o">.</span><span class="n">grouping</span><span class="p">(</span><span class="n">col_type_2</span><span class="p">)]</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">schema</span><span class="p">():</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;grouping(&quot;</span><span class="p">):</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">clean</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">with_column_renamed</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;grouping(</span><span class="si">{</span><span class="n">clean</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="n">result</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_1</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">col_type_2</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">31</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+--------+----------+-------+--------------------+------------------+------------------+</span>
+<span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">Count</span> <span class="o">|</span> <span class="n">Avg</span> <span class="n">Speed</span>          <span class="o">|</span> <span class="n">grouping</span><span class="p">(</span><span class="n">Type</span> <span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="n">grouping</span><span class="p">(</span><span class="n">Type</span> <span class="mi">2</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+------------------+------------------+</span>
+<span class="o">|</span>        <span class="o">|</span>          <span class="o">|</span> <span class="mi">86</span>    <span class="o">|</span> <span class="mf">72.46511627906976</span>  <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dark</span>     <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">81.0</span>               <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">100.0</span>              <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">51.666666666666664</span> <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mf">70.0</span>               <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Flying</span>   <span class="o">|</span> <span class="mi">23</span>    <span class="o">|</span> <span class="mf">91.08695652173913</span>  <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span> <span class="mf">27.5</span>               <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="mi">6</span>     <span class="o">|</span> <span class="mf">55.166666666666664</span> <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="mi">3</span>     <span class="o">|</span> <span class="mf">66.66666666666667</span>  <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">|</span>        <span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="mi">22</span>    <span class="o">|</span> <span class="mf">71.5909090909091</span>   <span class="o">|</span> <span class="mi">1</span>                <span class="o">|</span> <span class="mi">0</span>                <span class="o">|</span>
+<span class="o">+--------+----------+-------+--------------------+------------------+------------------+</span>
+<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">grouping(Type</span> <span class="pre">1)</span></code> is <code class="docutils literal notranslate"><span class="pre">0</span></code> the row is a per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> total (and <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code>).
+Where <code class="docutils literal notranslate"><span class="pre">grouping(Type</span> <span class="pre">2)</span></code> is <code class="docutils literal notranslate"><span class="pre">0</span></code> the row is a per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> total (and <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code>).</p>
+</section>
+</section>
 <section id="aggregate-functions">
 <h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h2>
 <p>The available aggregate functions are:</p>
@@ -820,6 +1099,7 @@ aggregate function without filtering rows from the entire DataFrame.</p>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.stddev_pop" title="datafusion.functions.stddev_pop"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.stddev_pop()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.var_samp" title="datafusion.functions.var_samp"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.var_samp()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.var_pop" title="datafusion.functions.var_pop"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.var_pop()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.var_population" title="datafusion.functions.var_population"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.var_population()</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -856,7 +1136,9 @@ aggregate function without filtering rows from the entire DataFrame.</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>Approximation Functions</dt><dd><ul class="simple">
+<dt>Percentile Functions</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.percentile_cont()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont" title="datafusion.functions.quantile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.quantile_cont()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.approx_distinct" title="datafusion.functions.approx_distinct"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.approx_distinct()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.approx_median" title="datafusion.functions.approx_median"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.approx_median()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont" title="datafusion.functions.approx_percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.approx_percentile_cont()</span></code></a></p></li>
@@ -865,6 +1147,11 @@ aggregate function without filtering rows from the entire DataFrame.</p>
 </dd>
 </dl>
 </li>
+<li><p>Grouping Set Functions
+- <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.grouping" title="datafusion.functions.grouping"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.grouping()</span></code></a>
+- <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.rollup()</span></code></a>
+- <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.cube()</span></code></a>
+- <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.grouping_sets()</span></code></a></p></li>
 </ol>
 </section>
 </section>

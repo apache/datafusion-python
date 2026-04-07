@@ -1607,10 +1607,23 @@ Arrow and can be found at:
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.aggregate">
 <span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.aggregate" title="Link to this definition">¶</a></dt>
 <dd><p>Aggregates the rows of the current DataFrame.</p>
+<p>By default each unique combination of the <code class="docutils literal notranslate"><span class="pre">group_by</span></code> columns
+produces one row. To get multiple levels of subtotals in a
+single pass, pass a
+<a class="reference internal" href="../expr/index.html#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupingSet</span></code></a> expression
+(created via
+<a class="reference internal" href="../expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rollup()</span></code></a>,
+<a class="reference internal" href="../expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cube()</span></code></a>, or
+<a class="reference internal" href="../expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">grouping_sets()</span></code></a>)
+as the <code class="docutils literal notranslate"><span class="pre">group_by</span></code> argument.  See the
+<a class="reference internal" href="../../../user-guide/common-operations/aggregations.html#aggregation"><span class="std std-ref">Aggregation</span></a> user guide for detailed examples.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>group_by</strong> – Sequence of expressions or column names to group by.</p></li>
+<li><p><strong>group_by</strong> – Sequence of expressions or column names to group
+by. A <a class="reference internal" href="../expr/index.html#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupingSet</span></code></a>
+expression may be included to produce multiple grouping
+levels (rollup, cube, or explicit grouping sets).</p></li>
 <li><p><strong>aggs</strong> – Sequence of expressions to aggregate.</p></li>
 </ul>
 </dd>

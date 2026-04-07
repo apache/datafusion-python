@@ -145,6 +145,7 @@ Functions
    datafusion.functions.generate_series
    datafusion.functions.get_field
    datafusion.functions.greatest
+   datafusion.functions.grouping
    datafusion.functions.ifnull
    datafusion.functions.in_list
    datafusion.functions.initcap
@@ -235,9 +236,11 @@ Functions
    datafusion.functions.order_by
    datafusion.functions.overlay
    datafusion.functions.percent_rank
+   datafusion.functions.percentile_cont
    datafusion.functions.pi
    datafusion.functions.pow
    datafusion.functions.power
+   datafusion.functions.quantile_cont
    datafusion.functions.radians
    datafusion.functions.random
    datafusion.functions.range
@@ -309,6 +312,7 @@ Functions
    datafusion.functions.uuid
    datafusion.functions.var
    datafusion.functions.var_pop
+   datafusion.functions.var_population
    datafusion.functions.var_samp
    datafusion.functions.var_sample
    datafusion.functions.version
@@ -1242,7 +1246,6 @@ Module Contents
    >>> result.collect_column("c")[0].as_py()
    1.0
 
-   >>> import pyarrow as pa
    >>> result = df.select(
    ...     dfn.functions.arrow_cast(
    ...         dfn.col("a"), data_type=pa.float64()
@@ -1261,7 +1264,6 @@ Module Contents
 
    .. rubric:: Examples
 
-   >>> import pyarrow as pa
    >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
    >>> schema = pa.schema([field])
    >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
@@ -2530,6 +2532,58 @@ Module Contents
    2
    >>> result.collect_column("greatest")[1].as_py()
    3
+
+
+.. py:function:: grouping(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Indicates whether a column is aggregated across in the current row.
+
+   Returns 0 when the column is part of the grouping key for that row
+   (i.e., the row contains per-group results for that column). Returns 1
+   when the column is *not* part of the grouping key (i.e., the row's
+   aggregate spans all values of that column).
+
+   This function is meaningful with
+   :py:meth:`GroupingSet.rollup <datafusion.expr.GroupingSet.rollup>`,
+   :py:meth:`GroupingSet.cube <datafusion.expr.GroupingSet.cube>`, or
+   :py:meth:`GroupingSet.grouping_sets <datafusion.expr.GroupingSet.grouping_sets>`,
+   where different rows are grouped by different subsets of columns. In a
+   default aggregation without grouping sets every column is always part
+   of the key, so ``grouping()`` always returns 0.
+
+   .. warning::
+
+       Due to an upstream DataFusion limitation
+       (`#21411 <https://github.com/apache/datafusion/issues/21411>`_),
+       ``.alias()`` cannot be applied directly to a ``grouping()``
+       expression. Doing so will raise an error at execution time. To
+       rename the column, use
+       :py:meth:`~datafusion.dataframe.DataFrame.with_column_renamed`
+       on the result DataFrame instead.
+
+   :param expression: The column to check grouping status for
+   :param distinct: If True, compute on distinct values only
+   :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   With :py:meth:`~datafusion.expr.GroupingSet.rollup`, the result
+   includes both per-group rows (``grouping(a) = 0``) and a
+   grand-total row where ``a`` is aggregated across
+   (``grouping(a) = 1``):
+
+   >>> from datafusion.expr import GroupingSet
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+   >>> result = df.aggregate(
+   ...     [GroupingSet.rollup(dfn.col("a"))],
+   ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
+   ...      dfn.functions.grouping(dfn.col("a"))],
+   ... ).sort(dfn.col("a").sort(nulls_first=False))
+   >>> result.collect_column("s").to_pylist()
+   [30, 30, 60]
+
+   .. seealso:: :py:class:`~datafusion.expr.GroupingSet`
 
 
 .. py:function:: ifnull(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3821,6 +3875,40 @@ Module Contents
    [0.0, 0.5, 1.0, 0.0, 1.0]
 
 
+.. py:function:: percentile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Computes the exact percentile of input values using continuous interpolation.
+
+   Unlike :py:func:`approx_percentile_cont`, this function computes the exact
+   percentile value rather than an approximation.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param sort_expression: Values for which to find the percentile
+   :param percentile: This must be between 0.0 and 1.0, inclusive
+   :param filter: If provided, only compute against rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.percentile_cont(
+   ...         dfn.col("a"), 0.5
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3.0
+
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.percentile_cont(
+   ...         dfn.col("a"), 0.5,
+   ...         filter=dfn.col("a") > dfn.lit(1.0),
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   3.5
+
+
 .. py:function:: pi() -> datafusion.expr.Expr
 
    Returns an approximate value of π.
@@ -3857,6 +3945,13 @@ Module Contents
    ... )
    >>> result.collect_column("pow")[0].as_py()
    8.0
+
+
+.. py:function:: quantile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Computes the exact percentile of input values using continuous interpolation.
+
+   .. seealso:: This is an alias for :py:func:`percentile_cont`.
 
 
 .. py:function:: radians(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -5277,7 +5372,6 @@ Module Contents
 
    .. rubric:: Examples
 
-   >>> import pyarrow as pa
    >>> ctx = dfn.SessionContext()
    >>> types = pa.array([0, 1, 0], type=pa.int8())
    >>> offsets = pa.array([0, 0, 1], type=pa.int32())
@@ -5300,7 +5394,6 @@ Module Contents
 
    .. rubric:: Examples
 
-   >>> import pyarrow as pa
    >>> ctx = dfn.SessionContext()
    >>> types = pa.array([0, 1, 0], type=pa.int8())
    >>> offsets = pa.array([0, 0, 1], type=pa.int32())
@@ -5380,6 +5473,13 @@ Module Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    1.0
+
+
+.. py:function:: var_population(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Computes the population variance of the argument.
+
+   .. seealso:: This is an alias for :py:func:`var_pop`.
 
 
 .. py:function:: var_samp(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
