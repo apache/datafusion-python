@@ -868,19 +868,6 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
-    #[pyo3(signature = (column, preserve_nulls=true))]
-    fn unnest_column(&self, column: &str, preserve_nulls: bool) -> PyDataFusionResult<Self> {
-        // TODO: expose RecursionUnnestOptions
-        // REF: https://github.com/apache/datafusion/pull/11577
-        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
-        let df = self
-            .df
-            .as_ref()
-            .clone()
-            .unnest_columns_with_options(&[column], unnest_options)?;
-        Ok(Self::new(df))
-    }
-
     #[pyo3(signature = (columns, preserve_nulls=true))]
     fn unnest_columns(
         &self,

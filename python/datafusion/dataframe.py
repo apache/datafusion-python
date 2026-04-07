@@ -30,11 +30,6 @@ from typing import (
     overload,
 )
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
-
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
 from datafusion._internal import InsertOp as InsertOpInternal
@@ -1297,11 +1292,6 @@ class DataFrame:
             Number of rows in the DataFrame.
         """
         return self.df.count()
-
-    @deprecated("Use :py:func:`unnest_columns` instead.")
-    def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
-        """See :py:func:`unnest_columns`."""
-        return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
     def unnest_columns(self, *columns: str, preserve_nulls: bool = True) -> DataFrame:
         """Expand columns of arrays into a single row per array element.
