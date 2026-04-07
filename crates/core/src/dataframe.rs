@@ -890,17 +890,6 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
-    /// Calculate the distinct union of two `DataFrame`s.  The
-    /// two `DataFrame`s must have exactly the same schema
-    fn union_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .union_distinct(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
-    }
-
     #[pyo3(signature = (column, preserve_nulls=true, recursions=None))]
     fn unnest_column(
         &self,
@@ -935,38 +924,28 @@ impl PyDataFrame {
     }
 
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
-    fn intersect(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .intersect(py_df.df.as_ref().clone())?;
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn intersect(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.intersect_distinct(other)?
+        } else {
+            base.intersect(other)?
+        };
         Ok(Self::new(new_df))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
-    fn except_all(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
-    }
-
-    /// Calculate the set difference with deduplication
-    fn except_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .except_distinct(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
-    }
-
-    /// Calculate the intersection with deduplication
-    fn intersect_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .intersect_distinct(py_df.df.as_ref().clone())?;
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn except_all(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.except_distinct(other)?
+        } else {
+            base.except(other)?
+        };
         Ok(Self::new(new_df))
     }
 

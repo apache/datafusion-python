@@ -3573,40 +3573,47 @@ def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
 
 
 @pytest.mark.parametrize(
-    ("df1_data", "df2_data", "method", "expected_a", "expected_b"),
+    ("df1_data", "df2_data", "method", "kwargs", "expected_a", "expected_b"),
     [
         pytest.param(
             {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
             {"a": [1, 2], "b": [10, 20]},
-            "except_distinct",
+            "except_all",
+            {"distinct": True},
             [3],
             [30],
-            id="except_distinct: removes matching rows and deduplicates",
+            id="except_all(distinct=True): removes matching rows and deduplicates",
         ),
         pytest.param(
             {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
             {"a": [1, 4], "b": [10, 40]},
-            "intersect_distinct",
+            "intersect",
+            {"distinct": True},
             [1],
             [10],
-            id="intersect_distinct: keeps common rows and deduplicates",
+            id="intersect(distinct=True): keeps common rows and deduplicates",
         ),
         pytest.param(
             {"a": [1], "b": [10]},
             {"b": [20], "a": [2]},  # reversed column order tests matching by name
             "union_by_name",
+            {},
             [1, 2],
             [10, 20],
             id="union_by_name: matches columns by name not position",
         ),
     ],
 )
-def test_set_operations_distinct(df1_data, df2_data, method, expected_a, expected_b):
+def test_set_operations_distinct(
+    df1_data, df2_data, method, kwargs, expected_a, expected_b
+):
     ctx = SessionContext()
     df1 = ctx.from_pydict(df1_data)
     df2 = ctx.from_pydict(df2_data)
     result = (
-        getattr(df1, method)(df2).sort(column("a").sort(ascending=True)).collect()[0]
+        getattr(df1, method)(df2, **kwargs)
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
     )
     assert result.column(0).to_pylist() == expected_a
     assert result.column(1).to_pylist() == expected_b

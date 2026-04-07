@@ -1179,85 +1179,28 @@ class DataFrame:
         """
         return DataFrame(self.df.union(other.df, distinct))
 
+    @deprecated(
+        "union_distinct() is deprecated. Use union(other, distinct=True) instead."
+    )
     def union_distinct(self, other: DataFrame) -> DataFrame:
         """Calculate the distinct union of two :py:class:`DataFrame`.
 
-        The two :py:class:`DataFrame` must have exactly the same schema.
-        Any duplicate rows are discarded.
-
-        Args:
-            other: DataFrame to union with.
-
-        Returns:
-            DataFrame after union.
+        See Also:
+            :py:meth:`union`
         """
-        return DataFrame(self.df.union_distinct(other.df))
+        return self.union(other, distinct=True)
 
-    def intersect(self, other: DataFrame) -> DataFrame:
+    def intersect(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the intersection of two :py:class:`DataFrame`.
 
         The two :py:class:`DataFrame` must have exactly the same schema.
 
         Args:
-            other:  DataFrame to intersect with.
+            other: DataFrame to intersect with.
+            distinct: If ``True``, duplicate rows are removed from the result.
 
         Returns:
             DataFrame after intersection.
-        """
-        return DataFrame(self.df.intersect(other.df))
-
-    def except_all(self, other: DataFrame) -> DataFrame:
-        """Calculate the exception of two :py:class:`DataFrame`.
-
-        The two :py:class:`DataFrame` must have exactly the same schema.
-
-        Args:
-            other: DataFrame to calculate exception with.
-
-        Returns:
-            DataFrame after exception.
-        """
-        return DataFrame(self.df.except_all(other.df))
-
-    def except_distinct(self, other: DataFrame) -> DataFrame:
-        """Calculate the set difference with deduplication.
-
-        Returns rows that are in this DataFrame but not in ``other``,
-        removing any duplicates. In contrast, :py:meth:`except_all` preserves
-        duplicate rows.
-
-        The two :py:class:`DataFrame` must have exactly the same schema.
-
-        Args:
-            other: DataFrame to calculate exception with.
-
-        Returns:
-            DataFrame after set difference with deduplication.
-
-        Examples:
-            Remove rows present in ``df2`` and deduplicate:
-
-            >>> ctx = dfn.SessionContext()
-            >>> df1 = ctx.from_pydict({"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]})
-            >>> df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
-            >>> df1.except_distinct(df2).sort("a").to_pydict()
-            {'a': [3], 'b': [30]}
-        """
-        return DataFrame(self.df.except_distinct(other.df))
-
-    def intersect_distinct(self, other: DataFrame) -> DataFrame:
-        """Calculate the intersection with deduplication.
-
-        Returns distinct rows that appear in both DataFrames. In contrast,
-        :py:meth:`intersect` preserves duplicate rows.
-
-        The two :py:class:`DataFrame` must have exactly the same schema.
-
-        Args:
-            other: DataFrame to intersect with.
-
-        Returns:
-            DataFrame after intersection with deduplication.
 
         Examples:
             Find rows common to both DataFrames:
@@ -1265,10 +1208,47 @@ class DataFrame:
             >>> ctx = dfn.SessionContext()
             >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
             >>> df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
-            >>> df1.intersect_distinct(df2).to_pydict()
+            >>> df1.intersect(df2).to_pydict()
+            {'a': [1], 'b': [10]}
+
+            Intersect with deduplication:
+
+            >>> df1 = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 10, 20]})
+            >>> df2 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+            >>> df1.intersect(df2, distinct=True).to_pydict()
             {'a': [1], 'b': [10]}
         """
-        return DataFrame(self.df.intersect_distinct(other.df))
+        return DataFrame(self.df.intersect(other.df, distinct))
+
+    def except_all(self, other: DataFrame, distinct: bool = False) -> DataFrame:
+        """Calculate the set difference of two :py:class:`DataFrame`.
+
+        Returns rows that are in this DataFrame but not in ``other``.
+
+        The two :py:class:`DataFrame` must have exactly the same schema.
+
+        Args:
+            other: DataFrame to calculate exception with.
+            distinct: If ``True``, duplicate rows are removed from the result.
+
+        Returns:
+            DataFrame after set difference.
+
+        Examples:
+            Remove rows present in ``df2``:
+
+            >>> ctx = dfn.SessionContext()
+            >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+            >>> df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+            >>> df1.except_all(df2).sort("a").to_pydict()
+            {'a': [3], 'b': [30]}
+
+            Remove rows present in ``df2`` and deduplicate:
+
+            >>> df1.except_all(df2, distinct=True).sort("a").to_pydict()
+            {'a': [3], 'b': [30]}
+        """
+        return DataFrame(self.df.except_all(other.df, distinct))
 
     def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Union two :py:class:`DataFrame` matching columns by name.
