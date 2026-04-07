@@ -29,6 +29,7 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
+    ExplainFormat,
     InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
@@ -3598,14 +3599,6 @@ def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
             [10, 20],
             id="union_by_name: matches columns by name not position",
         ),
-        pytest.param(
-            {"a": [1, 1], "b": [10, 10]},
-            {"b": [10], "a": [1]},  # reversed column order with duplicates
-            "union_by_name_distinct",
-            [1],
-            [10],
-            id="union_by_name_distinct: matches by name and deduplicates",
-        ),
     ],
 )
 def test_set_operations_distinct(df1_data, df2_data, method, expected_a, expected_b):
@@ -3617,6 +3610,15 @@ def test_set_operations_distinct(df1_data, df2_data, method, expected_a, expecte
     )
     assert result.column(0).to_pylist() == expected_a
     assert result.column(1).to_pylist() == expected_b
+
+
+def test_union_by_name_distinct():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+    df2 = ctx.from_pydict({"b": [10], "a": [1]})
+    result = df1.union_by_name(df2, distinct=True).collect()[0]
+    assert result.column(0).to_pylist() == [1]
+    assert result.column(1).to_pylist() == [10]
 
 
 def test_distinct_on():
@@ -3655,20 +3657,21 @@ def test_sort_by(input_values, expected):
 @pytest.mark.parametrize(
     ("fmt", "verbose", "analyze", "expected_substring"),
     [
-        (None, False, False, None),
-        ("TREE", False, False, "---"),
-        ("INDENT", True, True, None),
-        ("PGJSON", False, False, '"Plan"'),
-        ("GRAPHVIZ", False, False, "digraph"),
+        pytest.param(None, False, False, None, id="default format"),
+        pytest.param(ExplainFormat.TREE, False, False, "---", id="tree format"),
+        pytest.param(
+            ExplainFormat.INDENT, True, True, None, id="indent verbose+analyze"
+        ),
+        pytest.param(ExplainFormat.PGJSON, False, False, '"Plan"', id="pgjson format"),
+        pytest.param(
+            ExplainFormat.GRAPHVIZ, False, False, "digraph", id="graphviz format"
+        ),
     ],
 )
 def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
-    from datafusion import ExplainFormat
-
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1]})
-    explain_fmt = ExplainFormat[fmt] if fmt is not None else None
-    df.explain(verbose=verbose, analyze=analyze, format=explain_fmt)
+    df.explain(verbose=verbose, analyze=analyze, format=fmt)
     captured = capsys.readouterr()
     assert "plan_type" in captured.out
     if expected_substring is not None:

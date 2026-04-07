@@ -44,6 +44,7 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
+    _to_raw_expr,
     ensure_expr,
     ensure_expr_list,
     expr_list_to_raw_expr_list,
@@ -1170,7 +1171,7 @@ class DataFrame:
         """
         return DataFrame(self.df.intersect_distinct(other.df))
 
-    def union_by_name(self, other: DataFrame) -> DataFrame:
+    def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Union two :py:class:`DataFrame` matching columns by name.
 
         Unlike :py:meth:`union` which matches columns by position, this method
@@ -1179,6 +1180,7 @@ class DataFrame:
 
         Args:
             other: DataFrame to union with.
+            distinct: If ``True``, duplicate rows are removed from the result.
 
         Returns:
             DataFrame after union by name.
@@ -1191,30 +1193,17 @@ class DataFrame:
             >>> df2 = ctx.from_pydict({"b": [20], "a": [2]})
             >>> df1.union_by_name(df2).sort("a").to_pydict()
             {'a': [1, 2], 'b': [10, 20]}
-        """
-        return DataFrame(self.df.union_by_name(other.df))
 
-    def union_by_name_distinct(self, other: DataFrame) -> DataFrame:
-        """Union two :py:class:`DataFrame` by name with deduplication.
+            Union by name with deduplication:
 
-        Combines :py:meth:`union_by_name` with deduplication of rows.
-
-        Args:
-            other: DataFrame to union with.
-
-        Returns:
-            DataFrame after union by name with deduplication.
-
-        Examples:
-            Union by name and remove duplicate rows:
-
-            >>> ctx = dfn.SessionContext()
             >>> df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
             >>> df2 = ctx.from_pydict({"b": [10], "a": [1]})
-            >>> df1.union_by_name_distinct(df2).to_pydict()
+            >>> df1.union_by_name(df2, distinct=True).to_pydict()
             {'a': [1], 'b': [10]}
         """
-        return DataFrame(self.df.union_by_name_distinct(other.df))
+        if distinct:
+            return DataFrame(self.df.union_by_name_distinct(other.df))
+        return DataFrame(self.df.union_by_name(other.df))
 
     def distinct_on(
         self,
@@ -1275,8 +1264,7 @@ class DataFrame:
             >>> df.sort_by("a").to_pydict()
             {'a': [1, 2, 3]}
         """
-        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
-        raw = expr_list_to_raw_expr_list(exprs)
+        raw = [_to_raw_expr(e) for e in exprs]
         return DataFrame(self.df.sort_by(raw))
 
     def write_csv(
