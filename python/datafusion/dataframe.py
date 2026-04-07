@@ -395,17 +395,6 @@ class DataFrame:
         """
         return self.df.schema()
 
-    @deprecated(
-        "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
-    )
-    def select_columns(self, *args: str) -> DataFrame:
-        """Filter the DataFrame by columns.
-
-        Returns:
-            DataFrame only containing the specified columns.
-        """
-        return self.select(*args)
-
     def select_exprs(self, *args: str) -> DataFrame:
         """Project arbitrary list of expression strings into a new DataFrame.
 
