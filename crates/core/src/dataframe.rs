@@ -971,22 +971,15 @@ impl PyDataFrame {
     }
 
     /// Union two DataFrames matching columns by name
-    fn union_by_name(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .union_by_name(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
-    }
-
-    /// Union two DataFrames by name with deduplication
-    fn union_by_name_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self
-            .df
-            .as_ref()
-            .clone()
-            .union_by_name_distinct(py_df.df.as_ref().clone())?;
+    #[pyo3(signature = (py_df, distinct=false))]
+    fn union_by_name(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
+        let base = self.df.as_ref().clone();
+        let other = py_df.df.as_ref().clone();
+        let new_df = if distinct {
+            base.union_by_name_distinct(other)?
+        } else {
+            base.union_by_name(other)?
+        };
         Ok(Self::new(new_df))
     }
 

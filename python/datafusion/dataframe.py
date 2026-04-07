@@ -1300,9 +1300,7 @@ class DataFrame:
             >>> df1.union_by_name(df2, distinct=True).to_pydict()
             {'a': [1], 'b': [10]}
         """
-        if distinct:
-            return DataFrame(self.df.union_by_name_distinct(other.df))
-        return DataFrame(self.df.union_by_name(other.df))
+        return DataFrame(self.df.union_by_name(other.df, distinct))
 
     def distinct_on(
         self,
