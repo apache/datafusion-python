@@ -15,8 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::GroupingSet;
+use datafusion::logical_expr::{Expr, GroupingSet};
 use pyo3::prelude::*;
+
+use crate::expr::PyExpr;
 
 #[pyclass(
     from_py_object,
@@ -28,6 +30,39 @@ use pyo3::prelude::*;
 #[derive(Clone)]
 pub struct PyGroupingSet {
     grouping_set: GroupingSet,
+}
+
+#[pymethods]
+impl PyGroupingSet {
+    #[staticmethod]
+    #[pyo3(signature = (*exprs))]
+    fn rollup(exprs: Vec<PyExpr>) -> PyExpr {
+        Expr::GroupingSet(GroupingSet::Rollup(
+            exprs.into_iter().map(|e| e.expr).collect(),
+        ))
+        .into()
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (*exprs))]
+    fn cube(exprs: Vec<PyExpr>) -> PyExpr {
+        Expr::GroupingSet(GroupingSet::Cube(
+            exprs.into_iter().map(|e| e.expr).collect(),
+        ))
+        .into()
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (*expr_lists))]
+    fn grouping_sets(expr_lists: Vec<Vec<PyExpr>>) -> PyExpr {
+        Expr::GroupingSet(GroupingSet::GroupingSets(
+            expr_lists
+                .into_iter()
+                .map(|list| list.into_iter().map(|e| e.expr).collect())
+                .collect(),
+        ))
+        .into()
+    }
 }
 
 impl From<PyGroupingSet> for GroupingSet {

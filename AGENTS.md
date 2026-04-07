@@ -42,3 +42,15 @@ Every Python function must include a docstring with usage examples.
 - **Alias functions**: Functions that are simple aliases (e.g., `list_sort` aliasing
   `array_sort`) only need a one-line description and a `See Also` reference to the
   primary function. They do not need their own examples.
+
+## Aggregate and Window Function Documentation
+
+When adding or updating an aggregate or window function, ensure the corresponding
+site documentation is kept in sync:
+
+- **Aggregations**: `docs/source/user-guide/common-operations/aggregations.rst` —
+  add new aggregate functions to the "Aggregate Functions" list and include usage
+  examples if appropriate.
+- **Window functions**: `docs/source/user-guide/common-operations/windows.rst` —
+  add new window functions to the "Available Functions" list and include usage
+  examples if appropriate.

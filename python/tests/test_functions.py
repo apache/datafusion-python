@@ -22,6 +22,7 @@ import pyarrow as pa
 import pytest
 from datafusion import SessionContext, column, literal
 from datafusion import functions as f
+from datafusion.expr import GroupingSet
 
 np.seterr(invalid="ignore")
 
@@ -1818,6 +1819,114 @@ def df_with_nulls():
 def test_conditional_functions(df_with_nulls, expr, expected):
     result = df_with_nulls.select(expr.alias("result")).collect()[0]
     assert result.column(0) == expected
+
+
+@pytest.mark.parametrize(
+    ("func", "filter_expr", "expected"),
+    [
+        (f.percentile_cont, None, 3.0),
+        (f.percentile_cont, column("a") > literal(1.0), 3.5),
+        (f.quantile_cont, None, 3.0),
+    ],
+    ids=["no_filter", "with_filter", "quantile_cont_alias"],
+)
+def test_percentile_cont(func, filter_expr, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    result = df.aggregate(
+        [], [func(column("a"), 0.5, filter=filter_expr).alias("v")]
+    ).collect()[0]
+    assert result.column(0)[0].as_py() == expected
+
+
+@pytest.mark.parametrize(
+    ("grouping_set_expr", "expected_grouping", "expected_sums"),
+    [
+        (GroupingSet.rollup(column("a")), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.cube(column("a")), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.rollup("a"), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.cube("a"), [0, 0, 1], [30, 30, 60]),
+    ],
+    ids=["rollup", "cube", "rollup_str", "cube_str"],
+)
+def test_grouping_set_single_column(
+    grouping_set_expr, expected_grouping, expected_sums
+):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+    result = df.aggregate(
+        [grouping_set_expr],
+        [f.sum(column("b")).alias("s"), f.grouping(column("a"))],
+    ).sort(column("a").sort(ascending=True, nulls_first=False))
+    batches = result.collect()
+    g = pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
+    s = pa.concat_arrays([b.column("s") for b in batches]).to_pylist()
+    assert g == expected_grouping
+    assert s == expected_sums
+
+
+@pytest.mark.parametrize(
+    ("grouping_set_expr", "expected_rows"),
+    [
+        # rollup(a, b) => (a,b), (a), () => 3 + 2 + 1 = 6
+        (GroupingSet.rollup(column("a"), column("b")), 6),
+        # cube(a, b) => (a,b), (a), (b), () => 3 + 2 + 2 + 1 = 8
+        (GroupingSet.cube(column("a"), column("b")), 8),
+        (GroupingSet.rollup("a", "b"), 6),
+        (GroupingSet.cube("a", "b"), 8),
+    ],
+    ids=["rollup", "cube", "rollup_str", "cube_str"],
+)
+def test_grouping_set_multi_column(grouping_set_expr, expected_rows):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2], "b": ["x", "y", "x"], "c": [10, 20, 30]})
+    result = df.aggregate(
+        [grouping_set_expr],
+        [f.sum(column("c")).alias("s")],
+    )
+    total_rows = sum(b.num_rows for b in result.collect())
+    assert total_rows == expected_rows
+
+
+@pytest.mark.parametrize(
+    "grouping_set_expr",
+    [
+        GroupingSet.grouping_sets([column("a")], [column("b")]),
+        GroupingSet.grouping_sets(["a"], ["b"]),
+    ],
+    ids=["expr", "str"],
+)
+def test_grouping_sets_explicit(grouping_set_expr):
+    # Each row's grouping() value tells you which columns are aggregated across.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["x", "x", "y"], "b": ["m", "n", "m"], "c": [1, 2, 3]})
+    result = df.aggregate(
+        [grouping_set_expr],
+        [
+            f.sum(column("c")).alias("s"),
+            f.grouping(column("a")),
+            f.grouping(column("b")),
+        ],
+    ).sort(
+        column("a").sort(ascending=True, nulls_first=False),
+        column("b").sort(ascending=True, nulls_first=False),
+    )
+    batches = result.collect()
+    ga = pa.concat_arrays([b.column(3) for b in batches]).to_pylist()
+    gb = pa.concat_arrays([b.column(4) for b in batches]).to_pylist()
+    # Rows grouped by (a): ga=0 (a is a key), gb=1 (b is aggregated across)
+    # Rows grouped by (b): ga=1 (a is aggregated across), gb=0 (b is a key)
+    assert ga == [0, 0, 1, 1]
+    assert gb == [1, 1, 0, 0]
+
+
+def test_var_population():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [-1.0, 0.0, 2.0]})
+    result = df.aggregate([], [f.var_population(column("a")).alias("v")]).collect()[0]
+    # var_population is an alias for var_pop
+    expected = df.aggregate([], [f.var_pop(column("a")).alias("v")]).collect()[0]
+    assert abs(result.column(0)[0].as_py() - expected.column(0)[0].as_py()) < 1e-10
 
 
 def test_get_field(df):

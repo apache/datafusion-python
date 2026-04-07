@@ -166,6 +166,7 @@ __all__ = [
     "generate_series",
     "get_field",
     "greatest",
+    "grouping",
     "ifnull",
     "in_list",
     "initcap",
@@ -256,9 +257,11 @@ __all__ = [
     "order_by",
     "overlay",
     "percent_rank",
+    "percentile_cont",
     "pi",
     "pow",
     "power",
+    "quantile_cont",
     "radians",
     "random",
     "range",
@@ -331,6 +334,7 @@ __all__ = [
     "uuid",
     "var",
     "var_pop",
+    "var_population",
     "var_samp",
     "var_sample",
     "version",
@@ -2654,7 +2658,6 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         1.0
 
-        >>> import pyarrow as pa
         >>> result = df.select(
         ...     dfn.functions.arrow_cast(
         ...         dfn.col("a"), data_type=pa.float64()
@@ -2677,7 +2680,6 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     If called with two arguments, returns the value for the specified metadata key.
 
     Examples:
-        >>> import pyarrow as pa
         >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
         >>> schema = pa.schema([field])
         >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
@@ -2746,7 +2748,6 @@ def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:
     variant, otherwise returns NULL.
 
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> types = pa.array([0, 1, 0], type=pa.int8())
         >>> offsets = pa.array([0, 0, 1], type=pa.int32())
@@ -2771,7 +2772,6 @@ def union_tag(union_expr: Expr) -> Expr:
     """Returns the tag (active field name) of a union type.
 
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> types = pa.array([0, 1, 0], type=pa.int8())
         >>> offsets = pa.array([0, 0, 1], type=pa.int32())
@@ -4306,6 +4306,60 @@ def approx_percentile_cont_with_weight(
     )
 
 
+def percentile_cont(
+    sort_expression: Expr | SortExpr,
+    percentile: float,
+    filter: Expr | None = None,
+) -> Expr:
+    """Computes the exact percentile of input values using continuous interpolation.
+
+    Unlike :py:func:`approx_percentile_cont`, this function computes the exact
+    percentile value rather than an approximation.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        sort_expression: Values for which to find the percentile
+        percentile: This must be between 0.0 and 1.0, inclusive
+        filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3.0
+
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5,
+        ...         filter=dfn.col("a") > dfn.lit(1.0),
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        3.5
+    """
+    sort_expr_raw = sort_or_default(sort_expression)
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
+
+
+def quantile_cont(
+    sort_expression: Expr | SortExpr,
+    percentile: float,
+    filter: Expr | None = None,
+) -> Expr:
+    """Computes the exact percentile of input values using continuous interpolation.
+
+    See Also:
+        This is an alias for :py:func:`percentile_cont`.
+    """
+    return percentile_cont(sort_expression, percentile, filter)
+
+
 def array_agg(
     expression: Expr,
     distinct: bool = False,
@@ -4362,6 +4416,65 @@ def array_agg(
             expression.expr, distinct=distinct, filter=filter_raw, order_by=order_by_raw
         )
     )
+
+
+def grouping(
+    expression: Expr,
+    distinct: bool = False,
+    filter: Expr | None = None,
+) -> Expr:
+    """Indicates whether a column is aggregated across in the current row.
+
+    Returns 0 when the column is part of the grouping key for that row
+    (i.e., the row contains per-group results for that column). Returns 1
+    when the column is *not* part of the grouping key (i.e., the row's
+    aggregate spans all values of that column).
+
+    This function is meaningful with
+    :py:meth:`GroupingSet.rollup <datafusion.expr.GroupingSet.rollup>`,
+    :py:meth:`GroupingSet.cube <datafusion.expr.GroupingSet.cube>`, or
+    :py:meth:`GroupingSet.grouping_sets <datafusion.expr.GroupingSet.grouping_sets>`,
+    where different rows are grouped by different subsets of columns. In a
+    default aggregation without grouping sets every column is always part
+    of the key, so ``grouping()`` always returns 0.
+
+    .. warning::
+
+        Due to an upstream DataFusion limitation
+        (`#21411 <https://github.com/apache/datafusion/issues/21411>`_),
+        ``.alias()`` cannot be applied directly to a ``grouping()``
+        expression. Doing so will raise an error at execution time. To
+        rename the column, use
+        :py:meth:`~datafusion.dataframe.DataFrame.with_column_renamed`
+        on the result DataFrame instead.
+
+    Args:
+        expression: The column to check grouping status for
+        distinct: If True, compute on distinct values only
+        filter: If provided, only compute against rows for which the filter is True
+
+    Examples:
+        With :py:meth:`~datafusion.expr.GroupingSet.rollup`, the result
+        includes both per-group rows (``grouping(a) = 0``) and a
+        grand-total row where ``a`` is aggregated across
+        (``grouping(a) = 1``):
+
+        >>> from datafusion.expr import GroupingSet
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+        >>> result = df.aggregate(
+        ...     [GroupingSet.rollup(dfn.col("a"))],
+        ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
+        ...      dfn.functions.grouping(dfn.col("a"))],
+        ... ).sort(dfn.col("a").sort(nulls_first=False))
+        >>> result.collect_column("s").to_pylist()
+        [30, 30, 60]
+
+    See Also:
+        :py:class:`~datafusion.expr.GroupingSet`
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def avg(
@@ -4833,6 +4946,15 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
+
+
+def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
+    """Computes the population variance of the argument.
+
+    See Also:
+        This is an alias for :py:func:`var_pop`.
+    """
+    return var_pop(expression, filter)
 
 
 def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
