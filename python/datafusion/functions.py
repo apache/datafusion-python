@@ -18,7 +18,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pyarrow as pa
 
@@ -29,19 +29,11 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
-    WindowFrame,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
     sort_or_default,
 )
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
-
-if TYPE_CHECKING:
-    from datafusion.context import SessionContext
 __all__ = [
     "abs",
     "acos",
@@ -339,8 +331,6 @@ __all__ = [
     "var_sample",
     "version",
     "when",
-    # Window Functions
-    "window",
 ]
 
 
@@ -662,49 +652,6 @@ def when(when: Expr, then: Expr) -> CaseBuilder:
         'big'
     """
     return CaseBuilder(f.when(when.expr, then.expr))
-
-
-@deprecated("Prefer to call Expr.over() instead")
-def window(
-    name: str,
-    args: list[Expr],
-    partition_by: list[Expr] | Expr | None = None,
-    order_by: list[SortKey] | SortKey | None = None,
-    window_frame: WindowFrame | None = None,
-    filter: Expr | None = None,
-    distinct: bool = False,
-    ctx: SessionContext | None = None,
-) -> Expr:
-    """Creates a new Window function expression.
-
-    This interface will soon be deprecated. Instead of using this interface,
-    users should call the window functions directly. For example, to perform a
-    lag use::
-
-        df.select(functions.lag(col("a")).partition_by(col("b")).build())
-
-    The ``order_by`` parameter accepts column names or expressions, e.g.::
-
-        window("lag", [col("a")], order_by="ts")
-    """
-    args = [a.expr for a in args]
-    partition_by_raw = expr_list_to_raw_expr_list(partition_by)
-    order_by_raw = sort_list_to_raw_sort_list(order_by)
-    window_frame = window_frame.window_frame if window_frame is not None else None
-    ctx = ctx.ctx if ctx is not None else None
-    filter_raw = filter.expr if filter is not None else None
-    return Expr(
-        f.window(
-            name,
-            args,
-            partition_by=partition_by_raw,
-            order_by=order_by_raw,
-            window_frame=window_frame,
-            ctx=ctx,
-            filter=filter_raw,
-            distinct=distinct,
-        )
-    )
 
 
 # scalar functions
