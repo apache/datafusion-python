@@ -1445,7 +1445,7 @@ class GroupingSet:
     """
 
     @staticmethod
-    def rollup(*exprs: Expr) -> Expr:
+    def rollup(*exprs: Expr | str) -> Expr:
         """Create a ``ROLLUP`` grouping set for use with ``aggregate()``.
 
         ``ROLLUP`` generates all prefixes of the given column list as
@@ -1455,7 +1455,8 @@ class GroupingSet:
         This is equivalent to ``GROUP BY ROLLUP(a, b)`` in SQL.
 
         Args:
-            *exprs: Column expressions to include in the rollup.
+            *exprs: Column expressions or column name strings to
+                include in the rollup.
 
         Examples:
             >>> import datafusion as dfn
@@ -1474,11 +1475,11 @@ class GroupingSet:
             :py:meth:`cube`, :py:meth:`grouping_sets`,
             :py:func:`~datafusion.functions.grouping`
         """
-        args = [e.expr for e in exprs]
+        args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.rollup(*args))
 
     @staticmethod
-    def cube(*exprs: Expr) -> Expr:
+    def cube(*exprs: Expr | str) -> Expr:
         """Create a ``CUBE`` grouping set for use with ``aggregate()``.
 
         ``CUBE`` generates all possible subsets of the given column list
@@ -1488,7 +1489,8 @@ class GroupingSet:
         This is equivalent to ``GROUP BY CUBE(a, b)`` in SQL.
 
         Args:
-            *exprs: Column expressions to include in the cube.
+            *exprs: Column expressions or column name strings to
+                include in the cube.
 
         Examples:
             With a single column, ``cube`` behaves identically to
@@ -1510,23 +1512,25 @@ class GroupingSet:
             :py:meth:`rollup`, :py:meth:`grouping_sets`,
             :py:func:`~datafusion.functions.grouping`
         """
-        args = [e.expr for e in exprs]
+        args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.cube(*args))
 
     @staticmethod
-    def grouping_sets(*expr_lists: list[Expr]) -> Expr:
+    def grouping_sets(*expr_lists: list[Expr | str]) -> Expr:
         """Create explicit grouping sets for use with ``aggregate()``.
 
-        Each argument is a list of column expressions representing one
-        grouping set. For example, ``grouping_sets([a], [b])`` groups
-        by ``a`` alone and by ``b`` alone in a single query.
+        Each argument is a list of column expressions or column name
+        strings representing one grouping set. For example,
+        ``grouping_sets([a], [b])`` groups by ``a`` alone and by ``b``
+        alone in a single query.
 
         This is equivalent to ``GROUP BY GROUPING SETS ((a), (b))`` in
         SQL.
 
         Args:
             *expr_lists: Each positional argument is a list of
-                expressions forming one grouping set.
+                expressions or column name strings forming one
+                grouping set.
 
         Examples:
             >>> import datafusion as dfn
@@ -1552,5 +1556,5 @@ class GroupingSet:
             :py:meth:`rollup`, :py:meth:`cube`,
             :py:func:`~datafusion.functions.grouping`
         """
-        raw_lists = [[e.expr for e in lst] for lst in expr_lists]
+        raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]
         return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))

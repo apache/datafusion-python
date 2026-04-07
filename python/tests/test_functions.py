@@ -1844,8 +1844,10 @@ def test_percentile_cont(func, filter_expr, expected):
     [
         (GroupingSet.rollup(column("a")), [0, 0, 1], [30, 30, 60]),
         (GroupingSet.cube(column("a")), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.rollup("a"), [0, 0, 1], [30, 30, 60]),
+        (GroupingSet.cube("a"), [0, 0, 1], [30, 30, 60]),
     ],
-    ids=["rollup", "cube"],
+    ids=["rollup", "cube", "rollup_str", "cube_str"],
 )
 def test_grouping_set_single_column(
     grouping_set_expr, expected_grouping, expected_sums
@@ -1870,8 +1872,10 @@ def test_grouping_set_single_column(
         (GroupingSet.rollup(column("a"), column("b")), 6),
         # cube(a, b) => (a,b), (a), (b), () => 3 + 2 + 2 + 1 = 8
         (GroupingSet.cube(column("a"), column("b")), 8),
+        (GroupingSet.rollup("a", "b"), 6),
+        (GroupingSet.cube("a", "b"), 8),
     ],
-    ids=["rollup", "cube"],
+    ids=["rollup", "cube", "rollup_str", "cube_str"],
 )
 def test_grouping_set_multi_column(grouping_set_expr, expected_rows):
     ctx = SessionContext()
@@ -1884,12 +1888,20 @@ def test_grouping_set_multi_column(grouping_set_expr, expected_rows):
     assert total_rows == expected_rows
 
 
-def test_grouping_sets_explicit():
+@pytest.mark.parametrize(
+    "grouping_set_expr",
+    [
+        GroupingSet.grouping_sets([column("a")], [column("b")]),
+        GroupingSet.grouping_sets(["a"], ["b"]),
+    ],
+    ids=["expr", "str"],
+)
+def test_grouping_sets_explicit(grouping_set_expr):
     # Each row's grouping() value tells you which columns are aggregated across.
     ctx = SessionContext()
     df = ctx.from_pydict({"a": ["x", "x", "y"], "b": ["m", "n", "m"], "c": [1, 2, 3]})
     result = df.aggregate(
-        [GroupingSet.grouping_sets([column("a")], [column("b")])],
+        [grouping_set_expr],
         [
             f.sum(column("c")).alias("s"),
             f.grouping(column("a")),
