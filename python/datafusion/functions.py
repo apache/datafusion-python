@@ -2658,7 +2658,6 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         1.0
 
-        >>> import pyarrow as pa
         >>> result = df.select(
         ...     dfn.functions.arrow_cast(
         ...         dfn.col("a"), data_type=pa.float64()
@@ -2681,7 +2680,6 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     If called with two arguments, returns the value for the specified metadata key.
 
     Examples:
-        >>> import pyarrow as pa
         >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
         >>> schema = pa.schema([field])
         >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
@@ -2750,7 +2748,6 @@ def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:
     variant, otherwise returns NULL.
 
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> types = pa.array([0, 1, 0], type=pa.int8())
         >>> offsets = pa.array([0, 0, 1], type=pa.int32())
@@ -2775,7 +2772,6 @@ def union_tag(union_expr: Expr) -> Expr:
     """Returns the tag (active field name) of a union type.
 
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> types = pa.array([0, 1, 0], type=pa.int8())
         >>> offsets = pa.array([0, 0, 1], type=pa.int32())
