@@ -175,10 +175,7 @@ it's ``Type 2`` column that are null.
 Aggregate Functions
 -------------------
 
-You can use any :ref:`Aggregation Function<aggregation>` as a window function. Currently
-aggregate functions must use the deprecated
-:py:func:`datafusion.functions.window` API but this should be resolved in
-DataFusion 42.0 (`Issue Link <https://github.com/apache/datafusion-python/issues/833>`_). Here
+You can use any :ref:`Aggregation Function<aggregation>` as a window function. Here
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its ``"Type 1"`` using the :py:func:`datafusion.functions.avg` function.
 
@@ -189,10 +186,14 @@ power in its ``"Type 1"`` using the :py:func:`datafusion.functions.avg` function
         col('"Name"'),
         col('"Attack"'),
         col('"Type 1"'),
-        f.window("avg", [col('"Attack"')])
-            .partition_by(col('"Type 1"'))
-            .build()
-            .alias("Average Attack"),
+        f.avg(col('"Attack"')).over(
+            Window(
+                window_frame=WindowFrame("rows", None, None),
+                partition_by=[col('"Type 1"')],
+                order_by=[col('"Speed"')],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            )
+        ).alias("Average Attack"),
     )
 
 Available Functions
