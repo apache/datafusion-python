@@ -1822,18 +1822,19 @@ def test_conditional_functions(df_with_nulls, expr, expected):
 
 
 @pytest.mark.parametrize(
-    ("filter_expr", "expected"),
+    ("func", "filter_expr", "expected"),
     [
-        (None, 3.0),
-        (column("a") > literal(1.0), 3.5),
+        (f.percentile_cont, None, 3.0),
+        (f.percentile_cont, column("a") > literal(1.0), 3.5),
+        (f.quantile_cont, None, 3.0),
     ],
-    ids=["no_filter", "with_filter"],
+    ids=["no_filter", "with_filter", "quantile_cont_alias"],
 )
-def test_percentile_cont(filter_expr, expected):
+def test_percentile_cont(func, filter_expr, expected):
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
     result = df.aggregate(
-        [], [f.percentile_cont(column("a"), 0.5, filter=filter_expr).alias("v")]
+        [], [func(column("a"), 0.5, filter=filter_expr).alias("v")]
     ).collect()[0]
     assert result.column(0)[0].as_py() == expected
 

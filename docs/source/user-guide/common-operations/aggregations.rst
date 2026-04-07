@@ -354,6 +354,7 @@ The available aggregate functions are:
     - :py:func:`datafusion.functions.stddev_pop`
     - :py:func:`datafusion.functions.var_samp`
     - :py:func:`datafusion.functions.var_pop`
+    - :py:func:`datafusion.functions.var_population`
 6. Linear Regression Functions
     - :py:func:`datafusion.functions.regr_count`
     - :py:func:`datafusion.functions.regr_slope`
@@ -370,7 +371,9 @@ The available aggregate functions are:
     - :py:func:`datafusion.functions.nth_value`
 8. String Functions
     - :py:func:`datafusion.functions.string_agg`
-9. Approximation Functions
+9. Percentile Functions
+    - :py:func:`datafusion.functions.percentile_cont`
+    - :py:func:`datafusion.functions.quantile_cont`
     - :py:func:`datafusion.functions.approx_distinct`
     - :py:func:`datafusion.functions.approx_median`
     - :py:func:`datafusion.functions.approx_percentile_cont`

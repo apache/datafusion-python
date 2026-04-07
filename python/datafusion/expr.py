@@ -1458,7 +1458,6 @@ class GroupingSet:
             *exprs: Column expressions to include in the rollup.
 
         Examples:
-            >>> import pyarrow as pa
             >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1468,8 +1467,7 @@ class GroupingSet:
             ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
             ...      dfn.functions.grouping(dfn.col("a"))],
             ... ).sort(dfn.col("a").sort(nulls_first=False))
-            >>> batches = result.collect()
-            >>> pa.concat_arrays([b.column("s") for b in batches]).to_pylist()
+            >>> result.collect_column("s").to_pylist()
             [30, 30, 60]
 
         See Also:
@@ -1496,7 +1494,6 @@ class GroupingSet:
             With a single column, ``cube`` behaves identically to
             :py:meth:`rollup`:
 
-            >>> import pyarrow as pa
             >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1506,9 +1503,8 @@ class GroupingSet:
             ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
             ...      dfn.functions.grouping(dfn.col("a"))],
             ... ).sort(dfn.col("a").sort(nulls_first=False))
-            >>> batches = result.collect()
-            >>> pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
-            [0, 0, 1]
+            >>> result.collect_column("s").to_pylist()
+            [30, 30, 60]
 
         See Also:
             :py:meth:`rollup`, :py:meth:`grouping_sets`,
@@ -1533,7 +1529,6 @@ class GroupingSet:
                 expressions forming one grouping set.
 
         Examples:
-            >>> import pyarrow as pa
             >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1550,9 +1545,7 @@ class GroupingSet:
             ...     dfn.col("a").sort(nulls_first=False),
             ...     dfn.col("b").sort(nulls_first=False),
             ... )
-            >>> batches = result.collect()
-            >>> pa.concat_arrays(
-            ...     [b.column("s") for b in batches]).to_pylist()
+            >>> result.collect_column("s").to_pylist()
             [3, 3, 4, 2]
 
         See Also:

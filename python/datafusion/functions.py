@@ -261,6 +261,7 @@ __all__ = [
     "pi",
     "pow",
     "power",
+    "quantile_cont",
     "radians",
     "random",
     "range",
@@ -4350,6 +4351,19 @@ def percentile_cont(
     return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
 
 
+def quantile_cont(
+    sort_expression: Expr | SortExpr,
+    percentile: float,
+    filter: Expr | None = None,
+) -> Expr:
+    """Computes the exact percentile of input values using continuous interpolation.
+
+    See Also:
+        This is an alias for :py:func:`percentile_cont`.
+    """
+    return percentile_cont(sort_expression, percentile, filter)
+
+
 def array_agg(
     expression: Expr,
     distinct: bool = False,
@@ -4449,7 +4463,6 @@ def grouping(
         grand-total row where ``a`` is aggregated across
         (``grouping(a) = 1``):
 
-        >>> import pyarrow as pa
         >>> from datafusion.expr import GroupingSet
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
@@ -4458,9 +4471,8 @@ def grouping(
         ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
         ...      dfn.functions.grouping(dfn.col("a"))],
         ... ).sort(dfn.col("a").sort(nulls_first=False))
-        >>> batches = result.collect()
-        >>> pa.concat_arrays([b.column(2) for b in batches]).to_pylist()
-        [0, 0, 1]
+        >>> result.collect_column("s").to_pylist()
+        [30, 30, 60]
 
     See Also:
         :py:class:`~datafusion.expr.GroupingSet`
