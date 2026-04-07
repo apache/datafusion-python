@@ -1065,9 +1065,9 @@ class DataFrame:
             ...     right, left.col("id") == right.col("id"), how="inner"
             ... )
             >>> joined.select(
-            ...     left.col("id"), left.col("val"), right.col("val")
+            ...     left.col("id"), left.col("val"), right.col("val").alias("rval")
             ... ).sort(left.col("id")).to_pydict()
-            {'id': [1, 2], 'val': [10, 20], 'val': [30, 40]}
+            {'id': [1, 2], 'val': [10, 20], 'rval': [30, 40]}
 
         Args:
             right: Other DataFrame to join with.
