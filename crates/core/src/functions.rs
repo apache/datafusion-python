@@ -94,6 +94,57 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+fn array_distance(array1: PyExpr, array2: PyExpr) -> PyExpr {
+    let args = vec![array1.into(), array2.into()];
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::distance::array_distance_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+fn arrays_zip(exprs: Vec<PyExpr>) -> PyExpr {
+    let exprs = exprs.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::expr_fn::arrays_zip(exprs).into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (string, delimiter, null_string=None))]
+fn string_to_array(string: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![string.into(), delimiter.into()];
+    if let Some(null_string) = null_string {
+        args.push(null_string.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::string::string_to_array_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop, step=None))]
+fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![start.into(), stop.into()];
+    if let Some(step) = step {
+        args.push(step.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::range::gen_series_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+fn make_map(keys: Vec<PyExpr>, values: Vec<PyExpr>) -> PyExpr {
+    let keys = keys.into_iter().map(|x| x.into()).collect();
+    let values = values.into_iter().map(|x| x.into()).collect();
+    datafusion::functions_nested::map::map(keys, values).into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
@@ -644,7 +695,28 @@ expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
 expr_fn!(arrow_cast, arg_1 datatype);
+expr_fn_vec!(arrow_metadata);
+expr_fn!(union_tag, arg1);
 expr_fn!(random);
+
+#[pyfunction]
+fn get_field(expr: PyExpr, name: PyExpr) -> PyExpr {
+    functions::core::get_field()
+        .call(vec![expr.into(), name.into()])
+        .into()
+}
+
+#[pyfunction]
+fn union_extract(union_expr: PyExpr, field_name: PyExpr) -> PyExpr {
+    functions::core::union_extract()
+        .call(vec![union_expr.into(), field_name.into()])
+        .into()
+}
+
+#[pyfunction]
+fn version() -> PyExpr {
+    functions::core::version().call(vec![]).into()
+}
 
 // Array Functions
 array_fn!(array_append, array element);
@@ -674,9 +746,19 @@ array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
 array_fn!(array_resize, array size value);
+array_fn!(array_any_value, array);
+array_fn!(array_max, array);
+array_fn!(array_min, array);
+array_fn!(array_reverse, array);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
+
+// Map Functions
+array_fn!(map_keys, map);
+array_fn!(map_values, map);
+array_fn!(map_extract, map key);
+array_fn!(map_entries, map);
 
 aggregate_function!(array_agg);
 aggregate_function!(max);
@@ -709,9 +791,10 @@ aggregate_function!(var_pop);
 aggregate_function!(approx_distinct);
 aggregate_function!(approx_median);
 
-// Code is commented out since grouping is not yet implemented
-// https://github.com/apache/datafusion-python/issues/861
-// aggregate_function!(grouping);
+// The grouping function's physical plan is not implemented, but the
+// ResolveGroupingFunction analyzer rule rewrites it before the physical
+// planner sees it, so it works correctly at runtime.
+aggregate_function!(grouping);
 
 #[pyfunction]
 #[pyo3(signature = (sort_expression, percentile, num_centroids=None, filter=None))]
@@ -745,6 +828,19 @@ pub fn approx_percentile_cont_with_weight(
         lit(percentile),
         num_centroids.map(lit),
     );
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
+
+#[pyfunction]
+#[pyo3(signature = (sort_expression, percentile, filter=None))]
+pub fn percentile_cont(
+    sort_expression: PySortExpr,
+    percentile: f64,
+    filter: Option<PyExpr>,
+) -> PyDataFusionResult<PyExpr> {
+    let agg_fn =
+        functions_aggregate::expr_fn::percentile_cont(sort_expression.sort, lit(percentile));
 
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
@@ -949,10 +1045,12 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(approx_median))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont_with_weight))?;
+    m.add_wrapped(wrap_pyfunction!(percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(range))?;
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(arrow_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_metadata))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(asinh))?;
@@ -997,7 +1095,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
     m.add_wrapped(wrap_pyfunction!(greatest))?;
-    // m.add_wrapped(wrap_pyfunction!(grouping))?;
+    m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(isnan))?;
@@ -1081,6 +1179,10 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
+    m.add_wrapped(wrap_pyfunction!(get_field))?;
+    m.add_wrapped(wrap_pyfunction!(union_extract))?;
+    m.add_wrapped(wrap_pyfunction!(union_tag))?;
+    m.add_wrapped(wrap_pyfunction!(version))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_sample))?;
@@ -1139,8 +1241,23 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
+    m.add_wrapped(wrap_pyfunction!(array_any_value))?;
+    m.add_wrapped(wrap_pyfunction!(array_distance))?;
+    m.add_wrapped(wrap_pyfunction!(array_max))?;
+    m.add_wrapped(wrap_pyfunction!(array_min))?;
+    m.add_wrapped(wrap_pyfunction!(array_reverse))?;
+    m.add_wrapped(wrap_pyfunction!(arrays_zip))?;
+    m.add_wrapped(wrap_pyfunction!(string_to_array))?;
+    m.add_wrapped(wrap_pyfunction!(gen_series))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(cardinality))?;
+
+    // Map Functions
+    m.add_wrapped(wrap_pyfunction!(make_map))?;
+    m.add_wrapped(wrap_pyfunction!(map_keys))?;
+    m.add_wrapped(wrap_pyfunction!(map_values))?;
+    m.add_wrapped(wrap_pyfunction!(map_extract))?;
+    m.add_wrapped(wrap_pyfunction!(map_entries))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

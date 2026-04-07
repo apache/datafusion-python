@@ -682,8 +682,22 @@ class DataFrame:
     ) -> DataFrame:
         """Aggregates the rows of the current DataFrame.
 
+        By default each unique combination of the ``group_by`` columns
+        produces one row. To get multiple levels of subtotals in a
+        single pass, pass a
+        :py:class:`~datafusion.expr.GroupingSet` expression
+        (created via
+        :py:meth:`~datafusion.expr.GroupingSet.rollup`,
+        :py:meth:`~datafusion.expr.GroupingSet.cube`, or
+        :py:meth:`~datafusion.expr.GroupingSet.grouping_sets`)
+        as the ``group_by`` argument.  See the
+        :ref:`aggregation` user guide for detailed examples.
+
         Args:
-            group_by: Sequence of expressions or column names to group by.
+            group_by: Sequence of expressions or column names to group
+                by. A :py:class:`~datafusion.expr.GroupingSet`
+                expression may be included to produce multiple grouping
+                levels (rollup, cube, or explicit grouping sets).
             aggs: Sequence of expressions to aggregate.
 
         Returns:
