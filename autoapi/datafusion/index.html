@@ -1040,6 +1040,53 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ExplainFormat">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainFormat
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExplainFormat.GRAPHVIZ">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.GRAPHVIZ
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExplainFormat.INDENT">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.INDENT
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExplainFormat.PGJSON">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.PGJSON
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExplainFormat.TREE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.TREE
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.Expr">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -3495,49 +3542,52 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
 <td><p>Represent nodes in the DataFusion Physical Plan.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ExplainFormat" title="datafusion.ExplainFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a></p></td>
+<td><p>Output format for explain plans.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
 <td><p>Expression object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.InsertOp" title="datafusion.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.InsertOp" title="datafusion.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
 <td><p>Insert operation mode.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
 <td><p>Logical Plan.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ParquetColumnOptions" title="datafusion.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ParquetColumnOptions" title="datafusion.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
 <td><p>Parquet options for individual columns.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ParquetWriterOptions" title="datafusion.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ParquetWriterOptions" title="datafusion.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
 <td><p>Advanced parquet writer options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
 <td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
 <td><p>This class represents a stream of record batches.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a></p></td>
 <td><p>Class for performing scalar user-defined functions (UDF).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
 <td><p>A DataFusion table.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.TableFunction" title="datafusion.TableFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableFunction</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.TableFunction" title="datafusion.TableFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableFunction</span></code></a></p></td>
 <td><p>Class for performing user-defined table functions (UDTF).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
 <td><p>Defines a window frame for performing window operations.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowUDF</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowUDF</span></code></a></p></td>
 <td><p>Class for performing window user-defined functions (UDF).</p></td>
 </tr>
 </tbody>
@@ -4126,6 +4176,38 @@ single value for unary nodes, or two values for binary nodes (such as joins).</p
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.partition_count">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.ExecutionPlan.partition_count" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the number of partitions in the physical plan.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.ExplainFormat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">ExplainFormat</span></span><a class="headerlink" href="#datafusion.ExplainFormat" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Output format for explain plans.</p>
+<p>Controls how the query plan is rendered in <code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ExplainFormat.GRAPHVIZ">
+<span class="sig-name descname"><span class="pre">GRAPHVIZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'graphviz'</span></em><a class="headerlink" href="#datafusion.ExplainFormat.GRAPHVIZ" title="Link to this definition">¶</a></dt>
+<dd><p>Graphviz DOT format for graph rendering.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ExplainFormat.INDENT">
+<span class="sig-name descname"><span class="pre">INDENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'indent'</span></em><a class="headerlink" href="#datafusion.ExplainFormat.INDENT" title="Link to this definition">¶</a></dt>
+<dd><p>Default indented text format.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ExplainFormat.PGJSON">
+<span class="sig-name descname"><span class="pre">PGJSON</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pgjson'</span></em><a class="headerlink" href="#datafusion.ExplainFormat.PGJSON" title="Link to this definition">¶</a></dt>
+<dd><p>PostgreSQL-compatible JSON format for use with visualization tools.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ExplainFormat.TREE">
+<span class="sig-name descname"><span class="pre">TREE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tree'</span></em><a class="headerlink" href="#datafusion.ExplainFormat.TREE" title="Link to this definition">¶</a></dt>
+<dd><p>Tree-style visual format with box-drawing characters.</p>
 </dd></dl>
 
 </dd></dl>

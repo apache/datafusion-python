@@ -610,6 +610,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.col">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.col()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.collect">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -632,6 +641,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.collect_partitioned()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.column">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.column()
         </span>
        </code>
       </a>
@@ -668,6 +686,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.distinct()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.distinct_on">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.distinct_on()
         </span>
        </code>
       </a>
@@ -740,6 +767,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.filter()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.find_qualified_columns">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.find_qualified_columns()
         </span>
        </code>
       </a>
@@ -898,6 +934,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.sort_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.sort_by()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.tail">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -970,6 +1015,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union_by_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.union_by_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union_distinct">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -983,6 +1037,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.unnest_columns()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.window">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.window()
         </span>
        </code>
       </a>
@@ -1084,6 +1147,53 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrameWriteOptions._raw_write_options
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainFormat
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.GRAPHVIZ">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.GRAPHVIZ
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.INDENT">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.INDENT
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.PGJSON">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.PGJSON
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.TREE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExplainFormat.TREE
         </span>
        </code>
       </a>
@@ -1433,13 +1543,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrameWriteOptions</span></code></a></p></td>
 <td><p>Writer options for DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.InsertOp" title="datafusion.dataframe.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a></p></td>
+<td><p>Output format for explain plans.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.InsertOp" title="datafusion.dataframe.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
 <td><p>Insert operation mode.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.ParquetColumnOptions" title="datafusion.dataframe.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ParquetColumnOptions" title="datafusion.dataframe.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
 <td><p>Parquet options for individual columns.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
 <td><p>Advanced parquet writer options.</p></td>
 </tr>
 </tbody>
@@ -1659,6 +1772,16 @@ levels (rollup, cube, or explicit grouping sets).</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.col">
+<span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.col" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#datafusion.dataframe.DataFrame.column" title="datafusion.dataframe.DataFrame.column"><code class="xref py py-meth docutils literal notranslate"><span class="pre">column()</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.dataframe.DataFrame.column" title="datafusion.dataframe.DataFrame.column"><code class="xref py py-meth docutils literal notranslate"><span class="pre">column()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.collect">
 <span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.RecordBatch</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.collect" title="Link to this definition">¶</a></dt>
 <dd><p>Execute this <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and collect results into memory.</p>
@@ -1693,6 +1816,46 @@ partitioning.</p>
 </p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.column">
+<span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.column" title="Link to this definition">¶</a></dt>
+<dd><p>Return a fully qualified column expression for <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+<p>Resolves an unqualified column name against this DataFrame’s schema
+and returns an <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> whose underlying column reference
+includes the table qualifier. This is especially useful after joins,
+where the same column name may appear in multiple relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Unqualified column name to look up.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A fully qualified column expression.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If the column is not found or is ambiguous (exists in
+multiple relations).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Resolve a column from a simple DataFrame:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2]}</span>
+</pre></div>
+</div>
+<p>Resolve qualified columns after a join:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">joined</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr</span> <span class="o">=</span> <span class="n">joined</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">joined</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;id&#39;: [1, 2], &#39;y&#39;: [30, 40]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1742,6 +1905,40 @@ for non-numeric datatypes.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.distinct_on">
+<span class="sig-name descname"><span class="pre">distinct_on</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">on_expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">datafusion.expr.SortKey</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.distinct_on" title="Link to this definition">¶</a></dt>
+<dd><p>Deduplicate rows based on specific columns.</p>
+<p>Returns a new DataFrame with one row per unique combination of the
+<code class="docutils literal notranslate"><span class="pre">on_expr</span></code> columns, keeping the first row per group as determined by
+<code class="docutils literal notranslate"><span class="pre">sort_expr</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>on_expr</strong> – Expressions that determine uniqueness.</p></li>
+<li><p><strong>select_expr</strong> – Expressions to include in the output.</p></li>
+<li><p><strong>sort_expr</strong> – Optional sort expressions to determine which row to keep.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after deduplication.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Keep the row with the smallest <code class="docutils literal notranslate"><span class="pre">b</span></code> for each unique <code class="docutils literal notranslate"><span class="pre">a</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">distinct_on</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)],</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)],</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2], &#39;b&#39;: [10, 30]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.drop">
 <span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.drop" title="Link to this definition">¶</a></dt>
 <dd><p>Drop arbitrary amount of columns.</p>
@@ -1774,17 +1971,35 @@ if the original name is not strictly lower case.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.except_all">
-<span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.except_all" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the exception of two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
+<span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.except_all" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the set difference of two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
+<p>Returns rows that are in this DataFrame but not in <code class="docutils literal notranslate"><span class="pre">other</span></code>.</p>
 <p>The two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> must have exactly the same schema.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> – DataFrame to calculate exception with.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – DataFrame to calculate exception with.</p></li>
+<li><p><strong>distinct</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, duplicate rows are removed from the result.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame after exception.</p>
+<dd class="field-even"><p>DataFrame after set difference.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Remove rows present in <code class="docutils literal notranslate"><span class="pre">df2</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">except_all</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [3], &#39;b&#39;: [30]}</span>
+</pre></div>
+</div>
+<p>Remove rows present in <code class="docutils literal notranslate"><span class="pre">df2</span></code> and deduplicate:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">except_all</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [3], &#39;b&#39;: [30]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1822,7 +2037,7 @@ if the original name is not strictly lower case.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.explain">
-<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.explain" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><span class="pre">ExplainFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.explain" title="Link to this definition">¶</a></dt>
 <dd><p>Print an explanation of the DataFrame’s plan so far.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">analyze</span></code> is specified, runs the plan and reports metrics.</p>
 <dl class="field-list simple">
@@ -1830,9 +2045,23 @@ if the original name is not strictly lower case.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>verbose</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, more details will be included.</p></li>
 <li><p><strong>analyze</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the plan will run and metrics reported.</p></li>
+<li><p><strong>format</strong> – Output format for the plan. Defaults to
+<a class="reference internal" href="#datafusion.dataframe.ExplainFormat.INDENT" title="datafusion.dataframe.ExplainFormat.INDENT"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ExplainFormat.INDENT</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Show the plan in tree format:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplainFormat</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="n">ExplainFormat</span><span class="o">.</span><span class="n">TREE</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>Show plan with runtime metrics:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="n">analyze</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1898,6 +2127,35 @@ required, see the logical operations in <a class="reference internal" href="../f
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.find_qualified_columns">
+<span class="sig-name descname"><span class="pre">find_qualified_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.find_qualified_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Return fully qualified column expressions for the given names.</p>
+<p>This is a batch version of <a class="reference internal" href="#datafusion.dataframe.DataFrame.column" title="datafusion.dataframe.DataFrame.column"><code class="xref py py-meth docutils literal notranslate"><span class="pre">column()</span></code></a> — it resolves each
+unqualified name against the DataFrame’s schema and returns a list
+of qualified column expressions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>names</strong> – Unqualified column names to look up.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of fully qualified column expressions, one per name.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If any column is not found or is ambiguous.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Resolve multiple columns at once:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exprs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">find_qualified_columns</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="n">exprs</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2], &#39;c&#39;: [5, 6]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.head">
 <span class="sig-name descname"><span class="pre">head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.head" title="Link to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> with a limited number of rows.</p>
@@ -1913,17 +2171,36 @@ required, see the logical operations in <a class="reference internal" href="../f
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.intersect">
-<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.intersect" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.intersect" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the intersection of two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
 <p>The two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> must have exactly the same schema.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> – DataFrame to intersect with.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – DataFrame to intersect with.</p></li>
+<li><p><strong>distinct</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, duplicate rows are removed from the result.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame after intersection.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Find rows common to both DataFrames:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">40</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">intersect</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1], &#39;b&#39;: [10]}</span>
+</pre></div>
+</div>
+<p>Intersect with deduplication:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">intersect</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1], &#39;b&#39;: [10]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1951,7 +2228,12 @@ required, see the logical operations in <a class="reference internal" href="../f
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'inner'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'right'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'full'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'semi'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'anti'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'inner'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_on</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_on</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coalesce_duplicate_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span></dt>
 <dd><p>Join this <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> with another <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
-<p><cite>on</cite> has to be provided or both <cite>left_on</cite> and <cite>right_on</cite> in conjunction.</p>
+<p><code class="docutils literal notranslate"><span class="pre">on</span></code> has to be provided or both <code class="docutils literal notranslate"><span class="pre">left_on</span></code> and <code class="docutils literal notranslate"><span class="pre">right_on</span></code> in
+conjunction.</p>
+<p>When non-key columns share the same name in both DataFrames, use
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.col" title="datafusion.dataframe.DataFrame.col"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.col()</span></code></a> on each DataFrame <strong>before</strong> the join to
+obtain fully qualified column references that can disambiguate them.
+See <a class="reference internal" href="#datafusion.dataframe.DataFrame.join_on" title="datafusion.dataframe.DataFrame.join_on"><code class="xref py py-meth docutils literal notranslate"><span class="pre">join_on()</span></code></a> for an example.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1980,7 +2262,12 @@ that have identical names in the <code class="docutils literal notranslate"><spa
 <p>Join predicates must be <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> objects, typically
 built with <a class="reference internal" href="../index.html#datafusion.col" title="datafusion.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.col()</span></code></a>. On expressions are used to support
 in-equality predicates. Equality predicates are correctly optimized.</p>
+<p>Use <a class="reference internal" href="#datafusion.dataframe.DataFrame.col" title="datafusion.dataframe.DataFrame.col"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.col()</span></code></a> on each DataFrame <strong>before</strong> the join to
+obtain fully qualified column references. These qualified references
+can then be used in the join predicate and to disambiguate columns
+with the same name when selecting from the result.</p>
 <p class="rubric">Examples</p>
+<p>Join with unique column names:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">]})</span>
@@ -1988,6 +2275,18 @@ in-equality predicates. Equality predicates are correctly optimized.</p>
 <span class="gp">... </span>    <span class="n">right</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
 <span class="go">{&#39;a&#39;: [1, 2], &#39;x&#39;: [&#39;a&#39;, &#39;b&#39;], &#39;b&#39;: [1, 2], &#39;y&#39;: [&#39;c&#39;, &#39;d&#39;]}</span>
+</pre></div>
+</div>
+<p>Use <a class="reference internal" href="#datafusion.dataframe.DataFrame.col" title="datafusion.dataframe.DataFrame.col"><code class="xref py py-meth docutils literal notranslate"><span class="pre">col()</span></code></a> to disambiguate shared column names:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">joined</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">join_on</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">joined</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">),</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rval&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;id&#39;: [1, 2], &#39;val&#39;: [10, 20], &#39;rval&#39;: [30, 40]}</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
@@ -2187,6 +2486,31 @@ calling its <code class="docutils literal notranslate"><span class="pre">sort</s
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.sort_by">
+<span class="sig-name descname"><span class="pre">sort_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.sort_by" title="Link to this definition">¶</a></dt>
+<dd><p>Sort the DataFrame by column expressions in ascending order.</p>
+<p>This is a convenience method that sorts the DataFrame by the given
+expressions in ascending order with nulls last. For more control over
+sort direction and null ordering, use <a class="reference internal" href="#datafusion.dataframe.DataFrame.sort" title="datafusion.dataframe.DataFrame.sort"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort()</span></code></a> instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exprs</strong> – Expressions or column names to sort by.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after sorting.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Sort by a single column:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">sort_by</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.tail">
 <span class="sig-name descname"><span class="pre">tail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.tail" title="Link to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> with a limited number of rows.</p>
@@ -2308,24 +2632,54 @@ determined of the dataframe. This is done by collecting it.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.union_by_name">
+<span class="sig-name descname"><span class="pre">union_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.union_by_name" title="Link to this definition">¶</a></dt>
+<dd><p>Union two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> matching columns by name.</p>
+<p>Unlike <a class="reference internal" href="#datafusion.dataframe.DataFrame.union" title="datafusion.dataframe.DataFrame.union"><code class="xref py py-meth docutils literal notranslate"><span class="pre">union()</span></code></a> which matches columns by position, this method
+matches columns by their names, allowing DataFrames with different
+column orders to be combined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – DataFrame to union with.</p></li>
+<li><p><strong>distinct</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, duplicate rows are removed from the result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after union by name.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Combine DataFrames with different column orders:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">union_by_name</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2], &#39;b&#39;: [10, 20]}</span>
+</pre></div>
+</div>
+<p>Union by name with deduplication:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">union_by_name</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1], &#39;b&#39;: [10]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.union_distinct">
 <span class="sig-name descname"><span class="pre">union_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.union_distinct" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the distinct union of two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
-<p>The two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> must have exactly the same schema.
-Any duplicate rows are discarded.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> – DataFrame to union with.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame after union.</p>
-</dd>
-</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.dataframe.DataFrame.union" title="datafusion.dataframe.DataFrame.union"><code class="xref py py-meth docutils literal notranslate"><span class="pre">union()</span></code></a></p>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.unnest_columns">
-<span class="sig-name descname"><span class="pre">unnest_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.unnest_columns" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">unnest_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.unnest_columns" title="Link to this definition">¶</a></dt>
 <dd><p>Expand columns of arrays into a single row per array element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2333,12 +2687,59 @@ Any duplicate rows are discarded.</p>
 <li><p><strong>columns</strong> – Column names to perform unnest operation on.</p></li>
 <li><p><strong>preserve_nulls</strong> – If False, rows with null entries will not be
 returned.</p></li>
+<li><p><strong>recursions</strong> – Optional list of <code class="docutils literal notranslate"><span class="pre">(input_column,</span> <span class="pre">output_column,</span> <span class="pre">depth)</span></code>
+tuples that control how deeply nested columns are unnested. Any
+column not mentioned here is unnested with depth 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A DataFrame with the columns expanded.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Unnest an array column:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">unnest_columns</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3], &#39;b&#39;: [&#39;x&#39;, &#39;x&#39;, &#39;y&#39;]}</span>
+</pre></div>
+</div>
+<p>With explicit recursion depth:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">unnest_columns</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">recursions</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3], &#39;b&#39;: [&#39;x&#39;, &#39;x&#39;, &#39;y&#39;]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.window">
+<span class="sig-name descname"><span class="pre">window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.window" title="Link to this definition">¶</a></dt>
+<dd><p>Add window function columns to the DataFrame.</p>
+<p>Applies the given window function expressions and appends the results
+as new columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exprs</strong> – Window function expressions to evaluate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with new window function columns appended.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Add a row number within each group:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datafusion.functions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">f</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">f</span><span class="o">.</span><span class="n">row_number</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rn&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;rn&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">schema</span><span class="p">()</span><span class="o">.</span><span class="n">names</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2535,6 +2936,38 @@ See the individual implementation and documentation for details.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrameWriteOptions._raw_write_options">
 <span class="sig-name descname"><span class="pre">_raw_write_options</span></span><a class="headerlink" href="#datafusion.dataframe.DataFrameWriteOptions._raw_write_options" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">ExplainFormat</span></span><a class="headerlink" href="#datafusion.dataframe.ExplainFormat" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Output format for explain plans.</p>
+<p>Controls how the query plan is rendered in <a class="reference internal" href="#datafusion.dataframe.DataFrame.explain" title="datafusion.dataframe.DataFrame.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat.GRAPHVIZ">
+<span class="sig-name descname"><span class="pre">GRAPHVIZ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'graphviz'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainFormat.GRAPHVIZ" title="Link to this definition">¶</a></dt>
+<dd><p>Graphviz DOT format for graph rendering.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat.INDENT">
+<span class="sig-name descname"><span class="pre">INDENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'indent'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainFormat.INDENT" title="Link to this definition">¶</a></dt>
+<dd><p>Default indented text format.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat.PGJSON">
+<span class="sig-name descname"><span class="pre">PGJSON</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pgjson'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainFormat.PGJSON" title="Link to this definition">¶</a></dt>
+<dd><p>PostgreSQL-compatible JSON format for use with visualization tools.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat.TREE">
+<span class="sig-name descname"><span class="pre">TREE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tree'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainFormat.TREE" title="Link to this definition">¶</a></dt>
+<dd><p>Tree-style visual format with box-drawing characters.</p>
+</dd></dl>
 
 </dd></dl>
 

@@ -62,6 +62,7 @@ Classes
    datafusion.DataFrameWriteOptions
    datafusion.Database
    datafusion.ExecutionPlan
+   datafusion.ExplainFormat
    datafusion.Expr
    datafusion.InsertOp
    datafusion.LogicalPlan
@@ -657,6 +658,44 @@ Package Contents
 
 
       Returns the number of partitions in the physical plan.
+
+
+.. py:class:: ExplainFormat
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Output format for explain plans.
+
+   Controls how the query plan is rendered in :py:meth:`DataFrame.explain`.
+
+
+   .. py:attribute:: GRAPHVIZ
+      :value: 'graphviz'
+
+
+      Graphviz DOT format for graph rendering.
+
+
+   .. py:attribute:: INDENT
+      :value: 'indent'
+
+
+      Default indented text format.
+
+
+   .. py:attribute:: PGJSON
+      :value: 'pgjson'
+
+
+      PostgreSQL-compatible JSON format for use with visualization tools.
+
+
+   .. py:attribute:: TREE
+      :value: 'tree'
+
+
+      Tree-style visual format with box-drawing characters.
 
 
 .. py:class:: Expr(expr: datafusion._internal.expr.RawExpr)
