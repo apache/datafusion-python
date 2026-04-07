@@ -1459,7 +1459,6 @@ class GroupingSet:
                 include in the rollup.
 
         Examples:
-            >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
@@ -1496,7 +1495,6 @@ class GroupingSet:
             With a single column, ``cube`` behaves identically to
             :py:meth:`rollup`:
 
-            >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
@@ -1533,7 +1531,6 @@ class GroupingSet:
                 grouping set.
 
         Examples:
-            >>> import datafusion as dfn
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict(
