@@ -491,9 +491,50 @@ Module Contents
 
 
 
+   .. py:method:: deregister_object_store(schema: str, host: str | None = None) -> None
+
+      Remove an object store from the session.
+
+      :param schema: The data source schema (e.g. ``"s3://"``).
+      :param host: URL for the host (e.g. bucket name).
+
+
+
    .. py:method:: deregister_table(name: str) -> None
 
       Remove a table from the session.
+
+
+
+   .. py:method:: deregister_udaf(name: str) -> None
+
+      Remove a user-defined aggregate function from the session.
+
+      :param name: Name of the UDAF to deregister.
+
+
+
+   .. py:method:: deregister_udf(name: str) -> None
+
+      Remove a user-defined scalar function from the session.
+
+      :param name: Name of the UDF to deregister.
+
+
+
+   .. py:method:: deregister_udtf(name: str) -> None
+
+      Remove a user-defined table function from the session.
+
+      :param name: Name of the UDTF to deregister.
+
+
+
+   .. py:method:: deregister_udwf(name: str) -> None
+
+      Remove a user-defined window function from the session.
+
+      :param name: Name of the UDWF to deregister.
 
 
 
