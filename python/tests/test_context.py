@@ -553,9 +553,12 @@ def test_table_not_found(ctx):
 
 def test_session_start_time(ctx):
     import datetime
+    import re
 
     st = ctx.session_start_time()
     assert isinstance(st, str)
+    # Truncate nanoseconds to microseconds for Python 3.10 compat
+    st = re.sub(r"(\.\d{6})\d+", r"\1", st)
     dt = datetime.datetime.fromisoformat(st)
     assert dt.isoformat()
 
