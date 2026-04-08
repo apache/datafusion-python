@@ -31,6 +31,7 @@ from datafusion import (
     Table,
     column,
     literal,
+    udf,
 )
 
 
@@ -351,6 +352,125 @@ def test_deregister_table(ctx, database):
     assert public.names() == {"csv1", "csv2"}
 
 
+def test_deregister_udf():
+    ctx = SessionContext()
+
+    is_null = udf(
+        lambda x: x.is_null(),
+        [pa.float64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="my_is_null",
+    )
+    ctx.register_udf(is_null)
+
+    # Verify it works
+    df = ctx.from_pydict({"a": [1.0, None]})
+    ctx.register_table("t", df.into_view())
+    result = ctx.sql("SELECT my_is_null(a) FROM t").collect()
+    assert result[0].column(0) == pa.array([False, True])
+
+    # Deregister and verify it's gone
+    ctx.deregister_udf("my_is_null")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_is_null(a) FROM t").collect()
+
+
+def test_deregister_udaf():
+    import pyarrow.compute as pc
+
+    ctx = SessionContext()
+    from datafusion import Accumulator, udaf
+
+    class MySum(Accumulator):
+        def __init__(self):
+            self._sum = 0.0
+
+        def update(self, values: pa.Array) -> None:
+            self._sum += pc.sum(values).as_py()
+
+        def merge(self, states: list[pa.Array]) -> None:
+            self._sum += pc.sum(states[0]).as_py()
+
+        def state(self) -> list:
+            return [self._sum]
+
+        def evaluate(self) -> pa.Scalar:
+            return self._sum
+
+    my_sum = udaf(
+        MySum,
+        [pa.float64()],
+        pa.float64(),
+        [pa.float64()],
+        volatility="immutable",
+        name="my_sum",
+    )
+    ctx.register_udaf(my_sum)
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    ctx.register_table("t", df.into_view())
+
+    result = ctx.sql("SELECT my_sum(a) FROM t").collect()
+    assert result[0].column(0) == pa.array([6.0])
+
+    ctx.deregister_udaf("my_sum")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_sum(a) FROM t").collect()
+
+
+def test_deregister_udwf():
+    ctx = SessionContext()
+    from datafusion import udwf
+    from datafusion.user_defined import WindowEvaluator
+
+    class MyRowNumber(WindowEvaluator):
+        def __init__(self):
+            self._row = 0
+
+        def evaluate_all(self, values, num_rows):
+            return pa.array(list(range(1, num_rows + 1)), type=pa.uint64())
+
+    my_row_number = udwf(
+        MyRowNumber,
+        [pa.float64()],
+        pa.uint64(),
+        volatility="immutable",
+        name="my_row_number",
+    )
+    ctx.register_udwf(my_row_number)
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    ctx.register_table("t", df.into_view())
+
+    result = ctx.sql("SELECT my_row_number(a) OVER () FROM t").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3], type=pa.uint64())
+
+    ctx.deregister_udwf("my_row_number")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_row_number(a) OVER () FROM t").collect()
+
+
+def test_deregister_udtf():
+    import pyarrow.dataset as ds
+
+    ctx = SessionContext()
+    from datafusion import Table, udtf
+
+    class MyTable:
+        def __call__(self):
+            batch = pa.RecordBatch.from_pydict({"x": [1, 2, 3]})
+            return Table(ds.dataset([batch]))
+
+    my_table = udtf(MyTable(), "my_table")
+    ctx.register_udtf(my_table)
+
+    result = ctx.sql("SELECT * FROM my_table()").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+
+    ctx.deregister_udtf("my_table")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT * FROM my_table()").collect()
+
+
 def test_register_table_from_dataframe(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
     ctx.register_table("df_tbl", df)
@@ -551,6 +671,61 @@ def test_table_not_found(ctx):
         ctx.table(f"not-found-{uuid4()}")
 
 
+def test_session_start_time(ctx):
+    import datetime
+    import re
+
+    st = ctx.session_start_time()
+    assert isinstance(st, str)
+    # Truncate nanoseconds to microseconds for Python 3.10 compat
+    st = re.sub(r"(\.\d{6})\d+", r"\1", st)
+    dt = datetime.datetime.fromisoformat(st)
+    assert dt.isoformat()
+
+
+def test_enable_ident_normalization(ctx):
+    assert ctx.enable_ident_normalization() is True
+    ctx.sql("SET datafusion.sql_parser.enable_ident_normalization = false")
+    assert ctx.enable_ident_normalization() is False
+
+
+def test_parse_sql_expr(ctx):
+    from datafusion.common import DFSchema
+
+    schema = DFSchema.empty()
+    expr = ctx.parse_sql_expr("1 + 2", schema)
+    assert str(expr) == "Expr(Int64(1) + Int64(2))"
+
+
+def test_execute_logical_plan(ctx):
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    plan = df.logical_plan()
+    df2 = ctx.execute_logical_plan(plan)
+    result = df2.collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+
+
+def test_refresh_catalogs(ctx):
+    ctx.refresh_catalogs()
+
+
+def test_remove_optimizer_rule(ctx):
+    assert ctx.remove_optimizer_rule("push_down_filter") is True
+    assert ctx.remove_optimizer_rule("nonexistent_rule") is False
+
+
+def test_table_provider(ctx):
+    batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
+    ctx.register_record_batches("provider_test", [[batch]])
+    tbl = ctx.table_provider("provider_test")
+    assert tbl.schema == pa.schema([("x", pa.int64())])
+
+
+def test_table_provider_not_found(ctx):
+    with pytest.raises(KeyError):
+        ctx.table_provider("nonexistent_table")
+
+
 def test_read_json(ctx):
     path = pathlib.Path(__file__).parent.resolve()
 
@@ -666,6 +841,68 @@ def test_read_avro(ctx):
     path = pathlib.Path.cwd() / "testing/data/avro/alltypes_plain.avro"
     avro_df = ctx.read_avro(path=path)
     assert avro_df is not None
+
+
+def test_read_arrow(ctx, tmp_path):
+    # Write an Arrow IPC file, then read it back
+    table = pa.table({"a": [1, 2, 3], "b": ["x", "y", "z"]})
+    arrow_path = tmp_path / "test.arrow"
+    with pa.ipc.new_file(str(arrow_path), table.schema) as writer:
+        writer.write_table(table)
+
+    df = ctx.read_arrow(str(arrow_path))
+    result = df.collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+    assert result[0].column(1) == pa.array(["x", "y", "z"])
+
+    # Also verify pathlib.Path works
+    df = ctx.read_arrow(arrow_path)
+    result = df.collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+
+
+def test_read_empty(ctx):
+    df = ctx.read_empty()
+    result = df.collect()
+    assert len(result) == 1
+    assert result[0].num_columns == 0
+
+    df = ctx.empty_table()
+    result = df.collect()
+    assert len(result) == 1
+    assert result[0].num_columns == 0
+
+
+def test_register_arrow(ctx, tmp_path):
+    # Write an Arrow IPC file, then register and query it
+    table = pa.table({"x": [10, 20, 30]})
+    arrow_path = tmp_path / "test.arrow"
+    with pa.ipc.new_file(str(arrow_path), table.schema) as writer:
+        writer.write_table(table)
+
+    ctx.register_arrow("arrow_tbl", str(arrow_path))
+    result = ctx.sql("SELECT * FROM arrow_tbl").collect()
+    assert result[0].column(0) == pa.array([10, 20, 30])
+
+    # Also verify pathlib.Path works
+    ctx.register_arrow("arrow_tbl_path", arrow_path)
+    result = ctx.sql("SELECT * FROM arrow_tbl_path").collect()
+    assert result[0].column(0) == pa.array([10, 20, 30])
+
+
+def test_register_batch(ctx):
+    batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    ctx.register_batch("batch_tbl", batch)
+    result = ctx.sql("SELECT * FROM batch_tbl").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+    assert result[0].column(1) == pa.array([4, 5, 6])
+
+
+def test_register_batch_empty(ctx):
+    batch = pa.RecordBatch.from_pydict({"a": pa.array([], type=pa.int64())})
+    ctx.register_batch("empty_batch_tbl", batch)
+    result = ctx.sql("SELECT * FROM empty_batch_tbl").collect()
+    assert result[0].num_rows == 0
 
 
 def test_create_sql_options():

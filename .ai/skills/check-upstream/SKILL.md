@@ -109,6 +109,7 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 **Evaluated and not requiring separate Python exposure:**
 - `show_limit` — already covered by `DataFrame.show()`, which provides the same functionality with a simpler API
 - `with_param_values` — already covered by the `param_values` argument on `SessionContext.sql()`, which accomplishes the same thing more robustly
+- `union_by_name_distinct` — already covered by `DataFrame.union_by_name(distinct=True)`, which provides a more Pythonic API
 
 **How to check:**
 1. Fetch the upstream DataFrame documentation page listing all methods

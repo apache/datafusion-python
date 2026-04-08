@@ -28,7 +28,7 @@ use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
-use datafusion::common::{ScalarValue, TableReference, exec_err};
+use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -41,7 +41,7 @@ use datafusion::execution::context::{
 };
 use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
-use datafusion::execution::options::ReadOptions;
+use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
@@ -60,7 +60,7 @@ use datafusion_python_util::{
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
-use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -70,11 +70,13 @@ use crate::catalog::{
     PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
 };
 use crate::common::data_type::PyScalarValue;
+use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{
     PyDataFusionError, PyDataFusionResult, from_datafusion_error, py_datafusion_err,
 };
+use crate::expr::PyExpr;
 use crate::expr::sort_expr::PySortExpr;
 use crate::options::PyCsvReadOptions;
 use crate::physical_plan::PyExecutionPlan;
@@ -434,8 +436,22 @@ impl PySessionContext {
             &upstream_host
         };
         let url_string = format!("{scheme}{derived_host}");
-        let url = Url::parse(&url_string).unwrap();
+        let url = Url::parse(&url_string).map_err(|e| PyValueError::new_err(e.to_string()))?;
         self.ctx.runtime_env().register_object_store(&url, store);
+        Ok(())
+    }
+
+    /// Deregister an object store with the given url
+    #[pyo3(signature = (scheme, host=None))]
+    pub fn deregister_object_store(
+        &self,
+        scheme: &str,
+        host: Option<&str>,
+    ) -> PyDataFusionResult<()> {
+        let host = host.unwrap_or("");
+        let url_string = format!("{scheme}{host}");
+        let url = Url::parse(&url_string).map_err(|e| PyDataFusionError::Common(e.to_string()))?;
+        self.ctx.runtime_env().deregister_object_store(&url)?;
         Ok(())
     }
 
@@ -490,6 +506,10 @@ impl PySessionContext {
         let name = func.name.clone();
         let func = Arc::new(func);
         self.ctx.register_udtf(&name, func);
+    }
+
+    pub fn deregister_udtf(&self, name: &str) {
+        self.ctx.deregister_udtf(name);
     }
 
     #[pyo3(signature = (query, options=None, param_values=HashMap::default(), param_strings=HashMap::default()))]
@@ -956,6 +976,39 @@ impl PySessionContext {
         Ok(())
     }
 
+    #[pyo3(signature = (name, path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
+    pub fn register_arrow(
+        &self,
+        name: &str,
+        path: &str,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let mut options = ArrowReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_arrow(name, path, options);
+        wait_for_future(py, result)??;
+        Ok(())
+    }
+
+    pub fn register_batch(
+        &self,
+        name: &str,
+        batch: PyArrowType<RecordBatch>,
+    ) -> PyDataFusionResult<()> {
+        self.ctx.register_batch(name, batch.0)?;
+        Ok(())
+    }
+
     // Registers a PyArrow.Dataset
     pub fn register_dataset(
         &self,
@@ -975,14 +1028,26 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn deregister_udf(&self, name: &str) {
+        self.ctx.deregister_udf(name);
+    }
+
     pub fn register_udaf(&self, udaf: PyAggregateUDF) -> PyResult<()> {
         self.ctx.register_udaf(udaf.function);
         Ok(())
     }
 
+    pub fn deregister_udaf(&self, name: &str) {
+        self.ctx.deregister_udaf(name);
+    }
+
     pub fn register_udwf(&self, udwf: PyWindowUDF) -> PyResult<()> {
         self.ctx.register_udwf(udwf.function);
         Ok(())
+    }
+
+    pub fn deregister_udwf(&self, name: &str) {
+        self.ctx.deregister_udwf(name);
     }
 
     #[pyo3(signature = (name="datafusion"))]
@@ -1033,6 +1098,49 @@ impl PySessionContext {
 
     pub fn session_id(&self) -> String {
         self.ctx.session_id()
+    }
+
+    pub fn session_start_time(&self) -> String {
+        self.ctx.session_start_time().to_rfc3339()
+    }
+
+    pub fn enable_ident_normalization(&self) -> bool {
+        self.ctx.enable_ident_normalization()
+    }
+
+    pub fn parse_sql_expr(&self, sql: &str, schema: PyDFSchema) -> PyDataFusionResult<PyExpr> {
+        let df_schema: DFSchema = schema.into();
+        Ok(self.ctx.parse_sql_expr(sql, &df_schema)?.into())
+    }
+
+    pub fn execute_logical_plan(
+        &self,
+        plan: PyLogicalPlan,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let df = wait_for_future(
+            py,
+            self.ctx.execute_logical_plan(plan.plan.as_ref().clone()),
+        )??;
+        Ok(PyDataFrame::new(df))
+    }
+
+    pub fn refresh_catalogs(&self, py: Python) -> PyDataFusionResult<()> {
+        wait_for_future(py, self.ctx.refresh_catalogs())??;
+        Ok(())
+    }
+
+    pub fn remove_optimizer_rule(&self, name: &str) -> bool {
+        self.ctx.remove_optimizer_rule(name)
+    }
+
+    pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {
+        let provider = wait_for_future(py, self.ctx.table_provider(name))
+            // Outer error: runtime/async failure
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?
+            // Inner error: table not found
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?;
+        Ok(PyTable { table: provider })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1166,6 +1274,29 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future)??
         };
+        Ok(PyDataFrame::new(df))
+    }
+
+    #[pyo3(signature = (path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
+    pub fn read_arrow(
+        &self,
+        path: &str,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let mut options = ArrowReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.read_arrow(path, options);
+        let df = wait_for_future(py, result)??;
         Ok(PyDataFrame::new(df))
     }
 
