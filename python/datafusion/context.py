@@ -1164,6 +1164,42 @@ class SessionContext:
               20,
               30
             ]
+
+            Provide an explicit ``schema`` to override schema inference:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow(
+            ...         "arrow_schema",
+            ...         path,
+            ...         schema=pa.schema([("x", pa.int64())]),
+            ...     )
+            ...     ctx.sql("SELECT * FROM arrow_schema").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
+
+            Use ``file_extension`` to read files with a non-default extension:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.ipc")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow(
+            ...         "arrow_ipc", path, file_extension=".ipc"
+            ...     )
+            ...     ctx.sql("SELECT * FROM arrow_ipc").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
         """
         if table_partition_cols is None:
             table_partition_cols = []
@@ -1458,6 +1494,36 @@ class SessionContext:
             ...     with pa.ipc.new_file(path, table.schema) as writer:
             ...         writer.write_table(table)
             ...     df = ctx.read_arrow(path)
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+
+            Provide an explicit ``schema`` to override schema inference:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path, schema=pa.schema([("a", pa.int64())]))
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+
+            Use ``file_extension`` to read files with a non-default extension:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.ipc")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path, file_extension=".ipc")
             ...     df.collect()[0].column(0)
             <pyarrow.lib.Int64Array object at ...>
             [
