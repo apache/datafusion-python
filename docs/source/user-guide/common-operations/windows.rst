@@ -190,8 +190,6 @@ power in its ``"Type 1"`` using the :py:func:`datafusion.functions.avg` function
             Window(
                 window_frame=WindowFrame("rows", None, None),
                 partition_by=[col('"Type 1"')],
-                order_by=[col('"Speed"')],
-                null_treatment=NullTreatment.IGNORE_NULLS,
             )
         ).alias("Average Attack"),
     )
