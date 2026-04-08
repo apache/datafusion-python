@@ -1542,18 +1542,8 @@ class SessionContext:
     def read_empty(self) -> DataFrame:
         """Create an empty :py:class:`DataFrame` with no columns or rows.
 
-        This is an alias for :meth:`empty_table`.
-
-        Returns:
-            An empty DataFrame.
-
-        Examples:
-            >>> df = ctx.read_empty()
-            >>> result = df.collect()
-            >>> len(result)
-            1
-            >>> result[0].num_columns
-            0
+        See Also:
+            This is an alias for :meth:`empty_table`.
         """
         return self.empty_table()
 
