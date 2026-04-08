@@ -47,8 +47,12 @@ per-partition :py:class:`~datafusion.Metric` objects via
 When Are Metrics Available?
 ---------------------------
 
-Metrics are populated only **after** the DataFrame has been executed.
-Execution is triggered by any of the terminal operations:
+Some operators (for example ``DataSourceExec``) eagerly create a
+:py:class:`~datafusion.MetricsSet` when the physical plan is built, so
+:py:meth:`~datafusion.ExecutionPlan.metrics` may return a set even before any
+rows have been processed.  However, metric **values** such as ``output_rows``
+are only meaningful **after** the DataFrame has been executed via one of the
+terminal operations:
 
 - :py:meth:`~datafusion.DataFrame.collect`
 - :py:meth:`~datafusion.DataFrame.collect_partitioned`
@@ -57,8 +61,7 @@ Execution is triggered by any of the terminal operations:
 - :py:meth:`~datafusion.DataFrame.execute_stream_partitioned`
   (metrics are available once all partition streams have been fully consumed)
 
-Calling :py:meth:`~datafusion.ExecutionPlan.collect_metrics` before execution
-returns an empty list or entries whose values are ``None`` / ``0``.
+Before execution, metric values will be ``0`` or ``None``.
 
 .. note::
 

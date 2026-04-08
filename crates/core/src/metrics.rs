@@ -18,6 +18,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use chrono::{Datelike, Timelike};
 use datafusion::physical_plan::metrics::{Metric, MetricValue, MetricsSet, Timestamp};
 use pyo3::prelude::*;
 
@@ -88,18 +89,19 @@ impl PyMetric {
     ) -> PyResult<Option<Bound<'py, PyAny>>> {
         match ts.value() {
             Some(dt) => {
-                let nanos = dt.timestamp_nanos_opt().ok_or_else(|| {
-                    PyErr::new::<pyo3::exceptions::PyOverflowError, _>("timestamp out of range")
-                })?;
                 let datetime_mod = py.import("datetime")?;
                 let datetime_cls = datetime_mod.getattr("datetime")?;
                 let tz_utc = datetime_mod.getattr("timezone")?.getattr("utc")?;
-                let secs = nanos / 1_000_000_000;
-                let micros = (nanos % 1_000_000_000) / 1_000;
-                let result = datetime_cls.call_method1(
-                    "fromtimestamp",
-                    (secs as f64 + micros as f64 / 1_000_000.0, tz_utc),
-                )?;
+                let result = datetime_cls.call1((
+                    dt.year(),
+                    dt.month(),
+                    dt.day(),
+                    dt.hour(),
+                    dt.minute(),
+                    dt.second(),
+                    dt.timestamp_subsec_micros(),
+                    tz_utc,
+                ))?;
                 Ok(Some(result))
             }
             None => Ok(None),
@@ -138,6 +140,7 @@ impl PyMetric {
         }
     }
 
+    #[getter]
     fn value_as_datetime<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyAny>>> {
         match self.metric.value() {
             MetricValue::StartTimestamp(ts) | MetricValue::EndTimestamp(ts) => {

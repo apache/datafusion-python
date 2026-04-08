@@ -157,7 +157,7 @@ class ExecutionPlan:
         return self._raw_plan.to_proto()
 
     def metrics(self) -> MetricsSet | None:
-        """Return metrics for this plan node, or None if this node has no MetricsSet.
+        """Return metrics for this plan node, or None if this plan has no MetricsSet.
 
         Some operators (e.g. DataSourceExec) eagerly initialize a MetricsSet
         when the plan is created, so this may return a set even before
@@ -304,7 +304,7 @@ class Metric:
         Returns ``None`` for all non-timestamp metrics and for timestamp
         metrics whose value has not been set (e.g. before execution).
         """
-        return self._raw.value_as_datetime()
+        return self._raw.value_as_datetime
 
     @property
     def partition(self) -> int | None:
