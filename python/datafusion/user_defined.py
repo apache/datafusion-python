@@ -213,7 +213,6 @@ class ScalarUDF:
         Examples:
             Using ``udf`` as a function:
 
-            >>> import pyarrow as pa
             >>> import pyarrow.compute as pc
             >>> from datafusion.user_defined import ScalarUDF
             >>> def double_func(x):
@@ -480,7 +479,6 @@ class AggregateUDF:
         instance in which this UDAF is used.
 
         Examples:
-            >>> import pyarrow as pa
             >>> import pyarrow.compute as pc
             >>> from datafusion.user_defined import AggregateUDF, Accumulator, udaf
             >>> class Summarize(Accumulator):
@@ -874,7 +872,6 @@ class WindowUDF:
               When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
 
         Examples:
-            >>> import pyarrow as pa
             >>> from datafusion.user_defined import WindowUDF, WindowEvaluator, udwf
             >>> class BiasedNumbers(WindowEvaluator):
             ...     def __init__(self, start: int = 0):

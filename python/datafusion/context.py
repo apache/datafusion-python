@@ -903,6 +903,27 @@ class SessionContext:
         """Register a user defined table function."""
         self.ctx.register_udtf(func._udtf)
 
+    def register_batch(self, name: str, batch: pa.RecordBatch) -> None:
+        """Register a single :py:class:`pa.RecordBatch` as a table.
+
+        Args:
+            name: Name of the resultant table.
+            batch: Record batch to register as a table.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+            >>> ctx.register_batch("batch_tbl", batch)
+            >>> ctx.sql("SELECT * FROM batch_tbl").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+        """
+        self.ctx.register_batch(name, batch)
+
     def deregister_udtf(self, name: str) -> None:
         """Remove a user-defined table function from the session.
 
@@ -1106,6 +1127,86 @@ class SessionContext:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_avro(
+            name, str(path), schema, file_extension, table_partition_cols
+        )
+
+    def register_arrow(
+        self,
+        name: str,
+        path: str | pathlib.Path,
+        schema: pa.Schema | None = None,
+        file_extension: str = ".arrow",
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+    ) -> None:
+        """Register an Arrow IPC file as a table.
+
+        The registered table can be referenced from SQL statements executed
+        against this context.
+
+        Args:
+            name: Name of the table to register.
+            path: Path to the Arrow IPC file.
+            schema: The data source schema.
+            file_extension: File extension to select.
+            table_partition_cols: Partition columns.
+
+        Examples:
+            >>> import tempfile, os
+            >>> ctx = dfn.SessionContext()
+            >>> table = pa.table({"x": [10, 20, 30]})
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow("arrow_tbl", path)
+            ...     ctx.sql("SELECT * FROM arrow_tbl").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
+
+            Provide an explicit ``schema`` to override schema inference:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow(
+            ...         "arrow_schema",
+            ...         path,
+            ...         schema=pa.schema([("x", pa.int64())]),
+            ...     )
+            ...     ctx.sql("SELECT * FROM arrow_schema").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
+
+            Use ``file_extension`` to read files with a non-default extension:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.ipc")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     ctx.register_arrow(
+            ...         "arrow_ipc", path, file_extension=".ipc"
+            ...     )
+            ...     ctx.sql("SELECT * FROM arrow_ipc").collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              10,
+              20,
+              30
+            ]
+        """
+        if table_partition_cols is None:
+            table_partition_cols = []
+        table_partition_cols = _convert_table_partition_cols(table_partition_cols)
+        self.ctx.register_arrow(
             name, str(path), schema, file_extension, table_partition_cols
         )
 
@@ -1368,6 +1469,86 @@ class SessionContext:
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
+
+    def read_arrow(
+        self,
+        path: str | pathlib.Path,
+        schema: pa.Schema | None = None,
+        file_extension: str = ".arrow",
+        file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+    ) -> DataFrame:
+        """Create a :py:class:`DataFrame` for reading an Arrow IPC data source.
+
+        Args:
+            path: Path to the Arrow IPC file.
+            schema: The data source schema.
+            file_extension: File extension to select.
+            file_partition_cols: Partition columns.
+
+        Returns:
+            DataFrame representation of the read Arrow IPC file.
+
+        Examples:
+            >>> import tempfile, os
+            >>> ctx = dfn.SessionContext()
+            >>> table = pa.table({"a": [1, 2, 3]})
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path)
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+
+            Provide an explicit ``schema`` to override schema inference:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.arrow")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path, schema=pa.schema([("a", pa.int64())]))
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+
+            Use ``file_extension`` to read files with a non-default extension:
+
+            >>> with tempfile.TemporaryDirectory() as tmpdir:
+            ...     path = os.path.join(tmpdir, "data.ipc")
+            ...     with pa.ipc.new_file(path, table.schema) as writer:
+            ...         writer.write_table(table)
+            ...     df = ctx.read_arrow(path, file_extension=".ipc")
+            ...     df.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+        """
+        if file_partition_cols is None:
+            file_partition_cols = []
+        file_partition_cols = _convert_table_partition_cols(file_partition_cols)
+        return DataFrame(
+            self.ctx.read_arrow(str(path), schema, file_extension, file_partition_cols)
+        )
+
+    def read_empty(self) -> DataFrame:
+        """Create an empty :py:class:`DataFrame` with no columns or rows.
+
+        See Also:
+            This is an alias for :meth:`empty_table`.
+        """
+        return self.empty_table()
 
     def read_table(
         self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
