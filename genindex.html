@@ -1905,6 +1905,8 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion">enable_cell_expansion (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.enable_ident_normalization">enable_ident_normalization() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.enable_url_table">enable_url_table() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan.encode">encode() (datafusion.substrait.Plan method)</a>
@@ -1956,6 +1958,8 @@
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Execute">Execute (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.execute">execute() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.execute_logical_plan">execute_logical_plan() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream">execute_stream() (datafusion.dataframe.DataFrame method)</a>
 </li>
@@ -2896,8 +2900,12 @@
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetWriterOptions">(class in datafusion.dataframe)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.parse_sql_expr">parse_sql_expr() (datafusion.dataframe.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.parse_sql_expr">parse_sql_expr() (datafusion.context.SessionContext method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.parse_sql_expr">(datafusion.dataframe.DataFrame method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.partition_by">partition_by() (datafusion.Expr method)</a>
 
       <ul>
@@ -3054,6 +3062,8 @@
       </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.RecursiveQuery">RecursiveQuery (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.refresh_catalogs">refresh_catalogs() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regexp_count">regexp_count() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regexp_instr">regexp_instr() (in module datafusion.functions)</a>
@@ -3145,6 +3155,8 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_sxy">regr_sxy() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_syy">regr_syy() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.remove_optimizer_rule">remove_optimizer_rule() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Repartition">Repartition (in module datafusion.expr)</a>
 </li>
@@ -3297,6 +3309,8 @@
       <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.serialize_to_plan">serialize_to_plan() (datafusion.substrait.Serde static method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.session_id">session_id() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.session_start_time">session_start_time() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig">SessionConfig (class in datafusion)</a>
 
@@ -3540,6 +3554,8 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.table_partition_cols">(datafusion.options.CsvReadOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_provider">table_provider() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction">TableFunction (class in datafusion)</a>
 
       <ul>
@@ -3602,6 +3618,8 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_polars">to_polars() (datafusion.dataframe.DataFrame method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.to_proto">to_proto() (datafusion.ExecutionPlan method)</a>
 
       <ul>
@@ -3612,8 +3630,6 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.to_proto">(datafusion.plan.LogicalPlan method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch.to_pyarrow">to_pyarrow() (datafusion.record_batch.RecordBatch method)</a>
 
       <ul>

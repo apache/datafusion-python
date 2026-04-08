@@ -906,6 +906,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_ident_normalization">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.enable_ident_normalization()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_url_table">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -919,6 +928,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.execute()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute_logical_plan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.execute_logical_plan()
         </span>
        </code>
       </a>
@@ -987,6 +1005,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.parse_sql_expr">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.parse_sql_expr()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_arrow">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1045,6 +1072,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.read_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.refresh_catalogs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.refresh_catalogs()
         </span>
        </code>
       </a>
@@ -1230,10 +1266,28 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.remove_optimizer_rule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.remove_optimizer_rule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_id">
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.session_id()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_start_time">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.session_start_time()
         </span>
        </code>
       </a>
@@ -1270,6 +1324,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.table_exist()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.table_provider">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.table_provider()
         </span>
        </code>
       </a>
@@ -2010,6 +2073,18 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.enable_ident_normalization">
+<span class="sig-name descname"><span class="pre">enable_ident_normalization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.enable_ident_normalization" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether identifier normalization (lowercasing) is enabled.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">enable_ident_normalization</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.enable_url_table">
 <span class="sig-name descname"><span class="pre">enable_url_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.enable_url_table" title="Link to this definition">¶</a></dt>
 <dd><p>Control if local files can be queried as tables.</p>
@@ -2024,6 +2099,34 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.execute">
 <span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">datafusion.plan.ExecutionPlan</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../record_batch/index.html#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><span class="pre">datafusion.record_batch.RecordBatchStream</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <code class="docutils literal notranslate"><span class="pre">plan</span></code> and return the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.execute_logical_plan">
+<span class="sig-name descname"><span class="pre">execute_logical_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute_logical_plan" title="Link to this definition">¶</a></dt>
+<dd><p>Execute a <a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a> and return a DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>plan</strong> – Logical plan to execute.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame resulting from the execution.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plan</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">logical_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">execute_logical_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">&lt;pyarrow.lib.Int64Array object at ...&gt;</span>
+<span class="go">[</span>
+<span class="go">  1,</span>
+<span class="go">  2,</span>
+<span class="go">  3</span>
+<span class="go">]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2131,6 +2234,31 @@ a struct array.</p>
 <dd class="field-odd"><p>A <cite>SessionContext</cite> object that wraps the global <cite>SessionContextInternal</cite>.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.parse_sql_expr">
+<span class="sig-name descname"><span class="pre">parse_sql_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.common.DFSchema</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.parse_sql_expr" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a SQL expression string into a logical expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – SQL expression string.</p></li>
+<li><p><strong>schema</strong> – Schema to use for resolving column references.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed expression.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFSchema</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">schema</span> <span class="o">=</span> <span class="n">DFSchema</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">parse_sql_expr</span><span class="p">(</span><span class="s2">&quot;1 + 2&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="go">Expr(Int64(1) + Int64(2))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2316,6 +2444,17 @@ specified as a column name (<code class="docutils literal notranslate"><span cla
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.read_table">
 <span class="sig-name descname"><span class="pre">read_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">datafusion.catalog.Table</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><span class="pre">TableProviderExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.read_table" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from a table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.refresh_catalogs">
+<span class="sig-name descname"><span class="pre">refresh_catalogs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.refresh_catalogs" title="Link to this definition">¶</a></dt>
+<dd><p>Refresh catalog metadata.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">refresh_catalogs</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2674,9 +2813,41 @@ against this context.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.remove_optimizer_rule">
+<span class="sig-name descname"><span class="pre">remove_optimizer_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.remove_optimizer_rule" title="Link to this definition">¶</a></dt>
+<dd><p>Remove an optimizer rule by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the optimizer rule to remove.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if a rule with the given name was found and removed.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">remove_optimizer_rule</span><span class="p">(</span><span class="s2">&quot;nonexistent_rule&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.session_id">
 <span class="sig-name descname"><span class="pre">session_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.session_id" title="Link to this definition">¶</a></dt>
 <dd><p>Return an id that uniquely identifies this <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.session_start_time">
+<span class="sig-name descname"><span class="pre">session_start_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.session_start_time" title="Link to this definition">¶</a></dt>
+<dd><p>Return the session start time as an RFC 3339 formatted string.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">session_start_time</span><span class="p">()</span>  
+<span class="go">&#39;2026-01-01T12:34:56.123456789+00:00&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2738,6 +2909,33 @@ after parsing.</p></li>
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.table_exist">
 <span class="sig-name descname"><span class="pre">table_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.table_exist" title="Link to this definition">¶</a></dt>
 <dd><p>Return whether a table with the given name exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.table_provider">
+<span class="sig-name descname"><span class="pre">table_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">datafusion.catalog.Table</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.table_provider" title="Link to this definition">¶</a></dt>
+<dd><p>Return the <a class="reference internal" href="../catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> for the given table name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the table.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The table provider.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – If the table is not found.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_record_batches</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">,</span> <span class="p">[[</span><span class="n">batch</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tbl</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table_provider</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tbl</span><span class="o">.</span><span class="n">schema</span>
+<span class="go">x: int64</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

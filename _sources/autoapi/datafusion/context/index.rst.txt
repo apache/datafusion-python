@@ -544,6 +544,18 @@ Module Contents
 
 
 
+   .. py:method:: enable_ident_normalization() -> bool
+
+      Return whether identifier normalization (lowercasing) is enabled.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.enable_ident_normalization()
+      True
+
+
+
    .. py:method:: enable_url_table() -> SessionContext
 
       Control if local files can be queried as tables.
@@ -555,6 +567,30 @@ Module Contents
    .. py:method:: execute(plan: datafusion.plan.ExecutionPlan, partitions: int) -> datafusion.record_batch.RecordBatchStream
 
       Execute the ``plan`` and return the results.
+
+
+
+   .. py:method:: execute_logical_plan(plan: datafusion.plan.LogicalPlan) -> datafusion.dataframe.DataFrame
+
+      Execute a :py:class:`~datafusion.plan.LogicalPlan` and return a DataFrame.
+
+      :param plan: Logical plan to execute.
+
+      :returns: DataFrame resulting from the execution.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> plan = df.logical_plan()
+      >>> df2 = ctx.execute_logical_plan(plan)
+      >>> df2.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
 
 
 
@@ -634,6 +670,25 @@ Module Contents
       Retrieve the global context as a `SessionContext` wrapper.
 
       :returns: A `SessionContext` object that wraps the global `SessionContextInternal`.
+
+
+
+   .. py:method:: parse_sql_expr(sql: str, schema: datafusion.common.DFSchema) -> datafusion.expr.Expr
+
+      Parse a SQL expression string into a logical expression.
+
+      :param sql: SQL expression string.
+      :param schema: Schema to use for resolving column references.
+
+      :returns: Parsed expression.
+
+      .. rubric:: Examples
+
+      >>> from datafusion.common import DFSchema
+      >>> ctx = SessionContext()
+      >>> schema = DFSchema.empty()
+      >>> ctx.parse_sql_expr("1 + 2", schema=schema)
+      Expr(Int64(1) + Int64(2))
 
 
 
@@ -787,6 +842,17 @@ Module Contents
    .. py:method:: read_table(table: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> datafusion.dataframe.DataFrame
 
       Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
+
+
+
+   .. py:method:: refresh_catalogs() -> None
+
+      Refresh catalog metadata.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.refresh_catalogs()
 
 
 
@@ -1092,9 +1158,37 @@ Module Contents
 
 
 
+   .. py:method:: remove_optimizer_rule(name: str) -> bool
+
+      Remove an optimizer rule by name.
+
+      :param name: Name of the optimizer rule to remove.
+
+      :returns: True if a rule with the given name was found and removed.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.remove_optimizer_rule("nonexistent_rule")
+      False
+
+
+
    .. py:method:: session_id() -> str
 
       Return an id that uniquely identifies this :py:class:`SessionContext`.
+
+
+
+   .. py:method:: session_start_time() -> str
+
+      Return the session start time as an RFC 3339 formatted string.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.session_start_time()  # doctest: +SKIP
+      '2026-01-01T12:34:56.123456789+00:00'
 
 
 
@@ -1147,6 +1241,28 @@ Module Contents
    .. py:method:: table_exist(name: str) -> bool
 
       Return whether a table with the given name exists.
+
+
+
+   .. py:method:: table_provider(name: str) -> datafusion.catalog.Table
+
+      Return the :py:class:`~datafusion.catalog.Table` for the given table name.
+
+      :param name: Name of the table.
+
+      :returns: The table provider.
+
+      :raises KeyError: If the table is not found.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> ctx = SessionContext()
+      >>> batch = pa.RecordBatch.from_pydict({"x": [1, 2]})
+      >>> ctx.register_record_batches("my_table", [[batch]])
+      >>> tbl = ctx.table_provider("my_table")
+      >>> tbl.schema
+      x: int64
 
 
 
