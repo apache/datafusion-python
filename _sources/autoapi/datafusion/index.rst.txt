@@ -215,7 +215,6 @@ Package Contents
 
       .. rubric:: Examples
 
-      >>> import pyarrow as pa
       >>> import pyarrow.compute as pc
       >>> from datafusion.user_defined import AggregateUDF, Accumulator, udaf
       >>> class Summarize(Accumulator):
@@ -2231,7 +2230,6 @@ Package Contents
 
       Using ``udf`` as a function:
 
-      >>> import pyarrow as pa
       >>> import pyarrow.compute as pc
       >>> from datafusion.user_defined import ScalarUDF
       >>> def double_func(x):
@@ -2661,7 +2659,6 @@ Package Contents
 
       .. rubric:: Examples
 
-      >>> import pyarrow as pa
       >>> from datafusion.user_defined import WindowUDF, WindowEvaluator, udwf
       >>> class BiasedNumbers(WindowEvaluator):
       ...     def __init__(self, start: int = 0):

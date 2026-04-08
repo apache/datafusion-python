@@ -637,6 +637,67 @@ Module Contents
 
 
 
+   .. py:method:: read_arrow(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.arrow', file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> datafusion.dataframe.DataFrame
+
+      Create a :py:class:`DataFrame` for reading an Arrow IPC data source.
+
+      :param path: Path to the Arrow IPC file.
+      :param schema: The data source schema.
+      :param file_extension: File extension to select.
+      :param file_partition_cols: Partition columns.
+
+      :returns: DataFrame representation of the read Arrow IPC file.
+
+      .. rubric:: Examples
+
+      >>> import tempfile, os
+      >>> ctx = dfn.SessionContext()
+      >>> table = pa.table({"a": [1, 2, 3]})
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path)
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+      Provide an explicit ``schema`` to override schema inference:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path, schema=pa.schema([("a", pa.int64())]))
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+      Use ``file_extension`` to read files with a non-default extension:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.ipc")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path, file_extension=".ipc")
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+
+
    .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`DataFrame` for reading Avro data source.
@@ -671,6 +732,14 @@ Module Contents
                       combined with any of the other options in this method.
 
       :returns: DataFrame representation of the read CSV files
+
+
+
+   .. py:method:: read_empty() -> datafusion.dataframe.DataFrame
+
+      Create an empty :py:class:`DataFrame` with no columns or rows.
+
+      .. seealso:: This is an alias for :meth:`empty_table`.
 
 
 
@@ -721,6 +790,75 @@ Module Contents
 
 
 
+   .. py:method:: register_arrow(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.arrow', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> None
+
+      Register an Arrow IPC file as a table.
+
+      The registered table can be referenced from SQL statements executed
+      against this context.
+
+      :param name: Name of the table to register.
+      :param path: Path to the Arrow IPC file.
+      :param schema: The data source schema.
+      :param file_extension: File extension to select.
+      :param table_partition_cols: Partition columns.
+
+      .. rubric:: Examples
+
+      >>> import tempfile, os
+      >>> ctx = dfn.SessionContext()
+      >>> table = pa.table({"x": [10, 20, 30]})
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow("arrow_tbl", path)
+      ...     ctx.sql("SELECT * FROM arrow_tbl").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+      Provide an explicit ``schema`` to override schema inference:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow(
+      ...         "arrow_schema",
+      ...         path,
+      ...         schema=pa.schema([("x", pa.int64())]),
+      ...     )
+      ...     ctx.sql("SELECT * FROM arrow_schema").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+      Use ``file_extension`` to read files with a non-default extension:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.ipc")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow(
+      ...         "arrow_ipc", path, file_extension=".ipc"
+      ...     )
+      ...     ctx.sql("SELECT * FROM arrow_ipc").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+
+
    .. py:method:: register_avro(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.avro', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> None
 
       Register an Avro file as a table.
@@ -733,6 +871,28 @@ Module Contents
       :param schema: The data source schema.
       :param file_extension: File extension to select.
       :param table_partition_cols: Partition columns.
+
+
+
+   .. py:method:: register_batch(name: str, batch: pyarrow.RecordBatch) -> None
+
+      Register a single :py:class:`pa.RecordBatch` as a table.
+
+      :param name: Name of the resultant table.
+      :param batch: Record batch to register as a table.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+      >>> ctx.register_batch("batch_tbl", batch)
+      >>> ctx.sql("SELECT * FROM batch_tbl").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
 
 
 
