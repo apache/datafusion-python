@@ -911,6 +911,7 @@ class SessionContext:
             batch: Record batch to register as a table.
 
         Examples:
+            >>> ctx = dfn.SessionContext()
             >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
             >>> ctx.register_batch("batch_tbl", batch)
             >>> ctx.sql("SELECT * FROM batch_tbl").collect()[0].column(0)
@@ -1151,6 +1152,7 @@ class SessionContext:
 
         Examples:
             >>> import tempfile, os
+            >>> ctx = dfn.SessionContext()
             >>> table = pa.table({"x": [10, 20, 30]})
             >>> with tempfile.TemporaryDirectory() as tmpdir:
             ...     path = os.path.join(tmpdir, "data.arrow")
@@ -1488,6 +1490,7 @@ class SessionContext:
 
         Examples:
             >>> import tempfile, os
+            >>> ctx = dfn.SessionContext()
             >>> table = pa.table({"a": [1, 2, 3]})
             >>> with tempfile.TemporaryDirectory() as tmpdir:
             ...     path = os.path.join(tmpdir, "data.arrow")

@@ -34,4 +34,3 @@ def _doctest_namespace(doctest_namespace: dict) -> None:
     doctest_namespace["col"] = col
     doctest_namespace["lit"] = lit
     doctest_namespace["F"] = F
-    doctest_namespace["ctx"] = dfn.SessionContext()
