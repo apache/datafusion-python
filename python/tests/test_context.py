@@ -671,6 +671,61 @@ def test_table_not_found(ctx):
         ctx.table(f"not-found-{uuid4()}")
 
 
+def test_session_start_time(ctx):
+    import datetime
+    import re
+
+    st = ctx.session_start_time()
+    assert isinstance(st, str)
+    # Truncate nanoseconds to microseconds for Python 3.10 compat
+    st = re.sub(r"(\.\d{6})\d+", r"\1", st)
+    dt = datetime.datetime.fromisoformat(st)
+    assert dt.isoformat()
+
+
+def test_enable_ident_normalization(ctx):
+    assert ctx.enable_ident_normalization() is True
+    ctx.sql("SET datafusion.sql_parser.enable_ident_normalization = false")
+    assert ctx.enable_ident_normalization() is False
+
+
+def test_parse_sql_expr(ctx):
+    from datafusion.common import DFSchema
+
+    schema = DFSchema.empty()
+    expr = ctx.parse_sql_expr("1 + 2", schema)
+    assert str(expr) == "Expr(Int64(1) + Int64(2))"
+
+
+def test_execute_logical_plan(ctx):
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    plan = df.logical_plan()
+    df2 = ctx.execute_logical_plan(plan)
+    result = df2.collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+
+
+def test_refresh_catalogs(ctx):
+    ctx.refresh_catalogs()
+
+
+def test_remove_optimizer_rule(ctx):
+    assert ctx.remove_optimizer_rule("push_down_filter") is True
+    assert ctx.remove_optimizer_rule("nonexistent_rule") is False
+
+
+def test_table_provider(ctx):
+    batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
+    ctx.register_record_batches("provider_test", [[batch]])
+    tbl = ctx.table_provider("provider_test")
+    assert tbl.schema == pa.schema([("x", pa.int64())])
+
+
+def test_table_provider_not_found(ctx):
+    with pytest.raises(KeyError):
+        ctx.table_provider("nonexistent_table")
+
+
 def test_read_json(ctx):
     path = pathlib.Path(__file__).parent.resolve()
 

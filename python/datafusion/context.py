@@ -63,7 +63,8 @@ if TYPE_CHECKING:
     import polars as pl  # type: ignore[import]
 
     from datafusion.catalog import CatalogProvider, Table
-    from datafusion.expr import SortKey
+    from datafusion.common import DFSchema
+    from datafusion.expr import Expr, SortKey
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -1282,6 +1283,121 @@ class SessionContext:
     def session_id(self) -> str:
         """Return an id that uniquely identifies this :py:class:`SessionContext`."""
         return self.ctx.session_id()
+
+    def session_start_time(self) -> str:
+        """Return the session start time as an RFC 3339 formatted string.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.session_start_time()  # doctest: +SKIP
+            '2026-01-01T12:34:56.123456789+00:00'
+        """
+        return self.ctx.session_start_time()
+
+    def enable_ident_normalization(self) -> bool:
+        """Return whether identifier normalization (lowercasing) is enabled.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.enable_ident_normalization()
+            True
+        """
+        return self.ctx.enable_ident_normalization()
+
+    def parse_sql_expr(self, sql: str, schema: DFSchema) -> Expr:
+        """Parse a SQL expression string into a logical expression.
+
+        Args:
+            sql: SQL expression string.
+            schema: Schema to use for resolving column references.
+
+        Returns:
+            Parsed expression.
+
+        Examples:
+            >>> from datafusion.common import DFSchema
+            >>> ctx = SessionContext()
+            >>> schema = DFSchema.empty()
+            >>> ctx.parse_sql_expr("1 + 2", schema=schema)
+            Expr(Int64(1) + Int64(2))
+        """
+        from datafusion.expr import Expr  # noqa: PLC0415
+
+        return Expr(self.ctx.parse_sql_expr(sql, schema))
+
+    def execute_logical_plan(self, plan: LogicalPlan) -> DataFrame:
+        """Execute a :py:class:`~datafusion.plan.LogicalPlan` and return a DataFrame.
+
+        Args:
+            plan: Logical plan to execute.
+
+        Returns:
+            DataFrame resulting from the execution.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> plan = df.logical_plan()
+            >>> df2 = ctx.execute_logical_plan(plan)
+            >>> df2.collect()[0].column(0)
+            <pyarrow.lib.Int64Array object at ...>
+            [
+              1,
+              2,
+              3
+            ]
+        """
+        return DataFrame(self.ctx.execute_logical_plan(plan._raw_plan))
+
+    def refresh_catalogs(self) -> None:
+        """Refresh catalog metadata.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.refresh_catalogs()
+        """
+        self.ctx.refresh_catalogs()
+
+    def remove_optimizer_rule(self, name: str) -> bool:
+        """Remove an optimizer rule by name.
+
+        Args:
+            name: Name of the optimizer rule to remove.
+
+        Returns:
+            True if a rule with the given name was found and removed.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> ctx.remove_optimizer_rule("nonexistent_rule")
+            False
+        """
+        return self.ctx.remove_optimizer_rule(name)
+
+    def table_provider(self, name: str) -> Table:
+        """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
+
+        Args:
+            name: Name of the table.
+
+        Returns:
+            The table provider.
+
+        Raises:
+            KeyError: If the table is not found.
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> ctx = SessionContext()
+            >>> batch = pa.RecordBatch.from_pydict({"x": [1, 2]})
+            >>> ctx.register_record_batches("my_table", [[batch]])
+            >>> tbl = ctx.table_provider("my_table")
+            >>> tbl.schema
+            x: int64
+        """
+        from datafusion.catalog import Table  # noqa: PLC0415
+
+        return Table(self.ctx.table_provider(name))
 
     def read_json(
         self,
