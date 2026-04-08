@@ -31,6 +31,7 @@ from datafusion import (
     Table,
     column,
     literal,
+    udf,
 )
 
 
@@ -349,6 +350,125 @@ def test_deregister_table(ctx, database):
 
     ctx.deregister_table("csv")
     assert public.names() == {"csv1", "csv2"}
+
+
+def test_deregister_udf():
+    ctx = SessionContext()
+
+    is_null = udf(
+        lambda x: x.is_null(),
+        [pa.float64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="my_is_null",
+    )
+    ctx.register_udf(is_null)
+
+    # Verify it works
+    df = ctx.from_pydict({"a": [1.0, None]})
+    ctx.register_table("t", df.into_view())
+    result = ctx.sql("SELECT my_is_null(a) FROM t").collect()
+    assert result[0].column(0) == pa.array([False, True])
+
+    # Deregister and verify it's gone
+    ctx.deregister_udf("my_is_null")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_is_null(a) FROM t").collect()
+
+
+def test_deregister_udaf():
+    import pyarrow.compute as pc
+
+    ctx = SessionContext()
+    from datafusion import Accumulator, udaf
+
+    class MySum(Accumulator):
+        def __init__(self):
+            self._sum = 0.0
+
+        def update(self, values: pa.Array) -> None:
+            self._sum += pc.sum(values).as_py()
+
+        def merge(self, states: list[pa.Array]) -> None:
+            self._sum += pc.sum(states[0]).as_py()
+
+        def state(self) -> list:
+            return [self._sum]
+
+        def evaluate(self) -> pa.Scalar:
+            return self._sum
+
+    my_sum = udaf(
+        MySum,
+        [pa.float64()],
+        pa.float64(),
+        [pa.float64()],
+        volatility="immutable",
+        name="my_sum",
+    )
+    ctx.register_udaf(my_sum)
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    ctx.register_table("t", df.into_view())
+
+    result = ctx.sql("SELECT my_sum(a) FROM t").collect()
+    assert result[0].column(0) == pa.array([6.0])
+
+    ctx.deregister_udaf("my_sum")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_sum(a) FROM t").collect()
+
+
+def test_deregister_udwf():
+    ctx = SessionContext()
+    from datafusion import udwf
+    from datafusion.user_defined import WindowEvaluator
+
+    class MyRowNumber(WindowEvaluator):
+        def __init__(self):
+            self._row = 0
+
+        def evaluate_all(self, values, num_rows):
+            return pa.array(list(range(1, num_rows + 1)), type=pa.uint64())
+
+    my_row_number = udwf(
+        MyRowNumber,
+        [pa.float64()],
+        pa.uint64(),
+        volatility="immutable",
+        name="my_row_number",
+    )
+    ctx.register_udwf(my_row_number)
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    ctx.register_table("t", df.into_view())
+
+    result = ctx.sql("SELECT my_row_number(a) OVER () FROM t").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3], type=pa.uint64())
+
+    ctx.deregister_udwf("my_row_number")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT my_row_number(a) OVER () FROM t").collect()
+
+
+def test_deregister_udtf():
+    import pyarrow.dataset as ds
+
+    ctx = SessionContext()
+    from datafusion import Table, udtf
+
+    class MyTable:
+        def __call__(self):
+            batch = pa.RecordBatch.from_pydict({"x": [1, 2, 3]})
+            return Table(ds.dataset([batch]))
+
+    my_table = udtf(MyTable(), "my_table")
+    ctx.register_udtf(my_table)
+
+    result = ctx.sql("SELECT * FROM my_table()").collect()
+    assert result[0].column(0) == pa.array([1, 2, 3])
+
+    ctx.deregister_udtf("my_table")
+    with pytest.raises(ValueError):
+        ctx.sql("SELECT * FROM my_table()").collect()
 
 
 def test_register_table_from_dataframe(ctx):

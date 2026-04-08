@@ -568,6 +568,15 @@ class SessionContext:
         """
         self.ctx.register_object_store(schema, store, host)
 
+    def deregister_object_store(self, schema: str, host: str | None = None) -> None:
+        """Remove an object store from the session.
+
+        Args:
+            schema: The data source schema (e.g. ``"s3://"``).
+            host: URL for the host (e.g. bucket name).
+        """
+        self.ctx.deregister_object_store(schema, host)
+
     def register_listing_table(
         self,
         name: str,
@@ -914,6 +923,14 @@ class SessionContext:
         """
         self.ctx.register_batch(name, batch)
 
+    def deregister_udtf(self, name: str) -> None:
+        """Remove a user-defined table function from the session.
+
+        Args:
+            name: Name of the UDTF to deregister.
+        """
+        self.ctx.deregister_udtf(name)
+
     def register_record_batches(
         self, name: str, partitions: list[list[pa.RecordBatch]]
     ) -> None:
@@ -1168,13 +1185,37 @@ class SessionContext:
         """Register a user-defined function (UDF) with the context."""
         self.ctx.register_udf(udf._udf)
 
+    def deregister_udf(self, name: str) -> None:
+        """Remove a user-defined scalar function from the session.
+
+        Args:
+            name: Name of the UDF to deregister.
+        """
+        self.ctx.deregister_udf(name)
+
     def register_udaf(self, udaf: AggregateUDF) -> None:
         """Register a user-defined aggregation function (UDAF) with the context."""
         self.ctx.register_udaf(udaf._udaf)
 
+    def deregister_udaf(self, name: str) -> None:
+        """Remove a user-defined aggregate function from the session.
+
+        Args:
+            name: Name of the UDAF to deregister.
+        """
+        self.ctx.deregister_udaf(name)
+
     def register_udwf(self, udwf: WindowUDF) -> None:
         """Register a user-defined window function (UDWF) with the context."""
         self.ctx.register_udwf(udwf._udwf)
+
+    def deregister_udwf(self, name: str) -> None:
+        """Remove a user-defined window function from the session.
+
+        Args:
+            name: Name of the UDWF to deregister.
+        """
+        self.ctx.deregister_udwf(name)
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""

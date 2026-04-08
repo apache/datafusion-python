@@ -91,7 +91,6 @@ Explain = expr_internal.Explain
 Extension = expr_internal.Extension
 FileType = expr_internal.FileType
 Filter = expr_internal.Filter
-GroupingSet = expr_internal.GroupingSet
 Join = expr_internal.Join
 ILike = expr_internal.ILike
 InList = expr_internal.InList
@@ -1430,3 +1429,129 @@ class SortExpr:
 
 
 SortKey = Expr | SortExpr | str
+
+
+class GroupingSet:
+    """Factory for creating grouping set expressions.
+
+    Grouping sets control how
+    :py:meth:`~datafusion.dataframe.DataFrame.aggregate` groups rows.
+    Instead of a single ``GROUP BY``, they produce multiple grouping
+    levels in one pass — subtotals, cross-tabulations, or arbitrary
+    column subsets.
+
+    Use :py:func:`~datafusion.functions.grouping` in the aggregate list
+    to tell which columns are aggregated across in each result row.
+    """
+
+    @staticmethod
+    def rollup(*exprs: Expr | str) -> Expr:
+        """Create a ``ROLLUP`` grouping set for use with ``aggregate()``.
+
+        ``ROLLUP`` generates all prefixes of the given column list as
+        grouping sets. For example, ``rollup(a, b)`` produces grouping
+        sets ``(a, b)``, ``(a)``, and ``()`` (grand total).
+
+        This is equivalent to ``GROUP BY ROLLUP(a, b)`` in SQL.
+
+        Args:
+            *exprs: Column expressions or column name strings to
+                include in the rollup.
+
+        Examples:
+            >>> from datafusion.expr import GroupingSet
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+            >>> result = df.aggregate(
+            ...     [GroupingSet.rollup(dfn.col("a"))],
+            ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
+            ...      dfn.functions.grouping(dfn.col("a"))],
+            ... ).sort(dfn.col("a").sort(nulls_first=False))
+            >>> result.collect_column("s").to_pylist()
+            [30, 30, 60]
+
+        See Also:
+            :py:meth:`cube`, :py:meth:`grouping_sets`,
+            :py:func:`~datafusion.functions.grouping`
+        """
+        args = [_to_raw_expr(e) for e in exprs]
+        return Expr(expr_internal.GroupingSet.rollup(*args))
+
+    @staticmethod
+    def cube(*exprs: Expr | str) -> Expr:
+        """Create a ``CUBE`` grouping set for use with ``aggregate()``.
+
+        ``CUBE`` generates all possible subsets of the given column list
+        as grouping sets. For example, ``cube(a, b)`` produces grouping
+        sets ``(a, b)``, ``(a)``, ``(b)``, and ``()`` (grand total).
+
+        This is equivalent to ``GROUP BY CUBE(a, b)`` in SQL.
+
+        Args:
+            *exprs: Column expressions or column name strings to
+                include in the cube.
+
+        Examples:
+            With a single column, ``cube`` behaves identically to
+            :py:meth:`rollup`:
+
+            >>> from datafusion.expr import GroupingSet
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 20, 30]})
+            >>> result = df.aggregate(
+            ...     [GroupingSet.cube(dfn.col("a"))],
+            ...     [dfn.functions.sum(dfn.col("b")).alias("s"),
+            ...      dfn.functions.grouping(dfn.col("a"))],
+            ... ).sort(dfn.col("a").sort(nulls_first=False))
+            >>> result.collect_column("s").to_pylist()
+            [30, 30, 60]
+
+        See Also:
+            :py:meth:`rollup`, :py:meth:`grouping_sets`,
+            :py:func:`~datafusion.functions.grouping`
+        """
+        args = [_to_raw_expr(e) for e in exprs]
+        return Expr(expr_internal.GroupingSet.cube(*args))
+
+    @staticmethod
+    def grouping_sets(*expr_lists: list[Expr | str]) -> Expr:
+        """Create explicit grouping sets for use with ``aggregate()``.
+
+        Each argument is a list of column expressions or column name
+        strings representing one grouping set. For example,
+        ``grouping_sets([a], [b])`` groups by ``a`` alone and by ``b``
+        alone in a single query.
+
+        This is equivalent to ``GROUP BY GROUPING SETS ((a), (b))`` in
+        SQL.
+
+        Args:
+            *expr_lists: Each positional argument is a list of
+                expressions or column name strings forming one
+                grouping set.
+
+        Examples:
+            >>> from datafusion.expr import GroupingSet
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict(
+            ...     {"a": ["x", "x", "y"], "b": ["m", "n", "m"],
+            ...      "c": [1, 2, 3]})
+            >>> result = df.aggregate(
+            ...     [GroupingSet.grouping_sets(
+            ...         [dfn.col("a")], [dfn.col("b")])],
+            ...     [dfn.functions.sum(dfn.col("c")).alias("s"),
+            ...      dfn.functions.grouping(dfn.col("a")),
+            ...      dfn.functions.grouping(dfn.col("b"))],
+            ... ).sort(
+            ...     dfn.col("a").sort(nulls_first=False),
+            ...     dfn.col("b").sort(nulls_first=False),
+            ... )
+            >>> result.collect_column("s").to_pylist()
+            [3, 3, 4, 2]
+
+        See Also:
+            :py:meth:`rollup`, :py:meth:`cube`,
+            :py:func:`~datafusion.functions.grouping`
+        """
+        raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]
+        return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))

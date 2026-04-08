@@ -29,6 +29,7 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
+    ExplainFormat,
     InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
@@ -3569,3 +3570,263 @@ def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
     pa.parquet.write_table(table, path)
     df = ctx.read_parquet(path, file_sort_order=file_sort_order)
     assert df.collect()[0].column(0).to_pylist() == [1, 2]
+
+
+@pytest.mark.parametrize(
+    ("df1_data", "df2_data", "method", "kwargs", "expected_a", "expected_b"),
+    [
+        pytest.param(
+            {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
+            {"a": [1, 2], "b": [10, 20]},
+            "except_all",
+            {"distinct": True},
+            [3],
+            [30],
+            id="except_all(distinct=True): removes matching rows and deduplicates",
+        ),
+        pytest.param(
+            {"a": [1, 2, 3, 1], "b": [10, 20, 30, 10]},
+            {"a": [1, 4], "b": [10, 40]},
+            "intersect",
+            {"distinct": True},
+            [1],
+            [10],
+            id="intersect(distinct=True): keeps common rows and deduplicates",
+        ),
+        pytest.param(
+            {"a": [1], "b": [10]},
+            {"b": [20], "a": [2]},  # reversed column order tests matching by name
+            "union_by_name",
+            {},
+            [1, 2],
+            [10, 20],
+            id="union_by_name: matches columns by name not position",
+        ),
+    ],
+)
+def test_set_operations_distinct(
+    df1_data, df2_data, method, kwargs, expected_a, expected_b
+):
+    ctx = SessionContext()
+    df1 = ctx.from_pydict(df1_data)
+    df2 = ctx.from_pydict(df2_data)
+    result = (
+        getattr(df1, method)(df2, **kwargs)
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
+    )
+    assert result.column(0).to_pylist() == expected_a
+    assert result.column(1).to_pylist() == expected_b
+
+
+def test_union_by_name_distinct():
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+    df2 = ctx.from_pydict({"b": [10], "a": [1]})
+    result = df1.union_by_name(df2, distinct=True).collect()[0]
+    assert result.column(0).to_pylist() == [1]
+    assert result.column(1).to_pylist() == [10]
+
+
+def test_column_qualified():
+    """DataFrame.column() returns a qualified column expression."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+    expr = df.column("a")
+    result = df.select(expr).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+
+
+def test_column_not_found():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="not found"):
+        df.column("z")
+
+
+def test_column_ambiguous():
+    """After a join, duplicate column names that cannot be resolved raise an error."""
+    ctx = SessionContext()
+    left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+    right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
+    joined = left.join(right, on="id", how="inner")
+    with pytest.raises(Exception, match="not found"):
+        joined.column("val")
+
+
+def test_column_after_join():
+    """Qualified column works for non-ambiguous columns after a join."""
+    ctx = SessionContext()
+    left = ctx.from_pydict({"id": [1, 2], "x": [10, 20]})
+    right = ctx.from_pydict({"id": [1, 2], "y": [30, 40]})
+    joined = left.join(right, on="id", how="inner")
+    expr = joined.column("y")
+    result = joined.select("id", expr).sort("id").collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [30, 40]
+
+
+def test_col_join_disambiguate():
+    """Use col() to disambiguate and select columns after a join."""
+    ctx = SessionContext()
+    df1 = ctx.from_pydict({"foo": [1, 2, 3], "bar": [5, 6, 7]})
+    df2 = ctx.from_pydict({"foo": [1, 2, 3], "baz": [8, 9, 10]})
+    joined = df1.join_on(df2, df1.col("foo") == df2.col("foo"), how="inner")
+    result = (
+        joined.select(df1.col("foo"), df1.col("bar"), df2.col("baz"))
+        .sort(df1.col("foo"))
+        .to_pydict()
+    )
+    assert result["bar"] == [5, 6, 7]
+    assert result["baz"] == [8, 9, 10]
+
+
+def test_find_qualified_columns():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2], "b": [3, 4], "c": [5, 6]})
+    exprs = df.find_qualified_columns("a", "c")
+    assert len(exprs) == 2
+    result = df.select(*exprs).collect()[0]
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [5, 6]
+
+
+def test_find_qualified_columns_not_found():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="not found"):
+        df.find_qualified_columns("a", "z")
+
+
+def test_distinct_on():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})
+    result = (
+        df.distinct_on(
+            [column("a")],
+            [column("a"), column("b")],
+            [column("a").sort(ascending=True), column("b").sort(ascending=True)],
+        )
+        .sort(column("a").sort(ascending=True))
+        .collect()[0]
+    )
+    # Keeps the first row per group (smallest b per a)
+    assert result.column(0).to_pylist() == [1, 2]
+    assert result.column(1).to_pylist() == [10, 30]
+
+
+@pytest.mark.parametrize(
+    ("input_values", "expected"),
+    [
+        ([3, 1, 2], [1, 2, 3]),
+        ([1, 2, 3], [1, 2, 3]),
+        ([3, None, 1, 2], [1, 2, 3, None]),
+    ],
+)
+def test_sort_by(input_values, expected):
+    """sort_by always sorts ascending with nulls last regardless of input order."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": input_values})
+    result = df.sort_by(column("a")).collect()[0]
+    assert result.column(0).to_pylist() == expected
+
+
+@pytest.mark.parametrize(
+    ("fmt", "verbose", "analyze", "expected_substring"),
+    [
+        pytest.param(None, False, False, None, id="default format"),
+        pytest.param(ExplainFormat.TREE, False, False, "---", id="tree format"),
+        pytest.param(
+            ExplainFormat.INDENT, True, True, None, id="indent verbose+analyze"
+        ),
+        pytest.param(ExplainFormat.PGJSON, False, False, '"Plan"', id="pgjson format"),
+        pytest.param(
+            ExplainFormat.GRAPHVIZ, False, False, "digraph", id="graphviz format"
+        ),
+    ],
+)
+def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    df.explain(verbose=verbose, analyze=analyze, format=fmt)
+    captured = capsys.readouterr()
+    assert "plan_type" in captured.out
+    if expected_substring is not None:
+        assert expected_substring in captured.out
+
+
+@pytest.mark.parametrize(
+    ("window_exprs", "expected_columns"),
+    [
+        pytest.param(
+            lambda: [
+                f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
+                    "rn"
+                ),
+            ],
+            {"rn": [1, 2, 1]},
+            id="single window expression",
+        ),
+        pytest.param(
+            lambda: [
+                f.row_number(partition_by=[column("b")], order_by=[column("a")]).alias(
+                    "rn"
+                ),
+                f.rank(partition_by=[column("b")], order_by=[column("a")]).alias("rnk"),
+            ],
+            {"rn": [1, 2, 1], "rnk": [1, 2, 1]},
+            id="multiple window expressions",
+        ),
+    ],
+)
+def test_window(window_exprs, expected_columns):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+    result = (
+        df.window(*window_exprs()).sort(column("a").sort(ascending=True)).collect()[0]
+    )
+    for col_name, expected_values in expected_columns.items():
+        assert col_name in result.schema.names
+        assert (
+            result.column(result.schema.get_field_index(col_name)).to_pylist()
+            == expected_values
+        )
+
+
+@pytest.mark.parametrize(
+    ("input_data", "recursions", "expected_a"),
+    [
+        pytest.param(
+            {"a": [[1, 2], [3]], "b": ["x", "y"]},
+            None,
+            [1, 2, 3],
+            id="basic unnest without recursions",
+        ),
+        pytest.param(
+            {"a": [[1, 2], [3]], "b": ["x", "y"]},
+            [("a", "a", 1)],
+            [1, 2, 3],
+            id="explicit depth 1 matches basic unnest",
+        ),
+        pytest.param(
+            {"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]},
+            [("a", "a", 1)],
+            [[1, 2], [3], [4]],
+            id="depth 1 on nested lists keeps inner lists",
+        ),
+        pytest.param(
+            {"a": [[[1, 2], [3]], [[4]]], "b": ["x", "y"]},
+            [("a", "a", 2)],
+            [1, 2, 3, 4],
+            id="depth 2 fully flattens nested lists",
+        ),
+    ],
+)
+def test_unnest_columns_with_recursions(input_data, recursions, expected_a):
+    ctx = SessionContext()
+    df = ctx.from_pydict(input_data)
+    kwargs = {}
+    if recursions is not None:
+        kwargs["recursions"] = recursions
+    result = df.unnest_columns("a", **kwargs).collect()[0]
+    assert result.column(0).to_pylist() == expected_a

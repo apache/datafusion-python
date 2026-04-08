@@ -47,6 +47,7 @@ from .context import (
 from .dataframe import (
     DataFrame,
     DataFrameWriteOptions,
+    ExplainFormat,
     InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
@@ -82,6 +83,7 @@ __all__ = [
     "DataFrameWriteOptions",
     "Database",
     "ExecutionPlan",
+    "ExplainFormat",
     "Expr",
     "InsertOp",
     "LogicalPlan",

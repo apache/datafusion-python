@@ -134,3 +134,36 @@ In contrast to the above example, if we wish to get both columns:
 .. ipython:: python
 
     left.join(right, "id", how="inner", coalesce_duplicate_keys=False)
+
+Disambiguating Columns with ``DataFrame.col()``
+------------------------------------------------
+
+When both DataFrames contain non-key columns with the same name, you can use
+:py:meth:`~datafusion.dataframe.DataFrame.col` on each DataFrame **before** the
+join to create fully qualified column references. These references can then be
+used in the join predicate and when selecting from the result.
+
+This is especially useful with :py:meth:`~datafusion.dataframe.DataFrame.join_on`,
+which accepts expression-based predicates.
+
+.. ipython:: python
+
+    left = ctx.from_pydict(
+        {
+            "id": [1, 2, 3],
+            "val": [10, 20, 30],
+        }
+    )
+
+    right = ctx.from_pydict(
+        {
+            "id": [1, 2, 3],
+            "val": [40, 50, 60],
+        }
+    )
+
+    joined = left.join_on(
+        right, left.col("id") == right.col("id"), how="inner"
+    )
+
+    joined.select(left.col("id"), left.col("val"), right.col("val"))
