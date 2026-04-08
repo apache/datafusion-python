@@ -1147,8 +1147,8 @@ class SessionContext:
 
         Examples:
             >>> ctx = SessionContext()
-            >>> start_time = ctx.session_start_time()
-            >>> assert "T" in start_time  # RFC 3339 contains a 'T' separator
+            >>> ctx.session_start_time()  # doctest: +SKIP
+            '2026-01-01T12:34:56.123456789+00:00'
         """
         return self.ctx.session_start_time()
 
@@ -1157,7 +1157,8 @@ class SessionContext:
 
         Examples:
             >>> ctx = SessionContext()
-            >>> assert isinstance(ctx.enable_ident_normalization(), bool)
+            >>> ctx.enable_ident_normalization()
+            True
         """
         return self.ctx.enable_ident_normalization()
 
@@ -1175,8 +1176,8 @@ class SessionContext:
             >>> from datafusion.common import DFSchema
             >>> ctx = SessionContext()
             >>> schema = DFSchema.empty()
-            >>> expr = ctx.parse_sql_expr("1 + 2", schema)
-            >>> assert "Int64(1) + Int64(2)" in str(expr)
+            >>> ctx.parse_sql_expr("1 + 2", schema=schema)
+            Expr(Int64(1) + Int64(2))
         """
         from datafusion.expr import Expr  # noqa: PLC0415
 

@@ -60,7 +60,7 @@ use datafusion_python_util::{
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
-use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -1088,7 +1088,9 @@ impl PySessionContext {
 
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {
         let provider = wait_for_future(py, self.ctx.table_provider(name))
-            .map_err(|e| PyKeyError::new_err(e.to_string()))?
+            // Outer error: runtime/async failure
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?
+            // Inner error: table not found
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
         Ok(PyTable { table: provider })
     }

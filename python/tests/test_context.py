@@ -552,14 +552,18 @@ def test_table_not_found(ctx):
 
 
 def test_session_start_time(ctx):
+    import datetime
+
     st = ctx.session_start_time()
     assert isinstance(st, str)
-    assert "T" in st  # RFC 3339 format
+    dt = datetime.datetime.fromisoformat(st)
+    assert dt.isoformat()
 
 
 def test_enable_ident_normalization(ctx):
-    result = ctx.enable_ident_normalization()
-    assert isinstance(result, bool)
+    assert ctx.enable_ident_normalization() is True
+    ctx.sql("SET datafusion.sql_parser.enable_ident_normalization = false")
+    assert ctx.enable_ident_normalization() is False
 
 
 def test_parse_sql_expr(ctx):
@@ -567,7 +571,7 @@ def test_parse_sql_expr(ctx):
 
     schema = DFSchema.empty()
     expr = ctx.parse_sql_expr("1 + 2", schema)
-    assert "Int64(1) + Int64(2)" in str(expr)
+    assert str(expr) == "Expr(Int64(1) + Int64(2))"
 
 
 def test_execute_logical_plan(ctx):
@@ -583,6 +587,7 @@ def test_refresh_catalogs(ctx):
 
 
 def test_remove_optimizer_rule(ctx):
+    assert ctx.remove_optimizer_rule("push_down_filter") is True
     assert ctx.remove_optimizer_rule("nonexistent_rule") is False
 
 
