@@ -19,6 +19,7 @@ Classes
    datafusion.dataframe.Compression
    datafusion.dataframe.DataFrame
    datafusion.dataframe.DataFrameWriteOptions
+   datafusion.dataframe.ExplainFormat
    datafusion.dataframe.InsertOp
    datafusion.dataframe.ParquetColumnOptions
    datafusion.dataframe.ParquetWriterOptions
@@ -181,7 +182,21 @@ Module Contents
 
       Aggregates the rows of the current DataFrame.
 
-      :param group_by: Sequence of expressions or column names to group by.
+      By default each unique combination of the ``group_by`` columns
+      produces one row. To get multiple levels of subtotals in a
+      single pass, pass a
+      :py:class:`~datafusion.expr.GroupingSet` expression
+      (created via
+      :py:meth:`~datafusion.expr.GroupingSet.rollup`,
+      :py:meth:`~datafusion.expr.GroupingSet.cube`, or
+      :py:meth:`~datafusion.expr.GroupingSet.grouping_sets`)
+      as the ``group_by`` argument.  See the
+      :ref:`aggregation` user guide for detailed examples.
+
+      :param group_by: Sequence of expressions or column names to group
+                       by. A :py:class:`~datafusion.expr.GroupingSet`
+                       expression may be included to produce multiple grouping
+                       levels (rollup, cube, or explicit grouping sets).
       :param aggs: Sequence of expressions to aggregate.
 
       :returns: DataFrame after aggregation.
@@ -203,6 +218,14 @@ Module Contents
       :param mapping: Mapped with column as key and column dtype as value.
 
       :returns: DataFrame after casting columns
+
+
+
+   .. py:method:: col(name: str) -> datafusion.expr.Expr
+
+      Alias for :py:meth:`column`.
+
+      .. seealso:: :py:meth:`column`
 
 
 
@@ -235,6 +258,43 @@ Module Contents
 
                 List of list of :py:class:`RecordBatch` collected from the
                     DataFrame.
+
+
+
+   .. py:method:: column(name: str) -> datafusion.expr.Expr
+
+      Return a fully qualified column expression for ``name``.
+
+      Resolves an unqualified column name against this DataFrame's schema
+      and returns an :py:class:`Expr` whose underlying column reference
+      includes the table qualifier. This is especially useful after joins,
+      where the same column name may appear in multiple relations.
+
+      :param name: Unqualified column name to look up.
+
+      :returns: A fully qualified column expression.
+
+      :raises Exception: If the column is not found or is ambiguous (exists in
+          multiple relations).
+
+      .. rubric:: Examples
+
+      Resolve a column from a simple DataFrame:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+      >>> expr = df.column("a")
+      >>> df.select(expr).to_pydict()
+      {'a': [1, 2]}
+
+      Resolve qualified columns after a join:
+
+      >>> left = ctx.from_pydict({"id": [1, 2], "x": [10, 20]})
+      >>> right = ctx.from_pydict({"id": [1, 2], "y": [30, 40]})
+      >>> joined = left.join(right, on="id", how="inner")
+      >>> expr = joined.column("y")
+      >>> joined.select("id", expr).sort("id").to_pydict()
+      {'id': [1, 2], 'y': [30, 40]}
 
 
 
@@ -281,35 +341,92 @@ Module Contents
 
 
 
+   .. py:method:: distinct_on(on_expr: list[datafusion.expr.Expr], select_expr: list[datafusion.expr.Expr], sort_expr: list[datafusion.expr.SortKey] | None = None) -> DataFrame
+
+      Deduplicate rows based on specific columns.
+
+      Returns a new DataFrame with one row per unique combination of the
+      ``on_expr`` columns, keeping the first row per group as determined by
+      ``sort_expr``.
+
+      :param on_expr: Expressions that determine uniqueness.
+      :param select_expr: Expressions to include in the output.
+      :param sort_expr: Optional sort expressions to determine which row to keep.
+
+      :returns: DataFrame after deduplication.
+
+      .. rubric:: Examples
+
+      Keep the row with the smallest ``b`` for each unique ``a``:
+
+      >>> from datafusion import col
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 1, 2, 2], "b": [10, 20, 30, 40]})
+      >>> df.distinct_on(
+      ...     [col("a")],
+      ...     [col("a"), col("b")],
+      ...     [col("a").sort(ascending=True), col("b").sort(ascending=True)],
+      ... ).sort("a").to_pydict()
+      {'a': [1, 2], 'b': [10, 30]}
+
+
+
    .. py:method:: drop(*columns: str) -> DataFrame
 
       Drop arbitrary amount of columns.
 
-      Column names are case-sensitive and do not require double quotes like
-      other operations such as `select`. Leading and trailing double quotes
-      are allowed and will be automatically stripped if present.
+      Column names are case-sensitive and require double quotes to be dropped
+      if the original name is not strictly lower case.
 
-      :param columns: Column names to drop from the dataframe. Both ``column_name``
-                      and ``"column_name"`` are accepted.
+      :param columns: Column names to drop from the dataframe.
 
       :returns: DataFrame with those columns removed in the projection.
 
-      Example Usage::
+      .. rubric:: Examples
 
-          df.drop('ID_For_Students')      # Works
-          df.drop('"ID_For_Students"')    # Also works (quotes stripped)
+      To drop a lower-cased column 'a'
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4]})
+      >>> df.drop("a").schema().names
+      ['b']
+
+      Or to drop an upper-cased column 'A'
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"A": [1, 2], "b": [3, 4]})
+      >>> df.drop('"A"').schema().names
+      ['b']
 
 
 
-   .. py:method:: except_all(other: DataFrame) -> DataFrame
+   .. py:method:: except_all(other: DataFrame, distinct: bool = False) -> DataFrame
 
-      Calculate the exception of two :py:class:`DataFrame`.
+      Calculate the set difference of two :py:class:`DataFrame`.
+
+      Returns rows that are in this DataFrame but not in ``other``.
 
       The two :py:class:`DataFrame` must have exactly the same schema.
 
       :param other: DataFrame to calculate exception with.
+      :param distinct: If ``True``, duplicate rows are removed from the result.
 
-      :returns: DataFrame after exception.
+      :returns: DataFrame after set difference.
+
+      .. rubric:: Examples
+
+      Remove rows present in ``df2``:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+      >>> df2 = ctx.from_pydict({"a": [1, 2], "b": [10, 20]})
+      >>> df1.except_all(df2).sort("a").to_pydict()
+      {'a': [3], 'b': [30]}
+
+      Remove rows present in ``df2`` and deduplicate:
+
+      >>> df1.except_all(df2, distinct=True).sort("a").to_pydict()
+      {'a': [3], 'b': [30]}
 
 
 
@@ -337,7 +454,7 @@ Module Contents
 
 
 
-   .. py:method:: explain(verbose: bool = False, analyze: bool = False) -> None
+   .. py:method:: explain(verbose: bool = False, analyze: bool = False, format: ExplainFormat | None = None) -> None
 
       Print an explanation of the DataFrame's plan so far.
 
@@ -345,6 +462,21 @@ Module Contents
 
       :param verbose: If ``True``, more details will be included.
       :param analyze: If ``True``, the plan will run and metrics reported.
+      :param format: Output format for the plan. Defaults to
+                     :py:attr:`ExplainFormat.INDENT`.
+
+      .. rubric:: Examples
+
+      Show the plan in tree format:
+
+      >>> from datafusion import ExplainFormat
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.explain(format=ExplainFormat.TREE)  # doctest: +SKIP
+
+      Show plan with runtime metrics:
+
+      >>> df.explain(analyze=True)  # doctest: +SKIP
 
 
 
@@ -359,9 +491,12 @@ Module Contents
 
       .. rubric:: Examples
 
-      >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
-      >>> # Fill nulls in specific string columns
-      >>> df = df.fill_null("missing", subset=["name", "category"])
+      >>> from datafusion import SessionContext, col
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, None, 3], "b": [None, 5, 6]})
+      >>> filled = df.fill_null(0)
+      >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
+      [0, 1, 3]
 
       .. rubric:: Notes
 
@@ -383,15 +518,44 @@ Module Contents
       that will be parsed against the DataFrame schema. If more complex logic is
       required, see the logical operations in :py:mod:`~datafusion.functions`.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.filter(col("a") > lit(1))
-          df.filter("a > 1")
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.filter(col("a") > lit(1)).to_pydict()
+      {'a': [2, 3]}
+      >>> df.filter("a > 1").to_pydict()
+      {'a': [2, 3]}
 
       :param predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
 
       :returns: DataFrame after filtering.
+
+
+
+   .. py:method:: find_qualified_columns(*names: str) -> list[datafusion.expr.Expr]
+
+      Return fully qualified column expressions for the given names.
+
+      This is a batch version of :py:meth:`column` — it resolves each
+      unqualified name against the DataFrame's schema and returns a list
+      of qualified column expressions.
+
+      :param names: Unqualified column names to look up.
+
+      :returns: List of fully qualified column expressions, one per name.
+
+      :raises Exception: If any column is not found or is ambiguous.
+
+      .. rubric:: Examples
+
+      Resolve multiple columns at once:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2], "b": [3, 4], "c": [5, 6]})
+      >>> exprs = df.find_qualified_columns("a", "c")
+      >>> df.select(*exprs).to_pydict()
+      {'a': [1, 2], 'c': [5, 6]}
 
 
 
@@ -405,15 +569,33 @@ Module Contents
 
 
 
-   .. py:method:: intersect(other: DataFrame) -> DataFrame
+   .. py:method:: intersect(other: DataFrame, distinct: bool = False) -> DataFrame
 
       Calculate the intersection of two :py:class:`DataFrame`.
 
       The two :py:class:`DataFrame` must have exactly the same schema.
 
       :param other: DataFrame to intersect with.
+      :param distinct: If ``True``, duplicate rows are removed from the result.
 
       :returns: DataFrame after intersection.
+
+      .. rubric:: Examples
+
+      Find rows common to both DataFrames:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df1 = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+      >>> df2 = ctx.from_pydict({"a": [1, 4], "b": [10, 40]})
+      >>> df1.intersect(df2).to_pydict()
+      {'a': [1], 'b': [10]}
+
+      Intersect with deduplication:
+
+      >>> df1 = ctx.from_pydict({"a": [1, 1, 2], "b": [10, 10, 20]})
+      >>> df2 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+      >>> df1.intersect(df2, distinct=True).to_pydict()
+      {'a': [1], 'b': [10]}
 
 
 
@@ -428,8 +610,9 @@ Module Contents
       >>> df = ctx.sql("SELECT 1 AS value")
       >>> view = df.into_view()
       >>> ctx.register_table("values_view", view)
-      >>> df.collect()  # The DataFrame is still usable
-      >>> ctx.sql("SELECT value FROM values_view").collect()
+      >>> result = ctx.sql("SELECT value FROM values_view").collect()
+      >>> result[0].column("value").to_pylist()
+      [1]
 
 
 
@@ -439,7 +622,13 @@ Module Contents
 
       Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-      `on` has to be provided or both `left_on` and `right_on` in conjunction.
+      ``on`` has to be provided or both ``left_on`` and ``right_on`` in
+      conjunction.
+
+      When non-key columns share the same name in both DataFrames, use
+      :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+      obtain fully qualified column references that can disambiguate them.
+      See :py:meth:`join_on` for an example.
 
       :param right: Other DataFrame to join with.
       :param on: Column names to join on in both dataframes.
@@ -464,10 +653,34 @@ Module Contents
       built with :func:`datafusion.col`. On expressions are used to support
       in-equality predicates. Equality predicates are correctly optimized.
 
-      Example::
+      Use :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+      obtain fully qualified column references. These qualified references
+      can then be used in the join predicate and to disambiguate columns
+      with the same name when selecting from the result.
 
-          from datafusion import col
-          df.join_on(other_df, col("id") == col("other_id"))
+      .. rubric:: Examples
+
+      Join with unique column names:
+
+      >>> ctx = dfn.SessionContext()
+      >>> left = ctx.from_pydict({"a": [1, 2], "x": ["a", "b"]})
+      >>> right = ctx.from_pydict({"b": [1, 2], "y": ["c", "d"]})
+      >>> left.join_on(
+      ...     right, col("a") == col("b")
+      ... ).sort(col("x")).to_pydict()
+      {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
+
+      Use :py:meth:`col` to disambiguate shared column names:
+
+      >>> left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+      >>> right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
+      >>> joined = left.join_on(
+      ...     right, left.col("id") == right.col("id"), how="inner"
+      ... )
+      >>> joined.select(
+      ...     left.col("id"), left.col("val"), right.col("val").alias("rval")
+      ... ).sort(left.col("id")).to_pydict()
+      {'id': [1, 2], 'val': [10, 20], 'rval': [30, 40]}
 
       :param right: Other DataFrame to join with.
       :param on_exprs: single or multiple (in)-equality predicates.
@@ -511,14 +724,13 @@ Module Contents
 
       The expression is created and processed against the current schema.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.parse_sql_expr("a > 1")
-
-          should produce:
-
-          col("a") > lit(1)
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> expr = df.parse_sql_expr("a > 1")
+      >>> df.filter(expr).to_pydict()
+      {'a': [2, 3]}
 
       :param expr: Expression string to be converted to datafusion expression
 
@@ -581,14 +793,6 @@ Module Contents
 
 
 
-   .. py:method:: select_columns(*args: str) -> DataFrame
-
-      Filter the DataFrame by columns.
-
-      :returns: DataFrame only containing the specified columns.
-
-
-
    .. py:method:: select_exprs(*args: str) -> DataFrame
 
       Project arbitrary list of expression strings into a new DataFrame.
@@ -618,6 +822,29 @@ Module Contents
       :param exprs: Sort expressions or column names, applied in order.
 
       :returns: DataFrame after sorting.
+
+
+
+   .. py:method:: sort_by(*exprs: datafusion.expr.Expr | str) -> DataFrame
+
+      Sort the DataFrame by column expressions in ascending order.
+
+      This is a convenience method that sorts the DataFrame by the given
+      expressions in ascending order with nulls last. For more control over
+      sort direction and null ordering, use :py:meth:`sort` instead.
+
+      :param exprs: Expressions or column names to sort by.
+
+      :returns: DataFrame after sorting.
+
+      .. rubric:: Examples
+
+      Sort by a single column:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [3, 1, 2]})
+      >>> df.sort_by("a").to_pydict()
+      {'a': [1, 2, 3]}
 
 
 
@@ -678,15 +905,18 @@ Module Contents
 
       Apply a function to the current DataFrame which returns another DataFrame.
 
-      This is useful for chaining together multiple functions. For example::
+      This is useful for chaining together multiple functions.
 
-          def add_3(df: DataFrame) -> DataFrame:
-              return df.with_column("modified", lit(3))
+      .. rubric:: Examples
 
-          def within_limit(df: DataFrame, limit: int) -> DataFrame:
-              return df.filter(col("a") < lit(limit)).distinct()
-
-          df = df.transform(modify_df).transform(within_limit, 4)
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> def add_3(df):
+      ...     return df.with_column("modified", dfn.lit(3))
+      >>> def within_limit(df: DataFrame, limit: int) -> DataFrame:
+      ...     return df.filter(col("a") < lit(limit)).distinct()
+      >>> df.transform(add_3).transform(within_limit, 4).sort("a").to_pydict()
+      {'a': [1, 2, 3], 'modified': [3, 3, 3]}
 
       :param func: A callable function that takes a DataFrame as it's first argument
       :param args: Zero or more arguments to pass to `func`
@@ -709,28 +939,101 @@ Module Contents
 
 
 
+   .. py:method:: union_by_name(other: DataFrame, distinct: bool = False) -> DataFrame
+
+      Union two :py:class:`DataFrame` matching columns by name.
+
+      Unlike :py:meth:`union` which matches columns by position, this method
+      matches columns by their names, allowing DataFrames with different
+      column orders to be combined.
+
+      :param other: DataFrame to union with.
+      :param distinct: If ``True``, duplicate rows are removed from the result.
+
+      :returns: DataFrame after union by name.
+
+      .. rubric:: Examples
+
+      Combine DataFrames with different column orders:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df1 = ctx.from_pydict({"a": [1], "b": [10]})
+      >>> df2 = ctx.from_pydict({"b": [20], "a": [2]})
+      >>> df1.union_by_name(df2).sort("a").to_pydict()
+      {'a': [1, 2], 'b': [10, 20]}
+
+      Union by name with deduplication:
+
+      >>> df1 = ctx.from_pydict({"a": [1, 1], "b": [10, 10]})
+      >>> df2 = ctx.from_pydict({"b": [10], "a": [1]})
+      >>> df1.union_by_name(df2, distinct=True).to_pydict()
+      {'a': [1], 'b': [10]}
+
+
+
    .. py:method:: union_distinct(other: DataFrame) -> DataFrame
 
       Calculate the distinct union of two :py:class:`DataFrame`.
 
-      The two :py:class:`DataFrame` must have exactly the same schema.
-      Any duplicate rows are discarded.
-
-      :param other: DataFrame to union with.
-
-      :returns: DataFrame after union.
+      .. seealso:: :py:meth:`union`
 
 
 
-   .. py:method:: unnest_columns(*columns: str, preserve_nulls: bool = True) -> DataFrame
+   .. py:method:: unnest_columns(*columns: str, preserve_nulls: bool = True, recursions: list[tuple[str, str, int]] | None = None) -> DataFrame
 
       Expand columns of arrays into a single row per array element.
 
       :param columns: Column names to perform unnest operation on.
       :param preserve_nulls: If False, rows with null entries will not be
                              returned.
+      :param recursions: Optional list of ``(input_column, output_column, depth)``
+                         tuples that control how deeply nested columns are unnested. Any
+                         column not mentioned here is unnested with depth 1.
 
       :returns: A DataFrame with the columns expanded.
+
+      .. rubric:: Examples
+
+      Unnest an array column:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [[1, 2], [3]], "b": ["x", "y"]})
+      >>> df.unnest_columns("a").to_pydict()
+      {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
+
+      With explicit recursion depth:
+
+      >>> df.unnest_columns("a", recursions=[("a", "a", 1)]).to_pydict()
+      {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
+
+
+
+   .. py:method:: window(*exprs: datafusion.expr.Expr) -> DataFrame
+
+      Add window function columns to the DataFrame.
+
+      Applies the given window function expressions and appends the results
+      as new columns.
+
+      :param exprs: Window function expressions to evaluate.
+
+      :returns: DataFrame with new window function columns appended.
+
+      .. rubric:: Examples
+
+      Add a row number within each group:
+
+      >>> import datafusion.functions as f
+      >>> from datafusion import col
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": ["x", "x", "y"]})
+      >>> df = df.window(
+      ...     f.row_number(
+      ...         partition_by=[col("b")], order_by=[col("a")]
+      ...     ).alias("rn")
+      ... )
+      >>> "rn" in df.schema().names
+      True
 
 
 
@@ -742,10 +1045,12 @@ Module Contents
       :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
       string that will be parsed against the DataFrame schema.
 
-      Example::
+      .. rubric:: Examples
 
-          from datafusion import col, lit
-          df.with_column("b", col("a") + lit(1))
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2]})
+      >>> df.with_column("b", col("a") + lit(10)).to_pydict()
+      {'a': [1, 2], 'b': [11, 12]}
 
       :param name: Name of the column to add.
       :param expr: Expression to compute the column.
@@ -889,6 +1194,44 @@ Module Contents
 
 
    .. py:attribute:: _raw_write_options
+
+
+.. py:class:: ExplainFormat
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Output format for explain plans.
+
+   Controls how the query plan is rendered in :py:meth:`DataFrame.explain`.
+
+
+   .. py:attribute:: GRAPHVIZ
+      :value: 'graphviz'
+
+
+      Graphviz DOT format for graph rendering.
+
+
+   .. py:attribute:: INDENT
+      :value: 'indent'
+
+
+      Default indented text format.
+
+
+   .. py:attribute:: PGJSON
+      :value: 'pgjson'
+
+
+      PostgreSQL-compatible JSON format for use with visualization tools.
+
+
+   .. py:attribute:: TREE
+      :value: 'tree'
+
+
+      Tree-style visual format with box-drawing characters.
 
 
 .. py:class:: InsertOp

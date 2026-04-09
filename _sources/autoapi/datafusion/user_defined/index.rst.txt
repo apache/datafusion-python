@@ -161,48 +161,72 @@ Module Contents
           - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
             When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
 
-      Function example:
-
       If your :py:class:`Accumulator` can be instantiated with no arguments, you
-      can simply pass it's type as `accum`. If you need to pass additional
-      arguments to it's constructor, you can define a lambda or a factory method.
+      can simply pass its type as ``accum``. If you need to pass additional
+      arguments to its constructor, you can define a lambda or a factory method.
       During runtime the :py:class:`Accumulator` will be constructed for every
-      instance in which this UDAF is used. The following examples are all valid::
+      instance in which this UDAF is used.
 
-          import pyarrow as pa
-          import pyarrow.compute as pc
+      .. rubric:: Examples
 
-          class Summarize(Accumulator):
-              def __init__(self, bias: float = 0.0):
-                  self._sum = pa.scalar(bias)
+      >>> import pyarrow.compute as pc
+      >>> from datafusion.user_defined import AggregateUDF, Accumulator, udaf
+      >>> class Summarize(Accumulator):
+      ...     def __init__(self, bias: float = 0.0):
+      ...         self._sum = pa.scalar(bias)
+      ...     def state(self):
+      ...         return [self._sum]
+      ...     def update(self, values):
+      ...         self._sum = pa.scalar(
+      ...             self._sum.as_py() + pc.sum(values).as_py())
+      ...     def merge(self, states):
+      ...         self._sum = pa.scalar(
+      ...             self._sum.as_py() + pc.sum(states[0]).as_py())
+      ...     def evaluate(self):
+      ...         return self._sum
 
-              def state(self) -> list[pa.Scalar]:
-                  return [self._sum]
+      Using ``udaf`` as a function:
 
-              def update(self, values: pa.Array) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
+      >>> udaf1 = AggregateUDF.udaf(
+      ...     Summarize, pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
 
-              def merge(self, states: list[pa.Array]) -> None:
-                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
+      Wrapping ``udaf`` with a function:
 
-              def evaluate(self) -> pa.Scalar:
-                  return self._sum
+      >>> def sum_bias_10() -> Summarize:
+      ...     return Summarize(10.0)
+      >>> udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
+      ...     "immutable")
 
-          def sum_bias_10() -> Summarize:
-              return Summarize(10.0)
+      Using ``udaf`` with lambda:
 
-          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
-              "immutable")
-          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
-              [pa.float64()], "immutable")
+      >>> udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
 
-      Decorator example:::
+      Using ``udaf`` as a decorator:
 
-          @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
-          def udf4() -> Summarize:
-              return Summarize(10.0)
+      >>> @AggregateUDF.udaf(
+      ...     pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
+      ... def udaf4():
+      ...     return Summarize(10.0)
+
+      Apply to a dataframe:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+      >>> df.aggregate([], [udaf1(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      6.0
+      >>> df.aggregate([], [udaf2(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      16.0
+      >>> df.aggregate([], [udaf3(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      26.0
+      >>> df.aggregate([], [udaf4(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      16.0
 
       :param accum: The accumulator python function. Only needed when calling as a
                     function. Skip this argument when using ``udaf`` as a decorator.
@@ -284,7 +308,8 @@ Module Contents
       This class can be used both as either a function or a decorator.
 
       Usage:
-          - As a function: ``udf(func, input_fields, return_field, volatility, name)``.
+          - As a function: ``udf(func, input_fields, return_field,
+            volatility, name)``.
           - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
             When used a decorator, do **not** pass ``func`` explicitly.
 
@@ -312,18 +337,32 @@ Module Contents
       :returns: A user-defined function that can be used in SQL expressions,
                 data aggregation, or window function calls.
 
-      Example: Using ``udf`` as a function::
+      .. rubric:: Examples
 
-          def double_func(x):
-              return x * 2
-          double_udf = udf(double_func, [pa.int32()], pa.int32(),
-          "volatile", "double_it")
+      Using ``udf`` as a function:
 
-      Example: Using ``udf`` as a decorator::
+      >>> import pyarrow.compute as pc
+      >>> from datafusion.user_defined import ScalarUDF
+      >>> def double_func(x):
+      ...     return pc.multiply(x, 2)
+      >>> double_udf = ScalarUDF.udf(
+      ...     double_func, [pa.int64()], pa.int64(),
+      ...     "volatile", "double_it")
 
-          @udf([pa.int32()], pa.int32(), "volatile", "double_it")
-          def double_udf(x):
-              return x * 2
+      Using ``udf`` as a decorator:
+
+      >>> @ScalarUDF.udf([pa.int64()], pa.int64(), "volatile")
+      ... def decorator_double_udf(x):
+      ...     return pc.multiply(x, 3)
+
+      Apply to a dataframe:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"x": [1, 2, 3]})
+      >>> df.select(double_udf(col("x")).alias("result")).to_pydict()
+      {'result': [2, 4, 6]}
+      >>> df.select(decorator_double_udf(col("x")).alias("result")).to_pydict()
+      {'result': [3, 6, 9]}
 
 
 
@@ -707,31 +746,45 @@ Module Contents
           - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
             When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
 
-      Function example::
+      .. rubric:: Examples
 
-          import pyarrow as pa
+      >>> from datafusion.user_defined import WindowUDF, WindowEvaluator, udwf
+      >>> class BiasedNumbers(WindowEvaluator):
+      ...     def __init__(self, start: int = 0):
+      ...         self.start = start
+      ...     def evaluate_all(self, values, num_rows):
+      ...         return pa.array(
+      ...             [self.start + i for i in range(num_rows)])
 
-          class BiasedNumbers(WindowEvaluator):
-              def __init__(self, start: int = 0) -> None:
-                  self.start = start
+      Using ``udwf`` as a function:
 
-              def evaluate_all(self, values: list[pa.Array],
-                  num_rows: int) -> pa.Array:
-                  return pa.array([self.start + i for i in range(num_rows)])
+      >>> udwf1 = WindowUDF.udwf(
+      ...     BiasedNumbers, pa.int64(), pa.int64(), "immutable")
+      >>> def bias_10() -> BiasedNumbers:
+      ...    return BiasedNumbers(10)
+      >>> udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+      >>> udwf3 = udwf(
+      ...     lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable"
+      ... )
 
-          def bias_10() -> BiasedNumbers:
-              return BiasedNumbers(10)
+      Using ``udwf`` as a decorator:
 
-          udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
-          udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
-          udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
+      >>> @WindowUDF.udwf(pa.int64(), pa.int64(), "immutable")
+      ... def biased_numbers():
+      ...     return BiasedNumbers(10)
 
+      Apply to a dataframe:
 
-      Decorator example::
-
-          @udwf(pa.int64(), pa.int64(), "immutable")
-          def biased_numbers() -> BiasedNumbers:
-              return BiasedNumbers(10)
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+      >>> df.select(udwf1(col("a")).alias("result")).to_pydict()
+      {'result': [0, 1, 2]}
+      >>> df.select(udwf2(col("a")).alias("result")).to_pydict()
+      {'result': [10, 11, 12]}
+      >>> df.select(udwf3(col("a")).alias("result")).to_pydict()
+      {'result': [20, 21, 22]}
+      >>> df.select(biased_numbers(col("a")).alias("result")).to_pydict()
+      {'result': [10, 11, 12]}
 
       :param func: Only needed when calling as a function. Skip this argument when
                    using ``udwf`` as a decorator. If you have a Rust backed WindowUDF

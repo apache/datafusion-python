@@ -15,18 +15,18 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-HTML Rendering in Jupyter
-=========================
+DataFrame Rendering
+===================
 
-When working in Jupyter notebooks or other environments that support rich HTML display, 
-DataFusion DataFrames automatically render as nicely formatted HTML tables. This functionality
-is provided by the ``_repr_html_`` method, which is automatically called by Jupyter to provide
-a richer visualization than plain text output.
+DataFusion provides configurable rendering for DataFrames in both plain text and HTML
+formats. The ``datafusion.dataframe_formatter`` module controls how DataFrames are
+displayed in Jupyter notebooks (via ``_repr_html_``), in the terminal (via ``__repr__``),
+and anywhere else a string or HTML representation is needed.
 
-Basic HTML Rendering
---------------------
+Basic Rendering
+---------------
 
-In a Jupyter environment, simply displaying a DataFrame object will trigger HTML rendering:
+In a Jupyter environment, displaying a DataFrame triggers HTML rendering:
 
 .. code-block:: python
 
@@ -36,74 +36,117 @@ In a Jupyter environment, simply displaying a DataFrame object will trigger HTML
     # Explicit display also uses HTML rendering
     display(df)
 
-Customizing HTML Rendering
----------------------------
-
-DataFusion provides extensive customization options for HTML table rendering through the
-``datafusion.html_formatter`` module.
-
-Configuring the HTML Formatter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can customize how DataFrames are rendered by configuring the formatter:
+In a terminal or when converting to string, plain text rendering is used:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import configure_formatter
-    
-    # Change the default styling
+    # Plain text table output
+    print(df)
+
+Configuring the Formatter
+-------------------------
+
+You can customize how DataFrames are rendered by configuring the global formatter:
+
+.. code-block:: python
+
+    from datafusion.dataframe_formatter import configure_formatter
+
     configure_formatter(
-        max_cell_length=25,        # Maximum characters in a cell before truncation
-        max_width=1000,            # Maximum width in pixels
-        max_height=300,            # Maximum height in pixels
-        max_memory_bytes=2097152,  # Maximum memory for rendering (2MB)
-        min_rows=10,               # Minimum number of rows to display
-        max_rows=10,               # Maximum rows to display in __repr__
-        enable_cell_expansion=True,# Allow expanding truncated cells
-        custom_css=None,           # Additional custom CSS
+        max_cell_length=25,           # Maximum characters in a cell before truncation
+        max_width=1000,               # Maximum width in pixels (HTML only)
+        max_height=300,               # Maximum height in pixels (HTML only)
+        max_memory_bytes=2097152,     # Maximum memory for rendering (2MB)
+        min_rows=10,                  # Minimum number of rows to display
+        max_rows=10,                  # Maximum rows to display
+        enable_cell_expansion=True,   # Allow expanding truncated cells (HTML only)
+        custom_css=None,              # Additional custom CSS (HTML only)
         show_truncation_message=True, # Show message when data is truncated
-        style_provider=None,       # Custom styling provider
-        use_shared_styles=True     # Share styles across tables
+        style_provider=None,          # Custom styling provider (HTML only)
+        use_shared_styles=True,       # Share styles across tables (HTML only)
     )
 
 The formatter settings affect all DataFrames displayed after configuration.
 
 Custom Style Providers
------------------------
+----------------------
 
-For advanced styling needs, you can create a custom style provider:
+For HTML styling, you can create a custom style provider that implements the
+``StyleProvider`` protocol:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import StyleProvider, configure_formatter
-    
-    class MyStyleProvider(StyleProvider):
-        def get_table_styles(self):
-            return {
-                "table": "border-collapse: collapse; width: 100%;",
-                "th": "background-color: #007bff; color: white; padding: 8px; text-align: left;",
-                "td": "border: 1px solid #ddd; padding: 8px;",
-                "tr:nth-child(even)": "background-color: #f2f2f2;",
-            }
-            
-        def get_value_styles(self, dtype, value):
-            """Return custom styles for specific values"""
-            if dtype == "float" and value < 0:
-                return "color: red;"
-            return None
-    
+    from datafusion.dataframe_formatter import configure_formatter
+
+    class MyStyleProvider:
+        def get_cell_style(self):
+            """Return CSS style string for table data cells."""
+            return "border: 1px solid #ddd; padding: 8px; text-align: left;"
+
+        def get_header_style(self):
+            """Return CSS style string for table header cells."""
+            return (
+                "background-color: #007bff; color: white; "
+                "padding: 8px; text-align: left;"
+            )
+
     # Apply the custom style provider
     configure_formatter(style_provider=MyStyleProvider())
+
+Custom Cell Formatters
+----------------------
+
+You can register custom formatters for specific Python types. A cell formatter is any
+callable that takes a value and returns a string:
+
+.. code-block:: python
+
+    from datafusion.dataframe_formatter import get_formatter
+
+    formatter = get_formatter()
+
+    # Format floats to 2 decimal places
+    formatter.register_formatter(float, lambda v: f"{v:.2f}")
+
+    # Format dates in a custom way
+    from datetime import date
+    formatter.register_formatter(date, lambda v: v.strftime("%B %d, %Y"))
+
+Custom Cell and Header Builders
+-------------------------------
+
+For full control over the HTML of individual cells or headers, you can set custom
+builder functions:
+
+.. code-block:: python
+
+    from datafusion.dataframe_formatter import get_formatter
+
+    formatter = get_formatter()
+
+    # Custom cell builder receives (value, row, col, table_id) and returns HTML
+    def my_cell_builder(value, row, col, table_id):
+        color = "red" if isinstance(value, (int, float)) and value < 0 else "black"
+        return f"<td style='color: {color}; padding: 8px;'>{value}</td>"
+
+    formatter.set_custom_cell_builder(my_cell_builder)
+
+    # Custom header builder receives a schema field and returns HTML
+    def my_header_builder(field):
+        return f"<th style='background: #333; color: white; padding: 8px;'>{field.name}</th>"
+
+    formatter.set_custom_header_builder(my_header_builder)
 
 Performance Optimization with Shared Styles
 --------------------------------------------
 
-The ``use_shared_styles`` parameter (enabled by default) optimizes performance when displaying 
-multiple DataFrames in notebook environments:
+The ``use_shared_styles`` parameter (enabled by default) optimizes performance when
+displaying multiple DataFrames in notebook environments:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import StyleProvider, configure_formatter
+    from datafusion.dataframe_formatter import configure_formatter
+
     # Default: Use shared styles (recommended for notebooks)
     configure_formatter(use_shared_styles=True)
 
@@ -111,75 +154,47 @@ multiple DataFrames in notebook environments:
     configure_formatter(use_shared_styles=False)
 
 When ``use_shared_styles=True``:
+
 - CSS styles and JavaScript are included only once per notebook session
 - This reduces HTML output size and prevents style duplication
 - Improves rendering performance with many DataFrames
 - Applies consistent styling across all DataFrames
 
-Creating a Custom Formatter
-----------------------------
+Working with the Formatter Directly
+------------------------------------
 
-For complete control over rendering, you can implement a custom formatter:
+You can use ``get_formatter()`` and ``set_formatter()`` for direct access to the global
+formatter instance:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import Formatter, get_formatter
-    
-    class MyFormatter(Formatter):
-        def format_html(self, batches, schema, has_more=False, table_uuid=None):
-            # Create your custom HTML here
-            html = "<div class='my-custom-table'>"
-            # ... formatting logic ...
-            html += "</div>"
-            return html
-    
-    # Set as the global formatter
-    configure_formatter(formatter_class=MyFormatter)
-    
-    # Or use the formatter just for specific operations
-    formatter = get_formatter()
-    custom_html = formatter.format_html(batches, schema)
+    from datafusion.dataframe_formatter import (
+        DataFrameHtmlFormatter,
+        get_formatter,
+        set_formatter,
+    )
 
-Managing Formatters
--------------------
+    # Get and modify the current formatter
+    formatter = get_formatter()
+    print(formatter.max_rows)
+    print(formatter.max_cell_length)
+
+    # Create and set a fully custom formatter
+    custom_formatter = DataFrameHtmlFormatter(
+        max_cell_length=50,
+        max_rows=20,
+        enable_cell_expansion=False,
+    )
+    set_formatter(custom_formatter)
 
 Reset to default formatting:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import reset_formatter
-    
+    from datafusion.dataframe_formatter import reset_formatter
+
     # Reset to default settings
     reset_formatter()
-
-Get the current formatter settings:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import get_formatter
-    
-    formatter = get_formatter()
-    print(formatter.max_rows)
-    print(formatter.theme)
-
-Contextual Formatting
-----------------------
-
-You can also use a context manager to temporarily change formatting settings:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import formatting_context
-    
-    # Default formatting
-    df.show()
-    
-    # Temporarily use different formatting
-    with formatting_context(max_rows=100, theme="dark"):
-        df.show()  # Will use the temporary settings
-    
-    # Back to default formatting
-    df.show()
 
 Memory and Display Controls
 ---------------------------
@@ -188,10 +203,12 @@ You can control how much data is displayed and how much memory is used for rende
 
 .. code-block:: python
 
+    from datafusion.dataframe_formatter import configure_formatter
+
     configure_formatter(
         max_memory_bytes=4 * 1024 * 1024,  # 4MB maximum memory for display
         min_rows=20,                       # Always show at least 20 rows
-        max_rows=50                        # Show up to 50 rows in output
+        max_rows=50,                       # Show up to 50 rows in output
     )
 
 These parameters help balance comprehensive data display against performance considerations.
@@ -216,7 +233,7 @@ Additional Resources
 * :doc:`../io/index` - I/O Guide for reading data from various sources
 * :doc:`../data-sources` - Comprehensive data sources guide
 * :ref:`io_csv` - CSV file reading
-* :ref:`io_parquet` - Parquet file reading  
+* :ref:`io_parquet` - Parquet file reading
 * :ref:`io_json` - JSON file reading
 * :ref:`io_avro` - Avro file reading
 * :ref:`io_custom_table_provider` - Custom table providers

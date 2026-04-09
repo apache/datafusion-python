@@ -129,7 +129,7 @@
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
-     HTML Rendering in Jupyter
+     DataFrame Rendering
     </a>
    </li>
   </ul>
@@ -320,11 +320,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../functions/index.html">
        datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../html_formatter/index.html">
-       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -1517,7 +1512,7 @@ max_width, max_height, enable_cell_expansion, etc.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_formatter</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_formatter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">configure_formatter</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">max_cell_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">max_height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
@@ -1541,7 +1536,7 @@ HTML rendering is needed.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formatter</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formatter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">get_formatter</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span><span class="o">.</span><span class="n">max_cell_length</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># Increase cell length</span>
 </pre></div>
@@ -1555,7 +1550,7 @@ HTML rendering is needed.</p>
 <p>This function creates a new formatter with default configuration
 and sets it as the global formatter for all DataFrames.</p>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">reset_formatter</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">reset_formatter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">reset_formatter</span><span class="p">()</span>  <span class="c1"># Reset formatter to default settings</span>
 </pre></div>
 </div>
@@ -1571,7 +1566,7 @@ and sets it as the global formatter for all DataFrames.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formatter</span><span class="p">,</span> <span class="n">set_formatter</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formatter</span><span class="p">,</span> <span class="n">set_formatter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">custom_formatter</span> <span class="o">=</span> <span class="n">DataFrameHtmlFormatter</span><span class="p">(</span><span class="n">max_cell_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">set_formatter</span><span class="p">(</span><span class="n">custom_formatter</span><span class="p">)</span>
 </pre></div>

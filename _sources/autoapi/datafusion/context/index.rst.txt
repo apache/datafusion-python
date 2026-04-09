@@ -16,7 +16,6 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
-   datafusion.context.RuntimeConfig
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
@@ -51,16 +50,6 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
-
-
-.. py:class:: RuntimeConfig
-
-   Bases: :py:obj:`RuntimeEnvBuilder`
-
-
-   See `RuntimeEnvBuilder`.
-
-   Create a new :py:class:`RuntimeEnvBuilder` with default values.
 
 
 .. py:class:: RuntimeEnvBuilder
@@ -118,9 +107,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Examples usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
+      >>> config = dfn.RuntimeEnvBuilder().with_fair_spill_pool(1024)
 
 
 
@@ -136,9 +125,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
+      >>> config = dfn.RuntimeEnvBuilder().with_greedy_memory_pool(1024)
 
 
 
@@ -150,9 +139,9 @@ Module Contents
 
       :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
+      >>> config = dfn.RuntimeEnvBuilder().with_temp_file_path("/tmp")
 
 
 
@@ -189,9 +178,9 @@ Module Contents
 
       :returns: A new :py:class:`SQLOptions` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_ddl(True)
+      >>> options = dfn.SQLOptions().with_allow_ddl(True)
 
 
 
@@ -205,9 +194,9 @@ Module Contents
 
       :returns: A new :py:class:`SQLOptions` object with the updated setting.
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_dml(True)
+      >>> options = dfn.SQLOptions().with_allow_dml(True)
 
 
 
@@ -220,9 +209,9 @@ Module Contents
       :returns: py:class:SQLOptions` object with the updated setting.
       :rtype: A new
 
-      Example usage::
+      .. rubric:: Examples
 
-          options = SQLOptions().with_allow_statements(True)
+      >>> options = dfn.SQLOptions().with_allow_statements(True)
 
 
 
@@ -277,6 +266,17 @@ Module Contents
 
       :param catalog: Catalog name.
       :param schema: Schema name.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_extension(extension: Any) -> SessionConfig
+
+      Create a new configuration using an extension.
+
+      :param extension: A custom configuration extension object. These are
+      :param shared from another DataFusion extension library.:
 
       :returns: A new :py:class:`SessionConfig` object with the updated setting.
 
@@ -480,15 +480,68 @@ Module Contents
 
 
 
+   .. py:method:: deregister_object_store(schema: str, host: str | None = None) -> None
+
+      Remove an object store from the session.
+
+      :param schema: The data source schema (e.g. ``"s3://"``).
+      :param host: URL for the host (e.g. bucket name).
+
+
+
    .. py:method:: deregister_table(name: str) -> None
 
       Remove a table from the session.
 
 
 
+   .. py:method:: deregister_udaf(name: str) -> None
+
+      Remove a user-defined aggregate function from the session.
+
+      :param name: Name of the UDAF to deregister.
+
+
+
+   .. py:method:: deregister_udf(name: str) -> None
+
+      Remove a user-defined scalar function from the session.
+
+      :param name: Name of the UDF to deregister.
+
+
+
+   .. py:method:: deregister_udtf(name: str) -> None
+
+      Remove a user-defined table function from the session.
+
+      :param name: Name of the UDTF to deregister.
+
+
+
+   .. py:method:: deregister_udwf(name: str) -> None
+
+      Remove a user-defined window function from the session.
+
+      :param name: Name of the UDWF to deregister.
+
+
+
    .. py:method:: empty_table() -> datafusion.dataframe.DataFrame
 
       Create an empty :py:class:`~datafusion.dataframe.DataFrame`.
+
+
+
+   .. py:method:: enable_ident_normalization() -> bool
+
+      Return whether identifier normalization (lowercasing) is enabled.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.enable_ident_normalization()
+      True
 
 
 
@@ -506,6 +559,30 @@ Module Contents
 
 
 
+   .. py:method:: execute_logical_plan(plan: datafusion.plan.LogicalPlan) -> datafusion.dataframe.DataFrame
+
+      Execute a :py:class:`~datafusion.plan.LogicalPlan` and return a DataFrame.
+
+      :param plan: Logical plan to execute.
+
+      :returns: DataFrame resulting from the execution.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> plan = df.logical_plan()
+      >>> df2 = ctx.execute_logical_plan(plan)
+      >>> df2.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+
+
    .. py:method:: from_arrow(data: ArrowStreamExportable | ArrowArrayExportable, name: str | None = None) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
@@ -520,14 +597,6 @@ Module Contents
       :param name: Name of the DataFrame.
 
       :returns: DataFrame representation of the Arrow table.
-
-
-
-   .. py:method:: from_arrow_table(data: pyarrow.Table, name: str | None = None) -> datafusion.dataframe.DataFrame
-
-      Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
-
-      This is an alias for :py:func:`from_arrow`.
 
 
 
@@ -585,6 +654,86 @@ Module Contents
 
 
 
+   .. py:method:: parse_sql_expr(sql: str, schema: datafusion.common.DFSchema) -> datafusion.expr.Expr
+
+      Parse a SQL expression string into a logical expression.
+
+      :param sql: SQL expression string.
+      :param schema: Schema to use for resolving column references.
+
+      :returns: Parsed expression.
+
+      .. rubric:: Examples
+
+      >>> from datafusion.common import DFSchema
+      >>> ctx = SessionContext()
+      >>> schema = DFSchema.empty()
+      >>> ctx.parse_sql_expr("1 + 2", schema=schema)
+      Expr(Int64(1) + Int64(2))
+
+
+
+   .. py:method:: read_arrow(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.arrow', file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> datafusion.dataframe.DataFrame
+
+      Create a :py:class:`DataFrame` for reading an Arrow IPC data source.
+
+      :param path: Path to the Arrow IPC file.
+      :param schema: The data source schema.
+      :param file_extension: File extension to select.
+      :param file_partition_cols: Partition columns.
+
+      :returns: DataFrame representation of the read Arrow IPC file.
+
+      .. rubric:: Examples
+
+      >>> import tempfile, os
+      >>> ctx = dfn.SessionContext()
+      >>> table = pa.table({"a": [1, 2, 3]})
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path)
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+      Provide an explicit ``schema`` to override schema inference:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path, schema=pa.schema([("a", pa.int64())]))
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+      Use ``file_extension`` to read files with a non-default extension:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.ipc")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     df = ctx.read_arrow(path, file_extension=".ipc")
+      ...     df.collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
+
+
+
    .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`DataFrame` for reading Avro data source.
@@ -619,6 +768,14 @@ Module Contents
                       combined with any of the other options in this method.
 
       :returns: DataFrame representation of the read CSV files
+
+
+
+   .. py:method:: read_empty() -> datafusion.dataframe.DataFrame
+
+      Create an empty :py:class:`DataFrame` with no columns or rows.
+
+      .. seealso:: This is an alias for :meth:`empty_table`.
 
 
 
@@ -669,6 +826,86 @@ Module Contents
 
 
 
+   .. py:method:: refresh_catalogs() -> None
+
+      Refresh catalog metadata.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.refresh_catalogs()
+
+
+
+   .. py:method:: register_arrow(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.arrow', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> None
+
+      Register an Arrow IPC file as a table.
+
+      The registered table can be referenced from SQL statements executed
+      against this context.
+
+      :param name: Name of the table to register.
+      :param path: Path to the Arrow IPC file.
+      :param schema: The data source schema.
+      :param file_extension: File extension to select.
+      :param table_partition_cols: Partition columns.
+
+      .. rubric:: Examples
+
+      >>> import tempfile, os
+      >>> ctx = dfn.SessionContext()
+      >>> table = pa.table({"x": [10, 20, 30]})
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow("arrow_tbl", path)
+      ...     ctx.sql("SELECT * FROM arrow_tbl").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+      Provide an explicit ``schema`` to override schema inference:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.arrow")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow(
+      ...         "arrow_schema",
+      ...         path,
+      ...         schema=pa.schema([("x", pa.int64())]),
+      ...     )
+      ...     ctx.sql("SELECT * FROM arrow_schema").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+      Use ``file_extension`` to read files with a non-default extension:
+
+      >>> with tempfile.TemporaryDirectory() as tmpdir:
+      ...     path = os.path.join(tmpdir, "data.ipc")
+      ...     with pa.ipc.new_file(path, table.schema) as writer:
+      ...         writer.write_table(table)
+      ...     ctx.register_arrow(
+      ...         "arrow_ipc", path, file_extension=".ipc"
+      ...     )
+      ...     ctx.sql("SELECT * FROM arrow_ipc").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        10,
+        20,
+        30
+      ]
+
+
+
    .. py:method:: register_avro(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.avro', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> None
 
       Register an Avro file as a table.
@@ -681,6 +918,28 @@ Module Contents
       :param schema: The data source schema.
       :param file_extension: File extension to select.
       :param table_partition_cols: Partition columns.
+
+
+
+   .. py:method:: register_batch(name: str, batch: pyarrow.RecordBatch) -> None
+
+      Register a single :py:class:`pa.RecordBatch` as a table.
+
+      :param name: Name of the resultant table.
+      :param batch: Record batch to register as a table.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+      >>> ctx.register_batch("batch_tbl", batch)
+      >>> ctx.sql("SELECT * FROM batch_tbl").collect()[0].column(0)
+      <pyarrow.lib.Int64Array object at ...>
+      [
+        1,
+        2,
+        3
+      ]
 
 
 
@@ -825,6 +1084,18 @@ Module Contents
 
 
 
+   .. py:method:: register_table_factory(format: str, factory: datafusion.catalog.TableProviderFactory | datafusion.catalog.TableProviderFactoryExportable) -> None
+
+      Register a :py:class:`~datafusion.TableProviderFactoryExportable`.
+
+      The registered factory can be referenced from SQL DDL statements executed
+      against this context.
+
+      :param format: The value to be used in `STORED AS ${format}` clause.
+      :param factory: A PyCapsule that implements :class:`TableProviderFactoryExportable`
+
+
+
    .. py:method:: register_table_provider(name: str, provider: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
       Register a table provider.
@@ -868,9 +1139,37 @@ Module Contents
 
 
 
+   .. py:method:: remove_optimizer_rule(name: str) -> bool
+
+      Remove an optimizer rule by name.
+
+      :param name: Name of the optimizer rule to remove.
+
+      :returns: True if a rule with the given name was found and removed.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.remove_optimizer_rule("nonexistent_rule")
+      False
+
+
+
    .. py:method:: session_id() -> str
 
       Return an id that uniquely identifies this :py:class:`SessionContext`.
+
+
+
+   .. py:method:: session_start_time() -> str
+
+      Return the session start time as an RFC 3339 formatted string.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext()
+      >>> ctx.session_start_time()  # doctest: +SKIP
+      '2026-01-01T12:34:56.123456789+00:00'
 
 
 
@@ -923,6 +1222,28 @@ Module Contents
    .. py:method:: table_exist(name: str) -> bool
 
       Return whether a table with the given name exists.
+
+
+
+   .. py:method:: table_provider(name: str) -> datafusion.catalog.Table
+
+      Return the :py:class:`~datafusion.catalog.Table` for the given table name.
+
+      :param name: Name of the table.
+
+      :returns: The table provider.
+
+      :raises KeyError: If the table is not found.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> ctx = SessionContext()
+      >>> batch = pa.RecordBatch.from_pydict({"x": [1, 2]})
+      >>> ctx.register_record_batches("my_table", [[batch]])
+      >>> tbl = ctx.table_provider("my_table")
+      >>> tbl.schema
+      x: int64
 
 
 
