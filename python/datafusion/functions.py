@@ -1686,22 +1686,23 @@ def regexp_instr(
     """
     if not isinstance(regex, Expr):
         regex = Expr.literal(regex)
-
-    def _to_raw(val: Any) -> Any:
-        if val is None:
-            return None
-        if not isinstance(val, Expr):
-            val = Expr.literal(val)
-        return val.expr
+    if start is not None and not isinstance(start, Expr):
+        start = Expr.literal(start)
+    if n is not None and not isinstance(n, Expr):
+        n = Expr.literal(n)
+    if flags is not None and not isinstance(flags, Expr):
+        flags = Expr.literal(flags)
+    if sub_expr is not None and not isinstance(sub_expr, Expr):
+        sub_expr = Expr.literal(sub_expr)
 
     return Expr(
         f.regexp_instr(
             values.expr,
             regex.expr,
-            _to_raw(start),
-            _to_raw(n),
-            _to_raw(flags),
-            _to_raw(sub_expr),
+            start.expr if start is not None else None,
+            n.expr if n is not None else None,
+            flags.expr if flags is not None else None,
+            sub_expr.expr if sub_expr is not None else None,
         )
     )
 

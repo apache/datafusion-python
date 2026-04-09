@@ -104,6 +104,8 @@ Common mappings:
 | `logical_string()` / `TypeSignatureClass::String` | `str` |
 | `LogicalType::Boolean` | `bool` |
 
+**Important:** In Python's type system (PEP 484), `float` already accepts `int` values, so `int | float` is redundant and will fail the `ruff` linter (rule PYI041). Use `float` alone when the Rust side accepts a float/numeric type — Python users can still pass integer literals like `log(10, col("a"))` or `power(col("a"), 3)` without issue. Only use `int` when the Rust side strictly requires an integer (e.g., `logical_int64()`).
+
 #### Technique 3: Check `return_field_from_args()` for `scalar_arguments` usage
 
 Functions that inspect literal values at query planning time use `args.scalar_arguments.get(n)` in their `return_field_from_args()` method. This indicates the argument is **expected to be a literal** for optimal behavior (e.g., to determine output type precision), but may still work as a column.
@@ -166,31 +168,30 @@ These are arguments where an `Expr` never makes sense because the value must be 
 
 **Type hint pattern:** `str`, `int`, `list[str]`, etc. (no `Expr` in the union)
 
-**When to use:** When the argument is from a fixed enumeration or is always a compile-time constant:
-- Date/time part names (`"year"`, `"month"`, `"day"`, etc.)
-- Regex flags (`"g"`, `"i"`, etc.)
+**When to use:** When the argument is from a fixed enumeration or is always a compile-time constant, **AND** the parameter was not previously typed as `Expr`:
+- Separator in `concat_ws` (already typed as `str` in the Rust binding)
+- Index in `array_position` (already typed as `int` in the Rust binding)
 - Values that the Rust implementation already accepts as native types
 
-```python
-def date_part(part: str, date: Expr) -> Expr:
-    """Extracts a subfield from the date.
+**Backward compatibility rule:** If a parameter was previously typed as `Expr`, you **must** keep `Expr` in the union even if the Rust side requires a literal. Removing `Expr` would break existing user code like `date_part(lit("year"), col("a"))`. Use **Category A** instead — accept `Expr | str` — and let users who pass column expressions discover the runtime error from the Rust side. Never silently break backward compatibility.
 
-    Args:
-        part: The part of the date to extract. Must be one of "year", "month",
-            "day", "hour", "minute", "second", etc.
-        date: The date expression to extract from.
+```python
+def concat_ws(separator: str, *args: Expr) -> Expr:
+    """Concatenates the list ``args`` with the separator.
+
+    ``separator`` is already typed as ``str`` in the Rust binding, so
+    there is no backward-compatibility concern.
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
-        >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
+        >>> df = ctx.from_pydict({"a": ["hello"], "b": ["world"]})
         >>> result = df.select(
-        ...     dfn.functions.date_part("year", dfn.col("a")).alias("y"))
-        >>> result.collect_column("y")[0].as_py()
-        2021
+        ...     dfn.functions.concat_ws("-", dfn.col("a"), dfn.col("b")).alias("c"))
+        >>> result.collect_column("c")[0].as_py()
+        'hello-world'
     """
-    part = Expr.literal(part)
-    return Expr(f.date_part(part.expr, date.expr))
+    args = [arg.expr for arg in args]
+    return Expr(f.concat_ws(separator, args))
 ```
 
 ### Category C: Arguments That Should Accept str as Column Name
@@ -268,6 +269,21 @@ if not isinstance(arg, Expr):
 ```
 
 Do NOT create a new helper function for this — the inline check is clear and explicit. The project intentionally uses `ensure_expr()` to reject non-Expr values in contexts where coercion is not wanted; the pythonic coercion is the opposite pattern and should be visually distinct.
+
+**Functions with many optional nullable parameters:** For parameters typed as `Expr | <type> | None`, combine the `None` check with the `isinstance` check inline. Repeat this for each parameter — do not factor it into a local helper function, even if the repetition feels verbose. Consistency across the file is more important than DRY within a single function.
+
+```python
+# For each optional parameter:
+if start is not None and not isinstance(start, Expr):
+    start = Expr.literal(start)
+
+# When passing to the Rust binding, extract .expr or pass None:
+f.some_func(
+    values.expr,
+    start.expr if start is not None else None,
+    n.expr if n is not None else None,
+)
+```
 
 ## What NOT to Change
 
