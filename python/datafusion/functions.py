@@ -1096,7 +1096,7 @@ def initcap(string: Expr) -> Expr:
     return Expr(f.initcap(string.expr))
 
 
-def instr(string: Expr, substring: Expr) -> Expr:
+def instr(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
@@ -1422,7 +1422,7 @@ def pi() -> Expr:
     return Expr(f.pi())
 
 
-def position(string: Expr, substring: Expr) -> Expr:
+def position(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
