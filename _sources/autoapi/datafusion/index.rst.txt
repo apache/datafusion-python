@@ -24,7 +24,6 @@ Submodules
    /autoapi/datafusion/dataframe_formatter/index
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
-   /autoapi/datafusion/html_formatter/index
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
    /autoapi/datafusion/object_store/index
@@ -44,10 +43,6 @@ Attributes
    datafusion.DFSchema
    datafusion.col
    datafusion.column
-   datafusion.udaf
-   datafusion.udf
-   datafusion.udtf
-   datafusion.udwf
 
 
 Classes
@@ -55,12 +50,9 @@ Classes
 
 .. autoapisummary::
 
-   datafusion.Accumulator
-   datafusion.AggregateUDF
    datafusion.Catalog
    datafusion.CsvReadOptions
    datafusion.DataFrameWriteOptions
-   datafusion.Database
    datafusion.ExecutionPlan
    datafusion.ExplainFormat
    datafusion.Expr
@@ -72,12 +64,9 @@ Classes
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
    datafusion.SQLOptions
-   datafusion.ScalarUDF
    datafusion.SessionConfig
    datafusion.Table
-   datafusion.TableFunction
    datafusion.WindowFrame
-   datafusion.WindowUDF
 
 
 Functions
@@ -97,203 +86,6 @@ Functions
 Package Contents
 ----------------
 
-.. py:class:: Accumulator
-
-   Defines how an :py:class:`AggregateUDF` accumulates values.
-
-
-   .. py:method:: evaluate() -> pyarrow.Scalar
-      :abstractmethod:
-
-
-      Return the resultant value.
-
-      While this function template expects a PyArrow Scalar value return type,
-      you can return any value that can be converted into a Scalar. This
-      includes basic Python data types such as integers and strings. In
-      addition to primitive types, we currently support PyArrow, nanoarrow,
-      and arro3 objects in addition to primitive data types. Other objects
-      that support the Arrow FFI standard will be given a "best attempt" at
-      conversion to scalar objects.
-
-
-
-   .. py:method:: merge(states: list[pyarrow.Array]) -> None
-      :abstractmethod:
-
-
-      Merge a set of states.
-
-
-
-   .. py:method:: state() -> list[pyarrow.Scalar]
-      :abstractmethod:
-
-
-      Return the current state.
-
-      While this function template expects PyArrow Scalar values return type,
-      you can return any value that can be converted into a Scalar. This
-      includes basic Python data types such as integers and strings. In
-      addition to primitive types, we currently support PyArrow, nanoarrow,
-      and arro3 objects in addition to primitive data types. Other objects
-      that support the Arrow FFI standard will be given a "best attempt" at
-      conversion to scalar objects.
-
-
-
-   .. py:method:: update(*values: pyarrow.Array) -> None
-      :abstractmethod:
-
-
-      Evaluate an array of values and update state.
-
-
-
-.. py:class:: AggregateUDF(name: str, accumulator: collections.abc.Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
-              AggregateUDF(name: str, accumulator: AggregateUDFExportable, input_types: None = ..., return_type: None = ..., state_type: None = ..., volatility: None = ...)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Aggregate UDFs operate on a group of rows and return a single value. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined aggregate function (UDAF).
-
-   See :py:func:`udaf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDAF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Aggregate UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
-      :staticmethod:
-
-
-      Create an Aggregate UDF from AggregateUDF PyCapsule object.
-
-      This function will instantiate a Aggregate UDF that uses a DataFusion
-      AggregateUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
-                  udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
-                  udaf(accum: AggregateUDFExportable) -> AggregateUDF
-                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Aggregate Function (UDAF).
-
-      This class allows you to define an aggregate function that can be used in
-      data aggregation or window function calls.
-
-      Usage:
-          - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
-          - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
-            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
-
-      If your :py:class:`Accumulator` can be instantiated with no arguments, you
-      can simply pass its type as ``accum``. If you need to pass additional
-      arguments to its constructor, you can define a lambda or a factory method.
-      During runtime the :py:class:`Accumulator` will be constructed for every
-      instance in which this UDAF is used.
-
-      .. rubric:: Examples
-
-      >>> import pyarrow.compute as pc
-      >>> from datafusion.user_defined import AggregateUDF, Accumulator, udaf
-      >>> class Summarize(Accumulator):
-      ...     def __init__(self, bias: float = 0.0):
-      ...         self._sum = pa.scalar(bias)
-      ...     def state(self):
-      ...         return [self._sum]
-      ...     def update(self, values):
-      ...         self._sum = pa.scalar(
-      ...             self._sum.as_py() + pc.sum(values).as_py())
-      ...     def merge(self, states):
-      ...         self._sum = pa.scalar(
-      ...             self._sum.as_py() + pc.sum(states[0]).as_py())
-      ...     def evaluate(self):
-      ...         return self._sum
-
-      Using ``udaf`` as a function:
-
-      >>> udaf1 = AggregateUDF.udaf(
-      ...     Summarize, pa.float64(), pa.float64(),
-      ...     [pa.float64()], "immutable")
-
-      Wrapping ``udaf`` with a function:
-
-      >>> def sum_bias_10() -> Summarize:
-      ...     return Summarize(10.0)
-      >>> udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
-      ...     "immutable")
-
-      Using ``udaf`` with lambda:
-
-      >>> udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
-      ...     [pa.float64()], "immutable")
-
-      Using ``udaf`` as a decorator:
-
-      >>> @AggregateUDF.udaf(
-      ...     pa.float64(), pa.float64(),
-      ...     [pa.float64()], "immutable")
-      ... def udaf4():
-      ...     return Summarize(10.0)
-
-      Apply to a dataframe:
-
-      >>> ctx = dfn.SessionContext()
-      >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
-      >>> df.aggregate([], [udaf1(col("a")).alias("total")]).collect_column(
-      ...     "total")[0].as_py()
-      6.0
-      >>> df.aggregate([], [udaf2(col("a")).alias("total")]).collect_column(
-      ...     "total")[0].as_py()
-      16.0
-      >>> df.aggregate([], [udaf3(col("a")).alias("total")]).collect_column(
-      ...     "total")[0].as_py()
-      26.0
-      >>> df.aggregate([], [udaf4(col("a")).alias("total")]).collect_column(
-      ...     "total")[0].as_py()
-      16.0
-
-      :param accum: The accumulator python function. Only needed when calling as a
-                    function. Skip this argument when using ``udaf`` as a decorator.
-                    If you have a Rust backed AggregateUDF within a PyCapsule, you can
-                    pass this parameter and ignore the rest. They will be determined
-                    directly from the underlying function. See the online documentation
-                    for more information.
-      :param input_types: The data types of the arguments to ``accum``.
-      :param return_type: The data type of the return value.
-      :param state_type: The data types of the intermediate accumulation.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined aggregate function, which can be used in either data
-                aggregation or window function calls.
-
-
-
-   .. py:attribute:: _udaf
-
-
 .. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
    DataFusion data catalog.
@@ -304,12 +96,6 @@ Package Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the catalog.
-
-
-
-   .. py:method:: database(name: str = 'public') -> Schema
-
-      Returns the database with the given ``name`` from this catalog.
 
 
 
@@ -585,16 +371,6 @@ Package Contents
 
 
    .. py:attribute:: _raw_write_options
-
-
-.. py:class:: Database(schema: datafusion._internal.catalog.RawSchema)
-
-   Bases: :py:obj:`Schema`
-
-
-   See `Schema`.
-
-   This constructor is not typically called by the end user.
 
 
 .. py:class:: ExecutionPlan(plan: datafusion._internal.ExecutionPlan)
@@ -1062,14 +838,6 @@ Package Contents
    .. py:method:: degrees() -> Expr
 
       Converts the argument from radians to degrees.
-
-
-
-   .. py:method:: display_name() -> str
-
-      Returns the name of this expression as it should appear in a schema.
-
-      This name will not include any CAST expressions.
 
 
 
@@ -2148,116 +1916,6 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: _R, volatility: Volatility | str)
-
-   Class for performing scalar user-defined functions (UDF).
-
-   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
-   operating on a group of rows.
-
-   Instantiate a scalar user-defined function (UDF).
-
-   See helper method :py:func:`udf` for argument details.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Scalar UDF.
-
-
-
-   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a Scalar UDF from ScalarUDF PyCapsule object.
-
-      This function will instantiate a Scalar UDF that uses a DataFusion
-      ScalarUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udf(input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
-                  udf(func: collections.abc.Callable[Ellipsis, _R], input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
-                  udf(func: ScalarUDFExportable) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Function (UDF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udf(func, input_fields, return_field,
-            volatility, name)``.
-          - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
-            When used a decorator, do **not** pass ``func`` explicitly.
-
-      In lieu of passing a PyArrow Field, you can pass a DataType for simplicity.
-      When you do so, it will be assumed that the nullability of the inputs and
-      output are True and that they have no metadata.
-
-      :param func: Only needed when calling as a function.
-                   Skip this argument when using `udf` as a decorator. If you have a Rust
-                   backed ScalarUDF within a PyCapsule, you can pass this parameter
-                   and ignore the rest. They will be determined directly from the
-                   underlying function. See the online documentation for more information.
-      :type func: Callable, optional
-      :param input_fields: The data types or Fields
-                           of the arguments to ``func``. This list must be of the same length
-                           as the number of arguments.
-      :type input_fields: list[pa.Field | pa.DataType]
-      :param return_field: The field of the return value from the function.
-      :type return_field: _R
-      :param volatility: See `Volatility` for allowed values.
-      :type volatility: Volatility | str
-      :param name: A descriptive name for the function.
-      :type name: Optional[str]
-
-      :returns: A user-defined function that can be used in SQL expressions,
-                data aggregation, or window function calls.
-
-      .. rubric:: Examples
-
-      Using ``udf`` as a function:
-
-      >>> import pyarrow.compute as pc
-      >>> from datafusion.user_defined import ScalarUDF
-      >>> def double_func(x):
-      ...     return pc.multiply(x, 2)
-      >>> double_udf = ScalarUDF.udf(
-      ...     double_func, [pa.int64()], pa.int64(),
-      ...     "volatile", "double_it")
-
-      Using ``udf`` as a decorator:
-
-      >>> @ScalarUDF.udf([pa.int64()], pa.int64(), "volatile")
-      ... def decorator_double_udf(x):
-      ...     return pc.multiply(x, 3)
-
-      Apply to a dataframe:
-
-      >>> ctx = dfn.SessionContext()
-      >>> df = ctx.from_pydict({"x": [1, 2, 3]})
-      >>> df.select(double_udf(col("x")).alias("result")).to_pydict()
-      {'result': [2, 4, 6]}
-      >>> df.select(decorator_double_udf(col("x")).alias("result")).to_pydict()
-      {'result': [3, 6, 9]}
-
-
-
-   .. py:attribute:: _udf
-
-
 .. py:class:: SessionConfig(config_options: dict[str, str] | None = None)
 
    Session configuration options.
@@ -2477,59 +2135,6 @@ Package Contents
       Returns the schema associated with this table.
 
 
-.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any], ctx: datafusion.SessionContext | None = None)
-
-   Class for performing user-defined table functions (UDTF).
-
-   Table functions generate new table providers based on the
-   input expressions.
-
-   Instantiate a user-defined table function (UDTF).
-
-   See :py:func:`udtf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> Any
-
-      Execute the UDTF and return a table provider.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      User printable representation.
-
-
-
-   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a TableFunction instance from function arguments.
-
-
-
-   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
-                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
-      :staticmethod:
-
-
-      Create a new User-Defined Table Function (UDTF).
-
-
-
-   .. py:attribute:: _udtf
-
-
 .. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
@@ -2572,148 +2177,6 @@ Package Contents
    .. py:attribute:: window_frame
 
 
-.. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
-
-   Class for performing window user-defined functions (UDF).
-
-   Window UDFs operate on a partition of rows. See
-   also :py:class:`ScalarUDF` for operating on a row by row basis.
-
-   Instantiate a user-defined window function (UDWF).
-
-   See :py:func:`udwf` for a convenience function and argument
-   descriptions.
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDWF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the Window UDF.
-
-
-
-   .. py:method:: _create_window_udf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a WindowUDF instance from function arguments.
-
-
-
-   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
-      :staticmethod:
-
-
-      Create a decorator for a WindowUDF.
-
-
-
-   .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
-      :staticmethod:
-
-
-      Get the default name for a function based on its attributes.
-
-
-
-   .. py:method:: _normalize_input_types(input_types: pyarrow.DataType | list[pyarrow.DataType]) -> list[pyarrow.DataType]
-      :staticmethod:
-
-
-      Convert a single DataType to a list if needed.
-
-
-
-   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
-      :staticmethod:
-
-
-      Create a Window UDF from WindowUDF PyCapsule object.
-
-      This function will instantiate a Window UDF that uses a DataFusion
-      WindowUDF that is exported via the FFI bindings.
-
-
-
-   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
-                  udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Window Function (UDWF).
-
-      This class can be used both as either a function or a decorator.
-
-      Usage:
-          - As a function: ``udwf(func, input_types, return_type, volatility, name)``.
-          - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
-            When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
-
-      .. rubric:: Examples
-
-      >>> from datafusion.user_defined import WindowUDF, WindowEvaluator, udwf
-      >>> class BiasedNumbers(WindowEvaluator):
-      ...     def __init__(self, start: int = 0):
-      ...         self.start = start
-      ...     def evaluate_all(self, values, num_rows):
-      ...         return pa.array(
-      ...             [self.start + i for i in range(num_rows)])
-
-      Using ``udwf`` as a function:
-
-      >>> udwf1 = WindowUDF.udwf(
-      ...     BiasedNumbers, pa.int64(), pa.int64(), "immutable")
-      >>> def bias_10() -> BiasedNumbers:
-      ...    return BiasedNumbers(10)
-      >>> udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
-      >>> udwf3 = udwf(
-      ...     lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable"
-      ... )
-
-      Using ``udwf`` as a decorator:
-
-      >>> @WindowUDF.udwf(pa.int64(), pa.int64(), "immutable")
-      ... def biased_numbers():
-      ...     return BiasedNumbers(10)
-
-      Apply to a dataframe:
-
-      >>> ctx = dfn.SessionContext()
-      >>> df = ctx.from_pydict({"a": [10, 20, 30]})
-      >>> df.select(udwf1(col("a")).alias("result")).to_pydict()
-      {'result': [0, 1, 2]}
-      >>> df.select(udwf2(col("a")).alias("result")).to_pydict()
-      {'result': [10, 11, 12]}
-      >>> df.select(udwf3(col("a")).alias("result")).to_pydict()
-      {'result': [20, 21, 22]}
-      >>> df.select(biased_numbers(col("a")).alias("result")).to_pydict()
-      {'result': [10, 11, 12]}
-
-      :param func: Only needed when calling as a function. Skip this argument when
-                   using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
-                   within a PyCapsule, you can pass this parameter and ignore the rest.
-                   They will be determined directly from the underlying function. See
-                   the online documentation for more information.
-      :param input_types: The data types of the arguments.
-      :param return_type: The data type of the return value.
-      :param volatility: See :py:class:`Volatility` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns: A user-defined window function that can be used in window function calls.
-
-
-
-   .. py:attribute:: _udwf
-
-
 .. py:function:: configure_formatter(**kwargs: Any) -> None
 
    Configure the global DataFrame HTML formatter.
@@ -2728,7 +2191,7 @@ Package Contents
 
    .. rubric:: Example
 
-   >>> from datafusion.html_formatter import configure_formatter
+   >>> from datafusion.dataframe_formatter import configure_formatter
    >>> configure_formatter(
    ...     max_cell_length=50,
    ...     max_height=500,
@@ -2842,12 +2305,4 @@ Package Contents
 
 .. py:data:: column
    :type:  Col
-
-.. py:data:: udaf
-
-.. py:data:: udf
-
-.. py:data:: udtf
-
-.. py:data:: udwf
 

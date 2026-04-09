@@ -476,7 +476,7 @@ Module Contents
 
    .. rubric:: Example
 
-   >>> from datafusion.html_formatter import configure_formatter
+   >>> from datafusion.dataframe_formatter import configure_formatter
    >>> configure_formatter(
    ...     max_cell_length=50,
    ...     max_height=500,
@@ -497,7 +497,7 @@ Module Contents
 
    .. rubric:: Example
 
-   >>> from datafusion.html_formatter import get_formatter
+   >>> from datafusion.dataframe_formatter import get_formatter
    >>> formatter = get_formatter()
    >>> formatter.max_cell_length = 50  # Increase cell length
 
@@ -511,7 +511,7 @@ Module Contents
 
    .. rubric:: Example
 
-   >>> from datafusion.html_formatter import reset_formatter
+   >>> from datafusion.dataframe_formatter import reset_formatter
    >>> reset_formatter()  # Reset formatter to default settings
 
 
@@ -523,7 +523,7 @@ Module Contents
 
    .. rubric:: Example
 
-   >>> from datafusion.html_formatter import get_formatter, set_formatter
+   >>> from datafusion.dataframe_formatter import get_formatter, set_formatter
    >>> custom_formatter = DataFrameHtmlFormatter(max_cell_length=100)
    >>> set_formatter(custom_formatter)
 

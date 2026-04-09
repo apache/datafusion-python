@@ -793,14 +793,6 @@ Module Contents
 
 
 
-   .. py:method:: select_columns(*args: str) -> DataFrame
-
-      Filter the DataFrame by columns.
-
-      :returns: DataFrame only containing the specified columns.
-
-
-
    .. py:method:: select_exprs(*args: str) -> DataFrame
 
       Project arbitrary list of expression strings into a new DataFrame.

@@ -129,7 +129,7 @@
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="../dataframe/rendering.html">
-     HTML Rendering in Jupyter
+     DataFrame Rendering
     </a>
    </li>
   </ul>
@@ -320,11 +320,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
        datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/html_formatter/index.html">
-       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -706,20 +701,19 @@ it’s <code class="docutils literal notranslate"><span class="pre">Type</span> 
 </section>
 <section id="aggregate-functions">
 <h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h2>
-<p>You can use any <a class="reference internal" href="aggregations.html#aggregation"><span class="std std-ref">Aggregation Function</span></a> as a window function. Currently
-aggregate functions must use the deprecated
-<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.window()</span></code></a> API but this should be resolved in
-DataFusion 42.0 (<a class="reference external" href="https://github.com/apache/datafusion-python/issues/833">Issue Link</a>). Here
+<p>You can use any <a class="reference internal" href="aggregations.html#aggregation"><span class="std std-ref">Aggregation Function</span></a> as a window function. Here
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its <code class="docutils literal notranslate"><span class="pre">&quot;Type</span> <span class="pre">1&quot;</span></code> using the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.avg" title="datafusion.functions.avg"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.avg()</span></code></a> function.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)])</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Average Attack&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Average Attack&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 <span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 

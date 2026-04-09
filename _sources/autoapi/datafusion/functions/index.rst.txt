@@ -317,7 +317,6 @@ Functions
    datafusion.functions.var_sample
    datafusion.functions.version
    datafusion.functions.when
-   datafusion.functions.window
 
 
 Module Contents
@@ -5549,21 +5548,6 @@ Module Contents
    ...     dfn.lit("big")).otherwise(dfn.lit("small")).alias("c"))
    >>> result.collect_column("c")[2].as_py()
    'big'
-
-
-.. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, window_frame: datafusion.expr.WindowFrame | None = None, filter: datafusion.expr.Expr | None = None, distinct: bool = False, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
-
-   Creates a new Window function expression.
-
-   This interface will soon be deprecated. Instead of using this interface,
-   users should call the window functions directly. For example, to perform a
-   lag use::
-
-       df.select(functions.lag(col("a")).partition_by(col("b")).build())
-
-   The ``order_by`` parameter accepts column names or expressions, e.g.::
-
-       window("lag", [col("a")], order_by="ts")
 
 
 .. py:data:: today

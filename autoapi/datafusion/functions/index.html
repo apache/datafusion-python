@@ -34,7 +34,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.html_formatter" href="../html_formatter/index.html" />
+    <link rel="next" title="datafusion.input" href="../input/index.html" />
     <link rel="prev" title="datafusion.expr" href="../expr/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -129,7 +129,7 @@
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
-     HTML Rendering in Jupyter
+     DataFrame Rendering
     </a>
    </li>
   </ul>
@@ -320,11 +320,6 @@
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
        datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../html_formatter/index.html">
-       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -3088,15 +3083,6 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.functions.window">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       window()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.functions.today">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -4029,9 +4015,6 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.when" title="datafusion.functions.when"><code class="xref py py-obj docutils literal notranslate"><span class="pre">when</span></code></a>(→ datafusion.expr.CaseBuilder)</p></td>
 <td><p>Create a case expression that has no base expression.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(→ datafusion.expr.Expr)</p></td>
-<td><p>Creates a new Window function expression.</p></td>
 </tr>
 </tbody>
 </table>
@@ -9875,22 +9858,6 @@ detailed usage.</p>
 </div>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="datafusion.functions.window">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">datafusion.expr.SortKey</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datafusion.expr.SortKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">datafusion.expr.WindowFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.window" title="Link to this definition">¶</a></dt>
-<dd><p>Creates a new Window function expression.</p>
-<p>This interface will soon be deprecated. Instead of using this interface,
-users should call the window functions directly. For example, to perform a
-lag use:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">functions</span><span class="o">.</span><span class="n">lag</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">order_by</span></code> parameter accepts column names or expressions, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;lag&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;ts&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.functions.today">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">today</span></span><a class="headerlink" href="#datafusion.functions.today" title="Link to this definition">¶</a></dt>
@@ -9912,10 +9879,10 @@ lag use:</p>
             <p class="prev-next-title">datafusion.expr</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../html_formatter/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../input/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.html_formatter</p>
+        <p class="prev-next-title">datafusion.input</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

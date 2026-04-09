@@ -539,14 +539,6 @@ Module Contents
 
 
 
-   .. py:method:: display_name() -> str
-
-      Returns the name of this expression as it should appear in a schema.
-
-      This name will not include any CAST expressions.
-
-
-
    .. py:method:: distinct() -> ExprFuncBuilder
 
       Only evaluate distinct values for an aggregate function.

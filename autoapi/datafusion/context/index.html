@@ -129,7 +129,7 @@
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
-     HTML Rendering in Jupyter
+     DataFrame Rendering
     </a>
    </li>
   </ul>
@@ -322,11 +322,6 @@
        datafusion.functions
       </a>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../html_formatter/index.html">
-       datafusion.html_formatter
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../input/index.html">
        datafusion.input
@@ -466,15 +461,6 @@
       </a>
      </li>
     </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       RuntimeConfig
-      </span>
-     </code>
-    </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder">
@@ -951,15 +937,6 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_arrow_table">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         SessionContext.from_arrow_table()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_pandas">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1413,22 +1390,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.ArrowStreamExportable" title="datafusion.context.ArrowStreamExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a></p></td>
 <td><p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a></p></td>
-<td><p>See <cite>RuntimeEnvBuilder</cite>.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -1460,14 +1434,6 @@
 <span class="sig-name descname"><span class="pre">__arrow_c_stream__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p>
-<p>See <cite>RuntimeEnvBuilder</cite>.</p>
-<p>Create a new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> with default values.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -2148,13 +2114,6 @@ a struct array.</p>
 <dd class="field-even"><p>DataFrame representation of the Arrow table.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.SessionContext.from_arrow_table">
-<span class="sig-name descname"><span class="pre">from_arrow_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow_table" title="Link to this definition">¶</a></dt>
-<dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an Arrow table.</p>
-<p>This is an alias for <a class="reference internal" href="#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_arrow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">

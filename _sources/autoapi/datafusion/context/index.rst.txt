@@ -16,7 +16,6 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
-   datafusion.context.RuntimeConfig
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
@@ -51,16 +50,6 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
-
-
-.. py:class:: RuntimeConfig
-
-   Bases: :py:obj:`RuntimeEnvBuilder`
-
-
-   See `RuntimeEnvBuilder`.
-
-   Create a new :py:class:`RuntimeEnvBuilder` with default values.
 
 
 .. py:class:: RuntimeEnvBuilder
@@ -608,14 +597,6 @@ Module Contents
       :param name: Name of the DataFrame.
 
       :returns: DataFrame representation of the Arrow table.
-
-
-
-   .. py:method:: from_arrow_table(data: pyarrow.Table, name: str | None = None) -> datafusion.dataframe.DataFrame
-
-      Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
-
-      This is an alias for :py:func:`from_arrow`.
 
 
 

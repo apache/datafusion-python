@@ -39,12 +39,6 @@ Module Contents
 
 
 
-   .. py:method:: database(name: str = 'public') -> Schema
-
-      Returns the database with the given ``name`` from this catalog.
-
-
-
    .. py:method:: deregister_schema(name: str, cascade: bool = True) -> Schema | None
 
       Deregister a schema from this catalog.
