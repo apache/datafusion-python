@@ -363,49 +363,55 @@ def nullif(expr1: Expr, expr2: Expr) -> Expr:
     return Expr(f.nullif(expr1.expr, expr2.expr))
 
 
-def encode(expr: Expr, encoding: Expr) -> Expr:
+def encode(expr: Expr, encoding: Expr | str) -> Expr:
     """Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
         >>> result = df.select(
-        ...     dfn.functions.encode(dfn.col("a"), dfn.lit("base64")).alias("enc"))
+        ...     dfn.functions.encode(dfn.col("a"), "base64").alias("enc"))
         >>> result.collect_column("enc")[0].as_py()
         'aGVsbG8'
     """
+    if not isinstance(encoding, Expr):
+        encoding = Expr.literal(encoding)
     return Expr(f.encode(expr.expr, encoding.expr))
 
 
-def decode(expr: Expr, encoding: Expr) -> Expr:
+def decode(expr: Expr, encoding: Expr | str) -> Expr:
     """Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["aGVsbG8="]})
         >>> result = df.select(
-        ...     dfn.functions.decode(dfn.col("a"), dfn.lit("base64")).alias("dec"))
+        ...     dfn.functions.decode(dfn.col("a"), "base64").alias("dec"))
         >>> result.collect_column("dec")[0].as_py()
         b'hello'
     """
+    if not isinstance(encoding, Expr):
+        encoding = Expr.literal(encoding)
     return Expr(f.decode(expr.expr, encoding.expr))
 
 
-def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
+def array_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
         >>> result = df.select(
-        ...     dfn.functions.array_to_string(dfn.col("a"), dfn.lit(",")).alias("s"))
+        ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
         >>> result.collect_column("s")[0].as_py()
         '1,2,3'
     """
+    if not isinstance(delimiter, Expr):
+        delimiter = Expr.literal(delimiter)
     return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
 
 
-def array_join(expr: Expr, delimiter: Expr) -> Expr:
+def array_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
@@ -414,7 +420,7 @@ def array_join(expr: Expr, delimiter: Expr) -> Expr:
     return array_to_string(expr, delimiter)
 
 
-def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
+def list_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
@@ -423,7 +429,7 @@ def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
     return array_to_string(expr, delimiter)
 
 
-def list_join(expr: Expr, delimiter: Expr) -> Expr:
+def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
@@ -459,7 +465,7 @@ def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
     return Expr(f.in_list(arg.expr, values, negated))
 
 
-def digest(value: Expr, method: Expr) -> Expr:
+def digest(value: Expr, method: Expr | str) -> Expr:
     """Computes the binary hash of an expression using the specified algorithm.
 
     Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s,
@@ -469,24 +475,28 @@ def digest(value: Expr, method: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
         >>> result = df.select(
-        ...     dfn.functions.digest(dfn.col("a"), dfn.lit("md5")).alias("d"))
+        ...     dfn.functions.digest(dfn.col("a"), "md5").alias("d"))
         >>> len(result.collect_column("d")[0].as_py()) > 0
         True
     """
+    if not isinstance(method, Expr):
+        method = Expr.literal(method)
     return Expr(f.digest(value.expr, method.expr))
 
 
-def contains(string: Expr, search_str: Expr) -> Expr:
+def contains(string: Expr, search_str: Expr | str) -> Expr:
     """Returns true if ``search_str`` is found within ``string`` (case-sensitive).
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["the quick brown fox"]})
         >>> result = df.select(
-        ...     dfn.functions.contains(dfn.col("a"), dfn.lit("brown")).alias("c"))
+        ...     dfn.functions.contains(dfn.col("a"), "brown").alias("c"))
         >>> result.collect_column("c")[0].as_py()
         True
     """
+    if not isinstance(search_str, Expr):
+        search_str = Expr.literal(search_str)
     return Expr(f.contains(string.expr, search_str.expr))
 
 
@@ -949,17 +959,19 @@ def degrees(arg: Expr) -> Expr:
     return Expr(f.degrees(arg.expr))
 
 
-def ends_with(arg: Expr, suffix: Expr) -> Expr:
+def ends_with(arg: Expr, suffix: Expr | str) -> Expr:
     """Returns true if the ``string`` ends with the ``suffix``, false otherwise.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
         >>> ends_with_df = df.select(
-        ...     dfn.functions.ends_with(dfn.col("a"), dfn.lit("c")).alias("ends_with"))
+        ...     dfn.functions.ends_with(dfn.col("a"), "c").alias("ends_with"))
         >>> ends_with_df.collect_column("ends_with")[0].as_py()
         True
     """
+    if not isinstance(suffix, Expr):
+        suffix = Expr.literal(suffix)
     return Expr(f.ends_with(arg.expr, suffix.expr))
 
 
@@ -991,7 +1003,7 @@ def factorial(arg: Expr) -> Expr:
     return Expr(f.factorial(arg.expr))
 
 
-def find_in_set(string: Expr, string_list: Expr) -> Expr:
+def find_in_set(string: Expr, string_list: Expr | str) -> Expr:
     """Find a string in a list of strings.
 
     Returns a value in the range of 1 to N if the string is in the string list
@@ -1003,10 +1015,12 @@ def find_in_set(string: Expr, string_list: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["b"]})
         >>> result = df.select(
-        ...     dfn.functions.find_in_set(dfn.col("a"), dfn.lit("a,b,c")).alias("pos"))
+        ...     dfn.functions.find_in_set(dfn.col("a"), "a,b,c").alias("pos"))
         >>> result.collect_column("pos")[0].as_py()
         2
     """
+    if not isinstance(string_list, Expr):
+        string_list = Expr.literal(string_list)
     return Expr(f.find_in_set(string.expr, string_list.expr))
 
 
@@ -1138,31 +1152,35 @@ def least(*args: Expr) -> Expr:
     return Expr(f.least(*exprs))
 
 
-def left(string: Expr, n: Expr) -> Expr:
+def left(string: Expr, n: Expr | int) -> Expr:
     """Returns the first ``n`` characters in the ``string``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["the cat"]})
         >>> left_df = df.select(
-        ...     dfn.functions.left(dfn.col("a"), dfn.lit(3)).alias("left"))
+        ...     dfn.functions.left(dfn.col("a"), 3).alias("left"))
         >>> left_df.collect_column("left")[0].as_py()
         'the'
     """
+    if not isinstance(n, Expr):
+        n = Expr.literal(n)
     return Expr(f.left(string.expr, n.expr))
 
 
-def levenshtein(string1: Expr, string2: Expr) -> Expr:
+def levenshtein(string1: Expr, string2: Expr | str) -> Expr:
     """Returns the Levenshtein distance between the two given strings.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["kitten"]})
         >>> result = df.select(
-        ...     dfn.functions.levenshtein(dfn.col("a"), dfn.lit("sitting")).alias("d"))
+        ...     dfn.functions.levenshtein(dfn.col("a"), "sitting").alias("d"))
         >>> result.collect_column("d")[0].as_py()
         3
     """
+    if not isinstance(string2, Expr):
+        string2 = Expr.literal(string2)
     return Expr(f.levenshtein(string1.expr, string2.expr))
 
 
@@ -1179,18 +1197,20 @@ def ln(arg: Expr) -> Expr:
     return Expr(f.ln(arg.expr))
 
 
-def log(base: Expr, num: Expr) -> Expr:
+def log(base: Expr | float, num: Expr) -> Expr:
     """Returns the logarithm of a number for a particular ``base``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [100.0]})
         >>> result = df.select(
-        ...     dfn.functions.log(dfn.lit(10.0), dfn.col("a")).alias("log")
+        ...     dfn.functions.log(10.0, dfn.col("a")).alias("log")
         ... )
         >>> result.collect_column("log")[0].as_py()
         2.0
     """
+    if not isinstance(base, Expr):
+        base = Expr.literal(base)
     return Expr(f.log(base.expr, num.expr))
 
 
@@ -1233,7 +1253,7 @@ def lower(arg: Expr) -> Expr:
     return Expr(f.lower(arg.expr))
 
 
-def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
+def lpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) -> Expr:
     """Add left padding to a string.
 
     Extends the string to length length by prepending the characters fill (a
@@ -1244,9 +1264,7 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["the cat", "a hat"]})
         >>> lpad_df = df.select(
-        ...     dfn.functions.lpad(
-        ...         dfn.col("a"), dfn.lit(6)
-        ...     ).alias("lpad"))
+        ...     dfn.functions.lpad(dfn.col("a"), 6).alias("lpad"))
         >>> lpad_df.collect_column("lpad")[0].as_py()
         'the ca'
         >>> lpad_df.collect_column("lpad")[1].as_py()
@@ -1254,12 +1272,17 @@ def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
 
         >>> result = df.select(
         ...     dfn.functions.lpad(
-        ...         dfn.col("a"), dfn.lit(10), characters=dfn.lit(".")
+        ...         dfn.col("a"), 10, characters="."
         ...     ).alias("lpad"))
         >>> result.collect_column("lpad")[0].as_py()
         '...the cat'
     """
-    characters = characters if characters is not None else Expr.literal(" ")
+    if not isinstance(count, Expr):
+        count = Expr.literal(count)
+    if characters is None:
+        characters = Expr.literal(" ")
+    elif not isinstance(characters, Expr):
+        characters = Expr.literal(characters)
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
 
@@ -1354,7 +1377,10 @@ def octet_length(arg: Expr) -> Expr:
 
 
 def overlay(
-    string: Expr, substring: Expr, start: Expr, length: Expr | None = None
+    string: Expr,
+    substring: Expr | str,
+    start: Expr | int,
+    length: Expr | int | None = None,
 ) -> Expr:
     """Replace a substring with a new substring.
 
@@ -1365,13 +1391,18 @@ def overlay(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["abcdef"]})
         >>> result = df.select(
-        ...     dfn.functions.overlay(dfn.col("a"), dfn.lit("XY"), dfn.lit(3),
-        ...     dfn.lit(2)).alias("o"))
+        ...     dfn.functions.overlay(dfn.col("a"), "XY", 3, 2).alias("o"))
         >>> result.collect_column("o")[0].as_py()
         'abXYef'
     """
+    if not isinstance(substring, Expr):
+        substring = Expr.literal(substring)
+    if not isinstance(start, Expr):
+        start = Expr.literal(start)
     if length is None:
         return Expr(f.overlay(string.expr, substring.expr, start.expr))
+    if not isinstance(length, Expr):
+        length = Expr.literal(length)
     return Expr(f.overlay(string.expr, substring.expr, start.expr, length.expr))
 
 
@@ -1400,22 +1431,24 @@ def position(string: Expr, substring: Expr) -> Expr:
     return strpos(string, substring)
 
 
-def power(base: Expr, exponent: Expr) -> Expr:
+def power(base: Expr, exponent: Expr | float) -> Expr:
     """Returns ``base`` raised to the power of ``exponent``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [2.0]})
         >>> result = df.select(
-        ...     dfn.functions.power(dfn.col("a"), dfn.lit(3.0)).alias("pow")
+        ...     dfn.functions.power(dfn.col("a"), 3.0).alias("pow")
         ... )
         >>> result.collect_column("pow")[0].as_py()
         8.0
     """
+    if not isinstance(exponent, Expr):
+        exponent = Expr.literal(exponent)
     return Expr(f.power(base.expr, exponent.expr))
 
 
-def pow(base: Expr, exponent: Expr) -> Expr:
+def pow(base: Expr, exponent: Expr | float) -> Expr:
     """Returns ``base`` raised to the power of ``exponent``.
 
     See Also:
@@ -1440,7 +1473,9 @@ def radians(arg: Expr) -> Expr:
     return Expr(f.radians(arg.expr))
 
 
-def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
+def regexp_like(
+    string: Expr, regex: Expr | str, flags: Expr | str | None = None
+) -> Expr:
     r"""Find if any regular expression (regex) matches exist.
 
     Tests a string using a regular expression returning true if at least one match,
@@ -1450,9 +1485,7 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello123"]})
         >>> result = df.select(
-        ...     dfn.functions.regexp_like(
-        ...         dfn.col("a"), dfn.lit("\\d+")
-        ...     ).alias("m")
+        ...     dfn.functions.regexp_like(dfn.col("a"), "\\d+").alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         True
@@ -1461,19 +1494,24 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
 
         >>> result = df.select(
         ...     dfn.functions.regexp_like(
-        ...         dfn.col("a"), dfn.lit("HELLO"),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "HELLO", flags="i",
         ...     ).alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         True
     """
+    if not isinstance(regex, Expr):
+        regex = Expr.literal(regex)
     if flags is not None:
+        if not isinstance(flags, Expr):
+            flags = Expr.literal(flags)
         flags = flags.expr
     return Expr(f.regexp_like(string.expr, regex.expr, flags))
 
 
-def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
+def regexp_match(
+    string: Expr, regex: Expr | str, flags: Expr | str | None = None
+) -> Expr:
     r"""Perform regular expression (regex) matching.
 
     Returns an array with each element containing the leftmost-first match of the
@@ -1483,9 +1521,7 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
         >>> result = df.select(
-        ...     dfn.functions.regexp_match(
-        ...         dfn.col("a"), dfn.lit("(\\d+)")
-        ...     ).alias("m")
+        ...     dfn.functions.regexp_match(dfn.col("a"), "(\\d+)").alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         ['42']
@@ -1494,20 +1530,26 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
 
         >>> result = df.select(
         ...     dfn.functions.regexp_match(
-        ...         dfn.col("a"), dfn.lit("(HELLO)"),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "(HELLO)", flags="i",
         ...     ).alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         ['hello']
     """
+    if not isinstance(regex, Expr):
+        regex = Expr.literal(regex)
     if flags is not None:
+        if not isinstance(flags, Expr):
+            flags = Expr.literal(flags)
         flags = flags.expr
     return Expr(f.regexp_match(string.expr, regex.expr, flags))
 
 
 def regexp_replace(
-    string: Expr, pattern: Expr, replacement: Expr, flags: Expr | None = None
+    string: Expr,
+    pattern: Expr | str,
+    replacement: Expr | str,
+    flags: Expr | str | None = None,
 ) -> Expr:
     r"""Replaces substring(s) matching a PCRE-like regular expression.
 
@@ -1522,8 +1564,7 @@ def regexp_replace(
         >>> df = ctx.from_pydict({"a": ["hello 42"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_replace(
-        ...         dfn.col("a"), dfn.lit("\\d+"),
-        ...         dfn.lit("XX")
+        ...         dfn.col("a"), "\\d+", "XX"
         ...     ).alias("r")
         ... )
         >>> result.collect_column("r")[0].as_py()
@@ -1534,20 +1575,28 @@ def regexp_replace(
         >>> df = ctx.from_pydict({"a": ["a1 b2 c3"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_replace(
-        ...         dfn.col("a"), dfn.lit("\\d+"),
-        ...         dfn.lit("X"), flags=dfn.lit("g"),
+        ...         dfn.col("a"), "\\d+", "X", flags="g",
         ...     ).alias("r")
         ... )
         >>> result.collect_column("r")[0].as_py()
         'aX bX cX'
     """
+    if not isinstance(pattern, Expr):
+        pattern = Expr.literal(pattern)
+    if not isinstance(replacement, Expr):
+        replacement = Expr.literal(replacement)
     if flags is not None:
+        if not isinstance(flags, Expr):
+            flags = Expr.literal(flags)
         flags = flags.expr
     return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
 
 
 def regexp_count(
-    string: Expr, pattern: Expr, start: Expr | None = None, flags: Expr | None = None
+    string: Expr,
+    pattern: Expr | str,
+    start: Expr | int | None = None,
+    flags: Expr | str | None = None,
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -1558,9 +1607,7 @@ def regexp_count(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["abcabc"]})
         >>> result = df.select(
-        ...     dfn.functions.regexp_count(
-        ...         dfn.col("a"), dfn.lit("abc")
-        ...     ).alias("c"))
+        ...     dfn.functions.regexp_count(dfn.col("a"), "abc").alias("c"))
         >>> result.collect_column("c")[0].as_py()
         2
 
@@ -1569,25 +1616,31 @@ def regexp_count(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_count(
-        ...         dfn.col("a"), dfn.lit("ABC"),
-        ...         start=dfn.lit(4), flags=dfn.lit("i"),
+        ...         dfn.col("a"), "ABC", start=4, flags="i",
         ...     ).alias("c"))
         >>> result.collect_column("c")[0].as_py()
         1
     """
+    if not isinstance(pattern, Expr):
+        pattern = Expr.literal(pattern)
+    if start is not None:
+        if not isinstance(start, Expr):
+            start = Expr.literal(start)
+        start = start.expr
     if flags is not None:
+        if not isinstance(flags, Expr):
+            flags = Expr.literal(flags)
         flags = flags.expr
-    start = start.expr if start is not None else start
     return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
 
 
 def regexp_instr(
     values: Expr,
-    regex: Expr,
-    start: Expr | None = None,
-    n: Expr | None = None,
-    flags: Expr | None = None,
-    sub_expr: Expr | None = None,
+    regex: Expr | str,
+    start: Expr | int | None = None,
+    n: Expr | int | None = None,
+    flags: Expr | str | None = None,
+    sub_expr: Expr | int | None = None,
 ) -> Expr:
     r"""Returns the position of a regular expression match in a string.
 
@@ -1603,9 +1656,7 @@ def regexp_instr(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
         >>> result = df.select(
-        ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("\\d+")
-        ...     ).alias("pos")
+        ...     dfn.functions.regexp_instr(dfn.col("a"), "\\d+").alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
         7
@@ -1616,9 +1667,8 @@ def regexp_instr(
         >>> df = ctx.from_pydict({"a": ["abc ABC abc"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("abc"),
-        ...         start=dfn.lit(2), n=dfn.lit(1),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "abc",
+        ...         start=2, n=1, flags="i",
         ...     ).alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
@@ -1628,56 +1678,65 @@ def regexp_instr(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("(abc)"),
-        ...         sub_expr=dfn.lit(1),
+        ...         dfn.col("a"), "(abc)", sub_expr=1,
         ...     ).alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
         1
     """
-    start = start.expr if start is not None else None
-    n = n.expr if n is not None else None
-    flags = flags.expr if flags is not None else None
-    sub_expr = sub_expr.expr if sub_expr is not None else None
+    if not isinstance(regex, Expr):
+        regex = Expr.literal(regex)
+
+    def _to_raw(val: Any) -> Any:
+        if val is None:
+            return None
+        if not isinstance(val, Expr):
+            val = Expr.literal(val)
+        return val.expr
 
     return Expr(
         f.regexp_instr(
             values.expr,
             regex.expr,
-            start,
-            n,
-            flags,
-            sub_expr,
+            _to_raw(start),
+            _to_raw(n),
+            _to_raw(flags),
+            _to_raw(sub_expr),
         )
     )
 
 
-def repeat(string: Expr, n: Expr) -> Expr:
+def repeat(string: Expr, n: Expr | int) -> Expr:
     """Repeats the ``string`` to ``n`` times.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["ha"]})
         >>> result = df.select(
-        ...     dfn.functions.repeat(dfn.col("a"), dfn.lit(3)).alias("r"))
+        ...     dfn.functions.repeat(dfn.col("a"), 3).alias("r"))
         >>> result.collect_column("r")[0].as_py()
         'hahaha'
     """
+    if not isinstance(n, Expr):
+        n = Expr.literal(n)
     return Expr(f.repeat(string.expr, n.expr))
 
 
-def replace(string: Expr, from_val: Expr, to_val: Expr) -> Expr:
+def replace(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
     """Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello world"]})
         >>> result = df.select(
-        ...     dfn.functions.replace(dfn.col("a"), dfn.lit("world"),
-        ...     dfn.lit("there")).alias("r"))
+        ...     dfn.functions.replace(dfn.col("a"), "world", "there").alias("r"))
         >>> result.collect_column("r")[0].as_py()
         'hello there'
     """
+    if not isinstance(from_val, Expr):
+        from_val = Expr.literal(from_val)
+    if not isinstance(to_val, Expr):
+        to_val = Expr.literal(to_val)
     return Expr(f.replace(string.expr, from_val.expr, to_val.expr))
 
 
@@ -1694,39 +1753,43 @@ def reverse(arg: Expr) -> Expr:
     return Expr(f.reverse(arg.expr))
 
 
-def right(string: Expr, n: Expr) -> Expr:
+def right(string: Expr, n: Expr | int) -> Expr:
     """Returns the last ``n`` characters in the ``string``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
-        >>> result = df.select(dfn.functions.right(dfn.col("a"), dfn.lit(3)).alias("r"))
+        >>> result = df.select(dfn.functions.right(dfn.col("a"), 3).alias("r"))
         >>> result.collect_column("r")[0].as_py()
         'llo'
     """
+    if not isinstance(n, Expr):
+        n = Expr.literal(n)
     return Expr(f.right(string.expr, n.expr))
 
 
-def round(value: Expr, decimal_places: Expr | None = None) -> Expr:
+def round(value: Expr, decimal_places: Expr | int | None = None) -> Expr:
     """Round the argument to the nearest integer.
 
     If the optional ``decimal_places`` is specified, round to the nearest number of
     decimal places. You can specify a negative number of decimal places. For example
-    ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+    ``round(lit(125.2345), -2)`` would yield a value of ``100.0``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.567]})
-        >>> result = df.select(dfn.functions.round(dfn.col("a"), dfn.lit(2)).alias("r"))
+        >>> result = df.select(dfn.functions.round(dfn.col("a"), 2).alias("r"))
         >>> result.collect_column("r")[0].as_py()
         1.57
     """
     if decimal_places is None:
         decimal_places = Expr.literal(0)
+    elif not isinstance(decimal_places, Expr):
+        decimal_places = Expr.literal(decimal_places)
     return Expr(f.round(value.expr, decimal_places.expr))
 
 
-def rpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
+def rpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) -> Expr:
     """Add right padding to a string.
 
     Extends the string to length length by appending the characters fill (a space
@@ -1736,11 +1799,16 @@ def rpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hi"]})
         >>> result = df.select(
-        ...     dfn.functions.rpad(dfn.col("a"), dfn.lit(5), dfn.lit("!")).alias("r"))
+        ...     dfn.functions.rpad(dfn.col("a"), 5, "!").alias("r"))
         >>> result.collect_column("r")[0].as_py()
         'hi!!!'
     """
-    characters = characters if characters is not None else Expr.literal(" ")
+    if not isinstance(count, Expr):
+        count = Expr.literal(count)
+    if characters is None:
+        characters = Expr.literal(" ")
+    elif not isinstance(characters, Expr):
+        characters = Expr.literal(characters)
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
 
@@ -1856,7 +1924,7 @@ def sinh(arg: Expr) -> Expr:
     return Expr(f.sinh(arg.expr))
 
 
-def split_part(string: Expr, delimiter: Expr, index: Expr) -> Expr:
+def split_part(string: Expr, delimiter: Expr | str, index: Expr | int) -> Expr:
     """Split a string and return one part.
 
     Splits a string based on a delimiter and picks out the desired field based
@@ -1866,12 +1934,14 @@ def split_part(string: Expr, delimiter: Expr, index: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["a,b,c"]})
         >>> result = df.select(
-        ...     dfn.functions.split_part(
-        ...         dfn.col("a"), dfn.lit(","), dfn.lit(2)
-        ...     ).alias("s"))
+        ...     dfn.functions.split_part(dfn.col("a"), ",", 2).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'b'
     """
+    if not isinstance(delimiter, Expr):
+        delimiter = Expr.literal(delimiter)
+    if not isinstance(index, Expr):
+        index = Expr.literal(index)
     return Expr(f.split_part(string.expr, delimiter.expr, index.expr))
 
 
@@ -1888,49 +1958,55 @@ def sqrt(arg: Expr) -> Expr:
     return Expr(f.sqrt(arg.expr))
 
 
-def starts_with(string: Expr, prefix: Expr) -> Expr:
+def starts_with(string: Expr, prefix: Expr | str) -> Expr:
     """Returns true if string starts with prefix.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello_from_datafusion"]})
         >>> result = df.select(
-        ...     dfn.functions.starts_with(dfn.col("a"), dfn.lit("hello")).alias("sw"))
+        ...     dfn.functions.starts_with(dfn.col("a"), "hello").alias("sw"))
         >>> result.collect_column("sw")[0].as_py()
         True
     """
+    if not isinstance(prefix, Expr):
+        prefix = Expr.literal(prefix)
     return Expr(f.starts_with(string.expr, prefix.expr))
 
 
-def strpos(string: Expr, substring: Expr) -> Expr:
+def strpos(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
         >>> result = df.select(
-        ...     dfn.functions.strpos(dfn.col("a"), dfn.lit("llo")).alias("pos"))
+        ...     dfn.functions.strpos(dfn.col("a"), "llo").alias("pos"))
         >>> result.collect_column("pos")[0].as_py()
         3
     """
+    if not isinstance(substring, Expr):
+        substring = Expr.literal(substring)
     return Expr(f.strpos(string.expr, substring.expr))
 
 
-def substr(string: Expr, position: Expr) -> Expr:
+def substr(string: Expr, position: Expr | int) -> Expr:
     """Substring from the ``position`` to the end.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
         >>> result = df.select(
-        ...     dfn.functions.substr(dfn.col("a"), dfn.lit(3)).alias("s"))
+        ...     dfn.functions.substr(dfn.col("a"), 3).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'llo'
     """
+    if not isinstance(position, Expr):
+        position = Expr.literal(position)
     return Expr(f.substr(string.expr, position.expr))
 
 
-def substr_index(string: Expr, delimiter: Expr, count: Expr) -> Expr:
+def substr_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr:
     """Returns an indexed substring.
 
     The return will be the ``string`` from before ``count`` occurrences of
@@ -1940,27 +2016,32 @@ def substr_index(string: Expr, delimiter: Expr, count: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["a.b.c"]})
         >>> result = df.select(
-        ...     dfn.functions.substr_index(dfn.col("a"), dfn.lit("."),
-        ...     dfn.lit(2)).alias("s"))
+        ...     dfn.functions.substr_index(dfn.col("a"), ".", 2).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'a.b'
     """
+    if not isinstance(delimiter, Expr):
+        delimiter = Expr.literal(delimiter)
+    if not isinstance(count, Expr):
+        count = Expr.literal(count)
     return Expr(f.substr_index(string.expr, delimiter.expr, count.expr))
 
 
-def substring(string: Expr, position: Expr, length: Expr) -> Expr:
+def substring(string: Expr, position: Expr | int, length: Expr | int) -> Expr:
     """Substring from the ``position`` with ``length`` characters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello world"]})
         >>> result = df.select(
-        ...     dfn.functions.substring(
-        ...         dfn.col("a"), dfn.lit(1), dfn.lit(5)
-        ...     ).alias("s"))
+        ...     dfn.functions.substring(dfn.col("a"), 1, 5).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'hello'
     """
+    if not isinstance(position, Expr):
+        position = Expr.literal(position)
+    if not isinstance(length, Expr):
+        length = Expr.literal(length)
     return Expr(f.substring(string.expr, position.expr, length.expr))
 
 
@@ -2033,7 +2114,7 @@ def current_timestamp() -> Expr:
     return now()
 
 
-def to_char(arg: Expr, formatter: Expr) -> Expr:
+def to_char(arg: Expr, formatter: Expr | str) -> Expr:
     """Returns a string representation of a date, time, timestamp or duration.
 
     For usage of ``formatter`` see the rust chrono package ``strftime`` package.
@@ -2046,16 +2127,18 @@ def to_char(arg: Expr, formatter: Expr) -> Expr:
         >>> result = df.select(
         ...     dfn.functions.to_char(
         ...         dfn.functions.to_timestamp(dfn.col("a")),
-        ...         dfn.lit("%Y/%m/%d"),
+        ...         "%Y/%m/%d",
         ...     ).alias("formatted")
         ... )
         >>> result.collect_column("formatted")[0].as_py()
         '2021/01/01'
     """
+    if not isinstance(formatter, Expr):
+        formatter = Expr.literal(formatter)
     return Expr(f.to_char(arg.expr, formatter.expr))
 
 
-def date_format(arg: Expr, formatter: Expr) -> Expr:
+def date_format(arg: Expr, formatter: Expr | str) -> Expr:
     """Returns a string representation of a date, time, timestamp or duration.
 
     See Also:
@@ -2267,7 +2350,7 @@ def current_time() -> Expr:
     return Expr(f.current_time())
 
 
-def datepart(part: Expr, date: Expr) -> Expr:
+def datepart(part: Expr | str, date: Expr) -> Expr:
     """Return a specified part of a date.
 
     See Also:
@@ -2276,22 +2359,29 @@ def datepart(part: Expr, date: Expr) -> Expr:
     return date_part(part, date)
 
 
-def date_part(part: Expr, date: Expr) -> Expr:
+def date_part(part: Expr | str, date: Expr) -> Expr:
     """Extracts a subfield from the date.
+
+    Args:
+        part: The part of the date to extract. Must be one of ``"year"``,
+            ``"month"``, ``"day"``, ``"hour"``, ``"minute"``, ``"second"``, etc.
+        date: The date expression to extract from.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
         >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
         >>> result = df.select(
-        ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
+        ...     dfn.functions.date_part("year", dfn.col("a")).alias("y"))
         >>> result.collect_column("y")[0].as_py()
         2021
     """
+    if not isinstance(part, Expr):
+        part = Expr.literal(part)
     return Expr(f.date_part(part.expr, date.expr))
 
 
-def extract(part: Expr, date: Expr) -> Expr:
+def extract(part: Expr | str, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     See Also:
@@ -2300,25 +2390,30 @@ def extract(part: Expr, date: Expr) -> Expr:
     return date_part(part, date)
 
 
-def date_trunc(part: Expr, date: Expr) -> Expr:
+def date_trunc(part: Expr | str, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
+
+    Args:
+        part: The precision to truncate to. Must be one of ``"year"``,
+            ``"month"``, ``"day"``, ``"hour"``, ``"minute"``, ``"second"``, etc.
+        date: The date expression to truncate.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
         >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
         >>> result = df.select(
-        ...     dfn.functions.date_trunc(
-        ...         dfn.lit("month"), dfn.col("a")
-        ...     ).alias("t")
+        ...     dfn.functions.date_trunc("month", dfn.col("a")).alias("t")
         ... )
         >>> str(result.collect_column("t")[0].as_py())
         '2021-07-01 00:00:00'
     """
+    if not isinstance(part, Expr):
+        part = Expr.literal(part)
     return Expr(f.date_trunc(part.expr, date.expr))
 
 
-def datetrunc(part: Expr, date: Expr) -> Expr:
+def datetrunc(part: Expr | str, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     See Also:
@@ -2379,18 +2474,21 @@ def make_time(hour: Expr, minute: Expr, second: Expr) -> Expr:
     return Expr(f.make_time(hour.expr, minute.expr, second.expr))
 
 
-def translate(string: Expr, from_val: Expr, to_val: Expr) -> Expr:
+def translate(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
     """Replaces the characters in ``from_val`` with the counterpart in ``to_val``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello"]})
         >>> result = df.select(
-        ...     dfn.functions.translate(dfn.col("a"), dfn.lit("helo"),
-        ...     dfn.lit("HELO")).alias("t"))
+        ...     dfn.functions.translate(dfn.col("a"), "helo", "HELO").alias("t"))
         >>> result.collect_column("t")[0].as_py()
         'HELLO'
     """
+    if not isinstance(from_val, Expr):
+        from_val = Expr.literal(from_val)
+    if not isinstance(to_val, Expr):
+        to_val = Expr.literal(to_val)
     return Expr(f.translate(string.expr, from_val.expr, to_val.expr))
 
 
@@ -2407,27 +2505,25 @@ def trim(arg: Expr) -> Expr:
     return Expr(f.trim(arg.expr))
 
 
-def trunc(num: Expr, precision: Expr | None = None) -> Expr:
+def trunc(num: Expr, precision: Expr | int | None = None) -> Expr:
     """Truncate the number toward zero with optional precision.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1.567]})
         >>> result = df.select(
-        ...     dfn.functions.trunc(
-        ...         dfn.col("a")
-        ...     ).alias("t"))
+        ...     dfn.functions.trunc(dfn.col("a")).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         1.0
 
         >>> result = df.select(
-        ...     dfn.functions.trunc(
-        ...         dfn.col("a"), precision=dfn.lit(2)
-        ...     ).alias("t"))
+        ...     dfn.functions.trunc(dfn.col("a"), precision=2).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         1.56
     """
     if precision is not None:
+        if not isinstance(precision, Expr):
+            precision = Expr.literal(precision)
         return Expr(f.trunc(num.expr, precision.expr))
     return Expr(f.trunc(num.expr))
 
@@ -2908,17 +3004,19 @@ def list_dims(array: Expr) -> Expr:
     return array_dims(array)
 
 
-def array_element(array: Expr, n: Expr) -> Expr:
+def array_element(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
         >>> result = df.select(
-        ...     dfn.functions.array_element(dfn.col("a"), dfn.lit(2)).alias("result"))
+        ...     dfn.functions.array_element(dfn.col("a"), 2).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         20
     """
+    if not isinstance(n, Expr):
+        n = Expr.literal(n)
     return Expr(f.array_element(array.expr, n.expr))
 
 
@@ -2944,7 +3042,7 @@ def list_empty(array: Expr) -> Expr:
     return array_empty(array)
 
 
-def array_extract(array: Expr, n: Expr) -> Expr:
+def array_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
@@ -2953,7 +3051,7 @@ def array_extract(array: Expr, n: Expr) -> Expr:
     return array_element(array, n)
 
 
-def list_element(array: Expr, n: Expr) -> Expr:
+def list_element(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
@@ -2962,7 +3060,7 @@ def list_element(array: Expr, n: Expr) -> Expr:
     return array_element(array, n)
 
 
-def list_extract(array: Expr, n: Expr) -> Expr:
+def list_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
@@ -3312,22 +3410,25 @@ def list_remove(array: Expr, element: Expr) -> Expr:
     return array_remove(array, element)
 
 
-def array_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
+def array_remove_n(array: Expr, element: Expr, max: Expr | int) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
         >>> result = df.select(
-        ...     dfn.functions.array_remove_n(dfn.col("a"), dfn.lit(1),
-        ...     dfn.lit(2)).alias("result"))
+        ...     dfn.functions.array_remove_n(
+        ...         dfn.col("a"), dfn.lit(1), 2
+        ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [2, 1]
     """
+    if not isinstance(max, Expr):
+        max = Expr.literal(max)
     return Expr(f.array_remove_n(array.expr, element.expr, max.expr))
 
 
-def list_remove_n(array: Expr, element: Expr, max: Expr) -> Expr:
+def list_remove_n(array: Expr, element: Expr, max: Expr | int) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
     See Also:
@@ -3361,21 +3462,23 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
     return array_remove_all(array, element)
 
 
-def array_repeat(element: Expr, count: Expr) -> Expr:
+def array_repeat(element: Expr, count: Expr | int) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
         >>> result = df.select(
-        ...     dfn.functions.array_repeat(dfn.lit(3), dfn.lit(3)).alias("result"))
+        ...     dfn.functions.array_repeat(dfn.lit(3), 3).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [3, 3, 3]
     """
+    if not isinstance(count, Expr):
+        count = Expr.literal(count)
     return Expr(f.array_repeat(element.expr, count.expr))
 
 
-def list_repeat(element: Expr, count: Expr) -> Expr:
+def list_repeat(element: Expr, count: Expr | int) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
     See Also:
@@ -3408,7 +3511,7 @@ def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     return array_replace(array, from_val, to_val)
 
 
-def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr:
+def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr | int) -> Expr:
     """Replace ``n`` occurrences of ``from_val`` with ``to_val``.
 
     Replaces the first ``max`` occurrences of the specified element with another
@@ -3418,15 +3521,18 @@ def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Exp
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
         >>> result = df.select(
-        ...     dfn.functions.array_replace_n(dfn.col("a"), dfn.lit(1), dfn.lit(9),
-        ...     dfn.lit(2)).alias("result"))
+        ...     dfn.functions.array_replace_n(
+        ...         dfn.col("a"), dfn.lit(1), dfn.lit(9), 2
+        ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [9, 2, 9, 1]
     """
+    if not isinstance(max, Expr):
+        max = Expr.literal(max)
     return Expr(f.array_replace_n(array.expr, from_val.expr, to_val.expr, max.expr))
 
 
-def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr:
+def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr | int) -> Expr:
     """Replace ``n`` occurrences of ``from_val`` with ``to_val``.
 
     Replaces the first ``max`` occurrences of the specified element with another
@@ -3509,7 +3615,10 @@ def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -
 
 
 def array_slice(
-    array: Expr, begin: Expr, end: Expr, stride: Expr | None = None
+    array: Expr,
+    begin: Expr | int,
+    end: Expr | int,
+    stride: Expr | int | None = None,
 ) -> Expr:
     """Returns a slice of the array.
 
@@ -3517,9 +3626,7 @@ def array_slice(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
         >>> result = df.select(
-        ...     dfn.functions.array_slice(
-        ...         dfn.col("a"), dfn.lit(2), dfn.lit(3)
-        ...     ).alias("result"))
+        ...     dfn.functions.array_slice(dfn.col("a"), 2, 3).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [2, 3]
 
@@ -3527,18 +3634,25 @@ def array_slice(
 
         >>> result = df.select(
         ...     dfn.functions.array_slice(
-        ...         dfn.col("a"), dfn.lit(1), dfn.lit(4),
-        ...         stride=dfn.lit(2),
+        ...         dfn.col("a"), 1, 4, stride=2,
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 3]
     """
+    if not isinstance(begin, Expr):
+        begin = Expr.literal(begin)
+    if not isinstance(end, Expr):
+        end = Expr.literal(end)
     if stride is not None:
+        if not isinstance(stride, Expr):
+            stride = Expr.literal(stride)
         stride = stride.expr
     return Expr(f.array_slice(array.expr, begin.expr, end.expr, stride))
 
 
-def list_slice(array: Expr, begin: Expr, end: Expr, stride: Expr | None = None) -> Expr:
+def list_slice(
+    array: Expr, begin: Expr | int, end: Expr | int, stride: Expr | int | None = None
+) -> Expr:
     """Returns a slice of the array.
 
     See Also:
@@ -3630,7 +3744,7 @@ def list_except(array1: Expr, array2: Expr) -> Expr:
     return array_except(array1, array2)
 
 
-def array_resize(array: Expr, size: Expr, value: Expr) -> Expr:
+def array_resize(array: Expr, size: Expr | int, value: Expr) -> Expr:
     """Returns an array with the specified size filled.
 
     If ``size`` is greater than the ``array`` length, the additional entries will
@@ -3640,15 +3754,16 @@ def array_resize(array: Expr, size: Expr, value: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [[1, 2]]})
         >>> result = df.select(
-        ...     dfn.functions.array_resize(dfn.col("a"), dfn.lit(4),
-        ...     dfn.lit(0)).alias("result"))
+        ...     dfn.functions.array_resize(dfn.col("a"), 4, dfn.lit(0)).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 0, 0]
     """
+    if not isinstance(size, Expr):
+        size = Expr.literal(size)
     return Expr(f.array_resize(array.expr, size.expr, value.expr))
 
 
-def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
+def list_resize(array: Expr, size: Expr | int, value: Expr) -> Expr:
     """Returns an array with the specified size filled.
 
     If ``size`` is greater than the ``array`` length, the additional entries will be
@@ -3802,7 +3917,7 @@ def list_zip(*arrays: Expr) -> Expr:
 
 
 def string_to_array(
-    string: Expr, delimiter: Expr, null_string: Expr | None = None
+    string: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
 ) -> Expr:
     """Splits a string based on a delimiter and returns an array of parts.
 
@@ -3812,9 +3927,7 @@ def string_to_array(
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello,world"]})
         >>> result = df.select(
-        ...     dfn.functions.string_to_array(
-        ...         dfn.col("a"), dfn.lit(","),
-        ...     ).alias("result"))
+        ...     dfn.functions.string_to_array(dfn.col("a"), ",").alias("result"))
         >>> result.collect_column("result")[0].as_py()
         ['hello', 'world']
 
@@ -3822,17 +3935,24 @@ def string_to_array(
 
         >>> result = df.select(
         ...     dfn.functions.string_to_array(
-        ...         dfn.col("a"), dfn.lit(","), null_string=dfn.lit("world"),
+        ...         dfn.col("a"), ",", null_string="world",
         ...     ).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         ['hello', None]
     """
-    null_expr = null_string.expr if null_string is not None else None
+    if not isinstance(delimiter, Expr):
+        delimiter = Expr.literal(delimiter)
+    if null_string is not None:
+        if not isinstance(null_string, Expr):
+            null_string = Expr.literal(null_string)
+        null_expr = null_string.expr
+    else:
+        null_expr = None
     return Expr(f.string_to_array(string.expr, delimiter.expr, null_expr))
 
 
 def string_to_list(
-    string: Expr, delimiter: Expr, null_string: Expr | None = None
+    string: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
 ) -> Expr:
     """Splits a string based on a delimiter and returns an array of parts.
 
