@@ -18,20 +18,14 @@
 use std::collections::HashMap;
 
 use datafusion::common::{Column, ScalarValue, TableReference};
-use datafusion::execution::FunctionRegistry;
-use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion::functions_window::all_default_window_functions;
-use datafusion::logical_expr::expr::{
-    Alias, FieldMetadata, NullTreatment as DFNullTreatment, WindowFunction, WindowFunctionParams,
-};
-use datafusion::logical_expr::{Expr, ExprFunctionExt, WindowFrame, WindowFunctionDefinition, lit};
+use datafusion::logical_expr::expr::{Alias, FieldMetadata, NullTreatment as DFNullTreatment};
+use datafusion::logical_expr::{Expr, ExprFunctionExt, lit};
 use datafusion::{functions, functions_aggregate, functions_window};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
 use crate::common::data_type::{NullTreatment, PyScalarValue};
-use crate::context::PySessionContext;
-use crate::errors::{PyDataFusionError, PyDataFusionResult};
+use crate::errors::PyDataFusionResult;
 use crate::expr::PyExpr;
 use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
@@ -304,126 +298,6 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
 #[pyfunction]
 fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
     Ok(PyCaseBuilder::new(None).when(when, then))
-}
-
-/// Helper function to find the appropriate window function.
-///
-/// Search procedure:
-/// 1) Search built in window functions, which are being deprecated.
-/// 1) If a session context is provided:
-///      1) search User Defined Aggregate Functions (UDAFs)
-///      1) search registered window functions
-///      1) search registered aggregate functions
-/// 1) If no function has been found, search default aggregate functions.
-///
-/// NOTE: we search the built-ins first because the `UDAF` versions currently do not have the same behavior.
-fn find_window_fn(
-    name: &str,
-    ctx: Option<PySessionContext>,
-) -> PyDataFusionResult<WindowFunctionDefinition> {
-    if let Some(ctx) = ctx {
-        // search UDAFs
-        let udaf = ctx
-            .ctx
-            .udaf(name)
-            .map(WindowFunctionDefinition::AggregateUDF)
-            .ok();
-
-        if let Some(udaf) = udaf {
-            return Ok(udaf);
-        }
-
-        let session_state = ctx.ctx.state();
-
-        // search registered window functions
-        let window_fn = session_state
-            .window_functions()
-            .get(name)
-            .map(|f| WindowFunctionDefinition::WindowUDF(f.clone()));
-
-        if let Some(window_fn) = window_fn {
-            return Ok(window_fn);
-        }
-
-        // search registered aggregate functions
-        let agg_fn = session_state
-            .aggregate_functions()
-            .get(name)
-            .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
-
-        if let Some(agg_fn) = agg_fn {
-            return Ok(agg_fn);
-        }
-    }
-
-    // search default aggregate functions
-    let agg_fn = all_default_aggregate_functions()
-        .iter()
-        .find(|v| v.name() == name || v.aliases().contains(&name.to_string()))
-        .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
-
-    if let Some(agg_fn) = agg_fn {
-        return Ok(agg_fn);
-    }
-
-    // search default window functions
-    let window_fn = all_default_window_functions()
-        .iter()
-        .find(|v| v.name() == name || v.aliases().contains(&name.to_string()))
-        .map(|f| WindowFunctionDefinition::WindowUDF(f.clone()));
-
-    if let Some(window_fn) = window_fn {
-        return Ok(window_fn);
-    }
-
-    Err(PyDataFusionError::Common(format!(
-        "window function `{name}` not found"
-    )))
-}
-
-/// Creates a new Window function expression
-#[allow(clippy::too_many_arguments)]
-#[pyfunction]
-#[pyo3(signature = (name, args, partition_by=None, order_by=None, window_frame=None, filter=None, distinct=false, ctx=None))]
-fn window(
-    name: &str,
-    args: Vec<PyExpr>,
-    partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PySortExpr>>,
-    window_frame: Option<PyWindowFrame>,
-    filter: Option<PyExpr>,
-    distinct: bool,
-    ctx: Option<PySessionContext>,
-) -> PyResult<PyExpr> {
-    let fun = find_window_fn(name, ctx)?;
-
-    let window_frame = window_frame
-        .map(|w| w.into())
-        .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
-    let filter = filter.map(|f| f.expr.into());
-
-    Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::WindowFunction(Box::new(WindowFunction {
-            fun,
-            params: WindowFunctionParams {
-                args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
-                partition_by: partition_by
-                    .unwrap_or_default()
-                    .into_iter()
-                    .map(|x| x.expr)
-                    .collect::<Vec<_>>(),
-                order_by: order_by
-                    .unwrap_or_default()
-                    .into_iter()
-                    .map(|x| x.into())
-                    .collect::<Vec<_>>(),
-                window_frame,
-                filter,
-                distinct,
-                null_treatment: None,
-            },
-        })),
-    })
 }
 
 // Generates a [pyo3] wrapper for associated aggregate functions.
@@ -1186,7 +1060,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_sample))?;
-    m.add_wrapped(wrap_pyfunction!(window))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgx))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgy))?;
     m.add_wrapped(wrap_pyfunction!(regr_count))?;

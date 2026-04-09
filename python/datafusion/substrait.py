@@ -25,11 +25,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
-
 from datafusion.plan import LogicalPlan
 
 from ._internal import substrait as substrait_internal
@@ -86,11 +81,6 @@ class Plan:
             Plan object representing the Substrait plan.
         """
         return Plan(substrait_internal.Plan.from_json(json))
-
-
-@deprecated("Use `Plan` instead.")
-class plan(Plan):  # noqa: N801
-    """See `Plan`."""
 
 
 class Serde:
@@ -158,11 +148,6 @@ class Serde:
         return Plan(substrait_internal.Serde.deserialize_bytes(proto_bytes))
 
 
-@deprecated("Use `Serde` instead.")
-class serde(Serde):  # noqa: N801
-    """See `Serde` instead."""
-
-
 class Producer:
     """Generates substrait plans from a logical plan."""
 
@@ -184,11 +169,6 @@ class Producer:
         )
 
 
-@deprecated("Use `Producer` instead.")
-class producer(Producer):  # noqa: N801
-    """Use `Producer` instead."""
-
-
 class Consumer:
     """Generates a logical plan from a substrait plan."""
 
@@ -206,8 +186,3 @@ class Consumer:
         return LogicalPlan(
             substrait_internal.Consumer.from_substrait_plan(ctx.ctx, plan.plan_internal)
         )
-
-
-@deprecated("Use `Consumer` instead.")
-class consumer(Consumer):  # noqa: N801
-    """Use `Consumer` instead."""

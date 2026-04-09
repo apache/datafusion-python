@@ -468,17 +468,17 @@ impl PyDataFrame {
     fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
-            self.select_columns(vec![key])
+            self.select_exprs(vec![key])
         } else if let Ok(tuple) = key.cast::<PyTuple>() {
             // df[col1, col2, col3]
             let keys = tuple
                 .iter()
                 .map(|item| item.extract::<PyBackedStr>())
                 .collect::<PyResult<Vec<PyBackedStr>>>()?;
-            self.select_columns(keys)
+            self.select_exprs(keys)
         } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
             // df[[col1, col2, col3]]
-            self.select_columns(keys)
+            self.select_exprs(keys)
         } else {
             let message = "DataFrame can only be indexed by string index or indices".to_string();
             Err(PyDataFusionError::Common(message))
@@ -552,13 +552,6 @@ impl PyDataFrame {
             self.df.as_ref().clone().into_view()
         };
         Ok(PyTable::from(table_provider))
-    }
-
-    #[pyo3(signature = (*args))]
-    fn select_columns(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
-        let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
-        let df = self.df.as_ref().clone().select_columns(&args)?;
-        Ok(Self::new(df))
     }
 
     #[pyo3(signature = (*args))]
@@ -888,22 +881,6 @@ impl PyDataFrame {
         };
 
         Ok(Self::new(new_df))
-    }
-
-    #[pyo3(signature = (column, preserve_nulls=true, recursions=None))]
-    fn unnest_column(
-        &self,
-        column: &str,
-        preserve_nulls: bool,
-        recursions: Option<Vec<(String, String, usize)>>,
-    ) -> PyDataFusionResult<Self> {
-        let unnest_options = build_unnest_options(preserve_nulls, recursions);
-        let df = self
-            .df
-            .as_ref()
-            .clone()
-            .unnest_columns_with_options(&[column], unnest_options)?;
-        Ok(Self::new(df))
     }
 
     #[pyo3(signature = (columns, preserve_nulls=true, recursions=None))]

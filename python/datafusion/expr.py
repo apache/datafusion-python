@@ -27,11 +27,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
-
 import pyarrow as pa
 
 from ._internal import expr as expr_internal
@@ -355,16 +350,6 @@ class Expr:  # noqa: PLW1641
     def to_variant(self) -> Any:
         """Convert this expression into a python object if possible."""
         return self.expr.to_variant()
-
-    @deprecated(
-        "display_name() is deprecated. Use :py:meth:`~Expr.schema_name` instead"
-    )
-    def display_name(self) -> str:
-        """Returns the name of this expression as it should appear in a schema.
-
-        This name will not include any CAST expressions.
-        """
-        return self.schema_name()
 
     def schema_name(self) -> str:
         """Returns the name of this expression as it should appear in a schema.

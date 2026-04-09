@@ -129,11 +129,6 @@ class Catalog:
             else schema
         )
 
-    @deprecated("Use `schema` instead.")
-    def database(self, name: str = "public") -> Schema:
-        """Returns the database with the given ``name`` from this catalog."""
-        return self.schema(name)
-
     def register_schema(
         self,
         name: str,
@@ -193,11 +188,6 @@ class Schema:
     def table_exist(self, name: str) -> bool:
         """Determines if a table exists in this schema."""
         return self._raw_schema.table_exist(name)
-
-
-@deprecated("Use `Schema` instead.")
-class Database(Schema):
-    """See `Schema`."""
 
 
 class Table:

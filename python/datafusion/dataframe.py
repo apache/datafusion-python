@@ -489,17 +489,6 @@ class DataFrame:
         raw_exprs = self.df.find_qualified_columns(list(names))
         return [Expr(e) for e in raw_exprs]
 
-    @deprecated(
-        "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
-    )
-    def select_columns(self, *args: str) -> DataFrame:
-        """Filter the DataFrame by columns.
-
-        Returns:
-            DataFrame only containing the specified columns.
-        """
-        return self.select(*args)
-
     def select_exprs(self, *args: str) -> DataFrame:
         """Project arbitrary list of expression strings into a new DataFrame.
 
@@ -1602,15 +1591,6 @@ class DataFrame:
             Number of rows in the DataFrame.
         """
         return self.df.count()
-
-    @deprecated("Use :py:func:`unnest_columns` instead.")
-    def unnest_column(
-        self,
-        column: str,
-        preserve_nulls: bool = True,
-    ) -> DataFrame:
-        """See :py:func:`unnest_columns`."""
-        return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
     def unnest_columns(
         self,

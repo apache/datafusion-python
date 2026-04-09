@@ -31,6 +31,7 @@ from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, WindowFrame, col, lit
 from datafusion import functions as F
+from datafusion.expr import Window
 from util import get_data_path
 
 DATE = "1996-01-01"
@@ -70,7 +71,8 @@ df = df_lineitem.aggregate(
 # Use a window function to find the maximum revenue across the entire dataframe
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(
-    "max_revenue", F.window("max", [col("total_revenue")], window_frame=window_frame)
+    "max_revenue",
+    F.max(col("total_revenue")).over(Window(window_frame=window_frame)),
 )
 
 # Find all suppliers whose total revenue is the same as the maximum

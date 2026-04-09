@@ -32,6 +32,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 import datafusion
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
+from datafusion.expr import Window
 from util import get_data_path
 
 # This is the part we're looking for. Values selected here differ from the spec in order to run
@@ -106,11 +107,8 @@ df = df_partsupp.join(
 window_frame = datafusion.WindowFrame("rows", None, None)
 df = df.with_column(
     "min_cost",
-    F.window(
-        "min",
-        [col("ps_supplycost")],
-        partition_by=[col("ps_partkey")],
-        window_frame=window_frame,
+    F.min(col("ps_supplycost")).over(
+        Window(partition_by=[col("ps_partkey")], window_frame=window_frame)
     ),
 )
 
