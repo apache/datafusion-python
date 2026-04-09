@@ -37,9 +37,15 @@ use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, Table
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
+use datafusion::execution::context::TaskContext;
 use datafusion::logical_expr::SortExpr;
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
+use datafusion::physical_plan::{
+    ExecutionPlan as DFExecutionPlan, collect as df_collect,
+    collect_partitioned as df_collect_partitioned, execute_stream as df_execute_stream,
+    execute_stream_partitioned as df_execute_stream_partitioned,
+};
 use datafusion::prelude::*;
 use datafusion_python_util::{is_ipython_env, spawn_future, wait_for_future};
 use futures::{StreamExt, TryStreamExt};
@@ -308,6 +314,9 @@ pub struct PyDataFrame {
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
     batches: SharedCachedBatches,
+
+    // Cache the last physical plan so that metrics are available after execution.
+    last_plan: Arc<Mutex<Option<Arc<dyn DFExecutionPlan>>>>,
 }
 
 impl PyDataFrame {
@@ -316,6 +325,7 @@ impl PyDataFrame {
         Self {
             df: Arc::new(df),
             batches: Arc::new(Mutex::new(None)),
+            last_plan: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -385,6 +395,20 @@ impl PyDataFrame {
         }
 
         Ok(html_str)
+    }
+
+    /// Create the physical plan, cache it in `last_plan`, and return the plan together
+    /// with a task context. Centralises the repeated three-line pattern that appears in
+    /// `collect`, `collect_partitioned`, `execute_stream`, and `execute_stream_partitioned`.
+    fn create_and_cache_plan(
+        &self,
+        py: Python,
+    ) -> PyDataFusionResult<(Arc<dyn DFExecutionPlan>, Arc<TaskContext>)> {
+        let df = self.df.as_ref().clone();
+        let new_plan = wait_for_future(py, df.create_physical_plan())??;
+        *self.last_plan.lock() = Some(Arc::clone(&new_plan));
+        let task_ctx = Arc::new(self.df.as_ref().task_ctx());
+        Ok((new_plan, task_ctx))
     }
 
     async fn collect_column_inner(&self, column: &str) -> Result<ArrayRef, DataFusionError> {
@@ -646,8 +670,9 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect<'py>(&self, py: Python<'py>) -> PyResult<Vec<Bound<'py, PyAny>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
-            .map_err(PyDataFusionError::from)?;
+        let (plan, task_ctx) = self.create_and_cache_plan(py)?;
+        let batches =
+            wait_for_future(py, df_collect(plan, task_ctx))?.map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
@@ -662,7 +687,8 @@ impl PyDataFrame {
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<Bound<'py, PyAny>>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
+        let (plan, task_ctx) = self.create_and_cache_plan(py)?;
+        let batches = wait_for_future(py, df_collect_partitioned(plan, task_ctx))?
             .map_err(PyDataFusionError::from)?;
 
         batches
@@ -840,7 +866,13 @@ impl PyDataFrame {
     }
 
     /// Get the execution plan for this `DataFrame`
+    ///
+    /// If the DataFrame has already been executed (e.g. via `collect()`),
+    /// returns the cached plan which includes populated metrics.
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
+        if let Some(plan) = self.last_plan.lock().as_ref() {
+            return Ok(PyExecutionPlan::new(Arc::clone(plan)));
+        }
         let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())??;
         Ok(plan.into())
     }
@@ -1198,14 +1230,17 @@ impl PyDataFrame {
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
-        let df = self.df.as_ref().clone();
-        let stream = spawn_future(py, async move { df.execute_stream().await })?;
+        let (plan, task_ctx) = self.create_and_cache_plan(py)?;
+        let stream = spawn_future(py, async move { df_execute_stream(plan, task_ctx) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
-        let df = self.df.as_ref().clone();
-        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
+        let (plan, task_ctx) = self.create_and_cache_plan(py)?;
+        let streams = spawn_future(
+            py,
+            async move { df_execute_stream_partitioned(plan, task_ctx) },
+        )?;
         Ok(streams.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
