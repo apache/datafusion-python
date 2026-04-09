@@ -230,7 +230,11 @@ For each function being updated:
 3. **Update the docstring** examples to use the simpler calling convention
 4. **Preserve backward compatibility** — existing code using `Expr` must still work
 
-### Step 3: Update Docstring Examples
+### Step 3: Update Alias Type Hints
+
+After updating a primary function, find all alias functions that delegate to it (e.g., `instr` and `position` delegate to `strpos`). Update each alias's **parameter type hints** to match the primary function's new signature. Do not add coercion logic to aliases — the primary function handles that.
+
+### Step 4: Update Docstring Examples (primary functions only)
 
 Per the project's CLAUDE.md rules:
 - Every function must have doctest-style examples
@@ -247,7 +251,7 @@ dfn.functions.left(dfn.col("a"), dfn.lit(3))
 dfn.functions.left(dfn.col("a"), 3)
 ```
 
-### Step 4: Run Tests
+### Step 5: Run Tests
 
 After making changes, run the doctests to verify:
 ```bash
@@ -270,7 +274,7 @@ Do NOT create a new helper function for this — the inline check is clear and e
 - **Do not change arguments that represent data columns.** If an argument is the primary data being operated on (e.g., the `string` in `left(string, n)` or the `array` in `array_sort(array)`), it should remain `Expr` only. Users should use `col()` for column references.
 - **Do not change variadic `*args: Expr` parameters.** These represent multiple expressions and should stay as `Expr`.
 - **Do not change arguments where the coercion is ambiguous.** If it is unclear whether a string should be a column name or a literal, leave it as `Expr` and let the user be explicit.
-- **Do not change functions that are simple aliases.** If a function is just `return other_function(...)`, update the primary function only.
+- **Do not add coercion logic to simple aliases.** If a function is just `return other_function(...)`, the primary function handles coercion. However, you **must update the alias's type hints** to match the primary function's signature so that type checkers and documentation accurately reflect what the alias accepts.
 - **Do not change the Rust bindings.** All coercion happens in the Python layer. The Rust functions continue to accept `PyExpr`.
 
 ## Priority Order
