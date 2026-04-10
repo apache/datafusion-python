@@ -73,10 +73,10 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Switch to MSVC Rust toolchain (Windows)
+      - name: Set RUSTFLAGS for Windows GNU linker
         if: matrix.os == 'windows'
         shell: bash
-        run: rustup default stable-x86_64-pc-windows-msvc
+        run: echo "RUSTFLAGS=-C link-arg=-Wl,--exclude-libs=ALL" >> "$GITHUB_ENV"
 
       - name: Run release candidate verification
         shell: bash
