@@ -76,7 +76,7 @@ jobs:
       - name: Set RUSTFLAGS for Windows GNU linker
         if: matrix.os == 'windows'
         shell: bash
-        run: echo "RUSTFLAGS=-C link-arg=--exclude-libs=ALL" >> "$GITHUB_ENV"
+        run: echo "RUSTFLAGS=-C link-arg=-Wl,--exclude-libs=ALL" >> "$GITHUB_ENV"
 
       - name: Run release candidate verification
         shell: bash
