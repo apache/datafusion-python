@@ -16,6 +16,7 @@
 // under the License.
 
 use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
 use std::ptr::NonNull;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -462,7 +463,7 @@ impl PySessionContext {
     pub fn register_listing_table(
         &self,
         name: &str,
-        path: &str,
+        path: PathBuf,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         schema: Option<PyArrowType<Schema>>,
@@ -473,7 +474,7 @@ impl PySessionContext {
             .with_file_extension(file_extension)
             .with_table_partition_cols(convert_partition_cols(table_partition_cols))
             .with_file_sort_order(convert_file_sort_order(file_sort_order));
-        let table_path = ListingTableUrl::parse(path)?;
+        let table_path = ListingTableUrl::parse(path_to_str(&path)?)?;
         let resolved_schema: SchemaRef = match schema {
             Some(s) => Arc::new(s.0),
             None => {
@@ -830,7 +831,7 @@ impl PySessionContext {
     pub fn register_parquet(
         &self,
         name: &str,
-        path: &str,
+        path: PathBuf,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
@@ -847,7 +848,11 @@ impl PySessionContext {
             &schema,
             file_sort_order,
         );
-        wait_for_future(py, self.ctx.register_parquet(name, path, options))??;
+        wait_for_future(
+            py,
+            self.ctx
+                .register_parquet(name, path_to_str(&path)?, options),
+        )??;
         Ok(())
     }
 
@@ -864,14 +869,21 @@ impl PySessionContext {
         let options = convert_csv_options(options)?;
 
         if path.is_instance_of::<PyList>() {
-            let paths = path.extract::<Vec<String>>()?;
+            let paths = path
+                .extract::<Vec<PathBuf>>()?
+                .iter()
+                .map(|p| path_to_str(p).map(str::to_owned))
+                .collect::<PyDataFusionResult<Vec<_>>>()?;
             wait_for_future(
                 py,
                 self.register_csv_from_multiple_paths(name, paths, options),
             )??;
         } else {
-            let path = path.extract::<String>()?;
-            wait_for_future(py, self.ctx.register_csv(name, &path, options))??;
+            let path = path.extract::<PathBuf>()?;
+            wait_for_future(
+                py,
+                self.ctx.register_csv(name, path_to_str(&path)?, options),
+            )??;
         }
 
         Ok(())
@@ -888,7 +900,7 @@ impl PySessionContext {
     pub fn register_json(
         &self,
         name: &str,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
@@ -903,7 +915,10 @@ impl PySessionContext {
             file_extension,
             &schema,
         )?;
-        wait_for_future(py, self.ctx.register_json(name, path, options))??;
+        wait_for_future(
+            py,
+            self.ctx.register_json(name, path_to_str(&path)?, options),
+        )??;
         Ok(())
     }
 
@@ -916,14 +931,17 @@ impl PySessionContext {
     pub fn register_avro(
         &self,
         name: &str,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let options = build_avro_options(table_partition_cols, file_extension, &schema);
-        wait_for_future(py, self.ctx.register_avro(name, path, options))??;
+        wait_for_future(
+            py,
+            self.ctx.register_avro(name, path_to_str(&path)?, options),
+        )??;
         Ok(())
     }
 
@@ -931,23 +949,17 @@ impl PySessionContext {
     pub fn register_arrow(
         &self,
         name: &str,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let mut options = ArrowReadOptions::default().table_partition_cols(
-            table_partition_cols
-                .into_iter()
-                .map(|(name, ty)| (name, ty.0))
-                .collect::<Vec<(String, DataType)>>(),
-        );
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
-
-        let result = self.ctx.register_arrow(name, path, options);
-        wait_for_future(py, result)??;
+        let options = build_arrow_options(table_partition_cols, file_extension, &schema);
+        wait_for_future(
+            py,
+            self.ctx.register_arrow(name, path_to_str(&path)?, options),
+        )??;
         Ok(())
     }
 
@@ -1098,7 +1110,7 @@ impl PySessionContext {
     #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
     pub fn read_json(
         &self,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
@@ -1113,7 +1125,7 @@ impl PySessionContext {
             file_extension,
             &schema,
         )?;
-        let df = wait_for_future(py, self.ctx.read_json(path, options))??;
+        let df = wait_for_future(py, self.ctx.read_json(path_to_str(&path)?, options))??;
         Ok(PyDataFrame::new(df))
     }
 
@@ -1129,9 +1141,12 @@ impl PySessionContext {
         let options = convert_csv_options(options)?;
 
         let paths: Vec<String> = if path.is_instance_of::<PyList>() {
-            path.extract()?
+            path.extract::<Vec<PathBuf>>()?
+                .iter()
+                .map(|p| path_to_str(p).map(str::to_owned))
+                .collect::<PyDataFusionResult<_>>()?
         } else {
-            vec![path.extract()?]
+            vec![path_to_str(&path.extract::<PathBuf>()?)?.to_owned()]
         };
         let df = wait_for_future(py, self.ctx.read_csv(paths, options))??;
         Ok(PyDataFrame::new(df))
@@ -1148,7 +1163,7 @@ impl PySessionContext {
         file_sort_order=None))]
     pub fn read_parquet(
         &self,
-        path: &str,
+        path: PathBuf,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
@@ -1165,7 +1180,10 @@ impl PySessionContext {
             &schema,
             file_sort_order,
         );
-        let df = PyDataFrame::new(wait_for_future(py, self.ctx.read_parquet(path, options))??);
+        let df = PyDataFrame::new(wait_for_future(
+            py,
+            self.ctx.read_parquet(path_to_str(&path)?, options),
+        )??);
         Ok(df)
     }
 
@@ -1173,37 +1191,28 @@ impl PySessionContext {
     #[pyo3(signature = (path, schema=None, table_partition_cols=vec![], file_extension=".avro"))]
     pub fn read_avro(
         &self,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let options = build_avro_options(table_partition_cols, file_extension, &schema);
-        let df = wait_for_future(py, self.ctx.read_avro(path, options))??;
+        let df = wait_for_future(py, self.ctx.read_avro(path_to_str(&path)?, options))??;
         Ok(PyDataFrame::new(df))
     }
 
     #[pyo3(signature = (path, schema=None, file_extension=".arrow", table_partition_cols=vec![]))]
     pub fn read_arrow(
         &self,
-        path: &str,
+        path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let mut options = ArrowReadOptions::default().table_partition_cols(
-            table_partition_cols
-                .into_iter()
-                .map(|(name, ty)| (name, ty.0))
-                .collect::<Vec<(String, DataType)>>(),
-        );
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
-
-        let result = self.ctx.read_arrow(path, options);
-        let df = wait_for_future(py, result)??;
+        let options = build_arrow_options(table_partition_cols, file_extension, &schema);
+        let df = wait_for_future(py, self.ctx.read_arrow(path_to_str(&path)?, options))??;
         Ok(PyDataFrame::new(df))
     }
 
@@ -1344,6 +1353,11 @@ pub fn parse_file_compression_type(
         })
 }
 
+fn path_to_str(path: &Path) -> PyDataFusionResult<&str> {
+    path.to_str()
+        .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string").into())
+}
+
 fn convert_csv_options(
     options: Option<&PyCsvReadOptions>,
 ) -> PyDataFusionResult<CsvReadOptions<'_>> {
@@ -1404,6 +1418,18 @@ fn build_json_options<'a>(
     options.file_extension = file_extension;
     options.schema = schema.as_ref().map(|x| &x.0);
     Ok(options)
+}
+
+fn build_arrow_options<'a>(
+    table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
+    file_extension: &'a str,
+    schema: &'a Option<PyArrowType<Schema>>,
+) -> ArrowReadOptions<'a> {
+    let mut options = ArrowReadOptions::default()
+        .table_partition_cols(convert_partition_cols(table_partition_cols));
+    options.file_extension = file_extension;
+    options.schema = schema.as_ref().map(|x| &x.0);
+    options
 }
 
 fn build_avro_options<'a>(
