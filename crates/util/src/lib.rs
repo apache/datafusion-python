@@ -32,9 +32,10 @@ use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
-use crate::errors::{PyDataFusionError, PyDataFusionResult, to_datafusion_err};
-
 pub mod errors;
+pub use crate::errors::{
+    PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err,
+};
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
