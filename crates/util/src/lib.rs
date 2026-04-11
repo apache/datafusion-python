@@ -33,9 +33,9 @@ use tokio::task::JoinHandle;
 use tokio::time::sleep;
 
 pub mod errors;
-pub use crate::errors::{
-    PyDataFusionError, PyDataFusionResult, py_datafusion_err, to_datafusion_err,
-};
+pub use crate::errors::to_datafusion_err;
+
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
