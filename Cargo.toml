@@ -31,7 +31,7 @@ members = ["crates/core", "crates/util", "examples/datafusion-ffi-example"]
 resolver = "3"
 
 [workspace.dependencies]
-tokio = { version = "1.50" }
+tokio = { version = "1.51" }
 pyo3 = { version = "0.28" }
 pyo3-async-runtimes = { version = "0.28" }
 pyo3-log = "0.13.3"
