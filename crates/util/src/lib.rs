@@ -34,7 +34,6 @@ use tokio::time::sleep;
 
 pub mod errors;
 pub use crate::errors::to_datafusion_err;
-
 use crate::errors::{PyDataFusionError, PyDataFusionResult};
 
 /// Utility to get the Tokio Runtime from Python
