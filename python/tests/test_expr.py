@@ -173,6 +173,24 @@ def test_relational_expr(test_ctx):
     assert df.filter(col("a") == "beta").count() == 0
 
 
+def test_relational_expr_none_uses_null_predicates():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, 2, None]),
+            pa.array(["alpha", None, "gamma"], type=pa.string_view()),
+        ],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], name="batch_with_nulls")
+
+    assert df.filter(col("a") == None).count() == 1  # noqa: E711
+    assert df.filter(col("a") != None).count() == 2  # noqa: E711
+    assert df.filter(col("b") == None).count() == 1  # noqa: E711
+    assert df.filter(col("b") != None).count() == 2  # noqa: E711
+
+
 def test_expr_to_variant():
     # Taken from https://github.com/apache/datafusion-python/issues/781
     from datafusion import SessionContext
