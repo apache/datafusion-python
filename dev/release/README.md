@@ -26,11 +26,11 @@ required due to changes in DataFusion rather than having a large amount of work 
 is available.
 
 When there is a new official release of DataFusion, we update the `main` branch to point to that, update the version
-number, and create a new release branch, such as `branch-0.8`. Once this branch is created, we switch the `main` branch
+number, and create a new release branch, such as `branch-53`. Once this branch is created, we switch the `main` branch
 back to using GitHub dependencies. The release activity (such as generating the changelog) can then happen on the
 release branch without blocking ongoing development in the `main` branch.
 
-We can cherry-pick commits from the `main` branch into `branch-0.8` as needed and then create new patch releases
+We can cherry-pick commits from the `main` branch into `branch-53` as needed and then create new patch releases
 from that branch.
 
 ## Detailed Guide
@@ -54,7 +54,8 @@ Before creating a new release:
 
 - We need to ensure that the main branch does not have any GitHub dependencies
 - a PR should be created and merged to update the major version number of the project
-- A new release branch should be created, such as `branch-0.8`
+- A new release branch should be created, such as `branch-53`
+- It is best to push this branch to the apache repository rather than a personal fork in case patch releases are required.
 
 ## Preparing a Release Candidate
 
@@ -65,14 +66,14 @@ We maintain a `CHANGELOG.md` so our users know what has been changed between rel
 The changelog is generated using a Python script:
 
 ```bash
-$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py 24.0.0 HEAD 25.0.0 > dev/changelog/25.0.0.md
+$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py 52.0.0 HEAD 53.0.0 > dev/changelog/53.0.0.md
 ```
 
 This script creates a changelog from GitHub PRs based on the labels associated with them as well as looking for
 titles starting with `feat:`, `fix:`, or `docs:` . The script will produce output similar to:
 
 ```
-Fetching list of commits between 24.0.0 and HEAD
+Fetching list of commits between 52.0.0 and HEAD
 Fetching pull requests
 Categorizing pull requests
 Generating changelog content
@@ -81,6 +82,7 @@ Generating changelog content
 ### Update the version number
 
 The only place you should need to update the version is in the root `Cargo.toml`.
+You will need to update this both in the workspace section and also in the dependencies.
 After updating the toml file, run `cargo update` to update the cargo lock file.
 If you do not want to update all the dependencies, you can instead run `cargo build`
 which should only update the version number for `datafusion-python`.
@@ -94,14 +96,14 @@ you need to push a tag to start the CI process for release candidates. The follo
 the upstream repository is called `apache`.
 
 ```bash
-git tag 0.8.0-rc1
-git push apache 0.8.0-rc1
+git tag 53.0.0-rc1
+git push apache 53.0.0-rc1
 ```
 
 ### Create a source release
 
 ```bash
-./dev/release/create-tarball.sh 0.8.0 1
+./dev/release/create-tarball.sh 53.0.0 1
 ```
 
 This will also create the email template to send to the mailing list.
@@ -124,10 +126,10 @@ Click on the action and scroll down to the bottom of the page titled "Artifacts"
 contain files such as:
 
 ```text
-datafusion-22.0.0-cp37-abi3-macosx_10_7_x86_64.whl
-datafusion-22.0.0-cp37-abi3-macosx_11_0_arm64.whl
-datafusion-22.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-datafusion-22.0.0-cp37-abi3-win_amd64.whl
+datafusion-53.0.0-cp37-abi3-macosx_10_7_x86_64.whl
+datafusion-53.0.0-cp37-abi3-macosx_11_0_arm64.whl
+datafusion-53.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+datafusion-53.0.0-cp37-abi3-win_amd64.whl
 ```
 
 Upload the wheels to testpypi.
@@ -135,23 +137,23 @@ Upload the wheels to testpypi.
 ```bash
 unzip dist.zip
 python3 -m pip install --upgrade setuptools twine build
-python3 -m twine upload --repository testpypi datafusion-22.0.0-cp37-abi3-*.whl
+python3 -m twine upload --repository testpypi datafusion-53.0.0-cp37-abi3-*.whl
 ```
 
 When prompted for username, enter `__token__`. When prompted for a password, enter a valid GitHub Personal Access Token
 
 #### Publish Python Source Distribution to testpypi
 
-Download the source tarball created in the previous step, untar it, and run:
+Download the source tarball from the Apache server created in the previous step, untar it, and run:
 
 ```bash
 maturin sdist
 ```
 
-This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to testpypi:
+This will create a file named `dist/datafusion-53.0.0.tar.gz`. Upload this to testpypi:
 
 ```bash
-python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
+python3 -m twine upload --repository testpypi dist/datafusion-53.0.0.tar.gz
 ```
 
 ### Run Verify Release Candidate Workflow
@@ -162,8 +164,8 @@ Before sending the vote email, run the manually triggered GitHub Actions workflo
 
 1. Go to https://github.com/apache/datafusion-python/actions/workflows/verify-release-candidate.yml
 2. Click "Run workflow"
-3. Set `version` to the release version (for example, `52.0.0`)
-4. Set `rc_number` to the RC number (for example, `0`)
+3. Set `version` to the release version (for example, `53.0.0`)
+4. Set `rc_number` to the RC number (for example, `1`)
 5. Wait for all jobs to complete successfully
 
 Include a short note in the vote email template that this workflow was run across all OS/architecture
@@ -183,7 +185,7 @@ Releases may be verified using `verify-release-candidate.sh`:
 
 ```bash
 git clone https://github.com/apache/datafusion-python.git
-dev/release/verify-release-candidate.sh 48.0.0 1
+dev/release/verify-release-candidate.sh 53.0.0 1
 ```
 
 Alternatively, one can run unit tests against a testpypi release candidate:
@@ -195,7 +197,7 @@ cd datafusion-python
 
 # checkout the release commit
 git fetch --tags
-git checkout 40.0.0-rc1
+git checkout 53.0.0-rc1
 git submodule update --init --recursive
 
 # create the env
@@ -203,7 +205,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # install release candidate
-pip install --extra-index-url https://test.pypi.org/simple/ datafusion==40.0.0
+pip install --extra-index-url https://test.pypi.org/simple/ datafusion==53.0.0
 
 # install test dependencies
 pip install pytest numpy pytest-asyncio
@@ -224,7 +226,7 @@ Once the vote passes, we can publish the release.
 Create the source release tarball:
 
 ```bash
-./dev/release/release-tarball.sh 0.8.0 1
+./dev/release/release-tarball.sh 53.0.0 1
 ```
 
 ### Publishing Rust Crate to crates.io
@@ -232,7 +234,7 @@ Create the source release tarball:
 Some projects depend on the Rust crate directly, so we publish this to crates.io
 
 ```shell
-cargo publish
+cargo publish --workspace
 ```
 
 ### Publishing Python Artifacts to PyPi
@@ -252,15 +254,15 @@ Pypi packages auto upload to conda-forge via [datafusion feedstock](https://gith
 ### Push the Release Tag
 
 ```bash
-git checkout 0.8.0-rc1
-git tag 0.8.0
-git push apache 0.8.0
+git checkout 53.0.0-rc1
+git tag 53.0.0
+git push apache 53.0.0
 ```
 
 ### Add the release to Apache Reporter
 
 Add the release to https://reporter.apache.org/addrelease.html?datafusion with a version name prefixed with `DATAFUSION-PYTHON`,
-for example `DATAFUSION-PYTHON-31.0.0`.
+for example `DATAFUSION-PYTHON-53.0.0`.
 
 The release information is used to generate a template for a board report (see example from Apache Arrow
 [here](https://github.com/apache/arrow/pull/14357)).
@@ -283,7 +285,7 @@ svn ls https://dist.apache.org/repos/dist/dev/datafusion | grep datafusion-pytho
 Delete a release candidate:
 
 ```bash
-svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/datafusion/apache-datafusion-python-7.1.0-rc1/
+svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/datafusion/apache-datafusion-python-53.0.0-rc1/
 ```
 
 #### Deleting old releases from `release` svn
@@ -299,5 +301,5 @@ svn ls https://dist.apache.org/repos/dist/release/datafusion | grep datafusion-p
 Delete a release:
 
 ```bash
-svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/datafusion/datafusion-python-7.0.0
+svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/datafusion/datafusion-python-52.0.0
 ```
