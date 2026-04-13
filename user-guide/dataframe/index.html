@@ -132,6 +132,11 @@
      DataFrame Rendering
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="execution-metrics.html">
+     Execution Metrics
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toctree-l1 has-children">
@@ -474,6 +479,11 @@
    Built-in Functions
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#execution-metrics">
+   Execution Metrics
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -801,9 +811,17 @@ rendering, formatting options, and advanced styling, see <a class="reference int
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.functions</span></code></a> - Mathematical, string, date/time, and aggregation functions</p></li>
 </ul>
 <p>For a complete list of available functions, see the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.functions</span></code></a> module documentation.</p>
+</section>
+<section id="execution-metrics">
+<h2>Execution Metrics<a class="headerlink" href="#execution-metrics" title="Link to this heading">¶</a></h2>
+<p>After executing a DataFrame (via <code class="docutils literal notranslate"><span class="pre">collect()</span></code>, <code class="docutils literal notranslate"><span class="pre">execute_stream()</span></code>, etc.),
+DataFusion populates per-operator runtime statistics such as row counts and
+compute time. See <a class="reference internal" href="execution-metrics.html"><span class="doc">Execution Metrics</span></a> for a full explanation and
+worked example.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution-metrics.html">Execution Metrics</a></li>
 </ul>
 </div>
 </section>

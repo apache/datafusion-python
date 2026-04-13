@@ -16,6 +16,8 @@ Classes
 
    datafusion.plan.ExecutionPlan
    datafusion.plan.LogicalPlan
+   datafusion.plan.Metric
+   datafusion.plan.MetricsSet
 
 
 Module Contents
@@ -43,6 +45,33 @@ Module Contents
 
 
 
+   .. py:method:: collect_metrics() -> list[tuple[str, MetricsSet]]
+
+      Return runtime statistics for each step of the query execution.
+
+      DataFusion executes a query as a pipeline of operators — for example a
+      data source scan, followed by a filter, followed by a projection. After
+      the DataFrame has been executed (via
+      :py:meth:`~datafusion.DataFrame.collect`,
+      :py:meth:`~datafusion.DataFrame.execute_stream`, etc.), each operator
+      records statistics such as how many rows it produced and how much CPU
+      time it consumed.
+
+      Each entry in the returned list corresponds to one operator that
+      recorded metrics. The first element of the tuple is the operator's
+      description string — the same text shown by
+      :py:meth:`display_indent` — which identifies both the operator type
+      and its key parameters, for example ``"FilterExec: column1@0 > 1"``
+      or ``"DataSourceExec: partitions=1"``.
+
+      :returns: A list of ``(description, MetricsSet)`` tuples ordered from the
+                outermost operator (top of the execution tree) down to the
+                data-source leaves. Only operators that recorded at least one
+                metric are included. Returns an empty list if called before the
+                DataFrame has been executed.
+
+
+
    .. py:method:: display() -> str
 
       Print the physical plan.
@@ -62,6 +91,17 @@ Module Contents
       Create an ExecutionPlan from protobuf bytes.
 
       Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: metrics() -> MetricsSet | None
+
+      Return metrics for this plan node, or None if this plan has no MetricsSet.
+
+      Some operators (e.g. DataSourceExec) eagerly initialize a MetricsSet
+      when the plan is created, so this may return a set even before
+      execution.  Metric *values* (such as ``output_rows``) are only
+      meaningful after the DataFrame has been executed.
 
 
 
@@ -171,5 +211,151 @@ Module Contents
 
 
    .. py:attribute:: _raw_plan
+
+
+.. py:class:: Metric(raw: datafusion._internal.Metric)
+
+   A single execution metric with name, value, partition, and labels.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Return a string representation of the metric.
+
+
+
+   .. py:method:: labels() -> dict[str, str]
+
+      Return the labels associated with this metric.
+
+      Labels provide additional context for a metric.  For example::
+
+          metric.labels()
+          # {'output_type': 'final'}
+
+
+
+   .. py:attribute:: _raw
+
+
+   .. py:property:: name
+      :type: str
+
+
+      The name of this metric (e.g. ``output_rows``).
+
+
+   .. py:property:: partition
+      :type: int | None
+
+
+      The 0-based partition index this metric applies to.
+
+      Returns ``None`` for metrics that are not partition-specific (i.e. they
+      apply globally across all partitions of the operator).
+
+
+   .. py:property:: value
+      :type: int | datetime.datetime | None
+
+
+      The value of this metric.
+
+      Returns an ``int`` for counters, gauges, and time-based metrics
+      (nanoseconds), a :py:class:`~datetime.datetime` (UTC) for
+      ``start_timestamp`` / ``end_timestamp`` metrics, or ``None``
+      when the value has not been set or is not representable.
+
+
+   .. py:property:: value_as_datetime
+      :type: datetime.datetime | None
+
+
+      The value as a UTC :py:class:`~datetime.datetime` for timestamp metrics.
+
+      Returns ``None`` for all non-timestamp metrics and for timestamp
+      metrics whose value has not been set (e.g. before execution).
+
+
+.. py:class:: MetricsSet(raw: datafusion._internal.MetricsSet)
+
+   A set of metrics for a single execution plan operator.
+
+   A physical plan operator runs independently across one or more partitions.
+   :py:meth:`metrics` returns the raw per-partition :py:class:`Metric` objects.
+   The convenience properties (:py:attr:`output_rows`, :py:attr:`elapsed_compute`,
+   etc.) automatically sum the named metric across *all* partitions, giving a
+   single aggregate value for the operator as a whole.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Return a string representation of the metrics set.
+
+
+
+   .. py:method:: metrics() -> list[Metric]
+
+      Return all individual metrics in this set.
+
+
+
+   .. py:method:: sum_by_name(name: str) -> int | None
+
+      Sum the named metric across all partitions.
+
+      Useful for accessing any metric not exposed as a first-class property.
+      Returns ``None`` if no metric with the given name was recorded.
+
+      :param name: The metric name, e.g. ``"output_rows"`` or ``"elapsed_compute"``.
+
+
+
+   .. py:attribute:: _raw
+
+
+   .. py:property:: elapsed_compute
+      :type: int | None
+
+
+      Total CPU time (in nanoseconds) spent inside this operator's execute loop.
+
+      Summed across all partitions. Returns ``None`` if no ``elapsed_compute``
+      metric was recorded.
+
+
+   .. py:property:: output_rows
+      :type: int | None
+
+
+      Sum of output_rows across all partitions.
+
+
+   .. py:property:: spill_count
+      :type: int | None
+
+
+      Number of times this operator spilled data to disk due to memory pressure.
+
+      This is a count of spill events, not a byte count. Summed across all
+      partitions. Returns ``None`` if no ``spill_count`` metric was recorded.
+
+
+   .. py:property:: spilled_bytes
+      :type: int | None
+
+
+      Sum of spilled_bytes across all partitions.
+
+
+   .. py:property:: spilled_rows
+      :type: int | None
+
+
+      Sum of spilled_rows across all partitions.
 
 

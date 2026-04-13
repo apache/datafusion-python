@@ -132,6 +132,11 @@
      DataFrame Rendering
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/dataframe/execution-metrics.html">
+     Execution Metrics
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toctree-l1 has-children">
@@ -450,6 +455,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.collect_metrics">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.collect_metrics()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.display">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -472,6 +486,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          ExecutionPlan.from_proto()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.metrics">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.metrics()
         </span>
        </code>
       </a>
@@ -615,6 +638,172 @@
      </li>
     </ul>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.plan.Metric">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Metric
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.labels">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.labels()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric._raw">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric._raw
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.name
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.partition">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.partition
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.value">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.value
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.Metric.value_as_datetime">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Metric.value_as_datetime
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsSet
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.metrics">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.metrics()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.sum_by_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.sum_by_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet._raw">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet._raw
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.elapsed_compute">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.elapsed_compute
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.output_rows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.output_rows
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.spill_count">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.spill_count
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.spilled_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.spilled_bytes
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.MetricsSet.spilled_rows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         MetricsSet.spilled_rows
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
   </ul>
  </li>
 </ul>
@@ -651,6 +840,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
 <td><p>Logical Plan.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.plan.Metric" title="datafusion.plan.Metric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Metric</span></code></a></p></td>
+<td><p>A single execution metric with name, value, partition, and labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.plan.MetricsSet" title="datafusion.plan.MetricsSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricsSet</span></code></a></p></td>
+<td><p>A set of metrics for a single execution plan operator.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -676,6 +871,34 @@ single value for unary nodes, or two values for binary nodes (such as joins).</p
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.collect_metrics">
+<span class="sig-name descname"><span class="pre">collect_metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.plan.MetricsSet" title="datafusion.plan.MetricsSet"><span class="pre">MetricsSet</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.collect_metrics" title="Link to this definition">¶</a></dt>
+<dd><p>Return runtime statistics for each step of the query execution.</p>
+<p>DataFusion executes a query as a pipeline of operators — for example a
+data source scan, followed by a filter, followed by a projection. After
+the DataFrame has been executed (via
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">collect()</span></code>,
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">execute_stream()</span></code>, etc.), each operator
+records statistics such as how many rows it produced and how much CPU
+time it consumed.</p>
+<p>Each entry in the returned list corresponds to one operator that
+recorded metrics. The first element of the tuple is the operator’s
+description string — the same text shown by
+<a class="reference internal" href="#datafusion.plan.ExecutionPlan.display_indent" title="datafusion.plan.ExecutionPlan.display_indent"><code class="xref py py-meth docutils literal notranslate"><span class="pre">display_indent()</span></code></a> — which identifies both the operator type
+and its key parameters, for example <code class="docutils literal notranslate"><span class="pre">&quot;FilterExec:</span> <span class="pre">column1&#64;0</span> <span class="pre">&gt;</span> <span class="pre">1&quot;</span></code>
+or <code class="docutils literal notranslate"><span class="pre">&quot;DataSourceExec:</span> <span class="pre">partitions=1&quot;</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of <code class="docutils literal notranslate"><span class="pre">(description,</span> <span class="pre">MetricsSet)</span></code> tuples ordered from the
+outermost operator (top of the execution tree) down to the
+data-source leaves. Only operators that recorded at least one
+metric are included. Returns an empty list if called before the
+DataFrame has been executed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.display">
 <span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.display" title="Link to this definition">¶</a></dt>
 <dd><p>Print the physical plan.</p>
@@ -692,6 +915,16 @@ single value for unary nodes, or two values for binary nodes (such as joins).</p
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_proto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.from_proto" title="Link to this definition">¶</a></dt>
 <dd><p>Create an ExecutionPlan from protobuf bytes.</p>
 <p>Tables created in memory from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.MetricsSet" title="datafusion.plan.MetricsSet"><span class="pre">MetricsSet</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.metrics" title="Link to this definition">¶</a></dt>
+<dd><p>Return metrics for this plan node, or None if this plan has no MetricsSet.</p>
+<p>Some operators (e.g. DataSourceExec) eagerly initialize a MetricsSet
+when the plan is created, so this may return a set even before
+execution.  Metric <em>values</em> (such as <code class="docutils literal notranslate"><span class="pre">output_rows</span></code>) are only
+meaningful after the DataFrame has been executed.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -795,6 +1028,143 @@ using the `DOT</cite> language. This format can be visualized using software fro
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan._raw_plan">
 <span class="sig-name descname"><span class="pre">_raw_plan</span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan._raw_plan" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.plan.Metric">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.plan.</span></span><span class="sig-name descname"><span class="pre">Metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Metric</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.plan.Metric" title="Link to this definition">¶</a></dt>
+<dd><p>A single execution metric with name, value, partition, and labels.</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.plan.Metric.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Return a string representation of the metric.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.plan.Metric.labels" title="Link to this definition">¶</a></dt>
+<dd><p>Return the labels associated with this metric.</p>
+<p>Labels provide additional context for a metric.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+<span class="c1"># {&#39;output_type&#39;: &#39;final&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.plan.Metric._raw">
+<span class="sig-name descname"><span class="pre">_raw</span></span><a class="headerlink" href="#datafusion.plan.Metric._raw" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.plan.Metric.name" title="Link to this definition">¶</a></dt>
+<dd><p>The name of this metric (e.g. <code class="docutils literal notranslate"><span class="pre">output_rows</span></code>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.partition">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.Metric.partition" title="Link to this definition">¶</a></dt>
+<dd><p>The 0-based partition index this metric applies to.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for metrics that are not partition-specific (i.e. they
+apply globally across all partitions of the operator).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.value">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datetime.datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.Metric.value" title="Link to this definition">¶</a></dt>
+<dd><p>The value of this metric.</p>
+<p>Returns an <code class="docutils literal notranslate"><span class="pre">int</span></code> for counters, gauges, and time-based metrics
+(nanoseconds), a <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> (UTC) for
+<code class="docutils literal notranslate"><span class="pre">start_timestamp</span></code> / <code class="docutils literal notranslate"><span class="pre">end_timestamp</span></code> metrics, or <code class="docutils literal notranslate"><span class="pre">None</span></code>
+when the value has not been set or is not representable.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.Metric.value_as_datetime">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value_as_datetime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime.datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.Metric.value_as_datetime" title="Link to this definition">¶</a></dt>
+<dd><p>The value as a UTC <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> for timestamp metrics.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for all non-timestamp metrics and for timestamp
+metrics whose value has not been set (e.g. before execution).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.plan.</span></span><span class="sig-name descname"><span class="pre">MetricsSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.MetricsSet</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.plan.MetricsSet" title="Link to this definition">¶</a></dt>
+<dd><p>A set of metrics for a single execution plan operator.</p>
+<p>A physical plan operator runs independently across one or more partitions.
+<a class="reference internal" href="#datafusion.plan.MetricsSet.metrics" title="datafusion.plan.MetricsSet.metrics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">metrics()</span></code></a> returns the raw per-partition <a class="reference internal" href="#datafusion.plan.Metric" title="datafusion.plan.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> objects.
+The convenience properties (<a class="reference internal" href="#datafusion.plan.MetricsSet.output_rows" title="datafusion.plan.MetricsSet.output_rows"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_rows</span></code></a>, <a class="reference internal" href="#datafusion.plan.MetricsSet.elapsed_compute" title="datafusion.plan.MetricsSet.elapsed_compute"><code class="xref py py-attr docutils literal notranslate"><span class="pre">elapsed_compute</span></code></a>,
+etc.) automatically sum the named metric across <em>all</em> partitions, giving a
+single aggregate value for the operator as a whole.</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.plan.MetricsSet.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Return a string representation of the metrics set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.plan.Metric" title="datafusion.plan.Metric"><span class="pre">Metric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.plan.MetricsSet.metrics" title="Link to this definition">¶</a></dt>
+<dd><p>Return all individual metrics in this set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.sum_by_name">
+<span class="sig-name descname"><span class="pre">sum_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.plan.MetricsSet.sum_by_name" title="Link to this definition">¶</a></dt>
+<dd><p>Sum the named metric across all partitions.</p>
+<p>Useful for accessing any metric not exposed as a first-class property.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no metric with the given name was recorded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The metric name, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;output_rows&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;elapsed_compute&quot;</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet._raw">
+<span class="sig-name descname"><span class="pre">_raw</span></span><a class="headerlink" href="#datafusion.plan.MetricsSet._raw" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.elapsed_compute">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">elapsed_compute</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.MetricsSet.elapsed_compute" title="Link to this definition">¶</a></dt>
+<dd><p>Total CPU time (in nanoseconds) spent inside this operator’s execute loop.</p>
+<p>Summed across all partitions. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no <code class="docutils literal notranslate"><span class="pre">elapsed_compute</span></code>
+metric was recorded.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.output_rows">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.MetricsSet.output_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Sum of output_rows across all partitions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.spill_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spill_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.MetricsSet.spill_count" title="Link to this definition">¶</a></dt>
+<dd><p>Number of times this operator spilled data to disk due to memory pressure.</p>
+<p>This is a count of spill events, not a byte count. Summed across all
+partitions. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no <code class="docutils literal notranslate"><span class="pre">spill_count</span></code> metric was recorded.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.spilled_bytes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spilled_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.MetricsSet.spilled_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Sum of spilled_bytes across all partitions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.plan.MetricsSet.spilled_rows">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spilled_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.plan.MetricsSet.spilled_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Sum of spilled_rows across all partitions.</p>
+</dd></dl>
 
 </dd></dl>
 
