@@ -29,10 +29,10 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
+    _to_raw_literal_expr,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
     sort_or_default,
-    _to_raw_literal_expr,
 )
 
 __all__ = [
@@ -1471,9 +1471,6 @@ def regexp_like(
         >>> result.collect_column("m")[0].as_py()
         True
     """
-    # if flags is not None:
-    #     flags = flags.expr
-    # return Expr(f.regexp_like(string.expr, regex.expr, flags))
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     return Expr(f.regexp_like(string.expr, _to_raw_literal_expr(regex), flags))
 
@@ -1508,9 +1505,6 @@ def regexp_match(
         >>> result.collect_column("m")[0].as_py()
         ['hello']
     """
-    # if flags is not None:
-    #     flags = flags.expr
-    # return Expr(f.regexp_match(string.expr, regex.expr, flags))
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     return Expr(f.regexp_match(string.expr, _to_raw_literal_expr(regex), flags))
 
@@ -1553,9 +1547,6 @@ def regexp_replace(
         >>> result.collect_column("r")[0].as_py()
         'aX bX cX'
     """
-    # if flags is not None:
-    #     flags = flags.expr
-    # return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     pattern = _to_raw_literal_expr(pattern)
     replacement = _to_raw_literal_expr(replacement)
@@ -1594,10 +1585,6 @@ def regexp_count(
         >>> result.collect_column("c")[0].as_py()
         1
     """
-    # if flags is not None:
-    #     flags = flags.expr
-    # start = start.expr if start is not None else start
-    # return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     start = _to_raw_literal_expr(start) if start is not None else None
     return Expr(
@@ -1659,10 +1646,6 @@ def regexp_instr(
         >>> result.collect_column("pos")[0].as_py()
         1
     """
-    # start = start.expr if start is not None else None
-    # n = n.expr if n is not None else None
-    # flags = flags.expr if flags is not None else None
-    # sub_expr = sub_expr.expr if sub_expr is not None else None
     regex = _to_raw_literal_expr(regex)
     start = _to_raw_literal_expr(start) if start is not None else None
     n = _to_raw_literal_expr(n) if n is not None else None
