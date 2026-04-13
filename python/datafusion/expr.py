@@ -483,6 +483,8 @@ class Expr:  # noqa: PLW1641
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
+        if rhs is None:
+            return self.is_null()
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
@@ -492,6 +494,8 @@ class Expr:  # noqa: PLW1641
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
+        if rhs is None:
+            return self.is_not_null()
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__ne__(rhs.expr))
