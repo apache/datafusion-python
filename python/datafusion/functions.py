@@ -1441,7 +1441,9 @@ def radians(arg: Expr) -> Expr:
     return Expr(f.radians(arg.expr))
 
 
-def regexp_like(string: Expr, regex: Expr | Any, flags: Expr | Any | None = None) -> Expr:
+def regexp_like(
+    string: Expr, regex: Expr | Any, flags: Expr | Any | None = None
+) -> Expr:
     r"""Find if any regular expression (regex) matches exist.
 
     Tests a string using a regular expression returning true if at least one match,
@@ -1476,7 +1478,9 @@ def regexp_like(string: Expr, regex: Expr | Any, flags: Expr | Any | None = None
     return Expr(f.regexp_like(string.expr, _to_raw_literal_expr(regex), flags))
 
 
-def regexp_match(string: Expr, regex: Expr | Any, flags: Expr | Any | None = None) -> Expr:
+def regexp_match(
+    string: Expr, regex: Expr | Any, flags: Expr | Any | None = None
+) -> Expr:
     r"""Perform regular expression (regex) matching.
 
     Returns an array with each element containing the leftmost-first match of the
@@ -1512,7 +1516,10 @@ def regexp_match(string: Expr, regex: Expr | Any, flags: Expr | Any | None = Non
 
 
 def regexp_replace(
-    string: Expr, pattern: Expr | Any, replacement: Expr | Any, flags: Expr | Any | None = None
+    string: Expr,
+    pattern: Expr | Any,
+    replacement: Expr | Any,
+    flags: Expr | Any | None = None,
 ) -> Expr:
     r"""Replaces substring(s) matching a PCRE-like regular expression.
 
@@ -1556,7 +1563,10 @@ def regexp_replace(
 
 
 def regexp_count(
-    string: Expr, pattern: Expr | Any, start: Expr | Any | None = None, flags: Expr | Any | None = None
+    string: Expr,
+    pattern: Expr | Any,
+    start: Expr | Any | None = None,
+    flags: Expr | Any | None = None,
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -1590,7 +1600,9 @@ def regexp_count(
     # return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     start = _to_raw_literal_expr(start) if start is not None else None
-    return Expr(f.regexp_count(string.expr, _to_raw_literal_expr(pattern), start, flags))
+    return Expr(
+        f.regexp_count(string.expr, _to_raw_literal_expr(pattern), start, flags)
+    )
 
 
 def regexp_instr(

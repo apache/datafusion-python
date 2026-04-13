@@ -276,6 +276,7 @@ def ensure_expr_list(
 
     return list(_iter(exprs))
 
+
 def _to_raw_literal_expr(value: Expr | Any) -> expr_internal.Expr:
     """Convert an expression or Python literal to its raw variant.
 
@@ -293,6 +294,7 @@ def _to_raw_literal_expr(value: Expr | Any) -> expr_internal.Expr:
     if isinstance(value, Expr):
         return value.expr
     return Expr.literal(value).expr
+
 
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
     """Convert a Python expression or column name to its raw variant.
