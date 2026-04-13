@@ -933,6 +933,30 @@ def test_map_functions(func, expected):
             pa.array([1, 1, 0], type=pa.int64()),
         ),
         (
+            f.regexp_like(column("a"), "(ell|orl)"),
+            pa.array([True, True, False]),
+        ),
+        (
+            f.regexp_match(column("a"), "(ell|orl)"),
+            pa.array([["ell"], ["orl"], None], type=pa.list_(pa.string_view())),
+        ),
+        (
+            f.regexp_replace(column("a"), "(ell|orl)", "-"),
+            pa.array(["H-o", "W-d", "!"], type=pa.string_view()),
+        ),
+        (
+            f.regexp_count(column("a"), "(ell|orl)", start=1),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_count(column("a"), "(ELL|ORL)", flags="i"),
+            pa.array([1, 1, 0], type=pa.int64()),
+        ),
+        (
+            f.regexp_instr(column("a"), "([lr])", n=2),
+            pa.array([4, 4, 0], type=pa.int64()),
+        ),
+        (
             f.regexp_instr(column("a"), literal("(ell|orl)")),
             pa.array([2, 2, 0], type=pa.int64()),
         ),

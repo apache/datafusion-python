@@ -32,6 +32,7 @@ from datafusion.expr import (
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
     sort_or_default,
+    _to_raw_literal_expr,
 )
 
 __all__ = [
@@ -1440,7 +1441,7 @@ def radians(arg: Expr) -> Expr:
     return Expr(f.radians(arg.expr))
 
 
-def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
+def regexp_like(string: Expr, regex: Expr | Any, flags: Expr | Any | None = None) -> Expr:
     r"""Find if any regular expression (regex) matches exist.
 
     Tests a string using a regular expression returning true if at least one match,
@@ -1468,12 +1469,14 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         >>> result.collect_column("m")[0].as_py()
         True
     """
-    if flags is not None:
-        flags = flags.expr
-    return Expr(f.regexp_like(string.expr, regex.expr, flags))
+    # if flags is not None:
+    #     flags = flags.expr
+    # return Expr(f.regexp_like(string.expr, regex.expr, flags))
+    flags = _to_raw_literal_expr(flags) if flags is not None else None
+    return Expr(f.regexp_like(string.expr, _to_raw_literal_expr(regex), flags))
 
 
-def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
+def regexp_match(string: Expr, regex: Expr | Any, flags: Expr | Any | None = None) -> Expr:
     r"""Perform regular expression (regex) matching.
 
     Returns an array with each element containing the leftmost-first match of the
@@ -1501,13 +1504,15 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
         >>> result.collect_column("m")[0].as_py()
         ['hello']
     """
-    if flags is not None:
-        flags = flags.expr
-    return Expr(f.regexp_match(string.expr, regex.expr, flags))
+    # if flags is not None:
+    #     flags = flags.expr
+    # return Expr(f.regexp_match(string.expr, regex.expr, flags))
+    flags = _to_raw_literal_expr(flags) if flags is not None else None
+    return Expr(f.regexp_match(string.expr, _to_raw_literal_expr(regex), flags))
 
 
 def regexp_replace(
-    string: Expr, pattern: Expr, replacement: Expr, flags: Expr | None = None
+    string: Expr, pattern: Expr | Any, replacement: Expr | Any, flags: Expr | Any | None = None
 ) -> Expr:
     r"""Replaces substring(s) matching a PCRE-like regular expression.
 
@@ -1541,13 +1546,17 @@ def regexp_replace(
         >>> result.collect_column("r")[0].as_py()
         'aX bX cX'
     """
-    if flags is not None:
-        flags = flags.expr
-    return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
+    # if flags is not None:
+    #     flags = flags.expr
+    # return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
+    flags = _to_raw_literal_expr(flags) if flags is not None else None
+    pattern = _to_raw_literal_expr(pattern)
+    replacement = _to_raw_literal_expr(replacement)
+    return Expr(f.regexp_replace(string.expr, pattern, replacement, flags))
 
 
 def regexp_count(
-    string: Expr, pattern: Expr, start: Expr | None = None, flags: Expr | None = None
+    string: Expr, pattern: Expr | Any, start: Expr | Any | None = None, flags: Expr | Any | None = None
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -1575,19 +1584,22 @@ def regexp_count(
         >>> result.collect_column("c")[0].as_py()
         1
     """
-    if flags is not None:
-        flags = flags.expr
-    start = start.expr if start is not None else start
-    return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
+    # if flags is not None:
+    #     flags = flags.expr
+    # start = start.expr if start is not None else start
+    # return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
+    flags = _to_raw_literal_expr(flags) if flags is not None else None
+    start = _to_raw_literal_expr(start) if start is not None else None
+    return Expr(f.regexp_count(string.expr, _to_raw_literal_expr(pattern), start, flags))
 
 
 def regexp_instr(
     values: Expr,
-    regex: Expr,
-    start: Expr | None = None,
-    n: Expr | None = None,
-    flags: Expr | None = None,
-    sub_expr: Expr | None = None,
+    regex: Expr | Any,
+    start: Expr | Any | None = None,
+    n: Expr | Any | None = None,
+    flags: Expr | Any | None = None,
+    sub_expr: Expr | Any | None = None,
 ) -> Expr:
     r"""Returns the position of a regular expression match in a string.
 
@@ -1635,15 +1647,20 @@ def regexp_instr(
         >>> result.collect_column("pos")[0].as_py()
         1
     """
-    start = start.expr if start is not None else None
-    n = n.expr if n is not None else None
-    flags = flags.expr if flags is not None else None
-    sub_expr = sub_expr.expr if sub_expr is not None else None
+    # start = start.expr if start is not None else None
+    # n = n.expr if n is not None else None
+    # flags = flags.expr if flags is not None else None
+    # sub_expr = sub_expr.expr if sub_expr is not None else None
+    regex = _to_raw_literal_expr(regex)
+    start = _to_raw_literal_expr(start) if start is not None else None
+    n = _to_raw_literal_expr(n) if n is not None else None
+    flags = _to_raw_literal_expr(flags) if flags is not None else None
+    sub_expr = _to_raw_literal_expr(sub_expr) if sub_expr is not None else None
 
     return Expr(
         f.regexp_instr(
             values.expr,
-            regex.expr,
+            regex,
             start,
             n,
             flags,
