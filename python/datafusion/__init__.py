@@ -56,7 +56,7 @@ from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
-from .plan import ExecutionPlan, LogicalPlan
+from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
@@ -86,6 +86,8 @@ __all__ = [
     "Expr",
     "InsertOp",
     "LogicalPlan",
+    "Metric",
+    "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
     "RecordBatch",
