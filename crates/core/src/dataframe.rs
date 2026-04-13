@@ -38,8 +38,8 @@ use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::execution::context::TaskContext;
-use datafusion::logical_expr::SortExpr;
 use datafusion::logical_expr::dml::InsertOp;
+use datafusion::logical_expr::{LogicalPlan, SortExpr};
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::physical_plan::{
     ExecutionPlan as DFExecutionPlan, collect as df_collect,
@@ -707,7 +707,15 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyDataFusionResult<()> {
-        let df = self.df.as_ref().clone().limit(0, Some(num))?;
+        let mut df = self.df.as_ref().clone();
+        df = match self.df.logical_plan() {
+            LogicalPlan::Explain(_) | LogicalPlan::Analyze(_) => {
+                // Explain and Analyzer require they are at the top
+                // of the plan, so do not add a limit.
+                df
+            }
+            _ => df.limit(0, Some(num))?,
+        };
         print_dataframe(py, df)
     }
 
