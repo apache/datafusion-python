@@ -1190,7 +1190,7 @@ def ln(arg: Expr) -> Expr:
     return Expr(f.ln(arg.expr))
 
 
-def log(base: Expr | float, num: Expr) -> Expr:
+def log(base: Expr | int | float, num: Expr) -> Expr:  # noqa: PYI041
     """Returns the logarithm of a number for a particular ``base``.
 
     Examples:
@@ -1416,7 +1416,7 @@ def position(string: Expr, substring: Expr | str) -> Expr:
     return strpos(string, substring)
 
 
-def power(base: Expr, exponent: Expr | float) -> Expr:
+def power(base: Expr, exponent: Expr | int | float) -> Expr:  # noqa: PYI041
     """Returns ``base`` raised to the power of ``exponent``.
 
     Examples:
@@ -1432,7 +1432,7 @@ def power(base: Expr, exponent: Expr | float) -> Expr:
     return Expr(f.power(base.expr, exponent.expr))
 
 
-def pow(base: Expr, exponent: Expr | float) -> Expr:
+def pow(base: Expr, exponent: Expr | int | float) -> Expr:  # noqa: PYI041
     """Returns ``base`` raised to the power of ``exponent``.
 
     See Also:
@@ -1486,7 +1486,11 @@ def regexp_like(
     """
     regex = coerce_to_expr(regex)
     flags = coerce_to_expr_or_none(flags)
-    return Expr(f.regexp_like(string.expr, regex.expr, flags.expr if flags else None))
+    return Expr(
+        f.regexp_like(
+            string.expr, regex.expr, flags.expr if flags is not None else None
+        )
+    )
 
 
 def regexp_match(
@@ -1518,7 +1522,11 @@ def regexp_match(
     """
     regex = coerce_to_expr(regex)
     flags = coerce_to_expr_or_none(flags)
-    return Expr(f.regexp_match(string.expr, regex.expr, flags.expr if flags else None))
+    return Expr(
+        f.regexp_match(
+            string.expr, regex.expr, flags.expr if flags is not None else None
+        )
+    )
 
 
 def regexp_replace(
@@ -1565,7 +1573,7 @@ def regexp_replace(
             string.expr,
             pattern.expr,
             replacement.expr,
-            flags.expr if flags else None,
+            flags.expr if flags is not None else None,
         )
     )
 
@@ -1606,8 +1614,8 @@ def regexp_count(
         f.regexp_count(
             string.expr,
             pattern.expr,
-            start.expr if start else None,
-            flags.expr if flags else None,
+            start.expr if start is not None else None,
+            flags.expr if flags is not None else None,
         )
     )
 
@@ -3587,7 +3595,12 @@ def array_slice(
     end = coerce_to_expr(end)
     stride = coerce_to_expr_or_none(stride)
     return Expr(
-        f.array_slice(array.expr, begin.expr, end.expr, stride.expr if stride else None)
+        f.array_slice(
+            array.expr,
+            begin.expr,
+            end.expr,
+            stride.expr if stride is not None else None,
+        )
     )
 
 
@@ -3886,7 +3899,7 @@ def string_to_array(
         f.string_to_array(
             string.expr,
             delimiter.expr,
-            null_string.expr if null_string else None,
+            null_string.expr if null_string is not None else None,
         )
     )
 
