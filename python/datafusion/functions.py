@@ -29,6 +29,8 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
+    coerce_to_expr,
+    coerce_to_expr_or_none,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
     sort_or_default,
@@ -374,8 +376,7 @@ def encode(expr: Expr, encoding: Expr | str) -> Expr:
         >>> result.collect_column("enc")[0].as_py()
         'aGVsbG8'
     """
-    if not isinstance(encoding, Expr):
-        encoding = Expr.literal(encoding)
+    encoding = coerce_to_expr(encoding)
     return Expr(f.encode(expr.expr, encoding.expr))
 
 
@@ -390,8 +391,7 @@ def decode(expr: Expr, encoding: Expr | str) -> Expr:
         >>> result.collect_column("dec")[0].as_py()
         b'hello'
     """
-    if not isinstance(encoding, Expr):
-        encoding = Expr.literal(encoding)
+    encoding = coerce_to_expr(encoding)
     return Expr(f.decode(expr.expr, encoding.expr))
 
 
@@ -406,8 +406,7 @@ def array_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
         >>> result.collect_column("s")[0].as_py()
         '1,2,3'
     """
-    if not isinstance(delimiter, Expr):
-        delimiter = Expr.literal(delimiter)
+    delimiter = coerce_to_expr(delimiter)
     return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
 
 
@@ -479,8 +478,7 @@ def digest(value: Expr, method: Expr | str) -> Expr:
         >>> len(result.collect_column("d")[0].as_py()) > 0
         True
     """
-    if not isinstance(method, Expr):
-        method = Expr.literal(method)
+    method = coerce_to_expr(method)
     return Expr(f.digest(value.expr, method.expr))
 
 
@@ -495,8 +493,7 @@ def contains(string: Expr, search_str: Expr | str) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         True
     """
-    if not isinstance(search_str, Expr):
-        search_str = Expr.literal(search_str)
+    search_str = coerce_to_expr(search_str)
     return Expr(f.contains(string.expr, search_str.expr))
 
 
@@ -970,8 +967,7 @@ def ends_with(arg: Expr, suffix: Expr | str) -> Expr:
         >>> ends_with_df.collect_column("ends_with")[0].as_py()
         True
     """
-    if not isinstance(suffix, Expr):
-        suffix = Expr.literal(suffix)
+    suffix = coerce_to_expr(suffix)
     return Expr(f.ends_with(arg.expr, suffix.expr))
 
 
@@ -1019,8 +1015,7 @@ def find_in_set(string: Expr, string_list: Expr | str) -> Expr:
         >>> result.collect_column("pos")[0].as_py()
         2
     """
-    if not isinstance(string_list, Expr):
-        string_list = Expr.literal(string_list)
+    string_list = coerce_to_expr(string_list)
     return Expr(f.find_in_set(string.expr, string_list.expr))
 
 
@@ -1163,8 +1158,7 @@ def left(string: Expr, n: Expr | int) -> Expr:
         >>> left_df.collect_column("left")[0].as_py()
         'the'
     """
-    if not isinstance(n, Expr):
-        n = Expr.literal(n)
+    n = coerce_to_expr(n)
     return Expr(f.left(string.expr, n.expr))
 
 
@@ -1179,8 +1173,7 @@ def levenshtein(string1: Expr, string2: Expr | str) -> Expr:
         >>> result.collect_column("d")[0].as_py()
         3
     """
-    if not isinstance(string2, Expr):
-        string2 = Expr.literal(string2)
+    string2 = coerce_to_expr(string2)
     return Expr(f.levenshtein(string1.expr, string2.expr))
 
 
@@ -1209,8 +1202,7 @@ def log(base: Expr | float, num: Expr) -> Expr:
         >>> result.collect_column("log")[0].as_py()
         2.0
     """
-    if not isinstance(base, Expr):
-        base = Expr.literal(base)
+    base = coerce_to_expr(base)
     return Expr(f.log(base.expr, num.expr))
 
 
@@ -1277,12 +1269,8 @@ def lpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
         >>> result.collect_column("lpad")[0].as_py()
         '...the cat'
     """
-    if not isinstance(count, Expr):
-        count = Expr.literal(count)
-    if characters is None:
-        characters = Expr.literal(" ")
-    elif not isinstance(characters, Expr):
-        characters = Expr.literal(characters)
+    count = coerce_to_expr(count)
+    characters = coerce_to_expr(characters if characters is not None else " ")
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
 
@@ -1395,14 +1383,11 @@ def overlay(
         >>> result.collect_column("o")[0].as_py()
         'abXYef'
     """
-    if not isinstance(substring, Expr):
-        substring = Expr.literal(substring)
-    if not isinstance(start, Expr):
-        start = Expr.literal(start)
+    substring = coerce_to_expr(substring)
+    start = coerce_to_expr(start)
     if length is None:
         return Expr(f.overlay(string.expr, substring.expr, start.expr))
-    if not isinstance(length, Expr):
-        length = Expr.literal(length)
+    length = coerce_to_expr(length)
     return Expr(f.overlay(string.expr, substring.expr, start.expr, length.expr))
 
 
@@ -1443,8 +1428,7 @@ def power(base: Expr, exponent: Expr | float) -> Expr:
         >>> result.collect_column("pow")[0].as_py()
         8.0
     """
-    if not isinstance(exponent, Expr):
-        exponent = Expr.literal(exponent)
+    exponent = coerce_to_expr(exponent)
     return Expr(f.power(base.expr, exponent.expr))
 
 
@@ -1500,13 +1484,9 @@ def regexp_like(
         >>> result.collect_column("m")[0].as_py()
         True
     """
-    if not isinstance(regex, Expr):
-        regex = Expr.literal(regex)
-    if flags is not None:
-        if not isinstance(flags, Expr):
-            flags = Expr.literal(flags)
-        flags = flags.expr
-    return Expr(f.regexp_like(string.expr, regex.expr, flags))
+    regex = coerce_to_expr(regex)
+    flags = coerce_to_expr_or_none(flags)
+    return Expr(f.regexp_like(string.expr, regex.expr, flags.expr if flags else None))
 
 
 def regexp_match(
@@ -1536,13 +1516,9 @@ def regexp_match(
         >>> result.collect_column("m")[0].as_py()
         ['hello']
     """
-    if not isinstance(regex, Expr):
-        regex = Expr.literal(regex)
-    if flags is not None:
-        if not isinstance(flags, Expr):
-            flags = Expr.literal(flags)
-        flags = flags.expr
-    return Expr(f.regexp_match(string.expr, regex.expr, flags))
+    regex = coerce_to_expr(regex)
+    flags = coerce_to_expr_or_none(flags)
+    return Expr(f.regexp_match(string.expr, regex.expr, flags.expr if flags else None))
 
 
 def regexp_replace(
@@ -1581,15 +1557,17 @@ def regexp_replace(
         >>> result.collect_column("r")[0].as_py()
         'aX bX cX'
     """
-    if not isinstance(pattern, Expr):
-        pattern = Expr.literal(pattern)
-    if not isinstance(replacement, Expr):
-        replacement = Expr.literal(replacement)
-    if flags is not None:
-        if not isinstance(flags, Expr):
-            flags = Expr.literal(flags)
-        flags = flags.expr
-    return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
+    pattern = coerce_to_expr(pattern)
+    replacement = coerce_to_expr(replacement)
+    flags = coerce_to_expr_or_none(flags)
+    return Expr(
+        f.regexp_replace(
+            string.expr,
+            pattern.expr,
+            replacement.expr,
+            flags.expr if flags else None,
+        )
+    )
 
 
 def regexp_count(
@@ -1621,17 +1599,17 @@ def regexp_count(
         >>> result.collect_column("c")[0].as_py()
         1
     """
-    if not isinstance(pattern, Expr):
-        pattern = Expr.literal(pattern)
-    if start is not None:
-        if not isinstance(start, Expr):
-            start = Expr.literal(start)
-        start = start.expr
-    if flags is not None:
-        if not isinstance(flags, Expr):
-            flags = Expr.literal(flags)
-        flags = flags.expr
-    return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
+    pattern = coerce_to_expr(pattern)
+    start = coerce_to_expr_or_none(start)
+    flags = coerce_to_expr_or_none(flags)
+    return Expr(
+        f.regexp_count(
+            string.expr,
+            pattern.expr,
+            start.expr if start else None,
+            flags.expr if flags else None,
+        )
+    )
 
 
 def regexp_instr(
@@ -1684,16 +1662,11 @@ def regexp_instr(
         >>> result.collect_column("pos")[0].as_py()
         1
     """
-    if not isinstance(regex, Expr):
-        regex = Expr.literal(regex)
-    if start is not None and not isinstance(start, Expr):
-        start = Expr.literal(start)
-    if n is not None and not isinstance(n, Expr):
-        n = Expr.literal(n)
-    if flags is not None and not isinstance(flags, Expr):
-        flags = Expr.literal(flags)
-    if sub_expr is not None and not isinstance(sub_expr, Expr):
-        sub_expr = Expr.literal(sub_expr)
+    regex = coerce_to_expr(regex)
+    start = coerce_to_expr_or_none(start)
+    n = coerce_to_expr_or_none(n)
+    flags = coerce_to_expr_or_none(flags)
+    sub_expr = coerce_to_expr_or_none(sub_expr)
 
     return Expr(
         f.regexp_instr(
@@ -1718,8 +1691,7 @@ def repeat(string: Expr, n: Expr | int) -> Expr:
         >>> result.collect_column("r")[0].as_py()
         'hahaha'
     """
-    if not isinstance(n, Expr):
-        n = Expr.literal(n)
+    n = coerce_to_expr(n)
     return Expr(f.repeat(string.expr, n.expr))
 
 
@@ -1734,10 +1706,8 @@ def replace(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
         >>> result.collect_column("r")[0].as_py()
         'hello there'
     """
-    if not isinstance(from_val, Expr):
-        from_val = Expr.literal(from_val)
-    if not isinstance(to_val, Expr):
-        to_val = Expr.literal(to_val)
+    from_val = coerce_to_expr(from_val)
+    to_val = coerce_to_expr(to_val)
     return Expr(f.replace(string.expr, from_val.expr, to_val.expr))
 
 
@@ -1764,8 +1734,7 @@ def right(string: Expr, n: Expr | int) -> Expr:
         >>> result.collect_column("r")[0].as_py()
         'llo'
     """
-    if not isinstance(n, Expr):
-        n = Expr.literal(n)
+    n = coerce_to_expr(n)
     return Expr(f.right(string.expr, n.expr))
 
 
@@ -1783,10 +1752,7 @@ def round(value: Expr, decimal_places: Expr | int | None = None) -> Expr:
         >>> result.collect_column("r")[0].as_py()
         1.57
     """
-    if decimal_places is None:
-        decimal_places = Expr.literal(0)
-    elif not isinstance(decimal_places, Expr):
-        decimal_places = Expr.literal(decimal_places)
+    decimal_places = coerce_to_expr(decimal_places if decimal_places is not None else 0)
     return Expr(f.round(value.expr, decimal_places.expr))
 
 
@@ -1804,12 +1770,8 @@ def rpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
         >>> result.collect_column("r")[0].as_py()
         'hi!!!'
     """
-    if not isinstance(count, Expr):
-        count = Expr.literal(count)
-    if characters is None:
-        characters = Expr.literal(" ")
-    elif not isinstance(characters, Expr):
-        characters = Expr.literal(characters)
+    count = coerce_to_expr(count)
+    characters = coerce_to_expr(characters if characters is not None else " ")
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
 
@@ -1939,10 +1901,8 @@ def split_part(string: Expr, delimiter: Expr | str, index: Expr | int) -> Expr:
         >>> result.collect_column("s")[0].as_py()
         'b'
     """
-    if not isinstance(delimiter, Expr):
-        delimiter = Expr.literal(delimiter)
-    if not isinstance(index, Expr):
-        index = Expr.literal(index)
+    delimiter = coerce_to_expr(delimiter)
+    index = coerce_to_expr(index)
     return Expr(f.split_part(string.expr, delimiter.expr, index.expr))
 
 
@@ -1970,8 +1930,7 @@ def starts_with(string: Expr, prefix: Expr | str) -> Expr:
         >>> result.collect_column("sw")[0].as_py()
         True
     """
-    if not isinstance(prefix, Expr):
-        prefix = Expr.literal(prefix)
+    prefix = coerce_to_expr(prefix)
     return Expr(f.starts_with(string.expr, prefix.expr))
 
 
@@ -1986,8 +1945,7 @@ def strpos(string: Expr, substring: Expr | str) -> Expr:
         >>> result.collect_column("pos")[0].as_py()
         3
     """
-    if not isinstance(substring, Expr):
-        substring = Expr.literal(substring)
+    substring = coerce_to_expr(substring)
     return Expr(f.strpos(string.expr, substring.expr))
 
 
@@ -2002,8 +1960,7 @@ def substr(string: Expr, position: Expr | int) -> Expr:
         >>> result.collect_column("s")[0].as_py()
         'llo'
     """
-    if not isinstance(position, Expr):
-        position = Expr.literal(position)
+    position = coerce_to_expr(position)
     return Expr(f.substr(string.expr, position.expr))
 
 
@@ -2021,10 +1978,8 @@ def substr_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr
         >>> result.collect_column("s")[0].as_py()
         'a.b'
     """
-    if not isinstance(delimiter, Expr):
-        delimiter = Expr.literal(delimiter)
-    if not isinstance(count, Expr):
-        count = Expr.literal(count)
+    delimiter = coerce_to_expr(delimiter)
+    count = coerce_to_expr(count)
     return Expr(f.substr_index(string.expr, delimiter.expr, count.expr))
 
 
@@ -2039,10 +1994,8 @@ def substring(string: Expr, position: Expr | int, length: Expr | int) -> Expr:
         >>> result.collect_column("s")[0].as_py()
         'hello'
     """
-    if not isinstance(position, Expr):
-        position = Expr.literal(position)
-    if not isinstance(length, Expr):
-        length = Expr.literal(length)
+    position = coerce_to_expr(position)
+    length = coerce_to_expr(length)
     return Expr(f.substring(string.expr, position.expr, length.expr))
 
 
@@ -2134,8 +2087,7 @@ def to_char(arg: Expr, formatter: Expr | str) -> Expr:
         >>> result.collect_column("formatted")[0].as_py()
         '2021/01/01'
     """
-    if not isinstance(formatter, Expr):
-        formatter = Expr.literal(formatter)
+    formatter = coerce_to_expr(formatter)
     return Expr(f.to_char(arg.expr, formatter.expr))
 
 
@@ -2377,8 +2329,7 @@ def date_part(part: Expr | str, date: Expr) -> Expr:
         >>> result.collect_column("y")[0].as_py()
         2021
     """
-    if not isinstance(part, Expr):
-        part = Expr.literal(part)
+    part = coerce_to_expr(part)
     return Expr(f.date_part(part.expr, date.expr))
 
 
@@ -2409,8 +2360,7 @@ def date_trunc(part: Expr | str, date: Expr) -> Expr:
         >>> str(result.collect_column("t")[0].as_py())
         '2021-07-01 00:00:00'
     """
-    if not isinstance(part, Expr):
-        part = Expr.literal(part)
+    part = coerce_to_expr(part)
     return Expr(f.date_trunc(part.expr, date.expr))
 
 
@@ -2486,10 +2436,8 @@ def translate(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
         >>> result.collect_column("t")[0].as_py()
         'HELLO'
     """
-    if not isinstance(from_val, Expr):
-        from_val = Expr.literal(from_val)
-    if not isinstance(to_val, Expr):
-        to_val = Expr.literal(to_val)
+    from_val = coerce_to_expr(from_val)
+    to_val = coerce_to_expr(to_val)
     return Expr(f.translate(string.expr, from_val.expr, to_val.expr))
 
 
@@ -2523,8 +2471,7 @@ def trunc(num: Expr, precision: Expr | int | None = None) -> Expr:
         1.56
     """
     if precision is not None:
-        if not isinstance(precision, Expr):
-            precision = Expr.literal(precision)
+        precision = coerce_to_expr(precision)
         return Expr(f.trunc(num.expr, precision.expr))
     return Expr(f.trunc(num.expr))
 
@@ -3016,8 +2963,7 @@ def array_element(array: Expr, n: Expr | int) -> Expr:
         >>> result.collect_column("result")[0].as_py()
         20
     """
-    if not isinstance(n, Expr):
-        n = Expr.literal(n)
+    n = coerce_to_expr(n)
     return Expr(f.array_element(array.expr, n.expr))
 
 
@@ -3424,8 +3370,7 @@ def array_remove_n(array: Expr, element: Expr, max: Expr | int) -> Expr:
         >>> result.collect_column("result")[0].as_py()
         [2, 1]
     """
-    if not isinstance(max, Expr):
-        max = Expr.literal(max)
+    max = coerce_to_expr(max)
     return Expr(f.array_remove_n(array.expr, element.expr, max.expr))
 
 
@@ -3474,8 +3419,7 @@ def array_repeat(element: Expr, count: Expr | int) -> Expr:
         >>> result.collect_column("result")[0].as_py()
         [3, 3, 3]
     """
-    if not isinstance(count, Expr):
-        count = Expr.literal(count)
+    count = coerce_to_expr(count)
     return Expr(f.array_repeat(element.expr, count.expr))
 
 
@@ -3528,8 +3472,7 @@ def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr | int) 
         >>> result.collect_column("result")[0].as_py()
         [9, 2, 9, 1]
     """
-    if not isinstance(max, Expr):
-        max = Expr.literal(max)
+    max = coerce_to_expr(max)
     return Expr(f.array_replace_n(array.expr, from_val.expr, to_val.expr, max.expr))
 
 
@@ -3640,15 +3583,12 @@ def array_slice(
         >>> result.collect_column("result")[0].as_py()
         [1, 3]
     """
-    if not isinstance(begin, Expr):
-        begin = Expr.literal(begin)
-    if not isinstance(end, Expr):
-        end = Expr.literal(end)
-    if stride is not None:
-        if not isinstance(stride, Expr):
-            stride = Expr.literal(stride)
-        stride = stride.expr
-    return Expr(f.array_slice(array.expr, begin.expr, end.expr, stride))
+    begin = coerce_to_expr(begin)
+    end = coerce_to_expr(end)
+    stride = coerce_to_expr_or_none(stride)
+    return Expr(
+        f.array_slice(array.expr, begin.expr, end.expr, stride.expr if stride else None)
+    )
 
 
 def list_slice(
@@ -3759,8 +3699,7 @@ def array_resize(array: Expr, size: Expr | int, value: Expr) -> Expr:
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 0, 0]
     """
-    if not isinstance(size, Expr):
-        size = Expr.literal(size)
+    size = coerce_to_expr(size)
     return Expr(f.array_resize(array.expr, size.expr, value.expr))
 
 
@@ -3941,15 +3880,15 @@ def string_to_array(
         >>> result.collect_column("result")[0].as_py()
         ['hello', None]
     """
-    if not isinstance(delimiter, Expr):
-        delimiter = Expr.literal(delimiter)
-    if null_string is not None:
-        if not isinstance(null_string, Expr):
-            null_string = Expr.literal(null_string)
-        null_expr = null_string.expr
-    else:
-        null_expr = None
-    return Expr(f.string_to_array(string.expr, delimiter.expr, null_expr))
+    delimiter = coerce_to_expr(delimiter)
+    null_string = coerce_to_expr_or_none(null_string)
+    return Expr(
+        f.string_to_array(
+            string.expr,
+            delimiter.expr,
+            null_string.expr if null_string else None,
+        )
+    )
 
 
 def string_to_list(

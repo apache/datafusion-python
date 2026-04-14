@@ -261,28 +261,46 @@ python -m pytest --doctest-modules python/datafusion/functions.py -v
 
 ## Coercion Helper Pattern
 
-When adding coercion to a function, use this inline pattern:
+Use the coercion helpers from `datafusion.expr` to convert native Python values to `Expr`. These are the complement of `ensure_expr()` — where `ensure_expr` *rejects* non-`Expr` values, the coercion helpers *wrap* them via `Expr.literal()`.
+
+**For required parameters** use `coerce_to_expr`:
 
 ```python
-if not isinstance(arg, Expr):
-    arg = Expr.literal(arg)
+from datafusion.expr import coerce_to_expr
+
+def left(string: Expr, n: Expr | int) -> Expr:
+    n = coerce_to_expr(n)
+    return Expr(f.left(string.expr, n.expr))
 ```
 
-Do NOT create a new helper function for this — the inline check is clear and explicit. The project intentionally uses `ensure_expr()` to reject non-Expr values in contexts where coercion is not wanted; the pythonic coercion is the opposite pattern and should be visually distinct.
-
-**Functions with many optional nullable parameters:** For parameters typed as `Expr | <type> | None`, combine the `None` check with the `isinstance` check inline. Repeat this for each parameter — do not factor it into a local helper function, even if the repetition feels verbose. Consistency across the file is more important than DRY within a single function.
+**For optional nullable parameters** use `coerce_to_expr_or_none`:
 
 ```python
-# For each optional parameter:
-if start is not None and not isinstance(start, Expr):
-    start = Expr.literal(start)
+from datafusion.expr import coerce_to_expr, coerce_to_expr_or_none
 
-# When passing to the Rust binding, extract .expr or pass None:
-f.some_func(
-    values.expr,
-    start.expr if start is not None else None,
-    n.expr if n is not None else None,
-)
+def regexp_count(
+    string: Expr,
+    pattern: Expr | str,
+    start: Expr | int | None = None,
+    flags: Expr | str | None = None,
+) -> Expr:
+    pattern = coerce_to_expr(pattern)
+    start = coerce_to_expr_or_none(start)
+    flags = coerce_to_expr_or_none(flags)
+    return Expr(
+        f.regexp_count(
+            string.expr,
+            pattern.expr,
+            start.expr if start is not None else None,
+            flags.expr if flags is not None else None,
+        )
+    )
+```
+
+Both helpers are defined in `python/datafusion/expr.py` alongside `ensure_expr`. Import them in `functions.py` via:
+
+```python
+from datafusion.expr import coerce_to_expr, coerce_to_expr_or_none
 ```
 
 ## What NOT to Change
