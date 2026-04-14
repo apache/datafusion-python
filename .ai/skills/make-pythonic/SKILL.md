@@ -58,7 +58,13 @@ Check the Rust binding in `crates/core/src/functions.rs` and the upstream DataFu
 
 Check the DataFusion version in `crates/core/Cargo.toml` to find the right directory. Key subdirectories: `string/`, `datetime/`, `math/`, `regex/`.
 
-There are three concrete techniques to check, in order of signal strength:
+For **aggregate functions**, the upstream source is in a separate crate:
+
+```
+~/.cargo/registry/src/index.crates.io-*/datafusion-functions-aggregate-<VERSION>/src/
+```
+
+There are four concrete techniques to check, in order of signal strength:
 
 #### Technique 1: Check `invoke_with_args()` for literal-only enforcement (strongest signal)
 
@@ -74,6 +80,48 @@ let granularity_str = if let ColumnarValue::Scalar(ScalarValue::Utf8(Some(v))) =
 ```
 
 **If you find this pattern:** The argument is **Category B** — accept only the corresponding native Python type (e.g., `str`), not `Expr`. The function will error at runtime with a column expression anyway.
+
+#### Technique 1a: Check `accumulator()` for literal-only enforcement (aggregate functions)
+
+Technique 1 applies to scalar UDFs. Aggregate functions do not have `invoke_with_args()` — instead, they enforce literal-only arguments in their `accumulator()` (or `create_accumulator()`) method, which runs at planning time before any data is processed.
+
+Look for these patterns inside `accumulator()`:
+
+- `get_scalar_value(expr)` — evaluates the expression against an empty batch and errors if it's not a scalar
+- `validate_percentile_expr(expr)` — specific helper used by percentile functions
+- `downcast_ref::<Literal>()` — checks that the physical expression is a literal constant
+
+Example from `approx_percentile_cont.rs`:
+```rust
+fn accumulator(&self, args: AccumulatorArgs) -> Result<ApproxPercentileAccumulator> {
+    let percentile =
+        validate_percentile_expr(&args.exprs[1], "APPROX_PERCENTILE_CONT")?;
+    // ...
+}
+```
+
+Where `validate_percentile_expr` calls `get_scalar_value` and errors with `"must be a literal"`.
+
+Example from `string_agg.rs`:
+```rust
+fn accumulator(&self, acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    let Some(lit) = acc_args.exprs[1].as_any().downcast_ref::<Literal>() else {
+        return not_impl_err!(
+            "The second argument of the string_agg function must be a string literal"
+        );
+    };
+    // ...
+}
+```
+
+**If you find this pattern:** The argument is **Category B** — accept only the corresponding native Python type, not `Expr`. The function will error at planning time with a non-literal expression.
+
+Known aggregate functions with literal-only arguments:
+- `approx_percentile_cont` — `percentile` (float), `num_centroids` (int)
+- `approx_percentile_cont_with_weight` — `percentile` (float), `num_centroids` (int)
+- `percentile_cont` — `percentile` (float)
+- `string_agg` — `delimiter` (str)
+- `nth_value` — `n` (int)
 
 #### Technique 2: Check the `Signature` for data type constraints
 
@@ -125,12 +173,22 @@ let decimal_places: Option<i32> = match args.scalar_arguments.get(1) {
 #### Decision flow
 
 ```
-Is argument rejected at runtime if not a literal?
-  (check invoke_with_args for ColumnarValue::Scalar-only match + exec_err!)
-    → YES: Category B — accept only native type, no Expr
-    → NO: Does the Signature constrain it to a specific data type?
-        → YES: Category A — accept Expr | <native type matching the constraint>
-        → NO: Leave as Expr only
+Is the function a scalar UDF or an aggregate?
+  Scalar UDF:
+    Is argument rejected at runtime if not a literal?
+      (check invoke_with_args for ColumnarValue::Scalar-only match + exec_err!)
+        → YES: Category B — accept only native type, no Expr
+        → NO: continue below
+  Aggregate:
+    Is argument rejected at planning time if not a literal?
+      (check accumulator() for get_scalar_value / validate_percentile_expr /
+       downcast_ref::<Literal>() + error)
+        → YES: Category B — accept only native type, no Expr
+        → NO: continue below
+
+Does the Signature constrain it to a specific data type?
+    → YES: Category A — accept Expr | <native type matching the constraint>
+    → NO: Leave as Expr only
 ```
 
 ## Coercion Categories
