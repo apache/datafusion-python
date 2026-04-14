@@ -64,7 +64,7 @@ For **aggregate functions**, the upstream source is in a separate crate:
 ~/.cargo/registry/src/index.crates.io-*/datafusion-functions-aggregate-<VERSION>/src/
 ```
 
-There are four concrete techniques to check, in order of signal strength:
+There are five concrete techniques to check, in order of signal strength:
 
 #### Technique 1: Check `invoke_with_args()` for literal-only enforcement (strongest signal)
 
@@ -123,6 +123,41 @@ Known aggregate functions with literal-only arguments:
 - `string_agg` — `delimiter` (str)
 - `nth_value` — `n` (int)
 
+#### Technique 1b: Check `partition_evaluator()` for literal-only enforcement (window functions)
+
+Window functions do not have `invoke_with_args()` or `accumulator()`. Instead, they enforce literal-only arguments in their `partition_evaluator()` method, which constructs the evaluator that processes each partition.
+
+The upstream source is in a separate crate:
+
+```
+~/.cargo/registry/src/index.crates.io-*/datafusion-functions-window-<VERSION>/src/
+```
+
+Look for `get_scalar_value_from_args()` calls inside `partition_evaluator()`. This helper (defined in the window crate's `utils.rs`) calls `downcast_ref::<Literal>()` and errors with `"There is only support Literal types for field at idx: {index} in Window Function"`.
+
+Example from `ntile.rs`:
+```rust
+fn partition_evaluator(
+    &self,
+    partition_evaluator_args: PartitionEvaluatorArgs,
+) -> Result<Box<dyn PartitionEvaluator>> {
+    let scalar_n =
+        get_scalar_value_from_args(partition_evaluator_args.input_exprs(), 0)?
+            .ok_or_else(|| {
+                exec_datafusion_err!("NTILE requires a positive integer")
+            })?;
+    // ...
+}
+```
+
+**If you find this pattern:** The argument is **Category B** — accept only the corresponding native Python type, not `Expr`. The function will error at planning time with a non-literal expression.
+
+Known window functions with literal-only arguments:
+- `ntile` — `n` (int)
+- `lead` — `offset` (int), `default_value` (scalar)
+- `lag` — `offset` (int), `default_value` (scalar)
+- `nth_value` — `n` (int)
+
 #### Technique 2: Check the `Signature` for data type constraints
 
 Each function defines a `Signature::coercible(...)` that specifies what data types each argument accepts, using `Coercion` entries. This tells you the expected **data type** even if it doesn't enforce literal-only.
@@ -173,7 +208,7 @@ let decimal_places: Option<i32> = match args.scalar_arguments.get(1) {
 #### Decision flow
 
 ```
-Is the function a scalar UDF or an aggregate?
+What kind of function is this?
   Scalar UDF:
     Is argument rejected at runtime if not a literal?
       (check invoke_with_args for ColumnarValue::Scalar-only match + exec_err!)
@@ -182,6 +217,12 @@ Is the function a scalar UDF or an aggregate?
   Aggregate:
     Is argument rejected at planning time if not a literal?
       (check accumulator() for get_scalar_value / validate_percentile_expr /
+       downcast_ref::<Literal>() + error)
+        → YES: Category B — accept only native type, no Expr
+        → NO: continue below
+  Window:
+    Is argument rejected at planning time if not a literal?
+      (check partition_evaluator() for get_scalar_value_from_args /
        downcast_ref::<Literal>() + error)
         → YES: Category B — accept only native type, no Expr
         → NO: continue below
