@@ -412,6 +412,16 @@ def test_show_empty(df, capsys):
     assert "DataFrame has no rows" in captured.out
 
 
+def test_show_on_explain(ctx, capsys):
+    ctx.sql("explain select 1").show()
+    captured = capsys.readouterr()
+    assert "1 as Int64(1)" in captured.out
+
+    ctx.sql("explain analyze select 1").show()
+    captured = capsys.readouterr()
+    assert "1 as Int64(1)" in captured.out
+
+
 def test_sort(df):
     df = df.sort(column("b").sort(ascending=False))
 
