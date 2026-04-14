@@ -1051,7 +1051,7 @@ def test_coerce_to_expr_wraps_float():
 
 
 def test_coerce_to_expr_wraps_bool():
-    result = coerce_to_expr(True)  # noqa: FBT003
+    result = coerce_to_expr(True)
     assert isinstance(result, type(lit(True)))
 
 
@@ -1075,8 +1075,8 @@ def test_coerce_to_expr_or_none_passes_expr_through():
     "value",
     [
         # Boolean
-        pa.scalar(True, type=pa.bool_()),  # noqa: FBT003
-        pa.scalar(False, type=pa.bool_()),  # noqa: FBT003
+        pa.scalar(True, type=pa.bool_()),
+        pa.scalar(False, type=pa.bool_()),
         # Integers - signed
         pa.scalar(127, type=pa.int8()),
         pa.scalar(-128, type=pa.int8()),
