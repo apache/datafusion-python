@@ -1582,11 +1582,19 @@ def regexp_count(
         >>> result.collect_column("c")[0].as_py()
         1
     """
+    pattern = _to_raw_literal_expr(pattern)
     flags = _to_raw_literal_expr(flags) if flags is not None else None
     start = _to_raw_literal_expr(start) if start is not None else None
-    return Expr(
-        f.regexp_count(string.expr, _to_raw_literal_expr(pattern), start, flags)
-    )
+
+    # If Python callers pass only flags, supply the default start=1.
+    # Accepted call forms in Datafusion include:
+    # two arguments: string + pattern
+    # three arguments: string + pattern + start
+    # four arguments: string + pattern + start + flags
+    if start is None and flags is not None:
+        start = _to_raw_literal_expr(1)
+
+    return Expr(f.regexp_count(string.expr, pattern, start, flags))
 
 
 def regexp_instr(
