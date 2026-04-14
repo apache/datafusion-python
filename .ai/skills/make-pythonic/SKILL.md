@@ -116,12 +116,7 @@ fn accumulator(&self, acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>>
 
 **If you find this pattern:** The argument is **Category B** — accept only the corresponding native Python type, not `Expr`. The function will error at planning time with a non-literal expression.
 
-Known aggregate functions with literal-only arguments:
-- `approx_percentile_cont` — `percentile` (float), `num_centroids` (int)
-- `approx_percentile_cont_with_weight` — `percentile` (float), `num_centroids` (int)
-- `percentile_cont` — `percentile` (float)
-- `string_agg` — `delimiter` (str)
-- `nth_value` — `n` (int)
+To discover which aggregate functions have literal-only arguments, search the upstream aggregate crate for `get_scalar_value`, `validate_percentile_expr`, and `downcast_ref::<Literal>()` inside `accumulator()` methods. For example, you should expect to find `approx_percentile_cont` (percentile) and `string_agg` (delimiter) among the results.
 
 #### Technique 1b: Check `partition_evaluator()` for literal-only enforcement (window functions)
 
@@ -152,11 +147,7 @@ fn partition_evaluator(
 
 **If you find this pattern:** The argument is **Category B** — accept only the corresponding native Python type, not `Expr`. The function will error at planning time with a non-literal expression.
 
-Known window functions with literal-only arguments:
-- `ntile` — `n` (int)
-- `lead` — `offset` (int), `default_value` (scalar)
-- `lag` — `offset` (int), `default_value` (scalar)
-- `nth_value` — `n` (int)
+To discover which window functions have literal-only arguments, search the upstream window crate for `get_scalar_value_from_args` inside `partition_evaluator()` methods. For example, you should expect to find `ntile` (n) and `lead`/`lag` (offset, default_value) among the results.
 
 #### Technique 2: Check the `Signature` for data type constraints
 
