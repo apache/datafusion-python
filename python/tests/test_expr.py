@@ -53,6 +53,8 @@ from datafusion.expr import (
     TransactionEnd,
     TransactionStart,
     Values,
+    coerce_to_expr,
+    coerce_to_expr_or_none,
     ensure_expr,
     ensure_expr_list,
 )
@@ -1030,12 +1032,55 @@ def test_ensure_expr_list_bytearray():
         ensure_expr_list(bytearray(b"a"))
 
 
+def test_coerce_to_expr_passes_expr_through():
+    e = col("a")
+    result = coerce_to_expr(e)
+    assert isinstance(result, type(e))
+    assert str(result) == str(e)
+
+
+def test_coerce_to_expr_wraps_int():
+    result = coerce_to_expr(42)
+    assert isinstance(result, type(lit(42)))
+
+
+def test_coerce_to_expr_wraps_str():
+    result = coerce_to_expr("hello")
+    assert isinstance(result, type(lit("hello")))
+
+
+def test_coerce_to_expr_wraps_float():
+    result = coerce_to_expr(3.14)
+    assert isinstance(result, type(lit(3.14)))
+
+
+def test_coerce_to_expr_wraps_bool():
+    result = coerce_to_expr(True)
+    assert isinstance(result, type(lit(True)))
+
+
+def test_coerce_to_expr_or_none_returns_none():
+    assert coerce_to_expr_or_none(None) is None
+
+
+def test_coerce_to_expr_or_none_wraps_value():
+    result = coerce_to_expr_or_none(42)
+    assert isinstance(result, type(lit(42)))
+
+
+def test_coerce_to_expr_or_none_passes_expr_through():
+    e = col("a")
+    result = coerce_to_expr_or_none(e)
+    assert isinstance(result, type(e))
+    assert str(result) == str(e)
+
+
 @pytest.mark.parametrize(
     "value",
     [
         # Boolean
-        pa.scalar(True, type=pa.bool_()),  # noqa: FBT003
-        pa.scalar(False, type=pa.bool_()),  # noqa: FBT003
+        pa.scalar(True, type=pa.bool_()),
+        pa.scalar(False, type=pa.bool_()),
         # Integers - signed
         pa.scalar(127, type=pa.int8()),
         pa.scalar(-128, type=pa.int8()),

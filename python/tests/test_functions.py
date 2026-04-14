@@ -2099,3 +2099,96 @@ def test_gen_series_with_step():
         f.gen_series(literal(1), literal(10), literal(3)).alias("v")
     ).collect()
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
+
+
+class TestPythonicNativeTypes:
+    """Tests for accepting native Python types instead of requiring lit()."""
+
+    def test_split_part_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a,b,c"]})
+        result = df.select(f.split_part(column("a"), ",", 2).alias("s")).collect()
+        assert result[0].column(0)[0].as_py() == "b"
+
+    def test_encode_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["hello"]})
+        result = df.select(f.encode(column("a"), "base64").alias("e")).collect()
+        assert result[0].column(0)[0].as_py() == "aGVsbG8"
+
+    def test_date_part_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+        df = df.select(f.to_timestamp(column("a")).alias("a"))
+        result = df.select(f.date_part("year", column("a")).alias("y")).collect()
+        assert result[0].column(0)[0].as_py() == 2021
+
+    def test_date_trunc_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+        df = df.select(f.to_timestamp(column("a")).alias("a"))
+        result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
+        assert str(result[0].column(0)[0].as_py()) == "2021-07-01 00:00:00"
+
+    def test_left_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["the cat"]})
+        result = df.select(f.left(column("a"), 3).alias("l")).collect()
+        assert result[0].column(0)[0].as_py() == "the"
+
+    def test_round_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [1.567]})
+        result = df.select(f.round(column("a"), 2).alias("r")).collect()
+        assert result[0].column(0)[0].as_py() == 1.57
+
+    def test_regexp_count_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["abcabc"]})
+        result = df.select(
+            f.regexp_count(column("a"), "abc", start=4, flags="i").alias("c")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == 1
+
+    def test_log_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [100.0]})
+        result = df.select(f.log(10, column("a")).alias("l")).collect()
+        assert result[0].column(0)[0].as_py() == 2.0
+
+    def test_power_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [2.0]})
+        result = df.select(f.power(column("a"), 3).alias("p")).collect()
+        assert result[0].column(0)[0].as_py() == 8.0
+
+    def test_array_slice_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+        result = df.select(f.array_slice(column("a"), 2, 3).alias("s")).collect()
+        assert result[0].column(0)[0].as_py() == [2, 3]
+
+    def test_string_to_array_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["hello,NA,world"]})
+        result = df.select(
+            f.string_to_array(column("a"), ",", null_string="NA").alias("v")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == ["hello", None, "world"]
+
+    def test_regexp_replace_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a1 b2 c3"]})
+        result = df.select(
+            f.regexp_replace(column("a"), r"\d+", "X", flags="g").alias("r")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == "aX bX cX"
+
+    def test_backward_compat_with_lit(self):
+        """Verify that existing code using lit() still works."""
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a,b,c"]})
+        result = df.select(
+            f.split_part(column("a"), literal(","), literal(2)).alias("s")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == "b"
