@@ -1454,8 +1454,7 @@ def regexp_like(
         >>> df = ctx.from_pydict({"a": ["hello123"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_like(
-        ...         dfn.col("a"), dfn.lit("\\d+")
-        ...     ).alias("m")
+        ...         dfn.col("a"), "\\d+").alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         True
@@ -1464,8 +1463,8 @@ def regexp_like(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_like(
-        ...         dfn.col("a"), dfn.lit("HELLO"),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "HELLO",
+        ...         flags="i",
         ...     ).alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
@@ -1488,8 +1487,7 @@ def regexp_match(
         >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_match(
-        ...         dfn.col("a"), dfn.lit("(\\d+)")
-        ...     ).alias("m")
+        ...         dfn.col("a"), "(\\d+)").alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
         ['42']
@@ -1498,8 +1496,8 @@ def regexp_match(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_match(
-        ...         dfn.col("a"), dfn.lit("(HELLO)"),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "(HELLO)",
+        ...         flags="i",
         ...     ).alias("m")
         ... )
         >>> result.collect_column("m")[0].as_py()
@@ -1528,8 +1526,8 @@ def regexp_replace(
         >>> df = ctx.from_pydict({"a": ["hello 42"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_replace(
-        ...         dfn.col("a"), dfn.lit("\\d+"),
-        ...         dfn.lit("XX")
+        ...         dfn.col("a"), "\\d+",
+        ...         "XX"
         ...     ).alias("r")
         ... )
         >>> result.collect_column("r")[0].as_py()
@@ -1540,8 +1538,8 @@ def regexp_replace(
         >>> df = ctx.from_pydict({"a": ["a1 b2 c3"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_replace(
-        ...         dfn.col("a"), dfn.lit("\\d+"),
-        ...         dfn.lit("X"), flags=dfn.lit("g"),
+        ...         dfn.col("a"), "\\d+",
+        ...         "X", flags="g",
         ...     ).alias("r")
         ... )
         >>> result.collect_column("r")[0].as_py()
@@ -1556,7 +1554,7 @@ def regexp_replace(
 def regexp_count(
     string: Expr,
     pattern: Expr | str,
-    start: Expr | str | None = None,
+    start: Expr | int | None = None,
     flags: Expr | str | None = None,
 ) -> Expr:
     """Returns the number of matches in a string.
@@ -1569,8 +1567,7 @@ def regexp_count(
         >>> df = ctx.from_pydict({"a": ["abcabc"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_count(
-        ...         dfn.col("a"), dfn.lit("abc")
-        ...     ).alias("c"))
+        ...         dfn.col("a"), "abc").alias("c"))
         >>> result.collect_column("c")[0].as_py()
         2
 
@@ -1579,8 +1576,8 @@ def regexp_count(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_count(
-        ...         dfn.col("a"), dfn.lit("ABC"),
-        ...         start=dfn.lit(4), flags=dfn.lit("i"),
+        ...         dfn.col("a"), "ABC",
+        ...         start=4, flags="i",
         ...     ).alias("c"))
         >>> result.collect_column("c")[0].as_py()
         1
@@ -1595,10 +1592,10 @@ def regexp_count(
 def regexp_instr(
     values: Expr,
     regex: Expr | str,
-    start: Expr | str | None = None,
-    n: Expr | str | None = None,
+    start: Expr | int | None = None,
+    n: Expr | int | None = None,
     flags: Expr | str | None = None,
-    sub_expr: Expr | str | None = None,
+    sub_expr: Expr | int | None = None,
 ) -> Expr:
     r"""Returns the position of a regular expression match in a string.
 
@@ -1615,8 +1612,7 @@ def regexp_instr(
         >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("\\d+")
-        ...     ).alias("pos")
+        ...         dfn.col("a"), "\\d+").alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
         7
@@ -1627,9 +1623,9 @@ def regexp_instr(
         >>> df = ctx.from_pydict({"a": ["abc ABC abc"]})
         >>> result = df.select(
         ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("abc"),
-        ...         start=dfn.lit(2), n=dfn.lit(1),
-        ...         flags=dfn.lit("i"),
+        ...         dfn.col("a"), "abc",
+        ...         start=2, n=1,
+        ...         flags="i",
         ...     ).alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
@@ -1639,8 +1635,8 @@ def regexp_instr(
 
         >>> result = df.select(
         ...     dfn.functions.regexp_instr(
-        ...         dfn.col("a"), dfn.lit("(abc)"),
-        ...         sub_expr=dfn.lit(1),
+        ...         dfn.col("a"), "(abc)",
+        ...         sub_expr=1,
         ...     ).alias("pos")
         ... )
         >>> result.collect_column("pos")[0].as_py()
