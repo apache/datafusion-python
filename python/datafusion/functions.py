@@ -1442,7 +1442,7 @@ def radians(arg: Expr) -> Expr:
 
 
 def regexp_like(
-    string: Expr, regex: Expr | Any, flags: Expr | Any | None = None
+    string: Expr, regex: Expr | str, flags: Expr | str | None = None
 ) -> Expr:
     r"""Find if any regular expression (regex) matches exist.
 
@@ -1476,7 +1476,7 @@ def regexp_like(
 
 
 def regexp_match(
-    string: Expr, regex: Expr | Any, flags: Expr | Any | None = None
+    string: Expr, regex: Expr | str, flags: Expr | str | None = None
 ) -> Expr:
     r"""Perform regular expression (regex) matching.
 
@@ -1511,9 +1511,9 @@ def regexp_match(
 
 def regexp_replace(
     string: Expr,
-    pattern: Expr | Any,
-    replacement: Expr | Any,
-    flags: Expr | Any | None = None,
+    pattern: Expr | str,
+    replacement: Expr | str,
+    flags: Expr | str | None = None,
 ) -> Expr:
     r"""Replaces substring(s) matching a PCRE-like regular expression.
 
@@ -1555,9 +1555,9 @@ def regexp_replace(
 
 def regexp_count(
     string: Expr,
-    pattern: Expr | Any,
-    start: Expr | Any | None = None,
-    flags: Expr | Any | None = None,
+    pattern: Expr | str,
+    start: Expr | str | None = None,
+    flags: Expr | str | None = None,
 ) -> Expr:
     """Returns the number of matches in a string.
 
@@ -1594,11 +1594,11 @@ def regexp_count(
 
 def regexp_instr(
     values: Expr,
-    regex: Expr | Any,
-    start: Expr | Any | None = None,
-    n: Expr | Any | None = None,
-    flags: Expr | Any | None = None,
-    sub_expr: Expr | Any | None = None,
+    regex: Expr | str,
+    start: Expr | str | None = None,
+    n: Expr | str | None = None,
+    flags: Expr | str | None = None,
+    sub_expr: Expr | str | None = None,
 ) -> Expr:
     r"""Returns the position of a regular expression match in a string.
 
