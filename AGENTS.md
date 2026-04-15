@@ -49,24 +49,14 @@ Every pull request must follow the template in
 ## Pre-commit Checks
 
 Always run pre-commit checks **before** committing. The hooks are defined in
-`.pre-commit-config.yaml` and include:
-
-- **actionlint** — lint GitHub Actions workflow files
-- **ruff** — Python linter
-- **ruff-format** — Python formatter
-- **cargo fmt** — Rust formatter (nightly)
-- **cargo clippy** — Rust linter
-- **codespell** — spell checker
-- **uv-lock** — keep the uv lockfile in sync
-
-Run all hooks with:
+`.pre-commit-config.yaml` and run automatically on `git commit` if pre-commit
+is installed as a git hook. To run all hooks manually:
 
 ```bash
 pre-commit run --all-files
 ```
 
-Or they will run automatically on `git commit` if pre-commit is installed as a
-git hook. Fix any failures before committing.
+Fix any failures before committing.
 
 ## Python Function Docstrings
 
