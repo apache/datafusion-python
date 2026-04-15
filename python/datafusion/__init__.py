@@ -15,10 +15,45 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""DataFusion python package.
+"""DataFusion: an in-process query engine built on Apache Arrow.
 
-This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
-See https://datafusion.apache.org/python for more information.
+DataFusion is not a database -- it has no server and no external dependencies.
+You create a :py:class:`SessionContext`, point it at data sources (Parquet, CSV,
+JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
+using either SQL or the DataFrame API.
+
+Core abstractions
+-----------------
+- **SessionContext** -- entry point for loading data, running SQL, and creating
+  DataFrames.
+- **DataFrame** -- lazy query builder. Every method returns a new DataFrame;
+  call :py:meth:`~datafusion.dataframe.DataFrame.collect` or a ``to_*``
+  method to execute.
+- **Expr** -- expression tree node for column references, literals, and function
+  calls. Build with :py:func:`col` and :py:func:`lit`.
+- **functions** -- 290+ built-in scalar, aggregate, and window functions.
+
+Quick start
+-----------
+::
+
+    from datafusion import SessionContext, col, lit
+    from datafusion import functions as F
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    result = (
+        df.filter(col("a") > lit(1))
+          .with_column("total", col("a") + col("b"))
+          .aggregate([], [F.sum(col("total")).alias("grand_total")])
+    )
+    print(result.to_pydict())  # {'grand_total': [16]}
+
+For a comprehensive guide to the DataFrame API -- including a SQL-to-DataFrame
+reference table, expression building, idiomatic patterns, and common pitfalls --
+see the ``AGENTS.md`` file shipped alongside this package.
+
+Full documentation: https://datafusion.apache.org/python
 """
 
 from __future__ import annotations
