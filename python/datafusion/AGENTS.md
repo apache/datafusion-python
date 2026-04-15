@@ -27,8 +27,10 @@ dependencies. You create a `SessionContext`, point it at data (Parquet, CSV,
 JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
 using either SQL or the DataFrame API described below.
 
-All data flows through **PyArrow** (`pyarrow.RecordBatch` / `pyarrow.Table`),
-so any library that speaks Arrow can interoperate with DataFusion.
+All data flows through **Apache Arrow**. The canonical Python implementation is
+PyArrow (`pyarrow.RecordBatch` / `pyarrow.Table`), but any library that
+conforms to the [Arrow C Data Interface](https://arrow.apache.org/docs/format/CDataInterface.html)
+can interoperate with DataFusion.
 
 ## Core Abstractions
 
@@ -109,12 +111,16 @@ df.filter("a > 10")                                     # SQL expression string
 # GROUP BY a, compute sum(b) and count(*)
 df.aggregate([col("a")], [F.sum(col("b")), F.count(col("a"))])
 
-# HAVING: filter after aggregate
+# HAVING equivalent: use the filter keyword on the aggregate function
 df.aggregate(
     [col("region")],
-    [F.sum(col("sales")).alias("total_sales")],
-).filter(col("total_sales") > lit(1000))
+    [F.sum(col("sales"), filter=col("sales") > lit(1000)).alias("large_sales")],
+)
 ```
+
+Most aggregate functions accept an optional `filter` keyword argument. When
+provided, only rows where the filter expression is true contribute to the
+aggregate.
 
 ### Sorting
 
@@ -349,7 +355,7 @@ col("array_col")[1:3]                # array slice (0-indexed)
 | `SELECT *, a + 1 AS c` | `df.with_column("c", col("a") + lit(1))` |
 | `WHERE a > 10` | `df.filter(col("a") > lit(10))` |
 | `GROUP BY a` with `SUM(b)` | `df.aggregate([col("a")], [F.sum(col("b"))])` |
-| `HAVING sum_b > 100` | `.filter(col("sum_b") > lit(100))` (after aggregate) |
+| `SUM(b) FILTER (WHERE b > 100)` | `F.sum(col("b"), filter=col("b") > lit(100))` |
 | `ORDER BY a DESC` | `df.sort(col("a").sort(ascending=False))` |
 | `LIMIT 10 OFFSET 5` | `df.limit(10, offset=5)` |
 | `DISTINCT` | `df.distinct()` |
@@ -396,12 +402,6 @@ col("array_col")[1:3]                # array slice (0-indexed)
    frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. For a full
    partition frame, set `window_frame=WindowFrame("rows", None, None)`.
 
-6. **Aggregate then filter for HAVING**: There is no separate `.having()` method.
-   Use `.filter()` after `.aggregate()`:
-   ```python
-   df.aggregate([col("g")], [F.sum(col("v")).alias("s")]).filter(col("s") > lit(100))
-   ```
-
 ## Idiomatic Patterns
 
 ### Fluent Chaining
@@ -414,6 +414,7 @@ result = (
     .aggregate([col("region")], [F.sum(col("sales")).alias("total")])
     .sort(col("total").sort(ascending=False))
     .limit(10)
+    .collect()
 )
 ```
 
