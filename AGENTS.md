@@ -33,6 +33,41 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 - `SKILL.md` — The skill definition with YAML frontmatter (name, description, argument-hint) and detailed instructions.
 - Additional supporting files as needed.
 
+## Pull Requests
+
+Every pull request must follow the template in
+`.github/pull_request_template.md`. The description must include these sections:
+
+1. **Which issue does this PR close?** — Link the issue with `Closes #NNN`.
+2. **Rationale for this change** — Why the change is needed (skip if the issue
+   already explains it clearly).
+3. **What changes are included in this PR?** — Summarize the individual changes.
+4. **Are there any user-facing changes?** — Note any changes visible to users
+   (new APIs, changed behavior, new files shipped in the package, etc.). If
+   there are breaking changes to public APIs, add the `api change` label.
+
+## Pre-commit Checks
+
+Always run pre-commit checks **before** committing. The hooks are defined in
+`.pre-commit-config.yaml` and include:
+
+- **actionlint** — lint GitHub Actions workflow files
+- **ruff** — Python linter
+- **ruff-format** — Python formatter
+- **cargo fmt** — Rust formatter (nightly)
+- **cargo clippy** — Rust linter
+- **codespell** — spell checker
+- **uv-lock** — keep the uv lockfile in sync
+
+Run all hooks with:
+
+```bash
+pre-commit run --all-files
+```
+
+Or they will run automatically on `git commit` if pre-commit is installed as a
+git hook. Fix any failures before committing.
+
 ## Python Function Docstrings
 
 Every Python function must include a docstring with usage examples.
