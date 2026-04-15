@@ -17,7 +17,14 @@
   under the License.
 -->
 
-# Agent Instructions
+# Agent Instructions for Contributors
+
+This file is for agents working **on** the datafusion-python project (developing,
+testing, reviewing). If you need to **use** the DataFusion DataFrame API (write
+queries, build expressions, understand available functions), see the user-facing
+guide at [`python/datafusion/AGENTS.md`](python/datafusion/AGENTS.md).
+
+## Skills
 
 This project uses AI agent skills stored in `.ai/skills/`. Each skill is a directory containing a `SKILL.md` file with instructions for performing a specific task.
 
