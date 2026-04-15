@@ -277,6 +277,25 @@ def ensure_expr_list(
     return list(_iter(exprs))
 
 
+def _to_raw_literal_expr(value: Expr | Any) -> expr_internal.Expr:
+    """Convert an expression or Python literal to its raw variant.
+
+    Args:
+        value: Candidate expression or Python literal value.
+
+    Returns:
+        The internal :class:`~datafusion._internal.expr.Expr` representation.
+
+    Examples:
+          >>> expr = Expr(_to_raw_literal_expr(1))
+          >>> isinstance(expr, Expr)
+          True
+    """
+    if isinstance(value, Expr):
+        return value.expr
+    return Expr.literal(value).expr
+
+
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
     """Convert a Python expression or column name to its raw variant.
 
