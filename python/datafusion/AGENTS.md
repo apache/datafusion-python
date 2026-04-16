@@ -218,6 +218,7 @@ df.distinct_on(         # keep first row per group (like DISTINCT ON in Postgres
 DataFrames are lazy until you collect.
 
 ```python
+df.show()                               # print formatted table to stdout
 batches = df.collect()                  # list[pa.RecordBatch]
 table = df.to_arrow_table()             # pa.Table
 pandas_df = df.to_pandas()              # pd.DataFrame
@@ -249,7 +250,11 @@ col("column_name")              # reference a column
 lit(42)                          # integer literal
 lit("hello")                     # string literal
 lit(3.14)                        # float literal
+lit(pa.scalar(value))            # PyArrow scalar (preserves Arrow type)
 ```
+
+`lit()` accepts PyArrow scalars directly -- prefer this over converting Arrow
+data to Python and back when working with values extracted from query results.
 
 ### Arithmetic
 
@@ -260,6 +265,26 @@ col("a") - col("b")                        # subtraction
 col("a") / lit(2)                          # division
 col("a") % lit(3)                          # modulo
 ```
+
+### Date Arithmetic
+
+`Date32` columns require `Interval` types for arithmetic, not `Duration`. Use
+PyArrow's `month_day_nano_interval` type, which takes a `(months, days, nanos)`
+tuple:
+
+```python
+import pyarrow as pa
+
+# Subtract 90 days from a date column
+col("ship_date") - lit(pa.scalar((0, 90, 0), type=pa.month_day_nano_interval()))
+
+# Subtract 3 months
+col("ship_date") - lit(pa.scalar((3, 0, 0), type=pa.month_day_nano_interval()))
+```
+
+**Important**: `lit(datetime.timedelta(days=90))` creates a `Duration(µs)`
+literal, which is **not** compatible with `Date32` arithmetic. Always use
+`pa.month_day_nano_interval()` for date operations.
 
 ### Comparisons
 
@@ -414,8 +439,8 @@ result = (
     .aggregate([col("region")], [F.sum(col("sales")).alias("total")])
     .sort(col("total").sort(ascending=False))
     .limit(10)
-    .collect()
 )
+result.show()
 ```
 
 ### Using Variables as CTEs
@@ -428,6 +453,31 @@ base = ctx.read_parquet("orders.parquet").filter(col("status") == lit("shipped")
 by_region = base.aggregate([col("region")], [F.sum(col("amount")).alias("total")])
 top_regions = by_region.filter(col("total") > lit(10000))
 ```
+
+### Reusing Expressions as Variables
+
+Just like DataFrames, expressions (`Expr`) can be stored in variables and used
+anywhere an `Expr` is expected. This is useful for building up complex
+expressions or reusing a computed value across multiple operations:
+
+```python
+# Build an expression and reuse it
+disc_price = col("price") * (lit(1) - col("discount"))
+df = df.select(
+    col("id"),
+    disc_price.alias("disc_price"),
+    (disc_price * (lit(1) + col("tax"))).alias("total"),
+)
+
+# Use a collected scalar as an expression
+max_val = result_batch[0].column("max_price")[0]  # PyArrow scalar
+cutoff = lit(max_val) - lit(pa.scalar((0, 90, 0), type=pa.month_day_nano_interval()))
+df = df.filter(col("ship_date") <= cutoff)         # cutoff is already an Expr
+```
+
+**Important**: Do not wrap an `Expr` in `lit()`. `lit()` is for converting
+Python/PyArrow values into expressions. If a value is already an `Expr`, use it
+directly.
 
 ### Window Functions for Scalar Subqueries
 
