@@ -83,9 +83,8 @@ Every method returns a **new** DataFrame (immutable/lazy). Chain them fluently.
 ### Projection
 
 ```python
-df.select("a", "b")                         # by column name
-df.select(col("a"), col("b"))               # by Expr
-df.select(col("a"), (col("b") + 1).alias("b_plus_1"))  # with expression
+df.select("a", "b")                         # preferred: plain names as strings
+df.select(col("a"), (col("b") + 1).alias("b_plus_1"))  # use col()/Expr only when you need an expression
 
 df.with_column("new_col", col("a") + lit(10))  # add one column
 df.with_columns(
@@ -97,26 +96,44 @@ df.drop("unwanted_col")
 df.with_column_renamed("old_name", "new_name")
 ```
 
+When a column is referenced by name alone, pass the name as a string rather
+than wrapping it in `col()`. Reach for `col()` only when the projection needs
+arithmetic, aliasing, casting, or another expression operation.
+
+**Case sensitivity**: both `select("Name")` and `col("Name")` lowercase the
+identifier. For a column whose real name has uppercase letters, embed double
+quotes inside the string: `select('"MyCol"')` or `col('"MyCol"')`. Without the
+inner quotes the lookup will fail with `No field named mycol`.
+
 ### Filtering
 
 ```python
-df.filter(col("a") > lit(10))
-df.filter(col("a") > lit(10), col("b") == lit("x"))   # multiple = AND
-df.filter("a > 10")                                     # SQL expression string
+df.filter(col("a") > 10)
+df.filter(col("a") > 10, col("b") == "x")   # multiple = AND
+df.filter("a > 10")                          # SQL expression string
 ```
+
+Raw Python values on the right-hand side of a comparison are auto-wrapped
+into literals by the `Expr` operators, so prefer `col("a") > 10` over
+`col("a") > lit(10)`. See the Comparisons section and pitfall #2 for the
+full rule.
 
 ### Aggregation
 
 ```python
 # GROUP BY a, compute sum(b) and count(*)
-df.aggregate([col("a")], [F.sum(col("b")), F.count(col("a"))])
+df.aggregate(["a"], [F.sum(col("b")), F.count(col("a"))])
 
 # HAVING equivalent: use the filter keyword on the aggregate function
 df.aggregate(
-    [col("region")],
+    ["region"],
     [F.sum(col("sales"), filter=col("sales") > lit(1000)).alias("large_sales")],
 )
 ```
+
+As with `select()`, group keys can be passed as plain name strings. Reach for
+`col(...)` only when the grouping expression needs arithmetic, aliasing,
+casting, or another expression operation.
 
 Most aggregate functions accept an optional `filter` keyword argument. When
 provided, only rows where the filter expression is true contribute to the
@@ -125,9 +142,14 @@ aggregate.
 ### Sorting
 
 ```python
-df.sort(col("a").sort(ascending=True, nulls_first=False))
+df.sort(col("a"))                            # ascending (default)
 df.sort(col("a").sort(ascending=False))      # descending
+df.sort(col("a").sort(nulls_first=False))    # override null placement
 ```
+
+A plain expression passed to `sort()` is already treated as ascending. Only
+reach for `col(...).sort(...)` when you need to override a default (descending
+order or null placement). Writing `col("a").sort(ascending=True)` is redundant.
 
 ### Joining
 
@@ -150,6 +172,14 @@ df1.join(df2, on="key", how="anti")
 ```
 
 Join types: `"inner"`, `"left"`, `"right"`, `"full"`, `"semi"`, `"anti"`.
+
+Inner is the default `how`. Prefer `df1.join(df2, on="key")` over
+`df1.join(df2, on="key", how="inner")` — drop `how=` unless you need a
+non-inner join type.
+
+When the two sides' join columns have different native names, use
+`left_on=`/`right_on=` with the original names rather than aliasing one side
+to match the other — see pitfall #7.
 
 ### Window Functions
 
@@ -220,6 +250,7 @@ DataFrames are lazy until you collect.
 ```python
 df.show()                               # print formatted table to stdout
 batches = df.collect()                  # list[pa.RecordBatch]
+arr = df.collect_column("col_name")     # pa.Array | pa.ChunkedArray (single column)
 table = df.to_arrow_table()             # pa.Table
 pandas_df = df.to_pandas()              # pd.DataFrame
 polars_df = df.to_polars()              # pl.DataFrame
@@ -289,15 +320,20 @@ literal, which is **not** compatible with `Date32` arithmetic. Always use
 ### Comparisons
 
 ```python
-col("a") > lit(10)
-col("a") >= lit(10)
-col("a") < lit(10)
-col("a") <= lit(10)
-col("a") == lit("x")
-col("a") != lit("x")
+col("a") > 10
+col("a") >= 10
+col("a") < 10
+col("a") <= 10
+col("a") == "x"
+col("a") != "x"
 col("a") == None                           # same as col("a").is_null()
 col("a") != None                           # same as col("a").is_not_null()
 ```
+
+Comparison operators auto-wrap the right-hand Python value into a literal,
+so writing `col("a") > lit(10)` is redundant. Drop the `lit()` in
+comparisons. Reach for `lit()` only when auto-wrapping does not apply — see
+pitfall #2.
 
 ### Boolean Logic
 
@@ -305,9 +341,9 @@ col("a") != None                           # same as col("a").is_not_null()
 objects. You must use the bitwise operators:
 
 ```python
-(col("a") > lit(1)) & (col("b") < lit(10))   # AND
-(col("a") > lit(1)) | (col("b") < lit(10))   # OR
-~(col("a") > lit(1))                           # NOT
+(col("a") > 1) & (col("b") < 10)   # AND
+(col("a") > 1) | (col("b") < 10)   # OR
+~(col("a") > 1)                    # NOT
 ```
 
 Always wrap each comparison in parentheses when combining with `&`, `|`, `~`
@@ -379,7 +415,7 @@ col("array_col")[1:3]                # array slice (0-indexed)
 | `SELECT a, b + 1 AS c` | `df.select(col("a"), (col("b") + lit(1)).alias("c"))` |
 | `SELECT *, a + 1 AS c` | `df.with_column("c", col("a") + lit(1))` |
 | `WHERE a > 10` | `df.filter(col("a") > lit(10))` |
-| `GROUP BY a` with `SUM(b)` | `df.aggregate([col("a")], [F.sum(col("b"))])` |
+| `GROUP BY a` with `SUM(b)` | `df.aggregate(["a"], [F.sum(col("b"))])` |
 | `SUM(b) FILTER (WHERE b > 100)` | `F.sum(col("b"), filter=col("b") > lit(100))` |
 | `ORDER BY a DESC` | `df.sort(col("a").sort(ascending=False))` |
 | `LIMIT 10 OFFSET 5` | `df.limit(10, offset=5)` |
@@ -407,25 +443,69 @@ col("array_col")[1:3]                # array slice (0-indexed)
 1. **Boolean operators**: Use `&`, `|`, `~` -- not Python's `and`, `or`, `not`.
    Always parenthesize: `(col("a") > lit(1)) & (col("b") < lit(2))`.
 
-2. **Wrapping scalars with `lit()`**: Comparisons with raw Python values work
-   (e.g., `col("a") > 10`) because the Expr operators auto-wrap them, but
-   standalone scalars in function calls need `lit()`:
-   `F.coalesce(col("a"), lit(0))`, not `F.coalesce(col("a"), 0)`.
+2. **Wrapping scalars with `lit()`**: Prefer raw Python values on the
+   right-hand side of comparisons — `col("a") > 10`, `col("name") == "Alice"`
+   — because the Expr comparison operators auto-wrap them. Writing
+   `col("a") > lit(10)` is redundant. Reserve `lit()` for places where
+   auto-wrapping does *not* apply:
+   - standalone scalars passed into function calls:
+     `F.coalesce(col("a"), lit(0))`, not `F.coalesce(col("a"), 0)`
+   - arithmetic between two literals with no column involved:
+     `lit(1) - col("discount")` is fine, but `lit(1) - lit(2)` needs both
+   - values that must carry a specific Arrow type, via `lit(pa.scalar(...))`
+   - `.when(...)`, `.otherwise(...)`, `F.nullif(...)`, `.between(...)`,
+     `F.in_list(...)` and similar method/function arguments
 
-3. **Column name quoting**: Column names are normalized to lowercase by default.
-   To reference a column with uppercase letters, use double quotes inside the
-   string: `col('"MyColumn"')`.
+3. **Column name quoting**: Column names are normalized to lowercase by default
+   in both `select("...")` and `col("...")`. To reference a column with
+   uppercase letters, use double quotes inside the string:
+   `select('"MyColumn"')` or `col('"MyColumn"')`.
 
 4. **DataFrames are immutable**: Every method returns a **new** DataFrame. You
    must capture the return value:
    ```python
-   df = df.filter(col("a") > lit(1))   # correct
-   df.filter(col("a") > lit(1))         # WRONG -- result is discarded
+   df = df.filter(col("a") > 1)   # correct
+   df.filter(col("a") > 1)         # WRONG -- result is discarded
    ```
 
 5. **Window frame defaults**: When using `order_by` in a window, the default
    frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. For a full
    partition frame, set `window_frame=WindowFrame("rows", None, None)`.
+
+6. **Arithmetic on aggregates belongs in a later `select`, not inside
+   `aggregate`**: Each item in the aggregate list must be a single aggregate
+   call (optionally aliased). Combining aggregates with arithmetic inside
+   `aggregate(...)` fails with `Internal error: Invalid aggregate expression`.
+   Alias the aggregates, then compute the combination downstream:
+   ```python
+   # WRONG -- arithmetic wraps two aggregates
+   df.aggregate([], [(lit(100) * F.sum(col("a")) / F.sum(col("b"))).alias("ratio")])
+
+   # CORRECT -- aggregate first, then combine
+   (df.aggregate([], [F.sum(col("a")).alias("num"), F.sum(col("b")).alias("den")])
+      .select((lit(100) * col("num") / col("den")).alias("ratio")))
+   ```
+
+7. **Don't alias a join column to match the other side**: When equi-joining
+   with `on="key"`, renaming the join column on one side via `.alias("key")`
+   in a fresh projection creates a schema where one side's `key` is
+   qualified (`?table?.key`) and the other is unqualified. The join then
+   fails with `Schema contains qualified field name ... and unqualified
+   field name ... which would be ambiguous`. Use `left_on=`/`right_on=` with
+   the native names, or use `join_on(...)` with an explicit equality.
+   ```python
+   # WRONG -- alias on one side produces ambiguous schema after join
+   failed = orders.select(col("o_orderkey").alias("l_orderkey"))
+   li.join(failed, on="l_orderkey")   # ambiguous l_orderkey error
+
+   # CORRECT -- keep native names, use left_on/right_on
+   failed = orders.select("o_orderkey")
+   li.join(failed, left_on="l_orderkey", right_on="o_orderkey")
+
+   # ALSO CORRECT -- explicit predicate via join_on
+   # (note: join_on keeps both key columns in the output, unlike on="key")
+   li.join_on(failed, col("l_orderkey") == col("o_orderkey"))
+   ```
 
 ## Idiomatic Patterns
 
@@ -436,7 +516,7 @@ result = (
     ctx.read_parquet("data.parquet")
     .filter(col("year") >= lit(2020))
     .select(col("region"), col("sales"))
-    .aggregate([col("region")], [F.sum(col("sales")).alias("total")])
+    .aggregate(["region"], [F.sum(col("sales")).alias("total")])
     .sort(col("total").sort(ascending=False))
     .limit(10)
 )
@@ -450,7 +530,7 @@ variables:
 
 ```python
 base = ctx.read_parquet("orders.parquet").filter(col("status") == lit("shipped"))
-by_region = base.aggregate([col("region")], [F.sum(col("amount")).alias("total")])
+by_region = base.aggregate(["region"], [F.sum(col("amount")).alias("total")])
 top_regions = by_region.filter(col("total") > lit(10000))
 ```
 
@@ -470,9 +550,9 @@ df = df.select(
 )
 
 # Use a collected scalar as an expression
-max_val = result_batch[0].column("max_price")[0]  # PyArrow scalar
+max_val = result_df.collect_column("max_price")[0]   # PyArrow scalar
 cutoff = lit(max_val) - lit(pa.scalar((0, 90, 0), type=pa.month_day_nano_interval()))
-df = df.filter(col("ship_date") <= cutoff)         # cutoff is already an Expr
+df = df.filter(col("ship_date") <= cutoff)           # cutoff is already an Expr
 ```
 
 **Important**: Do not wrap an `Expr` in `lit()`. `lit()` is for converting
@@ -529,9 +609,25 @@ The `functions` module (imported as `F`) provides 290+ functions. Key categories
 `ntile`, `lag`, `lead`, `first_value`, `last_value`, `nth_value`
 
 **String**: `length`, `lower`, `upper`, `trim`, `ltrim`, `rtrim`, `lpad`,
-`rpad`, `starts_with`, `ends_with`, `contains`, `substr`, `replace`, `reverse`,
-`repeat`, `split_part`, `concat`, `concat_ws`, `initcap`, `ascii`, `chr`,
-`left`, `right`, `strpos`, `translate`, `overlay`, `levenshtein`
+`rpad`, `starts_with`, `ends_with`, `contains`, `substr`, `substring`,
+`replace`, `reverse`, `repeat`, `split_part`, `concat`, `concat_ws`,
+`initcap`, `ascii`, `chr`, `left`, `right`, `strpos`, `translate`, `overlay`,
+`levenshtein`
+
+`F.substr(str, start)` takes **only two arguments** and returns the tail of
+the string from `start` onward — passing a third length argument raises
+`TypeError: substr() takes 2 positional arguments but 3 were given`. For the
+SQL-style 3-arg form (`SUBSTRING(str FROM start FOR length)`), use
+`F.substring(col("s"), lit(start), lit(length))`. For a fixed-length prefix,
+`F.left(col("s"), lit(n))` is cleanest.
+
+```python
+# WRONG — substr does not accept a length argument
+F.substr(col("c_phone"), lit(1), lit(2))
+# CORRECT
+F.substring(col("c_phone"), lit(1), lit(2))   # explicit length
+F.left(col("c_phone"), lit(2))                # prefix shortcut
+```
 
 **Math**: `abs`, `ceil`, `floor`, `round`, `trunc`, `sqrt`, `cbrt`, `exp`,
 `ln`, `log`, `log2`, `log10`, `pow`, `signum`, `pi`, `random`, `factorial`,
