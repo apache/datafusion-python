@@ -222,7 +222,9 @@ df1.union(df2)                          # UNION ALL (by position)
 df1.union(df2, distinct=True)           # UNION DISTINCT
 df1.union_by_name(df2)                  # match columns by name, not position
 df1.intersect(df2)                      # INTERSECT ALL
+df1.intersect(df2, distinct=True)       # INTERSECT (distinct)
 df1.except_all(df2)                     # EXCEPT ALL
+df1.except_all(df2, distinct=True)      # EXCEPT (distinct)
 ```
 
 ### Limit and Offset
@@ -267,10 +269,13 @@ for batch in stream:
 ### Writing Results
 
 ```python
-df.write_parquet("output/")
-df.write_csv("output/")
-df.write_json("output/")
+df.write_parquet("output.parquet")
+df.write_csv("output.csv")
+df.write_json("output.json")
 ```
+
+You can also pass a directory path (e.g., `"output/"`) to write a multi-file
+partitioned output.
 
 ## Expression Building
 
@@ -364,15 +369,19 @@ F.nullif(col("a"), lit(0))         # return NULL if a == 0
 
 ```python
 # Simple CASE (matching on a single expression)
-F.case(col("status"))
+status_label = (
+    F.case(col("status"))
     .when(lit("A"), lit("Active"))
     .when(lit("I"), lit("Inactive"))
     .otherwise(lit("Unknown"))
+)
 
 # Searched CASE (each branch has its own predicate)
-F.when(col("value") > lit(100), lit("high"))
+severity = (
+    F.when(col("value") > lit(100), lit("high"))
     .when(col("value") > lit(50), lit("medium"))
     .otherwise(lit("low"))
+)
 ```
 
 ### Casting
@@ -426,8 +435,10 @@ col("array_col")[1:3]                # array slice (0-indexed)
 | `WHERE NOT EXISTS (SELECT ...)` | `a.join(b, on="key", how="anti")` |
 | `UNION ALL` | `df1.union(df2)` |
 | `UNION` (distinct) | `df1.union(df2, distinct=True)` |
-| `INTERSECT` | `df1.intersect(df2)` |
-| `EXCEPT` | `df1.except_all(df2)` |
+| `INTERSECT ALL` | `df1.intersect(df2)` |
+| `INTERSECT` (distinct) | `df1.intersect(df2, distinct=True)` |
+| `EXCEPT ALL` | `df1.except_all(df2)` |
+| `EXCEPT` (distinct) | `df1.except_all(df2, distinct=True)` |
 | `CASE x WHEN 1 THEN 'a' END` | `F.case(col("x")).when(lit(1), lit("a")).end()` |
 | `CASE WHEN x > 1 THEN 'a' END` | `F.when(col("x") > lit(1), lit("a")).end()` |
 | `x IN (1, 2, 3)` | `F.in_list(col("x"), [lit(1), lit(2), lit(3)])` |
