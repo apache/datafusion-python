@@ -17,7 +17,14 @@
   under the License.
 -->
 
-# Agent Instructions
+# Agent Instructions for Contributors
+
+This file is for agents working **on** the datafusion-python project (developing,
+testing, reviewing). If you need to **use** the DataFusion DataFrame API (write
+queries, build expressions, understand available functions), see the user-facing
+guide at [`python/datafusion/AGENTS.md`](python/datafusion/AGENTS.md).
+
+## Skills
 
 This project uses AI agent skills stored in `.ai/skills/`. Each skill is a directory containing a `SKILL.md` file with instructions for performing a specific task.
 
@@ -25,6 +32,31 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 
 - `SKILL.md` — The skill definition with YAML frontmatter (name, description, argument-hint) and detailed instructions.
 - Additional supporting files as needed.
+
+## Pull Requests
+
+Every pull request must follow the template in
+`.github/pull_request_template.md`. The description must include these sections:
+
+1. **Which issue does this PR close?** — Link the issue with `Closes #NNN`.
+2. **Rationale for this change** — Why the change is needed (skip if the issue
+   already explains it clearly).
+3. **What changes are included in this PR?** — Summarize the individual changes.
+4. **Are there any user-facing changes?** — Note any changes visible to users
+   (new APIs, changed behavior, new files shipped in the package, etc.). If
+   there are breaking changes to public APIs, add the `api change` label.
+
+## Pre-commit Checks
+
+Always run pre-commit checks **before** committing. The hooks are defined in
+`.pre-commit-config.yaml` and run automatically on `git commit` if pre-commit
+is installed as a git hook. To run all hooks manually:
+
+```bash
+pre-commit run --all-files
+```
+
+Fix any failures before committing.
 
 ## Python Function Docstrings
 
