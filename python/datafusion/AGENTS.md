@@ -127,7 +127,7 @@ df.aggregate(["a"], [F.sum(col("b")), F.count(col("a"))])
 # HAVING equivalent: use the filter keyword on the aggregate function
 df.aggregate(
     ["region"],
-    [F.sum(col("sales"), filter=col("sales") > lit(1000)).alias("large_sales")],
+    [F.sum(col("sales"), filter=col("sales") > 1000).alias("large_sales")],
 )
 ```
 
@@ -378,8 +378,8 @@ status_label = (
 
 # Searched CASE (each branch has its own predicate)
 severity = (
-    F.when(col("value") > lit(100), lit("high"))
-    .when(col("value") > lit(50), lit("medium"))
+    F.when(col("value") > 100, lit("high"))
+    .when(col("value") > 50, lit("medium"))
     .otherwise(lit("low"))
 )
 ```
@@ -423,9 +423,9 @@ col("array_col")[1:3]                # array slice (0-indexed)
 | `SELECT a, b` | `df.select("a", "b")` |
 | `SELECT a, b + 1 AS c` | `df.select(col("a"), (col("b") + lit(1)).alias("c"))` |
 | `SELECT *, a + 1 AS c` | `df.with_column("c", col("a") + lit(1))` |
-| `WHERE a > 10` | `df.filter(col("a") > lit(10))` |
+| `WHERE a > 10` | `df.filter(col("a") > 10)` |
 | `GROUP BY a` with `SUM(b)` | `df.aggregate(["a"], [F.sum(col("b"))])` |
-| `SUM(b) FILTER (WHERE b > 100)` | `F.sum(col("b"), filter=col("b") > lit(100))` |
+| `SUM(b) FILTER (WHERE b > 100)` | `F.sum(col("b"), filter=col("b") > 100)` |
 | `ORDER BY a DESC` | `df.sort(col("a").sort(ascending=False))` |
 | `LIMIT 10 OFFSET 5` | `df.limit(10, offset=5)` |
 | `DISTINCT` | `df.distinct()` |
@@ -440,7 +440,7 @@ col("array_col")[1:3]                # array slice (0-indexed)
 | `EXCEPT ALL` | `df1.except_all(df2)` |
 | `EXCEPT` (distinct) | `df1.except_all(df2, distinct=True)` |
 | `CASE x WHEN 1 THEN 'a' END` | `F.case(col("x")).when(lit(1), lit("a")).end()` |
-| `CASE WHEN x > 1 THEN 'a' END` | `F.when(col("x") > lit(1), lit("a")).end()` |
+| `CASE WHEN x > 1 THEN 'a' END` | `F.when(col("x") > 1, lit("a")).end()` |
 | `x IN (1, 2, 3)` | `F.in_list(col("x"), [lit(1), lit(2), lit(3)])` |
 | `x BETWEEN 1 AND 10` | `col("x").between(lit(1), lit(10))` |
 | `CAST(x AS DOUBLE)` | `col("x").cast(pa.float64())` |
@@ -452,7 +452,7 @@ col("array_col")[1:3]                # array slice (0-indexed)
 ## Common Pitfalls
 
 1. **Boolean operators**: Use `&`, `|`, `~` -- not Python's `and`, `or`, `not`.
-   Always parenthesize: `(col("a") > lit(1)) & (col("b") < lit(2))`.
+   Always parenthesize: `(col("a") > 1) & (col("b") < 2)`.
 
 2. **Wrapping scalars with `lit()`**: Prefer raw Python values on the
    right-hand side of comparisons — `col("a") > 10`, `col("name") == "Alice"`
@@ -525,7 +525,7 @@ col("array_col")[1:3]                # array slice (0-indexed)
 ```python
 result = (
     ctx.read_parquet("data.parquet")
-    .filter(col("year") >= lit(2020))
+    .filter(col("year") >= 2020)
     .select(col("region"), col("sales"))
     .aggregate(["region"], [F.sum(col("sales")).alias("total")])
     .sort(col("total").sort(ascending=False))
@@ -540,9 +540,9 @@ Instead of SQL CTEs (`WITH ... AS`), assign intermediate DataFrames to
 variables:
 
 ```python
-base = ctx.read_parquet("orders.parquet").filter(col("status") == lit("shipped"))
+base = ctx.read_parquet("orders.parquet").filter(col("status") == "shipped")
 by_region = base.aggregate(["region"], [F.sum(col("amount")).alias("total")])
-top_regions = by_region.filter(col("total") > lit(10000))
+top_regions = by_region.filter(col("total") > 10000)
 ```
 
 ### Reusing Expressions as Variables

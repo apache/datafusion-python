@@ -37,13 +37,13 @@ Quick start
 -----------
 ::
 
-    from datafusion import SessionContext, col, lit
+    from datafusion import SessionContext, col
     from datafusion import functions as F
 
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
     result = (
-        df.filter(col("a") > lit(1))
+        df.filter(col("a") > 1)
           .with_column("total", col("a") + col("b"))
           .aggregate([], [F.sum(col("total")).alias("grand_total")])
     )
