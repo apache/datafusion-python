@@ -15,9 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module supports expressions, one of the core concepts in DataFusion.
+""":py:class:`Expr` — the logical expression type used to build DataFusion queries.
 
-See :ref:`Expressions` in the online documentation for more details.
+An :py:class:`Expr` represents a computation over columns or literals: a
+column reference (``col("a")``), a literal (``lit(5)``), an operator
+combination (``col("a") + lit(1)``), or the output of a function from
+:py:mod:`datafusion.functions`. Expressions are passed to
+:py:class:`~datafusion.dataframe.DataFrame` methods such as
+:py:meth:`~datafusion.dataframe.DataFrame.select`,
+:py:meth:`~datafusion.dataframe.DataFrame.filter`,
+:py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+:py:meth:`~datafusion.dataframe.DataFrame.sort`.
+
+Convenience constructors are re-exported at the package level:
+:py:func:`datafusion.col` / :py:func:`datafusion.column` for column references
+and :py:func:`datafusion.lit` / :py:func:`datafusion.literal` for scalar
+literals.
+
+Examples:
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> df.select((col("a") * lit(10)).alias("ten_a")).to_pydict()
+    {'ten_a': [10, 20, 30]}
+
+See :ref:`expressions` in the online documentation for details on available
+operators and helpers.
 """
 
 # ruff: noqa: PLC0415
