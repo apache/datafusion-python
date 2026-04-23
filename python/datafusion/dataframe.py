@@ -804,17 +804,17 @@ class DataFrame:
 
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict(
-            ...     {"team": ["x", "x", "y"], "score": [1, 2, 3]}
+            ...     {"team": ["x", "x", "y"], "score": [1, 2, 5]}
             ... )
             >>> df.aggregate([], [F.sum(col("score")).alias("total")]).to_pydict()
-            {'total': [6]}
+            {'total': [8]}
 
             Group by a column and produce one row per group:
 
             >>> df.aggregate(
             ...     [col("team")], [F.sum(col("score")).alias("total")]
             ... ).sort("team").to_pydict()
-            {'team': ['x', 'y'], 'total': [3, 3]}
+            {'team': ['x', 'y'], 'total': [3, 5]}
         """
         group_by_list = (
             list(group_by)
