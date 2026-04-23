@@ -35,19 +35,18 @@ Core abstractions
 
 Quick start
 -----------
-::
 
-    from datafusion import SessionContext, col
-    from datafusion import functions as F
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
-    result = (
-        df.filter(col("a") > 1)
-          .with_column("total", col("a") + col("b"))
-          .aggregate([], [F.sum(col("total")).alias("grand_total")])
-    )
-    print(result.to_pydict())  # {'grand_total': [16]}
+>>> from datafusion import SessionContext, col
+>>> from datafusion import functions as F
+>>> ctx = SessionContext()
+>>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+>>> result = (
+...     df.filter(col("a") > 1)
+...       .with_column("total", col("a") + col("b"))
+...       .aggregate([], [F.sum(col("total")).alias("grand_total")])
+... )
+>>> result.to_pydict()
+{'grand_total': [16]}
 
 For a comprehensive guide to the DataFrame API -- including a SQL-to-DataFrame
 reference table, expression building, idiomatic patterns, and common pitfalls --

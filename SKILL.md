@@ -264,12 +264,61 @@ polars_df = df.to_polars()              # pl.DataFrame
 py_dict = df.to_pydict()                # dict[str, list]
 py_list = df.to_pylist()                # list[dict]
 count = df.count()                      # int
-
-# Streaming
-stream = df.execute_stream()            # RecordBatchStream (single partition)
-for batch in stream:
-    process(batch)
 ```
+
+### Date and Timestamp Type Conversion
+
+The Python type returned by `to_pydict()` / `to_pylist()` depends on the Arrow
+column type, and the mapping is inherited from PyArrow:
+
+| Arrow type | Python type returned |
+|---|---|
+| `timestamp(s)` / `(ms)` / `(us)` | `datetime.datetime` |
+| `timestamp(ns)` | `pandas.Timestamp` |
+| `date32` / `date64` | `datetime.date` |
+| `duration(s)` / `(ms)` / `(us)` | `datetime.timedelta` |
+| `duration(ns)` | `pandas.Timedelta` |
+
+The nanosecond-precision fallback to pandas types is the main surprise:
+pandas is not a hard dependency of `datafusion`, but PyArrow reaches for it
+when `datetime.datetime` / `datetime.timedelta` would lose precision (stdlib
+types only go to microseconds). If you need plain stdlib types, cast to a
+coarser unit before collecting, e.g.
+`df.select(col("ts").cast(pa.timestamp("us")))`.
+
+`df.to_pandas()` has its own footgun for dates: pandas has no pure-date dtype,
+so a `date32`/`date64` column comes back as an `object` column of
+`datetime.date` values rather than `datetime64[ns]`. If downstream code
+expects a datetime column, cast on the DataFusion side first:
+`col("ship_date").cast(pa.timestamp("ns"))`.
+
+### Streaming Results
+
+Prefer streaming over `collect()` when the result is too large to materialize
+in memory, when you want to start processing before the query finishes, or
+when you may break out of the loop early. `execute_stream()` pulls one
+`RecordBatch` at a time from the execution plan rather than buffering the
+whole result up front.
+
+```python
+# Single-partition stream; batch is a datafusion.RecordBatch
+stream = df.execute_stream()
+for batch in stream:
+    process(batch.to_pyarrow())         # convert to pa.RecordBatch if needed
+
+# DataFrame is iterable directly (delegates to execute_stream)
+for batch in df:
+    process(batch.to_pyarrow())
+
+# One stream per partition, for parallel consumption
+for stream in df.execute_stream_partitioned():
+    for batch in stream:
+        process(batch.to_pyarrow())
+```
+
+Async iteration is also supported via `async for batch in df: ...` (or
+`df.execute_stream()`), which is useful when batches are interleaved with
+other I/O.
 
 ### Writing Results
 
@@ -309,9 +358,9 @@ col("a") % lit(3)                          # modulo
 
 ### Date Arithmetic
 
-`Date32` columns require `Interval` types for arithmetic, not `Duration`. Use
-PyArrow's `month_day_nano_interval` type, which takes a `(months, days, nanos)`
-tuple:
+`Date32` and `Date64` columns both require `Interval` types for arithmetic,
+not `Duration`. Use PyArrow's `month_day_nano_interval` type, which takes a
+`(months, days, nanos)` tuple:
 
 ```python
 import pyarrow as pa
@@ -324,8 +373,13 @@ col("ship_date") - lit(pa.scalar((3, 0, 0), type=pa.month_day_nano_interval()))
 ```
 
 **Important**: `lit(datetime.timedelta(days=90))` creates a `Duration(µs)`
-literal, which is **not** compatible with `Date32` arithmetic. Always use
+literal, which is **not** compatible with `Date32`/`Date64` arithmetic
+(`Duration(ms)` and `Duration(ns)` are rejected too). Always use
 `pa.month_day_nano_interval()` for date operations.
+
+**Timestamps behave differently**: `Timestamp` columns *do* accept `Duration`,
+so `col("ts") - lit(datetime.timedelta(days=1))` works. The interval-only
+rule applies specifically to date columns.
 
 ### Comparisons
 
