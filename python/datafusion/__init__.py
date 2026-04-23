@@ -51,7 +51,8 @@ Quick start
 
 For a comprehensive guide to the DataFrame API -- including a SQL-to-DataFrame
 reference table, expression building, idiomatic patterns, and common pitfalls --
-see the ``AGENTS.md`` file shipped alongside this package.
+see ``SKILL.md`` at the root of the datafusion-python repository:
+https://github.com/apache/datafusion-python/blob/main/SKILL.md
 
 Full documentation: https://datafusion.apache.org/python
 """

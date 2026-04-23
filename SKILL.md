@@ -17,6 +17,11 @@
   under the License.
 -->
 
+---
+name: datafusion-python
+description: Use when the user is writing datafusion-python (Apache DataFusion Python bindings) DataFrame or SQL code. Covers imports, data loading, DataFrame operations, expression building, SQL-to-DataFrame mappings, idiomatic patterns, and common pitfalls.
+---
+
 # DataFusion Python DataFrame API Guide
 
 ## What Is DataFusion?

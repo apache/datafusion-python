@@ -22,7 +22,7 @@
 This file is for agents working **on** the datafusion-python project (developing,
 testing, reviewing). If you need to **use** the DataFusion DataFrame API (write
 queries, build expressions, understand available functions), see the user-facing
-guide at [`python/datafusion/AGENTS.md`](python/datafusion/AGENTS.md).
+skill at [`SKILL.md`](SKILL.md).
 
 ## Skills
 
