@@ -418,6 +418,16 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#core-abstractions">
+   Core abstractions
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#quick-start">
+   Quick start
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#submodules">
    Submodules
   </a>
@@ -3268,9 +3278,44 @@
                 
   <section id="module-datafusion">
 <span id="datafusion"></span><h1>datafusion<a class="headerlink" href="#module-datafusion" title="Link to this heading">¶</a></h1>
-<p>DataFusion python package.</p>
-<p>This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
-See <a class="reference external" href="https://datafusion.apache.org/python">https://datafusion.apache.org/python</a> for more information.</p>
+<p>DataFusion: an in-process query engine built on Apache Arrow.</p>
+<p>DataFusion is not a database – it has no server and no external dependencies.
+You create a <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, point it at data sources (Parquet, CSV,
+JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
+using either SQL or the DataFrame API.</p>
+<section id="core-abstractions">
+<h2>Core abstractions<a class="headerlink" href="#core-abstractions" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>SessionContext</strong> – entry point for loading data, running SQL, and creating
+DataFrames.</p></li>
+<li><p><strong>DataFrame</strong> – lazy query builder. Every method returns a new DataFrame;
+call <a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">collect()</span></code></a> or a <code class="docutils literal notranslate"><span class="pre">to_*</span></code>
+method to execute.</p></li>
+<li><p><strong>Expr</strong> – expression tree node for column references, literals, and function
+calls. Build with <a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">col()</span></code></a> and <a class="reference internal" href="#datafusion.lit" title="datafusion.lit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lit()</span></code></a>.</p></li>
+<li><p><strong>functions</strong> – 290+ built-in scalar, aggregate, and window functions.</p></li>
+</ul>
+</section>
+<section id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">F</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span>      <span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>
+<span class="gp">... </span>      <span class="o">.</span><span class="n">aggregate</span><span class="p">([],</span> <span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;grand_total&quot;</span><span class="p">)])</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;grand_total&#39;: [16]}</span>
+</pre></div>
+</div>
+<p>User guide and full documentation: <a class="reference external" href="https://datafusion.apache.org/python">https://datafusion.apache.org/python</a></p>
+<p>AI agent reference (SQL-to-DataFrame mappings, expression-building patterns,
+common pitfalls), written in a dense, skill-oriented format:
+<a class="reference external" href="https://github.com/apache/datafusion-python/blob/main/SKILL.md">https://github.com/apache/datafusion-python/blob/main/SKILL.md</a></p>
+</section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
