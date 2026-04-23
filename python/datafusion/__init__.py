@@ -48,12 +48,11 @@ Quick start
 >>> result.to_pydict()
 {'grand_total': [16]}
 
-For a comprehensive guide to the DataFrame API -- including a SQL-to-DataFrame
-reference table, expression building, idiomatic patterns, and common pitfalls --
-see ``SKILL.md`` at the root of the datafusion-python repository:
-https://github.com/apache/datafusion-python/blob/main/SKILL.md
+User guide and full documentation: https://datafusion.apache.org/python
 
-Full documentation: https://datafusion.apache.org/python
+AI agent reference (SQL-to-DataFrame mappings, expression-building patterns,
+common pitfalls), written in a dense, skill-oriented format:
+https://github.com/apache/datafusion-python/blob/main/SKILL.md
 """
 
 from __future__ import annotations
