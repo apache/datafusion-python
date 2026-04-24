@@ -26,6 +26,29 @@ identified in the order comment column by looking for a particular pattern.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        c_count,
+        count(*) as custdist
+    from
+        (
+                select
+                        c_custkey,
+                        count(o_orderkey)
+                from
+                        customer left outer join orders on
+                                c_custkey = o_custkey
+                                and o_comment not like '%express%requests%'
+                group by
+                        c_custkey
+        ) as c_orders (c_custkey, c_count)
+    group by
+        c_count
+    order by
+        custdist desc,
+        c_count desc;
 """
 
 from datafusion import SessionContext, col, lit

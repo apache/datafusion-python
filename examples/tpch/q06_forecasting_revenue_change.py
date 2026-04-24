@@ -27,6 +27,18 @@ range.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        sum(l_extendedprice * l_discount) as revenue
+    from
+        lineitem
+    where
+        l_shipdate >= date '1994-01-01'
+        and l_shipdate < date '1994-01-01' + interval '1' year
+        and l_discount between 0.04 - 0.01 and 0.04 + 0.01
+        and l_quantity < 24;
 """
 
 from datetime import datetime

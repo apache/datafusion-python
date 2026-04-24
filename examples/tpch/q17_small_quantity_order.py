@@ -26,6 +26,26 @@ taken?
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        sum(l_extendedprice) / 7.0 as avg_yearly
+    from
+        lineitem,
+        part
+    where
+        p_partkey = l_partkey
+        and p_brand = 'Brand#42'
+        and p_container = 'LG BAG'
+        and l_quantity < (
+                select
+                        0.2 * avg(l_quantity)
+                from
+                        lineitem
+                where
+                        l_partkey = p_partkey
+        );
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit

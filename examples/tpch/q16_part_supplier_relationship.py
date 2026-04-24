@@ -26,6 +26,39 @@ in descending count and ascending brand, type, and size.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        p_brand,
+        p_type,
+        p_size,
+        count(distinct ps_suppkey) as supplier_cnt
+    from
+        partsupp,
+        part
+    where
+        p_partkey = ps_partkey
+        and p_brand <> 'Brand#14'
+        and p_type not like 'SMALL PLATED%'
+        and p_size in (14, 6, 5, 31, 49, 15, 41, 47)
+        and ps_suppkey not in (
+                select
+                        s_suppkey
+                from
+                        supplier
+                where
+                        s_comment like '%Customer%Complaints%'
+        )
+    group by
+        p_brand,
+        p_type,
+        p_size
+    order by
+        supplier_cnt desc,
+        p_brand,
+        p_type,
+        p_size;
 """
 
 import pyarrow as pa

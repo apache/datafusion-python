@@ -25,6 +25,46 @@ convention are considered.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        s_name,
+        s_address
+    from
+        supplier,
+        nation
+    where
+        s_suppkey in (
+                select
+                        ps_suppkey
+                from
+                        partsupp
+                where
+                        ps_partkey in (
+                                select
+                                        p_partkey
+                                from
+                                        part
+                                where
+                                        p_name like 'blanched%'
+                        )
+                        and ps_availqty > (
+                                select
+                                        0.5 * sum(l_quantity)
+                                from
+                                        lineitem
+                                where
+                                        l_partkey = ps_partkey
+                                        and l_suppkey = ps_suppkey
+                                        and l_shipdate >= date '1993-01-01'
+                                        and l_shipdate < date '1993-01-01' + interval '1' year
+                        )
+        )
+        and s_nationkey = n_nationkey
+        and n_name = 'KENYA'
+    order by
+        s_name;
 """
 
 from datetime import datetime
@@ -87,7 +127,7 @@ df = df.join(
 )
 
 # Find cases of excess quantity
-df.filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
+df = df.filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
 
 # We could do these joins earlier, but now limit to the nation of interest suppliers
 df = df.join(df_supplier, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="inner")

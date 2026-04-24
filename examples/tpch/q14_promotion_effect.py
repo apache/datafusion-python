@@ -24,6 +24,22 @@ gives the percentage. Revenue is defined as (l_extendedprice * (1-l_discount)).
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        100.00 * sum(case
+                when p_type like 'PROMO%'
+                        then l_extendedprice * (1 - l_discount)
+                else 0
+        end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
+    from
+        lineitem,
+        part
+    where
+        l_partkey = p_partkey
+        and l_shipdate >= date '1995-02-01'
+        and l_shipdate < date '1995-02-01' + interval '1' month;
 """
 
 from datetime import datetime

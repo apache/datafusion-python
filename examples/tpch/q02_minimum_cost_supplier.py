@@ -27,6 +27,52 @@ comment information.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        s_acctbal,
+        s_name,
+        n_name,
+        p_partkey,
+        p_mfgr,
+        s_address,
+        s_phone,
+        s_comment
+    from
+        part,
+        supplier,
+        partsupp,
+        nation,
+        region
+    where
+        p_partkey = ps_partkey
+        and s_suppkey = ps_suppkey
+        and p_size = 48
+        and p_type like '%TIN'
+        and s_nationkey = n_nationkey
+        and n_regionkey = r_regionkey
+        and r_name = 'ASIA'
+        and ps_supplycost = (
+                select
+                        min(ps_supplycost)
+                from
+                        partsupp,
+                        supplier,
+                        nation,
+                        region
+                where
+                        p_partkey = ps_partkey
+                        and s_suppkey = ps_suppkey
+                        and s_nationkey = n_nationkey
+                        and n_regionkey = r_regionkey
+                        and r_name = 'ASIA'
+        )
+    order by
+        s_acctbal desc,
+        n_name,
+        s_name,
+        p_partkey limit 100;
 """
 
 import datafusion

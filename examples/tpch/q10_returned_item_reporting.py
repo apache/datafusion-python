@@ -27,6 +27,40 @@ sum(l_extendedprice*(1-l_discount)) for all qualifying lineitems.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        c_custkey,
+        c_name,
+        sum(l_extendedprice * (1 - l_discount)) as revenue,
+        c_acctbal,
+        n_name,
+        c_address,
+        c_phone,
+        c_comment
+    from
+        customer,
+        orders,
+        lineitem,
+        nation
+    where
+        c_custkey = o_custkey
+        and l_orderkey = o_orderkey
+        and o_orderdate >= date '1993-07-01'
+        and o_orderdate < date '1993-07-01' + interval '3' month
+        and l_returnflag = 'R'
+        and c_nationkey = n_nationkey
+    group by
+        c_custkey,
+        c_name,
+        c_acctbal,
+        c_phone,
+        n_name,
+        c_address,
+        c_comment
+    order by
+        revenue desc limit 20;
 """
 
 from datetime import datetime
