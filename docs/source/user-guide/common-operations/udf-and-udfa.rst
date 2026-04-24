@@ -101,6 +101,67 @@ write Rust based UDFs and to expose them to Python. There is an example in the
 `DataFusion blog <https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/>`_
 describing how to do this.
 
+When not to use a UDF
+^^^^^^^^^^^^^^^^^^^^^
+
+A UDF is the right tool when the computation genuinely cannot be expressed
+with built-in functions. It is often the *wrong* tool for a compound
+predicate that happens to be easier to write in Python. The optimizer
+cannot push a UDF through joins or filters, so a Python-side predicate
+prevents otherwise obvious rewrites and forces a per-row Python callback.
+
+Consider a filter that selects rows falling into one of three brand-specific
+buckets, each with its own containers, quantity range, and size range:
+
+.. code-block:: python
+
+    # Anti-pattern: the predicate is a plain disjunction, but hidden inside a UDF.
+    def is_of_interest(brand, container, quantity, size):
+        result = []
+        for b, c, q, s in zip(brand, container, quantity, size):
+            b = b.as_py()
+            if b == "Brand#12":
+                result.append(c.as_py() in ("SM CASE", "SM BOX") and 1 <= q.as_py() <= 11 and 1 <= s.as_py() <= 5)
+            elif b == "Brand#23":
+                result.append(c.as_py() in ("MED BAG", "MED BOX") and 10 <= q.as_py() <= 20 and 1 <= s.as_py() <= 10)
+            else:
+                result.append(False)
+        return pa.array(result)
+
+    df = df.filter(udf_is_of_interest(col("brand"), col("container"), col("quantity"), col("size")))
+
+The native equivalent keeps the bucket definitions as plain Python data
+(a dict) and builds an ``Expr`` from them. The optimizer sees a disjunction
+of simple predicates it can analyze and push down:
+
+.. code-block:: python
+
+    from functools import reduce
+    from operator import or_
+    from datafusion import col, lit, functions as f
+
+    items_of_interest = {
+        "Brand#12": {"containers": ["SM CASE", "SM BOX"], "min_qty": 1, "max_size": 5},
+        "Brand#23": {"containers": ["MED BAG", "MED BOX"], "min_qty": 10, "max_size": 10},
+    }
+
+    def brand_clause(brand, spec):
+        return (
+            (col("brand") == lit(brand))
+            & f.in_list(col("container"), [lit(c) for c in spec["containers"]])
+            & (col("quantity") >= lit(spec["min_qty"]))
+            & (col("quantity") <= lit(spec["min_qty"] + 10))
+            & (col("size") >= lit(1))
+            & (col("size") <= lit(spec["max_size"]))
+        )
+
+    predicate = reduce(or_, (brand_clause(b, s) for b, s in items_of_interest.items()))
+    df = df.filter(predicate)
+
+Reach for a UDF when the per-row computation is not expressible as a tree
+of built-in functions. When it *is* expressible, build the ``Expr`` tree
+directly.
+
 Aggregate Functions
 -------------------
 
