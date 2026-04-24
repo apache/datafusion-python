@@ -146,6 +146,98 @@ This function returns a new array with the elements repeated.
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
 
 
+Testing membership in a list
+----------------------------
+
+A common need is filtering rows where a column equals *any* of a small set of
+values. DataFusion offers three forms; they differ in readability and in how
+they scale:
+
+1. A compound boolean using ``|`` across explicit equalities.
+2. :py:func:`~datafusion.functions.in_list`, which accepts a list of
+   expressions and tests equality against all of them in one call.
+3. A trick with :py:func:`~datafusion.functions.array_position` and
+   :py:func:`~datafusion.functions.make_array`, which returns the 1-based
+   index of the value in a constructed array, or null if it is not present.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col, lit
+    from datafusion import functions as f
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"shipmode": ["MAIL", "SHIP", "AIR", "TRUCK", "RAIL"]})
+
+    # Option 1: compound boolean. Fine for two values; awkward past three.
+    df.filter((col("shipmode") == lit("MAIL")) | (col("shipmode") == lit("SHIP")))
+
+    # Option 2: in_list. Preferred for readability as the set grows.
+    df.filter(f.in_list(col("shipmode"), [lit("MAIL"), lit("SHIP")]))
+
+    # Option 3: array_position / make_array. Useful when you already have the
+    # set as an array column and want "is in that array" semantics.
+    df.filter(
+        ~f.array_position(
+            f.make_array(lit("MAIL"), lit("SHIP")), col("shipmode")
+        ).is_null()
+    )
+
+Use ``in_list`` as the default. It is explicit, readable, and matches the
+semantics users expect from SQL's ``IN (...)``. Reach for the
+``array_position`` form only when the membership set is itself an array
+column rather than a literal list.
+
+Conditional expressions
+-----------------------
+
+DataFusion provides :py:func:`~datafusion.functions.case` for the SQL
+``CASE`` expression in both its switched and searched forms, along with
+:py:func:`~datafusion.functions.when` as a standalone builder for the
+searched form.
+
+**Switched CASE** (one expression compared against several literal values):
+
+.. ipython:: python
+
+    df = ctx.from_pydict(
+        {"priority": ["1-URGENT", "2-HIGH", "3-MEDIUM", "5-LOW"]},
+    )
+
+    df.select(
+        col("priority"),
+        f.case(col("priority"))
+         .when(lit("1-URGENT"), lit(1))
+         .when(lit("2-HIGH"), lit(1))
+         .otherwise(lit(0))
+         .alias("is_high_priority"),
+    )
+
+**Searched CASE** (an independent boolean predicate per branch). Use this
+form whenever a branch tests more than simple equality — for example,
+checking whether a joined column is ``NULL`` to gate a computed value:
+
+.. ipython:: python
+
+    df = ctx.from_pydict(
+        {"volume": [10.0, 20.0, 30.0], "supplier_id": [1, None, 2]},
+    )
+
+    df.select(
+        col("volume"),
+        col("supplier_id"),
+        f.when(col("supplier_id").is_not_null(), col("volume"))
+         .otherwise(lit(0.0))
+         .alias("attributed_volume"),
+    )
+
+This searched-CASE pattern is idiomatic for "attribute the measure to the
+matching side of a left join, otherwise contribute zero" — a shape that
+appears in TPC-H Q08 and similar market-share calculations.
+
+If a switched CASE has only two or three branches that test equality, an
+``in_list`` filter combined with :py:meth:`~datafusion.expr.Expr.otherwise`
+is often simpler than the full ``case`` builder.
+
 Structs
 -------
 

@@ -163,6 +163,62 @@ Suppose we want to find the speed values for only Pokemon that have low Attack v
         f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
 
 
+Building per-group arrays
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~datafusion.functions.array_agg` collects the values within each
+group into a list. Combined with ``distinct=True`` and the ``filter``
+argument, it lets you ask two questions of the same group in one pass —
+"what are all the values?" and "what are the values that satisfy some
+condition?".
+
+Suppose each row records a line item with the supplier that fulfilled it and
+a flag for whether that supplier met the commit date. We want to identify
+orders where exactly one supplier failed, among two or more suppliers in
+total:
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col, lit, functions as f
+
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {
+            "order_id": [1, 1, 1, 2, 2, 3],
+            "supplier_id": [100, 101, 102, 200, 201, 300],
+            "failed":      [False, True, False, False, False, True],
+        },
+    )
+
+    grouped = df.aggregate(
+        [col("order_id")],
+        [
+            f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
+            f.array_agg(
+                col("supplier_id"),
+                filter=col("failed"),
+                distinct=True,
+            ).alias("failed_suppliers"),
+        ],
+    )
+
+    grouped.filter(
+        (f.array_length(col("failed_suppliers")) == lit(1))
+        & (f.array_length(col("all_suppliers")) > lit(1))
+    ).select(
+        col("order_id"),
+        f.array_element(col("failed_suppliers"), lit(1)).alias("the_one_bad_supplier"),
+    )
+
+Two aspects of the pattern are worth calling out:
+
+- ``filter=`` on an aggregate narrows the rows contributing to *that*
+  aggregate only. Filtering the DataFrame before the aggregate would have
+  dropped whole groups that no longer had any rows.
+- :py:func:`~datafusion.functions.array_length` tests group size without
+  another aggregate pass, and :py:func:`~datafusion.functions.array_element`
+  extracts a single value when you have proven the array has length one.
+
 Grouping Sets
 -------------
 
