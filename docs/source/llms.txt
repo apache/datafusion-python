@@ -4,7 +4,8 @@
 
 ## Agent Guide
 
-- [SKILL.md (agent skill)](https://datafusion.apache.org/python/skill.html): idiomatic DataFrame API patterns, SQL-to-DataFrame mappings, common pitfalls, and the full `functions` catalog. Primary source of truth for writing datafusion-python code.
+- [SKILL.md (agent skill, raw)](https://raw.githubusercontent.com/apache/datafusion-python/main/SKILL.md): idiomatic DataFrame API patterns, SQL-to-DataFrame mappings, common pitfalls, and the full `functions` catalog. Primary source of truth for writing datafusion-python code.
+- [Using DataFusion with AI coding assistants](https://datafusion.apache.org/python/ai-coding-assistants.html): human-readable guide for installing the skill and manual setup pointers.
 
 ## User Guide
 
