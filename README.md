@@ -215,6 +215,22 @@ You can verify the installation by running:
 '0.6.0'
 ```
 
+## Using DataFusion with AI coding assistants
+
+This project ships a [`SKILL.md`](SKILL.md) at the repo root that teaches AI
+coding assistants how to write idiomatic DataFusion Python. It follows the
+[Agent Skills](https://agentskills.io) open standard.
+
+**Preferred:** `npx skills add apache/datafusion-python` — installs the skill in
+Claude Code, Cursor, Windsurf, Cline, Codex, Copilot, Gemini CLI, and other
+supported agents.
+
+**Manual:** paste this line into your project's `AGENTS.md` / `CLAUDE.md`:
+
+```
+For DataFusion Python code, see https://github.com/apache/datafusion-python/blob/main/SKILL.md
+```
+
 ## How to develop
 
 This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin). The Maturin tools used in this workflow can be installed either via `uv` or `pip`. Both approaches should offer the same experience. It is recommended to use `uv` since it has significant performance improvements
