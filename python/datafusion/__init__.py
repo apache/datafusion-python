@@ -68,7 +68,6 @@ except ImportError:
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
 from .catalog import Catalog, Table
 from .col import col, column
 from .common import DFSchema
@@ -110,7 +109,6 @@ __all__ = [
     "Accumulator",
     "AggregateUDF",
     "Catalog",
-    "Config",
     "CsvReadOptions",
     "DFSchema",
     "DataFrame",

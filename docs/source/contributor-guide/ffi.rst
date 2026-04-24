@@ -149,20 +149,7 @@ interior-mutable state. In practice this means that any ``#[pyclass]`` containin
 ``Arc<RwLock<_>>`` or similar synchronized primitive must opt into ``#[pyclass(frozen)]``
 unless there is a compelling reason not to.
 
-The :mod:`datafusion` configuration helpers illustrate the preferred pattern. The
-``PyConfig`` class in :file:`src/config.rs` stores an ``Arc<RwLock<ConfigOptions>>`` and is
-explicitly frozen so callers interact with configuration state through provided methods
-instead of mutating the container directly:
-
-.. code-block:: rust
-
-    #[pyclass(from_py_object, name = "Config", module = "datafusion", subclass, frozen)]
-    #[derive(Clone)]
-    pub(crate) struct PyConfig {
-        config: Arc<RwLock<ConfigOptions>>,
-    }
-
-The same approach applies to execution contexts. ``PySessionContext`` in
+The execution context illustrates the preferred pattern. ``PySessionContext`` in
 :file:`src/context.rs` stays frozen even though it shares mutable state internally via
 ``SessionContext``. This ensures PyO3 tracks borrows correctly while Python-facing APIs
 clone the inner ``SessionContext`` or return new wrappers instead of mutating the
