@@ -3426,10 +3426,18 @@ def test_fill_null_all_null_column(ctx):
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
 
 
+_slow_udf_started = threading.Event()
+
+
 @udf([pa.int64()], pa.int64(), "immutable")
 def slow_udf(x: pa.Array) -> pa.Array:
-    # This must be longer than the check interval in wait_for_future
-    time.sleep(2.0)
+    _slow_udf_started.set()
+    # Sleep in small increments so Python's eval loop checks for pending
+    # async exceptions (like KeyboardInterrupt via PyThreadState_SetAsyncExc)
+    # between iterations. A single long time.sleep() is a C call where async
+    # exceptions are not checked on all Python versions (notably 3.11).
+    for _ in range(200):
+        time.sleep(0.01)
     return x
 
 
@@ -3463,6 +3471,7 @@ def test_collect_or_stream_interrupted(slow_query, as_c_stream):  # noqa: C901 P
     if as_c_stream:
         reader = pa.RecordBatchReader.from_stream(df)
 
+    _slow_udf_started.clear()
     read_started = threading.Event()
     read_exception = []
     read_thread_id = None
@@ -3472,6 +3481,14 @@ def test_collect_or_stream_interrupted(slow_query, as_c_stream):  # noqa: C901 P
         """Wait for read to start, then raise KeyboardInterrupt in read thread."""
         if not read_started.wait(timeout=max_wait_time):
             msg = f"Read operation did not start within {max_wait_time} seconds"
+            raise RuntimeError(msg)
+
+        # For slow_query tests, wait until the UDF is actually executing Python
+        # bytecode before sending the interrupt. PyThreadState_SetAsyncExc only
+        # delivers exceptions when the thread is in the Python eval loop, not
+        # while in native (Rust/C) code.
+        if slow_query and not _slow_udf_started.wait(timeout=max_wait_time):
+            msg = f"UDF did not start within {max_wait_time} seconds"
             raise RuntimeError(msg)
 
         if read_thread_id is None:

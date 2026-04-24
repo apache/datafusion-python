@@ -243,6 +243,8 @@ __all__ = [
     "WindowExpr",
     "WindowFrame",
     "WindowFrameBound",
+    "coerce_to_expr",
+    "coerce_to_expr_or_none",
     "ensure_expr",
     "ensure_expr_list",
 ]
@@ -254,6 +256,10 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     This helper rejects plain strings and other non-:class:`Expr` values so
     higher level APIs consistently require explicit :func:`~datafusion.col` or
     :func:`~datafusion.lit` expressions.
+
+    See Also:
+        :func:`coerce_to_expr` — the opposite behavior: *wraps* non-``Expr``
+        values as literals instead of rejecting them.
 
     Args:
         value: Candidate expression or other object.
@@ -297,6 +303,41 @@ def ensure_expr_list(
                 yield ensure_expr(expr)
 
     return list(_iter(exprs))
+
+
+def coerce_to_expr(value: Any) -> Expr:
+    """Coerce a native Python value to an ``Expr`` literal, passing ``Expr`` through.
+
+    This is the complement of :func:`ensure_expr`: where ``ensure_expr``
+    *rejects* non-``Expr`` values, ``coerce_to_expr`` *wraps* them via
+    :meth:`Expr.literal` so that functions can accept native Python types
+    (``int``, ``float``, ``str``, ``bool``, etc.) alongside ``Expr``.
+
+    Args:
+        value: An ``Expr`` instance (returned as-is) or a Python literal to wrap.
+
+    Returns:
+        An ``Expr`` representing the value.
+    """
+    if isinstance(value, Expr):
+        return value
+    return Expr.literal(value)
+
+
+def coerce_to_expr_or_none(value: Any | None) -> Expr | None:
+    """Coerce a value to ``Expr`` or pass ``None`` through unchanged.
+
+    Same as :func:`coerce_to_expr` but accepts ``None`` for optional parameters.
+
+    Args:
+        value: An ``Expr`` instance, a Python literal to wrap, or ``None``.
+
+    Returns:
+        An ``Expr`` representing the value, or ``None``.
+    """
+    if value is None:
+        return None
+    return coerce_to_expr(value)
 
 
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:

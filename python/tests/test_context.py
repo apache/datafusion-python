@@ -964,12 +964,12 @@ def test_csv_read_options_builder_pattern():
 
     options = (
         CsvReadOptions()
-        .with_has_header(False)  # noqa: FBT003
+        .with_has_header(False)
         .with_delimiter("|")
         .with_quote("'")
         .with_schema_infer_max_records(2000)
-        .with_truncated_rows(True)  # noqa: FBT003
-        .with_newlines_in_values(True)  # noqa: FBT003
+        .with_truncated_rows(True)
+        .with_newlines_in_values(True)
         .with_file_extension(".tsv")
     )
     assert options.has_header is False
