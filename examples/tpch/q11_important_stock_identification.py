@@ -79,39 +79,30 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
 
-# limit to returns
-df_nation = df_nation.filter(col("n_name") == lit(NATION))
-
-# Find part supplies of within this target nation
-
-df = df_nation.join(
-    df_supplier, left_on=["n_nationkey"], right_on=["s_nationkey"], how="inner"
+# Restrict to the target nation, then walk to partsupp rows via the supplier
+# join. Aggregate the per-part inventory value.
+df = (
+    df_nation.filter(col("n_name") == NATION)
+    .join(df_supplier, left_on="n_nationkey", right_on="s_nationkey")
+    .join(df_partsupp, left_on="s_suppkey", right_on="ps_suppkey")
+    .with_column("value", col("ps_supplycost") * col("ps_availqty"))
+    .aggregate(["ps_partkey"], [F.sum(col("value")).alias("value")])
 )
 
-df = df.join(df_partsupp, left_on=["s_suppkey"], right_on=["ps_suppkey"], how="inner")
+# A window function evaluated over the entire output produces a scalar grand
+# total that can be referenced row-by-row in the filter — a DataFrame-native
+# stand-in for the SQL HAVING ... > (SELECT SUM(...) * FRACTION ...) pattern.
+# The default frame is "UNBOUNDED PRECEDING to CURRENT ROW"; override to the
+# full partition for the grand total.
+whole_frame = WindowFrame("rows", None, None)
 
-
-# Compute the value of individual parts
-df = df.with_column("value", col("ps_supplycost") * col("ps_availqty"))
-
-# Compute total value of specific parts
-df = df.aggregate([col("ps_partkey")], [F.sum(col("value")).alias("value")])
-
-# By default window functions go from unbounded preceding to current row, but we want
-# to compute this sum across all rows
-window_frame = WindowFrame("rows", None, None)
-
-df = df.with_column(
-    "total_value", F.sum(col("value")).over(Window(window_frame=window_frame))
+df = (
+    df.with_column(
+        "total_value", F.sum(col("value")).over(Window(window_frame=whole_frame))
+    )
+    .filter(col("value") / col("total_value") >= lit(FRACTION))
+    .select("ps_partkey", "value")
+    .sort(col("value").sort(ascending=False))
 )
-
-# Limit to the parts for which there is a significant value based on the fraction of the total
-df = df.filter(col("value") / col("total_value") >= lit(FRACTION))
-
-# We only need to report on these two columns
-df = df.select("ps_partkey", "value")
-
-# Sort in descending order of value
-df = df.sort(col("value").sort(ascending=False))
 
 df.show()

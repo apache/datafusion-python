@@ -102,15 +102,13 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_discount",
 )
 
-# These limitations apply to all line items, so go ahead and do them first
-
-df = df_lineitem.filter(col("l_shipinstruct") == lit("DELIVER IN PERSON"))
-
-df = df.filter(
-    (col("l_shipmode") == lit("AIR")) | (col("l_shipmode") == lit("AIR REG"))
-)
-
-df = df.join(df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner")
+# Filter conditions that apply to every disjunct of the reference SQL's WHERE
+# clause — pull them out up front so the per-brand predicate stays focused on
+# the brand-specific parts.
+df = df_lineitem.filter(
+    col("l_shipinstruct") == "DELIVER IN PERSON",
+    F.in_list(col("l_shipmode"), [lit("AIR"), lit("AIR REG")]),
+).join(df_part, left_on="l_partkey", right_on="p_partkey")
 
 
 # Build one OR-combined predicate per brand. Each disjunct encodes the
@@ -121,12 +119,10 @@ def _brand_predicate(
     brand: str, min_quantity: int, containers: list[str], max_size: int
 ):
     return (
-        (col("p_brand") == lit(brand))
+        (col("p_brand") == brand)
         & F.in_list(col("p_container"), [lit(c) for c in containers])
-        & (col("l_quantity") >= lit(min_quantity))
-        & (col("l_quantity") <= lit(min_quantity + 10))
-        & (col("p_size") >= lit(1))
-        & (col("p_size") <= lit(max_size))
+        & col("l_quantity").between(lit(min_quantity), lit(min_quantity + 10))
+        & col("p_size").between(lit(1), lit(max_size))
     )
 
 
@@ -140,9 +136,7 @@ for brand, params in items_of_interest.items():
     )
     predicate = part_predicate if predicate is None else predicate | part_predicate
 
-df = df.filter(predicate)
-
-df = df.aggregate(
+df = df.filter(predicate).aggregate(
     [],
     [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
 )

@@ -75,20 +75,20 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
 
 # Limit dataframes to the rows of interest
 
-df_customer = df_customer.filter(col("c_mktsegment") == lit(SEGMENT_OF_INTEREST))
+df_customer = df_customer.filter(col("c_mktsegment") == SEGMENT_OF_INTEREST)
 df_orders = df_orders.filter(col("o_orderdate") < lit(DATE_OF_INTEREST))
 df_lineitem = df_lineitem.filter(col("l_shipdate") > lit(DATE_OF_INTEREST))
 
 # Join all 3 dataframes
 
-df = df_customer.join(
-    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
-).join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
+df = df_customer.join(df_orders, left_on="c_custkey", right_on="o_custkey").join(
+    df_lineitem, left_on="o_orderkey", right_on="l_orderkey"
+)
 
 # Compute the revenue
 
 df = df.aggregate(
-    [col("l_orderkey")],
+    ["l_orderkey"],
     [
         F.first_value(col("o_orderdate")).alias("o_orderdate"),
         F.first_value(col("o_shippriority")).alias("o_shippriority"),
@@ -96,17 +96,13 @@ df = df.aggregate(
     ],
 )
 
-# Sort by priority
+# Sort by priority, take 10, and project in the order expected by the spec.
 
-df = df.sort(col("revenue").sort(ascending=False), col("o_orderdate").sort())
-
-# Only return 10 results
-
-df = df.limit(10)
-
-# Change the order that the columns are reported in just to match the spec
-
-df = df.select("l_orderkey", "revenue", "o_orderdate", "o_shippriority")
+df = (
+    df.sort(col("revenue").sort(ascending=False), "o_orderdate")
+    .limit(10)
+    .select("l_orderkey", "revenue", "o_orderdate", "o_shippriority")
+)
 
 # Show result
 

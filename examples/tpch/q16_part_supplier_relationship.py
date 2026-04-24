@@ -61,7 +61,6 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         p_size;
 """
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
@@ -85,39 +84,36 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
 )
 
 df_unwanted_suppliers = df_supplier.filter(
-    ~F.regexp_match(col("s_comment"), lit("Customer.?*Complaints")).is_null()
+    F.regexp_match(col("s_comment"), lit("Customer.?*Complaints")).is_not_null()
 )
 
-# Remove unwanted suppliers
+# Remove unwanted suppliers via an anti join (DataFrame form of NOT IN).
 df_partsupp = df_partsupp.join(
-    df_unwanted_suppliers, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="anti"
+    df_unwanted_suppliers, left_on="ps_suppkey", right_on="s_suppkey", how="anti"
 )
 
-# Select the parts we are interested in
-df_part = df_part.filter(col("p_brand") != lit(BRAND))
+# Select the parts we are interested in.
 df_part = df_part.filter(
-    F.substring(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1))
-    != lit(TYPE_TO_IGNORE)
+    col("p_brand") != BRAND,
+    ~F.starts_with(col("p_type"), lit(TYPE_TO_IGNORE)),
+    F.in_list(col("p_size"), [lit(s) for s in SIZES_OF_INTEREST]),
 )
 
-# Python conversion of integer to literal casts it to int64 but the data for
-# part size is stored as an int32, so perform a cast. Then check to find if the part
-# size is within the array of possible sizes by checking the position of it is not
-# null.
-p_sizes = F.make_array(*[lit(s).cast(pa.int32()) for s in SIZES_OF_INTEREST])
-df_part = df_part.filter(~F.array_position(p_sizes, col("p_size")).is_null())
-
-df = df_part.join(
-    df_partsupp, left_on=["p_partkey"], right_on=["ps_partkey"], how="inner"
+# For each (brand, type, size), count the distinct suppliers remaining.
+df = (
+    df_part.join(df_partsupp, left_on="p_partkey", right_on="ps_partkey")
+    .select("p_brand", "p_type", "p_size", "ps_suppkey")
+    .distinct()
+    .aggregate(
+        ["p_brand", "p_type", "p_size"],
+        [F.count(col("ps_suppkey")).alias("supplier_cnt")],
+    )
+    .sort(
+        col("supplier_cnt").sort(ascending=False),
+        "p_brand",
+        "p_type",
+        "p_size",
+    )
 )
-
-df = df.select("p_brand", "p_type", "p_size", "ps_suppkey").distinct()
-
-df = df.aggregate(
-    [col("p_brand"), col("p_type"), col("p_size")],
-    [F.count(col("ps_suppkey")).alias("supplier_cnt")],
-)
-
-df = df.sort(col("supplier_cnt").sort(ascending=False))
 
 df.show()

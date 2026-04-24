@@ -114,8 +114,8 @@ df_part = df_part.filter(col("p_type") == part_of_interest)
 
 # Limit orders to those in the specified range
 
-df_orders = df_orders.filter(col("o_orderdate") >= start_date).filter(
-    col("o_orderdate") <= end_date
+df_orders = df_orders.filter(
+    col("o_orderdate") >= start_date, col("o_orderdate") <= end_date
 )
 
 # Part 1: Find customers in the region
@@ -127,36 +127,14 @@ df_orders = df_orders.filter(col("o_orderdate") >= start_date).filter(
 
 # First we find all the sales that make up the basis.
 
-df_regional_customers = df_region.filter(col("r_name") == customer_region)
-
-# After this join we have all of the possible sales nations
-df_regional_customers = df_regional_customers.join(
-    df_nation, left_on=["r_regionkey"], right_on=["n_regionkey"], how="inner"
-)
-
-# Now find the possible customers
-df_regional_customers = df_regional_customers.join(
-    df_customer, left_on=["n_nationkey"], right_on=["c_nationkey"], how="inner"
-)
-
-# Next find orders for these customers
-df_regional_customers = df_regional_customers.join(
-    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
-)
-
-# Find all line items from these orders
-df_regional_customers = df_regional_customers.join(
-    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
-)
-
-# Limit to the part of interest
-df_regional_customers = df_regional_customers.join(
-    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner"
-)
-
-# Compute the volume for each line item
-df_regional_customers = df_regional_customers.with_column(
-    "volume", col("l_extendedprice") * (lit(1.0) - col("l_discount"))
+df_regional_customers = (
+    df_region.filter(col("r_name") == customer_region)
+    .join(df_nation, left_on="r_regionkey", right_on="n_regionkey")
+    .join(df_customer, left_on="n_nationkey", right_on="c_nationkey")
+    .join(df_orders, left_on="c_custkey", right_on="o_custkey")
+    .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
+    .join(df_part, left_on="l_partkey", right_on="p_partkey")
+    .with_column("volume", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
 )
 
 # Part 2: Find suppliers from the nation
@@ -164,56 +142,41 @@ df_regional_customers = df_regional_customers.with_column(
 # Now that we have all of the sales of that part in the specified region, we need
 # to determine which of those came from suppliers in the nation we are interested in.
 
-df_national_suppliers = df_nation.filter(col("n_name") == supplier_nation)
-
-# Determine the suppliers by the limited nation key we have in our single row df above
-df_national_suppliers = df_national_suppliers.join(
-    df_supplier, left_on=["n_nationkey"], right_on=["s_nationkey"], how="inner"
+df_national_suppliers = (
+    df_nation.filter(col("n_name") == supplier_nation)
+    .join(df_supplier, left_on="n_nationkey", right_on="s_nationkey")
+    .select("s_suppkey")
 )
-
-# When we join to the customer dataframe, we don't want to confuse other columns, so only
-# select the supplier key that we need
-df_national_suppliers = df_national_suppliers.select("s_suppkey")
 
 
 # Part 3: Combine suppliers and customers and compute the market share
 
-# Now we can do a left outer join on the suppkey. Those line items from other suppliers
-# will get a null value. We can check for the existence of this null to compute a volume
-# column only from suppliers in the nation we are evaluating.
+# Left-outer join the national suppliers onto the regional sales. Rows from
+# other suppliers get a NULL ``s_suppkey``, which the CASE expression uses
+# to zero out the non-national volume.
 
 df = df_regional_customers.join(
-    df_national_suppliers, left_on=["l_suppkey"], right_on=["s_suppkey"], how="left"
-)
-
-# Use a searched CASE (``F.when(...).otherwise(...)``) to keep only the
-# volume attributable to suppliers in the nation of interest. This mirrors
-# the ``case when nation = '...' then volume else 0 end`` form of the
-# reference SQL rather than dispatching on a boolean subject.
-df = df.with_column(
-    "national_volume",
-    F.when(col("s_suppkey").is_not_null(), col("volume")).otherwise(lit(0.0)),
-)
-
-df = df.with_column(
-    "o_year", F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32())
+    df_national_suppliers, left_on="l_suppkey", right_on="s_suppkey", how="left"
+).with_columns(
+    national_volume=F.when(col("s_suppkey").is_not_null(), col("volume")).otherwise(
+        lit(0.0)
+    ),
+    o_year=F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32()),
 )
 
 
-# Lastly, sum up the results
+# Aggregate, compute the share, and sort.
 
-df = df.aggregate(
-    [col("o_year")],
-    [
-        F.sum(col("volume")).alias("volume"),
-        F.sum(col("national_volume")).alias("national_volume"),
-    ],
+df = (
+    df.aggregate(
+        ["o_year"],
+        [
+            F.sum(col("volume")).alias("volume"),
+            F.sum(col("national_volume")).alias("national_volume"),
+        ],
+    )
+    .select("o_year", (col("national_volume") / col("volume")).alias("mkt_share"))
+    .sort_by("o_year")
 )
-
-df = df.select(
-    col("o_year"), (F.col("national_volume") / F.col("volume")).alias("mkt_share")
-)
-
-df = df.sort(col("o_year").sort())
 
 df.show()

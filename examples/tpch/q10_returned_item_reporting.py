@@ -100,44 +100,40 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 )
 
 # limit to returns
-df_lineitem = df_lineitem.filter(col("l_returnflag") == lit("R"))
+df_lineitem = df_lineitem.filter(col("l_returnflag") == "R")
 
 
 # Rather than aggregate by all of the customer fields as you might do looking at the specification,
 # we can aggregate by o_custkey and then join in the customer data at the end.
 
-df = df_orders.filter(col("o_orderdate") >= date_start_of_quarter).filter(
-    col("o_orderdate") < date_start_of_quarter + interval_one_quarter
+df = (
+    df_orders.filter(
+        col("o_orderdate") >= date_start_of_quarter,
+        col("o_orderdate") < date_start_of_quarter + interval_one_quarter,
+    )
+    .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
+    .aggregate(
+        ["o_custkey"],
+        [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
+    )
 )
 
-df = df.join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
-
-# Compute the revenue
-df = df.aggregate(
-    [col("o_custkey")],
-    [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
+# Now join in the customer data, project the spec's output columns, and take the top 20.
+df = (
+    df.join(df_customer, left_on="o_custkey", right_on="c_custkey")
+    .join(df_nation, left_on="c_nationkey", right_on="n_nationkey")
+    .select(
+        "c_custkey",
+        "c_name",
+        "revenue",
+        "c_acctbal",
+        "n_name",
+        "c_address",
+        "c_phone",
+        "c_comment",
+    )
+    .sort(col("revenue").sort(ascending=False))
+    .limit(20)
 )
-
-# Now join in the customer data
-df = df.join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
-df = df.join(df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner")
-
-# These are the columns the problem statement requires
-df = df.select(
-    "c_custkey",
-    "c_name",
-    "revenue",
-    "c_acctbal",
-    "n_name",
-    "c_address",
-    "c_phone",
-    "c_comment",
-)
-
-# Sort the results in descending order
-df = df.sort(col("revenue").sort(ascending=False))
-
-# Only return the top 20 results
-df = df.limit(20)
 
 df.show()

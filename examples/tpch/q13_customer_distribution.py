@@ -72,20 +72,16 @@ df_orders = df_orders.filter(
     F.regexp_match(col("o_comment"), lit(f"{WORD_1}.?*{WORD_2}")).is_null()
 )
 
-# Since we may have customers with no orders we must do a left join
-df = df_customer.join(
-    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="left"
-)
-
-# Find the number of orders for each customer
-df = df.aggregate([col("c_custkey")], [F.count(col("o_custkey")).alias("c_count")])
-
-# Ultimately we want to know the number of customers that have that customer count
-df = df.aggregate([col("c_count")], [F.count(col("c_count")).alias("custdist")])
-
-# We want to order the results by the highest number of customers per count
-df = df.sort(
-    col("custdist").sort(ascending=False), col("c_count").sort(ascending=False)
+# Customers with no orders still participate, so this is a left join. Count the
+# orders per customer, then count customers per order-count value.
+df = (
+    df_customer.join(df_orders, left_on="c_custkey", right_on="o_custkey", how="left")
+    .aggregate(["c_custkey"], [F.count(col("o_custkey")).alias("c_count")])
+    .aggregate(["c_count"], [F.count_star().alias("custdist")])
+    .sort(
+        col("custdist").sort(ascending=False),
+        col("c_count").sort(ascending=False),
+    )
 )
 
 df.show()

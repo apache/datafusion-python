@@ -68,7 +68,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         s_name limit 100;
 """
 
-from datafusion import SessionContext, col, lit
+from datafusion import SessionContext, col
 from datafusion import functions as F
 from util import get_data_path
 
@@ -92,17 +92,16 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 )
 
 # Limit to suppliers in the nation of interest
-df_suppliers_of_interest = df_nation.filter(
-    col("n_name") == lit(NATION_OF_INTEREST)
-).join(df_supplier, left_on="n_nationkey", right_on="s_nationkey", how="inner")
+df_suppliers_of_interest = df_nation.filter(col("n_name") == NATION_OF_INTEREST).join(
+    df_supplier, left_on="n_nationkey", right_on="s_nationkey"
+)
 
 # Line items for orders that have status 'F'. This is the candidate set of
 # (order, supplier) pairs we reason about below.
 failed_order_lineitems = df_lineitem.join(
-    df_orders.filter(col("o_orderstatus") == lit("F")),
+    df_orders.filter(col("o_orderstatus") == "F"),
     left_on="l_orderkey",
     right_on="o_orderkey",
-    how="inner",
 )
 
 # Line items whose receipt was late. This corresponds to ``l1`` in the
@@ -117,8 +116,8 @@ late_lineitems = failed_order_lineitems.filter(
 multi_supplier_orders = (
     failed_order_lineitems.select("l_orderkey", "l_suppkey")
     .distinct()
-    .aggregate([col("l_orderkey")], [F.count(col("l_suppkey")).alias("n_suppliers")])
-    .filter(col("n_suppliers") > lit(1))
+    .aggregate(["l_orderkey"], [F.count_star().alias("n_suppliers")])
+    .filter(col("n_suppliers") > 1)
     .select("l_orderkey")
 )
 
@@ -129,30 +128,20 @@ multi_supplier_orders = (
 single_late_supplier_orders = (
     late_lineitems.select("l_orderkey", "l_suppkey")
     .distinct()
-    .aggregate(
-        [col("l_orderkey")], [F.count(col("l_suppkey")).alias("n_late_suppliers")]
-    )
-    .filter(col("n_late_suppliers") == lit(1))
+    .aggregate(["l_orderkey"], [F.count_star().alias("n_late_suppliers")])
+    .filter(col("n_late_suppliers") == 1)
     .select("l_orderkey")
 )
 
-# Keep late line items whose order qualifies on both counts. Semi joins
-# preserve the left-side columns without fanning out on the right.
-df = late_lineitems.join(multi_supplier_orders, on="l_orderkey", how="semi").join(
-    single_late_supplier_orders, on="l_orderkey", how="semi"
-)
-
-# Attach the supplier name for suppliers in the nation of interest, count
-# one row per qualifying order, and return the top 100.
+# Keep late line items whose order qualifies on both counts, attach the
+# supplier name for suppliers in the nation of interest, count one row per
+# qualifying order, and return the top 100.
 df = (
-    df.join(
-        df_suppliers_of_interest,
-        left_on="l_suppkey",
-        right_on="s_suppkey",
-        how="inner",
-    )
-    .aggregate([col("s_name")], [F.count(col("l_orderkey")).alias("numwait")])
-    .sort(col("numwait").sort(ascending=False), col("s_name").sort())
+    late_lineitems.join(multi_supplier_orders, on="l_orderkey", how="semi")
+    .join(single_late_supplier_orders, on="l_orderkey", how="semi")
+    .join(df_suppliers_of_interest, left_on="l_suppkey", right_on="s_suppkey")
+    .aggregate(["s_name"], [F.count_star().alias("numwait")])
+    .sort(col("numwait").sort(ascending=False), "s_name")
     .limit(100)
 )
 

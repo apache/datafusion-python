@@ -82,40 +82,36 @@ df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select(
 )
 df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select("o_custkey")
 
-# The nation code is a two digit number, but we need to convert it to a string literal
-nation_codes = F.make_array(*[lit(str(n)) for n in NATION_CODES])
+# Country code is the two-digit prefix of the phone number.
+nation_codes = [lit(str(n)) for n in NATION_CODES]
 
-# Use the substring operation to extract the first two characters of the phone number
-df = df_customer.with_column("cntrycode", F.substring(col("c_phone"), lit(0), lit(3)))
+# Start from customers with a positive balance in one of the target country
+# codes, then attach the grand-mean balance via a whole-frame window so we
+# can filter per row — DataFrame stand-in for the SQL's scalar ``(select
+# avg(c_acctbal) ... )`` subquery.
+whole_frame = WindowFrame("rows", None, None)
 
-# Limit our search to customers with some balance and in the country code above
-df = df.filter(col("c_acctbal") > lit(0.0))
-df = df.filter(~F.array_position(nation_codes, col("cntrycode")).is_null())
-
-# Compute the average balance. By default, the window frame is from unbounded preceding to the
-# current row. We want our frame to cover the entire data frame.
-window_frame = WindowFrame("rows", None, None)
-df = df.with_column(
-    "avg_balance",
-    F.avg(col("c_acctbal")).over(Window(window_frame=window_frame)),
+df = (
+    df_customer.with_column("cntrycode", F.left(col("c_phone"), lit(2)))
+    .filter(
+        col("c_acctbal") > 0.0,
+        F.in_list(col("cntrycode"), nation_codes),
+    )
+    .with_column(
+        "avg_balance",
+        F.avg(col("c_acctbal")).over(Window(window_frame=whole_frame)),
+    )
+    .filter(col("c_acctbal") > col("avg_balance"))
+    # Keep only customers with no orders (anti join = NOT EXISTS).
+    .join(df_orders, left_on="c_custkey", right_on="o_custkey", how="anti")
+    .aggregate(
+        ["cntrycode"],
+        [
+            F.count_star().alias("numcust"),
+            F.sum(col("c_acctbal")).alias("totacctbal"),
+        ],
+    )
+    .sort_by("cntrycode")
 )
-
-df.show()
-# Limit results to customers with above average balance
-df = df.filter(col("c_acctbal") > col("avg_balance"))
-
-# Limit results to customers with no orders
-df = df.join(df_orders, left_on="c_custkey", right_on="o_custkey", how="anti")
-
-# Count up the customers and the balances
-df = df.aggregate(
-    [col("cntrycode")],
-    [
-        F.count(col("c_custkey")).alias("numcust"),
-        F.sum(col("c_acctbal")).alias("totacctbal"),
-    ],
-)
-
-df = df.sort(col("cntrycode").sort())
 
 df.show()

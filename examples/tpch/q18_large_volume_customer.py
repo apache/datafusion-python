@@ -61,7 +61,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         o_orderdate limit 100;
 """
 
-from datafusion import SessionContext, col, lit
+from datafusion import SessionContext, col
 from datafusion import functions as F
 from util import get_data_path
 
@@ -81,22 +81,24 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_quantity", "l_extendedprice"
 )
 
-df = df_lineitem.aggregate(
-    [col("l_orderkey")], [F.sum(col("l_quantity")).alias("total_quantity")]
+# Find orders whose total quantity exceeds the threshold, then join in the
+# order + customer details the problem statement requires and sort.
+df = (
+    df_lineitem.aggregate(
+        ["l_orderkey"], [F.sum(col("l_quantity")).alias("total_quantity")]
+    )
+    .filter(col("total_quantity") > QUANTITY)
+    .join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
+    .join(df_customer, left_on="o_custkey", right_on="c_custkey")
+    .select(
+        "c_name",
+        "c_custkey",
+        "o_orderkey",
+        "o_orderdate",
+        "o_totalprice",
+        "total_quantity",
+    )
+    .sort(col("o_totalprice").sort(ascending=False), "o_orderdate")
 )
-
-# Limit to orders in which the total quantity is above a threshold
-df = df.filter(col("total_quantity") > lit(QUANTITY))
-
-# We've identified the orders of interest, now join the additional data
-# we are required to report on
-df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
-df = df.join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
-
-df = df.select(
-    "c_name", "c_custkey", "o_orderkey", "o_orderdate", "o_totalprice", "total_quantity"
-)
-
-df = df.sort(col("o_totalprice").sort(ascending=False), col("o_orderdate").sort())
 
 df.show()

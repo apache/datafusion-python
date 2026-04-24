@@ -87,47 +87,29 @@ date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
 
 
-df = df_lineitem.filter(col("l_receiptdate") >= lit(date)).filter(
-    col("l_receiptdate") < lit(date) + lit(interval)
-)
+df = df_lineitem.filter(
+    col("l_receiptdate") >= lit(date),
+    col("l_receiptdate") < lit(date) + lit(interval),
+    # ``in_list`` maps directly to ``l_shipmode in (...)`` from the SQL.
+    F.in_list(col("l_shipmode"), [lit(SHIP_MODE_1), lit(SHIP_MODE_2)]),
+    col("l_shipdate") < col("l_commitdate"),
+    col("l_commitdate") < col("l_receiptdate"),
+).join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
 
-# Restrict to the two ship modes of interest. ``in_list`` maps directly to
-# the ``l_shipmode in ('FOB', 'SHIP')`` clause of the reference SQL.
-df = df.filter(F.in_list(col("l_shipmode"), [lit(SHIP_MODE_1), lit(SHIP_MODE_2)]))
+# Flag each line item as belonging to a high-priority order or not.
+is_high_priority = F.in_list(col("o_orderpriority"), [lit("1-URGENT"), lit("2-HIGH")])
 
-
-# We need order priority, so join order df to line item
-df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
-
-# Restrict to line items we care about based on the problem statement.
-df = df.filter(col("l_commitdate") < col("l_receiptdate"))
-
-df = df.filter(col("l_shipdate") < col("l_commitdate"))
-
-df = df.with_column(
-    "high_line_value",
-    F.case(col("o_orderpriority"))
-    .when(lit("1-URGENT"), lit(1))
-    .when(lit("2-HIGH"), lit(1))
-    .otherwise(lit(0)),
-)
-
-# Aggregate the results
+# Count the high-priority and low-priority lineitems per ship mode.
 df = df.aggregate(
-    [col("l_shipmode")],
+    ["l_shipmode"],
     [
-        F.sum(col("high_line_value")).alias("high_line_count"),
-        F.count(col("high_line_value")).alias("all_lines_count"),
+        F.sum(F.when(is_high_priority, lit(1)).otherwise(lit(0))).alias(
+            "high_line_count"
+        ),
+        F.sum(F.when(~is_high_priority, lit(1)).otherwise(lit(0))).alias(
+            "low_line_count"
+        ),
     ],
-)
-
-# Compute the final output
-df = df.select(
-    col("l_shipmode"),
-    col("high_line_count"),
-    (col("all_lines_count") - col("high_line_count")).alias("low_line_count"),
-)
-
-df = df.sort(col("l_shipmode").sort())
+).sort_by("l_shipmode")
 
 df.show()

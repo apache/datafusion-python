@@ -71,12 +71,11 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
 
 # Filter down to lineitems of interest
 
-df = (
-    df_lineitem.filter(col("l_shipdate") >= lit(date))
-    .filter(col("l_shipdate") < lit(date) + lit(interval))
-    .filter(col("l_discount") >= lit(DISCOUT) - lit(DELTA))
-    .filter(col("l_discount") <= lit(DISCOUT) + lit(DELTA))
-    .filter(col("l_quantity") < lit(QUANTITY))
+df = df_lineitem.filter(
+    col("l_shipdate") >= lit(date),
+    col("l_shipdate") < lit(date) + lit(interval),
+    col("l_discount").between(lit(DISCOUT - DELTA), lit(DISCOUT + DELTA)),
+    col("l_quantity") < QUANTITY,
 )
 
 # Add up all the "lost" revenue

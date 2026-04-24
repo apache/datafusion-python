@@ -111,8 +111,8 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 
 
 # Filter to time of interest
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= start_date).filter(
-    col("l_shipdate") <= end_date
+df_lineitem = df_lineitem.filter(
+    col("l_shipdate") >= start_date, col("l_shipdate") <= end_date
 )
 
 
@@ -122,37 +122,33 @@ df_nation = df_nation.filter(F.in_list(col("n_name"), [nation_1, nation_2]))
 
 # Limit suppliers to either nation
 df_supplier = df_supplier.join(
-    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
-).select(col("s_suppkey"), col("n_name").alias("supp_nation"))
+    df_nation, left_on="s_nationkey", right_on="n_nationkey"
+).select("s_suppkey", col("n_name").alias("supp_nation"))
 
 # Limit customers to either nation
 df_customer = df_customer.join(
-    df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner"
-).select(col("c_custkey"), col("n_name").alias("cust_nation"))
+    df_nation, left_on="c_nationkey", right_on="n_nationkey"
+).select("c_custkey", col("n_name").alias("cust_nation"))
 
 # Join up all the data frames from line items, and make sure the supplier and customer are in
 # different nations.
 df = (
-    df_lineitem.join(
-        df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner"
-    )
-    .join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
-    .join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
+    df_lineitem.join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
+    .join(df_customer, left_on="o_custkey", right_on="c_custkey")
+    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
     .filter(col("cust_nation") != col("supp_nation"))
 )
 
 # Extract out two values for every line item
-df = df.with_column(
-    "l_year", F.datepart(lit("year"), col("l_shipdate")).cast(pa.int32())
-).with_column("volume", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
-
-# Aggregate the results
-df = df.aggregate(
-    [col("supp_nation"), col("cust_nation"), col("l_year")],
-    [F.sum(col("volume")).alias("revenue")],
+df = df.with_columns(
+    l_year=F.datepart(lit("year"), col("l_shipdate")).cast(pa.int32()),
+    volume=col("l_extendedprice") * (lit(1.0) - col("l_discount")),
 )
 
-# Sort based on problem statement requirements
-df = df.sort(col("supp_nation").sort(), col("cust_nation").sort(), col("l_year").sort())
+# Aggregate and sort per the spec.
+df = df.aggregate(
+    ["supp_nation", "cust_nation", "l_year"],
+    [F.sum(col("volume")).alias("revenue")],
+).sort_by("supp_nation", "cust_nation", "l_year")
 
 df.show()

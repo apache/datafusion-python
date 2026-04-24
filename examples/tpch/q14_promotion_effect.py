@@ -65,36 +65,31 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
 df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_type")
 
 
-# Check part type begins with PROMO
-df_part = df_part.filter(
-    F.substring(col("p_type"), lit(0), lit(6)) == lit("PROMO")
-).with_column("promo_factor", lit(1.0))
-
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
-    col("l_shipdate") < date_of_interest + interval_one_month
+# Restrict the line items to the month of interest, join the matching part
+# rows, and compute revenue per line item.
+df = (
+    df_lineitem.filter(
+        col("l_shipdate") >= date_of_interest,
+        col("l_shipdate") < date_of_interest + interval_one_month,
+    )
+    .join(df_part, left_on="l_partkey", right_on="p_partkey")
+    .with_column("revenue", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
 )
 
-# Left join so we can sum up the promo parts different from other parts
-df = df_lineitem.join(
-    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="left"
-)
-
-# Make a factor of 1.0 if it is a promotion, 0.0 otherwise
-df = df.with_column("promo_factor", F.coalesce(col("promo_factor"), lit(0.0)))
-df = df.with_column("revenue", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
-
-
-# Sum up the promo and total revenue
+# Sum promotional and total revenue, then compute the percentage. The
+# ``F.when(...)`` form mirrors the ``case when p_type like 'PROMO%' ... else 0``
+# in the reference SQL.
 df = df.aggregate(
     [],
     [
-        F.sum(col("promo_factor") * col("revenue")).alias("promo_revenue"),
+        F.sum(
+            F.when(
+                F.starts_with(col("p_type"), lit("PROMO")), col("revenue")
+            ).otherwise(lit(0.0))
+        ).alias("promo_revenue"),
         F.sum(col("revenue")).alias("total_revenue"),
     ],
-)
-
-# Return the percentage of revenue from promotions
-df = df.select(
+).select(
     (lit(100.0) * col("promo_revenue") / col("total_revenue")).alias("promo_revenue")
 )
 

@@ -97,37 +97,34 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name", "n_regionkey"
 )
 
-# Limit possible parts to the color specified
-df = df_part.filter(F.strpos(col("p_name"), part_color) > lit(0))
-
-# We have a series of joins that get us to limit down to the line items we need
-df = df.join(df_lineitem, left_on=["p_partkey"], right_on=["l_partkey"], how="inner")
-df = df.join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
-df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
-df = df.join(
-    df_partsupp,
-    left_on=["l_suppkey", "l_partkey"],
-    right_on=["ps_suppkey", "ps_partkey"],
-    how="inner",
+# Limit possible parts to the color specified, then walk the joins down to the
+# line-item rows we need and attach the supplier's nation.
+df = (
+    df_part.filter(F.strpos(col("p_name"), part_color) > 0)
+    .join(df_lineitem, left_on="p_partkey", right_on="l_partkey")
+    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
+    .join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
+    .join(
+        df_partsupp,
+        left_on=["l_suppkey", "l_partkey"],
+        right_on=["ps_suppkey", "ps_partkey"],
+    )
+    .join(df_nation, left_on="s_nationkey", right_on="n_nationkey")
 )
-df = df.join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
 
 # Compute the intermediate values and limit down to the expressions we need
 df = df.select(
     col("n_name").alias("nation"),
     F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32()).alias("o_year"),
     (
-        (col("l_extendedprice") * (lit(1) - col("l_discount")))
-        - (col("ps_supplycost") * col("l_quantity"))
+        col("l_extendedprice") * (lit(1) - col("l_discount"))
+        - col("ps_supplycost") * col("l_quantity")
     ).alias("amount"),
 )
 
-# Sum up the values by nation and year
-df = df.aggregate(
-    [col("nation"), col("o_year")], [F.sum(col("amount")).alias("profit")]
+# Sum up the values by nation and year, then sort per the spec.
+df = df.aggregate(["nation", "o_year"], [F.sum(col("amount")).alias("profit")]).sort(
+    "nation", col("o_year").sort(ascending=False)
 )
-
-# Sort according to the problem specification
-df = df.sort(col("nation").sort(), col("o_year").sort(ascending=False))
 
 df.show()

@@ -77,31 +77,23 @@ date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
-# Limit results to cases where commitment date before receipt date, then
-# reduce to a single row per order so the join with the orders table is a
-# semantic EXISTS rather than a fan-out.
-df_lineitem = (
-    df_lineitem.filter(col("l_commitdate") < col("l_receiptdate"))
-    .select("l_orderkey")
-    .distinct()
+# Keep only orders in the quarter of interest, then restrict to those that
+# have at least one late lineitem via a semi join (the DataFrame form of
+# ``EXISTS`` from the reference SQL).
+df_orders = df_orders.filter(
+    col("o_orderdate") >= lit(date),
+    col("o_orderdate") < lit(date) + lit(interval),
 )
 
-# Limit orders to date range of interest
-df_orders = df_orders.filter(col("o_orderdate") >= lit(date)).filter(
-    col("o_orderdate") < lit(date) + lit(interval)
-)
+late_lineitems = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate"))
 
-# Perform the join to find only orders for which there are lineitems outside of expected range
 df = df_orders.join(
-    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
+    late_lineitems, left_on="o_orderkey", right_on="l_orderkey", how="semi"
 )
 
-# Based on priority, find the number of entries
-df = df.aggregate(
-    [col("o_orderpriority")], [F.count(col("o_orderpriority")).alias("order_count")]
+# Count the number of orders in each priority group and sort.
+df = df.aggregate(["o_orderpriority"], [F.count_star().alias("order_count")]).sort_by(
+    "o_orderpriority"
 )
-
-# Sort the results
-df = df.sort(col("o_orderpriority").sort())
 
 df.show()

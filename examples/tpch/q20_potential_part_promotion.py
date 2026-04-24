@@ -103,17 +103,19 @@ interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
 # Filter down dataframes. ``starts_with`` reads more naturally than an
 # explicit substring slice and maps directly to the reference SQL's
 # ``p_name like 'forest%'`` clause.
-df_nation = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
+df_nation = df_nation.filter(col("n_name") == NATION_OF_INTEREST)
 df_part = df_part.filter(F.starts_with(col("p_name"), lit(COLOR_OF_INTEREST)))
 
 # Compute the total quantity of interesting parts shipped by each (part,
 # supplier) pair within the year of interest.
 totals = (
-    df_lineitem.filter(col("l_shipdate") >= lit(date))
-    .filter(col("l_shipdate") < lit(date) + lit(interval))
-    .join(df_part, left_on="l_partkey", right_on="p_partkey", how="inner")
+    df_lineitem.filter(
+        col("l_shipdate") >= lit(date),
+        col("l_shipdate") < lit(date) + lit(interval),
+    )
+    .join(df_part, left_on="l_partkey", right_on="p_partkey")
     .aggregate(
-        [col("l_partkey"), col("l_suppkey")],
+        ["l_partkey", "l_suppkey"],
         [F.sum(col("l_quantity")).alias("total_sold")],
     )
 )
@@ -127,7 +129,6 @@ excess_suppliers = (
         totals,
         left_on=["ps_partkey", "ps_suppkey"],
         right_on=["l_partkey", "l_suppkey"],
-        how="inner",
     )
     .filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
     .select(col("ps_suppkey").alias("suppkey"))
@@ -136,10 +137,11 @@ excess_suppliers = (
 
 # Limit to suppliers in the nation of interest and pick out the two
 # requested columns.
-df = df_supplier.join(
-    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
-).join(excess_suppliers, left_on="s_suppkey", right_on="suppkey", how="semi")
-
-df = df.select("s_name", "s_address").sort(col("s_name").sort())
+df = (
+    df_supplier.join(df_nation, left_on="s_nationkey", right_on="n_nationkey")
+    .join(excess_suppliers, left_on="s_suppkey", right_on="suppkey", how="semi")
+    .select("s_name", "s_address")
+    .sort_by("s_name")
+)
 
 df.show()

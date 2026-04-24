@@ -88,13 +88,12 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_phone",
 )
 
-# Limit line items to the quarter of interest
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
-    col("l_shipdate") < date_of_interest + interval_3_months
-)
-
-df = df_lineitem.aggregate(
-    [col("l_suppkey")],
+# Per-supplier revenue over the quarter of interest.
+per_supplier_revenue = df_lineitem.filter(
+    col("l_shipdate") >= date_of_interest,
+    col("l_shipdate") < date_of_interest + interval_3_months,
+).aggregate(
+    ["l_suppkey"],
     [
         F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
             "total_revenue"
@@ -102,24 +101,20 @@ df = df_lineitem.aggregate(
     ],
 )
 
-# Use a window function to find the maximum revenue across the entire dataframe
-window_frame = WindowFrame("rows", None, None)
-df = df.with_column(
-    "max_revenue",
-    F.max(col("total_revenue")).over(Window(window_frame=window_frame)),
+# A window ``max`` over the whole frame acts as a grand maximum that can be
+# compared row-by-row — the DataFrame stand-in for the reference SQL's
+# ``total_revenue = (select max(total_revenue) from revenue0)`` subquery.
+whole_frame = WindowFrame("rows", None, None)
+
+df = (
+    per_supplier_revenue.with_column(
+        "max_revenue",
+        F.max(col("total_revenue")).over(Window(window_frame=whole_frame)),
+    )
+    .filter(col("total_revenue") == col("max_revenue"))
+    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
+    .select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
+    .sort_by("s_suppkey")
 )
-
-# Find all suppliers whose total revenue is the same as the maximum
-df = df.filter(col("total_revenue") == col("max_revenue"))
-
-# Now that we know the supplier(s) with maximum revenue, get the rest of their information
-# from the supplier table
-df = df.join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
-
-# Return only the columns requested
-df = df.select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
-
-# If we have more than one, sort by supplier number (suppkey)
-df = df.sort(col("s_suppkey").sort())
 
 df.show()
