@@ -179,10 +179,7 @@ total:
 
 .. ipython:: python
 
-    from datafusion import SessionContext, col, lit, functions as f
-
-    ctx = SessionContext()
-    df = ctx.from_pydict(
+    orders_df = ctx.from_pydict(
         {
             "order_id": [1, 1, 1, 2, 2, 3],
             "supplier_id": [100, 101, 102, 200, 201, 300],
@@ -190,7 +187,7 @@ total:
         },
     )
 
-    grouped = df.aggregate(
+    grouped = orders_df.aggregate(
         [col("order_id")],
         [
             f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
