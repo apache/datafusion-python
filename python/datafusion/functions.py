@@ -14,7 +14,27 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""User functions for operating on :py:class:`~datafusion.expr.Expr`."""
+"""Scalar, aggregate, and window functions for :py:class:`~datafusion.expr.Expr`.
+
+Each function returns an :py:class:`~datafusion.expr.Expr` that can be combined
+with other expressions and passed to
+:py:class:`~datafusion.dataframe.DataFrame` methods such as
+:py:meth:`~datafusion.dataframe.DataFrame.select`,
+:py:meth:`~datafusion.dataframe.DataFrame.filter`,
+:py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+:py:meth:`~datafusion.dataframe.DataFrame.window`. The module is conventionally
+imported as ``F`` so calls read like ``F.sum(col("price"))``.
+
+Examples:
+    >>> from datafusion import functions as F
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3, 4]})
+    >>> df.aggregate([], [F.sum(col("a")).alias("total")]).to_pydict()
+    {'total': [10]}
+
+See :ref:`aggregation` and :ref:`window_functions` in the online documentation
+for categorized catalogs of aggregate and window functions.
+"""
 
 from __future__ import annotations
 
