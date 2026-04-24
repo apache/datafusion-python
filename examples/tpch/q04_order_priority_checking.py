@@ -24,18 +24,40 @@ query lists the count of such orders for each order priority sorted in ascending
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        o_orderpriority,
+        count(*) as order_count
+    from
+        orders
+    where
+        o_orderdate >= date '1993-07-01'
+        and o_orderdate < date '1993-07-01' + interval '3' month
+        and exists (
+                select
+                        *
+                from
+                        lineitem
+                where
+                        l_orderkey = o_orderkey
+                        and l_commitdate < l_receiptdate
+        )
+    group by
+        o_orderpriority
+    order by
+        o_orderpriority;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-# Ideally we could put 3 months into the interval. See note below.
-INTERVAL_DAYS = 92
-DATE_OF_INTEREST = "1993-07-01"
+QUARTER_START = date(1993, 7, 1)
+QUARTER_END = date(1993, 10, 1)
 
 # Load the dataframes we need
 
@@ -48,36 +70,23 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_commitdate", "l_receiptdate"
 )
 
-# Create a date object from the string
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
-
-# Limit results to cases where commitment date before receipt date
-# Aggregate the results so we only get one row to join with the order table.
-# Alternately, and likely more idiomatic is instead of `.aggregate` you could
-# do `.select("l_orderkey").distinct()`. The goal here is to show
-# multiple examples of how to use Data Fusion.
-df_lineitem = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate")).aggregate(
-    [col("l_orderkey")], []
+# Keep only orders in the quarter of interest, then restrict to those that
+# have at least one late lineitem via a semi join (the DataFrame form of
+# ``EXISTS`` from the reference SQL).
+df_orders = df_orders.filter(
+    col("o_orderdate") >= lit(QUARTER_START),
+    col("o_orderdate") < lit(QUARTER_END),
 )
 
-# Limit orders to date range of interest
-df_orders = df_orders.filter(col("o_orderdate") >= lit(date)).filter(
-    col("o_orderdate") < lit(date) + lit(interval)
-)
+late_lineitems = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate"))
 
-# Perform the join to find only orders for which there are lineitems outside of expected range
 df = df_orders.join(
-    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
+    late_lineitems, left_on="o_orderkey", right_on="l_orderkey", how="semi"
 )
 
-# Based on priority, find the number of entries
-df = df.aggregate(
-    [col("o_orderpriority")], [F.count(col("o_orderpriority")).alias("order_count")]
+# Count the number of orders in each priority group and sort.
+df = df.aggregate(["o_orderpriority"], [F.count_star().alias("order_count")]).sort_by(
+    "o_orderpriority"
 )
-
-# Sort the results
-df = df.sort(col("o_orderpriority").sort())
 
 df.show()

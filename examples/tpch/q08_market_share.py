@@ -25,24 +25,61 @@ years 1995 and 1996 presented in this order.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        o_year,
+        sum(case
+                when nation = 'BRAZIL' then volume
+                else 0
+        end) / sum(volume) as mkt_share
+    from
+        (
+                select
+                        extract(year from o_orderdate) as o_year,
+                        l_extendedprice * (1 - l_discount) as volume,
+                        n2.n_name as nation
+                from
+                        part,
+                        supplier,
+                        lineitem,
+                        orders,
+                        customer,
+                        nation n1,
+                        nation n2,
+                        region
+                where
+                        p_partkey = l_partkey
+                        and s_suppkey = l_suppkey
+                        and l_orderkey = o_orderkey
+                        and o_custkey = c_custkey
+                        and c_nationkey = n1.n_nationkey
+                        and n1.n_regionkey = r_regionkey
+                        and r_name = 'AMERICA'
+                        and s_nationkey = n2.n_nationkey
+                        and o_orderdate between date '1995-01-01' and date '1996-12-31'
+                        and p_type = 'ECONOMY ANODIZED STEEL'
+        ) as all_nations
+    group by
+        o_year
+    order by
+        o_year;
 """
 
-from datetime import datetime
+from datetime import date
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-supplier_nation = lit("BRAZIL")
-customer_region = lit("AMERICA")
-part_of_interest = lit("ECONOMY ANODIZED STEEL")
+supplier_nation = "BRAZIL"
+customer_region = "AMERICA"
+part_of_interest = "ECONOMY ANODIZED STEEL"
 
-START_DATE = "1995-01-01"
-END_DATE = "1996-12-31"
-
-start_date = lit(datetime.strptime(START_DATE, "%Y-%m-%d").date())
-end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
+START_DATE = date(1995, 1, 1)
+END_DATE = date(1996, 12, 31)
 
 
 # Load the dataframes we need
@@ -74,105 +111,57 @@ df_part = df_part.filter(col("p_type") == part_of_interest)
 
 # Limit orders to those in the specified range
 
-df_orders = df_orders.filter(col("o_orderdate") >= start_date).filter(
-    col("o_orderdate") <= end_date
+df_orders = df_orders.filter(
+    col("o_orderdate") >= lit(START_DATE), col("o_orderdate") <= lit(END_DATE)
 )
 
-# Part 1: Find customers in the region
+# Pair each supplier with its nation name so every regional-customer row
+# below carries the supplier's nation and can be filtered inside the
+# aggregate with ``F.sum(..., filter=...)``.
 
-# We want customers in region specified by region_of_interest. This will be used to compute
-# the total sales of the part of interest. We want to know of those sales what fraction
-# was supplied by the nation of interest. There is no guarantee that the nation of
-# interest is within the region of interest.
+df_supplier_with_nation = df_supplier.join(
+    df_nation, left_on="s_nationkey", right_on="n_nationkey"
+).select("s_suppkey", col("n_name").alias("supp_nation"))
 
-# First we find all the sales that make up the basis.
+# Build every (part, lineitem, order, customer) row for customers in the
+# target region ordering the target part. Each row carries the supplier's
+# nation so we can aggregate on it below.
 
-df_regional_customers = df_region.filter(col("r_name") == customer_region)
-
-# After this join we have all of the possible sales nations
-df_regional_customers = df_regional_customers.join(
-    df_nation, left_on=["r_regionkey"], right_on=["n_regionkey"], how="inner"
+df = (
+    df_region.filter(col("r_name") == customer_region)
+    .join(df_nation, left_on="r_regionkey", right_on="n_regionkey")
+    .join(df_customer, left_on="n_nationkey", right_on="c_nationkey")
+    .join(df_orders, left_on="c_custkey", right_on="o_custkey")
+    .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
+    .join(df_part, left_on="l_partkey", right_on="p_partkey")
+    .join(df_supplier_with_nation, left_on="l_suppkey", right_on="s_suppkey")
+    .with_columns(
+        volume=col("l_extendedprice") * (lit(1.0) - col("l_discount")),
+        o_year=F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32()),
+    )
 )
 
-# Now find the possible customers
-df_regional_customers = df_regional_customers.join(
-    df_customer, left_on=["n_nationkey"], right_on=["c_nationkey"], how="inner"
+# Aggregate the total and national volumes per year via the ``filter``
+# kwarg on ``F.sum`` (DataFrame form of SQL ``sum(... ) FILTER (WHERE ...)``).
+# ``coalesce`` handles the case where no sale came from the target nation
+# for a given year.
+df = (
+    df.aggregate(
+        ["o_year"],
+        [
+            F.sum(col("volume"), filter=col("supp_nation") == supplier_nation).alias(
+                "national_volume"
+            ),
+            F.sum(col("volume")).alias("total_volume"),
+        ],
+    )
+    .select(
+        "o_year",
+        (F.coalesce(col("national_volume"), lit(0.0)) / col("total_volume")).alias(
+            "mkt_share"
+        ),
+    )
+    .sort_by("o_year")
 )
-
-# Next find orders for these customers
-df_regional_customers = df_regional_customers.join(
-    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
-)
-
-# Find all line items from these orders
-df_regional_customers = df_regional_customers.join(
-    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
-)
-
-# Limit to the part of interest
-df_regional_customers = df_regional_customers.join(
-    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner"
-)
-
-# Compute the volume for each line item
-df_regional_customers = df_regional_customers.with_column(
-    "volume", col("l_extendedprice") * (lit(1.0) - col("l_discount"))
-)
-
-# Part 2: Find suppliers from the nation
-
-# Now that we have all of the sales of that part in the specified region, we need
-# to determine which of those came from suppliers in the nation we are interested in.
-
-df_national_suppliers = df_nation.filter(col("n_name") == supplier_nation)
-
-# Determine the suppliers by the limited nation key we have in our single row df above
-df_national_suppliers = df_national_suppliers.join(
-    df_supplier, left_on=["n_nationkey"], right_on=["s_nationkey"], how="inner"
-)
-
-# When we join to the customer dataframe, we don't want to confuse other columns, so only
-# select the supplier key that we need
-df_national_suppliers = df_national_suppliers.select("s_suppkey")
-
-
-# Part 3: Combine suppliers and customers and compute the market share
-
-# Now we can do a left outer join on the suppkey. Those line items from other suppliers
-# will get a null value. We can check for the existence of this null to compute a volume
-# column only from suppliers in the nation we are evaluating.
-
-df = df_regional_customers.join(
-    df_national_suppliers, left_on=["l_suppkey"], right_on=["s_suppkey"], how="left"
-)
-
-# Use a case statement to compute the volume sold by suppliers in the nation of interest
-df = df.with_column(
-    "national_volume",
-    F.case(col("s_suppkey").is_null())
-    .when(lit(value=False), col("volume"))
-    .otherwise(lit(0.0)),
-)
-
-df = df.with_column(
-    "o_year", F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32())
-)
-
-
-# Lastly, sum up the results
-
-df = df.aggregate(
-    [col("o_year")],
-    [
-        F.sum(col("volume")).alias("volume"),
-        F.sum(col("national_volume")).alias("national_volume"),
-    ],
-)
-
-df = df.select(
-    col("o_year"), (F.col("national_volume") / F.col("volume")).alias("mkt_share")
-)
-
-df = df.sort(col("o_year").sort())
 
 df.show()

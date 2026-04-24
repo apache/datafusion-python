@@ -27,27 +27,33 @@ range.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        sum(l_extendedprice * l_discount) as revenue
+    from
+        lineitem
+    where
+        l_shipdate >= date '1994-01-01'
+        and l_shipdate < date '1994-01-01' + interval '1' year
+        and l_discount between 0.06 - 0.01 and 0.06 + 0.01
+        and l_quantity < 24;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
 # Variables from the example query
 
-DATE_OF_INTEREST = "1994-01-01"
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 DISCOUT = 0.06
 DELTA = 0.01
 QUANTITY = 24
-
-INTERVAL_DAYS = 365
-
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
@@ -59,12 +65,11 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
 
 # Filter down to lineitems of interest
 
-df = (
-    df_lineitem.filter(col("l_shipdate") >= lit(date))
-    .filter(col("l_shipdate") < lit(date) + lit(interval))
-    .filter(col("l_discount") >= lit(DISCOUT) - lit(DELTA))
-    .filter(col("l_discount") <= lit(DISCOUT) + lit(DELTA))
-    .filter(col("l_quantity") < lit(QUANTITY))
+df = df_lineitem.filter(
+    col("l_shipdate") >= lit(YEAR_START),
+    col("l_shipdate") < lit(YEAR_END),
+    col("l_discount").between(lit(DISCOUT - DELTA), lit(DISCOUT + DELTA)),
+    col("l_quantity") < QUANTITY,
 )
 
 # Add up all the "lost" revenue

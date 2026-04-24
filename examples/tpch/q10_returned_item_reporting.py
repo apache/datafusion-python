@@ -27,20 +27,50 @@ sum(l_extendedprice*(1-l_discount)) for all qualifying lineitems.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        c_custkey,
+        c_name,
+        sum(l_extendedprice * (1 - l_discount)) as revenue,
+        c_acctbal,
+        n_name,
+        c_address,
+        c_phone,
+        c_comment
+    from
+        customer,
+        orders,
+        lineitem,
+        nation
+    where
+        c_custkey = o_custkey
+        and l_orderkey = o_orderkey
+        and o_orderdate >= date '1993-10-01'
+        and o_orderdate < date '1993-10-01' + interval '3' month
+        and l_returnflag = 'R'
+        and c_nationkey = n_nationkey
+    group by
+        c_custkey,
+        c_name,
+        c_acctbal,
+        c_phone,
+        n_name,
+        c_address,
+        c_comment
+    order by
+        revenue desc limit 20;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE_START_OF_QUARTER = "1993-10-01"
-
-date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d").date())
-
-interval_one_quarter = lit(pa.scalar((0, 92, 0), type=pa.month_day_nano_interval()))
+QUARTER_START = date(1993, 10, 1)
+QUARTER_END = date(1994, 1, 1)
 
 # Load the dataframes we need
 
@@ -66,44 +96,40 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 )
 
 # limit to returns
-df_lineitem = df_lineitem.filter(col("l_returnflag") == lit("R"))
+df_lineitem = df_lineitem.filter(col("l_returnflag") == "R")
 
 
 # Rather than aggregate by all of the customer fields as you might do looking at the specification,
 # we can aggregate by o_custkey and then join in the customer data at the end.
 
-df = df_orders.filter(col("o_orderdate") >= date_start_of_quarter).filter(
-    col("o_orderdate") < date_start_of_quarter + interval_one_quarter
+df = (
+    df_orders.filter(
+        col("o_orderdate") >= lit(QUARTER_START),
+        col("o_orderdate") < lit(QUARTER_END),
+    )
+    .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
+    .aggregate(
+        ["o_custkey"],
+        [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
+    )
 )
 
-df = df.join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
-
-# Compute the revenue
-df = df.aggregate(
-    [col("o_custkey")],
-    [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
+# Now join in the customer data, project the spec's output columns, and take the top 20.
+df = (
+    df.join(df_customer, left_on="o_custkey", right_on="c_custkey")
+    .join(df_nation, left_on="c_nationkey", right_on="n_nationkey")
+    .select(
+        "c_custkey",
+        "c_name",
+        "revenue",
+        "c_acctbal",
+        "n_name",
+        "c_address",
+        "c_phone",
+        "c_comment",
+    )
+    .sort(col("revenue").sort(ascending=False))
+    .limit(20)
 )
-
-# Now join in the customer data
-df = df.join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
-df = df.join(df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner")
-
-# These are the columns the problem statement requires
-df = df.select(
-    "c_custkey",
-    "c_name",
-    "revenue",
-    "c_acctbal",
-    "n_name",
-    "c_address",
-    "c_phone",
-    "c_comment",
-)
-
-# Sort the results in descending order
-df = df.sort(col("revenue").sort(ascending=False))
-
-# Only return the top 20 results
-df = df.limit(20)
 
 df.show()

@@ -27,6 +27,30 @@ A count of the number of lineitems in each group is included.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        l_returnflag,
+        l_linestatus,
+        sum(l_quantity) as sum_qty,
+        sum(l_extendedprice) as sum_base_price,
+        sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
+        sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
+        avg(l_quantity) as avg_qty,
+        avg(l_extendedprice) as avg_price,
+        avg(l_discount) as avg_disc,
+        count(*) as count_order
+    from
+        lineitem
+    where
+        l_shipdate <= date '1998-12-01' - interval '90 days'
+    group by
+        l_returnflag,
+        l_linestatus
+    order by
+        l_returnflag,
+        l_linestatus;
 """
 
 import pyarrow as pa
@@ -58,31 +82,25 @@ df = df.filter(col("l_shipdate") <= lit(greatest_ship_date) - lit(interval))
 
 # Aggregate the results
 
+disc_price = col("l_extendedprice") * (lit(1) - col("l_discount"))
+
 df = df.aggregate(
-    [col("l_returnflag"), col("l_linestatus")],
+    ["l_returnflag", "l_linestatus"],
     [
         F.sum(col("l_quantity")).alias("sum_qty"),
         F.sum(col("l_extendedprice")).alias("sum_base_price"),
-        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
-            "sum_disc_price"
-        ),
-        F.sum(
-            col("l_extendedprice")
-            * (lit(1) - col("l_discount"))
-            * (lit(1) + col("l_tax"))
-        ).alias("sum_charge"),
+        F.sum(disc_price).alias("sum_disc_price"),
+        F.sum(disc_price * (lit(1) + col("l_tax"))).alias("sum_charge"),
         F.avg(col("l_quantity")).alias("avg_qty"),
         F.avg(col("l_extendedprice")).alias("avg_price"),
         F.avg(col("l_discount")).alias("avg_disc"),
-        F.count(col("l_returnflag")).alias(
-            "count_order"
-        ),  # Counting any column should return same result
+        F.count_star().alias("count_order"),
     ],
 )
 
 # Sort per the expected result
 
-df = df.sort(col("l_returnflag").sort(), col("l_linestatus").sort())
+df = df.sort_by("l_returnflag", "l_linestatus")
 
 # Note: There appears to be a discrepancy between what is returned here and what is in the generated
 # answers file for the case of return flag N and line status O, but I did not investigate further.

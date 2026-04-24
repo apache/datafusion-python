@@ -24,10 +24,47 @@ combination of specific brands, a list of containers, and a range of sizes.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        sum(l_extendedprice* (1 - l_discount)) as revenue
+    from
+        lineitem,
+        part
+    where
+        (
+                p_partkey = l_partkey
+                and p_brand = 'Brand#12'
+                and p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+                and l_quantity >= 1 and l_quantity <= 1 + 10
+                and p_size between 1 and 5
+                and l_shipmode in ('AIR', 'AIR REG')
+                and l_shipinstruct = 'DELIVER IN PERSON'
+        )
+        or
+        (
+                p_partkey = l_partkey
+                and p_brand = 'Brand#23'
+                and p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+                and l_quantity >= 10 and l_quantity <= 10 + 10
+                and p_size between 1 and 10
+                and l_shipmode in ('AIR', 'AIR REG')
+                and l_shipinstruct = 'DELIVER IN PERSON'
+        )
+        or
+        (
+                p_partkey = l_partkey
+                and p_brand = 'Brand#34'
+                and p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+                and l_quantity >= 20 and l_quantity <= 20 + 10
+                and p_size between 1 and 15
+                and l_shipmode in ('AIR', 'AIR REG')
+                and l_shipinstruct = 'DELIVER IN PERSON'
+        );
 """
 
-import pyarrow as pa
-from datafusion import SessionContext, col, lit, udf
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
@@ -65,72 +102,41 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_discount",
 )
 
-# These limitations apply to all line items, so go ahead and do them first
-
-df = df_lineitem.filter(col("l_shipinstruct") == lit("DELIVER IN PERSON"))
-
-df = df.filter(
-    (col("l_shipmode") == lit("AIR")) | (col("l_shipmode") == lit("AIR REG"))
-)
-
-df = df.join(df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner")
+# Filter conditions that apply to every disjunct of the reference SQL's WHERE
+# clause — pull them out up front so the per-brand predicate stays focused on
+# the brand-specific parts.
+df = df_lineitem.filter(
+    col("l_shipinstruct") == "DELIVER IN PERSON",
+    F.in_list(col("l_shipmode"), [lit("AIR"), lit("AIR REG")]),
+).join(df_part, left_on="l_partkey", right_on="p_partkey")
 
 
-# Create the user defined function (UDF) definition that does the work
-def is_of_interest(
-    brand_arr: pa.Array,
-    container_arr: pa.Array,
-    quantity_arr: pa.Array,
-    size_arr: pa.Array,
-) -> pa.Array:
-    """
-    The purpose of this function is to demonstrate how a UDF works, taking as input a pyarrow Array
-    and generating a resultant Array. The length of the inputs should match and there should be the
-    same number of rows in the output.
-    """
-    result = []
-    for idx, brand_val in enumerate(brand_arr):
-        brand = brand_val.as_py()
-        if brand in items_of_interest:
-            values_of_interest = items_of_interest[brand]
-
-            container_matches = (
-                container_arr[idx].as_py() in values_of_interest["containers"]
-            )
-
-            quantity = quantity_arr[idx].as_py()
-            quantity_matches = (
-                values_of_interest["min_quantity"]
-                <= quantity
-                <= values_of_interest["min_quantity"] + 10
-            )
-
-            size = size_arr[idx].as_py()
-            size_matches = 1 <= size <= values_of_interest["max_size"]
-
-            result.append(container_matches and quantity_matches and size_matches)
-        else:
-            result.append(False)
-
-    return pa.array(result)
-
-
-# Turn the above function into a UDF that DataFusion can understand
-is_of_interest_udf = udf(
-    is_of_interest,
-    [pa.utf8(), pa.utf8(), pa.decimal128(15, 2), pa.int32()],
-    pa.bool_(),
-    "stable",
-)
-
-# Filter results using the above UDF
-df = df.filter(
-    is_of_interest_udf(
-        col("p_brand"), col("p_container"), col("l_quantity"), col("p_size")
+# Build one OR-combined predicate per brand. Each disjunct encodes the
+# brand-specific container list, quantity window, and size range from the
+# reference SQL. This mirrors the SQL ``where (... brand A ...) or (... brand
+# B ...) or (... brand C ...)`` form directly, without a UDF.
+def _brand_predicate(
+    brand: str, min_quantity: int, containers: list[str], max_size: int
+):
+    return (
+        (col("p_brand") == brand)
+        & F.in_list(col("p_container"), [lit(c) for c in containers])
+        & col("l_quantity").between(lit(min_quantity), lit(min_quantity + 10))
+        & col("p_size").between(lit(1), lit(max_size))
     )
-)
 
-df = df.aggregate(
+
+predicate = None
+for brand, params in items_of_interest.items():
+    part_predicate = _brand_predicate(
+        brand,
+        params["min_quantity"],
+        params["containers"],
+        params["max_size"],
+    )
+    predicate = part_predicate if predicate is None else predicate | part_predicate
+
+df = df.filter(predicate).aggregate(
     [],
     [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
 )

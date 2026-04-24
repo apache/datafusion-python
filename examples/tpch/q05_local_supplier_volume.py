@@ -27,22 +27,44 @@ qualifying lineitems in a particular nation is defined as sum(l_extendedprice * 
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        n_name,
+        sum(l_extendedprice * (1 - l_discount)) as revenue
+    from
+        customer,
+        orders,
+        lineitem,
+        supplier,
+        nation,
+        region
+    where
+        c_custkey = o_custkey
+        and l_orderkey = o_orderkey
+        and l_suppkey = s_suppkey
+        and c_nationkey = s_nationkey
+        and s_nationkey = n_nationkey
+        and n_regionkey = r_regionkey
+        and r_name = 'ASIA'
+        and o_orderdate >= date '1994-01-01'
+        and o_orderdate < date '1994-01-01' + interval '1' year
+    group by
+        n_name
+    order by
+        revenue desc;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE_OF_INTEREST = "1994-01-01"
-INTERVAL_DAYS = 365
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 REGION_OF_INTEREST = "ASIA"
-
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
@@ -68,38 +90,32 @@ df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
 )
 
 # Restrict dataframes to cases of interest
-df_orders = df_orders.filter(col("o_orderdate") >= lit(date)).filter(
-    col("o_orderdate") < lit(date) + lit(interval)
+df_orders = df_orders.filter(
+    col("o_orderdate") >= lit(YEAR_START),
+    col("o_orderdate") < lit(YEAR_END),
 )
 
-df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
+df_region = df_region.filter(col("r_name") == REGION_OF_INTEREST)
 
 # Join all the dataframes
 
 df = (
-    df_customer.join(
-        df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
-    )
-    .join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
+    df_customer.join(df_orders, left_on="c_custkey", right_on="o_custkey")
+    .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
     .join(
         df_supplier,
         left_on=["l_suppkey", "c_nationkey"],
         right_on=["s_suppkey", "s_nationkey"],
-        how="inner",
     )
-    .join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
-    .join(df_region, left_on=["n_regionkey"], right_on=["r_regionkey"], how="inner")
+    .join(df_nation, left_on="s_nationkey", right_on="n_nationkey")
+    .join(df_region, left_on="n_regionkey", right_on="r_regionkey")
 )
 
-# Compute the final result
+# Compute the final result, then sort in descending order.
 
 df = df.aggregate(
-    [col("n_name")],
+    ["n_name"],
     [F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias("revenue")],
-)
-
-# Sort in descending order
-
-df = df.sort(col("revenue").sort(ascending=False))
+).sort(col("revenue").sort(ascending=False))
 
 df.show()
