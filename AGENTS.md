@@ -42,9 +42,6 @@ Currently available skills:
   contributor-facing guide for writing idiomatic DataFrame code inside this
   repo (TPC-H pattern index, plan-comparison diagnostic, docstring
   conventions). Layers on top of the user-facing [`SKILL.md`](SKILL.md).
-- [`audit-skill-md`](.ai/skills/audit-skill-md/SKILL.md) — cross-reference
-  the repo-root `SKILL.md` against the current public Python API and report
-  new APIs needing coverage and stale mentions. Run after upstream syncs.
 
 ## Plan-comparison diagnostic
 
