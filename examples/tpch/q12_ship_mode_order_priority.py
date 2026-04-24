@@ -91,20 +91,9 @@ df = df_lineitem.filter(col("l_receiptdate") >= lit(date)).filter(
     col("l_receiptdate") < lit(date) + lit(interval)
 )
 
-# Note: It is not recommended to use array_has because it treats the second argument as an argument
-# so if you pass it col("l_shipmode") it will pass the entire array to process which is very slow.
-# Instead check the position of the entry is not null.
-df = df.filter(
-    ~F.array_position(
-        F.make_array(lit(SHIP_MODE_1), lit(SHIP_MODE_2)), col("l_shipmode")
-    ).is_null()
-)
-
-# Since we have only two values, it's much easier to do this as a filter where the l_shipmode
-# matches either of the two values, but we want to show doing some array operations in this
-# example. If you want to see this done with filters, comment out the above line and uncomment
-# this one.
-# df = df.filter((col("l_shipmode") == lit(SHIP_MODE_1)) | (col("l_shipmode") == lit(SHIP_MODE_2))) # noqa: ERA001
+# Restrict to the two ship modes of interest. ``in_list`` maps directly to
+# the ``l_shipmode in ('FOB', 'SHIP')`` clause of the reference SQL.
+df = df.filter(F.in_list(col("l_shipmode"), [lit(SHIP_MODE_1), lit(SHIP_MODE_2)]))
 
 
 # We need order priority, so join order df to line item

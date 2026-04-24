@@ -92,65 +92,68 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 )
 
 # Limit to suppliers in the nation of interest
-df_suppliers_of_interest = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
+df_suppliers_of_interest = df_nation.filter(
+    col("n_name") == lit(NATION_OF_INTEREST)
+).join(df_supplier, left_on="n_nationkey", right_on="s_nationkey", how="inner")
 
-df_suppliers_of_interest = df_suppliers_of_interest.join(
-    df_supplier, left_on="n_nationkey", right_on="s_nationkey", how="inner"
+# Line items for orders that have status 'F'. This is the candidate set of
+# (order, supplier) pairs we reason about below.
+failed_order_lineitems = df_lineitem.join(
+    df_orders.filter(col("o_orderstatus") == lit("F")),
+    left_on="l_orderkey",
+    right_on="o_orderkey",
+    how="inner",
 )
 
-# Find the failed orders and all their line items
-df = df_orders.filter(col("o_orderstatus") == lit("F"))
-
-df = df_lineitem.join(df, left_on="l_orderkey", right_on="o_orderkey", how="inner")
-
-# Identify the line items for which the order is failed due to.
-df = df.with_column(
-    "failed_supp",
-    F.case(col("l_receiptdate") > col("l_commitdate"))
-    .when(lit(value=True), col("l_suppkey"))
-    .end(),
+# Line items whose receipt was late. This corresponds to ``l1`` in the
+# reference SQL.
+late_lineitems = failed_order_lineitems.filter(
+    col("l_receiptdate") > col("l_commitdate")
 )
 
-# There are other ways we could do this but the purpose of this example is to work with rows where
-# an element is an array of values. In this case, we will create two columns of arrays. One will be
-# an array of all of the suppliers who made up this order. That way we can filter the dataframe for
-# only orders where this array is larger than one for multiple supplier orders. The second column
-# is all of the suppliers who failed to make their commitment. We can filter the second column for
-# arrays with size one. That combination will give us orders that had multiple suppliers where only
-# one failed. Use distinct=True in the blow aggregation so we don't get multiple line items from the
-# same supplier reported in either array.
-df = df.aggregate(
-    [col("o_orderkey")],
-    [
-        F.array_agg(col("l_suppkey"), distinct=True).alias("all_suppliers"),
-        F.array_agg(
-            col("failed_supp"), filter=col("failed_supp").is_not_null(), distinct=True
-        ).alias("failed_suppliers"),
-    ],
+# Orders that had more than one distinct supplier. Expressed as
+# ``count(distinct l_suppkey) > 1``. Stands in for the reference SQL's
+# ``exists (... l2.l_suppkey <> l1.l_suppkey ...)`` subquery.
+multi_supplier_orders = (
+    failed_order_lineitems.select("l_orderkey", "l_suppkey")
+    .distinct()
+    .aggregate([col("l_orderkey")], [F.count(col("l_suppkey")).alias("n_suppliers")])
+    .filter(col("n_suppliers") > lit(1))
+    .select("l_orderkey")
 )
 
-# This is the check described above which will identify single failed supplier in a multiple
-# supplier order.
-df = df.filter(F.array_length(col("failed_suppliers")) == lit(1)).filter(
-    F.array_length(col("all_suppliers")) > lit(1)
+# Orders where exactly one distinct supplier was late. Stands in for the
+# reference SQL's ``not exists (... l3.l_suppkey <> l1.l_suppkey and l3 is
+# also late ...)`` subquery: if only one supplier on the order was late,
+# nobody else on the same order was late.
+single_late_supplier_orders = (
+    late_lineitems.select("l_orderkey", "l_suppkey")
+    .distinct()
+    .aggregate(
+        [col("l_orderkey")], [F.count(col("l_suppkey")).alias("n_late_suppliers")]
+    )
+    .filter(col("n_late_suppliers") == lit(1))
+    .select("l_orderkey")
 )
 
-# Since we have an array we know is exactly one element long, we can extract that single value.
-df = df.select(
-    col("o_orderkey"), F.array_element(col("failed_suppliers"), lit(1)).alias("suppkey")
+# Keep late line items whose order qualifies on both counts. Semi joins
+# preserve the left-side columns without fanning out on the right.
+df = late_lineitems.join(multi_supplier_orders, on="l_orderkey", how="semi").join(
+    single_late_supplier_orders, on="l_orderkey", how="semi"
 )
 
-# Join to the supplier of interest list for the nation of interest
-df = df.join(
-    df_suppliers_of_interest, left_on=["suppkey"], right_on=["s_suppkey"], how="inner"
+# Attach the supplier name for suppliers in the nation of interest, count
+# one row per qualifying order, and return the top 100.
+df = (
+    df.join(
+        df_suppliers_of_interest,
+        left_on="l_suppkey",
+        right_on="s_suppkey",
+        how="inner",
+    )
+    .aggregate([col("s_name")], [F.count(col("l_orderkey")).alias("numwait")])
+    .sort(col("numwait").sort(ascending=False), col("s_name").sort())
+    .limit(100)
 )
-
-# Count how many orders that supplier is the only failed supplier for
-df = df.aggregate([col("s_name")], [F.count(col("o_orderkey")).alias("numwait")])
-
-# Return in descending order
-df = df.sort(col("numwait").sort(ascending=False), col("s_name").sort())
-
-df = df.limit(100)
 
 df.show()

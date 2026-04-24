@@ -100,42 +100,46 @@ date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
 
-# Filter down dataframes
+# Filter down dataframes. ``starts_with`` reads more naturally than an
+# explicit substring slice and maps directly to the reference SQL's
+# ``p_name like 'forest%'`` clause.
 df_nation = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
-df_part = df_part.filter(
-    F.substring(col("p_name"), lit(0), lit(len(COLOR_OF_INTEREST) + 1))
-    == lit(COLOR_OF_INTEREST)
+df_part = df_part.filter(F.starts_with(col("p_name"), lit(COLOR_OF_INTEREST)))
+
+# Compute the total quantity of interesting parts shipped by each (part,
+# supplier) pair within the year of interest.
+totals = (
+    df_lineitem.filter(col("l_shipdate") >= lit(date))
+    .filter(col("l_shipdate") < lit(date) + lit(interval))
+    .join(df_part, left_on="l_partkey", right_on="p_partkey", how="inner")
+    .aggregate(
+        [col("l_partkey"), col("l_suppkey")],
+        [F.sum(col("l_quantity")).alias("total_sold")],
+    )
 )
 
-df = df_lineitem.filter(col("l_shipdate") >= lit(date)).filter(
-    col("l_shipdate") < lit(date) + lit(interval)
+# Keep only (part, supplier) pairs whose available quantity exceeds 50% of
+# the total shipped. The result already contains one row per supplier of
+# interest, so we can semi-join the supplier table rather than inner-join
+# and deduplicate afterwards.
+excess_suppliers = (
+    df_partsupp.join(
+        totals,
+        left_on=["ps_partkey", "ps_suppkey"],
+        right_on=["l_partkey", "l_suppkey"],
+        how="inner",
+    )
+    .filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
+    .select(col("ps_suppkey").alias("suppkey"))
+    .distinct()
 )
 
-# This will filter down the line items to the parts of interest
-df = df.join(df_part, left_on="l_partkey", right_on="p_partkey", how="inner")
+# Limit to suppliers in the nation of interest and pick out the two
+# requested columns.
+df = df_supplier.join(
+    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
+).join(excess_suppliers, left_on="s_suppkey", right_on="suppkey", how="semi")
 
-# Compute the total sold and limit ourselves to individual supplier/part combinations
-df = df.aggregate(
-    [col("l_partkey"), col("l_suppkey")], [F.sum(col("l_quantity")).alias("total_sold")]
-)
-
-df = df.join(
-    df_partsupp,
-    left_on=["l_partkey", "l_suppkey"],
-    right_on=["ps_partkey", "ps_suppkey"],
-    how="inner",
-)
-
-# Find cases of excess quantity
-df = df.filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
-
-# We could do these joins earlier, but now limit to the nation of interest suppliers
-df = df.join(df_supplier, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="inner")
-df = df.join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
-
-# Restrict to the requested data per the problem statement
-df = df.select("s_name", "s_address").distinct()
-
-df = df.sort(col("s_name").sort())
+df = df.select("s_name", "s_address").sort(col("s_name").sort())
 
 df.show()

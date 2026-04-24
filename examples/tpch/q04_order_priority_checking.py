@@ -77,13 +77,13 @@ date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
-# Limit results to cases where commitment date before receipt date
-# Aggregate the results so we only get one row to join with the order table.
-# Alternately, and likely more idiomatic is instead of `.aggregate` you could
-# do `.select("l_orderkey").distinct()`. The goal here is to show
-# multiple examples of how to use Data Fusion.
-df_lineitem = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate")).aggregate(
-    [col("l_orderkey")], []
+# Limit results to cases where commitment date before receipt date, then
+# reduce to a single row per order so the join with the orders table is a
+# semantic EXISTS rather than a fan-out.
+df_lineitem = (
+    df_lineitem.filter(col("l_commitdate") < col("l_receiptdate"))
+    .select("l_orderkey")
+    .distinct()
 )
 
 # Limit orders to date range of interest

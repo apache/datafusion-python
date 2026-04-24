@@ -186,12 +186,13 @@ df = df_regional_customers.join(
     df_national_suppliers, left_on=["l_suppkey"], right_on=["s_suppkey"], how="left"
 )
 
-# Use a case statement to compute the volume sold by suppliers in the nation of interest
+# Use a searched CASE (``F.when(...).otherwise(...)``) to keep only the
+# volume attributable to suppliers in the nation of interest. This mirrors
+# the ``case when nation = '...' then volume else 0 end`` form of the
+# reference SQL rather than dispatching on a boolean subject.
 df = df.with_column(
     "national_volume",
-    F.case(col("s_suppkey").is_null())
-    .when(lit(value=False), col("volume"))
-    .otherwise(lit(0.0)),
+    F.when(col("s_suppkey").is_not_null(), col("volume")).otherwise(lit(0.0)),
 )
 
 df = df.with_column(

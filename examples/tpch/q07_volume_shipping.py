@@ -116,20 +116,8 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= start_date).filter(
 )
 
 
-# A simpler way to do the following operation is to use a filter, but we also want to demonstrate
-# how to use case statements. Here we are assigning `n_name` to be itself when it is either of
-# the two nations of interest. Since there is no `otherwise()` statement, any values that do
-# not match these will result in a null value and then get filtered out.
-#
-# To do the same using a simple filter would be:
-# df_nation = df_nation.filter((F.col("n_name") == nation_1) | (F.col("n_name") == nation_2)) # noqa: ERA001
-df_nation = df_nation.with_column(
-    "n_name",
-    F.case(col("n_name"))
-    .when(nation_1, col("n_name"))
-    .when(nation_2, col("n_name"))
-    .end(),
-).filter(~col("n_name").is_null())
+# Limit the nation table to the two nations of interest.
+df_nation = df_nation.filter(F.in_list(col("n_name"), [nation_1, nation_2]))
 
 
 # Limit suppliers to either nation

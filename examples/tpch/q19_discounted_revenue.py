@@ -64,8 +64,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         );
 """
 
-import pyarrow as pa
-from datafusion import SessionContext, col, lit, udf
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
@@ -114,59 +113,34 @@ df = df.filter(
 df = df.join(df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner")
 
 
-# Create the user defined function (UDF) definition that does the work
-def is_of_interest(
-    brand_arr: pa.Array,
-    container_arr: pa.Array,
-    quantity_arr: pa.Array,
-    size_arr: pa.Array,
-) -> pa.Array:
-    """
-    The purpose of this function is to demonstrate how a UDF works, taking as input a pyarrow Array
-    and generating a resultant Array. The length of the inputs should match and there should be the
-    same number of rows in the output.
-    """
-    result = []
-    for idx, brand_val in enumerate(brand_arr):
-        brand = brand_val.as_py()
-        if brand in items_of_interest:
-            values_of_interest = items_of_interest[brand]
-
-            container_matches = (
-                container_arr[idx].as_py() in values_of_interest["containers"]
-            )
-
-            quantity = quantity_arr[idx].as_py()
-            quantity_matches = (
-                values_of_interest["min_quantity"]
-                <= quantity
-                <= values_of_interest["min_quantity"] + 10
-            )
-
-            size = size_arr[idx].as_py()
-            size_matches = 1 <= size <= values_of_interest["max_size"]
-
-            result.append(container_matches and quantity_matches and size_matches)
-        else:
-            result.append(False)
-
-    return pa.array(result)
-
-
-# Turn the above function into a UDF that DataFusion can understand
-is_of_interest_udf = udf(
-    is_of_interest,
-    [pa.utf8(), pa.utf8(), pa.decimal128(15, 2), pa.int32()],
-    pa.bool_(),
-    "stable",
-)
-
-# Filter results using the above UDF
-df = df.filter(
-    is_of_interest_udf(
-        col("p_brand"), col("p_container"), col("l_quantity"), col("p_size")
+# Build one OR-combined predicate per brand. Each disjunct encodes the
+# brand-specific container list, quantity window, and size range from the
+# reference SQL. This mirrors the SQL ``where (... brand A ...) or (... brand
+# B ...) or (... brand C ...)`` form directly, without a UDF.
+def _brand_predicate(
+    brand: str, min_quantity: int, containers: list[str], max_size: int
+):
+    return (
+        (col("p_brand") == lit(brand))
+        & F.in_list(col("p_container"), [lit(c) for c in containers])
+        & (col("l_quantity") >= lit(min_quantity))
+        & (col("l_quantity") <= lit(min_quantity + 10))
+        & (col("p_size") >= lit(1))
+        & (col("p_size") <= lit(max_size))
     )
-)
+
+
+predicate = None
+for brand, params in items_of_interest.items():
+    part_predicate = _brand_predicate(
+        brand,
+        params["min_quantity"],
+        params["containers"],
+        params["max_size"],
+    )
+    predicate = part_predicate if predicate is None else predicate | part_predicate
+
+df = df.filter(predicate)
 
 df = df.aggregate(
     [],
