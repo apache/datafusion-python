@@ -84,7 +84,7 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
 )
 
 df_unwanted_suppliers = df_supplier.filter(
-    F.regexp_match(col("s_comment"), lit("Customer.?*Complaints")).is_not_null()
+    F.regexp_like(col("s_comment"), lit("Customer.*Complaints"))
 )
 
 # Remove unwanted suppliers via an anti join (DataFrame form of NOT IN).

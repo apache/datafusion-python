@@ -56,20 +56,15 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         revenue desc;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE_OF_INTEREST = "1994-01-01"
-INTERVAL_DAYS = 365
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 REGION_OF_INTEREST = "ASIA"
-
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
@@ -96,8 +91,8 @@ df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
 
 # Restrict dataframes to cases of interest
 df_orders = df_orders.filter(
-    col("o_orderdate") >= lit(date),
-    col("o_orderdate") < lit(date) + lit(interval),
+    col("o_orderdate") >= lit(YEAR_START),
+    col("o_orderdate") < lit(YEAR_END),
 )
 
 df_region = df_region.filter(col("r_name") == REGION_OF_INTEREST)

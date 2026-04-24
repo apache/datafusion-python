@@ -70,7 +70,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         l_year;
 """
 
-from datetime import datetime
+from datetime import date
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit
@@ -82,11 +82,8 @@ from util import get_data_path
 nation_1 = lit("FRANCE")
 nation_2 = lit("GERMANY")
 
-START_DATE = "1995-01-01"
-END_DATE = "1996-12-31"
-
-start_date = lit(datetime.strptime(START_DATE, "%Y-%m-%d").date())
-end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
+START_DATE = date(1995, 1, 1)
+END_DATE = date(1996, 12, 31)
 
 
 # Load the dataframes we need
@@ -112,7 +109,7 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 
 # Filter to time of interest
 df_lineitem = df_lineitem.filter(
-    col("l_shipdate") >= start_date, col("l_shipdate") <= end_date
+    col("l_shipdate") >= lit(START_DATE), col("l_shipdate") <= lit(END_DATE)
 )
 
 

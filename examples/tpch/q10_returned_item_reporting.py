@@ -63,18 +63,14 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         revenue desc limit 20;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE_START_OF_QUARTER = "1993-10-01"
-
-date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d").date())
-
-interval_one_quarter = lit(pa.scalar((0, 92, 0), type=pa.month_day_nano_interval()))
+QUARTER_START = date(1993, 10, 1)
+QUARTER_END = date(1994, 1, 1)
 
 # Load the dataframes we need
 
@@ -108,8 +104,8 @@ df_lineitem = df_lineitem.filter(col("l_returnflag") == "R")
 
 df = (
     df_orders.filter(
-        col("o_orderdate") >= date_start_of_quarter,
-        col("o_orderdate") < date_start_of_quarter + interval_one_quarter,
+        col("o_orderdate") >= lit(QUARTER_START),
+        col("o_orderdate") < lit(QUARTER_END),
     )
     .join(df_lineitem, left_on="o_orderkey", right_on="l_orderkey")
     .aggregate(

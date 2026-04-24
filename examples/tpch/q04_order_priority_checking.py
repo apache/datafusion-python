@@ -50,16 +50,14 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         o_orderpriority;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-# Ideally we could put 3 months into the interval. See note below.
-INTERVAL_DAYS = 92
-DATE_OF_INTEREST = "1993-07-01"
+QUARTER_START = date(1993, 7, 1)
+QUARTER_END = date(1993, 10, 1)
 
 # Load the dataframes we need
 
@@ -72,17 +70,12 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_commitdate", "l_receiptdate"
 )
 
-# Create a date object from the string
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
-
 # Keep only orders in the quarter of interest, then restrict to those that
 # have at least one late lineitem via a semi join (the DataFrame form of
 # ``EXISTS`` from the reference SQL).
 df_orders = df_orders.filter(
-    col("o_orderdate") >= lit(date),
-    col("o_orderdate") < lit(date) + lit(interval),
+    col("o_orderdate") >= lit(QUARTER_START),
+    col("o_orderdate") < lit(QUARTER_END),
 )
 
 late_lineitems = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate"))

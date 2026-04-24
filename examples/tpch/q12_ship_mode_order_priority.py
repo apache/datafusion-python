@@ -60,16 +60,16 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         l_shipmode;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
 SHIP_MODE_1 = "MAIL"
 SHIP_MODE_2 = "SHIP"
-DATE_OF_INTEREST = "1994-01-01"
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 
 # Load the dataframes we need
 
@@ -82,14 +82,10 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_shipmode", "l_commitdate", "l_shipdate", "l_receiptdate"
 )
 
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
-
 
 df = df_lineitem.filter(
-    col("l_receiptdate") >= lit(date),
-    col("l_receiptdate") < lit(date) + lit(interval),
+    col("l_receiptdate") >= lit(YEAR_START),
+    col("l_receiptdate") < lit(YEAR_END),
     # ``in_list`` maps directly to ``l_shipmode in (...)`` from the SQL.
     F.in_list(col("l_shipmode"), [lit(SHIP_MODE_1), lit(SHIP_MODE_2)]),
     col("l_shipdate") < col("l_commitdate"),
@@ -97,18 +93,18 @@ df = df_lineitem.filter(
 ).join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
 
 # Flag each line item as belonging to a high-priority order or not.
-is_high_priority = F.in_list(col("o_orderpriority"), [lit("1-URGENT"), lit("2-HIGH")])
+high_priorities = [lit("1-URGENT"), lit("2-HIGH")]
+is_high = F.in_list(col("o_orderpriority"), high_priorities)
+is_low = F.in_list(col("o_orderpriority"), high_priorities, negated=True)
 
-# Count the high-priority and low-priority lineitems per ship mode.
+# Count the high-priority and low-priority lineitems per ship mode via the
+# ``filter`` kwarg on ``F.count`` (DataFrame form of SQL's ``count(*)
+# FILTER (WHERE ...)``).
 df = df.aggregate(
     ["l_shipmode"],
     [
-        F.sum(F.when(is_high_priority, lit(1)).otherwise(lit(0))).alias(
-            "high_line_count"
-        ),
-        F.sum(F.when(~is_high_priority, lit(1)).otherwise(lit(0))).alias(
-            "low_line_count"
-        ),
+        F.count(col("o_orderkey"), filter=is_high).alias("high_line_count"),
+        F.count(col("o_orderkey"), filter=is_low).alias("low_line_count"),
     ],
 ).sort_by("l_shipmode")
 

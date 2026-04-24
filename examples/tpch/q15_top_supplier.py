@@ -60,19 +60,14 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
     drop view revenue0;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
-from datafusion import SessionContext, WindowFrame, col, lit
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
-from datafusion.expr import Window
 from util import get_data_path
 
-DATE = "1996-01-01"
-
-date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
-
-interval_3_months = lit(pa.scalar((0, 91, 0), type=pa.month_day_nano_interval()))
+QUARTER_START = date(1996, 1, 1)
+QUARTER_END = date(1996, 4, 1)
 
 # Load the dataframes we need
 
@@ -89,30 +84,26 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
 )
 
 # Per-supplier revenue over the quarter of interest.
+revenue = col("l_extendedprice") * (lit(1) - col("l_discount"))
+
 per_supplier_revenue = df_lineitem.filter(
-    col("l_shipdate") >= date_of_interest,
-    col("l_shipdate") < date_of_interest + interval_3_months,
-).aggregate(
-    ["l_suppkey"],
-    [
-        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
-            "total_revenue"
-        )
-    ],
+    col("l_shipdate") >= lit(QUARTER_START),
+    col("l_shipdate") < lit(QUARTER_END),
+).aggregate(["l_suppkey"], [F.sum(revenue).alias("total_revenue")])
+
+# Compute the grand maximum revenue separately and join on equality — the
+# DataFrame stand-in for the reference SQL's
+# ``total_revenue = (select max(total_revenue) from revenue0)`` subquery.
+max_revenue = per_supplier_revenue.aggregate(
+    [], [F.max(col("total_revenue")).alias("max_rev")]
 )
 
-# A window ``max`` over the whole frame acts as a grand maximum that can be
-# compared row-by-row — the DataFrame stand-in for the reference SQL's
-# ``total_revenue = (select max(total_revenue) from revenue0)`` subquery.
-whole_frame = WindowFrame("rows", None, None)
+top_suppliers = per_supplier_revenue.join_on(
+    max_revenue, col("total_revenue") == col("max_rev")
+).select("l_suppkey", "total_revenue")
 
 df = (
-    per_supplier_revenue.with_column(
-        "max_revenue",
-        F.max(col("total_revenue")).over(Window(window_frame=whole_frame)),
-    )
-    .filter(col("total_revenue") == col("max_revenue"))
-    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
+    df_supplier.join(top_suppliers, left_on="s_suppkey", right_on="l_suppkey")
     .select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
     .sort_by("s_suppkey")
 )

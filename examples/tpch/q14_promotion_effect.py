@@ -42,18 +42,14 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         and l_shipdate < date '1995-09-01' + interval '1' month;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE = "1995-09-01"
-
-date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
-
-interval_one_month = lit(pa.scalar((0, 30, 0), type=pa.month_day_nano_interval()))
+MONTH_START = date(1995, 9, 1)
+MONTH_END = date(1995, 10, 1)
 
 # Load the dataframes we need
 
@@ -66,31 +62,29 @@ df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p
 
 
 # Restrict the line items to the month of interest, join the matching part
-# rows, and compute revenue per line item.
+# rows, and aggregate revenue totals with a ``filter`` clause on the promo
+# sum — the DataFrame form of SQL ``sum(... ) FILTER (WHERE ...)``.
+revenue = col("l_extendedprice") * (lit(1.0) - col("l_discount"))
+is_promo = F.starts_with(col("p_type"), lit("PROMO"))
+
 df = (
     df_lineitem.filter(
-        col("l_shipdate") >= date_of_interest,
-        col("l_shipdate") < date_of_interest + interval_one_month,
+        col("l_shipdate") >= lit(MONTH_START),
+        col("l_shipdate") < lit(MONTH_END),
     )
     .join(df_part, left_on="l_partkey", right_on="p_partkey")
-    .with_column("revenue", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
-)
-
-# Sum promotional and total revenue, then compute the percentage. The
-# ``F.when(...)`` form mirrors the ``case when p_type like 'PROMO%' ... else 0``
-# in the reference SQL.
-df = df.aggregate(
-    [],
-    [
-        F.sum(
-            F.when(
-                F.starts_with(col("p_type"), lit("PROMO")), col("revenue")
-            ).otherwise(lit(0.0))
-        ).alias("promo_revenue"),
-        F.sum(col("revenue")).alias("total_revenue"),
-    ],
-).select(
-    (lit(100.0) * col("promo_revenue") / col("total_revenue")).alias("promo_revenue")
+    .aggregate(
+        [],
+        [
+            F.sum(revenue, filter=is_promo).alias("promo_revenue"),
+            F.sum(revenue).alias("total_revenue"),
+        ],
+    )
+    .select(
+        (lit(100.0) * col("promo_revenue") / col("total_revenue")).alias(
+            "promo_revenue"
+        )
+    )
 )
 
 df.show()

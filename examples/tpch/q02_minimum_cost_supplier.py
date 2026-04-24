@@ -113,12 +113,12 @@ df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
     "r_regionkey", "r_name"
 )
 
-# Filter down parts. Part names contain the type of interest, so we can use strpos to find where
-# in the p_type column the word is. `strpos` will return 0 if not found, otherwise the position
-# in the string where it is located.
+# Filter down parts. The reference SQL uses ``p_type like '%BRASS'`` which
+# is an ``ends_with`` check; use the dedicated string function rather than
+# a manual substring match.
 
 df_part = df_part.filter(
-    F.strpos(col("p_type"), lit(TYPE_OF_INTEREST)) > 0,
+    F.ends_with(col("p_type"), lit(TYPE_OF_INTEREST)),
     col("p_size") == SIZE_OF_INTEREST,
 )
 

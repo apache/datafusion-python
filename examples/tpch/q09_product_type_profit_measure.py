@@ -69,7 +69,7 @@ from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-part_color = lit("green")
+part_color = "green"
 
 # Load the dataframes we need
 
@@ -98,9 +98,10 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 )
 
 # Limit possible parts to the color specified, then walk the joins down to the
-# line-item rows we need and attach the supplier's nation.
+# line-item rows we need and attach the supplier's nation. ``F.contains``
+# maps directly to the reference SQL's ``p_name like '%green%'``.
 df = (
-    df_part.filter(F.strpos(col("p_name"), part_color) > 0)
+    df_part.filter(F.contains(col("p_name"), lit(part_color)))
     .join(df_lineitem, left_on="p_partkey", right_on="l_partkey")
     .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
     .join(df_orders, left_on="l_orderkey", right_on="o_orderkey")

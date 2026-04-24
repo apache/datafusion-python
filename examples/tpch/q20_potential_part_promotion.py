@@ -67,15 +67,15 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         s_name;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
 COLOR_OF_INTEREST = "forest"
-DATE_OF_INTEREST = "1994-01-01"
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 NATION_OF_INTEREST = "CANADA"
 
 # Load the dataframes we need
@@ -96,10 +96,6 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
 
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
-
-interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
-
 # Filter down dataframes. ``starts_with`` reads more naturally than an
 # explicit substring slice and maps directly to the reference SQL's
 # ``p_name like 'forest%'`` clause.
@@ -110,8 +106,8 @@ df_part = df_part.filter(F.starts_with(col("p_name"), lit(COLOR_OF_INTEREST)))
 # supplier) pair within the year of interest.
 totals = (
     df_lineitem.filter(
-        col("l_shipdate") >= lit(date),
-        col("l_shipdate") < lit(date) + lit(interval),
+        col("l_shipdate") >= lit(YEAR_START),
+        col("l_shipdate") < lit(YEAR_END),
     )
     .join(df_part, left_on="l_partkey", right_on="p_partkey")
     .aggregate(
