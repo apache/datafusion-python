@@ -5,7 +5,32 @@ datafusion.context
 
 .. autoapi-nested-parse::
 
-   Session Context and it's associated configuration.
+   :py:class:`SessionContext` — entry point for running DataFusion queries.
+
+   A :py:class:`SessionContext` holds registered tables, catalogs, and
+   configuration for the current session. It is the first object most programs
+   create: from it you register data, run SQL strings
+   (:py:meth:`SessionContext.sql`), read files
+   (:py:meth:`SessionContext.read_csv`,
+   :py:meth:`SessionContext.read_parquet`, ...), and construct
+   :py:class:`~datafusion.dataframe.DataFrame` objects in memory
+   (:py:meth:`SessionContext.from_pydict`,
+   :py:meth:`SessionContext.from_arrow`).
+
+   Session behavior (memory limits, batch size, configured optimizer passes,
+   ...) is controlled by :py:class:`SessionConfig` and
+   :py:class:`RuntimeEnvBuilder`; SQL dialect limits are controlled by
+   :py:class:`SQLOptions`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> ctx.sql("SELECT 1 AS n").to_pydict()
+   {'n': [1]}
+
+   See :ref:`user_guide_concepts` in the online documentation for the broader
+   execution model.
 
 
 

@@ -1519,8 +1519,30 @@
                 
   <section id="module-datafusion.dataframe">
 <span id="datafusion-dataframe"></span><h1>datafusion.dataframe<a class="headerlink" href="#module-datafusion.dataframe" title="Link to this heading">¶</a></h1>
-<p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> is one of the core concepts in DataFusion.</p>
-<p>See <a class="reference internal" href="../../../user-guide/basics.html#user-guide-concepts"><span class="std std-ref">Concepts</span></a> in the online documentation for more information.</p>
+<p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> — lazy, chainable query representation.</p>
+<p>A <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> is a logical plan over one or more data sources.
+Methods that reshape the plan (<a class="reference internal" href="#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.select()</span></code></a>,
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.filter()</span></code></a>, <a class="reference internal" href="#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.aggregate()</span></code></a>,
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.sort" title="datafusion.dataframe.DataFrame.sort"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.sort()</span></code></a>, <a class="reference internal" href="#datafusion.dataframe.DataFrame.join" title="datafusion.dataframe.DataFrame.join"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.join()</span></code></a>,
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.limit" title="datafusion.dataframe.DataFrame.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.limit()</span></code></a>, the set-operation methods, …) return a new
+<a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and do no work until a terminal method such as
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.collect()</span></code></a>, <a class="reference internal" href="#datafusion.dataframe.DataFrame.to_pydict" title="datafusion.dataframe.DataFrame.to_pydict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.to_pydict()</span></code></a>,
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.show" title="datafusion.dataframe.DataFrame.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.show()</span></code></a>, or one of the <code class="docutils literal notranslate"><span class="pre">write_*</span></code> methods is called.</p>
+<p>DataFrames are produced from a
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, typically via
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.sql" title="datafusion.context.SessionContext.sql"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sql()</span></code></a>,
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.read_csv" title="datafusion.context.SessionContext.read_csv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_csv()</span></code></a>,
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.read_parquet" title="datafusion.context.SessionContext.read_parquet"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_parquet()</span></code></a>, or
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.from_pydict" title="datafusion.context.SessionContext.from_pydict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_pydict()</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;b&#39;: [20, 30]}</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../../../user-guide/basics.html#user-guide-concepts"><span class="std std-ref">Concepts</span></a> in the online documentation for a high-level
+overview of the execution model.</p>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
@@ -1735,6 +1757,24 @@ levels (rollup, cube, or explicit grouping sets).</p></li>
 <dd class="field-even"><p>DataFrame after aggregation.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Aggregate without grouping — an empty <code class="docutils literal notranslate"><span class="pre">group_by</span></code> produces a
+single row:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;team&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([],</span> <span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;total&#39;: [8]}</span>
+</pre></div>
+</div>
+<p>Group by a column and produce one row per group:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="s2">&quot;team&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">)]</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;team&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;team&#39;: [&#39;x&#39;, &#39;y&#39;], &#39;total&#39;: [3, 5]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2244,6 +2284,28 @@ that have identical names in the <code class="docutils literal notranslate"><spa
 <dd class="field-even"><p>DataFrame after join.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Inner-join two DataFrames on a shared column:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;id&#39;: [2, 3], &#39;val&#39;: [20, 30], &#39;label&#39;: [&#39;b&#39;, &#39;c&#39;]}</span>
+</pre></div>
+</div>
+<p>Left join to keep all rows from the left side:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;id&#39;: [1, 2, 3], &#39;val&#39;: [10, 20, 30], &#39;label&#39;: [None, &#39;b&#39;, &#39;c&#39;]}</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">left_on</span></code> / <code class="docutils literal notranslate"><span class="pre">right_on</span></code> when the key columns differ in name:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">right2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;rid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">right2</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;rid&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;id&#39;: [2, 3], &#39;val&#39;: [20, 30], &#39;rid&#39;: [2, 3], &#39;label&#39;: [&#39;b&#39;, &#39;c&#39;]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2299,6 +2361,8 @@ with the same name when selecting from the result.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.limit">
 <span class="sig-name descname"><span class="pre">limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.limit" title="Link to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> with a limited number of rows.</p>
+<p>Results are returned in unspecified order unless the DataFrame is
+explicitly sorted first via <a class="reference internal" href="#datafusion.dataframe.DataFrame.sort" title="datafusion.dataframe.DataFrame.sort"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort()</span></code></a> or <a class="reference internal" href="#datafusion.dataframe.DataFrame.sort_by" title="datafusion.dataframe.DataFrame.sort_by"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort_by()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2310,6 +2374,19 @@ with the same name when selecting from the result.</p>
 <dd class="field-even"><p>DataFrame after limiting.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Take the first two rows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2]}</span>
+</pre></div>
+</div>
+<p>Skip the first row then take two (paging):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [2, 3]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2407,6 +2484,8 @@ nullability for each column.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.select">
 <span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.select" title="Link to this definition">¶</a></dt>
 <dd><p>Project arbitrary expressions into a new <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
+<p>String arguments are treated as column names; <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>
+arguments can reshape, rename, or compute new columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>exprs</strong> – Either column names or <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> to select.</p>
@@ -2415,12 +2494,19 @@ nullability for each column.</p>
 <dd class="field-even"><p>DataFrame after projection. It has one column for each expression.</p>
 </dd>
 </dl>
-<p>Example usage:</p>
-<p>The following example will return 3 columns from the original dataframe.
-The first two columns will be the original column <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> since the
-string “a” is assumed to refer to column selection. Also a duplicate of
-column <code class="docutils literal notranslate"><span class="pre">a</span></code> will be returned with the column name <code class="docutils literal notranslate"><span class="pre">alternate_a</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;alternate_a&quot;</span><span class="p">))</span>
+<p class="rubric">Examples</p>
+<p>Select columns by name:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3]}</span>
+</pre></div>
+</div>
+<p>Mix column names, expressions, and aliases. The string <code class="docutils literal notranslate"><span class="pre">&quot;a&quot;</span></code> selects
+column <code class="docutils literal notranslate"><span class="pre">a</span></code> directly; <code class="docutils literal notranslate"><span class="pre">col(&quot;a&quot;).alias(&quot;alternate_a&quot;)</span></code> returns a
+duplicate under a new name:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;alternate_a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3], &#39;b&#39;: [10, 20, 30], &#39;alternate_a&#39;: [1, 2, 3]}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2454,7 +2540,8 @@ The output DataFrame has one column for each expression.</p>
 <span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.expr.SortKey</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.sort" title="Link to this definition">¶</a></dt>
 <dd><p>Sort the DataFrame by the specified sorting expressions or column names.</p>
 <p>Note that any expression can be turned into a sort expression by
-calling its <code class="docutils literal notranslate"><span class="pre">sort</span></code> method.</p>
+calling its <code class="docutils literal notranslate"><span class="pre">sort</span></code> method. For ascending-only sorts, the shorter
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.sort_by" title="datafusion.dataframe.DataFrame.sort_by"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort_by()</span></code></a> is usually more convenient.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>exprs</strong> – Sort expressions or column names, applied in order.</p>
@@ -2463,6 +2550,19 @@ calling its <code class="docutils literal notranslate"><span class="pre">sort</s
 <dd class="field-even"><p>DataFrame after sorting.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Sort ascending by a column name:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3], &#39;b&#39;: [20, 30, 10]}</span>
+</pre></div>
+</div>
+<p>Sort descending using <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.sort()</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [3, 2, 1], &#39;b&#39;: [10, 30, 20]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2609,6 +2709,20 @@ determined of the dataframe. This is done by collecting it.</p>
 <dd class="field-even"><p>DataFrame after union.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Stack rows from both DataFrames, preserving duplicates:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 2, 3]}</span>
+</pre></div>
+</div>
+<p>Deduplicate the combined result with <code class="docutils literal notranslate"><span class="pre">distinct=True</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3]}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

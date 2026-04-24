@@ -2600,8 +2600,29 @@
                 
   <section id="module-datafusion.expr">
 <span id="datafusion-expr"></span><h1>datafusion.expr<a class="headerlink" href="#module-datafusion.expr" title="Link to this heading">¶</a></h1>
-<p>This module supports expressions, one of the core concepts in DataFusion.</p>
-<p>See <a class="reference internal" href="../../../user-guide/common-operations/expressions.html#expressions"><span class="std std-ref">Expressions</span></a> in the online documentation for more details.</p>
+<p><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> — the logical expression type used to build DataFusion queries.</p>
+<p>An <a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> represents a computation over columns or literals: a
+column reference (<code class="docutils literal notranslate"><span class="pre">col(&quot;a&quot;)</span></code>), a literal (<code class="docutils literal notranslate"><span class="pre">lit(5)</span></code>), an operator
+combination (<code class="docutils literal notranslate"><span class="pre">col(&quot;a&quot;)</span> <span class="pre">+</span> <span class="pre">lit(1)</span></code>), or the output of a function from
+<a class="reference internal" href="../functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.functions</span></code></a>. Expressions are passed to
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> methods such as
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>,
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a>,
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">aggregate()</span></code></a>, and
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.sort" title="datafusion.dataframe.DataFrame.sort"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort()</span></code></a>.</p>
+<p>Convenience constructors are re-exported at the package level:
+<a class="reference internal" href="../index.html#datafusion.col" title="datafusion.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.col()</span></code></a> / <a class="reference internal" href="../index.html#datafusion.column" title="datafusion.column"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.column()</span></code></a> for column references
+and <a class="reference internal" href="../index.html#datafusion.lit" title="datafusion.lit"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.lit()</span></code></a> / <a class="reference internal" href="../index.html#datafusion.literal" title="datafusion.literal"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.literal()</span></code></a> for scalar
+literals.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;ten_a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;ten_a&#39;: [10, 20, 30]}</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../../../user-guide/common-operations/expressions.html#expressions"><span class="std std-ref">Expressions</span></a> in the online documentation for details on available
+operators and helpers.</p>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">

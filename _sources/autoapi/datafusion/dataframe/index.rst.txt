@@ -5,9 +5,33 @@ datafusion.dataframe
 
 .. autoapi-nested-parse::
 
-   :py:class:`DataFrame` is one of the core concepts in DataFusion.
+   :py:class:`DataFrame` — lazy, chainable query representation.
 
-   See :ref:`user_guide_concepts` in the online documentation for more information.
+   A :py:class:`DataFrame` is a logical plan over one or more data sources.
+   Methods that reshape the plan (:py:meth:`DataFrame.select`,
+   :py:meth:`DataFrame.filter`, :py:meth:`DataFrame.aggregate`,
+   :py:meth:`DataFrame.sort`, :py:meth:`DataFrame.join`,
+   :py:meth:`DataFrame.limit`, the set-operation methods, ...) return a new
+   :py:class:`DataFrame` and do no work until a terminal method such as
+   :py:meth:`DataFrame.collect`, :py:meth:`DataFrame.to_pydict`,
+   :py:meth:`DataFrame.show`, or one of the ``write_*`` methods is called.
+
+   DataFrames are produced from a
+   :py:class:`~datafusion.context.SessionContext`, typically via
+   :py:meth:`~datafusion.context.SessionContext.sql`,
+   :py:meth:`~datafusion.context.SessionContext.read_csv`,
+   :py:meth:`~datafusion.context.SessionContext.read_parquet`, or
+   :py:meth:`~datafusion.context.SessionContext.from_pydict`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+   >>> df.filter(col("a") > 1).select("b").to_pydict()
+   {'b': [20, 30]}
+
+   See :ref:`user_guide_concepts` in the online documentation for a high-level
+   overview of the execution model.
 
 
 
@@ -200,6 +224,25 @@ Module Contents
       :param aggs: Sequence of expressions to aggregate.
 
       :returns: DataFrame after aggregation.
+
+      .. rubric:: Examples
+
+      Aggregate without grouping — an empty ``group_by`` produces a
+      single row:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict(
+      ...     {"team": ["x", "x", "y"], "score": [1, 2, 5]}
+      ... )
+      >>> df.aggregate([], [F.sum(col("score")).alias("total")]).to_pydict()
+      {'total': [8]}
+
+      Group by a column and produce one row per group:
+
+      >>> df.aggregate(
+      ...     ["team"], [F.sum(col("score")).alias("total")]
+      ... ).sort("team").to_pydict()
+      {'team': ['x', 'y'], 'total': [3, 5]}
 
 
 
@@ -643,6 +686,29 @@ Module Contents
 
       :returns: DataFrame after join.
 
+      .. rubric:: Examples
+
+      Inner-join two DataFrames on a shared column:
+
+      >>> ctx = dfn.SessionContext()
+      >>> left = ctx.from_pydict({"id": [1, 2, 3], "val": [10, 20, 30]})
+      >>> right = ctx.from_pydict({"id": [2, 3, 4], "label": ["b", "c", "d"]})
+      >>> left.join(right, on="id").sort("id").to_pydict()
+      {'id': [2, 3], 'val': [20, 30], 'label': ['b', 'c']}
+
+      Left join to keep all rows from the left side:
+
+      >>> left.join(right, on="id", how="left").sort("id").to_pydict()
+      {'id': [1, 2, 3], 'val': [10, 20, 30], 'label': [None, 'b', 'c']}
+
+      Use ``left_on`` / ``right_on`` when the key columns differ in name:
+
+      >>> right2 = ctx.from_pydict({"rid": [2, 3], "label": ["b", "c"]})
+      >>> left.join(
+      ...     right2, left_on="id", right_on="rid"
+      ... ).sort("id").to_pydict()
+      {'id': [2, 3], 'val': [20, 30], 'rid': [2, 3], 'label': ['b', 'c']}
+
 
 
    .. py:method:: join_on(right: DataFrame, *on_exprs: datafusion.expr.Expr, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner') -> DataFrame
@@ -695,10 +761,27 @@ Module Contents
 
       Return a new :py:class:`DataFrame` with a limited number of rows.
 
+      Results are returned in unspecified order unless the DataFrame is
+      explicitly sorted first via :py:meth:`sort` or :py:meth:`sort_by`.
+
       :param count: Number of rows to limit the DataFrame to.
       :param offset: Number of rows to skip.
 
       :returns: DataFrame after limiting.
+
+      .. rubric:: Examples
+
+      Take the first two rows:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3, 4]}).sort("a")
+      >>> df.limit(2).to_pydict()
+      {'a': [1, 2]}
+
+      Skip the first row then take two (paging):
+
+      >>> df.limit(2, offset=1).to_pydict()
+      {'a': [2, 3]}
 
 
 
@@ -777,19 +860,28 @@ Module Contents
 
       Project arbitrary expressions into a new :py:class:`DataFrame`.
 
+      String arguments are treated as column names; :py:class:`~datafusion.expr.Expr`
+      arguments can reshape, rename, or compute new columns.
+
       :param exprs: Either column names or :py:class:`~datafusion.expr.Expr` to select.
 
       :returns: DataFrame after projection. It has one column for each expression.
 
-      Example usage:
+      .. rubric:: Examples
 
-      The following example will return 3 columns from the original dataframe.
-      The first two columns will be the original column ``a`` and ``b`` since the
-      string "a" is assumed to refer to column selection. Also a duplicate of
-      column ``a`` will be returned with the column name ``alternate_a``::
+      Select columns by name:
 
-          df = df.select("a", col("b"), col("a").alias("alternate_a"))
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
+      >>> df.select("a").to_pydict()
+      {'a': [1, 2, 3]}
 
+      Mix column names, expressions, and aliases. The string ``"a"`` selects
+      column ``a`` directly; ``col("a").alias("alternate_a")`` returns a
+      duplicate under a new name:
+
+      >>> df.select("a", col("b"), col("a").alias("alternate_a")).to_pydict()
+      {'a': [1, 2, 3], 'b': [10, 20, 30], 'alternate_a': [1, 2, 3]}
 
 
 
@@ -817,11 +909,26 @@ Module Contents
       Sort the DataFrame by the specified sorting expressions or column names.
 
       Note that any expression can be turned into a sort expression by
-      calling its ``sort`` method.
+      calling its ``sort`` method. For ascending-only sorts, the shorter
+      :py:meth:`sort_by` is usually more convenient.
 
       :param exprs: Sort expressions or column names, applied in order.
 
       :returns: DataFrame after sorting.
+
+      .. rubric:: Examples
+
+      Sort ascending by a column name:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [3, 1, 2], "b": [10, 20, 30]})
+      >>> df.sort("a").to_pydict()
+      {'a': [1, 2, 3], 'b': [20, 30, 10]}
+
+      Sort descending using :py:meth:`Expr.sort`:
+
+      >>> df.sort(col("a").sort(ascending=False)).to_pydict()
+      {'a': [3, 2, 1], 'b': [10, 30, 20]}
 
 
 
@@ -936,6 +1043,21 @@ Module Contents
       :param distinct: If ``True``, duplicate rows will be removed.
 
       :returns: DataFrame after union.
+
+      .. rubric:: Examples
+
+      Stack rows from both DataFrames, preserving duplicates:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df1 = ctx.from_pydict({"a": [1, 2]})
+      >>> df2 = ctx.from_pydict({"a": [2, 3]})
+      >>> df1.union(df2).sort("a").to_pydict()
+      {'a': [1, 2, 2, 3]}
+
+      Deduplicate the combined result with ``distinct=True``:
+
+      >>> df1.union(df2, distinct=True).sort("a").to_pydict()
+      {'a': [1, 2, 3]}
 
 
 

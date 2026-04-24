@@ -1384,7 +1384,29 @@
                 
   <section id="module-datafusion.context">
 <span id="datafusion-context"></span><h1>datafusion.context<a class="headerlink" href="#module-datafusion.context" title="Link to this heading">¶</a></h1>
-<p>Session Context and it’s associated configuration.</p>
+<p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> — entry point for running DataFusion queries.</p>
+<p>A <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> holds registered tables, catalogs, and
+configuration for the current session. It is the first object most programs
+create: from it you register data, run SQL strings
+(<a class="reference internal" href="#datafusion.context.SessionContext.sql" title="datafusion.context.SessionContext.sql"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.sql()</span></code></a>), read files
+(<a class="reference internal" href="#datafusion.context.SessionContext.read_csv" title="datafusion.context.SessionContext.read_csv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.read_csv()</span></code></a>,
+<a class="reference internal" href="#datafusion.context.SessionContext.read_parquet" title="datafusion.context.SessionContext.read_parquet"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.read_parquet()</span></code></a>, …), and construct
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> objects in memory
+(<a class="reference internal" href="#datafusion.context.SessionContext.from_pydict" title="datafusion.context.SessionContext.from_pydict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.from_pydict()</span></code></a>,
+<a class="reference internal" href="#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.from_arrow()</span></code></a>).</p>
+<p>Session behavior (memory limits, batch size, configured optimizer passes,
+…) is controlled by <a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> and
+<a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a>; SQL dialect limits are controlled by
+<a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 AS n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;n&#39;: [1]}</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../../../user-guide/basics.html#user-guide-concepts"><span class="std std-ref">Concepts</span></a> in the online documentation for the broader
+execution model.</p>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">

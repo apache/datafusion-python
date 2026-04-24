@@ -3121,7 +3121,25 @@
                 
   <section id="module-datafusion.functions">
 <span id="datafusion-functions"></span><h1>datafusion.functions<a class="headerlink" href="#module-datafusion.functions" title="Link to this heading">¶</a></h1>
-<p>User functions for operating on <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+<p>Scalar, aggregate, and window functions for <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+<p>Each function returns an <a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> that can be combined
+with other expressions and passed to
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> methods such as
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></a>,
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a>,
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">aggregate()</span></code></a>, and
+<a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame.window" title="datafusion.dataframe.DataFrame.window"><code class="xref py py-meth docutils literal notranslate"><span class="pre">window()</span></code></a>. The module is conventionally
+imported as <code class="docutils literal notranslate"><span class="pre">F</span></code> so calls read like <code class="docutils literal notranslate"><span class="pre">F.sum(col(&quot;price&quot;))</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">F</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([],</span> <span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;total&#39;: [10]}</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../../../user-guide/common-operations/aggregations.html#aggregation"><span class="std std-ref">Aggregation</span></a> and <a class="reference internal" href="../../../user-guide/common-operations/windows.html#window-functions"><span class="std std-ref">Window Functions</span></a> in the online documentation
+for categorized catalogs of aggregate and window functions.</p>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
