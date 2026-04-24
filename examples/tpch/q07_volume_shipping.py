@@ -55,8 +55,8 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
                         and s_nationkey = n1.n_nationkey
                         and c_nationkey = n2.n_nationkey
                         and (
-                                (n1.n_name = 'GERMANY' and n2.n_name = 'IRAQ')
-                                or (n1.n_name = 'IRAQ' and n2.n_name = 'GERMANY')
+                                (n1.n_name = 'FRANCE' and n2.n_name = 'GERMANY')
+                                or (n1.n_name = 'GERMANY' and n2.n_name = 'FRANCE')
                         )
                         and l_shipdate between date '1995-01-01' and date '1996-12-31'
         ) as shipping

@@ -44,7 +44,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
     from
         lineitem
     where
-        l_shipdate <= date '1998-12-01' - interval '68 days'
+        l_shipdate <= date '1998-12-01' - interval '90 days'
     group by
         l_returnflag,
         l_linestatus

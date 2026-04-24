@@ -54,7 +54,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
                         and p_partkey = l_partkey
                         and o_orderkey = l_orderkey
                         and s_nationkey = n_nationkey
-                        and p_name like '%moccasin%'
+                        and p_name like '%green%'
         ) as profit
     group by
         nation,

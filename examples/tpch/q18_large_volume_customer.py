@@ -46,7 +46,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
                         lineitem
                 group by
                         l_orderkey having
-                                sum(l_quantity) > 313
+                                sum(l_quantity) > 300
         )
         and c_custkey = o_custkey
         and o_orderkey = l_orderkey

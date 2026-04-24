@@ -38,8 +38,8 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         part
     where
         l_partkey = p_partkey
-        and l_shipdate >= date '1995-02-01'
-        and l_shipdate < date '1995-02-01' + interval '1' month;
+        and l_shipdate >= date '1995-09-01'
+        and l_shipdate < date '1995-09-01' + interval '1' month;
 """
 
 from datetime import datetime

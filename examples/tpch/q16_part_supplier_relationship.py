@@ -39,9 +39,9 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         part
     where
         p_partkey = ps_partkey
-        and p_brand <> 'Brand#14'
-        and p_type not like 'SMALL PLATED%'
-        and p_size in (14, 6, 5, 31, 49, 15, 41, 47)
+        and p_brand <> 'Brand#45'
+        and p_type not like 'MEDIUM POLISHED%'
+        and p_size in (49, 14, 23, 45, 19, 3, 36, 9)
         and ps_suppkey not in (
                 select
                         s_suppkey

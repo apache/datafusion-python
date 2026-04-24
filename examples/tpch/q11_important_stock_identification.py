@@ -38,7 +38,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
     where
         ps_suppkey = s_suppkey
         and s_nationkey = n_nationkey
-        and n_name = 'ALGERIA'
+        and n_name = 'GERMANY'
     group by
         ps_partkey having
                 sum(ps_supplycost * ps_availqty) > (
@@ -51,7 +51,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
                         where
                                 ps_suppkey = s_suppkey
                                 and s_nationkey = n_nationkey
-                                and n_name = 'ALGERIA'
+                                and n_name = 'GERMANY'
                 )
     order by
         value desc;

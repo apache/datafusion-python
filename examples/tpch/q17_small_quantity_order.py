@@ -36,8 +36,8 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         part
     where
         p_partkey = l_partkey
-        and p_brand = 'Brand#42'
-        and p_container = 'LG BAG'
+        and p_brand = 'Brand#23'
+        and p_container = 'MED BOX'
         and l_quantity < (
                 select
                         0.2 * avg(l_quantity)

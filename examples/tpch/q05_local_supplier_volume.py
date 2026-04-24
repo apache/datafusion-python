@@ -47,7 +47,7 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         and c_nationkey = s_nationkey
         and s_nationkey = n_nationkey
         and n_regionkey = r_regionkey
-        and r_name = 'AFRICA'
+        and r_name = 'ASIA'
         and o_orderdate >= date '1994-01-01'
         and o_orderdate < date '1994-01-01' + interval '1' year
     group by

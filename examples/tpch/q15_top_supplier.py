@@ -34,8 +34,8 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         from
                 lineitem
         where
-                l_shipdate >= date '1996-08-01'
-                and l_shipdate < date '1996-08-01' + interval '3' month
+                l_shipdate >= date '1996-01-01'
+                and l_shipdate < date '1996-01-01' + interval '3' month
         group by
                 l_suppkey;
     select
