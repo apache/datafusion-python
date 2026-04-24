@@ -19,11 +19,9 @@
 
 # Using DataFusion with AI Coding Assistants
 
-If you write DataFusion Python code with an AI coding assistant — Claude
-Code, Cursor, Windsurf, Cline, Codex, Copilot, Gemini CLI, or any other
-agent that supports skill discovery — this project ships machine-readable
-guidance so the assistant produces idiomatic code rather than guessing from
-its training data.
+If you write DataFusion Python code with an AI coding assistant, this
+project ships machine-readable guidance so the assistant produces
+idiomatic code rather than guessing from its training data.
 
 ## What is published
 
