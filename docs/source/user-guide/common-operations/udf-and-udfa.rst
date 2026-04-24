@@ -104,35 +104,96 @@ describing how to do this.
 When not to use a UDF
 ^^^^^^^^^^^^^^^^^^^^^
 
-A UDF is the right tool when the computation genuinely cannot be expressed
-with built-in functions. It is often the *wrong* tool for a compound
-predicate that happens to be easier to write in Python. The optimizer
-cannot push a UDF through joins or filters, so a Python-side predicate
-prevents otherwise obvious rewrites and forces a per-row Python callback.
+A UDF is the right tool when the per-row computation genuinely cannot be
+expressed with built-in functions. It is often the *wrong* tool for a
+predicate that happens to be easier to write in Python. A UDF is opaque
+to the optimizer, which means filters expressed as UDFs lose several
+rewrites that the engine applies to filters built from native
+expressions. The most visible of these is **Parquet predicate pushdown**:
+a native predicate can prune entire row groups using the min/max
+statistics in the Parquet footer, while a UDF predicate cannot.
 
-Consider a filter that selects rows falling into one of three brand-specific
-buckets, each with its own containers, quantity range, and size range:
+The following example writes a small Parquet file, then filters it two
+ways: first with a native expression, then with a UDF that computes the
+same result. The filter itself is simple on purpose so we can compare
+the plans side by side.
 
-.. code-block:: python
+.. ipython:: python
 
-    # Anti-pattern: the predicate is a plain disjunction, but hidden inside a UDF.
-    def is_of_interest(brand, container, quantity, size):
-        result = []
-        for b, c, q, s in zip(brand, container, quantity, size):
-            b = b.as_py()
-            if b == "Brand#12":
-                result.append(c.as_py() in ("SM CASE", "SM BOX") and 1 <= q.as_py() <= 11 and 1 <= s.as_py() <= 5)
-            elif b == "Brand#23":
-                result.append(c.as_py() in ("MED BAG", "MED BOX") and 10 <= q.as_py() <= 20 and 1 <= s.as_py() <= 10)
-            else:
-                result.append(False)
-        return pa.array(result)
+    import tempfile, os
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from datafusion import SessionContext, col, lit, udf
 
-    df = df.filter(udf_is_of_interest(col("brand"), col("container"), col("quantity"), col("size")))
+    tmpdir = tempfile.mkdtemp()
+    parquet_path = os.path.join(tmpdir, "items.parquet")
+    pq.write_table(
+        pa.table({
+            "id":    list(range(100)),
+            "brand": ["A", "B", "C", "D"] * 25,
+            "qty":   [i * 10 for i in range(100)],
+        }),
+        parquet_path,
+    )
 
-The native equivalent keeps the bucket definitions as plain Python data
-(a dict) and builds an ``Expr`` from them. The optimizer sees a disjunction
-of simple predicates it can analyze and push down:
+    ctx = SessionContext()
+    items = ctx.read_parquet(parquet_path)
+
+**Native-expression predicate.** The filter is a plain boolean tree
+over column references and literals, so the optimizer can analyze it:
+
+.. ipython:: python
+
+    native_filtered = items.filter(
+        (col("brand") == lit("A")) & (col("qty") >= lit(150))
+    )
+    print(native_filtered.execution_plan().display_indent())
+
+Notice the ``DataSourceExec`` line. It carries three annotations the
+optimizer computed from the predicate:
+
+- ``predicate=brand@1 = A AND qty@2 >= 150`` — the filter is pushed
+  into the Parquet scan itself, so the scan only reads matching rows.
+- ``pruning_predicate=... brand_min@0 <= A AND A <= brand_max@1 ...
+  qty_max@4 >= 150`` — the scan prunes whole row groups by consulting
+  the Parquet min/max statistics in the footer *before* reading any
+  column data.
+- ``required_guarantees=[brand in (A)]`` — the scan uses this when a
+  bloom filter or dictionary is available to skip pages.
+
+**UDF predicate.** Now wrap the same logic in a Python UDF:
+
+.. ipython:: python
+
+    def brand_qty_filter(brand_arr: pa.Array, qty_arr: pa.Array) -> pa.Array:
+        return pa.array([
+            b.as_py() == "A" and q.as_py() >= 150
+            for b, q in zip(brand_arr, qty_arr)
+        ])
+
+    pred_udf = udf(
+        brand_qty_filter, [pa.string(), pa.int64()], pa.bool_(), "stable",
+    )
+    udf_filtered = items.filter(pred_udf(col("brand"), col("qty")))
+    print(udf_filtered.execution_plan().display_indent())
+
+The ``DataSourceExec`` now carries only ``predicate=brand_qty_filter(...)``.
+There is no ``pruning_predicate`` and no ``required_guarantees``: the
+scan has to materialize every row group and hand each row to the
+Python callback just to decide whether to keep it.
+
+At small scale the cost difference is invisible; on a Parquet file with
+many row groups, or data whose min/max statistics line up well with
+the predicate, the native form can skip most of the file. The UDF form
+reads all of it.
+
+**Takeaway.** Reach for a UDF when the per-row computation is genuinely
+not expressible as a tree of built-in functions (custom numerical work,
+external lookups, complex business rules). When it *is* expressible —
+even if the native form is a little more verbose — build the ``Expr``
+tree directly so the optimizer can see through it. For disjunctive
+predicates the idiom is to produce one clause per bucket and combine
+them with ``|``:
 
 .. code-block:: python
 
@@ -140,12 +201,12 @@ of simple predicates it can analyze and push down:
     from operator import or_
     from datafusion import col, lit, functions as f
 
-    items_of_interest = {
+    buckets = {
         "Brand#12": {"containers": ["SM CASE", "SM BOX"], "min_qty": 1, "max_size": 5},
         "Brand#23": {"containers": ["MED BAG", "MED BOX"], "min_qty": 10, "max_size": 10},
     }
 
-    def brand_clause(brand, spec):
+    def bucket_clause(brand, spec):
         return (
             (col("brand") == lit(brand))
             & f.in_list(col("container"), [lit(c) for c in spec["containers"]])
@@ -155,12 +216,8 @@ of simple predicates it can analyze and push down:
             & (col("size") <= lit(spec["max_size"]))
         )
 
-    predicate = reduce(or_, (brand_clause(b, s) for b, s in items_of_interest.items()))
+    predicate = reduce(or_, (bucket_clause(b, s) for b, s in buckets.items()))
     df = df.filter(predicate)
-
-Reach for a UDF when the per-row computation is not expressible as a tree
-of built-in functions. When it *is* expressible, build the ``Expr`` tree
-directly.
 
 Aggregate Functions
 -------------------
