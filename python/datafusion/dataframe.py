@@ -35,7 +35,7 @@ DataFrames are produced from a
 Examples:
     >>> ctx = dfn.SessionContext()
     >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [10, 20, 30]})
-    >>> df.filter(col("a") > lit(1)).select("b").to_pydict()
+    >>> df.filter(col("a") > 1).select("b").to_pydict()
     {'b': [20, 30]}
 
 See :ref:`user_guide_concepts` in the online documentation for a high-level
@@ -812,7 +812,7 @@ class DataFrame:
             Group by a column and produce one row per group:
 
             >>> df.aggregate(
-            ...     [col("team")], [F.sum(col("score")).alias("total")]
+            ...     ["team"], [F.sum(col("score")).alias("total")]
             ... ).sort("team").to_pydict()
             {'team': ['x', 'y'], 'total': [3, 5]}
         """

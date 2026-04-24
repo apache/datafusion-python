@@ -128,14 +128,22 @@ aggregate.
 ### Sorting
 
 ```python
-df.sort(col("a"))                            # ascending (default)
+df.sort("a")                                 # ascending (plain name, preferred)
+df.sort(col("a"))                            # ascending via col()
 df.sort(col("a").sort(ascending=False))      # descending
 df.sort(col("a").sort(nulls_first=False))    # override null placement
+
+df.sort_by("a", "b")                         # ascending-only shortcut
 ```
 
-A plain expression passed to `sort()` is already treated as ascending. Only
-reach for `col(...).sort(...)` when you need to override a default (descending
-order or null placement). Writing `col("a").sort(ascending=True)` is redundant.
+As with `select()` and `aggregate()`, bare column references can be passed as
+plain name strings. A plain expression passed to `sort()` is already treated
+as ascending, so reach for `col(...).sort(...)` only when you need to override
+a default (descending order or null placement). Writing
+`col("a").sort(ascending=True)` is redundant.
+
+For ascending-only sorts with no null-placement override, `df.sort_by(...)` is
+a shorter alias for `df.sort(...)`.
 
 ### Joining
 
