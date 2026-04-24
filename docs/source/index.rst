@@ -78,6 +78,7 @@ Example
    user-guide/configuration
    user-guide/sql
    user-guide/upgrade-guides
+   skill
 
 
 .. _toc.contributor_guide:
