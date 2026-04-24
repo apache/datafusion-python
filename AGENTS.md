@@ -38,26 +38,6 @@ Currently available skills:
 - [`check-upstream`](.ai/skills/check-upstream/SKILL.md) — audit upstream
   Apache DataFusion features (functions, DataFrame ops, SessionContext
   methods, FFI types) not yet exposed in the Python bindings.
-- [`write-dataframe-code`](.ai/skills/write-dataframe-code/SKILL.md) —
-  contributor-facing guide for writing idiomatic DataFrame code inside this
-  repo (TPC-H pattern index, plan-comparison diagnostic, docstring
-  conventions). Layers on top of the user-facing [`SKILL.md`](SKILL.md).
-
-## Plan-comparison diagnostic
-
-When translating a SQL query to a DataFrame — TPC-H, a benchmark, or an
-answer to a user question — correctness is gated by the answer-file
-comparison in `examples/tpch/_tests.py`, but plan-level equivalence is a
-separate question. Two surface-different DataFrame forms that resolve to
-the same optimized logical plan are effectively the same query.
-
-As an ad-hoc check, compare `ctx.sql(reference_sql).optimized_logical_plan()`
-against the DataFrame's `optimized_logical_plan()`. Use `LogicalPlan.__eq__`
-for structural equality and `LogicalPlan.display_indent()` for readable
-diffs. This is a diagnostic, not a gate — a mismatch does not mean the
-DataFrame form is wrong, only that the two forms are not literally the same
-plan. The [`write-dataframe-code`](.ai/skills/write-dataframe-code/SKILL.md)
-skill has the full workflow.
 
 ## Pull Requests
 
