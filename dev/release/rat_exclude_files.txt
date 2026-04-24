@@ -50,3 +50,4 @@ benchmarks/tpch/create_tables.sql
 uv.lock
 examples/tpch/answers_sf1/*.tbl
 SKILL.md
+docs/source/llms.txt
