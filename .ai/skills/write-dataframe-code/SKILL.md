@@ -148,5 +148,3 @@ function exposes a non-obvious option, add a short usage example.
   (users and agents).
 - `.ai/skills/check-upstream/` — audit upstream Apache DataFusion features
   and flag what the Python bindings do not yet expose.
-- `.ai/skills/audit-skill-md/` — audit the repo-root `SKILL.md` against the
-  current public Python API and flag drift.
