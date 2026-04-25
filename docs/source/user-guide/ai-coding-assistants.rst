@@ -30,7 +30,7 @@ What is published
   DataFrame operations, expression building, SQL-to-DataFrame mappings,
   idiomatic patterns, and common pitfalls. Follows the
   `Agent Skills <https://agentskills.io>`_ open standard.
-- `llms.txt <llms.txt>`_ — an entry point for LLM-based tools following the
+- `llms.txt <https://datafusion.apache.org/python/llms.txt>`_ — an entry point for LLM-based tools following the
   `llmstxt.org <https://llmstxt.org>`_ convention. Categorized links to the
   skill, user guide, API reference, and examples.
 

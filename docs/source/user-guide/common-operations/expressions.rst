@@ -234,9 +234,9 @@ This searched-CASE pattern is idiomatic for "attribute the measure to the
 matching side of a left join, otherwise contribute zero" — a shape that
 appears in TPC-H Q08 and similar market-share calculations.
 
-If a switched CASE has only two or three branches that test equality, an
-``in_list`` filter combined with :py:meth:`~datafusion.expr.Expr.otherwise`
-is often simpler than the full ``case`` builder.
+If a switched CASE only groups several equality matches into one bucket,
+``f.when(f.in_list(col(...), [...]), value).otherwise(default)`` is often
+simpler than the full ``case`` builder.
 
 Structs
 -------
