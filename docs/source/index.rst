@@ -78,7 +78,7 @@ Example
    user-guide/configuration
    user-guide/sql
    user-guide/upgrade-guides
-   ai-coding-assistants
+   user-guide/ai-coding-assistants
 
 
 .. _toc.contributor_guide:
