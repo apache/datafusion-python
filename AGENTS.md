@@ -33,11 +33,9 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 - `SKILL.md` — The skill definition with YAML frontmatter (name, description, argument-hint) and detailed instructions.
 - Additional supporting files as needed.
 
-Currently available skills:
-
-- [`check-upstream`](.ai/skills/check-upstream/SKILL.md) — audit upstream
-  Apache DataFusion features (functions, DataFrame ops, SessionContext
-  methods, FFI types) not yet exposed in the Python bindings.
+To discover what skills are available, list `.ai/skills/` and read each
+`SKILL.md`. The frontmatter `name` and `description` fields summarize the
+skill's purpose.
 
 ## Pull Requests
 
