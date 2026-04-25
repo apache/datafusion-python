@@ -105,13 +105,22 @@ When not to use a UDF
 ^^^^^^^^^^^^^^^^^^^^^
 
 A UDF is the right tool when the per-row computation genuinely cannot be
-expressed with built-in functions. It is often the *wrong* tool for a
-predicate that happens to be easier to write in Python. A UDF is opaque
-to the optimizer, which means filters expressed as UDFs lose several
-rewrites that the engine applies to filters built from native
-expressions. The most visible of these is **Parquet predicate pushdown**:
-a native predicate can prune entire row groups using the min/max
-statistics in the Parquet footer, while a UDF predicate cannot.
+expressed with DataFusion's built-in expressions. It is often the *wrong*
+tool for a predicate that *can* be written as an ``Expr`` tree but feels
+easier to write as a Python function — for example, a filter that keeps
+a row if it matches any one of several rule sets, where each rule set
+checks its own combination of columns (the worked example at the end of
+this section keeps a row when it matches any one of several brand-specific
+rules). Looping over the rules in Python and returning a boolean per row
+reads naturally and is tempting to wrap in a UDF, but a UDF is opaque to
+the optimizer: filters expressed as UDFs lose several rewrites that the
+engine applies to filters built from native expressions. The most visible
+of these is **predicate pushdown into the table provider**: a native
+predicate can be handed to the source so it skips data before it is read,
+while a UDF predicate cannot. The example below uses Parquet, where
+pushdown prunes whole row groups using the min/max statistics in the
+footer, but the same mechanism applies to any table provider that
+advertises filter support — including custom providers.
 
 The following example writes a small Parquet file, then filters it two
 ways: first with a native expression, then with a UDF that computes the
