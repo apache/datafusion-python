@@ -33,6 +33,10 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 - `SKILL.md` — The skill definition with YAML frontmatter (name, description, argument-hint) and detailed instructions.
 - Additional supporting files as needed.
 
+To discover what skills are available, list `.ai/skills/` and read each
+`SKILL.md`. The frontmatter `name` and `description` fields summarize the
+skill's purpose.
+
 ## Pull Requests
 
 Every pull request must follow the template in

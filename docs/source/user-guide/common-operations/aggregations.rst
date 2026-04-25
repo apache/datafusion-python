@@ -163,6 +163,56 @@ Suppose we want to find the speed values for only Pokemon that have low Attack v
         f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
 
 
+Comparing subsets within a group
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you need to compare the full membership of a group against a
+subset that meets some condition — for example, "which groups have at least
+one failure, but not every member failed?". The ``filter`` argument on an
+aggregate restricts the rows that contribute to *that* aggregate without
+dropping the group, so a single pass can produce both the full set and the
+filtered subset side by side. Pairing
+:py:func:`~datafusion.functions.array_agg` with ``distinct=True`` and
+``filter=`` is a compact way to express this: collect the distinct values
+of the group, collect the distinct values that satisfy the condition, then
+compare the two arrays.
+
+Suppose each row records a line item with the supplier that fulfilled it and
+a flag for whether that supplier met the commit date. We want to identify
+*partially failed* orders — orders where at least one supplier failed but
+not every supplier failed:
+
+.. ipython:: python
+
+    orders_df = ctx.from_pydict(
+        {
+            "order_id": [1, 1, 1, 2, 2, 3, 4, 4],
+            "supplier_id": [100, 101, 102, 200, 201, 300, 400, 401],
+            "failed":      [False, True, False, False, False, True, True, True],
+        },
+    )
+
+    grouped = orders_df.aggregate(
+        [col("order_id")],
+        [
+            f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
+            f.array_agg(
+                col("supplier_id"),
+                filter=col("failed"),
+                distinct=True,
+            ).alias("failed_suppliers"),
+        ],
+    )
+
+    grouped.filter(
+        (f.array_length(col("failed_suppliers")) > lit(0))
+        & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
+    ).select(col("order_id"), col("failed_suppliers"))
+
+Order 1 is partial (one of three suppliers failed). Order 2 is excluded
+because no supplier failed, order 3 because its only supplier failed, and
+order 4 because both of its suppliers failed.
+
 Grouping Sets
 -------------
 

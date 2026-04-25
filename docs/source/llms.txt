@@ -1,0 +1,36 @@
+# DataFusion in Python
+
+> Apache DataFusion Python is a Python binding for Apache DataFusion, an in-process, Arrow-native query engine. It exposes a SQL interface and a lazy DataFrame API over PyArrow and any Arrow C Data Interface source. This file points agents and LLM-based tools at the most useful entry points for writing DataFusion Python code.
+
+## Agent Guide
+
+- [SKILL.md (agent skill, raw)](https://raw.githubusercontent.com/apache/datafusion-python/main/SKILL.md): idiomatic DataFrame API patterns, SQL-to-DataFrame mappings, common pitfalls, and the full `functions` catalog. Primary source of truth for writing datafusion-python code.
+- [Using DataFusion with AI coding assistants](https://datafusion.apache.org/python/user-guide/ai-coding-assistants.html): human-readable guide for installing the skill and manual setup pointers.
+
+## User Guide
+
+- [Introduction](https://datafusion.apache.org/python/user-guide/introduction.html): install, the Pokemon quick start, Jupyter tips.
+- [Basics](https://datafusion.apache.org/python/user-guide/basics.html): `SessionContext`, `DataFrame`, and `Expr` at a glance.
+- [Data sources](https://datafusion.apache.org/python/user-guide/data-sources.html): Parquet, CSV, JSON, Arrow, Pandas, Polars, and Python objects.
+- [DataFrame operations](https://datafusion.apache.org/python/user-guide/dataframe/index.html): the lazy query-building interface.
+- [Common operations](https://datafusion.apache.org/python/user-guide/common-operations/index.html): select, filter, join, aggregate, window, expressions, and functions.
+- [SQL](https://datafusion.apache.org/python/user-guide/sql.html): running SQL against registered tables.
+- [Configuration](https://datafusion.apache.org/python/user-guide/configuration.html): session and runtime options.
+
+## DataFrame API reference
+
+- [`datafusion.dataframe.DataFrame`](https://datafusion.apache.org/python/autoapi/datafusion/dataframe/index.html): the lazy DataFrame builder (`select`, `filter`, `aggregate`, `join`, `sort`, `limit`, set operations).
+- [`datafusion.expr`](https://datafusion.apache.org/python/autoapi/datafusion/expr/index.html): expression tree nodes (`Expr`, `Window`, `WindowFrame`, `GroupingSet`).
+- [`datafusion.functions`](https://datafusion.apache.org/python/autoapi/datafusion/functions/index.html): 290+ scalar, aggregate, and window functions.
+- [`datafusion.context.SessionContext`](https://datafusion.apache.org/python/autoapi/datafusion/context/index.html): session entry point, data loading, SQL execution.
+
+## Examples
+
+- [TPC-H queries (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples/tpch): canonical translations of TPC-H Q01–Q22 to idiomatic DataFrame code, each with reference SQL embedded in the module docstring.
+- [Other examples (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples): UDF/UDAF/UDWF, Substrait, Pandas/Polars interop, S3 reads.
+
+## Optional
+
+- [Contributor guide](https://datafusion.apache.org/python/contributor-guide/introduction.html): building from source, extending the Python bindings.
+- [Upgrade guides](https://datafusion.apache.org/python/user-guide/upgrade-guides.html): migration notes between releases.
+- [Upstream Rust `DataFusion`](https://datafusion.apache.org/): the underlying query engine.
