@@ -163,27 +163,32 @@ Suppose we want to find the speed values for only Pokemon that have low Attack v
         f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
 
 
-Building per-group arrays
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Comparing subsets within a group
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:py:func:`~datafusion.functions.array_agg` collects the values within each
-group into a list. Combined with ``distinct=True`` and the ``filter``
-argument, it lets you ask two questions of the same group in one pass —
-"what are all the values?" and "what are the values that satisfy some
-condition?".
+Sometimes you need to compare the full membership of a group against a
+subset that meets some condition — for example, "which groups have at least
+one failure, but not every member failed?". The ``filter`` argument on an
+aggregate restricts the rows that contribute to *that* aggregate without
+dropping the group, so a single pass can produce both the full set and the
+filtered subset side by side. Pairing
+:py:func:`~datafusion.functions.array_agg` with ``distinct=True`` and
+``filter=`` is a compact way to express this: collect the distinct values
+of the group, collect the distinct values that satisfy the condition, then
+compare the two arrays.
 
 Suppose each row records a line item with the supplier that fulfilled it and
 a flag for whether that supplier met the commit date. We want to identify
-orders where exactly one supplier failed, among two or more suppliers in
-total:
+*partially failed* orders — orders where at least one supplier failed but
+not every supplier failed:
 
 .. ipython:: python
 
     orders_df = ctx.from_pydict(
         {
-            "order_id": [1, 1, 1, 2, 2, 3],
-            "supplier_id": [100, 101, 102, 200, 201, 300],
-            "failed":      [False, True, False, False, False, True],
+            "order_id": [1, 1, 1, 2, 2, 3, 4, 4],
+            "supplier_id": [100, 101, 102, 200, 201, 300, 400, 401],
+            "failed":      [False, True, False, False, False, True, True, True],
         },
     )
 
@@ -200,21 +205,13 @@ total:
     )
 
     grouped.filter(
-        (f.array_length(col("failed_suppliers")) == lit(1))
-        & (f.array_length(col("all_suppliers")) > lit(1))
-    ).select(
-        col("order_id"),
-        f.array_element(col("failed_suppliers"), lit(1)).alias("the_one_bad_supplier"),
-    )
+        (f.array_length(col("failed_suppliers")) > lit(0))
+        & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
+    ).select(col("order_id"), col("failed_suppliers"))
 
-Two aspects of the pattern are worth calling out:
-
-- ``filter=`` on an aggregate narrows the rows contributing to *that*
-  aggregate only. Filtering the DataFrame before the aggregate would have
-  dropped whole groups that no longer had any rows.
-- :py:func:`~datafusion.functions.array_length` tests group size without
-  another aggregate pass, and :py:func:`~datafusion.functions.array_element`
-  extracts a single value when you have proven the array has length one.
+Order 1 is partial (one of three suppliers failed). Order 2 is excluded
+because no supplier failed, order 3 because its only supplier failed, and
+order 4 because both of its suppliers failed.
 
 Grouping Sets
 -------------
