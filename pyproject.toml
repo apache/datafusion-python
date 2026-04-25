@@ -111,6 +111,7 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
   "ARG",
   "BLE001",
   "D",
+  "FBT003",
   "PD",
   "PLC0415",
   "PLR0913",
