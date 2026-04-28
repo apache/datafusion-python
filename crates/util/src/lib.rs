@@ -17,7 +17,7 @@
 
 use std::future::Future;
 use std::ptr::NonNull;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, OnceLock, RwLock};
 use std::time::Duration;
 
 use datafusion::datasource::TableProvider;
@@ -59,11 +59,29 @@ pub fn is_ipython_env(py: Python) -> &'static bool {
     })
 }
 
-/// Utility to get the Global Datafussion CTX
+fn global_ctx_slot() -> &'static RwLock<Arc<SessionContext>> {
+    static CTX: OnceLock<RwLock<Arc<SessionContext>>> = OnceLock::new();
+    CTX.get_or_init(|| RwLock::new(Arc::new(SessionContext::new())))
+}
+
+/// Utility to get the Global DataFusion CTX.
+///
+/// Returns an owned `Arc<SessionContext>` snapshot. The underlying slot can be
+/// replaced via [`set_global_ctx`]; existing snapshots are unaffected.
 #[inline]
-pub fn get_global_ctx() -> &'static Arc<SessionContext> {
-    static CTX: OnceLock<Arc<SessionContext>> = OnceLock::new();
-    CTX.get_or_init(|| Arc::new(SessionContext::new()))
+pub fn get_global_ctx() -> Arc<SessionContext> {
+    global_ctx_slot()
+        .read()
+        .expect("global SessionContext lock poisoned")
+        .clone()
+}
+
+/// Replace the Global DataFusion CTX. Subsequent calls to [`get_global_ctx`]
+/// will return the new context. Already-cloned `Arc`s are not affected.
+pub fn set_global_ctx(ctx: Arc<SessionContext>) {
+    *global_ctx_slot()
+        .write()
+        .expect("global SessionContext lock poisoned") = ctx;
 }
 
 /// Utility to collect rust futures with GIL released and respond to
@@ -223,4 +241,41 @@ pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_Logic
     let codec = unsafe { data.as_ref() };
 
     Ok(codec.clone())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The global slot must round-trip a custom `SessionContext`. Since the
+    /// global is process-wide, this test only asserts identity through a
+    /// single set/get cycle and restores the prior value at the end so the
+    /// test is independent of ordering with other tests in the binary.
+    #[test]
+    fn set_global_ctx_replaces_default() {
+        let prior = get_global_ctx();
+        let custom = Arc::new(SessionContext::new());
+        let custom_ptr = Arc::as_ptr(&custom);
+
+        set_global_ctx(custom.clone());
+        let observed = get_global_ctx();
+        assert_eq!(
+            Arc::as_ptr(&observed),
+            custom_ptr,
+            "get_global_ctx should return the context installed by set_global_ctx",
+        );
+
+        // A snapshot taken before the swap should be unaffected after another
+        // set_global_ctx call, because get_global_ctx clones the Arc.
+        let snapshot = get_global_ctx();
+        let replacement = Arc::new(SessionContext::new());
+        set_global_ctx(replacement);
+        assert_eq!(
+            Arc::as_ptr(&snapshot),
+            custom_ptr,
+            "previously cloned snapshots must not be invalidated by set_global_ctx",
+        );
+
+        set_global_ctx(prior);
+    }
 }

@@ -56,7 +56,7 @@ use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
-    get_tokio_runtime, spawn_future, wait_for_future,
+    get_tokio_runtime, set_global_ctx, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -407,9 +407,20 @@ impl PySessionContext {
     #[staticmethod]
     #[pyo3(signature = ())]
     pub fn global_ctx() -> PyResult<Self> {
-        let ctx = get_global_ctx().clone();
+        let ctx = get_global_ctx();
         let logical_codec = Self::default_logical_codec(&ctx);
         Ok(Self { ctx, logical_codec })
+    }
+
+    /// Replace the process-wide global `SessionContext` with this one.
+    ///
+    /// All subsequent callers of `SessionContext.global_ctx()` (and Rust
+    /// helpers that fall back to the global context, such as the
+    /// `read_parquet` / `read_csv` / etc. module-level helpers) will see this
+    /// context. Existing references already obtained from `global_ctx()` are
+    /// not affected.
+    pub fn set_as_global(&self) {
+        set_global_ctx(self.ctx.clone());
     }
 
     /// Register an object store with the given name
