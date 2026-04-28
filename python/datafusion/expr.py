@@ -410,6 +410,31 @@ class Expr:  # noqa: PLW1641
         """This constructor should not be called by the end user."""
         self.expr = expr
 
+    def to_bytes(self) -> bytes:
+        """Serialize this expression to bytes via the ``datafusion-proto`` wire format.
+
+        Function references (built-ins and UDFs/UDAFs/UDWFs) are encoded by
+        name; on :py:meth:`from_bytes` the names are resolved against the
+        process-wide global :py:class:`SessionContext`. Built-in functions
+        always roundtrip; for user-defined functions, register them on a
+        context and call :py:meth:`SessionContext.set_as_global` before
+        loading.
+        """
+        return self.expr.to_bytes()
+
+    @classmethod
+    def from_bytes(cls, data: bytes) -> Expr:
+        """Inverse of :py:meth:`to_bytes`. See that method for caveats."""
+        return cls(expr_internal.RawExpr.from_bytes(data))
+
+    def __getstate__(self) -> bytes:
+        """Serialize for ``pickle`` / ``dill``. Delegates to :py:meth:`to_bytes`."""
+        return self.to_bytes()
+
+    def __setstate__(self, state: bytes) -> None:
+        """Inverse of :py:meth:`__getstate__`."""
+        self.expr = expr_internal.RawExpr.from_bytes(state)
+
     def to_variant(self) -> Any:
         """Convert this expression into a python object if possible."""
         return self.expr.to_variant()

@@ -188,6 +188,7 @@ ignore-words-list = ["IST", "ans"]
 dev = [
   "arro3-core==0.6.5",
   "codespell==2.4.1",
+  "dill>=0.3.8",
   "maturin>=1.8.1",
   "nanoarrow==0.8.0",
   "numpy>1.25.0;python_version<'3.14'",
