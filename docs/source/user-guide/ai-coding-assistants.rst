@@ -25,7 +25,7 @@ idiomatic code rather than guessing from its training data.
 What is published
 -----------------
 
-- `SKILL.md <https://github.com/apache/datafusion-python/blob/main/SKILL.md>`_ —
+- `SKILL.md <https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md>`_ —
   a dense, skill-oriented reference covering imports, data loading,
   DataFrame operations, expression building, SQL-to-DataFrame mappings,
   idiomatic patterns, and common pitfalls. Follows the
@@ -55,7 +55,7 @@ automatically.
 **Manual:** if you are not using the ``skills`` registry, paste this
 single line into your project's ``AGENTS.md`` or ``CLAUDE.md``::
 
-    For DataFusion Python code, see https://github.com/apache/datafusion-python/blob/main/SKILL.md
+    For DataFusion Python code, see https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md
 
 Most assistants resolve that pointer the first time they see a
 DataFusion-related prompt in the project.
