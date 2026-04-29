@@ -129,6 +129,10 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# Copy agent-facing files (llms.txt) verbatim to the site root so they
+# resolve at conventional URLs like `https://.../python/llms.txt`.
+html_extra_path = ["llms.txt"]
+
 html_logo = "_static/images/2x_bgwhite_original.png"
 
 html_css_files = ["theme_overrides.css"]
