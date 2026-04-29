@@ -851,7 +851,7 @@ impl PyDataFrame {
             Some(f) => f
                 .parse::<datafusion::common::format::ExplainFormat>()
                 .map_err(|e| {
-                    PyDataFusionError::Common(format!("Invalid explain format '{}': {}", f, e))
+                    PyDataFusionError::Common(format!("Invalid explain format '{f}': {e}"))
                 })?,
             None => datafusion::common::format::ExplainFormat::Indent,
         };

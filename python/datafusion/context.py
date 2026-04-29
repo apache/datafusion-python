@@ -566,6 +566,22 @@ class SessionContext:
         wrapper.ctx = internal_ctx
         return wrapper
 
+    def set_as_global(self) -> None:
+        """Install this context as the process-wide global ``SessionContext``.
+
+        After this call, :meth:`SessionContext.global_ctx` (and the module-level
+        helpers in :mod:`datafusion.io` that fall back to the global context)
+        will return this context. Existing references already obtained from
+        ``global_ctx()`` are not invalidated.
+
+        Example::
+
+            ctx = SessionContext()
+            ctx.register_udf(my_udf)
+            ctx.set_as_global()
+        """
+        self.ctx.set_as_global()
+
     def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
 

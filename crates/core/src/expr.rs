@@ -31,9 +31,12 @@ use datafusion::logical_expr::{
     Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder, ExprFunctionExt, Like, LogicalPlan,
     Operator, TryCast, WindowFunctionDefinition, col, lit, lit_with_metadata,
 };
+use datafusion_proto::bytes::Serializeable;
+use datafusion_python_util::get_global_ctx;
 use pyo3::IntoPyObjectExt;
 use pyo3::basic::CompareOp;
 use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 use window::PyWindowFrame;
 
 use self::alias::PyAlias;
@@ -254,6 +257,29 @@ impl PyExpr {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("Expr({})", self.expr))
+    }
+
+    /// Serialize the underlying expression to bytes via the `datafusion-proto`
+    /// wire format. Used by the Python `Expr` wrapper to implement
+    /// `__getstate__` / `__setstate__`; also exposed directly so callers can
+    /// persist or transmit expressions without going through `pickle`.
+    fn to_bytes<'py>(&self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        let bytes = self.expr.to_bytes()?;
+        Ok(PyBytes::new(py, &bytes))
+    }
+
+    /// Reconstruct a `RawExpr` from bytes produced by [`PyExpr::to_bytes`].
+    ///
+    /// Function references (built-ins, UDFs, UDAFs, UDWFs) are resolved by
+    /// name against the process-wide global `SessionContext`. Built-in
+    /// functions are registered on every fresh context, so they always
+    /// roundtrip. To roundtrip user-defined functions, register them on a
+    /// context and call `SessionContext.set_as_global()` before unpickling.
+    #[staticmethod]
+    fn from_bytes(bytes: &[u8]) -> PyDataFusionResult<PyExpr> {
+        let ctx = get_global_ctx();
+        let expr = Expr::from_bytes_with_registry(bytes, ctx.as_ref())?;
+        Ok(expr.into())
     }
 
     fn __add__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
