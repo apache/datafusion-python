@@ -33,6 +33,12 @@ release branch without blocking ongoing development in the `main` branch.
 We can cherry-pick commits from the `main` branch into `branch-53` as needed and then create new patch releases
 from that branch.
 
+## Upstream Sync
+
+Between releases the `main` branch is periodically synced to a newer upstream `apache/datafusion` version. This is
+broken into a three-PR workflow (bump + fix breakage, consolidate transitive deps, fill API and documentation gaps).
+See [`upstream-sync.md`](upstream-sync.md) for the full process.
+
 ## Detailed Guide
 
 ### Pre-requisites
