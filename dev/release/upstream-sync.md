@@ -38,8 +38,32 @@ build, test, and lint cleanly against it.
 1. Update the `datafusion` dependency in the root `Cargo.toml` (workspace
    section and dependencies). Any downstream `datafusion-*` crates pinned in
    `crates/core/Cargo.toml` should move to the matching version.
-2. Run `cargo update -p datafusion` (or `cargo update` for a broader refresh)
-   so `Cargo.lock` reflects the new pin.
+2. Update `Cargo.lock` for the datafusion family only — leave unrelated
+   transitives at their current pins so PR 2 can address them deliberately.
+   List every `datafusion-*` workspace dependency with `-p`:
+
+   ```bash
+   cargo update \
+     -p datafusion \
+     -p datafusion-substrait \
+     -p datafusion-proto \
+     -p datafusion-ffi \
+     -p datafusion-catalog \
+     -p datafusion-common \
+     -p datafusion-functions-aggregate \
+     -p datafusion-functions-window \
+     -p datafusion-expr
+   ```
+
+   Or pin exact versions with `--precise`, one crate at a time:
+
+   ```bash
+   cargo update -p datafusion --precise 54.0.0
+   # repeat for each datafusion-* sibling
+   ```
+
+   A bare `cargo update` would refresh every transitive crate and blur the
+   diff between PR 1 and PR 2.
 3. Run the standard build and test commands and address compilation errors,
    API renames, signature changes, and behavior changes:
    - `cargo build`
