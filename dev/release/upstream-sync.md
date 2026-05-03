@@ -128,7 +128,15 @@ documentation so it still matches the surface we ship.
    - Skip it (internal-only or already covered by an existing API; record
      the decision in the "Evaluated and not requiring exposure" sections of
      the skill so future runs don't re-flag it).
-3. Run the `audit-skill-md` skill (`.ai/skills/audit-skill-md/SKILL.md`) to
+3. (Optional) Run the `make-pythonic` skill
+   (`.ai/skills/make-pythonic/SKILL.md`) over any newly exposed APIs to
+   align signatures with the project's Pythonic style (accepting plain
+   strings for column names, raw Python values where auto-wrapping
+   applies, etc.). Invoke it from the assistant with `/make-pythonic`.
+   Running this *before* the audit step means examples in `SKILL.md` get
+   updated to the final signature in one pass instead of churning twice.
+   Larger reshapes still belong in their own PR.
+4. Run the `audit-skill-md` skill (`.ai/skills/audit-skill-md/SKILL.md`) to
    cross-reference the user-facing skill at
    [`skills/datafusion_python/SKILL.md`](../../skills/datafusion_python/SKILL.md)
    against the current public API. The skill flags stale function names,
@@ -137,12 +145,9 @@ documentation so it still matches the surface we ship.
    `/audit-skill-md` (optionally scoped, e.g. `/audit-skill-md dataframe`).
    Apply the resulting edits to `SKILL.md` and to the relevant RST pages
    under `docs/source/user-guide/common-operations/`.
-4. If new aggregate or window functions were exposed in step 2, also update:
+5. If new aggregate or window functions were exposed in step 2, also update:
    - `docs/source/user-guide/common-operations/aggregations.rst`
    - `docs/source/user-guide/common-operations/windows.rst`
-
-PR 3 is the natural place to land small Pythonic-interface improvements
-discovered during the audit. Larger reshapes should still get their own PR.
 
 ## Why three PRs
 
