@@ -52,7 +52,7 @@ User guide and full documentation: https://datafusion.apache.org/python
 
 AI agent reference (SQL-to-DataFrame mappings, expression-building patterns,
 common pitfalls), written in a dense, skill-oriented format:
-https://github.com/apache/datafusion-python/blob/main/SKILL.md
+https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md
 """
 
 from __future__ import annotations

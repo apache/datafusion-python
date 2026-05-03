@@ -217,8 +217,8 @@ You can verify the installation by running:
 
 ## Using DataFusion with AI coding assistants
 
-This project ships a [`SKILL.md`](SKILL.md) at the repo root that teaches AI
-coding assistants how to write idiomatic DataFusion Python. It follows the
+This project ships a [`SKILL.md`](skills/datafusion_python/SKILL.md) that
+teaches AI coding assistants how to write idiomatic DataFusion Python. It follows the
 [Agent Skills](https://agentskills.io) open standard.
 
 **Preferred:** `npx skills add apache/datafusion-python` — installs the skill in
@@ -228,7 +228,7 @@ supported agents.
 **Manual:** paste this line into your project's `AGENTS.md` / `CLAUDE.md`:
 
 ```
-For DataFusion Python code, see https://github.com/apache/datafusion-python/blob/main/SKILL.md
+For DataFusion Python code, see https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md
 ```
 
 ## How to develop

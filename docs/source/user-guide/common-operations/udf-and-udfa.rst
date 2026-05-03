@@ -101,6 +101,133 @@ write Rust based UDFs and to expose them to Python. There is an example in the
 `DataFusion blog <https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/>`_
 describing how to do this.
 
+When not to use a UDF
+^^^^^^^^^^^^^^^^^^^^^
+
+A UDF is the right tool when the per-row computation genuinely cannot be
+expressed with DataFusion's built-in expressions. It is often the *wrong*
+tool for a predicate that *can* be written as an ``Expr`` tree but feels
+easier to write as a Python function — for example, a filter that keeps
+a row if it matches any one of several rule sets, where each rule set
+checks its own combination of columns (the worked example at the end of
+this section keeps a row when it matches any one of several brand-specific
+rules). Looping over the rules in Python and returning a boolean per row
+reads naturally and is tempting to wrap in a UDF, but a UDF is opaque to
+the optimizer: filters expressed as UDFs lose several rewrites that the
+engine applies to filters built from native expressions. The most visible
+of these is **predicate pushdown into the table provider**: a native
+predicate can be handed to the source so it skips data before it is read,
+while a UDF predicate cannot. The example below uses Parquet, where
+pushdown prunes whole row groups using the min/max statistics in the
+footer, but the same mechanism applies to any table provider that
+advertises filter support — including custom providers.
+
+The following example writes a small Parquet file, then filters it two
+ways: first with a native expression, then with a UDF that computes the
+same result. The filter itself is simple on purpose so we can compare
+the plans side by side.
+
+.. ipython:: python
+
+    import tempfile, os
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from datafusion import SessionContext, col, lit, udf
+
+    tmpdir = tempfile.mkdtemp()
+    parquet_path = os.path.join(tmpdir, "items.parquet")
+    pq.write_table(
+        pa.table({
+            "id":    list(range(100)),
+            "brand": ["A", "B", "C", "D"] * 25,
+            "qty":   [i * 10 for i in range(100)],
+        }),
+        parquet_path,
+    )
+
+    ctx = SessionContext()
+    items = ctx.read_parquet(parquet_path)
+
+**Native-expression predicate.** The filter is a plain boolean tree
+over column references and literals, so the optimizer can analyze it:
+
+.. ipython:: python
+
+    native_filtered = items.filter(
+        (col("brand") == lit("A")) & (col("qty") >= lit(150))
+    )
+    print(native_filtered.execution_plan().display_indent())
+
+Notice the ``DataSourceExec`` line. It carries three annotations the
+optimizer computed from the predicate:
+
+- ``predicate=brand@1 = A AND qty@2 >= 150`` — the filter is pushed
+  into the Parquet scan itself, so the scan only reads matching rows.
+- ``pruning_predicate=... brand_min@0 <= A AND A <= brand_max@1 ...
+  qty_max@4 >= 150`` — the scan prunes whole row groups by consulting
+  the Parquet min/max statistics in the footer *before* reading any
+  column data.
+- ``required_guarantees=[brand in (A)]`` — the scan uses this when a
+  bloom filter or dictionary is available to skip pages.
+
+**UDF predicate.** Now wrap the same logic in a Python UDF:
+
+.. ipython:: python
+
+    def brand_qty_filter(brand_arr: pa.Array, qty_arr: pa.Array) -> pa.Array:
+        return pa.array([
+            b.as_py() == "A" and q.as_py() >= 150
+            for b, q in zip(brand_arr, qty_arr)
+        ])
+
+    pred_udf = udf(
+        brand_qty_filter, [pa.string(), pa.int64()], pa.bool_(), "stable",
+    )
+    udf_filtered = items.filter(pred_udf(col("brand"), col("qty")))
+    print(udf_filtered.execution_plan().display_indent())
+
+The ``DataSourceExec`` now carries only ``predicate=brand_qty_filter(...)``.
+There is no ``pruning_predicate`` and no ``required_guarantees``: the
+scan has to materialize every row group and hand each row to the
+Python callback just to decide whether to keep it.
+
+At small scale the cost difference is invisible; on a Parquet file with
+many row groups, or data whose min/max statistics line up well with
+the predicate, the native form can skip most of the file. The UDF form
+reads all of it.
+
+**Takeaway.** Reach for a UDF when the per-row computation is genuinely
+not expressible as a tree of built-in functions (custom numerical work,
+external lookups, complex business rules). When it *is* expressible —
+even if the native form is a little more verbose — build the ``Expr``
+tree directly so the optimizer can see through it. For disjunctive
+predicates the idiom is to produce one clause per bucket and combine
+them with ``|``:
+
+.. code-block:: python
+
+    from functools import reduce
+    from operator import or_
+    from datafusion import col, lit, functions as f
+
+    buckets = {
+        "Brand#12": {"containers": ["SM CASE", "SM BOX"], "min_qty": 1, "max_size": 5},
+        "Brand#23": {"containers": ["MED BAG", "MED BOX"], "min_qty": 10, "max_size": 10},
+    }
+
+    def bucket_clause(brand, spec):
+        return (
+            (col("brand") == lit(brand))
+            & f.in_list(col("container"), [lit(c) for c in spec["containers"]])
+            & (col("quantity") >= lit(spec["min_qty"]))
+            & (col("quantity") <= lit(spec["min_qty"] + 10))
+            & (col("size") >= lit(1))
+            & (col("size") <= lit(spec["max_size"]))
+        )
+
+    predicate = reduce(or_, (bucket_clause(b, s) for b, s in buckets.items()))
+    df = df.filter(predicate)
+
 Aggregate Functions
 -------------------
 
