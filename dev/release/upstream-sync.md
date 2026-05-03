@@ -35,9 +35,15 @@ time.
 **Goal:** update the upstream `datafusion` crate version and make the project
 build, test, and lint cleanly against it.
 
-1. Update every `datafusion-*` entry in `[workspace.dependencies]` of the
-   root `Cargo.toml` to the new major version. The per-crate manifests under
-   `crates/` inherit these pins via `workspace = true` and need no edit.
+1. In the root `Cargo.toml`, update:
+   - `[workspace.package].version` to the new major (the `datafusion-python`
+     major tracks the upstream `datafusion` major, so a 53→54 bump moves
+     this from `53.0.0` to `54.0.0`), and
+   - every `datafusion` / `datafusion-*` entry in `[workspace.dependencies]`
+     to the same new major.
+
+   Per-crate manifests under `crates/` inherit these pins via
+   `workspace = true` and need no edit.
 2. Update `Cargo.lock` for the datafusion family only — leave unrelated
    transitives at their current pins so PR 2 can address them deliberately.
    List every `datafusion-*` workspace dependency with `-p`:
