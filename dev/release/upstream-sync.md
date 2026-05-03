@@ -98,14 +98,15 @@ documentation so it still matches the surface we ship.
    - Skip it (internal-only or already covered by an existing API; record
      the decision in the "Evaluated and not requiring exposure" sections of
      the skill so future runs don't re-flag it).
-3. Cross-reference the user-facing skill at
+3. Run the `audit-skill-md` skill (`.ai/skills/audit-skill-md/SKILL.md`) to
+   cross-reference the user-facing skill at
    [`skills/datafusion_python/SKILL.md`](../../skills/datafusion_python/SKILL.md)
-   against the current public API. Look for stale function names, missing
-   newly exposed APIs, and examples that drifted from current behavior.
-   Update `SKILL.md` and the relevant RST pages under
-   `docs/source/user-guide/common-operations/` accordingly. (An
-   `audit-skill-md` skill is planned to automate this step — once it lands
-   under `.ai/skills/audit-skill-md/`, invoke it via `/audit-skill-md`.)
+   against the current public API. The skill flags stale function names,
+   missing newly exposed APIs, examples that drifted from idiomatic style,
+   and missing version notes. Invoke it from the assistant with
+   `/audit-skill-md` (optionally scoped, e.g. `/audit-skill-md dataframe`).
+   Apply the resulting edits to `SKILL.md` and to the relevant RST pages
+   under `docs/source/user-guide/common-operations/`.
 4. If new aggregate or window functions were exposed in step 2, also update:
    - `docs/source/user-guide/common-operations/aggregations.rst`
    - `docs/source/user-guide/common-operations/windows.rst`
