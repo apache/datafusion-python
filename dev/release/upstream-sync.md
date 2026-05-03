@@ -35,9 +35,9 @@ time.
 **Goal:** update the upstream `datafusion` crate version and make the project
 build, test, and lint cleanly against it.
 
-1. Update the `datafusion` dependency in the root `Cargo.toml` (workspace
-   section and dependencies). Any downstream `datafusion-*` crates pinned in
-   `crates/core/Cargo.toml` should move to the matching version.
+1. Update every `datafusion-*` entry in `[workspace.dependencies]` of the
+   root `Cargo.toml` to the new major version. The per-crate manifests under
+   `crates/` inherit these pins via `workspace = true` and need no edit.
 2. Update `Cargo.lock` for the datafusion family only — leave unrelated
    transitives at their current pins so PR 2 can address them deliberately.
    List every `datafusion-*` workspace dependency with `-p`:
