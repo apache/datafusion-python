@@ -75,10 +75,11 @@ Before producing the report:
 2. The relevant Python module(s) for the chosen scope. Public surface is the
    `__all__` list (where defined) plus `class` and `def` symbols not prefixed
    with `_`.
-3. `Cargo.toml` (root) for the current `datafusion-python` version (e.g.,
-   `version = "53.0.0"`). The major version always matches the upstream
-   `datafusion` crate, so a single `datafusion-python` version expresses
-   both. `python/datafusion/__init__.py`'s `__version__` is the same value
+3. `Cargo.toml` (root) for the current `datafusion-python` version — read
+   the `version` field under `[workspace.package]` (format `NN.0.0`). The
+   major version always matches the upstream `datafusion` crate, so a
+   single `datafusion-python` version expresses both.
+   `python/datafusion/__init__.py`'s `__version__` is the same value
    exposed at runtime.
 4. Recent commits touching the relevant module(s) for context on what
    changed since the last sync:
