@@ -19,7 +19,7 @@
 
 ---
 name: audit-skill-md
-description: Audit the user-facing skill at skills/datafusion_python/SKILL.md against the current public Python API. Find new APIs that should be documented, stale mentions of removed/renamed APIs, examples that drifted from current idiomatic style, and places that need a "requires upstream DataFusion vX" note. Run after upstream syncs and before each release.
+description: Audit the user-facing skill at skills/datafusion_python/SKILL.md against the current public Python API. Find new APIs that should be documented, stale mentions of removed/renamed APIs, examples that drifted from current idiomatic style, and places that need a "requires datafusion-python NN or newer" note. Run after upstream syncs and before each release.
 argument-hint: [scope] (e.g., "session-context", "dataframe", "expr", "functions", "patterns", "pitfalls", "version-notes", "all")
 ---
 
