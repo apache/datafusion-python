@@ -253,6 +253,11 @@
    Upgrade Guides
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../ai-coding-assistants.html">
+   Using AI Coding Assistants
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -421,6 +426,13 @@
   <a class="reference internal nav-link" href="#scalar-functions">
    Scalar Functions
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#when-not-to-use-a-udf">
+     When not to use a UDF
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#aggregate-functions">
@@ -572,6 +584,141 @@ cost of converting to Python objects and back, a more advanced approach is to
 write Rust based UDFs and to expose them to Python. There is an example in the
 <a class="reference external" href="https://datafusion.apache.org/blog/2024/11/19/datafusion-python-udf-comparisons/">DataFusion blog</a>
 describing how to do this.</p>
+<section id="when-not-to-use-a-udf">
+<h3>When not to use a UDF<a class="headerlink" href="#when-not-to-use-a-udf" title="Link to this heading">¶</a></h3>
+<p>A UDF is the right tool when the per-row computation genuinely cannot be
+expressed with DataFusion’s built-in expressions. It is often the <em>wrong</em>
+tool for a predicate that <em>can</em> be written as an <code class="docutils literal notranslate"><span class="pre">Expr</span></code> tree but feels
+easier to write as a Python function — for example, a filter that keeps
+a row if it matches any one of several rule sets, where each rule set
+checks its own combination of columns (the worked example at the end of
+this section keeps a row when it matches any one of several brand-specific
+rules). Looping over the rules in Python and returning a boolean per row
+reads naturally and is tempting to wrap in a UDF, but a UDF is opaque to
+the optimizer: filters expressed as UDFs lose several rewrites that the
+engine applies to filters built from native expressions. The most visible
+of these is <strong>predicate pushdown into the table provider</strong>: a native
+predicate can be handed to the source so it skips data before it is read,
+while a UDF predicate cannot. The example below uses Parquet, where
+pushdown prunes whole row groups using the min/max statistics in the
+footer, but the same mechanism applies to any table provider that
+advertises filter support — including custom providers.</p>
+<p>The following example writes a small Parquet file, then filters it two
+ways: first with a native expression, then with a UDF that computes the
+same result. The filter itself is simple on purpose so we can compare
+the plans side by side.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">udf</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="n">parquet_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;items.parquet&quot;</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="n">pq</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">({</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span>    <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;brand&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">25</span><span class="p">,</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;qty&quot;</span><span class="p">:</span>   <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">}),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">parquet_path</span><span class="p">,</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="n">items</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">parquet_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Native-expression predicate.</strong> The filter is a plain boolean tree
+over column references and literals, so the optimizer can analyze it:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">native_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lit</span><span class="p">(</span><span class="mi">150</span><span class="p">))</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">native_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
+<span class="n">FilterExec</span><span class="p">:</span> <span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="o">=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">150</span>
+  <span class="n">RepartitionExec</span><span class="p">:</span> <span class="n">partitioning</span><span class="o">=</span><span class="n">RoundRobinBatch</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">input_partitions</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">DataSourceExec</span><span class="p">:</span> <span class="n">file_groups</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="n">group</span><span class="p">:</span> <span class="p">[[</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmpayflef13</span><span class="o">/</span><span class="n">items</span><span class="o">.</span><span class="n">parquet</span><span class="p">]]},</span> <span class="n">projection</span><span class="o">=</span><span class="p">[</span><span class="nb">id</span><span class="p">,</span> <span class="n">brand</span><span class="p">,</span> <span class="n">qty</span><span class="p">],</span> <span class="n">file_type</span><span class="o">=</span><span class="n">parquet</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="o">=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">pruning_predicate</span><span class="o">=</span><span class="n">brand_null_count</span><span class="o">@</span><span class="mi">2</span> <span class="o">!=</span> <span class="n">row_count</span><span class="o">@</span><span class="mi">3</span> <span class="n">AND</span> <span class="n">brand_min</span><span class="o">@</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">A</span> <span class="o">&lt;=</span> <span class="n">brand_max</span><span class="o">@</span><span class="mi">1</span> <span class="n">AND</span> <span class="n">qty_null_count</span><span class="o">@</span><span class="mi">5</span> <span class="o">!=</span> <span class="n">row_count</span><span class="o">@</span><span class="mi">3</span> <span class="n">AND</span> <span class="n">qty_max</span><span class="o">@</span><span class="mi">4</span> <span class="o">&gt;=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">required_guarantees</span><span class="o">=</span><span class="p">[</span><span class="n">brand</span> <span class="ow">in</span> <span class="p">(</span><span class="n">A</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>Notice the <code class="docutils literal notranslate"><span class="pre">DataSourceExec</span></code> line. It carries three annotations the
+optimizer computed from the predicate:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">predicate=brand&#64;1</span> <span class="pre">=</span> <span class="pre">A</span> <span class="pre">AND</span> <span class="pre">qty&#64;2</span> <span class="pre">&gt;=</span> <span class="pre">150</span></code> — the filter is pushed
+into the Parquet scan itself, so the scan only reads matching rows.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pruning_predicate=...</span> <span class="pre">brand_min&#64;0</span> <span class="pre">&lt;=</span> <span class="pre">A</span> <span class="pre">AND</span> <span class="pre">A</span> <span class="pre">&lt;=</span> <span class="pre">brand_max&#64;1</span> <span class="pre">...</span>
+<span class="pre">qty_max&#64;4</span> <span class="pre">&gt;=</span> <span class="pre">150</span></code> — the scan prunes whole row groups by consulting
+the Parquet min/max statistics in the footer <em>before</em> reading any
+column data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">required_guarantees=[brand</span> <span class="pre">in</span> <span class="pre">(A)]</span></code> — the scan uses this when a
+bloom filter or dictionary is available to skip pages.</p></li>
+</ul>
+<p><strong>UDF predicate.</strong> Now wrap the same logic in a Python UDF:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">brand_qty_filter</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="k">return</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">b</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="ow">and</span> <span class="n">q</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">150</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">])</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="n">pred_udf</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">brand_qty_filter</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s2">&quot;stable&quot;</span><span class="p">,</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">32</span><span class="p">]:</span> <span class="n">udf_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pred_udf</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">33</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">udf_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
+<span class="n">FilterExec</span><span class="p">:</span> <span class="n">brand_qty_filter</span><span class="p">(</span><span class="n">CAST</span><span class="p">(</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="n">AS</span> <span class="n">Utf8</span><span class="p">),</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span><span class="p">)</span>
+  <span class="n">RepartitionExec</span><span class="p">:</span> <span class="n">partitioning</span><span class="o">=</span><span class="n">RoundRobinBatch</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">input_partitions</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">DataSourceExec</span><span class="p">:</span> <span class="n">file_groups</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="n">group</span><span class="p">:</span> <span class="p">[[</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmpayflef13</span><span class="o">/</span><span class="n">items</span><span class="o">.</span><span class="n">parquet</span><span class="p">]]},</span> <span class="n">projection</span><span class="o">=</span><span class="p">[</span><span class="nb">id</span><span class="p">,</span> <span class="n">brand</span><span class="p">,</span> <span class="n">qty</span><span class="p">],</span> <span class="n">file_type</span><span class="o">=</span><span class="n">parquet</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">brand_qty_filter</span><span class="p">(</span><span class="n">CAST</span><span class="p">(</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="n">AS</span> <span class="n">Utf8</span><span class="p">),</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">DataSourceExec</span></code> now carries only <code class="docutils literal notranslate"><span class="pre">predicate=brand_qty_filter(...)</span></code>.
+There is no <code class="docutils literal notranslate"><span class="pre">pruning_predicate</span></code> and no <code class="docutils literal notranslate"><span class="pre">required_guarantees</span></code>: the
+scan has to materialize every row group and hand each row to the
+Python callback just to decide whether to keep it.</p>
+<p>At small scale the cost difference is invisible; on a Parquet file with
+many row groups, or data whose min/max statistics line up well with
+the predicate, the native form can skip most of the file. The UDF form
+reads all of it.</p>
+<p><strong>Takeaway.</strong> Reach for a UDF when the per-row computation is genuinely
+not expressible as a tree of built-in functions (custom numerical work,
+external lookups, complex business rules). When it <em>is</em> expressible —
+even if the native form is a little more verbose — build the <code class="docutils literal notranslate"><span class="pre">Expr</span></code>
+tree directly so the optimizer can see through it. For disjunctive
+predicates the idiom is to produce one clause per bucket and combine
+them with <code class="docutils literal notranslate"><span class="pre">|</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">or_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+
+<span class="n">buckets</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Brand#12&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;containers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SM CASE&quot;</span><span class="p">,</span> <span class="s2">&quot;SM BOX&quot;</span><span class="p">],</span> <span class="s2">&quot;min_qty&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;max_size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="s2">&quot;Brand#23&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;containers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MED BAG&quot;</span><span class="p">,</span> <span class="s2">&quot;MED BOX&quot;</span><span class="p">],</span> <span class="s2">&quot;min_qty&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;max_size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bucket_clause</span><span class="p">(</span><span class="n">brand</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="n">brand</span><span class="p">))</span>
+        <span class="o">&amp;</span> <span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;container&quot;</span><span class="p">),</span> <span class="p">[</span><span class="n">lit</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">[</span><span class="s2">&quot;containers&quot;</span><span class="p">]])</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;quantity&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lit</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;min_qty&quot;</span><span class="p">]))</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;quantity&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">lit</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;min_qty&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">10</span><span class="p">))</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">lit</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;max_size&quot;</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+<span class="n">predicate</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">or_</span><span class="p">,</span> <span class="p">(</span><span class="n">bucket_clause</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">buckets</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">predicate</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="aggregate-functions">
 <h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h2>
