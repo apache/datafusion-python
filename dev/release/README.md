@@ -33,6 +33,12 @@ release branch without blocking ongoing development in the `main` branch.
 We can cherry-pick commits from the `main` branch into `branch-53` as needed and then create new patch releases
 from that branch.
 
+## Upstream Sync
+
+Between releases the `main` branch is periodically synced to a newer upstream `apache/datafusion` version. This is
+broken into a three-PR workflow (bump + fix breakage, consolidate transitive deps, fill API and documentation gaps).
+See [`upstream-sync.md`](upstream-sync.md) for the full process.
+
 ## Detailed Guide
 
 ### Pre-requisites
@@ -53,6 +59,9 @@ You will also need access to the [datafusion](https://test.pypi.org/project/data
 Before creating a new release:
 
 - We need to ensure that the main branch does not have any GitHub dependencies
+- Confirm the upstream sync workflow in [`upstream-sync.md`](upstream-sync.md) has been completed for this release cycle
+  (crate bump + breakage fixes, transitive dependency consolidation, and the `/check-upstream` and `/audit-skill-md`
+  passes). Any gaps surfaced by those skills should land before the release branch is cut.
 - a PR should be created and merged to update the major version number of the project
 - A new release branch should be created, such as `branch-53`
 - It is best to push this branch to the apache repository rather than a personal fork in case patch releases are required.
