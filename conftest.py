@@ -17,12 +17,29 @@
 
 """Pytest configuration for doctest namespace injection."""
 
-import datafusion as dfn
-import numpy as np
-import pyarrow as pa
-import pytest
-from datafusion import col, lit
-from datafusion import functions as F
+import sys
+from pathlib import Path
+
+# Ensure ``python/`` is reachable by ``import``. The ``tests`` package lives at
+# ``python/tests`` and spawn-based multiprocessing tests need workers to be
+# able to resolve ``tests._pickle_multiprocessing_helpers`` by its real dotted
+# name when unpickling task args. Editable installs add this path via a .pth
+# file, but the wheel install used in CI does not, which led to spawn workers
+# dying with ``ModuleNotFoundError`` and ``Pool.map`` hanging.
+#
+# Append (don't prepend) so the wheel-installed ``datafusion`` in
+# site-packages still wins over the source tree at ``python/datafusion`` —
+# the source tree has no compiled ``_internal`` module on a fresh checkout.
+_python_dir = str(Path(__file__).parent / "python")
+if _python_dir not in sys.path:
+    sys.path.append(_python_dir)
+
+import datafusion as dfn  # noqa: E402
+import numpy as np  # noqa: E402
+import pyarrow as pa  # noqa: E402
+import pytest  # noqa: E402
+from datafusion import col, lit  # noqa: E402
+from datafusion import functions as F  # noqa: E402
 
 
 @pytest.fixture(autouse=True)

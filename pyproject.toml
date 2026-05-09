@@ -74,13 +74,6 @@ asyncio_default_fixture_loop_scope = "function"
 addopts = "--doctest-modules"
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 testpaths = ["python/tests", "python/datafusion"]
-# Ensure ``python/`` is on sys.path so the ``tests`` package is importable.
-# Required for spawn-based multiprocessing tests: workers need to resolve
-# ``tests._pickle_multiprocessing_helpers`` by its real dotted name. With
-# editable/develop installs a .pth file happens to add this path, but the
-# wheel install used in CI does not, which led to spawn workers dying with
-# ``ModuleNotFoundError: No module named 'tests'`` and ``Pool.map`` hanging.
-pythonpath = ["python"]
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
