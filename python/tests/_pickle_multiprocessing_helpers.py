@@ -75,8 +75,11 @@ def apply_builtin_expr(args: tuple) -> list:
 def apply_udf_expr(args: tuple) -> list:
     expr, values = args
     # Reuse the worker's global ctx so the UDF registered by the initializer
-    # is visible during execution as well as during arg unpickling.
+    # is visible during execution as well as during arg unpickling. Omit the
+    # table name so each call gets a fresh auto-generated one — a worker may
+    # process multiple tasks, and reusing a fixed name on the shared ctx would
+    # collide on the second call.
     ctx = SessionContext.global_ctx()
     batch = pa.RecordBatch.from_arrays([pa.array(values, type=pa.int64())], names=["a"])
-    df = ctx.create_dataframe([[batch]], name="t_udf")
+    df = ctx.create_dataframe([[batch]])
     return df.select(expr.alias("out")).collect()[0].column(0).to_pylist()
