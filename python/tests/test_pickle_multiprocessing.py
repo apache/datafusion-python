@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import multiprocessing as mp
 
+import pytest
 from datafusion import col, lit
 
 from tests._pickle_multiprocessing_helpers import (
@@ -50,6 +51,12 @@ from tests._pickle_multiprocessing_helpers import (
     build_add_ten_udf,
     register_udf_on_global_ctx,
 )
+
+# Hard upper bound for any single test in this module. If a spawn worker dies
+# silently during arg unpickling or initializer execution, ``Pool.map`` blocks
+# forever; ``pytest-timeout`` turns that into a real failure with a traceback
+# instead of a 30-minute job-level CI timeout.
+pytestmark = pytest.mark.timeout(60)
 
 
 def test_builtin_expr_through_multiprocessing_pool() -> None:
