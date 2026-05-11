@@ -578,6 +578,11 @@ impl PyDataFrame {
         Ok(PyTable::from(table_provider))
     }
 
+    fn alias(&self, alias: &str) -> PyDataFusionResult<Self> {
+        let df = self.df.as_ref().clone().alias(alias)?;
+        Ok(Self::new(df))
+    }
+
     #[pyo3(signature = (*args))]
     fn select_exprs(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
         let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();

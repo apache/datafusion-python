@@ -523,6 +523,27 @@ class DataFrame:
         """
         return self.df.select_exprs(*args)
 
+    def alias(self, alias: str) -> DataFrame:
+        """Assign a table alias to this :py:class:`DataFrame`.
+
+        Replaces the qualifiers of the output columns with ``alias``. Useful for
+        self-joins and any situation that needs an unambiguous table-style
+        qualifier (``alias.col``) for downstream references.
+
+        Args:
+            alias: Table alias to apply to the DataFrame's columns.
+
+        Returns:
+            DataFrame with columns re-qualified under ``alias``.
+
+        Example:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.alias("t").to_pydict()
+            {'a': [1, 2, 3]}
+        """
+        return DataFrame(self.df.alias(alias))
+
     def select(self, *exprs: Expr | str) -> DataFrame:
         """Project arbitrary expressions into a new :py:class:`DataFrame`.
 
