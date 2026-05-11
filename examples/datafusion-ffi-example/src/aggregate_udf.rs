@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::sync::Arc;
 
 use arrow_schema::DataType;
@@ -61,10 +60,6 @@ impl MySumUDF {
 }
 
 impl AggregateUDFImpl for MySumUDF {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn name(&self) -> &str {
         "my_custom_sum"
     }

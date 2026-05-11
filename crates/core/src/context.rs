@@ -759,8 +759,8 @@ impl PySessionContext {
                 .pointer_checked(Some(c"datafusion_catalog_provider_list"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
-            let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
-            provider as Arc<dyn CatalogProviderList>
+            let provider: Arc<dyn CatalogProviderList> = provider.into();
+            provider
         } else {
             match provider.extract::<PyCatalogList>() {
                 Ok(py_catalog_list) => py_catalog_list.catalog_list,
@@ -794,8 +794,8 @@ impl PySessionContext {
                 .pointer_checked(Some(c"datafusion_catalog_provider"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
-            let provider: Arc<dyn CatalogProvider + Send> = provider.into();
-            provider as Arc<dyn CatalogProvider>
+            let provider: Arc<dyn CatalogProvider> = provider.into();
+            provider
         } else {
             match provider.extract::<PyCatalog>() {
                 Ok(py_catalog) => py_catalog.catalog,
@@ -1056,10 +1056,7 @@ impl PySessionContext {
             "Catalog with name {name} doesn't exist."
         )))?;
 
-        match catalog
-            .as_any()
-            .downcast_ref::<RustWrappedPyCatalogProvider>()
-        {
+        match catalog.downcast_ref::<RustWrappedPyCatalogProvider>() {
             Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
             None => Ok(
                 PyCatalog::new_from_parts(catalog, Arc::clone(&self.logical_codec))

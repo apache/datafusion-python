@@ -93,6 +93,7 @@ impl PyTableFunction {
     #[pyo3(signature = (*args))]
     pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTable> {
         let args: Vec<Expr> = args.iter().map(|e| e.expr.clone()).collect();
+        #[allow(deprecated)]
         let table_provider = self.call(&args).map_err(py_datafusion_err)?;
 
         Ok(PyTable::from(table_provider))
@@ -125,6 +126,7 @@ fn call_python_table_function(
 }
 
 impl TableFunctionImpl for PyTableFunction {
+    #[allow(deprecated)]
     fn call(&self, args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
             PyTableFunctionInner::FFIFunction(func) => func.call(args),

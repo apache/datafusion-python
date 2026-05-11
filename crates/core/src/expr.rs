@@ -220,6 +220,15 @@ impl PyExpr {
             Expr::SetComparison(value) => {
                 Ok(set_comparison::PySetComparison::from(value.clone()).into_bound_py_any(py)?)
             }
+            Expr::HigherOrderFunction(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::HigherOrderFunction to a Python object is not implemented: {value:?}"
+            ))),
+            Expr::Lambda(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::Lambda to a Python object is not implemented: {value:?}"
+            ))),
+            Expr::LambdaVariable(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::LambdaVariable to a Python object is not implemented: {value:?}"
+            ))),
         })
     }
 
@@ -393,6 +402,11 @@ impl PyExpr {
             Expr::Wildcard { .. } => {
                 return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"));
             }
+            Expr::HigherOrderFunction(..) | Expr::Lambda(..) | Expr::LambdaVariable(..) => {
+                return Err(py_unsupported_variant_err(
+                    "Expr::HigherOrderFunction / Lambda / LambdaVariable is unsupported",
+                ));
+            }
         })
     }
 
@@ -531,6 +545,12 @@ impl PyExpr {
             #[allow(deprecated)]
             Expr::Wildcard { .. } => {
                 Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
+            }
+
+            Expr::HigherOrderFunction(..) | Expr::Lambda(..) | Expr::LambdaVariable(..) => {
+                Err(py_unsupported_variant_err(
+                    "Expr::HigherOrderFunction / Lambda / LambdaVariable is unsupported",
+                ))
             }
         }
     }
@@ -782,7 +802,9 @@ impl PyExpr {
                 | Operator::QuestionPipe
                 | Operator::Colon => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
-            Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
+            Expr::Cast(Cast { expr: _, field }) => {
+                DataTypeMap::map_from_arrow_type(field.data_type())
+            }
             Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {expr:?}"

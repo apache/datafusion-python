@@ -365,6 +365,12 @@ impl DataTypeMap {
                 Arc::clone(field1),
                 Arc::clone(field2),
             )),
+            ScalarValue::ListView(_) => Err(PyNotImplementedError::new_err(
+                "ScalarValue::ListView".to_string(),
+            )),
+            ScalarValue::LargeListView(_) => Err(PyNotImplementedError::new_err(
+                "ScalarValue::LargeListView".to_string(),
+            )),
         }
     }
 }
