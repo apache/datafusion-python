@@ -39,7 +39,8 @@ def test_ffi_table_function_register() -> None:
     assert result[0].num_columns == 4
     print(result)
 
-    result = [r.column(0) for r in result]
+    # Multi-partition collect order is non-deterministic; sort by first value.
+    result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     expected = [
         pa.array([0, 1, 2], type=pa.int32()),
         pa.array([3, 4, 5, 6], type=pa.int32()),
@@ -61,7 +62,7 @@ def test_ffi_table_function_call_directly():
     assert result[0].num_columns == 4
     print(result)
 
-    result = [r.column(0) for r in result]
+    result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     expected = [
         pa.array([0, 1, 2], type=pa.int32()),
         pa.array([3, 4, 5, 6], type=pa.int32()),
@@ -96,7 +97,7 @@ def common_table_function_test(test_ctx: SessionContext) -> None:
     assert result[0].num_columns == 3
     print(result)
 
-    result = [r.column(0) for r in result]
+    result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     expected = [
         pa.array([0, 1], type=pa.int32()),
         pa.array([2, 3, 4], type=pa.int32()),

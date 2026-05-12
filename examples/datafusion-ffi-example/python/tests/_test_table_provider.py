@@ -36,7 +36,9 @@ def test_table_provider_ffi(inner_capsule: bool) -> None:
     assert len(result) == 4
     assert result[0].num_columns == 3
 
-    result = [r.column(0) for r in result]
+    # Multi-partition collect order is non-deterministic; sort by first value
+    # in column 0, which is unique per partition (0, 2, 4, 6).
+    result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     expected = [
         pa.array([0, 1], type=pa.int32()),
         pa.array([2, 3, 4], type=pa.int32()),
@@ -47,5 +49,5 @@ def test_table_provider_ffi(inner_capsule: bool) -> None:
     assert result == expected
 
     result = ctx.read_table(table).collect()
-    result = [r.column(0) for r in result]
+    result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     assert result == expected
