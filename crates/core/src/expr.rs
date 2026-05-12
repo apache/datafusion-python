@@ -85,9 +85,12 @@ pub mod explain;
 pub mod extension;
 pub mod filter;
 pub mod grouping_set;
+pub mod higher_order_function;
 pub mod in_list;
 pub mod in_subquery;
 pub mod join;
+pub mod lambda;
+pub mod lambda_variable;
 pub mod like;
 pub mod limit;
 pub mod literal;
@@ -220,15 +223,14 @@ impl PyExpr {
             Expr::SetComparison(value) => {
                 Ok(set_comparison::PySetComparison::from(value.clone()).into_bound_py_any(py)?)
             }
-            Expr::HigherOrderFunction(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::HigherOrderFunction to a Python object is not implemented: {value:?}"
-            ))),
-            Expr::Lambda(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::Lambda to a Python object is not implemented: {value:?}"
-            ))),
-            Expr::LambdaVariable(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::LambdaVariable to a Python object is not implemented: {value:?}"
-            ))),
+            Expr::HigherOrderFunction(value) => Ok(
+                higher_order_function::PyHigherOrderFunction::from(value.clone())
+                    .into_bound_py_any(py)?,
+            ),
+            Expr::Lambda(value) => Ok(lambda::PyLambda::from(value.clone()).into_bound_py_any(py)?),
+            Expr::LambdaVariable(value) => {
+                Ok(lambda_variable::PyLambdaVariable::from(value.clone()).into_bound_py_any(py)?)
+            }
         })
     }
 
@@ -860,6 +862,9 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<union::PyUnion>()?;
     m.add_class::<unnest::PyUnnest>()?;
     m.add_class::<unnest_expr::PyUnnestExpr>()?;
+    m.add_class::<higher_order_function::PyHigherOrderFunction>()?;
+    m.add_class::<lambda::PyLambda>()?;
+    m.add_class::<lambda_variable::PyLambdaVariable>()?;
     m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
