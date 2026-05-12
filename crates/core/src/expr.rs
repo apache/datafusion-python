@@ -23,8 +23,8 @@ use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::expr::{
-    AggregateFunction, AggregateFunctionParams, FieldMetadata, InList, InSubquery, ScalarFunction,
-    SetComparison, WindowFunction,
+    AggregateFunction, AggregateFunctionParams, FieldMetadata, HigherOrderFunction, InList,
+    InSubquery, Lambda, ScalarFunction, SetComparison, WindowFunction,
 };
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
@@ -398,16 +398,14 @@ impl PyExpr {
             | Expr::OuterReferenceColumn(_, _)
             | Expr::Unnest(_)
             | Expr::IsNotUnknown(_)
-            | Expr::SetComparison(_) => RexType::Call,
+            | Expr::SetComparison(_)
+            | Expr::HigherOrderFunction(..)
+            | Expr::Lambda(..) => RexType::Call,
+            Expr::LambdaVariable(..) => RexType::Reference,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
             #[allow(deprecated)]
             Expr::Wildcard { .. } => {
                 return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"));
-            }
-            Expr::HigherOrderFunction(..) | Expr::Lambda(..) | Expr::LambdaVariable(..) => {
-                return Err(py_unsupported_variant_err(
-                    "Expr::HigherOrderFunction / Lambda / LambdaVariable is unsupported",
-                ));
             }
         })
     }
@@ -435,9 +433,10 @@ impl PyExpr {
     pub fn rex_call_operands(&self) -> PyResult<Vec<PyExpr>> {
         match &self.expr {
             // Expr variants that are themselves the operand to return
-            Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
-                Ok(vec![PyExpr::from(self.expr.clone())])
-            }
+            Expr::Column(..)
+            | Expr::ScalarVariable(..)
+            | Expr::Literal(..)
+            | Expr::LambdaVariable(..) => Ok(vec![PyExpr::from(self.expr.clone())]),
 
             Expr::Alias(alias) => Ok(vec![PyExpr::from(*alias.expr.clone())]),
 
@@ -464,13 +463,15 @@ impl PyExpr {
                 params: AggregateFunctionParams { args, .. },
                 ..
             })
-            | Expr::ScalarFunction(ScalarFunction { args, .. }) => {
+            | Expr::ScalarFunction(ScalarFunction { args, .. })
+            | Expr::HigherOrderFunction(HigherOrderFunction { args, .. }) => {
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
             Expr::WindowFunction(boxed_window_fn) => {
                 let args = &boxed_window_fn.params.args;
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
+            Expr::Lambda(Lambda { body, .. }) => Ok(vec![PyExpr::from(*body.clone())]),
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -548,12 +549,6 @@ impl PyExpr {
             Expr::Wildcard { .. } => {
                 Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
             }
-
-            Expr::HigherOrderFunction(..) | Expr::Lambda(..) | Expr::LambdaVariable(..) => {
-                Err(py_unsupported_variant_err(
-                    "Expr::HigherOrderFunction / Lambda / LambdaVariable is unsupported",
-                ))
-            }
         }
     }
 
@@ -566,6 +561,10 @@ impl PyExpr {
                 right: _,
             }) => format!("{op}"),
             Expr::ScalarFunction(ScalarFunction { func, args: _ }) => func.name().to_string(),
+            Expr::HigherOrderFunction(HigherOrderFunction { func, args: _ }) => {
+                func.name().to_string()
+            }
+            Expr::Lambda(..) => "lambda".to_string(),
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
             Expr::Case { .. } => "case".to_string(),
