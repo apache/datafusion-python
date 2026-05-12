@@ -537,10 +537,15 @@ class DataFrame:
             DataFrame with columns re-qualified under ``alias``.
 
         Example:
+            >>> from datafusion import col
             >>> ctx = dfn.SessionContext()
-            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
-            >>> df.alias("t").to_pydict()
-            {'a': [1, 2, 3]}
+            >>> df = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
+            >>> left = df.alias("l")
+            >>> right = df.alias("r")
+            >>> left.join(right, left_on="id", right_on="id").select(
+            ...     "id", col("l.val").alias("lval"), col("r.val").alias("rval")
+            ... ).sort("id").to_pydict()
+            {'id': [1, 2], 'lval': [10, 20], 'rval': [10, 20]}
         """
         return DataFrame(self.df.alias(alias))
 
