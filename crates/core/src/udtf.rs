@@ -18,7 +18,7 @@
 use std::ptr::NonNull;
 use std::sync::Arc;
 
-use datafusion::catalog::{TableFunctionImpl, TableProvider};
+use datafusion::catalog::{TableFunctionArgs, TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
@@ -93,8 +93,11 @@ impl PyTableFunction {
     #[pyo3(signature = (*args))]
     pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTable> {
         let args: Vec<Expr> = args.iter().map(|e| e.expr.clone()).collect();
-        #[allow(deprecated)]
-        let table_provider = self.call(&args).map_err(py_datafusion_err)?;
+        let global = PySessionContext::global_ctx()?;
+        let state = global.ctx.state();
+        let table_provider = self
+            .call_with_args(TableFunctionArgs::new(&args, &state))
+            .map_err(py_datafusion_err)?;
 
         Ok(PyTable::from(table_provider))
     }
@@ -126,11 +129,12 @@ fn call_python_table_function(
 }
 
 impl TableFunctionImpl for PyTableFunction {
-    #[allow(deprecated)]
-    fn call(&self, args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
+    fn call_with_args(&self, args: TableFunctionArgs) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
-            PyTableFunctionInner::FFIFunction(func) => func.call(args),
-            PyTableFunctionInner::PythonFunction(obj) => call_python_table_function(obj, args),
+            PyTableFunctionInner::FFIFunction(func) => func.call_with_args(args),
+            PyTableFunctionInner::PythonFunction(obj) => {
+                call_python_table_function(obj, args.exprs())
+            }
         }
     }
 }
