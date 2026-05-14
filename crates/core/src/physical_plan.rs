@@ -18,17 +18,15 @@
 use std::sync::Arc;
 
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
-use datafusion_ffi::execution_plan::FFI_ExecutionPlan;
 use datafusion_proto::physical_plan::AsExecutionPlan;
-use datafusion_python_util::get_tokio_runtime;
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use pyo3::types::{PyBytes, PyCapsule};
+use pyo3::types::PyBytes;
 
 use crate::codec::PythonPhysicalCodec;
 use crate::context::PySessionContext;
-use crate::errors::{PyDataFusionResult, py_datafusion_err};
+use crate::errors::PyDataFusionResult;
 use crate::metrics::PyMetricsSet;
 
 #[pyclass(
@@ -127,34 +125,6 @@ impl PyExecutionPlan {
     #[getter]
     pub fn partition_count(&self) -> usize {
         self.plan.output_partitioning().partition_count()
-    }
-
-    /// Extract a `PyExecutionPlan` from any object exposing
-    /// `__datafusion_execution_plan__()` (PyCapsule protocol).
-    #[staticmethod]
-    pub fn from_pycapsule(mut capsule: Bound<PyAny>) -> PyResult<Self> {
-        if capsule.hasattr("__datafusion_execution_plan__")? {
-            capsule = capsule.getattr("__datafusion_execution_plan__")?.call0()?;
-        }
-
-        let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
-        let data: std::ptr::NonNull<FFI_ExecutionPlan> = capsule
-            .pointer_checked(Some(c"datafusion_execution_plan"))?
-            .cast();
-        let plan = unsafe { data.as_ref() };
-        let plan: Arc<dyn ExecutionPlan> = plan.try_into().map_err(py_datafusion_err)?;
-
-        Ok(Self { plan })
-    }
-
-    pub fn __datafusion_execution_plan__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_execution_plan".into();
-        let runtime = get_tokio_runtime().handle().clone();
-        let plan = FFI_ExecutionPlan::new(self.plan.clone(), Some(runtime));
-        PyCapsule::new(py, plan, Some(name))
     }
 }
 

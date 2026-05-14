@@ -208,23 +208,6 @@ class ExecutionPlan:
         )
         return self.to_bytes()
 
-    @staticmethod
-    def from_pycapsule(capsule: Any) -> ExecutionPlan:
-        """Construct an `ExecutionPlan` from a PyCapsule.
-
-        Accepts either a raw capsule or any object exposing
-        ``__datafusion_execution_plan__``.
-        """
-        return ExecutionPlan(df_internal.ExecutionPlan.from_pycapsule(capsule))
-
-    def __datafusion_execution_plan__(self) -> Any:
-        """Return a PyCapsule pointing at the underlying `FFI_ExecutionPlan`.
-
-        Lets other Rust libraries consume the plan without depending on
-        the datafusion-python class.
-        """
-        return self._raw_plan.__datafusion_execution_plan__()
-
     def metrics(self) -> MetricsSet | None:
         """Return metrics for this plan node, or None if this plan has no MetricsSet.
 

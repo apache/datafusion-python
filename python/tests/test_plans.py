@@ -17,7 +17,6 @@
 
 import datetime
 
-import datafusion._internal as df_internal
 import pytest
 from datafusion import (
     ExecutionPlan,
@@ -77,18 +76,6 @@ def test_execution_plan_to_proto_is_deprecated(ctx, df) -> None:
         restored = ExecutionPlan.from_proto(ctx, blob)
 
     assert str(plan) == str(restored)
-
-
-def test_execution_plan_pycapsule_protocol(df) -> None:
-    """PyExecutionPlan exposes __datafusion_execution_plan__ and accepts
-    capsule-protocol objects on from_pycapsule."""
-    plan = df.execution_plan()
-    capsule = plan._raw_plan.__datafusion_execution_plan__()
-    assert capsule is not None
-
-    # Capsule-protocol input (forwards via __datafusion_execution_plan__).
-    restored = df_internal.ExecutionPlan.from_pycapsule(plan._raw_plan)
-    assert str(plan) == str(ExecutionPlan(restored))
 
 
 def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:
