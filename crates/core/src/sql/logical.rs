@@ -203,12 +203,6 @@ impl PyLogicalPlan {
         py: Python<'py>,
         ctx: Option<PySessionContext>,
     ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        // When the caller supplies a session, route through its
-        // installed logical codec so user FFI codecs registered via
-        // `with_logical_extension_codec` see the encode path.
-        // Otherwise fall back to a default-inner `PythonLogicalCodec`
-        // — Python scalar UDFs still inline via `DFPYUDF1`, but
-        // non-Python UDFs hit the default codec only.
         let default_codec;
         let codec: &dyn datafusion_proto::logical_plan::LogicalExtensionCodec = match ctx {
             Some(ref ctx) => ctx.logical_codec().as_ref(),
