@@ -17,39 +17,63 @@
 
 //! Python-aware extension codecs.
 //!
-//! [`PythonLogicalCodec`] wraps a user-supplied (or default)
-//! [`LogicalExtensionCodec`] and is the codec datafusion-python parks
-//! on every `SessionContext`. [`PythonPhysicalCodec`] is the symmetric
-//! wrapper around [`PhysicalExtensionCodec`].
+//! Datafusion-python plans can carry references to Python-defined
+//! objects that the upstream protobuf codecs do not know how to
+//! serialize: pure-Python scalar / aggregate / window UDFs, Python
+//! query-planning extensions, and so on. Their state lives inside
+//! `Py<PyAny>` callables and closures rather than being recoverable
+//! from a name in the receiver's function registry. To ship a plan
+//! across a process boundary (pickle, `multiprocessing`, Ray actor,
+//! `datafusion-distributed`, etc.) those payloads have to be encoded
+//! into the proto wire format itself.
 //!
-//! In PR1 both codecs delegate every call to their `inner` codec. The
-//! types exist so that follow-up work (pickle support, Python scalar
-//! UDF inline encoding) can add in-band Python payloads without
-//! re-plumbing the session field.
+//! [`PythonLogicalCodec`] is the [`LogicalExtensionCodec`] that
+//! datafusion-python parks on every `SessionContext`. It wraps a
+//! user-supplied (or default) inner codec and adds Python-aware
+//! in-band encoding on top: when the encoder sees a Python-defined
+//! UDF, the codec cloudpickles the callable + signature into the
+//! `fun_definition` proto field; when the decoder sees a payload it
+//! produced, it reconstructs the UDF from the bytes alone — no
+//! pre-registration on the receiver. UDFs the codec does not
+//! recognise are delegated to `inner`, which is typically
+//! `DefaultLogicalExtensionCodec` but may be a downstream-supplied
+//! FFI codec installed via
+//! `SessionContext.with_logical_extension_codec(...)`.
+//!
+//! [`PythonPhysicalCodec`] is the symmetric wrapper around
+//! [`PhysicalExtensionCodec`]. Logical and physical layers each have
+//! a `try_encode_udf` / `try_decode_udf` pair, so a `ScalarUDF`
+//! referenced inside a `LogicalPlan`, an `ExecutionPlan`, or a
+//! `PhysicalExpr` must encode identically through either layer for
+//! plans to survive a serialization round-trip. Both codecs share
+//! the same payload framing for that reason.
+//!
+//! Payloads emitted by these codecs are tagged with an 8-byte magic
+//! prefix so the decoder can distinguish them from arbitrary bytes
+//! (empty `fun_definition` from the default codec, user FFI payloads
+//! that picked a non-colliding prefix). Dispatch precedence on
+//! decode: **Python-inline payload (magic prefix match) → `inner`
+//! codec → caller's `FunctionRegistry` fallback.**
 //!
 //! ## Wire-format magic prefix registry
 //!
-//! Future in-band Python payloads will be prefixed with an 8-byte
-//! magic so the decoder can distinguish them from arbitrary
-//! `fun_definition` bytes produced by the default codec or a user FFI
-//! codec.
+//! | Layer + kind                  | Magic prefix |
+//! | ----------------------------- | ------------ |
+//! | `PythonLogicalCodec` scalar   | `DFPYUDF1`   |
+//! | `PythonLogicalCodec` agg      | `DFPYUDA1`   |
+//! | `PythonLogicalCodec` window   | `DFPYUDW1`   |
+//! | `PythonPhysicalCodec` scalar  | `DFPYUDF1`   |
+//! | `PythonPhysicalCodec` agg     | `DFPYUDA1`   |
+//! | `PythonPhysicalCodec` window  | `DFPYUDW1`   |
+//! | `PythonPhysicalCodec` expr    | `DFPYPE1`    |
+//! | User FFI extension codec      | user-chosen  |
+//! | Default codec                 | (none)       |
 //!
-//! | Layer + kind                  | Magic prefix | Status        |
-//! | ----------------------------- | ------------ | ------------- |
-//! | `PythonLogicalCodec` scalar   | `DFPYUDF1`   | reserved (PR2)|
-//! | `PythonLogicalCodec` agg      | `DFPYUDA1`   | reserved      |
-//! | `PythonLogicalCodec` window   | `DFPYUDW1`   | reserved      |
-//! | `PythonPhysicalCodec` scalar  | `DFPYUDF1`   | reserved (PR2)|
-//! | `PythonPhysicalCodec` agg     | `DFPYUDA1`   | reserved      |
-//! | `PythonPhysicalCodec` window  | `DFPYUDW1`   | reserved      |
-//! | `PythonPhysicalCodec` expr    | `DFPYPE1`    | reserved      |
-//! | User FFI extension codec      | user-chosen  | downstream    |
-//! | Default codec                 | (none)       | upstream      |
-//!
-//! Dispatch precedence once in-band payloads land: **Python-inline
-//! payload (magic prefix match) → `inner` codec → caller's registry
-//! fallback.** User FFI codecs should pick non-colliding prefixes
-//! (recommend a `DF` namespace plus a crate-specific suffix).
+//! Downstream FFI codecs should pick non-colliding prefixes (use a
+//! `DF` namespace plus a crate-specific suffix). The codec
+//! implementations in this module currently delegate every method to
+//! `inner`; the encoder/decoder hooks for each kind are added as the
+//! corresponding Python-side type becomes serializable.
 
 use std::sync::Arc;
 
@@ -62,16 +86,23 @@ use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
 
-/// Reserved magic prefix for an inlined Python scalar UDF payload.
-/// Not produced or consumed by PR1; the constant is reserved here so
-/// follow-up work has a single definition site.
+/// Wire-format prefix that tags a `fun_definition` payload as an
+/// inlined Python scalar UDF (cloudpickled tuple of name, callable,
+/// input schema, return field, volatility). Defined once here so
+/// the encoder and decoder cannot drift.
 #[allow(dead_code)]
 pub(crate) const PY_SCALAR_UDF_MAGIC: &[u8] = b"DFPYUDF1";
 
-/// `LogicalExtensionCodec` parked on every `SessionContext`. Wraps a
-/// composable `inner` codec; PR1 delegates every method straight
-/// through. The wrapper exists so follow-up patches can add Python
-/// in-band encoding without changing every serializer.
+/// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
+/// the Python-aware encoding hooks for logical-layer types
+/// (`LogicalPlan`, `Expr`) and delegates everything it does not
+/// handle to the composable `inner` codec — typically
+/// `DefaultLogicalExtensionCodec`, or a downstream FFI codec
+/// installed via `SessionContext.with_logical_extension_codec(...)`.
+///
+/// Sitting at the top of the session's logical codec stack means
+/// every serializer that reads `session.logical_codec()` automatically
+/// picks up Python-aware encoding for free.
 #[derive(Debug)]
 pub struct PythonLogicalCodec {
     inner: Arc<dyn LogicalExtensionCodec>,
@@ -136,9 +167,18 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 }
 
-/// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`]. Same
-/// motivation: a stable session field that follow-up patches can layer
-/// Python in-band encoding onto.
+/// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`] parked
+/// on the same `SessionContext`. Carries the Python-aware encoding
+/// hooks for physical-layer types (`ExecutionPlan`, `PhysicalExpr`)
+/// and delegates the rest to `inner`.
+///
+/// The `PhysicalExtensionCodec` trait has its own `try_encode_udf`
+/// / `try_decode_udf` pair distinct from the logical one, so a
+/// `ScalarUDF` referenced inside a physical plan needs Python-aware
+/// encoding on this layer too — otherwise a plan with a Python UDF
+/// would round-trip at the logical level but break at the physical
+/// level. Both layers reuse the shared payload framing
+/// ([`PY_SCALAR_UDF_MAGIC`] et al.) so the wire format is identical.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
