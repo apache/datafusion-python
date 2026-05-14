@@ -15,12 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Inter-process communication helpers for distributing DataFusion expressions.
+"""Worker-side setup for distributing DataFusion expressions.
 
-This module provides a worker-scoped :class:`SessionContext` slot that
-:meth:`Expr.__reduce__` consults when unpickling expressions across process
-boundaries. Set the worker context once per worker process (typically from a
-``multiprocessing.Pool`` initializer or a Ray actor ``__init__``):
+When a :class:`Expr` is shipped to a worker process (e.g. through
+:func:`multiprocessing.Pool` or a Ray actor), the worker reconstructs the
+expression against a :class:`SessionContext`. If the expression references
+aggregate UDFs, window UDFs, table providers, or UDFs imported via the FFI
+capsule protocol — anything the worker would otherwise resolve from its
+registered functions — install a configured :class:`SessionContext` once
+per worker:
 
 >>> # doctest: +SKIP
 >>> from datafusion import SessionContext
@@ -28,15 +31,13 @@ boundaries. Set the worker context once per worker process (typically from a
 >>>
 >>> def init_worker():
 ...     ctx = SessionContext()
-...     # register Rust-backed UDFs / aggregates / window functions here
+...     ctx.register_udaf(my_aggregate)
 ...     set_worker_ctx(ctx)
 
-Python scalar UDFs do not need pre-registration: their definitions
-travel inside the pickled expression and are reconstructed on the
-receiver automatically. The worker context is only needed when the
-expression references aggregate UDFs, window UDFs, table providers,
-or UDFs imported via the FFI capsule protocol — anything the
-receiver would otherwise resolve from its registered functions.
+Built-in functions and Python scalar UDFs travel inside the shipped
+expression itself and do not need pre-registration on the worker.
+
+See :doc:`/user-guide/io/distributing_expressions` for the full pattern.
 """
 
 from __future__ import annotations
@@ -59,25 +60,30 @@ _local = threading.local()
 
 
 def set_worker_ctx(ctx: SessionContext) -> None:
-    """Register the receiver :class:`SessionContext` for this worker.
+    """Install this worker's :class:`SessionContext` for shipped expressions.
 
-    Call once per worker process — typically from a ``Pool`` initializer or a
-    Ray actor ``__init__``. Idempotent: overwrites any previous value.
-
-    The worker context is stored in a thread-local slot, so each thread within
-    a worker can install its own context independently.
+    Call once per worker — typically from a ``multiprocessing.Pool``
+    initializer or a Ray actor ``__init__``. Idempotent: overwrites any
+    previous value. Stored in a thread-local slot, so each thread within a
+    worker may install its own context independently.
     """
     _local.ctx = ctx
 
 
 def clear_worker_ctx() -> None:
-    """Remove the worker context, restoring fresh-context fallback behavior."""
+    """Remove this worker's installed :class:`SessionContext`.
+
+    After clearing, expressions reconstructed in this worker fall back to a
+    fresh empty :class:`SessionContext` — adequate for built-ins and Python
+    scalar UDFs, but anything that travels by name only (aggregate UDFs,
+    window UDFs, FFI UDFs) will fail to resolve.
+    """
     if hasattr(_local, "ctx"):
         del _local.ctx
 
 
 def get_worker_ctx() -> SessionContext | None:
-    """Return the worker context if set, else ``None``."""
+    """Return this worker's installed :class:`SessionContext`, or ``None``."""
     return getattr(_local, "ctx", None)
 
 

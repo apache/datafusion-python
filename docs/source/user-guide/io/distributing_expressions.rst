@@ -18,19 +18,18 @@
 Distributing expressions across processes
 =========================================
 
-DataFusion expressions (:py:class:`~datafusion.Expr`) can be serialized and
-shipped across process boundaries — useful for distributing work over a
-``multiprocessing.Pool``, a Ray actor pool, or any framework that supports a
-per-worker initialization hook.
+A common pattern is to build a DataFusion expression
+(:py:class:`~datafusion.Expr`) in a driver process, hand it to a pool of
+worker processes (``multiprocessing.Pool``, a Ray actor pool, or any other
+framework with a per-worker initialization hook), and have each worker
+evaluate the expression against its own slice of data.
 
-Pickle support
---------------
+DataFusion expressions support this directly: they can be sent through
+:py:mod:`pickle` like any other Python object. Python scalar UDFs ride along
+inside the pickled bytes — the receiver does not need to pre-register them.
 
-:py:class:`~datafusion.Expr` implements the pickle protocol directly. Call
-:py:func:`pickle.dumps` on an expression and ship the bytes; the receiver
-calls :py:func:`pickle.loads`. Python *scalar UDFs* are cloudpickled into the
-proto wire format by a Rust-side codec (``PythonUDFCodec``), so the blob is
-self-contained — the receiver does not need to pre-register the UDF.
+Basic worker-pool example
+-------------------------
 
 .. code-block:: python
 
@@ -38,20 +37,16 @@ self-contained — the receiver does not need to pre-register the UDF.
     import pickle
 
     import pyarrow as pa
-    from datafusion import SessionContext, col, lit, udf
+    from datafusion import SessionContext, col, udf
 
-    def init_worker():
-        # Optional: install a worker context for aggregate / window UDFs,
-        # table providers, or Rust-side function registrations. Not needed
-        # for built-ins or Python scalar UDFs.
-        pass
 
     def evaluate(blob_and_batch):
         blob, batch = blob_and_batch
-        expr = pickle.loads(blob)
+        expr = pickle.loads(blob)  # Python scalar UDFs ride along inline.
         ctx = SessionContext()
         df = ctx.from_pydict({"a": batch})
         return df.with_column("result", expr).select("result").to_pydict()["result"]
+
 
     if __name__ == "__main__":
         double = udf(
@@ -68,74 +63,92 @@ self-contained — the receiver does not need to pre-register the UDF.
             )
         print(results)  # [[2, 4, 6], [20, 40, 60]]
 
-Worker-scoped context
----------------------
 
-For references the codec cannot inline — aggregate UDFs, window UDFs, FFI
-capsule UDFs, or anything resolved through the
-:class:`SessionContext`'s function registry — set a worker-scoped context
-once per process using :py:func:`datafusion.ipc.set_worker_ctx`:
+What travels with the expression
+--------------------------------
+
+* **Built-in functions** (``abs``, ``length``, arithmetic, comparisons, etc.)
+  — fully portable. Worker needs nothing pre-registered.
+* **Python scalar UDFs** (defined with :py:func:`datafusion.udf`) — fully
+  portable. The callable and its signature travel inside the pickled bytes
+  and are reconstructed on the worker automatically.
+* **Aggregate UDFs**, **window UDFs**, **UDFs imported via the FFI capsule
+  protocol** — travel **by name only**. The worker must already have a
+  matching registration on its :py:class:`SessionContext`. Without that
+  registration, evaluation raises an error.
+
+Registering shared UDFs on workers
+----------------------------------
+
+When an expression references something that travels by name only (aggregate
+UDF, window UDF, FFI UDF), set up the worker's :py:class:`SessionContext`
+once per process and install it as the *worker context*:
 
 .. code-block:: python
 
     from datafusion import SessionContext
     from datafusion.ipc import set_worker_ctx
 
+
     def init_worker():
         ctx = SessionContext()
-        ctx.register_udaf(my_aggregate)  # if needed
+        ctx.register_udaf(my_aggregate)
         set_worker_ctx(ctx)
+
 
     with mp.get_context("forkserver").Pool(
         processes=4, initializer=init_worker
     ) as pool:
         ...
 
-Without a worker context, unpickling falls back to a fresh
-:py:class:`SessionContext`. Built-in functions resolve; Python scalar UDFs
-ride along inside the blob via the codec. References to aggregate / window
-UDFs or other registry-only entries raise an informative error if not
-registered on the worker.
+Inside a worker, expressions reconstructed by :py:func:`pickle.loads` resolve
+their by-name references against the installed worker context. If no worker
+context is installed, a fresh empty :py:class:`SessionContext` is used —
+fine for expressions that only reference built-ins and Python scalar UDFs,
+but anything by-name-only will fail to resolve.
 
 Python 3.14 default change
 --------------------------
 
 Python 3.14 changed the POSIX default start method for
-:py:mod:`multiprocessing` from ``fork`` to ``forkserver``. With ``fork``, a
-context set in the parent was visible in workers via copy-on-write; with
-``forkserver`` and ``spawn`` it is not. The codec + worker-init pattern works
-on every start method — prefer it over relying on inherited state.
+:py:mod:`multiprocessing` from ``fork`` to ``forkserver``. With ``fork``, any
+state set in the parent was visible in workers via copy-on-write; with
+``forkserver`` and ``spawn`` it is not. The
+:py:func:`~datafusion.ipc.set_worker_ctx` pattern works on every start
+method — prefer it over relying on inherited state.
 
-Trade-offs of inline UDFs
--------------------------
+Practical considerations
+------------------------
 
-* **Blob size** — cloudpickled callables add bytes per blob. A trivial
-  built-in expression is ~20 bytes; an expression referencing a Python scalar
-  UDF is hundreds of bytes (the cloudpickled callable + signature). Pre-register
-  shared UDFs on workers via :py:func:`~datafusion.ipc.set_worker_ctx` when
-  the same UDF is shipped many times and you want to avoid the overhead.
-* **Closure capture** — cloudpickle captures closure state. Surprises are
-  possible if the UDF closes over large objects, module-level mutable state,
-  or non-portable file paths.
-* **FFI scalar UDFs cannot be inlined** — PyCapsule-backed UDFs have no
-  Python callable to cloudpickle. The codec leaves their ``fun_definition``
-  empty; the receiver must have a matching registration.
-* **Aggregate and window UDFs cannot be inlined yet** — their Python state
-  is held inside opaque factory closures on the Rust side. Pre-register on
-  the worker.
+* **Pickled size scales with what travels inline.** A pickled expression of
+  just built-ins is small (tens of bytes). An expression carrying a Python
+  scalar UDF is hundreds of bytes (the callable and its signature). When the
+  same UDF is shipped many times, pre-registering it on each worker via
+  :py:func:`~datafusion.ipc.set_worker_ctx` and referring to it by name
+  cuts the per-blob overhead.
+* **Closure capture.** When a Python scalar UDF closes over surrounding
+  state — local variables, module-level objects, file paths — that state
+  is captured at pickling time. Surprises are possible if the captured
+  state is large, mutable, or not portable to the worker's environment.
+* **Aggregate and window UDFs always travel by name.** Their Python state
+  is held inside opaque factory closures that cannot be reconstructed from
+  bytes alone. Use :py:func:`~datafusion.ipc.set_worker_ctx` to register
+  them on each worker.
 
 Security
 --------
 
 .. warning::
 
-   Pickle blobs containing inlined UDFs deserialize via :py:mod:`cloudpickle`,
-   which executes arbitrary code on the receiver. Only :py:func:`pickle.loads`
-   blobs from trusted sources. For untrusted-source workflows, restrict the
-   sender to built-in functions and pre-registered Rust-side UDFs.
+   Reconstructing an expression containing a Python scalar UDF executes
+   arbitrary Python code on the receiver. Only :py:func:`pickle.loads`
+   expressions from trusted sources. For untrusted-source workflows,
+   restrict senders to built-in functions and pre-registered Rust-side
+   UDFs, and never feed externally supplied bytes through
+   :py:func:`pickle.loads`.
 
 See also
 --------
 
-* :py:mod:`datafusion.ipc` — module-level API reference.
+* :py:mod:`datafusion.ipc` — worker context API.
 * ``examples/ray_pickle_expr.py`` — runnable Ray actor example.

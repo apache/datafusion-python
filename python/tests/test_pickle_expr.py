@@ -17,10 +17,11 @@
 
 """In-process pickle round-trip tests for :class:`Expr`.
 
-The Rust-side ``PythonUDFCodec`` cloudpickles Python scalar UDF callables
-directly into the proto wire format, so pickle blobs are self-contained.
-The worker context (:mod:`datafusion.ipc`) is only needed for references
-the codec can't inline — aggregate UDFs, window UDFs, FFI capsule UDFs.
+Built-in functions and Python scalar UDFs travel with the pickled
+expression and do not need worker-side pre-registration. The worker
+context (:mod:`datafusion.ipc`) is only consulted for references that
+travel by name — aggregate UDFs, window UDFs, UDFs imported via the FFI
+capsule protocol.
 
 Cross-process tests live in ``test_pickle_multiprocessing.py``.
 """

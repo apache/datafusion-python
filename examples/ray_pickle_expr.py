@@ -17,13 +17,11 @@
 
 """Distribute DataFusion expressions to Ray actors.
 
-This example shows the worker-init pattern from the user guide adapted to
-Ray's actor model: each actor builds its own :class:`SessionContext`.
-Python scalar UDFs travel inside the pickle blob via the Rust-side
-``PythonUDFCodec`` — no actor-side pre-registration is required. The
-worker context (set via :func:`datafusion.ipc.set_worker_ctx`) is still
-useful for aggregate/window UDFs or other registry-only entries; we set
-one here to show the pattern.
+Build an expression in the driver, ship it to a pool of Ray actors, and have
+each actor evaluate it against its own slice of data. Each actor sets up
+its own :class:`SessionContext` once in `__init__` and registers any UDFs
+it needs to resolve by name. Python scalar UDFs travel with the shipped
+expression and need no actor-side pre-registration.
 
 Prerequisites:
     pip install ray
@@ -58,8 +56,9 @@ class DataFusionWorker:
     def __init__(self) -> None:
         ctx = SessionContext()
         ctx.register_udf(_build_double_udf())
-        # The worker context is what Expr.__setstate__ consults when
-        # pickled expressions arrive at this actor.
+        # Install the actor's SessionContext as its worker context;
+        # expressions reconstructed in this actor will resolve their
+        # by-name references against it.
         set_worker_ctx(ctx)
         self._ctx = ctx
 

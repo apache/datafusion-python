@@ -434,30 +434,32 @@ class Expr:  # noqa: PLW1641
         return self.expr.variant_name()
 
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
-        """Serialize this expression to protobuf bytes.
+        """Serialize this expression to bytes for shipping to another process.
 
-        Python scalar UDFs are inlined into the returned bytes — the
-        receiver does not need to pre-register them. Aggregate UDFs,
-        window UDFs, and UDFs imported via the FFI capsule protocol
-        are stored by name only; the receiver must have them
-        registered.
+        Use this — or :func:`pickle.dumps` — to send an expression to a
+        worker process for distributed evaluation.
 
-        When ``ctx`` is supplied, encoding also routes through the
-        session's installed codec stack.
+        Built-in functions and Python scalar UDFs travel inside the
+        returned bytes; the worker does not need to pre-register them.
+        Aggregate UDFs, window UDFs, and UDFs imported via the FFI
+        capsule protocol travel by name only and must be registered on
+        the worker. See :doc:`/user-guide/io/distributing_expressions`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return bytes(self.expr.to_bytes(ctx_arg))
 
     @classmethod
     def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
-        """Decode an expression from serialized protobuf bytes.
+        """Reconstruct an expression from serialized bytes.
 
-        ``ctx`` is the receiver :class:`SessionContext` used to resolve
-        function references not inlined by the codec (aggregate UDFs,
-        window UDFs, FFI UDFs). When ``ctx`` is ``None`` the worker
-        context set via :func:`datafusion.ipc.set_worker_ctx` is
-        consulted; if no worker context is set, a fresh
-        :class:`SessionContext` is used.
+        Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
+        ``ctx`` is the :class:`SessionContext` used to resolve any
+        function references that travel by name — aggregate UDFs, window
+        UDFs, FFI UDFs. When ``ctx`` is ``None`` the worker context
+        installed via :func:`datafusion.ipc.set_worker_ctx` is consulted;
+        if no worker context is installed, a fresh
+        :class:`SessionContext` is used (sufficient for built-ins and
+        Python scalar UDFs).
         """
         from datafusion.ipc import _resolve_ctx
 
@@ -467,14 +469,12 @@ class Expr:  # noqa: PLW1641
     def __reduce__(self) -> tuple:
         """Pickle protocol hook.
 
-        Python scalar UDFs referenced by the expression are inlined
-        into the pickle blob, so the receiver does not need to
-        pre-register them. On unpickle the bytes are decoded against
-        the worker context set via
-        :func:`datafusion.ipc.set_worker_ctx` (or a fresh
-        :class:`SessionContext` if none) for any registry-resolved
-        references — aggregate UDFs, window UDFs, UDFs imported via
-        the FFI capsule protocol.
+        Lets expressions be shipped to worker processes via
+        :func:`pickle.dumps` / :func:`pickle.loads`. The worker's
+        :class:`SessionContext` for resolving by-name references is
+        looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
+        back to a fresh empty :class:`SessionContext` if none has been
+        installed on the worker.
         """
         return (Expr._reconstruct, (self.to_bytes(),))
 

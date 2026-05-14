@@ -18,11 +18,11 @@
 """Cross-process pickle tests for :class:`Expr`.
 
 Workers run with each :mod:`multiprocessing` start method (``fork``,
-``forkserver``, ``spawn``). Python scalar UDFs travel inside the proto blob
-via the Rust-side ``PythonUDFCodec`` — no worker-side pre-registration
-needed. Worker-side helpers live in ``_pickle_multiprocessing_helpers`` —
-the underscore prefix avoids pytest collection so the module imports under
-its real name in worker subprocesses.
+``forkserver``, ``spawn``). Python scalar UDFs travel with the pickled
+expression and need no worker-side pre-registration. Worker-side helpers
+live in ``_pickle_multiprocessing_helpers`` — the underscore prefix
+avoids pytest collection so the module imports under its real name in
+worker subprocesses.
 """
 
 from __future__ import annotations

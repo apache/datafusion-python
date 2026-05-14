@@ -46,7 +46,7 @@ Here is a direct link to the file used in the examples:
 
 ### Distributing DataFusion expressions
 
-- [Pickle expressions and send them to Ray actors](./ray_pickle_expr.py)
+- [Distribute expression evaluation across Ray actors](./ray_pickle_expr.py)
 
 ### Substrait Support
 
