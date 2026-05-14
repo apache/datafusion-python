@@ -24,11 +24,15 @@ worker processes (``multiprocessing.Pool``, a Ray actor pool, or any other
 framework with a per-worker initialization hook), and have each worker
 evaluate the expression against its own slice of data.
 
-DataFusion expressions support this directly: they can be sent through
-Python's standard `pickle <https://docs.python.org/3/library/pickle.html>`_
-module like any other Python object. Python UDFs — scalar, aggregate, and
-window — travel inside the pickled bytes; the receiver does not need to
-pre-register them.
+DataFusion expressions support this directly: pass one to a worker
+process and Python's standard
+`pickle <https://docs.python.org/3/library/pickle.html>`_ machinery
+serializes it transparently — the same machinery
+:py:meth:`multiprocessing.pool.Pool.map`, Ray's
+``@ray.remote``, and similar libraries already use to ship function
+arguments. Python UDFs — scalar, aggregate, and window — travel inside
+the serialized expression; the receiver does not need to pre-register
+them.
 
 Basic worker-pool example
 -------------------------
@@ -36,15 +40,14 @@ Basic worker-pool example
 .. code-block:: python
 
     import multiprocessing as mp
-    import pickle
 
     import pyarrow as pa
     from datafusion import SessionContext, col, udf
 
 
-    def evaluate(blob_and_batch):
-        blob, batch = blob_and_batch
-        expr = pickle.loads(blob)  # Python UDFs travel inside the bytes.
+    def evaluate(expr, batch):
+        # `expr` arrived here via the pool's automatic pickling —
+        # no manual serialization needed in user code.
         ctx = SessionContext()
         df = ctx.from_pydict({"a": batch})
         return df.with_column("result", expr).select("result").to_pydict()["result"]
@@ -55,13 +58,13 @@ Basic worker-pool example
             lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
             [pa.int64()], pa.int64(), volatility="immutable", name="double",
         )
-        blob = pickle.dumps(double(col("a")))
+        expr = double(col("a"))
 
         mp_ctx = mp.get_context("forkserver")
         with mp_ctx.Pool(processes=4) as pool:
-            results = pool.map(
+            results = pool.starmap(
                 evaluate,
-                [(blob, [1, 2, 3]), (blob, [10, 20, 30])],
+                [(expr, [1, 2, 3]), (expr, [10, 20, 30])],
             )
         print(results)  # [[2, 4, 6], [20, 40, 60]]
 
@@ -108,8 +111,8 @@ must resolve from its registered functions), set up the worker's
     ) as pool:
         ...
 
-Inside a worker, expressions reconstructed by :py:func:`pickle.loads` resolve
-their by-name references against the installed worker context. If no worker
+Inside a worker, expressions arriving from the driver resolve their
+by-name references against the installed worker context. If no worker
 context is installed, a fresh empty :py:class:`SessionContext` is used —
 fine for expressions that only reference built-ins and Python UDFs, but
 FFI-capsule-backed registrations will fail to resolve.
@@ -144,10 +147,10 @@ Security
 .. warning::
 
    Reconstructing an expression containing a Python UDF executes arbitrary
-   Python code on the receiver. Only :py:func:`pickle.loads` expressions
-   from trusted sources. For untrusted-source workflows, restrict senders
-   to built-in functions and pre-registered Rust-side UDFs, and never feed
-   externally supplied bytes through :py:func:`pickle.loads`.
+   Python code on the receiver — pickle is doing the work under the hood
+   and pickle is unsafe on untrusted input. Only accept expressions from
+   trusted sources. For untrusted-source workflows, restrict senders to
+   built-in functions and pre-registered Rust-side UDFs.
 
 See also
 --------

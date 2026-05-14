@@ -30,11 +30,9 @@ Run:
     python examples/ray_pickle_expr.py
 """
 
-import pickle
-
 import pyarrow as pa
 import ray
-from datafusion import SessionContext, col, lit, udf
+from datafusion import Expr, SessionContext, col, lit, udf
 from datafusion.ipc import set_worker_ctx
 
 
@@ -62,9 +60,10 @@ class DataFusionWorker:
         set_worker_ctx(ctx)
         self._ctx = ctx
 
-    def evaluate(self, expr_blob: bytes, batch_pylist: list[int]) -> list[int]:
-        """Unpickle an Expr, run it over an in-memory batch, return results."""
-        expr = pickle.loads(expr_blob)
+    def evaluate(self, expr: Expr, batch_pylist: list[int]) -> list[int]:
+        """Run the expression against an in-memory batch."""
+        # `expr` arrived here via Ray's automatic argument serialization —
+        # no manual pickle handling needed in user code.
         df = self._ctx.from_pydict({"a": batch_pylist})
         out = df.with_column("result", expr).select("result")
         return out.to_pydict()["result"]
@@ -76,13 +75,11 @@ def main() -> None:
     sender = SessionContext()
     sender.register_udf(_build_double_udf())
     expr = _build_double_udf()(col("a")) + lit(1)
-    blob = pickle.dumps(expr)
-    print(f"pickled expression: {len(blob)} bytes")
 
     workers = [DataFusionWorker.remote() for _ in range(2)]
     batches = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]
     futures = [
-        workers[i % len(workers)].evaluate.remote(blob, batch)
+        workers[i % len(workers)].evaluate.remote(expr, batch)
         for i, batch in enumerate(batches)
     ]
     for batch, result in zip(batches, ray.get(futures), strict=True):
