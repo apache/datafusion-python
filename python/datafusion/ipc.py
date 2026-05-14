@@ -31,12 +31,12 @@ boundaries. Set the worker context once per worker process (typically from a
 ...     # register Rust-backed UDFs / aggregates / window functions here
 ...     set_worker_ctx(ctx)
 
-Python scalar UDFs do not need pre-registration: their definitions are
-cloudpickled into the proto wire format by ``PythonLogicalCodec`` and
-reconstructed on the receiver automatically. The worker context is only
-needed when the expression references aggregate / window UDFs, table
-providers, or Rust-side function registrations the receiver wouldn't
-otherwise have.
+Python scalar UDFs do not need pre-registration: their definitions
+travel inside the pickled expression and are reconstructed on the
+receiver automatically. The worker context is only needed when the
+expression references aggregate UDFs, window UDFs, table providers,
+or UDFs imported via the FFI capsule protocol — anything the
+receiver would otherwise resolve from its registered functions.
 """
 
 from __future__ import annotations

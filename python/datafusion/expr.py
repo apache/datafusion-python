@@ -436,9 +436,9 @@ class Expr:  # noqa: PLW1641
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Serialize this expression to protobuf bytes.
 
-        Python scalar UDFs are cloudpickled inline by
-        :class:`PythonLogicalCodec`, so the returned blob is
-        self-contained for scalar UDFs. Aggregate / window / FFI UDFs
+        Python scalar UDFs are inlined into the returned bytes — the
+        receiver does not need to pre-register them. Aggregate UDFs,
+        window UDFs, and UDFs imported via the FFI capsule protocol
         are stored by name only; the receiver must have them
         registered.
 
@@ -467,13 +467,14 @@ class Expr:  # noqa: PLW1641
     def __reduce__(self) -> tuple:
         """Pickle protocol hook.
 
-        :class:`PythonLogicalCodec` cloudpickles referenced Python
-        scalar UDFs directly into the proto wire format, so the
-        returned blob is self-contained. On unpickle the bytes are
-        decoded against the worker context set via
+        Python scalar UDFs referenced by the expression are inlined
+        into the pickle blob, so the receiver does not need to
+        pre-register them. On unpickle the bytes are decoded against
+        the worker context set via
         :func:`datafusion.ipc.set_worker_ctx` (or a fresh
-        :class:`SessionContext` if none) for any remaining
-        registry-resolved references.
+        :class:`SessionContext` if none) for any registry-resolved
+        references — aggregate UDFs, window UDFs, UDFs imported via
+        the FFI capsule protocol.
         """
         return (Expr._reconstruct, (self.to_bytes(),))
 
