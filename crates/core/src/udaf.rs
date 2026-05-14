@@ -15,16 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::any::Any;
 use std::ptr::NonNull;
 use std::sync::Arc;
 
 use datafusion::arrow::array::ArrayRef;
-use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::datatypes::{DataType, Field, FieldRef};
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
+use datafusion::logical_expr::function::{AccumulatorArgs, StateFieldsArgs};
 use datafusion::logical_expr::{
-    Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, create_udaf,
+    Accumulator, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
 use datafusion_python_util::parse_volatility;
@@ -144,15 +146,140 @@ impl Accumulator for RustAccumulator {
     }
 }
 
-pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
-    Arc::new(move |_args| -> Result<Box<dyn Accumulator>> {
-        let accum = Python::attach(|py| {
-            accum
-                .call0(py)
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
-        })?;
-        Ok(Box::new(RustAccumulator::new(accum)))
-    })
+fn instantiate_accumulator(accum: &Py<PyAny>) -> Result<Box<dyn Accumulator>> {
+    let instance = Python::attach(|py| {
+        accum
+            .call0(py)
+            .map_err(|e| DataFusionError::Execution(format!("{e}")))
+    })?;
+    Ok(Box::new(RustAccumulator::new(instance)))
+}
+
+/// Named-struct `AggregateUDFImpl` for Python-defined aggregate UDFs.
+/// Holds the Python accumulator factory directly so the codec can
+/// downcast and cloudpickle it across process boundaries.
+#[derive(Debug)]
+pub(crate) struct PythonFunctionAggregateUDF {
+    name: String,
+    accumulator: Py<PyAny>,
+    signature: Signature,
+    return_type: DataType,
+    state_fields: Vec<FieldRef>,
+}
+
+impl PythonFunctionAggregateUDF {
+    fn new(
+        name: String,
+        accumulator: Py<PyAny>,
+        input_types: Vec<DataType>,
+        return_type: DataType,
+        state_types: Vec<DataType>,
+        volatility: Volatility,
+    ) -> Self {
+        let signature = Signature::exact(input_types, volatility);
+        let state_fields = state_types
+            .into_iter()
+            .enumerate()
+            .map(|(i, t)| Arc::new(Field::new(format!("{i}"), t, true)))
+            .collect();
+        Self {
+            name,
+            accumulator,
+            signature,
+            return_type,
+            state_fields,
+        }
+    }
+
+    /// Stored Python callable that returns a fresh accumulator instance
+    /// per partition. Consumed by the codec to cloudpickle the factory
+    /// across process boundaries.
+    pub(crate) fn accumulator(&self) -> &Py<PyAny> {
+        &self.accumulator
+    }
+
+    pub(crate) fn return_type(&self) -> &DataType {
+        &self.return_type
+    }
+
+    pub(crate) fn state_fields_ref(&self) -> &[FieldRef] {
+        &self.state_fields
+    }
+
+    pub(crate) fn from_parts(
+        name: String,
+        accumulator: Py<PyAny>,
+        input_types: Vec<DataType>,
+        return_type: DataType,
+        state_types: Vec<DataType>,
+        volatility: Volatility,
+    ) -> Self {
+        Self::new(
+            name,
+            accumulator,
+            input_types,
+            return_type,
+            state_types,
+            volatility,
+        )
+    }
+}
+
+impl Eq for PythonFunctionAggregateUDF {}
+impl PartialEq for PythonFunctionAggregateUDF {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.signature == other.signature
+            && self.return_type == other.return_type
+            && self.state_fields == other.state_fields
+            && Python::attach(|py| {
+                self.accumulator
+                    .bind(py)
+                    .eq(other.accumulator.bind(py))
+                    .unwrap_or(false)
+            })
+    }
+}
+
+impl std::hash::Hash for PythonFunctionAggregateUDF {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.signature.hash(state);
+        self.return_type.hash(state);
+        for f in &self.state_fields {
+            f.hash(state);
+        }
+        Python::attach(|py| {
+            let py_hash = self.accumulator.bind(py).hash().unwrap_or(0);
+            state.write_isize(py_hash);
+        });
+    }
+}
+
+impl AggregateUDFImpl for PythonFunctionAggregateUDF {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    fn return_type(&self, _arg_types: &[DataType]) -> Result<DataType> {
+        Ok(self.return_type.clone())
+    }
+
+    fn accumulator(&self, _acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        instantiate_accumulator(&self.accumulator)
+    }
+
+    fn state_fields(&self, _args: StateFieldsArgs) -> Result<Vec<FieldRef>> {
+        Ok(self.state_fields.clone())
+    }
 }
 
 fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
@@ -190,14 +317,15 @@ impl PyAggregateUDF {
         state_type: PyArrowType<Vec<DataType>>,
         volatility: &str,
     ) -> PyResult<Self> {
-        let function = create_udaf(
-            name,
+        let py_udf = PythonFunctionAggregateUDF::new(
+            name.to_string(),
+            accumulator,
             input_type.0,
-            Arc::new(return_type.0),
+            return_type.0,
+            state_type.0,
             parse_volatility(volatility)?,
-            to_rust_accumulator(accumulator),
-            Arc::new(state_type.0),
         );
+        let function = AggregateUDF::new_from_impl(py_udf);
         Ok(Self { function })
     }
 

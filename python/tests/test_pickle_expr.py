@@ -130,6 +130,63 @@ class TestUDFCodec:
         assert decoded.canonical_name() == e.canonical_name()
 
 
+class TestAggregateUDFCodec:
+    """Python aggregate UDFs travel inline like scalar UDFs."""
+
+    def _build_aggregate_udf(self):
+        from datafusion import udaf
+        from datafusion.user_defined import Accumulator
+
+        class CountAcc(Accumulator):
+            def __init__(self):
+                self._count = 0
+
+            def state(self):
+                return [pa.scalar(self._count, type=pa.int64())]
+
+            def update(self, values):
+                self._count += len(values)
+
+            def merge(self, states):
+                for s in states:
+                    self._count += s[0].as_py()
+
+            def evaluate(self):
+                return pa.scalar(self._count, type=pa.int64())
+
+        return udaf(
+            CountAcc,
+            [pa.int64()],
+            pa.int64(),
+            [pa.int64()],
+            "immutable",
+            name="count_all",
+        )
+
+    def test_agg_udf_self_contained_blob(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        assert len(blob) > 200
+
+    def test_agg_udf_decodes_into_fresh_ctx(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = e.to_bytes()
+        fresh = SessionContext()
+        from datafusion import Expr
+
+        decoded = Expr.from_bytes(blob, ctx=fresh)
+        assert "count_all" in decoded.canonical_name()
+
+    def test_agg_udf_decodes_via_pickle_with_no_worker_ctx(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        decoded = pickle.loads(blob)
+        assert "count_all" in decoded.canonical_name()
+
+
 class TestWindowUDFCodec:
     """Python window UDFs travel inline like scalar UDFs."""
 

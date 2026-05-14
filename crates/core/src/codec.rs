@@ -85,8 +85,8 @@ use datafusion::datasource::TableProvider;
 use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
-    AggregateUDF, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, TypeSignature, WindowUDF,
-    WindowUDFImpl,
+    AggregateUDF, AggregateUDFImpl, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl,
+    TypeSignature, WindowUDF, WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
@@ -95,6 +95,7 @@ use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExt
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyTuple};
 
+use crate::udaf::PythonFunctionAggregateUDF;
 use crate::udf::PythonFunctionScalarUDF;
 use crate::udwf::MultiColumnWindowUDF;
 
@@ -103,6 +104,11 @@ use crate::udwf::MultiColumnWindowUDF;
 /// input schema, return field, volatility). Defined once here so
 /// the encoder and decoder cannot drift.
 pub(crate) const PY_SCALAR_UDF_MAGIC: &[u8] = b"DFPYUDF1";
+
+/// Wire-format prefix for an inlined Python aggregate UDF
+/// (cloudpickled tuple of name, accumulator factory, input schema,
+/// return type, state types schema, volatility).
+pub(crate) const PY_AGG_UDF_MAGIC: &[u8] = b"DFPYUDA1";
 
 /// Wire-format prefix for an inlined Python window UDF (cloudpickled
 /// tuple of name, evaluator factory, input schema, return type,
@@ -205,10 +211,16 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_agg_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        if let Some(udaf) = try_decode_python_agg_udf(buf)? {
+            return Ok(udaf);
+        }
         self.inner.try_decode_udaf(name, buf)
     }
 
@@ -301,10 +313,16 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_agg_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        if let Some(udaf) = try_decode_python_agg_udf(buf)? {
+            return Ok(udaf);
+        }
         self.inner.try_decode_udaf(name, buf)
     }
 
@@ -610,6 +628,152 @@ fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<MultiCol
         evaluator,
         input_types,
         return_type,
+        volatility,
+    ))
+}
+
+// =============================================================================
+// Shared Python aggregate UDF encode / decode helpers
+//
+// Cloudpickle tuple shape: `(name, accumulator_factory, input_schema_bytes,
+// return_type_bytes, state_schema_bytes, volatility_str)`. The accumulator
+// factory is the Python callable that produces a new accumulator instance
+// per partition.
+// =============================================================================
+
+pub(crate) fn try_encode_python_agg_udf(node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<bool> {
+    let Some(py_udf) = node
+        .inner()
+        .as_any()
+        .downcast_ref::<PythonFunctionAggregateUDF>()
+    else {
+        return Ok(false);
+    };
+
+    Python::attach(|py| -> Result<bool> {
+        let bytes = encode_python_agg_udf(py, py_udf)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        buf.extend_from_slice(PY_AGG_UDF_MAGIC);
+        buf.extend_from_slice(&bytes);
+        Ok(true)
+    })
+}
+
+pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
+    if buf.is_empty() || !buf.starts_with(PY_AGG_UDF_MAGIC) {
+        return Ok(None);
+    }
+    let payload = &buf[PY_AGG_UDF_MAGIC.len()..];
+
+    Python::attach(|py| -> Result<Option<Arc<AggregateUDF>>> {
+        let udf = decode_python_agg_udf(py, payload)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        Ok(Some(Arc::new(AggregateUDF::new_from_impl(udf))))
+    })
+}
+
+fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> PyResult<Vec<u8>> {
+    let cloudpickle = py.import("cloudpickle")?;
+
+    let signature = AggregateUDFImpl::signature(udf);
+    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
+        TypeSignature::Exact(types) => types.clone(),
+        other => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "PythonFunctionAggregateUDF expected Signature::Exact, got {other:?}"
+            )));
+        }
+    };
+    let input_fields: Vec<Field> = input_dtypes
+        .into_iter()
+        .enumerate()
+        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
+        .collect();
+    let input_schema_bytes = schema_to_ipc_bytes(&Schema::new(input_fields))
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    let return_schema = Schema::new(vec![Field::new("result", udf.return_type().clone(), true)]);
+    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    let state_fields: Vec<Field> = udf
+        .state_fields_ref()
+        .iter()
+        .map(|f| f.as_ref().clone())
+        .collect();
+    let state_schema_bytes = schema_to_ipc_bytes(&Schema::new(state_fields))
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    let volatility = format!("{:?}", signature.volatility).to_lowercase();
+
+    let payload = PyTuple::new(
+        py,
+        [
+            AggregateUDFImpl::name(udf).into_pyobject(py)?.into_any(),
+            udf.accumulator().bind(py).clone().into_any(),
+            PyBytes::new(py, &input_schema_bytes).into_any(),
+            PyBytes::new(py, &return_schema_bytes).into_any(),
+            PyBytes::new(py, &state_schema_bytes).into_any(),
+            volatility.into_pyobject(py)?.into_any(),
+        ],
+    )?;
+
+    let blob = cloudpickle.call_method1("dumps", (payload,))?;
+    blob.extract::<Vec<u8>>()
+}
+
+fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionAggregateUDF> {
+    let cloudpickle = py.import("cloudpickle")?;
+
+    let tuple = cloudpickle
+        .call_method1("loads", (PyBytes::new(py, payload),))?
+        .cast_into::<PyTuple>()?;
+
+    let name: String = tuple.get_item(0)?.extract()?;
+    let accumulator: Py<PyAny> = tuple.get_item(1)?.unbind();
+    let input_schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
+    let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
+    let state_schema_bytes: Vec<u8> = tuple.get_item(4)?.extract()?;
+    let volatility_str: String = tuple.get_item(5)?.extract()?;
+
+    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let input_types: Vec<arrow::datatypes::DataType> = input_schema
+        .fields()
+        .iter()
+        .map(|f| f.data_type().clone())
+        .collect();
+
+    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let return_type = return_schema
+        .fields()
+        .first()
+        .ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "PythonFunctionAggregateUDF return schema must contain exactly one field",
+            )
+        })?
+        .data_type()
+        .clone();
+
+    let state_schema = schema_from_ipc_bytes(&state_schema_bytes)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let state_types: Vec<arrow::datatypes::DataType> = state_schema
+        .fields()
+        .iter()
+        .map(|f| f.data_type().clone())
+        .collect();
+
+    let volatility = datafusion_python_util::parse_volatility(&volatility_str)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    Ok(PythonFunctionAggregateUDF::from_parts(
+        name,
+        accumulator,
+        input_types,
+        return_type,
+        state_types,
         volatility,
     ))
 }
