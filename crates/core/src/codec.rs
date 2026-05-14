@@ -80,8 +80,10 @@ use std::sync::Arc;
 use arrow::datatypes::SchemaRef;
 use datafusion::common::{Result, TableReference};
 use datafusion::datasource::TableProvider;
+use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
-use datafusion::logical_expr::{Extension, LogicalPlan, ScalarUDF};
+use datafusion::logical_expr::{AggregateUDF, Extension, LogicalPlan, ScalarUDF, WindowUDF};
+use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
@@ -158,12 +160,44 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         self.inner.try_encode_table_provider(table_ref, node, buf)
     }
 
+    fn try_decode_file_format(
+        &self,
+        buf: &[u8],
+        ctx: &TaskContext,
+    ) -> Result<Arc<dyn FileFormatFactory>> {
+        self.inner.try_decode_file_format(buf, ctx)
+    }
+
+    fn try_encode_file_format(
+        &self,
+        buf: &mut Vec<u8>,
+        node: Arc<dyn FileFormatFactory>,
+    ) -> Result<()> {
+        self.inner.try_encode_file_format(buf, node)
+    }
+
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
         self.inner.try_encode_udf(node, buf)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
         self.inner.try_decode_udf(name, buf)
+    }
+
+    fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        self.inner.try_encode_udaf(node, buf)
+    }
+
+    fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        self.inner.try_decode_udaf(name, buf)
+    }
+
+    fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        self.inner.try_encode_udwf(node, buf)
+    }
+
+    fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        self.inner.try_decode_udwf(name, buf)
     }
 }
 
@@ -220,5 +254,33 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
         self.inner.try_decode_udf(name, buf)
+    }
+
+    fn try_encode_expr(&self, node: &Arc<dyn PhysicalExpr>, buf: &mut Vec<u8>) -> Result<()> {
+        self.inner.try_encode_expr(node, buf)
+    }
+
+    fn try_decode_expr(
+        &self,
+        buf: &[u8],
+        inputs: &[Arc<dyn PhysicalExpr>],
+    ) -> Result<Arc<dyn PhysicalExpr>> {
+        self.inner.try_decode_expr(buf, inputs)
+    }
+
+    fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        self.inner.try_encode_udaf(node, buf)
+    }
+
+    fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        self.inner.try_decode_udaf(name, buf)
+    }
+
+    fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        self.inner.try_encode_udwf(node, buf)
+    }
+
+    fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        self.inner.try_decode_udwf(name, buf)
     }
 }
