@@ -41,10 +41,16 @@ def test_ffi_physical_codec_install_and_export():
 
 
 def test_ffi_physical_codec_consulted_on_udf_encode():
-    """Serializing an ExecutionPlan that references an FFI-imported
-    scalar UDF routes `try_encode_udf` through the installed physical
-    codec — PythonPhysicalCodec delegates non-Python UDFs to the inner
-    codec."""
+    """Serializing through ctx.physical_codec() routes try_encode_udf to
+    the user-installed FFI codec.
+
+    Mirror of the logical-side dispatch test: verifies
+    `PyExecutionPlan.to_bytes -> session.physical_codec ->
+    PythonPhysicalCodec -> FFI_PhysicalExtensionCodec -> user impl`
+    forwards correctly. Does not test Python-UDF-specific dispatch —
+    PythonPhysicalCodec currently delegates all UDF encoding to its
+    inner codec unconditionally.
+    """
     ctx, codec = _setup_session_with_codec()
     df = ctx.sql("SELECT abs(a) AS x FROM t")
     plan = df.execution_plan()

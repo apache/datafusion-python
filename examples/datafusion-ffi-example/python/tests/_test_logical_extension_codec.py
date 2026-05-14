@@ -41,9 +41,20 @@ def test_ffi_logical_codec_install_and_export():
 
 
 def test_ffi_logical_codec_consulted_on_udf_encode():
-    """Serializing a plan that references an FFI-imported scalar UDF
-    routes through the installed codec's `try_encode_udf` path —
-    PythonLogicalCodec delegates non-Python UDFs to the inner codec."""
+    """Serializing through ctx.logical_codec() routes try_encode_udf to
+    the user-installed FFI codec.
+
+    Verifies the dispatch chain
+    `PyLogicalPlan.to_bytes -> session.logical_codec ->
+    PythonLogicalCodec -> FFI_LogicalExtensionCodec -> user impl`
+    is wired correctly. The user codec's atomic counter increments
+    after a serialization pass, proving every hop forwards.
+
+    Does not test any Python-UDF-specific dispatch — PythonLogicalCodec
+    currently delegates all UDF encoding to its inner codec
+    unconditionally. Python-vs-other branching lands when in-band
+    scalar UDF encoding is added.
+    """
     ctx, codec = _setup_session_with_codec()
     df = ctx.sql("SELECT abs(-1) AS x")
     plan = df.logical_plan()
