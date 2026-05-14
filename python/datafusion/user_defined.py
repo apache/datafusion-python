@@ -132,6 +132,7 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
+        self._name = name
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
@@ -140,6 +141,11 @@ class ScalarUDF:
         self._udf = df_internal.ScalarUDF(
             name, func, input_fields, return_field, str(volatility)
         )
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDF."""
+        return self._name
 
     def __repr__(self) -> str:
         """Print a string representation of the Scalar UDF."""
@@ -394,6 +400,7 @@ class AggregateUDF:
         See :py:func:`udaf` for a convenience function and argument
         descriptions.
         """
+        self._name = name
         if hasattr(accumulator, "__datafusion_aggregate_udf__"):
             self._udaf = df_internal.AggregateUDF.from_pycapsule(accumulator)
             return
@@ -417,6 +424,11 @@ class AggregateUDF:
             state_type,
             str(volatility),
         )
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDAF."""
+        return self._name
 
     def __repr__(self) -> str:
         """Print a string representation of the Aggregate UDF."""
@@ -821,12 +833,18 @@ class WindowUDF:
         See :py:func:`udwf` for a convenience function and argument
         descriptions.
         """
+        self._name = name
         if hasattr(func, "__datafusion_window_udf__"):
             self._udwf = df_internal.WindowUDF.from_pycapsule(func)
             return
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDWF."""
+        return self._name
 
     def __repr__(self) -> str:
         """Print a string representation of the Window UDF."""
