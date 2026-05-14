@@ -78,11 +78,26 @@ impl PyExecutionPlan {
         format!("{}", d.indent(false))
     }
 
-    pub fn to_bytes<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = PythonPhysicalCodec::default();
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &'py self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        // Route through the session's physical codec when supplied so
+        // user FFI codecs registered via
+        // `with_physical_extension_codec` see the encode path.
+        let default_codec;
+        let codec: &dyn datafusion_proto::physical_plan::PhysicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.physical_codec().as_ref(),
+            None => {
+                default_codec = PythonPhysicalCodec::default();
+                &default_codec
+            }
+        };
         let proto = datafusion_proto::protobuf::PhysicalPlanNode::try_from_physical_plan(
             self.plan.clone(),
-            &codec,
+            codec,
         )?;
 
         let bytes = proto.encode_to_vec();
@@ -115,7 +130,7 @@ impl PyExecutionPlan {
             py,
             "PyExecutionPlan.to_proto is deprecated; use to_bytes instead",
         )?;
-        self.to_bytes(py)
+        self.to_bytes(py, None)
     }
 
     /// Deprecated alias for [`Self::from_bytes`]. Will be removed in a
@@ -213,9 +228,21 @@ impl PyPhysicalExpr {
         format!("{}", self.expr)
     }
 
-    pub fn to_bytes<'py>(&self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = PythonPhysicalCodec::default();
-        let proto = serialize_physical_expr(&self.expr, &codec)?;
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        let default_codec;
+        let codec: &dyn datafusion_proto::physical_plan::PhysicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.physical_codec().as_ref(),
+            None => {
+                default_codec = PythonPhysicalCodec::default();
+                &default_codec
+            }
+        };
+        let proto = serialize_physical_expr(&self.expr, codec)?;
         let bytes = proto.encode_to_vec();
         Ok(PyBytes::new(py, &bytes))
     }

@@ -197,10 +197,28 @@ impl PyLogicalPlan {
         format!("{}", self.plan.display_graphviz())
     }
 
-    pub fn to_bytes<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = PythonLogicalCodec::default();
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &'py self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        // When the caller supplies a session, route through its
+        // installed logical codec so user FFI codecs registered via
+        // `with_logical_extension_codec` see the encode path.
+        // Otherwise fall back to a default-inner `PythonLogicalCodec`
+        // — Python scalar UDFs still inline via `DFPYUDF1`, but
+        // non-Python UDFs hit the default codec only.
+        let default_codec;
+        let codec: &dyn datafusion_proto::logical_plan::LogicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.logical_codec().as_ref(),
+            None => {
+                default_codec = PythonLogicalCodec::default();
+                &default_codec
+            }
+        };
         let proto =
-            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, &codec)?;
+            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, codec)?;
 
         let bytes = proto.encode_to_vec();
         Ok(PyBytes::new(py, &bytes))
@@ -231,7 +249,7 @@ impl PyLogicalPlan {
             py,
             "PyLogicalPlan.to_proto is deprecated; use to_bytes instead",
         )?;
-        self.to_bytes(py)
+        self.to_bytes(py, None)
     }
 
     /// Deprecated alias for [`Self::from_bytes`]. Will be removed in a

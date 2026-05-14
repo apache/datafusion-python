@@ -268,7 +268,11 @@ macro_rules! from_pycapsule {
             })?;
             $crate::validate_pycapsule(&capsule, $capsule_name)?;
 
-            let data: std::ptr::NonNull<$ffi_type> = capsule.pointer_checked(None)?.cast();
+            let expected_name = std::ffi::CString::new($capsule_name)
+                .expect("capsule name must not contain interior NUL bytes");
+            let data: std::ptr::NonNull<$ffi_type> = capsule
+                .pointer_checked(Some(expected_name.as_c_str()))?
+                .cast();
             let output_obj = unsafe { data.as_ref() };
             let output_obj: std::sync::Arc<$output_type> = output_obj.into();
 
@@ -301,7 +305,11 @@ macro_rules! try_from_pycapsule {
             })?;
             $crate::validate_pycapsule(&capsule, $capsule_name)?;
 
-            let data: std::ptr::NonNull<$ffi_type> = capsule.pointer_checked(None)?.cast();
+            let expected_name = std::ffi::CString::new($capsule_name)
+                .expect("capsule name must not contain interior NUL bytes");
+            let data: std::ptr::NonNull<$ffi_type> = capsule
+                .pointer_checked(Some(expected_name.as_c_str()))?
+                .cast();
             let output_obj = unsafe { data.as_ref() };
             let output_obj: std::sync::Arc<$output_type> = output_obj
                 .try_into()

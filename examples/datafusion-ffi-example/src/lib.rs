@@ -20,6 +20,10 @@ use pyo3::prelude::*;
 use crate::aggregate_udf::MySumUDF;
 use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider, MyCatalogProviderList};
 use crate::config::MyConfig;
+use crate::execution_plan::MyExecutionPlan;
+use crate::logical_extension_codec::MyLogicalExtensionCodec;
+use crate::physical_expr::MyPhysicalExpr;
+use crate::physical_extension_codec::MyPhysicalExtensionCodec;
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
@@ -29,6 +33,10 @@ use crate::window_udf::MyRankUDF;
 pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
 pub(crate) mod config;
+pub(crate) mod execution_plan;
+pub(crate) mod logical_extension_codec;
+pub(crate) mod physical_expr;
+pub(crate) mod physical_extension_codec;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
@@ -49,5 +57,9 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MySumUDF>()?;
     m.add_class::<MyRankUDF>()?;
     m.add_class::<MyConfig>()?;
+    m.add_class::<MyLogicalExtensionCodec>()?;
+    m.add_class::<MyPhysicalExtensionCodec>()?;
+    m.add_class::<MyExecutionPlan>()?;
+    m.add_class::<MyPhysicalExpr>()?;
     Ok(())
 }

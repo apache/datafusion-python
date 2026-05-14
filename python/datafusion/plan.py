@@ -99,13 +99,18 @@ class LogicalPlan:  # noqa: PLW1641
         """
         return LogicalPlan(df_internal.LogicalPlan.from_bytes(ctx.ctx, data))
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Convert a LogicalPlan to serialized protobuf bytes.
 
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed `LogicalExtensionCodec` so user FFI codecs (registered
+        via :py:meth:`SessionContext.with_logical_extension_codec`) see
+        the encode path. With ``ctx=None`` a default codec is used.
         Tables created in memory from record batches are currently not
         supported.
         """
-        return self._raw_plan.to_bytes()
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self._raw_plan.to_bytes(ctx_arg)
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
@@ -175,13 +180,15 @@ class ExecutionPlan:
         """
         return ExecutionPlan(df_internal.ExecutionPlan.from_bytes(ctx.ctx, data))
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Convert an ExecutionPlan into serialized protobuf bytes.
 
-        Tables created in memory from record batches are currently not
-        supported.
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed `PhysicalExtensionCodec`. Tables created in memory
+        from record batches are currently not supported.
         """
-        return self._raw_plan.to_bytes()
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self._raw_plan.to_bytes(ctx_arg)
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
@@ -412,9 +419,14 @@ class PhysicalExpr:
         """Return a string representation."""
         return repr(self._raw)
 
-    def to_bytes(self) -> bytes:
-        """Serialize the physical expression to protobuf bytes."""
-        return self._raw.to_bytes()
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
+        """Serialize the physical expression to protobuf bytes.
+
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed `PhysicalExtensionCodec`.
+        """
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self._raw.to_bytes(ctx_arg)
 
     @staticmethod
     def from_bytes(ctx: SessionContext, data: bytes, input_schema: Any) -> PhysicalExpr:

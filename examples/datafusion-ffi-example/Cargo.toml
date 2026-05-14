@@ -26,12 +26,14 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+datafusion = { workspace = true }
 datafusion-catalog = { workspace = true, default-features = false }
 datafusion-common = { workspace = true, default-features = false }
 datafusion-functions-aggregate = { workspace = true }
 datafusion-functions-window = { workspace = true }
 datafusion-expr = { workspace = true }
 datafusion-ffi = { workspace = true }
+datafusion-proto = { workspace = true }
 
 arrow = { workspace = true }
 arrow-array = { workspace = true }
