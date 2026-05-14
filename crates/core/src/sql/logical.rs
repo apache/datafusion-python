@@ -241,38 +241,6 @@ impl PyLogicalPlan {
         let plan = proto_plan.try_into_logical_plan(&ctx.ctx.task_ctx(), codec.as_ref())?;
         Ok(Self::new(plan))
     }
-
-    /// Deprecated alias for [`Self::to_bytes`]. Will be removed in a
-    /// future release.
-    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        emit_deprecation(
-            py,
-            "PyLogicalPlan.to_proto is deprecated; use to_bytes instead",
-        )?;
-        self.to_bytes(py, None)
-    }
-
-    /// Deprecated alias for [`Self::from_bytes`]. Will be removed in a
-    /// future release.
-    #[staticmethod]
-    pub fn from_proto(
-        py: Python<'_>,
-        ctx: PySessionContext,
-        proto_msg: Bound<'_, PyBytes>,
-    ) -> PyDataFusionResult<Self> {
-        emit_deprecation(
-            py,
-            "PyLogicalPlan.from_proto is deprecated; use from_bytes instead",
-        )?;
-        Self::from_bytes(ctx, proto_msg)
-    }
-}
-
-fn emit_deprecation(py: Python<'_>, msg: &str) -> PyResult<()> {
-    let warnings = py.import("warnings")?;
-    let category = py.import("builtins")?.getattr("DeprecationWarning")?;
-    warnings.call_method1("warn", (msg, category, 2))?;
-    Ok(())
 }
 
 impl From<PyLogicalPlan> for LogicalPlan {

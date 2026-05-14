@@ -398,12 +398,10 @@ impl PySessionContext {
             .with_default_features()
             .build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
-        let logical_codec = Self::default_logical_codec();
-        let physical_codec = Self::default_physical_codec();
         Ok(PySessionContext {
             ctx,
-            logical_codec,
-            physical_codec,
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
         })
     }
 
@@ -419,12 +417,10 @@ impl PySessionContext {
     #[pyo3(signature = ())]
     pub fn global_ctx() -> PyResult<Self> {
         let ctx = get_global_ctx().clone();
-        let logical_codec = Self::default_logical_codec();
-        let physical_codec = Self::default_physical_codec();
         Ok(Self {
             ctx,
-            logical_codec,
-            physical_codec,
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
         })
     }
 
@@ -1458,14 +1454,6 @@ impl PySessionContext {
         Ok(())
     }
 
-    fn default_logical_codec() -> Arc<PythonLogicalCodec> {
-        Arc::new(PythonLogicalCodec::default())
-    }
-
-    fn default_physical_codec() -> Arc<PythonPhysicalCodec> {
-        Arc::new(PythonPhysicalCodec::default())
-    }
-
     /// Session-scoped logical codec. Sibling modules read this when they
     /// need to serialize/deserialize logical-layer types (LogicalPlan,
     /// Expr) against the user-installed (or default) codec stack.
@@ -1525,14 +1513,10 @@ impl From<PySessionContext> for SessionContext {
 
 impl From<SessionContext> for PySessionContext {
     fn from(ctx: SessionContext) -> PySessionContext {
-        let ctx = Arc::new(ctx);
-        let logical_codec = Self::default_logical_codec();
-        let physical_codec = Self::default_physical_codec();
-
         PySessionContext {
-            ctx,
-            logical_codec,
-            physical_codec,
+            ctx: Arc::new(ctx),
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
         }
     }
 }

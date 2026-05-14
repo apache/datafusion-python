@@ -43,13 +43,11 @@ use crate::expr::PyExpr;
 /// This struct holds the Python written function that is a
 /// ScalarUDF.
 #[derive(Debug)]
-pub(crate) struct PythonFunctionScalarUDF {
+struct PythonFunctionScalarUDF {
     name: String,
     func: Py<PyAny>,
-    input_fields: Vec<Field>,
-    return_field: FieldRef,
     signature: Signature,
-    volatility: Volatility,
+    return_field: FieldRef,
 }
 
 impl PythonFunctionScalarUDF {
@@ -65,39 +63,9 @@ impl PythonFunctionScalarUDF {
         Self {
             name,
             func,
-            input_fields,
-            return_field: Arc::new(return_field),
             signature,
-            volatility,
+            return_field: Arc::new(return_field),
         }
-    }
-
-    /// Stored Python callable. Consumed by the codec to cloudpickle the
-    /// function body across process boundaries.
-    pub(crate) fn func(&self) -> &Py<PyAny> {
-        &self.func
-    }
-
-    pub(crate) fn input_fields(&self) -> &[Field] {
-        &self.input_fields
-    }
-
-    pub(crate) fn return_field(&self) -> &FieldRef {
-        &self.return_field
-    }
-
-    pub(crate) fn volatility(&self) -> Volatility {
-        self.volatility
-    }
-
-    pub(crate) fn from_parts(
-        name: String,
-        func: Py<PyAny>,
-        input_fields: Vec<Field>,
-        return_field: Field,
-        volatility: Volatility,
-    ) -> Self {
-        Self::new(name, func, input_fields, return_field, volatility)
     }
 }
 

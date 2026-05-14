@@ -18,7 +18,6 @@
 import datetime
 
 import datafusion._internal as df_internal
-import pyarrow as pa
 import pytest
 from datafusion import (
     ExecutionPlan,
@@ -90,22 +89,6 @@ def test_execution_plan_pycapsule_protocol(df) -> None:
     # Capsule-protocol input (forwards via __datafusion_execution_plan__).
     restored = df_internal.ExecutionPlan.from_pycapsule(plan._raw_plan)
     assert str(plan) == str(ExecutionPlan(restored))
-
-
-def test_physical_expr_to_bytes_roundtrip(ctx) -> None:
-    """Round-trip a PhysicalExpr through the session's physical codec."""
-    ctx.sql("CREATE TABLE t AS VALUES (1, 10), (2, 20), (3, 30)")
-    df = ctx.sql("SELECT column1 + column2 AS s FROM t")
-    # Exercising the plan triggers physical planning; we only need to
-    # confirm the class surface is registered here. End-to-end physical
-    # expression roundtrip is exercised by the integration suite once a
-    # public Python constructor for PhysicalExpr lands.
-    df.execution_plan()
-    schema = pa.schema([("column1", pa.int64()), ("column2", pa.int64())])
-    assert hasattr(df_internal, "PhysicalExpr")
-    assert hasattr(df_internal.PhysicalExpr, "from_bytes")
-    assert hasattr(df_internal.PhysicalExpr, "from_pycapsule")
-    assert schema is not None
 
 
 def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:

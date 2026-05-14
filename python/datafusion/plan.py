@@ -34,7 +34,6 @@ __all__ = [
     "LogicalPlan",
     "Metric",
     "MetricsSet",
-    "PhysicalExpr",
 ]
 
 
@@ -398,56 +397,3 @@ class Metric:
     def __repr__(self) -> str:
         """Return a string representation of the metric."""
         return repr(self._raw)
-
-
-class PhysicalExpr:
-    """Thin wrapper around a DataFusion physical expression.
-
-    `PhysicalExpr` is the post-planning form of an `Expr`: column
-    references are resolved to positional indices, scalar functions
-    are dispatched, and types are determined. This wrapper exposes
-    serialization + the PyCapsule protocol so physical expressions
-    can be shipped to other Rust libraries that consume
-    `FFI_PhysicalExpr`.
-    """
-
-    def __init__(self, expr: df_internal.PhysicalExpr) -> None:
-        """Internal constructor; not for end-user use."""
-        self._raw = expr
-
-    def __repr__(self) -> str:
-        """Return a string representation."""
-        return repr(self._raw)
-
-    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
-        """Serialize the physical expression to protobuf bytes.
-
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed `PhysicalExtensionCodec`.
-        """
-        ctx_arg = ctx.ctx if ctx is not None else None
-        return self._raw.to_bytes(ctx_arg)
-
-    @staticmethod
-    def from_bytes(ctx: SessionContext, data: bytes, input_schema: Any) -> PhysicalExpr:
-        """Deserialize a physical expression.
-
-        ``input_schema`` must be the pyarrow Schema the expression
-        resolves column references against.
-        """
-        return PhysicalExpr(
-            df_internal.PhysicalExpr.from_bytes(ctx.ctx, data, input_schema)
-        )
-
-    @staticmethod
-    def from_pycapsule(capsule: Any) -> PhysicalExpr:
-        """Construct a PhysicalExpr from a PyCapsule.
-
-        Accepts either a raw capsule or any object exposing
-        ``__datafusion_physical_expr__``.
-        """
-        return PhysicalExpr(df_internal.PhysicalExpr.from_pycapsule(capsule))
-
-    def __datafusion_physical_expr__(self) -> Any:
-        """Return a PyCapsule pointing at the underlying `FFI_PhysicalExpr`."""
-        return self._raw.__datafusion_physical_expr__()
