@@ -20,10 +20,10 @@
 When a :class:`Expr` is shipped to a worker process (e.g. through
 :func:`multiprocessing.Pool` or a Ray actor), the worker reconstructs the
 expression against a :class:`SessionContext`. If the expression references
-aggregate UDFs, window UDFs, table providers, or UDFs imported via the FFI
-capsule protocol — anything the worker would otherwise resolve from its
-registered functions — install a configured :class:`SessionContext` once
-per worker:
+UDFs imported via the FFI capsule protocol — or any UDF the worker would
+otherwise resolve from its registered functions rather than from inside
+the shipped expression — install a configured :class:`SessionContext`
+once per worker:
 
 >>> # doctest: +SKIP
 >>> from datafusion import SessionContext
@@ -31,11 +31,12 @@ per worker:
 >>>
 >>> def init_worker():
 ...     ctx = SessionContext()
-...     ctx.register_udaf(my_aggregate)
+...     ctx.register_udaf(my_ffi_aggregate)
 ...     set_worker_ctx(ctx)
 
-Built-in functions and Python scalar UDFs travel inside the shipped
-expression itself and do not need pre-registration on the worker.
+Built-in functions and Python UDFs (scalar, aggregate, window) travel
+inside the shipped expression itself and do not need pre-registration
+on the worker.
 
 See :doc:`/user-guide/io/distributing_expressions` for the full pattern.
 """
@@ -75,8 +76,8 @@ def clear_worker_ctx() -> None:
 
     After clearing, expressions reconstructed in this worker fall back to a
     fresh empty :class:`SessionContext` — adequate for built-ins and Python
-    scalar UDFs, but anything that travels by name only (aggregate UDFs,
-    window UDFs, FFI UDFs) will fail to resolve.
+    UDFs (scalar, aggregate, window), but anything imported via the FFI
+    capsule protocol will fail to resolve.
     """
     if hasattr(_local, "ctx"):
         del _local.ctx

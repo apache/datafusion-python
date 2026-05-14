@@ -17,11 +17,10 @@
 
 """In-process pickle round-trip tests for :class:`Expr`.
 
-Built-in functions and Python scalar UDFs travel with the pickled
-expression and do not need worker-side pre-registration. The worker
-context (:mod:`datafusion.ipc`) is only consulted for references that
-travel by name — aggregate UDFs, window UDFs, UDFs imported via the FFI
-capsule protocol.
+Built-in functions and Python UDFs (scalar, aggregate, window) travel
+with the pickled expression and do not need worker-side pre-registration.
+The worker context (:mod:`datafusion.ipc`) is only consulted for UDFs
+imported via the FFI capsule protocol.
 
 Cross-process tests live in ``test_pickle_multiprocessing.py``.
 """

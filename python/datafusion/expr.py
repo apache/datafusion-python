@@ -439,11 +439,11 @@ class Expr:  # noqa: PLW1641
         Use this — or :func:`pickle.dumps` — to send an expression to a
         worker process for distributed evaluation.
 
-        Built-in functions and Python scalar UDFs travel inside the
-        returned bytes; the worker does not need to pre-register them.
-        Aggregate UDFs, window UDFs, and UDFs imported via the FFI
-        capsule protocol travel by name only and must be registered on
-        the worker. See :doc:`/user-guide/io/distributing_expressions`.
+        Built-in functions and Python UDFs (scalar, aggregate, window)
+        travel inside the returned bytes; the worker does not need to
+        pre-register them. UDFs imported via the FFI capsule protocol
+        travel by name only and must be registered on the worker. See
+        :doc:`/user-guide/io/distributing_expressions`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return bytes(self.expr.to_bytes(ctx_arg))
@@ -470,8 +470,10 @@ class Expr:  # noqa: PLW1641
         """Pickle protocol hook.
 
         Lets expressions be shipped to worker processes via
-        :func:`pickle.dumps` / :func:`pickle.loads`. The worker's
-        :class:`SessionContext` for resolving by-name references is
+        :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
+        and Python UDFs travel inside the pickle bytes; only FFI-capsule
+        UDFs require pre-registration on the worker. The worker's
+        :class:`SessionContext` for resolving those references is
         looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
         back to a fresh empty :class:`SessionContext` if none has been
         installed on the worker.

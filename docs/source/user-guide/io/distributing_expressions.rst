@@ -69,20 +69,25 @@ What travels with the expression
 
 * **Built-in functions** (``abs``, ``length``, arithmetic, comparisons, etc.)
   — fully portable. Worker needs nothing pre-registered.
-* **Python scalar UDFs** (defined with :py:func:`datafusion.udf`) — fully
-  portable. The callable and its signature travel inside the pickled bytes
-  and are reconstructed on the worker automatically.
-* **Aggregate UDFs**, **window UDFs**, **UDFs imported via the FFI capsule
-  protocol** — travel **by name only**. The worker must already have a
-  matching registration on its :py:class:`SessionContext`. Without that
-  registration, evaluation raises an error.
+* **Python UDFs** — fully portable. The callable, its signature, and any
+  state captured in closures travel inside the pickled bytes and are
+  reconstructed on the worker automatically. Applies equally to:
+
+  * **scalar UDFs** (:py:func:`datafusion.udf`)
+  * **aggregate UDFs** (:py:func:`datafusion.udaf`)
+  * **window UDFs** (:py:func:`datafusion.udwf`)
+* **UDFs imported via the FFI capsule protocol** — travel **by name only**.
+  The worker must already have a matching registration on its
+  :py:class:`SessionContext`. Without that registration, evaluation raises
+  an error.
 
 Registering shared UDFs on workers
 ----------------------------------
 
-When an expression references something that travels by name only (aggregate
-UDF, window UDF, FFI UDF), set up the worker's :py:class:`SessionContext`
-once per process and install it as the *worker context*:
+When an expression references an FFI capsule UDF (or any UDF the worker
+must resolve from its registered functions), set up the worker's
+:py:class:`SessionContext` once per process and install it as the
+*worker context*:
 
 .. code-block:: python
 
@@ -92,7 +97,7 @@ once per process and install it as the *worker context*:
 
     def init_worker():
         ctx = SessionContext()
-        ctx.register_udaf(my_aggregate)
+        ctx.register_udaf(my_ffi_aggregate)
         set_worker_ctx(ctx)
 
 
@@ -104,8 +109,8 @@ once per process and install it as the *worker context*:
 Inside a worker, expressions reconstructed by :py:func:`pickle.loads` resolve
 their by-name references against the installed worker context. If no worker
 context is installed, a fresh empty :py:class:`SessionContext` is used —
-fine for expressions that only reference built-ins and Python scalar UDFs,
-but anything by-name-only will fail to resolve.
+fine for expressions that only reference built-ins and Python UDFs, but
+FFI-capsule-backed registrations will fail to resolve.
 
 Python 3.14 default change
 --------------------------
@@ -122,30 +127,25 @@ Practical considerations
 
 * **Pickled size scales with what travels inline.** A pickled expression of
   just built-ins is small (tens of bytes). An expression carrying a Python
-  scalar UDF is hundreds of bytes (the callable and its signature). When the
-  same UDF is shipped many times, pre-registering it on each worker via
-  :py:func:`~datafusion.ipc.set_worker_ctx` and referring to it by name
-  cuts the per-blob overhead.
-* **Closure capture.** When a Python scalar UDF closes over surrounding
-  state — local variables, module-level objects, file paths — that state
-  is captured at pickling time. Surprises are possible if the captured
-  state is large, mutable, or not portable to the worker's environment.
-* **Aggregate and window UDFs always travel by name.** Their Python state
-  is held inside opaque factory closures that cannot be reconstructed from
-  bytes alone. Use :py:func:`~datafusion.ipc.set_worker_ctx` to register
-  them on each worker.
+  UDF is hundreds of bytes (the callable and its signature). When the same
+  UDF is shipped many times, registering an equivalent FFI-capsule UDF on
+  each worker via :py:func:`~datafusion.ipc.set_worker_ctx` and referring
+  to it by name cuts the per-blob overhead.
+* **Closure capture.** When a Python UDF closes over surrounding state —
+  local variables, module-level objects, file paths — that state is
+  captured at pickling time. Surprises are possible if the captured state
+  is large, mutable, or not portable to the worker's environment.
 
 Security
 --------
 
 .. warning::
 
-   Reconstructing an expression containing a Python scalar UDF executes
-   arbitrary Python code on the receiver. Only :py:func:`pickle.loads`
-   expressions from trusted sources. For untrusted-source workflows,
-   restrict senders to built-in functions and pre-registered Rust-side
-   UDFs, and never feed externally supplied bytes through
-   :py:func:`pickle.loads`.
+   Reconstructing an expression containing a Python UDF executes arbitrary
+   Python code on the receiver. Only :py:func:`pickle.loads` expressions
+   from trusted sources. For untrusted-source workflows, restrict senders
+   to built-in functions and pre-registered Rust-side UDFs, and never feed
+   externally supplied bytes through :py:func:`pickle.loads`.
 
 See also
 --------
