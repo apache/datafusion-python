@@ -28,6 +28,7 @@ use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+pub mod codec;
 pub mod common;
 
 #[allow(clippy::borrow_deref_ref)]
@@ -96,6 +97,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<metrics::PyMetricsSet>()?;
     m.add_class::<metrics::PyMetric>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
+    m.add_class::<physical_plan::PyPhysicalExpr>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;
 

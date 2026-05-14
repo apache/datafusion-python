@@ -90,7 +90,7 @@ from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
-from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
+from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet, PhysicalExpr
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
@@ -124,6 +124,7 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
+    "PhysicalExpr",
     "RecordBatch",
     "RecordBatchStream",
     "RuntimeEnvBuilder",

@@ -21,10 +21,14 @@ use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 use datafusion::datasource::TableProvider;
+use datafusion::execution::TaskContext;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
+use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
+use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
@@ -224,3 +228,105 @@ pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_Logic
 
     Ok(codec.clone())
 }
+
+pub fn create_physical_extension_capsule<'py>(
+    py: Python<'py>,
+    codec: &FFI_PhysicalExtensionCodec,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let name = cr"datafusion_physical_extension_codec".into();
+    let codec = codec.clone();
+
+    PyCapsule::new(py, codec, Some(name))
+}
+
+/// Define a `<fn_name>(obj) -> PyResult<Arc<$output_type>>` extractor that
+/// accepts either a raw `PyCapsule` carrying `$ffi_type` or any object
+/// exposing `__<capsule_name>__()` that returns one.
+///
+/// Use this when `Arc<$output_type>: From<&$ffi_type>` (infallible
+/// conversion). For fallible conversions use [`try_from_pycapsule!`]
+/// instead.
+#[macro_export]
+macro_rules! from_pycapsule {
+    ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty) => {
+        pub fn $fn_name(
+            obj: &$crate::pyo3::Bound<$crate::pyo3::PyAny>,
+        ) -> $crate::pyo3::PyResult<std::sync::Arc<$output_type>> {
+            use $crate::pyo3::prelude::*;
+            use $crate::pyo3::types::PyCapsule;
+
+            let mut obj = obj.clone();
+            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
+                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
+            }
+            let capsule = obj.cast::<PyCapsule>().map_err(|_| {
+                $crate::errors::py_datafusion_err(concat!(
+                    "Invalid ",
+                    $capsule_name,
+                    ". Does not contain PyCapsule object."
+                ))
+            })?;
+            $crate::validate_pycapsule(&capsule, $capsule_name)?;
+
+            let data: std::ptr::NonNull<$ffi_type> = capsule.pointer_checked(None)?.cast();
+            let output_obj = unsafe { data.as_ref() };
+            let output_obj: std::sync::Arc<$output_type> = output_obj.into();
+
+            Ok(output_obj)
+        }
+    };
+}
+
+/// Same shape as [`from_pycapsule!`] but for FFI types whose conversion
+/// into `Arc<$output_type>` is fallible (uses `TryFrom`).
+#[macro_export]
+macro_rules! try_from_pycapsule {
+    ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty) => {
+        pub fn $fn_name(
+            obj: &$crate::pyo3::Bound<$crate::pyo3::PyAny>,
+        ) -> $crate::pyo3::PyResult<std::sync::Arc<$output_type>> {
+            use $crate::pyo3::prelude::*;
+            use $crate::pyo3::types::PyCapsule;
+
+            let mut obj = obj.clone();
+            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
+                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
+            }
+            let capsule = obj.cast::<PyCapsule>().map_err(|_| {
+                $crate::errors::py_datafusion_err(concat!(
+                    "Invalid ",
+                    $capsule_name,
+                    ". Does not contain PyCapsule object."
+                ))
+            })?;
+            $crate::validate_pycapsule(&capsule, $capsule_name)?;
+
+            let data: std::ptr::NonNull<$ffi_type> = capsule.pointer_checked(None)?.cast();
+            let output_obj = unsafe { data.as_ref() };
+            let output_obj: std::sync::Arc<$output_type> = output_obj
+                .try_into()
+                .map_err($crate::errors::py_datafusion_err)?;
+
+            Ok(output_obj)
+        }
+    };
+}
+
+// Re-export pyo3 so the macros expand inside downstream crates without
+// requiring an explicit pyo3 dep at the call site.
+#[doc(hidden)]
+pub use pyo3;
+
+from_pycapsule!(
+    physical_codec_from_pycapsule,
+    "datafusion_physical_extension_codec",
+    FFI_PhysicalExtensionCodec,
+    dyn PhysicalExtensionCodec
+);
+
+try_from_pycapsule!(
+    task_context_from_pycapsule,
+    "datafusion_task_context_provider",
+    FFI_TaskContextProvider,
+    TaskContext
+);

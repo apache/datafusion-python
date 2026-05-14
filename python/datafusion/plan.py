@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import datafusion._internal as df_internal
@@ -33,6 +34,7 @@ __all__ = [
     "LogicalPlan",
     "Metric",
     "MetricsSet",
+    "PhysicalExpr",
 ]
 
 
@@ -88,19 +90,41 @@ class LogicalPlan:  # noqa: PLW1641
         return self._raw_plan.display_graphviz()
 
     @staticmethod
-    def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
-        """Create a LogicalPlan from protobuf bytes.
+    def from_bytes(ctx: SessionContext, data: bytes) -> LogicalPlan:
+        """Create a LogicalPlan from serialized protobuf bytes.
 
-        Tables created in memory from record batches are currently not supported.
+        Decoding routes through the session's installed
+        `LogicalExtensionCodec`. Tables created in memory from record
+        batches are currently not supported.
         """
-        return LogicalPlan(df_internal.LogicalPlan.from_proto(ctx.ctx, data))
+        return LogicalPlan(df_internal.LogicalPlan.from_bytes(ctx.ctx, data))
+
+    def to_bytes(self) -> bytes:
+        """Convert a LogicalPlan to serialized protobuf bytes.
+
+        Tables created in memory from record batches are currently not
+        supported.
+        """
+        return self._raw_plan.to_bytes()
+
+    @staticmethod
+    def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
+        """Deprecated alias for :meth:`from_bytes`."""
+        warnings.warn(
+            "LogicalPlan.from_proto is deprecated; use from_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return LogicalPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Convert a LogicalPlan to protobuf bytes.
-
-        Tables created in memory from record batches are currently not supported.
-        """
-        return self._raw_plan.to_proto()
+        """Deprecated alias for :meth:`to_bytes`."""
+        warnings.warn(
+            "LogicalPlan.to_proto is deprecated; use to_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.to_bytes()
 
     def __eq__(self, other: LogicalPlan) -> bool:
         """Test equality."""
@@ -142,19 +166,58 @@ class ExecutionPlan:
         return self._raw_plan.partition_count
 
     @staticmethod
-    def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
-        """Create an ExecutionPlan from protobuf bytes.
+    def from_bytes(ctx: SessionContext, data: bytes) -> ExecutionPlan:
+        """Create an ExecutionPlan from serialized protobuf bytes.
 
-        Tables created in memory from record batches are currently not supported.
+        Decoding routes through the session's installed
+        `PhysicalExtensionCodec`. Tables created in memory from record
+        batches are currently not supported.
         """
-        return ExecutionPlan(df_internal.ExecutionPlan.from_proto(ctx.ctx, data))
+        return ExecutionPlan(df_internal.ExecutionPlan.from_bytes(ctx.ctx, data))
+
+    def to_bytes(self) -> bytes:
+        """Convert an ExecutionPlan into serialized protobuf bytes.
+
+        Tables created in memory from record batches are currently not
+        supported.
+        """
+        return self._raw_plan.to_bytes()
+
+    @staticmethod
+    def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
+        """Deprecated alias for :meth:`from_bytes`."""
+        warnings.warn(
+            "ExecutionPlan.from_proto is deprecated; use from_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return ExecutionPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Convert an ExecutionPlan into protobuf bytes.
+        """Deprecated alias for :meth:`to_bytes`."""
+        warnings.warn(
+            "ExecutionPlan.to_proto is deprecated; use to_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.to_bytes()
 
-        Tables created in memory from record batches are currently not supported.
+    @staticmethod
+    def from_pycapsule(capsule: Any) -> ExecutionPlan:
+        """Construct an `ExecutionPlan` from a PyCapsule.
+
+        Accepts either a raw capsule or any object exposing
+        ``__datafusion_execution_plan__``.
         """
-        return self._raw_plan.to_proto()
+        return ExecutionPlan(df_internal.ExecutionPlan.from_pycapsule(capsule))
+
+    def __datafusion_execution_plan__(self) -> Any:
+        """Return a PyCapsule pointing at the underlying `FFI_ExecutionPlan`.
+
+        Lets other Rust libraries consume the plan without depending on
+        the datafusion-python class.
+        """
+        return self._raw_plan.__datafusion_execution_plan__()
 
     def metrics(self) -> MetricsSet | None:
         """Return metrics for this plan node, or None if this plan has no MetricsSet.
@@ -328,3 +391,51 @@ class Metric:
     def __repr__(self) -> str:
         """Return a string representation of the metric."""
         return repr(self._raw)
+
+
+class PhysicalExpr:
+    """Thin wrapper around a DataFusion physical expression.
+
+    `PhysicalExpr` is the post-planning form of an `Expr`: column
+    references are resolved to positional indices, scalar functions
+    are dispatched, and types are determined. This wrapper exposes
+    serialization + the PyCapsule protocol so physical expressions
+    can be shipped to other Rust libraries that consume
+    `FFI_PhysicalExpr`.
+    """
+
+    def __init__(self, expr: df_internal.PhysicalExpr) -> None:
+        """Internal constructor; not for end-user use."""
+        self._raw = expr
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return repr(self._raw)
+
+    def to_bytes(self) -> bytes:
+        """Serialize the physical expression to protobuf bytes."""
+        return self._raw.to_bytes()
+
+    @staticmethod
+    def from_bytes(ctx: SessionContext, data: bytes, input_schema: Any) -> PhysicalExpr:
+        """Deserialize a physical expression.
+
+        ``input_schema`` must be the pyarrow Schema the expression
+        resolves column references against.
+        """
+        return PhysicalExpr(
+            df_internal.PhysicalExpr.from_bytes(ctx.ctx, data, input_schema)
+        )
+
+    @staticmethod
+    def from_pycapsule(capsule: Any) -> PhysicalExpr:
+        """Construct a PhysicalExpr from a PyCapsule.
+
+        Accepts either a raw capsule or any object exposing
+        ``__datafusion_physical_expr__``.
+        """
+        return PhysicalExpr(df_internal.PhysicalExpr.from_pycapsule(capsule))
+
+    def __datafusion_physical_expr__(self) -> Any:
+        """Return a PyCapsule pointing at the underlying `FFI_PhysicalExpr`."""
+        return self._raw.__datafusion_physical_expr__()

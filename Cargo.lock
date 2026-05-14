@@ -1698,6 +1698,7 @@ dependencies = [
  "arrow",
  "datafusion",
  "datafusion-ffi",
+ "datafusion-proto",
  "prost",
  "pyo3",
  "tokio",
