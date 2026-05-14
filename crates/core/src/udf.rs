@@ -46,10 +46,8 @@ use crate::expr::PyExpr;
 pub(crate) struct PythonFunctionScalarUDF {
     name: String,
     func: Py<PyAny>,
-    input_fields: Vec<Field>,
-    return_field: FieldRef,
     signature: Signature,
-    volatility: Volatility,
+    return_field: FieldRef,
 }
 
 impl PythonFunctionScalarUDF {
@@ -65,10 +63,8 @@ impl PythonFunctionScalarUDF {
         Self {
             name,
             func,
-            input_fields,
-            return_field: Arc::new(return_field),
             signature,
-            volatility,
+            return_field: Arc::new(return_field),
         }
     }
 
@@ -78,18 +74,15 @@ impl PythonFunctionScalarUDF {
         &self.func
     }
 
-    pub(crate) fn input_fields(&self) -> &[Field] {
-        &self.input_fields
-    }
-
     pub(crate) fn return_field(&self) -> &FieldRef {
         &self.return_field
     }
 
-    pub(crate) fn volatility(&self) -> Volatility {
-        self.volatility
-    }
-
+    /// Reconstruct a `PythonFunctionScalarUDF` from the parts emitted
+    /// by the codec. `input_fields` here only contributes `data_type`
+    /// info (collapsed into `Signature::exact`); their names,
+    /// nullability, and metadata are not retained, so the decoder is
+    /// free to fabricate them from `Vec<DataType>`.
     pub(crate) fn from_parts(
         name: String,
         func: Py<PyAny>,

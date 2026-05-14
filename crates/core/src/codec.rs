@@ -85,7 +85,7 @@ use datafusion::datasource::TableProvider;
 use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
-    AggregateUDF, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, WindowUDF,
+    AggregateUDF, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, TypeSignature, WindowUDF,
 };
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
@@ -357,13 +357,32 @@ pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<Scal
 /// Build the cloudpickle payload for a `PythonFunctionScalarUDF`.
 ///
 /// Layout: `cloudpickle.dumps((name, func, input_schema_bytes,
-/// return_field, volatility_str))`. Input fields ride along as an
-/// IPC-encoded pyarrow Schema so they round-trip without extra
-/// plumbing.
+/// return_field, volatility_str))`. Input `DataType`s are derived
+/// from the UDF's `Signature` (always `TypeSignature::Exact` for
+/// Python-defined UDFs) and packaged as a pyarrow `Schema` with
+/// synthesized field names — the local `PythonFunctionScalarUDF`
+/// does not retain field-level metadata, and reconstructing one on
+/// the receiver via `from_parts` immediately collapses any incoming
+/// `Field` info back to `DataType`, so the original sender-side
+/// fields and receiver-side fields are functionally equivalent.
 fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> PyResult<Vec<u8>> {
     let cloudpickle = py.import("cloudpickle")?;
 
-    let input_schema = Schema::new(udf.input_fields().to_vec());
+    let signature = udf.signature();
+    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
+        TypeSignature::Exact(types) => types.clone(),
+        other => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "PythonFunctionScalarUDF expected Signature::Exact, got {other:?}"
+            )));
+        }
+    };
+    let fields: Vec<Field> = input_dtypes
+        .into_iter()
+        .enumerate()
+        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
+        .collect();
+    let input_schema = Schema::new(fields);
     let pa_schema_obj = input_schema.to_pyarrow(py)?;
     let pa_schema = pa_schema_obj.into_bound();
     let schema_bytes: Vec<u8> = pa_schema
@@ -372,7 +391,7 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
         .extract()?;
 
     let return_field_obj = udf.return_field().as_ref().to_pyarrow(py)?;
-    let volatility = format!("{:?}", udf.volatility()).to_lowercase();
+    let volatility = format!("{:?}", signature.volatility).to_lowercase();
 
     let payload = PyTuple::new(
         py,
