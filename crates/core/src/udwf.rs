@@ -25,10 +25,9 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
-use datafusion::logical_expr::ptr_eq::PtrEq;
 use datafusion::logical_expr::window_state::WindowAggState;
 use datafusion::logical_expr::{
-    PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
+    PartitionEvaluator, Signature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
@@ -198,15 +197,13 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 }
 
-pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFactory {
-    Arc::new(move || -> Result<Box<dyn PartitionEvaluator>> {
-        let evaluator = Python::attach(|py| {
-            evaluator
-                .call0(py)
-                .map_err(|e| DataFusionError::Execution(e.to_string()))
-        })?;
-        Ok(Box::new(RustPartitionEvaluator::new(evaluator)))
-    })
+fn instantiate_partition_evaluator(evaluator: &Py<PyAny>) -> Result<Box<dyn PartitionEvaluator>> {
+    let instance = Python::attach(|py| {
+        evaluator
+            .call0(py)
+            .map_err(|e| DataFusionError::Execution(e.to_string()))
+    })?;
+    Ok(Box::new(RustPartitionEvaluator::new(instance)))
 }
 
 /// Represents an WindowUDF
@@ -234,14 +231,14 @@ impl PyWindowUDF {
         volatility: &str,
     ) -> PyResult<Self> {
         let return_type = return_type.0;
-        let input_types = input_types.into_iter().map(|t| t.0).collect();
+        let input_types: Vec<DataType> = input_types.into_iter().map(|t| t.0).collect();
 
         let function = WindowUDF::from(MultiColumnWindowUDF::new(
             name,
+            evaluator,
             input_types,
             return_type,
             parse_volatility(volatility)?,
-            to_rust_partition_evaluator(evaluator),
         ));
         Ok(Self { function })
     }
@@ -278,41 +275,78 @@ impl PyWindowUDF {
     }
 }
 
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct MultiColumnWindowUDF {
     name: String,
+    evaluator: Py<PyAny>,
     signature: Signature,
     return_type: DataType,
-    partition_evaluator_factory: PtrEq<PartitionEvaluatorFactory>,
-}
-
-impl std::fmt::Debug for MultiColumnWindowUDF {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("WindowUDF")
-            .field("name", &self.name)
-            .field("signature", &self.signature)
-            .field("return_type", &"<func>")
-            .field("partition_evaluator_factory", &"<FUNC>")
-            .finish()
-    }
 }
 
 impl MultiColumnWindowUDF {
     pub fn new(
         name: impl Into<String>,
+        evaluator: Py<PyAny>,
         input_types: Vec<DataType>,
         return_type: DataType,
         volatility: Volatility,
-        partition_evaluator_factory: PartitionEvaluatorFactory,
     ) -> Self {
         let name = name.into();
         let signature = Signature::exact(input_types, volatility);
         Self {
             name,
+            evaluator,
             signature,
             return_type,
-            partition_evaluator_factory: partition_evaluator_factory.into(),
         }
+    }
+
+    /// Stored Python callable that produces a fresh partition
+    /// evaluator instance per partition. Consumed by the codec to
+    /// cloudpickle the evaluator factory across process boundaries.
+    pub(crate) fn evaluator(&self) -> &Py<PyAny> {
+        &self.evaluator
+    }
+
+    pub(crate) fn return_type(&self) -> &DataType {
+        &self.return_type
+    }
+
+    pub(crate) fn from_parts(
+        name: String,
+        evaluator: Py<PyAny>,
+        input_types: Vec<DataType>,
+        return_type: DataType,
+        volatility: Volatility,
+    ) -> Self {
+        Self::new(name, evaluator, input_types, return_type, volatility)
+    }
+}
+
+impl Eq for MultiColumnWindowUDF {}
+impl PartialEq for MultiColumnWindowUDF {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.signature == other.signature
+            && self.return_type == other.return_type
+            && Python::attach(|py| {
+                self.evaluator
+                    .bind(py)
+                    .eq(other.evaluator.bind(py))
+                    .unwrap_or(false)
+            })
+    }
+}
+
+impl std::hash::Hash for MultiColumnWindowUDF {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.signature.hash(state);
+        self.return_type.hash(state);
+        Python::attach(|py| {
+            let py_hash = self.evaluator.bind(py).hash().unwrap_or(0);
+            state.write_isize(py_hash);
+        });
     }
 }
 
@@ -339,7 +373,6 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
         &self,
         _partition_evaluator_args: PartitionEvaluatorArgs,
     ) -> Result<Box<dyn PartitionEvaluator>> {
-        let _ = _partition_evaluator_args;
-        (self.partition_evaluator_factory)()
+        instantiate_partition_evaluator(&self.evaluator)
     }
 }

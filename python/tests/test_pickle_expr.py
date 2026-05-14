@@ -130,6 +130,49 @@ class TestUDFCodec:
         assert decoded.canonical_name() == e.canonical_name()
 
 
+class TestWindowUDFCodec:
+    """Python window UDFs travel inline like scalar UDFs."""
+
+    def _build_window_udf(self):
+        from datafusion import udwf
+        from datafusion.user_defined import WindowEvaluator
+
+        class CountUpEvaluator(WindowEvaluator):
+            def evaluate_all(self, values, num_rows):
+                return pa.array(list(range(num_rows)))
+
+        return udwf(
+            CountUpEvaluator,
+            [pa.int64()],
+            pa.int64(),
+            "immutable",
+            name="count_up",
+        )
+
+    def test_window_udf_self_contained_blob(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        assert len(blob) > 200
+
+    def test_window_udf_decodes_into_fresh_ctx(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = e.to_bytes()
+        fresh = SessionContext()
+        from datafusion import Expr
+
+        decoded = Expr.from_bytes(blob, ctx=fresh)
+        assert "count_up" in decoded.canonical_name()
+
+    def test_window_udf_decodes_via_pickle_with_no_worker_ctx(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        decoded = pickle.loads(blob)
+        assert "count_up" in decoded.canonical_name()
+
+
 class TestWorkerCtxLifecycle:
     def test_set_and_clear(self):
         assert get_worker_ctx() is None

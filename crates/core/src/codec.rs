@@ -86,6 +86,7 @@ use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
     AggregateUDF, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, TypeSignature, WindowUDF,
+    WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
@@ -95,12 +96,18 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyTuple};
 
 use crate::udf::PythonFunctionScalarUDF;
+use crate::udwf::MultiColumnWindowUDF;
 
 /// Wire-format prefix that tags a `fun_definition` payload as an
 /// inlined Python scalar UDF (cloudpickled tuple of name, callable,
 /// input schema, return field, volatility). Defined once here so
 /// the encoder and decoder cannot drift.
 pub(crate) const PY_SCALAR_UDF_MAGIC: &[u8] = b"DFPYUDF1";
+
+/// Wire-format prefix for an inlined Python window UDF (cloudpickled
+/// tuple of name, evaluator factory, input schema, return type,
+/// volatility).
+pub(crate) const PY_WINDOW_UDF_MAGIC: &[u8] = b"DFPYUDW1";
 
 /// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
 /// the Python-aware encoding hooks for logical-layer types
@@ -206,10 +213,16 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_window_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        if let Some(udwf) = try_decode_python_window_udf(buf)? {
+            return Ok(udwf);
+        }
         self.inner.try_decode_udwf(name, buf)
     }
 }
@@ -296,10 +309,16 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_window_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        if let Some(udwf) = try_decode_python_window_udf(buf)? {
+            return Ok(udwf);
+        }
         self.inner.try_decode_udwf(name, buf)
     }
 }
@@ -470,4 +489,127 @@ fn schema_to_ipc_bytes(schema: &Schema) -> arrow::error::Result<Vec<u8>> {
 fn schema_from_ipc_bytes(bytes: &[u8]) -> arrow::error::Result<Schema> {
     let reader = StreamReader::try_new(std::io::Cursor::new(bytes), None)?;
     Ok(reader.schema().as_ref().clone())
+}
+
+// =============================================================================
+// Shared Python window UDF encode / decode helpers
+//
+// Cloudpickle tuple shape: `(name, evaluator_factory, input_schema_bytes,
+// return_schema_bytes, volatility_str)`. The evaluator factory is the
+// Python callable that produces a new evaluator instance per partition.
+// =============================================================================
+
+pub(crate) fn try_encode_python_window_udf(node: &WindowUDF, buf: &mut Vec<u8>) -> Result<bool> {
+    let Some(py_udf) = node.inner().as_any().downcast_ref::<MultiColumnWindowUDF>() else {
+        return Ok(false);
+    };
+
+    Python::attach(|py| -> Result<bool> {
+        let bytes = encode_python_window_udf(py, py_udf)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        buf.extend_from_slice(PY_WINDOW_UDF_MAGIC);
+        buf.extend_from_slice(&bytes);
+        Ok(true)
+    })
+}
+
+pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
+    if buf.is_empty() || !buf.starts_with(PY_WINDOW_UDF_MAGIC) {
+        return Ok(None);
+    }
+    let payload = &buf[PY_WINDOW_UDF_MAGIC.len()..];
+
+    Python::attach(|py| -> Result<Option<Arc<WindowUDF>>> {
+        let udf = decode_python_window_udf(py, payload)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        Ok(Some(Arc::new(WindowUDF::new_from_impl(udf))))
+    })
+}
+
+fn encode_python_window_udf(py: Python<'_>, udf: &MultiColumnWindowUDF) -> PyResult<Vec<u8>> {
+    let cloudpickle = py.import("cloudpickle")?;
+
+    let signature = WindowUDFImpl::signature(udf);
+    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
+        TypeSignature::Exact(types) => types.clone(),
+        other => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "MultiColumnWindowUDF expected Signature::Exact, got {other:?}"
+            )));
+        }
+    };
+    let input_fields: Vec<Field> = input_dtypes
+        .into_iter()
+        .enumerate()
+        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
+        .collect();
+    let input_schema = Schema::new(input_fields);
+    let input_schema_bytes = schema_to_ipc_bytes(&input_schema)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    let return_schema = Schema::new(vec![Field::new("result", udf.return_type().clone(), true)]);
+    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    let volatility = format!("{:?}", signature.volatility).to_lowercase();
+
+    let payload = PyTuple::new(
+        py,
+        [
+            WindowUDFImpl::name(udf).into_pyobject(py)?.into_any(),
+            udf.evaluator().bind(py).clone().into_any(),
+            PyBytes::new(py, &input_schema_bytes).into_any(),
+            PyBytes::new(py, &return_schema_bytes).into_any(),
+            volatility.into_pyobject(py)?.into_any(),
+        ],
+    )?;
+
+    let blob = cloudpickle.call_method1("dumps", (payload,))?;
+    blob.extract::<Vec<u8>>()
+}
+
+fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<MultiColumnWindowUDF> {
+    let cloudpickle = py.import("cloudpickle")?;
+
+    let tuple = cloudpickle
+        .call_method1("loads", (PyBytes::new(py, payload),))?
+        .cast_into::<PyTuple>()?;
+
+    let name: String = tuple.get_item(0)?.extract()?;
+    let evaluator: Py<PyAny> = tuple.get_item(1)?.unbind();
+    let input_schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
+    let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
+    let volatility_str: String = tuple.get_item(4)?.extract()?;
+
+    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let input_types: Vec<arrow::datatypes::DataType> = input_schema
+        .fields()
+        .iter()
+        .map(|f| f.data_type().clone())
+        .collect();
+
+    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let return_type = return_schema
+        .fields()
+        .first()
+        .ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "MultiColumnWindowUDF return schema must contain exactly one field",
+            )
+        })?
+        .data_type()
+        .clone();
+
+    let volatility = datafusion_python_util::parse_volatility(&volatility_str)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
+    Ok(MultiColumnWindowUDF::from_parts(
+        name,
+        evaluator,
+        input_types,
+        return_type,
+        volatility,
+    ))
 }
