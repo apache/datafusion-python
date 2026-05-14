@@ -436,21 +436,51 @@ class Expr:  # noqa: PLW1641
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Serialize this expression to protobuf bytes.
 
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
-        default codec is used.
+        Python scalar UDFs are cloudpickled inline by
+        :class:`PythonLogicalCodec`, so the returned blob is
+        self-contained for scalar UDFs. Aggregate / window / FFI UDFs
+        are stored by name only; the receiver must have them
+        registered.
+
+        When ``ctx`` is supplied, encoding also routes through the
+        session's installed codec stack.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
-        return self.expr.to_bytes(ctx_arg)
+        return bytes(self.expr.to_bytes(ctx_arg))
 
-    @staticmethod
-    def from_bytes(ctx: SessionContext, data: bytes) -> Expr:
+    @classmethod
+    def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
         """Decode an expression from serialized protobuf bytes.
 
-        ``ctx`` provides the function registry for resolving UDF
-        references and the logical codec for in-band Python payloads.
+        ``ctx`` is the receiver :class:`SessionContext` used to resolve
+        function references not inlined by the codec (aggregate UDFs,
+        window UDFs, FFI UDFs). When ``ctx`` is ``None`` the worker
+        context set via :func:`datafusion.ipc.set_worker_ctx` is
+        consulted; if no worker context is set, a fresh
+        :class:`SessionContext` is used.
         """
-        return Expr(expr_internal.RawExpr.from_bytes(ctx.ctx, data))
+        from datafusion.ipc import _resolve_ctx
+
+        resolved = _resolve_ctx(ctx)
+        return cls(expr_internal.RawExpr.from_bytes(resolved.ctx, buf))
+
+    def __reduce__(self) -> tuple:
+        """Pickle protocol hook.
+
+        :class:`PythonLogicalCodec` cloudpickles referenced Python
+        scalar UDFs directly into the proto wire format, so the
+        returned blob is self-contained. On unpickle the bytes are
+        decoded against the worker context set via
+        :func:`datafusion.ipc.set_worker_ctx` (or a fresh
+        :class:`SessionContext` if none) for any remaining
+        registry-resolved references.
+        """
+        return (Expr._reconstruct, (self.to_bytes(),))
+
+    @classmethod
+    def _reconstruct(cls, proto_bytes: bytes) -> Expr:
+        """Internal entry point used by :meth:`__reduce__` on unpickle."""
+        return cls.from_bytes(proto_bytes)
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""
