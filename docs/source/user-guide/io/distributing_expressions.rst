@@ -25,8 +25,10 @@ framework with a per-worker initialization hook), and have each worker
 evaluate the expression against its own slice of data.
 
 DataFusion expressions support this directly: they can be sent through
-:py:mod:`pickle` like any other Python object. Python scalar UDFs ride along
-inside the pickled bytes — the receiver does not need to pre-register them.
+Python's standard `pickle <https://docs.python.org/3/library/pickle.html>`_
+module like any other Python object. Python UDFs — scalar, aggregate, and
+window — travel inside the pickled bytes; the receiver does not need to
+pre-register them.
 
 Basic worker-pool example
 -------------------------
@@ -42,7 +44,7 @@ Basic worker-pool example
 
     def evaluate(blob_and_batch):
         blob, batch = blob_and_batch
-        expr = pickle.loads(blob)  # Python scalar UDFs ride along inline.
+        expr = pickle.loads(blob)  # Python UDFs travel inside the bytes.
         ctx = SessionContext()
         df = ctx.from_pydict({"a": batch})
         return df.with_column("result", expr).select("result").to_pydict()["result"]
