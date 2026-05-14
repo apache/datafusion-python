@@ -78,8 +78,8 @@
 use std::sync::Arc;
 
 use arrow::datatypes::{Field, Schema, SchemaRef};
-use arrow::pyarrow::ToPyArrow;
-use datafusion::arrow::pyarrow::FromPyArrow;
+use arrow::ipc::reader::StreamReader;
+use arrow::ipc::writer::StreamWriter;
 use datafusion::common::{Result, TableReference};
 use datafusion::datasource::TableProvider;
 use datafusion::datasource::file_format::FileFormatFactory;
@@ -91,7 +91,6 @@ use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
-use pyo3::BoundObject;
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyTuple};
 
@@ -357,14 +356,14 @@ pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<Scal
 /// Build the cloudpickle payload for a `PythonFunctionScalarUDF`.
 ///
 /// Layout: `cloudpickle.dumps((name, func, input_schema_bytes,
-/// return_field, volatility_str))`. Input `DataType`s are derived
-/// from the UDF's `Signature` (always `TypeSignature::Exact` for
-/// Python-defined UDFs) and packaged as a pyarrow `Schema` with
-/// synthesized field names — the local `PythonFunctionScalarUDF`
-/// does not retain field-level metadata, and reconstructing one on
-/// the receiver via `from_parts` immediately collapses any incoming
-/// `Field` info back to `DataType`, so the original sender-side
-/// fields and receiver-side fields are functionally equivalent.
+/// return_schema_bytes, volatility_str))`. Both schema blobs are
+/// produced by arrow-rs's native IPC stream writer — no pyarrow
+/// round-trip — and decoded with the matching stream reader on the
+/// receiver. Input `DataType`s come from the UDF's `Signature`
+/// (always `TypeSignature::Exact` for Python-defined UDFs);
+/// receiver-side `Field` metadata is irrelevant because
+/// `from_parts` immediately collapses incoming `Field`s back to
+/// `DataType`s for the reconstructed `Signature`.
 fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> PyResult<Vec<u8>> {
     let cloudpickle = py.import("cloudpickle")?;
 
@@ -377,20 +376,19 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
             )));
         }
     };
-    let fields: Vec<Field> = input_dtypes
+    let input_fields: Vec<Field> = input_dtypes
         .into_iter()
         .enumerate()
         .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
         .collect();
-    let input_schema = Schema::new(fields);
-    let pa_schema_obj = input_schema.to_pyarrow(py)?;
-    let pa_schema = pa_schema_obj.into_bound();
-    let schema_bytes: Vec<u8> = pa_schema
-        .call_method0("serialize")?
-        .call_method0("to_pybytes")?
-        .extract()?;
+    let input_schema = Schema::new(input_fields);
+    let input_schema_bytes = schema_to_ipc_bytes(&input_schema)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    let return_field_obj = udf.return_field().as_ref().to_pyarrow(py)?;
+    let return_schema = Schema::new(vec![udf.return_field().as_ref().clone()]);
+    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+
     let volatility = format!("{:?}", signature.volatility).to_lowercase();
 
     let payload = PyTuple::new(
@@ -398,8 +396,8 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
         [
             udf.name().into_pyobject(py)?.into_any(),
             udf.func().bind(py).clone().into_any(),
-            PyBytes::new(py, &schema_bytes).into_any(),
-            return_field_obj.into_bound(),
+            PyBytes::new(py, &input_schema_bytes).into_any(),
+            PyBytes::new(py, &return_schema_bytes).into_any(),
             volatility.into_pyobject(py)?.into_any(),
         ],
     )?;
@@ -411,7 +409,6 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
 /// Inverse of [`encode_python_scalar_udf`].
 fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionScalarUDF> {
     let cloudpickle = py.import("cloudpickle")?;
-    let pyarrow = py.import("pyarrow")?;
 
     let tuple = cloudpickle
         .call_method1("loads", (PyBytes::new(py, payload),))?
@@ -419,21 +416,30 @@ fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
 
     let name: String = tuple.get_item(0)?.extract()?;
     let func: Py<PyAny> = tuple.get_item(1)?.unbind();
-    let schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
-    let return_field_py = tuple.get_item(3)?;
+    let input_schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
+    let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
     let volatility_str: String = tuple.get_item(4)?.extract()?;
 
-    let buffer = pyarrow.call_method1("py_buffer", (PyBytes::new(py, &schema_bytes),))?;
-    let pa_schema = pyarrow
-        .getattr("ipc")?
-        .call_method1("read_schema", (buffer,))?;
-
-    let schema = Schema::from_pyarrow_bound(&pa_schema)
+    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let input_fields: Vec<Field> = schema.fields().iter().map(|f| f.as_ref().clone()).collect();
+    let input_fields: Vec<Field> = input_schema
+        .fields()
+        .iter()
+        .map(|f| f.as_ref().clone())
+        .collect();
 
-    let return_field = Field::from_pyarrow_bound(&return_field_py)
+    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let return_field = return_schema
+        .fields()
+        .first()
+        .ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "PythonFunctionScalarUDF return schema must contain exactly one field",
+            )
+        })?
+        .as_ref()
+        .clone();
 
     let volatility = datafusion_python_util::parse_volatility(&volatility_str)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
@@ -445,4 +451,23 @@ fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
         return_field,
         volatility,
     ))
+}
+
+/// Serialize a `Schema` to a self-contained IPC stream containing
+/// only the schema message (no record batches). Inverse:
+/// [`schema_from_ipc_bytes`].
+fn schema_to_ipc_bytes(schema: &Schema) -> arrow::error::Result<Vec<u8>> {
+    let mut buf: Vec<u8> = Vec::new();
+    {
+        let mut writer = StreamWriter::try_new(&mut buf, schema)?;
+        writer.finish()?;
+    }
+    Ok(buf)
+}
+
+/// Decode an IPC stream containing only a schema message back into a
+/// `Schema`. Inverse: [`schema_to_ipc_bytes`].
+fn schema_from_ipc_bytes(bytes: &[u8]) -> arrow::error::Result<Schema> {
+    let reader = StreamReader::try_new(std::io::Cursor::new(bytes), None)?;
+    Ok(reader.schema().as_ref().clone())
 }
