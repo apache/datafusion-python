@@ -55,12 +55,13 @@ expression; the receiver does not need to pre-register them.
 Basic worker-pool example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Define a worker function that takes the expression plus a batch and
+returns the evaluated result:
+
 .. code-block:: python
 
-    import multiprocessing as mp
-
     import pyarrow as pa
-    from datafusion import SessionContext, col, udf
+    from datafusion import SessionContext
 
 
     def evaluate(expr, batch):
@@ -70,21 +71,31 @@ Basic worker-pool example
         df = ctx.from_pydict({"a": batch})
         return df.with_column("result", expr).select("result").to_pydict()["result"]
 
+Then build the expression in the driver and fan it out:
 
-    if __name__ == "__main__":
-        double = udf(
-            lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
-            [pa.int64()], pa.int64(), volatility="immutable", name="double",
+.. code-block:: python
+
+    import multiprocessing as mp
+    from datafusion import col, udf
+
+    double = udf(
+        lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+        [pa.int64()], pa.int64(), volatility="immutable", name="double",
+    )
+    expr = double(col("a"))
+
+    mp_ctx = mp.get_context("forkserver")
+    with mp_ctx.Pool(processes=4) as pool:
+        results = pool.starmap(
+            evaluate,
+            [(expr, [1, 2, 3]), (expr, [10, 20, 30])],
         )
-        expr = double(col("a"))
+    print(results)  # [[2, 4, 6], [20, 40, 60]]
 
-        mp_ctx = mp.get_context("forkserver")
-        with mp_ctx.Pool(processes=4) as pool:
-            results = pool.starmap(
-                evaluate,
-                [(expr, [1, 2, 3]), (expr, [10, 20, 30])],
-            )
-        print(results)  # [[2, 4, 6], [20, 40, 60]]
+When saved to a ``.py`` file and executed with the ``spawn`` or
+``forkserver`` start method, wrap the driver block in
+``if __name__ == "__main__":`` so worker processes can re-import the
+module without re-running it.
 
 
 What travels with the expression
