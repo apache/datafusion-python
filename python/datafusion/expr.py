@@ -439,6 +439,12 @@ class Expr:  # noqa: PLW1641
         Use this — or :func:`pickle.dumps` — to send an expression to a
         worker process for distributed evaluation.
 
+        When ``ctx`` is supplied, encoding routes through that session's
+        installed :class:`LogicalExtensionCodec` (so settings like
+        :meth:`SessionContext.with_python_udf_inlining` take effect).
+        When ``ctx`` is ``None``, the default codec is used (Python UDF
+        inlining on, no user-installed extension codec).
+
         Built-in functions and Python UDFs (scalar, aggregate, window)
         travel inside the returned bytes; the worker does not need to
         pre-register them. UDFs imported via the FFI capsule protocol
