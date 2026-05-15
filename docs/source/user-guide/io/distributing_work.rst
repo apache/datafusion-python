@@ -116,6 +116,85 @@ What travels with the expression
   :py:class:`SessionContext`. Without that registration, evaluation
   raises an error.
 
+Session contexts at a glance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is only one type — :py:class:`SessionContext`. It can occupy
+up to four *slots* in a running program:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 12 18 40 30
+
+   * - Slot
+     - Lifetime
+     - Purpose
+     - Set how
+   * - User-held
+     - Local variable / attribute
+     - Build and run queries
+     - ``ctx = SessionContext(...)``
+   * - Global
+     - Process singleton (lazy-init)
+     - Backs module-level
+       :py:func:`~datafusion.io.read_parquet`,
+       :py:func:`~datafusion.io.read_csv`,
+       :py:func:`~datafusion.io.read_json`,
+       :py:func:`~datafusion.io.read_avro`; final fallback for
+       :py:meth:`Expr.from_bytes`
+     - Implicit; access via
+       :py:meth:`SessionContext.global_ctx`
+   * - Sender
+     - Thread-local on the driver
+     - Codec settings for outbound :py:func:`pickle.dumps` /
+       :py:meth:`Expr.to_bytes` without ``ctx``
+     - :py:func:`~datafusion.ipc.set_sender_ctx`
+   * - Worker
+     - Thread-local on the worker
+     - Function registry for inbound :py:func:`pickle.loads` /
+       :py:meth:`Expr.from_bytes` without ``ctx``
+     - :py:func:`~datafusion.ipc.set_worker_ctx`
+
+The same :py:class:`SessionContext` object may occupy more than one
+slot simultaneously — installing it into a slot is a reference, not
+a copy.
+
+**Non-distributed user.** One user-held context. The global slot is
+invisible unless you call top-level ``read_*`` helpers. Sender and
+worker slots are unused.
+
+**Distributed user.** Two questions to answer:
+
+1. *Driver side — what wire format do I want?* The default (Python UDF
+   inlining on) is self-contained; you do not need a sender context.
+   To opt into the strict format,
+   :py:func:`~datafusion.ipc.set_sender_ctx`
+   with a session built via
+   :py:meth:`SessionContext.with_python_udf_inlining(False)
+   <datafusion.SessionContext.with_python_udf_inlining>`.
+
+2. *Worker side — what registrations does decode need?* For built-ins
+   and inline Python UDFs, nothing. For FFI-capsule UDFs (or
+   strict-mode round-trips that travel by name), call
+   :py:func:`~datafusion.ipc.set_worker_ctx` once per worker with a
+   context that has the relevant registrations.
+
+Resolution order on the worker side is *explicit argument →
+worker context → global context.* Explicit ``ctx=`` on
+:py:meth:`Expr.from_bytes` always wins; the sender slot is ignored
+on decode and the worker slot is ignored on encode.
+
+Sharp edges:
+
+* Sender and worker slots are **thread-local**. Background threads
+  on either side see ``None`` until they install their own.
+* The global slot persists across ``fork`` workers (copy-on-write
+  memory inherit) but not across ``spawn`` / ``forkserver`` workers
+  (fresh process — register or install a worker context on
+  start-up).
+* The inlining toggle is per-context state, not a global switch.
+  Two contexts with different toggles can coexist in one process.
+
 Registering shared UDFs on workers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -143,9 +222,10 @@ as the *worker context*:
 
 Inside a worker, expressions arriving from the driver resolve their
 by-name references against the installed worker context. If no worker
-context is installed, a fresh empty :py:class:`SessionContext` is
-used — fine for expressions that only reference built-ins and Python
-UDFs, but FFI-capsule-backed registrations will fail to resolve.
+context is installed, the global :py:class:`SessionContext` is used —
+fine for expressions that only reference built-ins and Python UDFs,
+but FFI-capsule-backed registrations must be installed on the global
+context to resolve.
 
 Python 3.14 default change
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,6 +277,27 @@ Two use cases:
 Mismatched configurations raise a descriptive error: an inline blob
 fed to a strict receiver fails fast rather than silently dropping
 into ``cloudpickle.loads``.
+
+To make the toggle apply through :py:func:`pickle.dumps` (which
+calls :py:meth:`Expr.to_bytes` with no context), install the strict
+session as the driver's *sender context*:
+
+.. code-block:: python
+
+    from datafusion import SessionContext
+    from datafusion.ipc import set_sender_ctx
+
+    set_sender_ctx(SessionContext().with_python_udf_inlining(False))
+    # Every subsequent pickle.dumps(expr) on this thread encodes
+    # without inlining the Python callable.
+
+Pair with a matching strict worker context
+(:py:func:`~datafusion.ipc.set_worker_ctx`) so the ``pickle.loads``
+side also refuses inline payloads. Explicit
+:py:meth:`Expr.to_bytes(ctx) <Expr.to_bytes>` and
+:py:meth:`Expr.from_bytes(blob, ctx=ctx) <Expr.from_bytes>` calls
+honor the supplied ``ctx`` directly and ignore the sender / worker
+contexts.
 
 Note that :py:func:`pickle.loads` itself remains unsafe on untrusted
 input regardless of this setting — an attacker producing the outer

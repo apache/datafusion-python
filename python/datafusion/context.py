@@ -1786,6 +1786,16 @@ class SessionContext:
           :meth:`Expr.from_bytes` input that may come from an untrusted
           source — ``cloudpickle.loads`` will not be invoked.
 
+        The toggle applies directly to :meth:`Expr.to_bytes` /
+        :meth:`Expr.from_bytes` calls that pass this session as their
+        ``ctx`` argument. To make the toggle apply through
+        :func:`pickle.dumps` (which calls :meth:`Expr.to_bytes` with no
+        context), install this session as the driver's sender context
+        via :func:`datafusion.ipc.set_sender_ctx` — and install it as
+        the worker's context via
+        :func:`datafusion.ipc.set_worker_ctx` for the corresponding
+        :func:`pickle.loads`.
+
         ``pickle.loads`` on untrusted bytes remains unsafe regardless of
         this setting (see the `pickle module security warning
         <https://docs.python.org/3/library/pickle.html#module-pickle>`_

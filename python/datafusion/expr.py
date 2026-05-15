@@ -457,9 +457,10 @@ class Expr:  # noqa: PLW1641
         function references that travel by name — aggregate UDFs, window
         UDFs, FFI UDFs. When ``ctx`` is ``None`` the worker context
         installed via :func:`datafusion.ipc.set_worker_ctx` is consulted;
-        if no worker context is installed, a fresh
+        if no worker context is installed, the global
         :class:`SessionContext` is used (sufficient for built-ins and
-        Python scalar UDFs).
+        Python scalar UDFs, plus any UDFs registered on the global
+        context).
         """
         from datafusion.ipc import _resolve_ctx
 
@@ -475,10 +476,17 @@ class Expr:  # noqa: PLW1641
         UDFs require pre-registration on the worker. The worker's
         :class:`SessionContext` for resolving those references is
         looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
-        back to a fresh empty :class:`SessionContext` if none has been
+        back to the global :class:`SessionContext` if none has been
         installed on the worker.
+
+        The encoding side honors a driver-side sender context installed
+        via :func:`datafusion.ipc.set_sender_ctx` — that is how
+        :meth:`SessionContext.with_python_udf_inlining` propagates
+        through ``pickle.dumps``.
         """
-        return (Expr._reconstruct, (self.to_bytes(),))
+        from datafusion.ipc import get_sender_ctx
+
+        return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
 
     @classmethod
     def _reconstruct(cls, proto_bytes: bytes) -> Expr:

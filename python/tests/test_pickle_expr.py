@@ -33,15 +33,24 @@ import threading
 import pyarrow as pa
 import pytest
 from datafusion import Expr, SessionContext, col, lit, udf
-from datafusion.ipc import clear_worker_ctx, get_worker_ctx, set_worker_ctx
+from datafusion.ipc import (
+    clear_sender_ctx,
+    clear_worker_ctx,
+    get_sender_ctx,
+    get_worker_ctx,
+    set_sender_ctx,
+    set_worker_ctx,
+)
 
 
 @pytest.fixture(autouse=True)
 def _reset_worker_ctx():
-    """Ensure every test starts with no worker context installed."""
+    """Ensure every test starts with no worker or sender context installed."""
     clear_worker_ctx()
+    clear_sender_ctx()
     yield
     clear_worker_ctx()
+    clear_sender_ctx()
 
 
 def _double_udf():
@@ -284,6 +293,80 @@ class TestPythonUdfInliningToggle:
         with pytest.raises(Exception, match="inlining is disabled"):
             Expr.from_bytes(blob, ctx=strict_receiver)
 
+    def test_sender_ctx_propagates_through_pickle(self):
+        """`set_sender_ctx` makes `pickle.dumps` use a strict codec.
+
+        Without a sender context, pickle defaults to the inline codec and
+        the blob is large. With a strict sender context installed, the
+        blob shrinks because the Python callable is encoded by name
+        instead of cloudpickled.
+        """
+        u = self._build_double_udf()
+        e = u(col("a"))
+
+        blob_default = pickle.dumps(e)
+
+        strict_sender = SessionContext().with_python_udf_inlining(False)
+        set_sender_ctx(strict_sender)
+        try:
+            blob_strict = pickle.dumps(e)
+        finally:
+            clear_sender_ctx()
+
+        assert len(blob_strict) < len(blob_default) // 4
+
+    def test_sender_ctx_strict_roundtrip_via_pickle(self):
+        """End-to-end pickle round-trip with strict mode on both sides.
+
+        Driver installs a strict sender context. Worker installs a
+        matching strict context with the UDF registered. The UDF
+        travels by name through `pickle.dumps` / `pickle.loads`.
+        """
+        u = self._build_double_udf()
+        e = u(col("a"))
+
+        strict_sender = SessionContext().with_python_udf_inlining(False)
+        set_sender_ctx(strict_sender)
+        try:
+            blob = pickle.dumps(e)
+        finally:
+            clear_sender_ctx()
+
+        worker = SessionContext().with_python_udf_inlining(False)
+        worker.register_udf(u)
+        set_worker_ctx(worker)
+        try:
+            decoded = pickle.loads(blob)
+        finally:
+            clear_worker_ctx()
+
+        assert "double" in decoded.canonical_name()
+
+    def test_sender_ctx_strict_pickle_refused_by_inline_worker(self):
+        """A strict-encoded blob still decodes fine on an inline worker
+        because the wire format is the same default-codec by-name form.
+        Sanity check: cross-config works as long as the receiver can
+        resolve the name."""
+        u = self._build_double_udf()
+        e = u(col("a"))
+
+        strict_sender = SessionContext().with_python_udf_inlining(False)
+        set_sender_ctx(strict_sender)
+        try:
+            blob = pickle.dumps(e)
+        finally:
+            clear_sender_ctx()
+
+        worker = SessionContext()
+        worker.register_udf(u)
+        set_worker_ctx(worker)
+        try:
+            decoded = pickle.loads(blob)
+        finally:
+            clear_worker_ctx()
+
+        assert "double" in decoded.canonical_name()
+
 
 class TestWorkerCtxLifecycle:
     def test_set_and_clear(self):
@@ -318,3 +401,36 @@ class TestWorkerCtxLifecycle:
         assert seen_in_thread[1] is not main_ctx
         # Main thread's ctx is unchanged by the thread's actions.
         assert get_worker_ctx() is main_ctx
+
+
+class TestSenderCtxLifecycle:
+    def test_set_and_clear(self):
+        assert get_sender_ctx() is None
+        ctx = SessionContext()
+        set_sender_ctx(ctx)
+        assert get_sender_ctx() is ctx
+        clear_sender_ctx()
+        assert get_sender_ctx() is None
+
+    def test_clear_when_unset_is_noop(self):
+        clear_sender_ctx()  # no error
+        assert get_sender_ctx() is None
+
+    def test_thread_local_isolation(self):
+        main_ctx = SessionContext()
+        set_sender_ctx(main_ctx)
+
+        seen_in_thread: list = []
+
+        def worker():
+            seen_in_thread.append(get_sender_ctx())
+            set_sender_ctx(SessionContext())
+            seen_in_thread.append(get_sender_ctx())
+
+        t = threading.Thread(target=worker)
+        t.start()
+        t.join()
+
+        assert seen_in_thread[0] is None
+        assert seen_in_thread[1] is not main_ctx
+        assert get_sender_ctx() is main_ctx

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Worker-side setup for distributing DataFusion expressions.
+"""Driver- and worker-side setup for distributing DataFusion expressions.
 
 When a :class:`Expr` is shipped to a worker process (e.g. through
 :func:`multiprocessing.Pool` or a Ray actor), the worker reconstructs the
@@ -38,6 +38,24 @@ Built-in functions and Python UDFs (scalar, aggregate, window) travel
 inside the shipped expression itself and do not need pre-registration
 on the worker.
 
+On the driver side, call :func:`set_sender_ctx` to control how
+:func:`pickle.dumps` encodes expressions — for example, to apply
+:meth:`SessionContext.with_python_udf_inlining` to every pickled
+expression on this thread:
+
+>>> # doctest: +SKIP
+>>> from datafusion import SessionContext
+>>> from datafusion.ipc import set_sender_ctx
+>>>
+>>> driver_ctx = SessionContext().with_python_udf_inlining(False)
+>>> set_sender_ctx(driver_ctx)
+>>> pickle.dumps(expr)  # encoded with inlining disabled
+
+Without a sender context the default codec is used (Python UDF
+inlining on). The sender context only affects pickle / ``to_bytes``
+encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
+``ctx``.
+
 See :doc:`/user-guide/io/distributing_work` for the full pattern.
 """
 
@@ -51,8 +69,11 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "clear_sender_ctx",
     "clear_worker_ctx",
+    "get_sender_ctx",
     "get_worker_ctx",
+    "set_sender_ctx",
     "set_worker_ctx",
 ]
 
@@ -74,10 +95,10 @@ def set_worker_ctx(ctx: SessionContext) -> None:
 def clear_worker_ctx() -> None:
     """Remove this worker's installed :class:`SessionContext`.
 
-    After clearing, expressions reconstructed in this worker fall back to a
-    fresh empty :class:`SessionContext` — adequate for built-ins and Python
+    After clearing, expressions reconstructed in this worker fall back to
+    the global :class:`SessionContext` — adequate for built-ins and Python
     UDFs (scalar, aggregate, window), but anything imported via the FFI
-    capsule protocol will fail to resolve.
+    capsule protocol must be registered on the global context to resolve.
     """
     if hasattr(_local, "ctx"):
         del _local.ctx
@@ -88,12 +109,48 @@ def get_worker_ctx() -> SessionContext | None:
     return getattr(_local, "ctx", None)
 
 
+def set_sender_ctx(ctx: SessionContext) -> None:
+    """Install this driver's :class:`SessionContext` for outbound pickles.
+
+    Controls how :func:`pickle.dumps` encodes :class:`Expr` instances on
+    this thread. The most useful application is propagating a session
+    configured with
+    :meth:`SessionContext.with_python_udf_inlining` so the toggle takes
+    effect through pickle (which otherwise calls
+    :meth:`Expr.to_bytes` with no context and uses the default codec).
+
+    Idempotent: overwrites any previous value. Stored in a thread-local
+    slot, so worker threads on the driver may install their own contexts.
+    Does not affect :meth:`Expr.to_bytes` calls that pass an explicit
+    ``ctx`` — those continue to use the supplied context.
+    """
+    _local.sender_ctx = ctx
+
+
+def clear_sender_ctx() -> None:
+    """Remove this driver's installed sender :class:`SessionContext`.
+
+    After clearing, pickled expressions fall back to the default codec
+    (Python UDF inlining on).
+    """
+    if hasattr(_local, "sender_ctx"):
+        del _local.sender_ctx
+
+
+def get_sender_ctx() -> SessionContext | None:
+    """Return this driver's installed sender :class:`SessionContext`, or ``None``."""
+    return getattr(_local, "sender_ctx", None)
+
+
 def _resolve_ctx(
     explicit_ctx: SessionContext | None = None,
 ) -> SessionContext:
     """Resolve a context for Expr reconstruction.
 
-    Priority: explicit argument > worker context > fresh context.
+    Priority: explicit argument > worker context > global context.
+    Falling back to the global :class:`SessionContext` (instead of a
+    freshly constructed one) preserves any registrations the user has
+    installed on it.
     """
     if explicit_ctx is not None:
         return explicit_ctx
@@ -102,4 +159,4 @@ def _resolve_ctx(
         return worker
     from datafusion.context import SessionContext  # noqa: PLC0415
 
-    return SessionContext()
+    return SessionContext.global_ctx()
