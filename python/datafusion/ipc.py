@@ -159,6 +159,13 @@ def _resolve_ctx(
     worker = get_worker_ctx()
     if worker is not None:
         return worker
+    # Lazy import: `datafusion/__init__.py` imports `datafusion.ipc`
+    # before `datafusion.context`, so a module-top import would force
+    # `datafusion.context` to load mid-init of `datafusion.ipc`. The
+    # cycle is benign today (context.py only pulls expr.py at module
+    # scope, neither pulls ipc.py back), but a single new import in
+    # context.py's transitive deps could turn it into a real cycle.
+    # Deferring keeps `datafusion.ipc` import-order-independent.
     from datafusion.context import SessionContext  # noqa: PLC0415
 
     return SessionContext.global_ctx()
