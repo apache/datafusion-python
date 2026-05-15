@@ -106,15 +106,18 @@ impl PartialEq for PythonFunctionScalarUDF {
 
 impl Hash for PythonFunctionScalarUDF {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        // Hash only the identifying header (name + signature + return
+        // field). Skipping `func` is intentional: the Rust `Hash`
+        // contract requires `a == b ⇒ hash(a) == hash(b)`, not the
+        // converse, so a coarser hash is sound — `PartialEq` still
+        // disambiguates two UDFs with the same header but distinct
+        // callables. Falling back to a sentinel on `py_hash` failure
+        // (as a prior revision did) silently mapped every unhashable
+        // closure to the same bucket; that is the worst case for a
+        // hashmap and is what this rewrite avoids.
         self.name.hash(state);
         self.signature.hash(state);
         self.return_field.hash(state);
-
-        Python::attach(|py| {
-            let py_hash = self.func.bind(py).hash().unwrap_or(0); // Handle unhashable objects
-
-            state.write_isize(py_hash);
-        });
     }
 }
 

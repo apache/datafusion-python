@@ -340,13 +340,12 @@ impl PartialEq for PythonFunctionWindowUDF {
 
 impl std::hash::Hash for PythonFunctionWindowUDF {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        // See `PythonFunctionScalarUDF`'s `Hash` impl for the
+        // rationale: hash the identifying header only and let
+        // `PartialEq` disambiguate evaluators.
         self.name.hash(state);
         self.signature.hash(state);
         self.return_type.hash(state);
-        Python::attach(|py| {
-            let py_hash = self.evaluator.bind(py).hash().unwrap_or(0);
-            state.write_isize(py_hash);
-        });
     }
 }
 
