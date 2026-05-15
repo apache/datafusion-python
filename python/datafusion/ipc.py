@@ -25,14 +25,15 @@ otherwise resolve from its registered functions rather than from inside
 the shipped expression — install a configured :class:`SessionContext`
 once per worker:
 
->>> # doctest: +SKIP
->>> from datafusion import SessionContext
->>> from datafusion.ipc import set_worker_ctx
->>>
->>> def init_worker():
-...     ctx = SessionContext()
-...     ctx.register_udaf(my_ffi_aggregate)
-...     set_worker_ctx(ctx)
+.. code-block:: python
+
+    from datafusion import SessionContext
+    from datafusion.ipc import set_worker_ctx
+
+    def init_worker():
+        ctx = SessionContext()
+        ctx.register_udaf(my_ffi_aggregate)
+        set_worker_ctx(ctx)
 
 Built-in functions and Python UDFs (scalar, aggregate, window) travel
 inside the shipped expression itself and do not need pre-registration
@@ -43,13 +44,14 @@ On the driver side, call :func:`set_sender_ctx` to control how
 :meth:`SessionContext.with_python_udf_inlining` to every pickled
 expression on this thread:
 
->>> # doctest: +SKIP
->>> from datafusion import SessionContext
->>> from datafusion.ipc import set_sender_ctx
->>>
->>> driver_ctx = SessionContext().with_python_udf_inlining(False)
->>> set_sender_ctx(driver_ctx)
->>> pickle.dumps(expr)  # encoded with inlining disabled
+.. code-block:: python
+
+    from datafusion import SessionContext
+    from datafusion.ipc import set_sender_ctx
+
+    driver_ctx = SessionContext().with_python_udf_inlining(False)
+    set_sender_ctx(driver_ctx)
+    pickle.dumps(expr)  # encoded with inlining disabled
 
 Without a sender context the default codec is used (Python UDF
 inlining on). The sender context only affects pickle / ``to_bytes``
