@@ -481,6 +481,13 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
             )));
         }
     };
+    // Input fields exist only as a transport for the per-arg
+    // `DataType`. Names default to `arg_{i}` and nullability to
+    // `true` because the underlying `TypeSignature::Exact` cannot
+    // express either — the receiver immediately collapses these
+    // fields back to `Vec<DataType>` when reconstructing the
+    // `Signature`, so any nullability or metadata set here would be
+    // discarded.
     let input_fields: Vec<Field> = input_dtypes
         .into_iter()
         .enumerate()
@@ -667,6 +674,13 @@ fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> Py
             )));
         }
     };
+    // Input fields exist only as a transport for the per-arg
+    // `DataType`. Names default to `arg_{i}` and nullability to
+    // `true` because the underlying `TypeSignature::Exact` cannot
+    // express either — the receiver immediately collapses these
+    // fields back to `Vec<DataType>` when reconstructing the
+    // `Signature`, so any nullability or metadata set here would be
+    // discarded.
     let input_fields: Vec<Field> = input_dtypes
         .into_iter()
         .enumerate()
@@ -795,6 +809,13 @@ fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> Py
             )));
         }
     };
+    // Input fields exist only as a transport for the per-arg
+    // `DataType`. Names default to `arg_{i}` and nullability to
+    // `true` because the underlying `TypeSignature::Exact` cannot
+    // express either — the receiver immediately collapses these
+    // fields back to `Vec<DataType>` when reconstructing the
+    // `Signature`, so any nullability or metadata set here would be
+    // discarded.
     let input_fields: Vec<Field> = input_dtypes
         .into_iter()
         .enumerate()
