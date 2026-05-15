@@ -77,7 +77,7 @@
 
 use std::sync::Arc;
 
-use arrow::datatypes::{Field, Schema, SchemaRef};
+use arrow::datatypes::{DataType, Field, Schema, SchemaRef};
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
 use datafusion::common::{Result, TableReference};
@@ -85,7 +85,7 @@ use datafusion::datasource::TableProvider;
 use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
-    AggregateUDF, AggregateUDFImpl, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl,
+    AggregateUDF, AggregateUDFImpl, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, Signature,
     TypeSignature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
@@ -478,46 +478,15 @@ pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<Scal
 /// Build the cloudpickle payload for a `PythonFunctionScalarUDF`.
 ///
 /// Layout: `cloudpickle.dumps((name, func, input_schema_bytes,
-/// return_schema_bytes, volatility_str))`. Both schema blobs are
-/// produced by arrow-rs's native IPC stream writer — no pyarrow
-/// round-trip — and decoded with the matching stream reader on the
-/// receiver. Input `DataType`s come from the UDF's `Signature`
-/// (always `TypeSignature::Exact` for Python-defined UDFs);
-/// receiver-side `Field` metadata is irrelevant because
-/// `from_parts` immediately collapses incoming `Field`s back to
-/// `DataType`s for the reconstructed `Signature`.
+/// return_schema_bytes, volatility_str))`. Schema blobs are produced
+/// by arrow-rs's native IPC stream writer (no pyarrow round-trip) and
+/// decoded with the matching stream reader on the receiver. See
+/// [`build_input_schema_bytes`] for what the input blob carries.
 fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = cloudpickle(py)?;
-
     let signature = udf.signature();
-    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
-        TypeSignature::Exact(types) => types.clone(),
-        other => {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "PythonFunctionScalarUDF expected Signature::Exact, got {other:?}"
-            )));
-        }
-    };
-    // Input fields exist only as a transport for the per-arg
-    // `DataType`. Names default to `arg_{i}` and nullability to
-    // `true` because the underlying `TypeSignature::Exact` cannot
-    // express either — the receiver immediately collapses these
-    // fields back to `Vec<DataType>` when reconstructing the
-    // `Signature`, so any nullability or metadata set here would be
-    // discarded.
-    let input_fields: Vec<Field> = input_dtypes
-        .into_iter()
-        .enumerate()
-        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
-        .collect();
-    let input_schema = Schema::new(input_fields);
-    let input_schema_bytes = schema_to_ipc_bytes(&input_schema)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
-    let return_schema = Schema::new(vec![udf.return_field().as_ref().clone()]);
-    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
+    let input_dtypes = signature_input_dtypes(signature, "PythonFunctionScalarUDF")?;
+    let input_schema_bytes = build_input_schema_bytes(&input_dtypes)?;
+    let return_schema_bytes = build_single_field_schema_bytes(udf.return_field().as_ref())?;
     let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
@@ -531,15 +500,14 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
         ],
     )?;
 
-    let blob = cloudpickle.call_method1("dumps", (payload,))?;
-    blob.extract::<Vec<u8>>()
+    cloudpickle(py)?
+        .call_method1("dumps", (payload,))?
+        .extract::<Vec<u8>>()
 }
 
 /// Inverse of [`encode_python_scalar_udf`].
 fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionScalarUDF> {
-    let cloudpickle = cloudpickle(py)?;
-
-    let tuple = cloudpickle
+    let tuple = cloudpickle(py)?
         .call_method1("loads", (PyBytes::new(py, payload),))?
         .cast_into::<PyTuple>()?;
 
@@ -549,29 +517,9 @@ fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
     let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
     let volatility_str: String = tuple.get_item(4)?.extract()?;
 
-    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let input_types: Vec<arrow::datatypes::DataType> = input_schema
-        .fields()
-        .iter()
-        .map(|f| f.data_type().clone())
-        .collect();
-
-    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let return_field = return_schema
-        .fields()
-        .first()
-        .ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(
-                "PythonFunctionScalarUDF return schema must contain exactly one field",
-            )
-        })?
-        .as_ref()
-        .clone();
-
-    let volatility = datafusion_python_util::parse_volatility(&volatility_str)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let input_types = read_input_dtypes(&input_schema_bytes)?;
+    let return_field = read_single_return_field(&return_schema_bytes, "PythonFunctionScalarUDF")?;
+    let volatility = parse_volatility_str(&volatility_str)?;
 
     Ok(PythonFunctionScalarUDF::from_parts(
         name,
@@ -599,6 +547,82 @@ fn schema_to_ipc_bytes(schema: &Schema) -> arrow::error::Result<Vec<u8>> {
 fn schema_from_ipc_bytes(bytes: &[u8]) -> arrow::error::Result<Schema> {
     let reader = StreamReader::try_new(std::io::Cursor::new(bytes), None)?;
     Ok(reader.schema().as_ref().clone())
+}
+
+/// Extract the per-arg `DataType`s from a `Signature` known to be
+/// `TypeSignature::Exact` (all Python-defined UDFs are constructed
+/// with `Signature::exact`). Any other variant indicates the impl was
+/// not built by this crate's UDF/UDAF/UDWF constructors.
+fn signature_input_dtypes(signature: &Signature, kind: &str) -> PyResult<Vec<DataType>> {
+    match &signature.type_signature {
+        TypeSignature::Exact(types) => Ok(types.clone()),
+        other => Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "{kind} expected Signature::Exact, got {other:?}"
+        ))),
+    }
+}
+
+/// Wrap per-arg `DataType`s in synthetic `arg_{i}` fields and emit
+/// the IPC schema blob the encoder writes into the cloudpickle tuple.
+///
+/// The names and `nullable: true` are arbitrary: the underlying
+/// `TypeSignature::Exact` carries no per-input nullability or
+/// metadata, and the receiver collapses these fields back to
+/// `Vec<DataType>` via [`read_input_dtypes`], so anything set here
+/// beyond the data type is discarded on decode.
+fn build_input_schema_bytes(dtypes: &[DataType]) -> PyResult<Vec<u8>> {
+    let fields: Vec<Field> = dtypes
+        .iter()
+        .enumerate()
+        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt.clone(), true))
+        .collect();
+    schema_to_ipc_bytes(&Schema::new(fields)).map_err(arrow_to_py_err)
+}
+
+/// Emit a single-field IPC schema blob. Used for return-type and
+/// state-field payloads where the receiver needs to recover field
+/// metadata (names, nullability, key/value attributes) verbatim.
+fn build_single_field_schema_bytes(field: &Field) -> PyResult<Vec<u8>> {
+    schema_to_ipc_bytes(&Schema::new(vec![field.clone()])).map_err(arrow_to_py_err)
+}
+
+/// Emit a multi-field IPC schema blob.
+fn build_schema_bytes(fields: Vec<Field>) -> PyResult<Vec<u8>> {
+    schema_to_ipc_bytes(&Schema::new(fields)).map_err(arrow_to_py_err)
+}
+
+/// Decode the per-arg `DataType`s the encoder wrote via
+/// [`build_input_schema_bytes`].
+fn read_input_dtypes(bytes: &[u8]) -> PyResult<Vec<DataType>> {
+    let schema = schema_from_ipc_bytes(bytes).map_err(arrow_to_py_err)?;
+    Ok(schema
+        .fields()
+        .iter()
+        .map(|f| f.data_type().clone())
+        .collect())
+}
+
+/// Decode a single-field IPC schema blob and return that field by
+/// value. `kind` names the UDF flavor in the error message produced
+/// when the blob is empty (should be unreachable for sender-side
+/// payloads built via [`build_single_field_schema_bytes`]).
+fn read_single_return_field(bytes: &[u8], kind: &str) -> PyResult<Field> {
+    let schema = schema_from_ipc_bytes(bytes).map_err(arrow_to_py_err)?;
+    let field = schema.fields().first().ok_or_else(|| {
+        pyo3::exceptions::PyValueError::new_err(format!(
+            "{kind} return schema must contain exactly one field"
+        ))
+    })?;
+    Ok(field.as_ref().clone())
+}
+
+fn arrow_to_py_err(e: arrow::error::ArrowError) -> PyErr {
+    pyo3::exceptions::PyValueError::new_err(format!("{e}"))
+}
+
+fn parse_volatility_str(s: &str) -> PyResult<Volatility> {
+    datafusion_python_util::parse_volatility(s)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))
 }
 
 /// Stable wire-format string for a `Volatility`. Pinned to the three
@@ -671,37 +695,11 @@ pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<Wind
 }
 
 fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = cloudpickle(py)?;
-
     let signature = WindowUDFImpl::signature(udf);
-    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
-        TypeSignature::Exact(types) => types.clone(),
-        other => {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "PythonFunctionWindowUDF expected Signature::Exact, got {other:?}"
-            )));
-        }
-    };
-    // Input fields exist only as a transport for the per-arg
-    // `DataType`. Names default to `arg_{i}` and nullability to
-    // `true` because the underlying `TypeSignature::Exact` cannot
-    // express either — the receiver immediately collapses these
-    // fields back to `Vec<DataType>` when reconstructing the
-    // `Signature`, so any nullability or metadata set here would be
-    // discarded.
-    let input_fields: Vec<Field> = input_dtypes
-        .into_iter()
-        .enumerate()
-        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
-        .collect();
-    let input_schema = Schema::new(input_fields);
-    let input_schema_bytes = schema_to_ipc_bytes(&input_schema)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
-    let return_schema = Schema::new(vec![Field::new("result", udf.return_type().clone(), true)]);
-    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
+    let input_dtypes = signature_input_dtypes(signature, "PythonFunctionWindowUDF")?;
+    let input_schema_bytes = build_input_schema_bytes(&input_dtypes)?;
+    let return_field = Field::new("result", udf.return_type().clone(), true);
+    let return_schema_bytes = build_single_field_schema_bytes(&return_field)?;
     let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
@@ -715,14 +713,13 @@ fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> Py
         ],
     )?;
 
-    let blob = cloudpickle.call_method1("dumps", (payload,))?;
-    blob.extract::<Vec<u8>>()
+    cloudpickle(py)?
+        .call_method1("dumps", (payload,))?
+        .extract::<Vec<u8>>()
 }
 
 fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionWindowUDF> {
-    let cloudpickle = cloudpickle(py)?;
-
-    let tuple = cloudpickle
+    let tuple = cloudpickle(py)?
         .call_method1("loads", (PyBytes::new(py, payload),))?
         .cast_into::<PyTuple>()?;
 
@@ -732,29 +729,11 @@ fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
     let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
     let volatility_str: String = tuple.get_item(4)?.extract()?;
 
-    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let input_types: Vec<arrow::datatypes::DataType> = input_schema
-        .fields()
-        .iter()
-        .map(|f| f.data_type().clone())
-        .collect();
-
-    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let return_type = return_schema
-        .fields()
-        .first()
-        .ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(
-                "PythonFunctionWindowUDF return schema must contain exactly one field",
-            )
-        })?
+    let input_types = read_input_dtypes(&input_schema_bytes)?;
+    let return_type = read_single_return_field(&return_schema_bytes, "PythonFunctionWindowUDF")?
         .data_type()
         .clone();
-
-    let volatility = datafusion_python_util::parse_volatility(&volatility_str)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let volatility = parse_volatility_str(&volatility_str)?;
 
     Ok(PythonFunctionWindowUDF::new(
         name,
@@ -806,44 +785,17 @@ pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<Aggrega
 }
 
 fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = cloudpickle(py)?;
-
     let signature = AggregateUDFImpl::signature(udf);
-    let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
-        TypeSignature::Exact(types) => types.clone(),
-        other => {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "PythonFunctionAggregateUDF expected Signature::Exact, got {other:?}"
-            )));
-        }
-    };
-    // Input fields exist only as a transport for the per-arg
-    // `DataType`. Names default to `arg_{i}` and nullability to
-    // `true` because the underlying `TypeSignature::Exact` cannot
-    // express either — the receiver immediately collapses these
-    // fields back to `Vec<DataType>` when reconstructing the
-    // `Signature`, so any nullability or metadata set here would be
-    // discarded.
-    let input_fields: Vec<Field> = input_dtypes
-        .into_iter()
-        .enumerate()
-        .map(|(i, dt)| Field::new(format!("arg_{i}"), dt, true))
-        .collect();
-    let input_schema_bytes = schema_to_ipc_bytes(&Schema::new(input_fields))
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
-    let return_schema = Schema::new(vec![Field::new("result", udf.return_type().clone(), true)]);
-    let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
+    let input_dtypes = signature_input_dtypes(signature, "PythonFunctionAggregateUDF")?;
+    let input_schema_bytes = build_input_schema_bytes(&input_dtypes)?;
+    let return_field = Field::new("result", udf.return_type().clone(), true);
+    let return_schema_bytes = build_single_field_schema_bytes(&return_field)?;
     let state_fields: Vec<Field> = udf
         .state_fields_ref()
         .iter()
         .map(|f| f.as_ref().clone())
         .collect();
-    let state_schema_bytes = schema_to_ipc_bytes(&Schema::new(state_fields))
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-
+    let state_schema_bytes = build_schema_bytes(state_fields)?;
     let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
@@ -858,14 +810,13 @@ fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> Py
         ],
     )?;
 
-    let blob = cloudpickle.call_method1("dumps", (payload,))?;
-    blob.extract::<Vec<u8>>()
+    cloudpickle(py)?
+        .call_method1("dumps", (payload,))?
+        .extract::<Vec<u8>>()
 }
 
 fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionAggregateUDF> {
-    let cloudpickle = cloudpickle(py)?;
-
-    let tuple = cloudpickle
+    let tuple = cloudpickle(py)?
         .call_method1("loads", (PyBytes::new(py, payload),))?
         .cast_into::<PyTuple>()?;
 
@@ -876,39 +827,19 @@ fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunct
     let state_schema_bytes: Vec<u8> = tuple.get_item(4)?.extract()?;
     let volatility_str: String = tuple.get_item(5)?.extract()?;
 
-    let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let input_types: Vec<arrow::datatypes::DataType> = input_schema
-        .fields()
-        .iter()
-        .map(|f| f.data_type().clone())
-        .collect();
-
-    let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let return_type = return_schema
-        .fields()
-        .first()
-        .ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(
-                "PythonFunctionAggregateUDF return schema must contain exactly one field",
-            )
-        })?
+    let input_types = read_input_dtypes(&input_schema_bytes)?;
+    let return_type = read_single_return_field(&return_schema_bytes, "PythonFunctionAggregateUDF")?
         .data_type()
         .clone();
-
-    let state_schema = schema_from_ipc_bytes(&state_schema_bytes)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
     // Preserve the encoded state field metadata (names, nullability,
     // arbitrary key/value attributes) so the post-decode UDF reports
     // the same state schema as the sender's instance — important for
     // accumulators whose `StateFieldsArgs` consumers key off names or
     // nullability rather than positional `DataType`.
+    let state_schema = schema_from_ipc_bytes(&state_schema_bytes).map_err(arrow_to_py_err)?;
     let state_fields: Vec<arrow::datatypes::FieldRef> =
         state_schema.fields().iter().cloned().collect();
-
-    let volatility = datafusion_python_util::parse_volatility(&volatility_str)
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
+    let volatility = parse_volatility_str(&volatility_str)?;
 
     Ok(PythonFunctionAggregateUDF::from_parts(
         name,
