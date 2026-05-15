@@ -446,13 +446,16 @@ class Expr:  # noqa: PLW1641
         worker process for distributed evaluation.
 
         When ``ctx`` is supplied, encoding routes through that session's
-        installed :class:`LogicalExtensionCodec`. When ``ctx`` is
-        ``None``, the default codec is used.
+        installed :class:`LogicalExtensionCodec` (so settings like
+        :meth:`SessionContext.with_python_udf_inlining` take effect).
+        When ``ctx`` is ``None``, the default codec is used (Python UDF
+        inlining on, no user-installed extension codec).
 
         Built-in functions and Python UDFs (scalar, aggregate, window)
         travel inside the returned bytes; the worker does not need to
         pre-register them. UDFs imported via the FFI capsule protocol
-        travel by name only and must be registered on the worker.
+        travel by name only and must be registered on the worker. See
+        :doc:`/user-guide/io/distributing_work`.
 
         .. warning:: Security
             Bytes returned here may embed a cloudpickled Python
@@ -522,7 +525,9 @@ class Expr:  # noqa: PLW1641
 
         Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
         ``ctx`` is the :class:`SessionContext` used to resolve any
-        function references that travel by name (e.g. FFI UDFs). When
+        function references that travel by name (e.g. FFI UDFs, or
+        Python UDFs sent with inlining disabled via
+        :meth:`SessionContext.with_python_udf_inlining`). When
         ``ctx`` is ``None`` the worker context installed via
         :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
         context is installed, the global :class:`SessionContext` is used
@@ -586,8 +591,15 @@ class Expr:  # noqa: PLW1641
             >>> e = col("a") * lit(2)
             >>> pickle.loads(pickle.dumps(e)).canonical_name()
             'a * Int64(2)'
+
+        The encoding side honors a driver-side sender context installed
+        via :func:`datafusion.ipc.set_sender_ctx` — that is how
+        :meth:`SessionContext.with_python_udf_inlining` propagates
+        through ``pickle.dumps``.
         """
-        return (Expr._reconstruct, (self.to_bytes(),))
+        from datafusion.ipc import get_sender_ctx
+
+        return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
 
     @classmethod
     def _reconstruct(cls, proto_bytes: bytes) -> Expr:

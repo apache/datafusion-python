@@ -232,15 +232,43 @@ fn strip_wire_header<'a>(
 #[derive(Debug)]
 pub struct PythonLogicalCodec {
     inner: Arc<dyn LogicalExtensionCodec>,
+    python_udf_inlining: bool,
 }
 
 impl PythonLogicalCodec {
     pub fn new(inner: Arc<dyn LogicalExtensionCodec>) -> Self {
-        Self { inner }
+        Self {
+            inner,
+            python_udf_inlining: true,
+        }
     }
 
     pub fn inner(&self) -> &Arc<dyn LogicalExtensionCodec> {
         &self.inner
+    }
+
+    /// Whether Python-defined UDFs are encoded inline (and decoded
+    /// from cloudpickle blobs). Defaults to `true`. Set to `false`
+    /// when the codec sits on a session that must produce
+    /// cross-language wire bytes, or reject `cloudpickle.loads` on
+    /// untrusted `from_bytes` input.
+    ///
+    /// Security scope: strict mode (`false`) narrows only the codec
+    /// layer — it stops `Expr::from_bytes` from invoking
+    /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
+    /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
+    /// `pickle.loads` on untrusted input as unsafe regardless of this
+    /// setting. See Python's [pickle module security warning][1] for
+    /// why `pickle.loads` is unsafe in general.
+    ///
+    /// [1]: https://docs.python.org/3/library/pickle.html#module-pickle
+    pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
+        self.python_udf_inlining = enabled;
+        self
+    }
+
+    pub fn python_udf_inlining(&self) -> bool {
+        self.python_udf_inlining
     }
 }
 
@@ -301,46 +329,74 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_scalar_udf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udf(node, buf)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
-        if let Some(udf) = try_decode_python_scalar_udf(buf)? {
-            return Ok(udf);
+        if self.python_udf_inlining {
+            if let Some(udf) = try_decode_python_scalar_udf(buf)? {
+                return Ok(udf);
+            }
+        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
+            return Err(refuse_inline_payload("scalar UDF", name));
         }
         self.inner.try_decode_udf(name, buf)
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udaf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
-        if let Some(udaf) = try_decode_python_udaf(buf)? {
-            return Ok(udaf);
+        if self.python_udf_inlining {
+            if let Some(udaf) = try_decode_python_udaf(buf)? {
+                return Ok(udaf);
+            }
+        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
+            return Err(refuse_inline_payload("aggregate UDF", name));
         }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udwf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
-        if let Some(udwf) = try_decode_python_udwf(buf)? {
-            return Ok(udwf);
+        if self.python_udf_inlining {
+            if let Some(udwf) = try_decode_python_udwf(buf)? {
+                return Ok(udwf);
+            }
+        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
+            return Err(refuse_inline_payload("window UDF", name));
         }
         self.inner.try_decode_udwf(name, buf)
     }
+}
+
+/// Build the error returned by a strict codec when it receives an
+/// inline Python-UDF payload it has been told not to deserialize.
+fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusionError {
+    // `Execution`, not `Plan`: this is a wire-format decode refusal at
+    // codec time, not a planner-stage failure. Downstream error
+    // classification keys off the variant — surfacing this as a planner
+    // error would mis-route it into "fix your SQL" buckets.
+    datafusion::error::DataFusionError::Execution(format!(
+        "Refusing to deserialize inline Python {kind} '{name}': Python UDF \
+         inlining is disabled on this session. Ask the sender to re-encode \
+         with inlining disabled (so the UDF travels by name), or register \
+         '{name}' on this receiver's session and enable inlining on both \
+         sides — receivers cannot re-encode bytes they did not produce."
+    ))
 }
 
 /// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`] parked
@@ -358,15 +414,29 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
+    python_udf_inlining: bool,
 }
 
 impl PythonPhysicalCodec {
     pub fn new(inner: Arc<dyn PhysicalExtensionCodec>) -> Self {
-        Self { inner }
+        Self {
+            inner,
+            python_udf_inlining: true,
+        }
     }
 
     pub fn inner(&self) -> &Arc<dyn PhysicalExtensionCodec> {
         &self.inner
+    }
+
+    /// See [`PythonLogicalCodec::with_python_udf_inlining`].
+    pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
+        self.python_udf_inlining = enabled;
+        self
+    }
+
+    pub fn python_udf_inlining(&self) -> bool {
+        self.python_udf_inlining
     }
 }
 
@@ -391,15 +461,19 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_scalar_udf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udf(node, buf)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
-        if let Some(udf) = try_decode_python_scalar_udf(buf)? {
-            return Ok(udf);
+        if self.python_udf_inlining {
+            if let Some(udf) = try_decode_python_scalar_udf(buf)? {
+                return Ok(udf);
+            }
+        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
+            return Err(refuse_inline_payload("scalar UDF", name));
         }
         self.inner.try_decode_udf(name, buf)
     }
@@ -417,29 +491,37 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udaf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
-        if let Some(udaf) = try_decode_python_udaf(buf)? {
-            return Ok(udaf);
+        if self.python_udf_inlining {
+            if let Some(udaf) = try_decode_python_udaf(buf)? {
+                return Ok(udaf);
+            }
+        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
+            return Err(refuse_inline_payload("aggregate UDF", name));
         }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udwf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
-        if let Some(udwf) = try_decode_python_udwf(buf)? {
-            return Ok(udwf);
+        if self.python_udf_inlining {
+            if let Some(udwf) = try_decode_python_udwf(buf)? {
+                return Ok(udwf);
+            }
+        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
+            return Err(refuse_inline_payload("window UDF", name));
         }
         self.inner.try_decode_udwf(name, buf)
     }

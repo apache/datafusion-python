@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Worker-side setup for distributing DataFusion expressions.
+"""Driver- and worker-side setup for distributing DataFusion expressions.
 
 When a :class:`Expr` is shipped to a worker process (e.g. through
 :func:`multiprocessing.Pool` or a Ray actor), the worker reconstructs the
@@ -53,6 +53,27 @@ on the worker.
    payloads are not portable across Python minor versions. See
    :meth:`datafusion.Expr.to_bytes` for examples of what travels by
    value vs. by reference.
+
+On the driver side, call :func:`set_sender_ctx` to control how
+:func:`pickle.dumps` encodes expressions — for example, to apply
+:meth:`SessionContext.with_python_udf_inlining` to every pickled
+expression on this thread:
+
+.. code-block:: python
+
+    from datafusion import SessionContext
+    from datafusion.ipc import set_sender_ctx
+
+    driver_ctx = SessionContext().with_python_udf_inlining(enabled=False)
+    set_sender_ctx(driver_ctx)
+    pickle.dumps(expr)  # encoded with inlining disabled
+
+Without a sender context the default codec is used (Python UDF
+inlining on). The sender context only affects pickle / ``to_bytes``
+encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
+``ctx``.
+
+See :doc:`/user-guide/io/distributing_work` for the full pattern.
 """
 
 from __future__ import annotations
@@ -65,8 +86,11 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "clear_sender_ctx",
     "clear_worker_ctx",
+    "get_sender_ctx",
     "get_worker_ctx",
+    "set_sender_ctx",
     "set_worker_ctx",
 ]
 
@@ -123,6 +147,39 @@ def get_worker_ctx() -> SessionContext | None:
         True
     """
     return getattr(_local, "ctx", None)
+
+
+def set_sender_ctx(ctx: SessionContext) -> None:
+    """Install this driver's :class:`SessionContext` for outbound pickles.
+
+    Controls how :func:`pickle.dumps` encodes :class:`Expr` instances on
+    this thread. The most useful application is propagating a session
+    configured with
+    :meth:`SessionContext.with_python_udf_inlining` so the toggle takes
+    effect through pickle (which otherwise calls
+    :meth:`Expr.to_bytes` with no context and uses the default codec).
+
+    Idempotent: overwrites any previous value. Stored in a thread-local
+    slot, so worker threads on the driver may install their own contexts.
+    Does not affect :meth:`Expr.to_bytes` calls that pass an explicit
+    ``ctx`` — those continue to use the supplied context.
+    """
+    _local.sender_ctx = ctx
+
+
+def clear_sender_ctx() -> None:
+    """Remove this driver's installed sender :class:`SessionContext`.
+
+    After clearing, pickled expressions fall back to the default codec
+    (Python UDF inlining on).
+    """
+    if hasattr(_local, "sender_ctx"):
+        del _local.sender_ctx
+
+
+def get_sender_ctx() -> SessionContext | None:
+    """Return this driver's installed sender :class:`SessionContext`, or ``None``."""
+    return getattr(_local, "sender_ctx", None)
 
 
 def _resolve_ctx(

@@ -1769,3 +1769,46 @@ class SessionContext:
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
+
+    def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
+        """Toggle inline encoding of Python-defined UDFs on this session.
+
+        ``enabled`` is keyword-only:
+        ``with_python_udf_inlining(enabled=False)`` reads at the call
+        site as the inverse of
+        ``with_python_udf_inlining(enabled=True)``, where a positional
+        ``True`` / ``False`` would not.
+
+        When ``True`` (the default), Python scalar, aggregate, and window
+        UDFs travel inside the serialized expression and are
+        reconstructed on the receiver without pre-registration.
+
+        Set ``False`` to:
+
+        * Produce serialized bytes that round-trip through a non-Python
+          decoder (cross-language portability). UDFs are stored by name
+          only; the receiver must have matching registrations.
+        * Refuse to reconstruct Python UDFs from
+          :meth:`Expr.from_bytes` input that may come from an untrusted
+          source — ``cloudpickle.loads`` will not be invoked.
+
+        The toggle applies directly to :meth:`Expr.to_bytes` /
+        :meth:`Expr.from_bytes` calls that pass this session as their
+        ``ctx`` argument. To make the toggle apply through
+        :func:`pickle.dumps` (which calls :meth:`Expr.to_bytes` with no
+        context), install this session as the driver's sender context
+        via :func:`datafusion.ipc.set_sender_ctx` — and install it as
+        the worker's context via
+        :func:`datafusion.ipc.set_worker_ctx` for the corresponding
+        :func:`pickle.loads`.
+
+        For the full security model, see
+        :doc:`/user-guide/io/distributing_work` (Security section). In
+        short: this toggle narrows only the :meth:`Expr.from_bytes`
+        surface; :func:`pickle.loads` on untrusted bytes remains
+        unsafe regardless of the toggle.
+        """
+        new_internal = self.ctx.with_python_udf_inlining(enabled)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new

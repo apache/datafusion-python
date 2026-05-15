@@ -29,6 +29,9 @@ env:
 jobs:
   test-matrix:
     runs-on: ubuntu-latest
+    # Backstop: a hung multiprocessing worker (e.g. during a pickle regression)
+    # should not block CI longer than this.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
