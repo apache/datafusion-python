@@ -294,7 +294,11 @@ class TestPythonUdfInliningToggle:
 
         strict_receiver = SessionContext().with_python_udf_inlining(False)
         strict_receiver.register_udf(u)
-        with pytest.raises(Exception, match="inlining is disabled"):
+        # `RuntimeError` (not bare `Exception`): the codec refusal is
+        # surfaced through `parse_expr` → `PyRuntimeError`. Tightening
+        # the assertion catches a regression that swallows the refusal
+        # as a different error type.
+        with pytest.raises(RuntimeError, match="inlining is disabled"):
             Expr.from_bytes(blob, ctx=strict_receiver)
 
     def test_sender_ctx_propagates_through_pickle(self):
