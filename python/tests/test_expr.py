@@ -1186,7 +1186,7 @@ def test_expr_to_bytes_roundtrip(ctx: SessionContext) -> None:
 
     original = col("a") + lit(1)
     blob = original.to_bytes(ctx)
-    restored = Expr.from_bytes(ctx, blob)
+    restored = Expr.from_bytes(blob, ctx=ctx)
 
     # Canonical name preserves the structure of the expression even
     # though the underlying PyExpr instances are different.
@@ -1201,6 +1201,6 @@ def test_expr_to_bytes_no_ctx_default_codec() -> None:
     fresh = SessionContext()
     original = col("a") * lit(2)
     blob = original.to_bytes()  # encode side: default codec
-    restored = Expr.from_bytes(fresh, blob)
+    restored = Expr.from_bytes(blob, ctx=fresh)
 
     assert restored.canonical_name() == original.canonical_name()

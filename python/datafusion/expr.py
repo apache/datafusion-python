@@ -434,23 +434,59 @@ class Expr:  # noqa: PLW1641
         return self.expr.variant_name()
 
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
-        """Serialize this expression to protobuf bytes.
+        """Serialize this expression to bytes for shipping to another process.
 
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
-        default codec is used.
+        Use this — or :func:`pickle.dumps` — to send an expression to a
+        worker process for distributed evaluation.
+
+        When ``ctx`` is supplied, encoding routes through that session's
+        installed :class:`LogicalExtensionCodec`. When ``ctx`` is
+        ``None``, the default codec is used.
+
+        Built-in functions and Python scalar UDFs travel inside the
+        returned bytes; the worker does not need to pre-register them.
+        UDFs imported via the FFI capsule protocol travel by name only
+        and must be registered on the worker.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return self.expr.to_bytes(ctx_arg)
 
-    @staticmethod
-    def from_bytes(ctx: SessionContext, data: bytes) -> Expr:
-        """Decode an expression from serialized protobuf bytes.
+    @classmethod
+    def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
+        """Reconstruct an expression from serialized bytes.
 
-        ``ctx`` provides the function registry for resolving UDF
-        references and the logical codec for in-band Python payloads.
+        Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
+        ``ctx`` is the :class:`SessionContext` used to resolve any
+        function references that travel by name (e.g. FFI UDFs). When
+        ``ctx`` is ``None`` the worker context installed via
+        :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
+        context is installed, the global :class:`SessionContext` is used
+        (sufficient for built-ins and Python scalar UDFs, plus any UDFs
+        registered on the global context).
         """
-        return Expr(expr_internal.RawExpr.from_bytes(ctx.ctx, data))
+        from datafusion.ipc import _resolve_ctx
+
+        resolved = _resolve_ctx(ctx)
+        return cls(expr_internal.RawExpr.from_bytes(resolved.ctx, buf))
+
+    def __reduce__(self) -> tuple:
+        """Pickle protocol hook.
+
+        Lets expressions be shipped to worker processes via
+        :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
+        and Python scalar UDFs travel inside the pickle bytes; only
+        FFI-capsule UDFs require pre-registration on the worker. The
+        worker's :class:`SessionContext` for resolving those references
+        is looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
+        back to the global :class:`SessionContext` if none has been
+        installed on the worker.
+        """
+        return (Expr._reconstruct, (self.to_bytes(),))
+
+    @classmethod
+    def _reconstruct(cls, proto_bytes: bytes) -> Expr:
+        """Internal entry point used by :meth:`__reduce__` on unpickle."""
+        return cls.from_bytes(proto_bytes)
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""

@@ -141,6 +141,16 @@ class ScalarUDF:
             name, func, input_fields, return_field, str(volatility)
         )
 
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDF.
+
+        For UDFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udf.name
+
     def __repr__(self) -> str:
         """Print a string representation of the Scalar UDF."""
         return self._udf.__repr__()

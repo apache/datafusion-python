@@ -43,7 +43,7 @@ use crate::expr::PyExpr;
 /// This struct holds the Python written function that is a
 /// ScalarUDF.
 #[derive(Debug)]
-struct PythonFunctionScalarUDF {
+pub(crate) struct PythonFunctionScalarUDF {
     name: String,
     func: Py<PyAny>,
     signature: Signature,
@@ -67,6 +67,37 @@ impl PythonFunctionScalarUDF {
             return_field: Arc::new(return_field),
         }
     }
+
+    /// Stored Python callable. Consumed by the codec to cloudpickle
+    /// the function body across process boundaries.
+    pub(crate) fn func(&self) -> &Py<PyAny> {
+        &self.func
+    }
+
+    pub(crate) fn return_field(&self) -> &FieldRef {
+        &self.return_field
+    }
+
+    /// Reconstruct a `PythonFunctionScalarUDF` from the parts emitted
+    /// by the codec. Inputs collapse to `Vec<DataType>` because
+    /// `Signature::exact` cannot carry per-input nullability or
+    /// metadata — the encoder is free to discard that side of the
+    /// schema. `return_field` is kept as a `Field` so the post-decode
+    /// nullability and metadata match the sender's instance.
+    pub(crate) fn from_parts(
+        name: String,
+        func: Py<PyAny>,
+        input_types: Vec<DataType>,
+        return_field: Field,
+        volatility: Volatility,
+    ) -> Self {
+        Self {
+            name,
+            func,
+            signature: Signature::exact(input_types, volatility),
+            return_field: Arc::new(return_field),
+        }
+    }
 }
 
 impl Eq for PythonFunctionScalarUDF {}
@@ -75,21 +106,51 @@ impl PartialEq for PythonFunctionScalarUDF {
         self.name == other.name
             && self.signature == other.signature
             && self.return_field == other.return_field
-            && Python::attach(|py| self.func.bind(py).eq(other.func.bind(py)).unwrap_or(false))
+            // Identical pointers ⇒ same Python object. Most equality
+            // checks compare `Arc`-shared clones of the same UDF
+            // (e.g. expression rewriting), so the pointer match short-
+            // circuits before touching the GIL.
+            && (self.func.as_ptr() == other.func.as_ptr()
+                || Python::attach(|py| {
+                    // Rust's `PartialEq` cannot return `Result`, so we
+                    // have to pick a side when Python `__eq__` raises.
+                    // `false` is the conservative choice — better to
+                    // report two UDFs as distinct than to wrongly
+                    // merge them — but the silent miss can still
+                    // surface as expression-dedup or cache-lookup
+                    // anomalies. Log at `debug` so the failure is
+                    // observable without flooding production logs.
+                    // FIXME: revisit if upstream `ScalarUDFImpl`
+                    // exposes a fallible `PartialEq`.
+                    self.func
+                        .bind(py)
+                        .eq(other.func.bind(py))
+                        .unwrap_or_else(|e| {
+                            log::debug!(
+                                target: "datafusion_python::udf",
+                                "PythonFunctionScalarUDF {:?} __eq__ raised; treating as unequal: {e}",
+                                self.name,
+                            );
+                            false
+                        })
+                }))
     }
 }
 
 impl Hash for PythonFunctionScalarUDF {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        // Hash only the identifying header (name + signature + return
+        // field). Skipping `func` is intentional: the Rust `Hash`
+        // contract requires `a == b ⇒ hash(a) == hash(b)`, not the
+        // converse, so a coarser hash is sound — `PartialEq` still
+        // disambiguates two UDFs with the same header but distinct
+        // callables. Falling back to a sentinel on `py_hash` failure
+        // (as a prior revision did) silently mapped every unhashable
+        // closure to the same bucket; that is the worst case for a
+        // hashmap and is what this rewrite avoids.
         self.name.hash(state);
         self.signature.hash(state);
         self.return_field.hash(state);
-
-        Python::attach(|py| {
-            let py_hash = self.func.bind(py).hash().unwrap_or(0); // Handle unhashable objects
-
-            state.write_isize(py_hash);
-        });
     }
 }
 
@@ -219,5 +280,10 @@ impl PyScalarUDF {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("ScalarUDF({})", self.function.name()))
+    }
+
+    #[getter]
+    fn name(&self) -> &str {
+        self.function.name()
     }
 }
