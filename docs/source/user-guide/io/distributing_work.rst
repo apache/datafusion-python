@@ -188,6 +188,14 @@ Sharp edges:
 
 * Sender and worker slots are **thread-local**. Background threads
   on either side see ``None`` until they install their own.
+* Under the ``fork`` start method, the parent's ``threading.local()``
+  values are copied into the child by copy-on-write — a forked
+  worker initially observes whatever sender / worker slot the parent
+  had set, until the worker writes its own value (or calls the
+  matching ``clear_*_ctx``). ``spawn`` and ``forkserver`` workers
+  start with empty thread-local slots. Treat the slot as
+  uninitialized on worker entry and install (or clear) it explicitly
+  in the worker initializer; do not rely on inherited state.
 * The global slot persists across ``fork`` workers (copy-on-write
   memory inherit) but not across ``spawn`` / ``forkserver`` workers
   (fresh process — register or install a worker context on
