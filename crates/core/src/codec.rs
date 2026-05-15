@@ -19,11 +19,11 @@
 //!
 //! Datafusion-python plans can carry references to Python-defined
 //! objects that the upstream protobuf codecs do not know how to
-//! serialize: pure-Python scalar UDFs, Python query-planning
-//! extensions, and so on. Their state lives inside `Py<PyAny>`
-//! callables and closures rather than being recoverable from a name
-//! in the receiver's function registry. To ship a plan across a
-//! process boundary (pickle, `multiprocessing`, Ray actor,
+//! serialize: pure-Python scalar / aggregate / window UDFs, Python
+//! query-planning extensions, and so on. Their state lives inside
+//! `Py<PyAny>` callables and closures rather than being recoverable
+//! from a name in the receiver's function registry. To ship a plan
+//! across a process boundary (pickle, `multiprocessing`, Ray actor,
 //! `datafusion-distributed`, etc.) those payloads have to be encoded
 //! into the proto wire format itself.
 //!
@@ -256,7 +256,12 @@ impl PythonLogicalCodec {
     /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
     /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
     /// `pickle.loads` on untrusted input as unsafe regardless of this
-    /// setting.
+    /// setting. See `docs/source/user-guide/io/distributing_work.rst`
+    /// (Security section) for the full threat model, and Python's
+    /// [pickle module security warning][1] for why `pickle.loads` is
+    /// unsafe in general.
+    ///
+    /// [1]: https://docs.python.org/3/library/pickle.html#module-pickle
     pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
         self.python_udf_inlining = enabled;
         self
@@ -433,7 +438,7 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// encoding on this layer too — otherwise a plan with a Python UDF
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
-/// ([`PY_SCALAR_UDF_FAMILY`]) so the wire format is identical.
+/// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
@@ -563,10 +568,10 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 // =============================================================================
 
 /// Encode a Python scalar UDF inline if `node` is one. Returns
-/// `Ok(true)` when the payload (`DFPYUDF` family prefix, version byte,
-/// cloudpickled tuple) was written and the caller should skip its
-/// inner codec. Returns `Ok(false)` for any non-Python UDF, signalling
-/// the caller to delegate to its `inner`.
+/// `Ok(true)` when the payload (`DFPYUDF1` prefix + cloudpickled
+/// tuple) was written and the caller should skip its inner codec.
+/// Returns `Ok(false)` for any non-Python UDF, signalling the caller
+/// to delegate to its `inner`.
 pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<bool> {
     let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionScalarUDF>() else {
         return Ok(false);
@@ -806,7 +811,7 @@ fn read_framed_payload<'a>(
 
 /// Cached handle to the `cloudpickle` module.
 ///
-/// The encode/decode helpers above would otherwise re-resolve the
+/// Six encode/decode helpers below would otherwise re-resolve the
 /// module on every call. `py.import` is backed by `sys.modules` and
 /// therefore cheap, but each call still walks a dict and re-binds the
 /// result; a plan with many Python UDFs pays that cost per UDF.

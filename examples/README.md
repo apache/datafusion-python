@@ -44,6 +44,11 @@ Here is a direct link to the file used in the examples:
 - [Register a Python UDF with DataFusion](./python-udf.py)
 - [Register a Python UDAF with DataFusion](./python-udaf.py)
 
+### Distributing DataFusion expressions
+
+- [Fan out distinct expressions to a multiprocessing pool](./multiprocessing_pickle_expr.py)
+- [Distribute expression evaluation across Ray actors](./ray_pickle_expr.py)
+
 ### Substrait Support
 
 - [Serialize query plans using Substrait](./substrait.py)
