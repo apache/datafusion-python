@@ -173,6 +173,37 @@ Practical considerations
   the captured state is large, mutable, or not portable to the
   worker's environment.
 
+Disabling Python UDF inlining
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For a stricter wire format, call
+:py:meth:`SessionContext.with_python_udf_inlining(False)
+<datafusion.SessionContext.with_python_udf_inlining>` on the session
+producing or consuming the bytes. With inlining disabled, Python
+UDFs travel by name only — the same way FFI-capsule UDFs do — and
+the receiver must have a matching registration.
+
+Two use cases:
+
+* **Cross-language portability.** A non-Python decoder cannot
+  reconstruct a cloudpickled payload. Senders aimed at Java, C++,
+  or another Rust binary disable inlining and rely on the receiver
+  having compatible UDF registrations.
+* **Untrusted-source decode.** With inlining disabled,
+  :py:meth:`Expr.from_bytes` never calls ``cloudpickle.loads`` on
+  the incoming bytes — an inline payload from a misbehaving sender
+  raises a clear error instead of executing arbitrary Python code.
+
+Mismatched configurations raise a descriptive error: an inline blob
+fed to a strict receiver fails fast rather than silently dropping
+into ``cloudpickle.loads``.
+
+Note that :py:func:`pickle.loads` itself remains unsafe on untrusted
+input regardless of this setting — an attacker producing the outer
+pickle envelope can execute arbitrary code before the codec ever
+sees the bytes. The toggle only protects the
+:py:meth:`Expr.from_bytes` API surface.
+
 Security
 ~~~~~~~~
 
@@ -182,8 +213,10 @@ Security
    arbitrary Python code on the receiver — pickle is doing the work
    under the hood and pickle is unsafe on untrusted input. Only
    accept expressions from trusted sources. For untrusted-source
-   workflows, restrict senders to built-in functions and
-   pre-registered Rust-side UDFs.
+   workflows, disable Python UDF inlining (see above), restrict
+   senders to built-in functions and pre-registered Rust-side UDFs,
+   and avoid :py:func:`pickle.loads` on externally supplied bytes
+   entirely.
 
 Query-level distribution via datafusion-distributed
 ---------------------------------------------------

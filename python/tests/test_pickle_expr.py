@@ -229,6 +229,62 @@ class TestWindowUDFCodec:
         assert "count_up" in decoded.canonical_name()
 
 
+class TestPythonUdfInliningToggle:
+    """`SessionContext.with_python_udf_inlining(False)` opts out of
+    inline Python UDF encoding for both encode and decode paths."""
+
+    def _build_double_udf(self):
+        return udf(
+            lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+            [pa.int64()],
+            pa.int64(),
+            volatility="immutable",
+            name="double",
+        )
+
+    def test_strict_encoder_emits_smaller_blob(self):
+        """Strict mode skips cloudpickle of the Python callable, so the
+        encoded bytes are dramatically smaller than the inline form."""
+        ctx_inline = SessionContext()
+        ctx_strict = ctx_inline.with_python_udf_inlining(False)
+        u = self._build_double_udf()
+        e = u(col("a"))
+
+        blob_inline = e.to_bytes(ctx_inline)
+        blob_strict = e.to_bytes(ctx_strict)
+
+        assert len(blob_strict) < len(blob_inline) // 4
+
+    def test_strict_roundtrip_via_registry(self):
+        """When both sender and receiver disable inlining, the UDF
+        travels by name only and the receiver resolves it from its
+        registered functions."""
+        from datafusion import Expr
+
+        strict_sender = SessionContext().with_python_udf_inlining(False)
+        u = self._build_double_udf()
+        blob = u(col("a")).to_bytes(strict_sender)
+
+        receiver = SessionContext().with_python_udf_inlining(False)
+        receiver.register_udf(u)
+        restored = Expr.from_bytes(blob, ctx=receiver)
+        assert "double" in restored.canonical_name()
+
+    def test_strict_decoder_refuses_inline_payload(self):
+        """An inline-encoded blob fed to a strict receiver raises with a
+        clear error rather than silently invoking cloudpickle.loads."""
+        from datafusion import Expr
+
+        sender = SessionContext()
+        u = self._build_double_udf()
+        blob = u(col("a")).to_bytes(sender)
+
+        strict_receiver = SessionContext().with_python_udf_inlining(False)
+        strict_receiver.register_udf(u)
+        with pytest.raises(Exception, match="inlining is disabled"):
+            Expr.from_bytes(blob, ctx=strict_receiver)
+
+
 class TestWorkerCtxLifecycle:
     def test_set_and_clear(self):
         assert get_worker_ctx() is None

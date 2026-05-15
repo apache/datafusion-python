@@ -1769,3 +1769,28 @@ class SessionContext:
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
+
+    def with_python_udf_inlining(self, enabled: bool) -> SessionContext:
+        """Toggle inline encoding of Python-defined UDFs on this session.
+
+        When ``True`` (the default), Python scalar, aggregate, and window
+        UDFs travel inside the serialized expression and are
+        reconstructed on the receiver without pre-registration.
+
+        Set ``False`` to:
+
+        * Produce serialized bytes that round-trip through a non-Python
+          decoder (cross-language portability). UDFs are stored by name
+          only; the receiver must have matching registrations.
+        * Refuse to reconstruct Python UDFs from
+          :meth:`Expr.from_bytes` input that may come from an untrusted
+          source — ``cloudpickle.loads`` will not be invoked.
+
+        ``pickle.loads`` on untrusted bytes remains unsafe regardless of
+        this setting; only the ``to_bytes`` / ``from_bytes`` API is
+        affected.
+        """
+        new_internal = self.ctx.with_python_udf_inlining(enabled)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new
