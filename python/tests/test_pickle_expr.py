@@ -182,8 +182,6 @@ class TestAggregateUDFCodec:
         e = u(col("a"))
         blob = e.to_bytes()
         fresh = SessionContext()
-        from datafusion import Expr
-
         decoded = Expr.from_bytes(blob, ctx=fresh)
         assert "count_all" in decoded.canonical_name()
 
@@ -237,8 +235,6 @@ class TestWindowUDFCodec:
         e = u(col("a"))
         blob = e.to_bytes()
         fresh = SessionContext()
-        from datafusion import Expr
-
         decoded = Expr.from_bytes(blob, ctx=fresh)
         assert "count_up" in decoded.canonical_name()
 
@@ -280,8 +276,6 @@ class TestPythonUdfInliningToggle:
         """When both sender and receiver disable inlining, the UDF
         travels by name only and the receiver resolves it from its
         registered functions."""
-        from datafusion import Expr
-
         strict_sender = SessionContext().with_python_udf_inlining(False)
         u = self._build_double_udf()
         blob = u(col("a")).to_bytes(strict_sender)
@@ -294,8 +288,6 @@ class TestPythonUdfInliningToggle:
     def test_strict_decoder_refuses_inline_payload(self):
         """An inline-encoded blob fed to a strict receiver raises with a
         clear error rather than silently invoking cloudpickle.loads."""
-        from datafusion import Expr
-
         sender = SessionContext()
         u = self._build_double_udf()
         blob = u(col("a")).to_bytes(sender)
