@@ -27,6 +27,7 @@ its real name in worker subprocesses.
 
 from __future__ import annotations
 
+import functools
 import multiprocessing as mp
 import pickle
 import sys
@@ -37,24 +38,29 @@ from datafusion import col, lit
 from . import _pickle_multiprocessing_helpers as helpers
 
 
+@functools.cache
 def _multiprocessing_available() -> tuple[bool, str]:
     """Return (available, reason). Some sandboxed environments deny semaphore
     creation; without semaphores, ``multiprocessing.Pool`` cannot start.
+
+    Cached so the probe Pool only spawns once per session, and only when a
+    test in this module is actually about to run — collection-only runs
+    (e.g. ``pytest --collect-only`` on the full suite) skip the probe.
     """
     try:
         ctx = mp.get_context("spawn")
         with ctx.Pool(processes=1) as pool:
             pool.map(int, [0])
-    except PermissionError as exc:
-        return False, f"multiprocessing.Pool unavailable: {exc}"
-    except OSError as exc:
+    except (PermissionError, OSError) as exc:
         return False, f"multiprocessing.Pool unavailable: {exc}"
     return True, ""
 
 
-_MP_AVAILABLE, _MP_SKIP_REASON = _multiprocessing_available()
-
-pytestmark = pytest.mark.skipif(not _MP_AVAILABLE, reason=_MP_SKIP_REASON)
+@pytest.fixture(autouse=True)
+def _skip_if_multiprocessing_unavailable():
+    available, reason = _multiprocessing_available()
+    if not available:
+        pytest.skip(reason)
 
 
 START_METHODS = [
