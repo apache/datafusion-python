@@ -626,6 +626,17 @@ Module Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> Expr
+      :staticmethod:
+
+
+      Decode an expression from serialized protobuf bytes.
+
+      ``ctx`` provides the function registry for resolving UDF
+      references and the logical codec for in-band Python payloads.
+
+
+
    .. py:method:: from_unixtime() -> Expr
 
       Converts an integer to RFC3339 timestamp format string.
@@ -952,6 +963,16 @@ Module Contents
    .. py:method:: tanh() -> Expr
 
       Returns the hyperbolic tangent of the argument.
+
+
+
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Serialize this expression to protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
+      default codec is used.
 
 
 

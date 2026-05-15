@@ -470,13 +470,23 @@ Package Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
+      :staticmethod:
+
+
+      Create an ExecutionPlan from serialized protobuf bytes.
+
+      Decoding routes through the session's installed
+      `PhysicalExtensionCodec`. Tables created in memory from record
+      batches are currently not supported.
+
+
+
    .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
       :staticmethod:
 
 
-      Create an ExecutionPlan from protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`from_bytes`.
 
 
 
@@ -491,11 +501,19 @@ Package Contents
 
 
 
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Convert an ExecutionPlan into serialized protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed `PhysicalExtensionCodec`. Tables created in memory
+      from record batches are currently not supported.
+
+
+
    .. py:method:: to_proto() -> bytes
 
-      Convert an ExecutionPlan into protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`to_bytes`.
 
 
 
@@ -977,6 +995,17 @@ Package Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> Expr
+      :staticmethod:
+
+
+      Decode an expression from serialized protobuf bytes.
+
+      ``ctx`` provides the function registry for resolving UDF
+      references and the logical codec for in-band Python payloads.
+
+
+
    .. py:method:: from_unixtime() -> Expr
 
       Converts an integer to RFC3339 timestamp format string.
@@ -1306,6 +1335,16 @@ Package Contents
 
 
 
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Serialize this expression to protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
+      default codec is used.
+
+
+
    .. py:method:: to_hex() -> Expr
 
       Converts an integer to a hexadecimal string.
@@ -1470,13 +1509,23 @@ Package Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
+      :staticmethod:
+
+
+      Create a LogicalPlan from serialized protobuf bytes.
+
+      Decoding routes through the session's installed
+      `LogicalExtensionCodec`. Tables created in memory from record
+      batches are currently not supported.
+
+
+
    .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
       :staticmethod:
 
 
-      Create a LogicalPlan from protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`from_bytes`.
 
 
 
@@ -1486,11 +1535,22 @@ Package Contents
 
 
 
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Convert a LogicalPlan to serialized protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed `LogicalExtensionCodec` so user FFI codecs (registered
+      via :py:meth:`SessionContext.with_logical_extension_codec`) see
+      the encode path. With ``ctx=None`` a default codec is used.
+      Tables created in memory from record batches are currently not
+      supported.
+
+
+
    .. py:method:: to_proto() -> bytes
 
-      Convert a LogicalPlan to protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`to_bytes`.
 
 
 

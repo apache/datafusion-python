@@ -767,6 +767,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.__datafusion_physical_extension_codec__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_task_context_provider__">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1329,6 +1338,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.with_logical_extension_codec()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_physical_extension_codec">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.with_physical_extension_codec()
         </span>
        </code>
       </a>
@@ -1928,6 +1946,12 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_logical_extension_codec__">
 <span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="Link to this definition">¶</a></dt>
 <dd><p>Access the PyCapsule FFI_LogicalExtensionCodec.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_physical_extension_codec__">
+<span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__" title="Link to this definition">¶</a></dt>
+<dd><p>Access the PyCapsule FFI_PhysicalExtensionCodec.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2933,6 +2957,14 @@ after parsing.</p></li>
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.with_logical_extension_codec">
 <span class="sig-name descname"><span class="pre">with_logical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="Link to this definition">¶</a></dt>
 <dd><p>Create a new session context with specified codec.</p>
+<p>This only supports codecs that have been implemented using the
+FFI interface.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.with_physical_extension_codec">
+<span class="sig-name descname"><span class="pre">with_physical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_physical_extension_codec" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new session context with the specified physical codec.</p>
 <p>This only supports codecs that have been implemented using the
 FFI interface.</p>
 </dd></dl>

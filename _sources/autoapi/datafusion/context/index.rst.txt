@@ -442,6 +442,12 @@ Module Contents
 
 
 
+   .. py:method:: __datafusion_physical_extension_codec__() -> Any
+
+      Access the PyCapsule FFI_PhysicalExtensionCodec.
+
+
+
    .. py:method:: __datafusion_task_context_provider__() -> Any
 
       Access the PyCapsule FFI_TaskContextProvider.
@@ -1275,6 +1281,15 @@ Module Contents
    .. py:method:: with_logical_extension_codec(codec: Any) -> SessionContext
 
       Create a new session context with specified codec.
+
+      This only supports codecs that have been implemented using the
+      FFI interface.
+
+
+
+   .. py:method:: with_physical_extension_codec(codec: Any) -> SessionContext
+
+      Create a new session context with the specified physical codec.
 
       This only supports codecs that have been implemented using the
       FFI interface.

@@ -487,6 +487,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.from_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.from_bytes()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.from_proto">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -500,6 +509,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          ExecutionPlan.metrics()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.ExecutionPlan.to_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.to_bytes()
         </span>
        </code>
       </a>
@@ -597,6 +615,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.LogicalPlan.from_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.from_bytes()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.plan.LogicalPlan.from_proto">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -610,6 +637,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          LogicalPlan.inputs()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.plan.LogicalPlan.to_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.to_bytes()
         </span>
        </code>
       </a>
@@ -916,10 +952,18 @@ DataFrame has been executed.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.from_bytes">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.from_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Create an ExecutionPlan from serialized protobuf bytes.</p>
+<p>Decoding routes through the session’s installed
+<cite>PhysicalExtensionCodec</cite>. Tables created in memory from record
+batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.from_proto">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_proto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.from_proto" title="Link to this definition">¶</a></dt>
-<dd><p>Create an ExecutionPlan from protobuf bytes.</p>
-<p>Tables created in memory from record batches are currently not supported.</p>
+<dd><p>Deprecated alias for <a class="reference internal" href="#datafusion.plan.ExecutionPlan.from_bytes" title="datafusion.plan.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -933,10 +977,18 @@ meaningful after the DataFrame has been executed.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.to_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Convert an ExecutionPlan into serialized protobuf bytes.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
+installed <cite>PhysicalExtensionCodec</cite>. Tables created in memory
+from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.to_proto">
 <span class="sig-name descname"><span class="pre">to_proto</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.to_proto" title="Link to this definition">¶</a></dt>
-<dd><p>Convert an ExecutionPlan into protobuf bytes.</p>
-<p>Tables created in memory from record batches are currently not supported.</p>
+<dd><p>Deprecated alias for <a class="reference internal" href="#datafusion.plan.ExecutionPlan.to_bytes" title="datafusion.plan.ExecutionPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1004,10 +1056,18 @@ using the `DOT</cite> language. This format can be visualized using software fro
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.from_bytes">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.from_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Create a LogicalPlan from serialized protobuf bytes.</p>
+<p>Decoding routes through the session’s installed
+<cite>LogicalExtensionCodec</cite>. Tables created in memory from record
+batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.from_proto">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_proto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.from_proto" title="Link to this definition">¶</a></dt>
-<dd><p>Create a LogicalPlan from protobuf bytes.</p>
-<p>Tables created in memory from record batches are currently not supported.</p>
+<dd><p>Deprecated alias for <a class="reference internal" href="#datafusion.plan.LogicalPlan.from_bytes" title="datafusion.plan.LogicalPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1017,10 +1077,21 @@ using the `DOT</cite> language. This format can be visualized using software fro
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.to_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a LogicalPlan to serialized protobuf bytes.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
+installed <cite>LogicalExtensionCodec</cite> so user FFI codecs (registered
+via <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec()</span></code>) see
+the encode path. With <code class="docutils literal notranslate"><span class="pre">ctx=None</span></code> a default codec is used.
+Tables created in memory from record batches are currently not
+supported.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.to_proto">
 <span class="sig-name descname"><span class="pre">to_proto</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.to_proto" title="Link to this definition">¶</a></dt>
-<dd><p>Convert a LogicalPlan to protobuf bytes.</p>
-<p>Tables created in memory from record batches are currently not supported.</p>
+<dd><p>Deprecated alias for <a class="reference internal" href="#datafusion.plan.LogicalPlan.to_bytes" title="datafusion.plan.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">

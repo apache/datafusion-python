@@ -1039,6 +1039,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.from_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.from_bytes()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.from_unixtime">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1430,6 +1439,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.tanh()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.to_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.to_bytes()
         </span>
        </code>
       </a>
@@ -3416,6 +3434,14 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.from_bytes">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.from_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Decode an expression from serialized protobuf bytes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ctx</span></code> provides the function registry for resolving UDF
+references and the logical codec for in-band Python payloads.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.from_unixtime">
 <span class="sig-name descname"><span class="pre">from_unixtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.from_unixtime" title="Link to this definition">¶</a></dt>
 <dd><p>Converts an integer to RFC3339 timestamp format string.</p>
@@ -3736,6 +3762,15 @@ UTF8View literal, like in:
 <dt class="sig sig-object py" id="datafusion.expr.Expr.tanh">
 <span class="sig-name descname"><span class="pre">tanh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.tanh" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the hyperbolic tangent of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.to_bytes">
+<span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.to_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Serialize this expression to protobuf bytes.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
+installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code>. Without <code class="docutils literal notranslate"><span class="pre">ctx</span></code> a
+default codec is used.</p>
 </dd></dl>
 
 <dl class="py method">
