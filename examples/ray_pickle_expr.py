@@ -17,11 +17,9 @@
 
 """Distribute DataFusion expressions to Ray actors.
 
-Build an expression in the driver, ship it to a pool of Ray actors, and have
-each actor evaluate it against its own slice of data. Each actor sets up
-its own :class:`SessionContext` once in `__init__` and registers any UDFs
-it needs to resolve by name. Python scalar UDFs travel with the shipped
-expression and need no actor-side pre-registration.
+Build an expression in the driver, ship it to a pool of Ray actors, and
+have each actor evaluate it against its own slice of data. Python UDFs
+travel with the shipped expression — no actor-side registration needed.
 
 Prerequisites:
     pip install ray
@@ -33,11 +31,10 @@ Run:
 import pyarrow as pa
 import ray
 from datafusion import Expr, SessionContext, col, lit, udf
-from datafusion.ipc import set_worker_ctx
 
 
 def _build_double_udf():
-    """Return the demo UDF used by the actors."""
+    """Return the demo UDF used by the driver."""
     return udf(
         lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
         [pa.int64()],
@@ -52,18 +49,13 @@ class DataFusionWorker:
     """A Ray actor with a private :class:`SessionContext`."""
 
     def __init__(self) -> None:
-        ctx = SessionContext()
-        ctx.register_udf(_build_double_udf())
-        # Install the actor's SessionContext as its worker context;
-        # expressions reconstructed in this actor will resolve their
-        # by-name references against it.
-        set_worker_ctx(ctx)
-        self._ctx = ctx
+        self._ctx = SessionContext()
 
     def evaluate(self, expr: Expr, batch_pylist: list[int]) -> list[int]:
         """Run the expression against an in-memory batch."""
-        # `expr` arrived here via Ray's automatic argument serialization —
-        # no manual pickle handling needed in user code.
+        # `expr` arrived here via Ray's automatic argument serialization;
+        # the Python UDF inside it was reconstructed from the bytes — no
+        # pre-registration on this actor required.
         df = self._ctx.from_pydict({"a": batch_pylist})
         out = df.with_column("result", expr).select("result")
         return out.to_pydict()["result"]
@@ -72,8 +64,6 @@ class DataFusionWorker:
 def main() -> None:
     ray.init(ignore_reinit_error=True)
 
-    sender = SessionContext()
-    sender.register_udf(_build_double_udf())
     expr = _build_double_udf()(col("a")) + lit(1)
 
     workers = [DataFusionWorker.remote() for _ in range(2)]
