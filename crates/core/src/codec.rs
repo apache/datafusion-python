@@ -75,7 +75,7 @@
 //! `inner`; the encoder/decoder hooks for each kind are added as the
 //! corresponding Python-side type becomes serializable.
 
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use arrow::datatypes::{Field, Schema, SchemaRef};
 use arrow::ipc::reader::StreamReader;
@@ -470,7 +470,7 @@ pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<Scal
 /// `from_parts` immediately collapses incoming `Field`s back to
 /// `DataType`s for the reconstructed `Signature`.
 fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let signature = udf.signature();
     let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
@@ -513,7 +513,7 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
 
 /// Inverse of [`encode_python_scalar_udf`].
 fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionScalarUDF> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let tuple = cloudpickle
         .call_method1("loads", (PyBytes::new(py, payload),))?
@@ -589,6 +589,33 @@ fn volatility_wire_str(v: Volatility) -> &'static str {
     }
 }
 
+/// Cached handle to the `cloudpickle` module.
+///
+/// Six encode/decode helpers below would otherwise re-resolve the
+/// module on every call. `py.import` is backed by `sys.modules` and
+/// therefore cheap, but each call still walks a dict and re-binds the
+/// result; a plan with many Python UDFs pays that cost per UDF. The
+/// `OnceLock` collapses it to a single import per process while the
+/// `Py<PyAny>` lets us hand out a fresh `Bound` against the current
+/// GIL token without holding one in the static slot.
+fn cloudpickle<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+    static CLOUDPICKLE: OnceLock<Py<PyAny>> = OnceLock::new();
+    if let Some(cached) = CLOUDPICKLE.get() {
+        return Ok(cached.bind(py).clone());
+    }
+    // Race: two threads can both miss and import. CPython's
+    // `sys.modules` makes the second import essentially free, and
+    // `set` losing the race still leaves the winning value in the
+    // slot — both threads end up returning the same module.
+    let module = py.import("cloudpickle")?;
+    let _ = CLOUDPICKLE.set(module.clone().unbind().into_any());
+    Ok(CLOUDPICKLE
+        .get()
+        .expect("cloudpickle slot populated above")
+        .bind(py)
+        .clone())
+}
+
 // =============================================================================
 // Shared Python window UDF encode / decode helpers
 //
@@ -629,7 +656,7 @@ pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<Wind
 }
 
 fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let signature = WindowUDFImpl::signature(udf);
     let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
@@ -671,7 +698,7 @@ fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> Py
 }
 
 fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionWindowUDF> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let tuple = cloudpickle
         .call_method1("loads", (PyBytes::new(py, payload),))?
@@ -757,7 +784,7 @@ pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<Aggrega
 }
 
 fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> PyResult<Vec<u8>> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let signature = AggregateUDFImpl::signature(udf);
     let input_dtypes: Vec<arrow::datatypes::DataType> = match &signature.type_signature {
@@ -807,7 +834,7 @@ fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> Py
 }
 
 fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionAggregateUDF> {
-    let cloudpickle = py.import("cloudpickle")?;
+    let cloudpickle = cloudpickle(py)?;
 
     let tuple = cloudpickle
         .call_method1("loads", (PyBytes::new(py, payload),))?
