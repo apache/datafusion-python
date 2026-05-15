@@ -233,7 +233,7 @@ impl PyWindowUDF {
         let return_type = return_type.0;
         let input_types: Vec<DataType> = input_types.into_iter().map(|t| t.0).collect();
 
-        let function = WindowUDF::from(MultiColumnWindowUDF::new(
+        let function = WindowUDF::from(PythonFunctionWindowUDF::new(
             name,
             evaluator,
             input_types,
@@ -276,15 +276,15 @@ impl PyWindowUDF {
 }
 
 #[derive(Debug)]
-pub struct MultiColumnWindowUDF {
+pub(crate) struct PythonFunctionWindowUDF {
     name: String,
     evaluator: Py<PyAny>,
     signature: Signature,
     return_type: DataType,
 }
 
-impl MultiColumnWindowUDF {
-    pub fn new(
+impl PythonFunctionWindowUDF {
+    pub(crate) fn new(
         name: impl Into<String>,
         evaluator: Py<PyAny>,
         input_types: Vec<DataType>,
@@ -323,8 +323,8 @@ impl MultiColumnWindowUDF {
     }
 }
 
-impl Eq for MultiColumnWindowUDF {}
-impl PartialEq for MultiColumnWindowUDF {
+impl Eq for PythonFunctionWindowUDF {}
+impl PartialEq for PythonFunctionWindowUDF {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
             && self.signature == other.signature
@@ -338,7 +338,7 @@ impl PartialEq for MultiColumnWindowUDF {
     }
 }
 
-impl std::hash::Hash for MultiColumnWindowUDF {
+impl std::hash::Hash for PythonFunctionWindowUDF {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.name.hash(state);
         self.signature.hash(state);
@@ -350,7 +350,7 @@ impl std::hash::Hash for MultiColumnWindowUDF {
     }
 }
 
-impl WindowUDFImpl for MultiColumnWindowUDF {
+impl WindowUDFImpl for PythonFunctionWindowUDF {
     fn as_any(&self) -> &dyn Any {
         self
     }

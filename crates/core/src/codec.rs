@@ -97,7 +97,7 @@ use pyo3::types::{PyBytes, PyTuple};
 
 use crate::udaf::PythonFunctionAggregateUDF;
 use crate::udf::PythonFunctionScalarUDF;
-use crate::udwf::MultiColumnWindowUDF;
+use crate::udwf::PythonFunctionWindowUDF;
 
 /// Wire-format prefix that tags a `fun_definition` payload as an
 /// inlined Python scalar UDF (cloudpickled tuple of name, callable,
@@ -518,7 +518,11 @@ fn schema_from_ipc_bytes(bytes: &[u8]) -> arrow::error::Result<Schema> {
 // =============================================================================
 
 pub(crate) fn try_encode_python_window_udf(node: &WindowUDF, buf: &mut Vec<u8>) -> Result<bool> {
-    let Some(py_udf) = node.inner().as_any().downcast_ref::<MultiColumnWindowUDF>() else {
+    let Some(py_udf) = node
+        .inner()
+        .as_any()
+        .downcast_ref::<PythonFunctionWindowUDF>()
+    else {
         return Ok(false);
     };
 
@@ -544,7 +548,7 @@ pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<Wind
     })
 }
 
-fn encode_python_window_udf(py: Python<'_>, udf: &MultiColumnWindowUDF) -> PyResult<Vec<u8>> {
+fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> PyResult<Vec<u8>> {
     let cloudpickle = py.import("cloudpickle")?;
 
     let signature = WindowUDFImpl::signature(udf);
@@ -552,7 +556,7 @@ fn encode_python_window_udf(py: Python<'_>, udf: &MultiColumnWindowUDF) -> PyRes
         TypeSignature::Exact(types) => types.clone(),
         other => {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "MultiColumnWindowUDF expected Signature::Exact, got {other:?}"
+                "PythonFunctionWindowUDF expected Signature::Exact, got {other:?}"
             )));
         }
     };
@@ -586,7 +590,7 @@ fn encode_python_window_udf(py: Python<'_>, udf: &MultiColumnWindowUDF) -> PyRes
     blob.extract::<Vec<u8>>()
 }
 
-fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<MultiColumnWindowUDF> {
+fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionWindowUDF> {
     let cloudpickle = py.import("cloudpickle")?;
 
     let tuple = cloudpickle
@@ -614,7 +618,7 @@ fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<MultiCol
         .first()
         .ok_or_else(|| {
             pyo3::exceptions::PyValueError::new_err(
-                "MultiColumnWindowUDF return schema must contain exactly one field",
+                "PythonFunctionWindowUDF return schema must contain exactly one field",
             )
         })?
         .data_type()
@@ -623,7 +627,7 @@ fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<MultiCol
     let volatility = datafusion_python_util::parse_volatility(&volatility_str)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    Ok(MultiColumnWindowUDF::from_parts(
+    Ok(PythonFunctionWindowUDF::from_parts(
         name,
         evaluator,
         input_types,
