@@ -66,11 +66,13 @@
 //! | Layer + kind                  | Family prefix |
 //! | ----------------------------- | ------------- |
 //! | `PythonLogicalCodec` scalar   | `DFPYUDF`     |
+//! | `PythonLogicalCodec` agg      | `DFPYUDA`     |
+//! | `PythonLogicalCodec` window   | `DFPYUDW`     |
 //! | `PythonPhysicalCodec` scalar  | `DFPYUDF`     |
+//! | `PythonPhysicalCodec` agg     | `DFPYUDA`     |
+//! | `PythonPhysicalCodec` window  | `DFPYUDW`     |
 //! | User FFI extension codec      | user-chosen   |
 //! | Default codec                 | (none)        |
-//!
-//! Aggregate and window UDF families are reserved for follow-on work.
 //!
 //! Current wire-format version is [`WIRE_VERSION_CURRENT`]; supported
 //! receive range is `WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT`.
@@ -94,8 +96,8 @@ use datafusion::datasource::TableProvider;
 use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
-    AggregateUDF, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, Signature, TypeSignature,
-    Volatility, WindowUDF,
+    AggregateUDF, AggregateUDFImpl, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl, Signature,
+    TypeSignature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
@@ -105,7 +107,10 @@ use pyo3::prelude::*;
 use pyo3::sync::PyOnceLock;
 use pyo3::types::{PyBytes, PyTuple};
 
+use crate::errors::to_datafusion_err;
+use crate::udaf::PythonFunctionAggregateUDF;
 use crate::udf::PythonFunctionScalarUDF;
+use crate::udwf::PythonFunctionWindowUDF;
 
 // Wire-format framing for inlined Python UDF payloads.
 //
@@ -125,6 +130,16 @@ use crate::udf::PythonFunctionScalarUDF;
 /// (cloudpickled tuple of name, callable, input schema, return field,
 /// volatility).
 pub(crate) const PY_SCALAR_UDF_FAMILY: &[u8] = b"DFPYUDF";
+
+/// Family prefix for an inlined Python aggregate UDF
+/// (cloudpickled tuple of name, accumulator factory, input schema,
+/// return type, state types schema, volatility).
+pub(crate) const PY_AGG_UDF_FAMILY: &[u8] = b"DFPYUDA";
+
+/// Family prefix for an inlined Python window UDF
+/// (cloudpickled tuple of name, evaluator factory, input schema,
+/// return type, volatility).
+pub(crate) const PY_WINDOW_UDF_FAMILY: &[u8] = b"DFPYUDW";
 
 /// Wire-format version this build emits.
 pub(crate) const WIRE_VERSION_CURRENT: u8 = 1;
@@ -299,18 +314,30 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_agg_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        if let Some(udaf) = try_decode_python_agg_udf(buf)? {
+            return Ok(udaf);
+        }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_window_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        if let Some(udwf) = try_decode_python_window_udf(buf)? {
+            return Ok(udwf);
+        }
         self.inner.try_decode_udwf(name, buf)
     }
 }
@@ -389,18 +416,30 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_agg_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
+        if let Some(udaf) = try_decode_python_agg_udf(buf)? {
+            return Ok(udaf);
+        }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
+        if try_encode_python_window_udf(node, buf)? {
+            return Ok(());
+        }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
+        if let Some(udwf) = try_decode_python_window_udf(buf)? {
+            return Ok(udwf);
+        }
         self.inner.try_decode_udwf(name, buf)
     }
 }
@@ -425,12 +464,8 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
     };
 
     Python::attach(|py| -> Result<bool> {
-        let py_version = current_python_version(py)
-            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        let bytes = encode_python_scalar_udf(py, py_udf)
-            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        write_wire_header(buf, PY_SCALAR_UDF_FAMILY, py_version);
-        buf.extend_from_slice(&bytes);
+        let bytes = encode_python_scalar_udf(py, py_udf).map_err(to_datafusion_err)?;
+        append_framed_payload(py, buf, PY_SCALAR_UDF_FAMILY, &bytes)?;
         Ok(true)
     })
 }
@@ -441,14 +476,11 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
     Python::attach(|py| -> Result<Option<Arc<ScalarUDF>>> {
-        let py_version = current_python_version(py)
-            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        let Some(payload) = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", py_version)?
+        let Some(payload) = read_framed_payload(py, buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")?
         else {
             return Ok(None);
         };
-        let udf = decode_python_scalar_udf(py, payload)
-            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        let udf = decode_python_scalar_udf(py, payload).map_err(to_datafusion_err)?;
         Ok(Some(Arc::new(ScalarUDF::new_from_impl(udf))))
     })
 }
@@ -564,6 +596,11 @@ fn build_single_field_schema_bytes(field: &Field) -> PyResult<Vec<u8>> {
     schema_to_ipc_bytes(&Schema::new(vec![field.clone()])).map_err(arrow_to_py_err)
 }
 
+/// Emit a multi-field IPC schema blob.
+fn build_schema_bytes(fields: Vec<Field>) -> PyResult<Vec<u8>> {
+    schema_to_ipc_bytes(&Schema::new(fields)).map_err(arrow_to_py_err)
+}
+
 /// Decode the per-arg `DataType`s the encoder wrote via
 /// [`build_input_schema_bytes`].
 fn read_input_dtypes(bytes: &[u8]) -> PyResult<Vec<DataType>> {
@@ -624,6 +661,37 @@ fn current_python_version(py: Python<'_>) -> PyResult<(u8, u8)> {
     Ok((major, minor))
 }
 
+/// Stamp `buf` with the framing header for `family` plus the current
+/// Python `(major, minor)`, then append `payload`. Bundles the
+/// `current_python_version` lookup with the header write so each
+/// encoder call site stays one line.
+fn append_framed_payload(
+    py: Python<'_>,
+    buf: &mut Vec<u8>,
+    family: &[u8],
+    payload: &[u8],
+) -> Result<()> {
+    let py_version = current_python_version(py).map_err(to_datafusion_err)?;
+    write_wire_header(buf, family, py_version);
+    buf.extend_from_slice(payload);
+    Ok(())
+}
+
+/// Inspect `buf`'s framing against `family` + the current Python
+/// `(major, minor)`. Returns `Ok(None)` when `buf` does not carry
+/// `family` (caller should delegate); `Ok(Some(payload))` when the
+/// framing matches; `Err(_)` for a recognised family at the wrong
+/// wire-format or Python version (see [`strip_wire_header`]).
+fn read_framed_payload<'a>(
+    py: Python<'_>,
+    buf: &'a [u8],
+    family: &[u8],
+    kind: &str,
+) -> Result<Option<&'a [u8]>> {
+    let py_version = current_python_version(py).map_err(to_datafusion_err)?;
+    strip_wire_header(buf, family, kind, py_version)
+}
+
 /// Cached handle to the `cloudpickle` module.
 ///
 /// The encode/decode helpers above would otherwise re-resolve the
@@ -640,6 +708,186 @@ fn cloudpickle<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
     CLOUDPICKLE
         .get_or_try_init(py, || Ok(py.import("cloudpickle")?.unbind().into_any()))
         .map(|cached| cached.bind(py).clone())
+}
+
+// =============================================================================
+// Shared Python window UDF encode / decode helpers
+//
+// Cloudpickle tuple shape: `(name, evaluator_factory, input_schema_bytes,
+// return_schema_bytes, volatility_str)`. The evaluator factory is the
+// Python callable that produces a new evaluator instance per partition.
+// =============================================================================
+
+pub(crate) fn try_encode_python_window_udf(node: &WindowUDF, buf: &mut Vec<u8>) -> Result<bool> {
+    let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionWindowUDF>() else {
+        return Ok(false);
+    };
+
+    Python::attach(|py| -> Result<bool> {
+        let bytes = encode_python_window_udf(py, py_udf).map_err(to_datafusion_err)?;
+        append_framed_payload(py, buf, PY_WINDOW_UDF_FAMILY, &bytes)?;
+        Ok(true)
+    })
+}
+
+pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
+    Python::attach(|py| -> Result<Option<Arc<WindowUDF>>> {
+        let Some(payload) = read_framed_payload(py, buf, PY_WINDOW_UDF_FAMILY, "window UDF")?
+        else {
+            return Ok(None);
+        };
+        let udf = decode_python_window_udf(py, payload).map_err(to_datafusion_err)?;
+        Ok(Some(Arc::new(WindowUDF::new_from_impl(udf))))
+    })
+}
+
+fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> PyResult<Vec<u8>> {
+    let signature = WindowUDFImpl::signature(udf);
+    let input_dtypes = signature_input_dtypes(signature, "PythonFunctionWindowUDF")?;
+    let input_schema_bytes = build_input_schema_bytes(&input_dtypes)?;
+    let return_field = Field::new("result", udf.return_type().clone(), true);
+    let return_schema_bytes = build_single_field_schema_bytes(&return_field)?;
+    let volatility = volatility_wire_str(signature.volatility);
+
+    let payload = PyTuple::new(
+        py,
+        [
+            WindowUDFImpl::name(udf).into_pyobject(py)?.into_any(),
+            udf.evaluator().bind(py).clone().into_any(),
+            PyBytes::new(py, &input_schema_bytes).into_any(),
+            PyBytes::new(py, &return_schema_bytes).into_any(),
+            volatility.into_pyobject(py)?.into_any(),
+        ],
+    )?;
+
+    cloudpickle(py)?
+        .call_method1("dumps", (payload,))?
+        .extract::<Vec<u8>>()
+}
+
+fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionWindowUDF> {
+    let tuple = cloudpickle(py)?
+        .call_method1("loads", (PyBytes::new(py, payload),))?
+        .cast_into::<PyTuple>()?;
+
+    let name: String = tuple.get_item(0)?.extract()?;
+    let evaluator: Py<PyAny> = tuple.get_item(1)?.unbind();
+    let input_schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
+    let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
+    let volatility_str: String = tuple.get_item(4)?.extract()?;
+
+    let input_types = read_input_dtypes(&input_schema_bytes)?;
+    let return_type = read_single_return_field(&return_schema_bytes, "PythonFunctionWindowUDF")?
+        .data_type()
+        .clone();
+    let volatility = parse_volatility_str(&volatility_str)?;
+
+    Ok(PythonFunctionWindowUDF::new(
+        name,
+        evaluator,
+        input_types,
+        return_type,
+        volatility,
+    ))
+}
+
+// =============================================================================
+// Shared Python aggregate UDF encode / decode helpers
+//
+// Cloudpickle tuple shape: `(name, accumulator_factory, input_schema_bytes,
+// return_type_bytes, state_schema_bytes, volatility_str)`. The accumulator
+// factory is the Python callable that produces a new accumulator instance
+// per partition.
+// =============================================================================
+
+pub(crate) fn try_encode_python_agg_udf(node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<bool> {
+    let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionAggregateUDF>() else {
+        return Ok(false);
+    };
+
+    Python::attach(|py| -> Result<bool> {
+        let bytes = encode_python_agg_udf(py, py_udf).map_err(to_datafusion_err)?;
+        append_framed_payload(py, buf, PY_AGG_UDF_FAMILY, &bytes)?;
+        Ok(true)
+    })
+}
+
+pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
+    Python::attach(|py| -> Result<Option<Arc<AggregateUDF>>> {
+        let Some(payload) = read_framed_payload(py, buf, PY_AGG_UDF_FAMILY, "aggregate UDF")?
+        else {
+            return Ok(None);
+        };
+        let udf = decode_python_agg_udf(py, payload).map_err(to_datafusion_err)?;
+        Ok(Some(Arc::new(AggregateUDF::new_from_impl(udf))))
+    })
+}
+
+fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> PyResult<Vec<u8>> {
+    let signature = AggregateUDFImpl::signature(udf);
+    let input_dtypes = signature_input_dtypes(signature, "PythonFunctionAggregateUDF")?;
+    let input_schema_bytes = build_input_schema_bytes(&input_dtypes)?;
+    let return_field = Field::new("result", udf.return_type().clone(), true);
+    let return_schema_bytes = build_single_field_schema_bytes(&return_field)?;
+    let state_fields: Vec<Field> = udf
+        .state_fields_ref()
+        .iter()
+        .map(|f| f.as_ref().clone())
+        .collect();
+    let state_schema_bytes = build_schema_bytes(state_fields)?;
+    let volatility = volatility_wire_str(signature.volatility);
+
+    let payload = PyTuple::new(
+        py,
+        [
+            AggregateUDFImpl::name(udf).into_pyobject(py)?.into_any(),
+            udf.accumulator().bind(py).clone().into_any(),
+            PyBytes::new(py, &input_schema_bytes).into_any(),
+            PyBytes::new(py, &return_schema_bytes).into_any(),
+            PyBytes::new(py, &state_schema_bytes).into_any(),
+            volatility.into_pyobject(py)?.into_any(),
+        ],
+    )?;
+
+    cloudpickle(py)?
+        .call_method1("dumps", (payload,))?
+        .extract::<Vec<u8>>()
+}
+
+fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunctionAggregateUDF> {
+    let tuple = cloudpickle(py)?
+        .call_method1("loads", (PyBytes::new(py, payload),))?
+        .cast_into::<PyTuple>()?;
+
+    let name: String = tuple.get_item(0)?.extract()?;
+    let accumulator: Py<PyAny> = tuple.get_item(1)?.unbind();
+    let input_schema_bytes: Vec<u8> = tuple.get_item(2)?.extract()?;
+    let return_schema_bytes: Vec<u8> = tuple.get_item(3)?.extract()?;
+    let state_schema_bytes: Vec<u8> = tuple.get_item(4)?.extract()?;
+    let volatility_str: String = tuple.get_item(5)?.extract()?;
+
+    let input_types = read_input_dtypes(&input_schema_bytes)?;
+    let return_type = read_single_return_field(&return_schema_bytes, "PythonFunctionAggregateUDF")?
+        .data_type()
+        .clone();
+    // Preserve the encoded state field metadata (names, nullability,
+    // arbitrary key/value attributes) so the post-decode UDF reports
+    // the same state schema as the sender's instance — important for
+    // accumulators whose `StateFieldsArgs` consumers key off names or
+    // nullability rather than positional `DataType`.
+    let state_schema = schema_from_ipc_bytes(&state_schema_bytes).map_err(arrow_to_py_err)?;
+    let state_fields: Vec<arrow::datatypes::FieldRef> =
+        state_schema.fields().iter().cloned().collect();
+    let volatility = parse_volatility_str(&volatility_str)?;
+
+    Ok(PythonFunctionAggregateUDF::from_parts(
+        name,
+        accumulator,
+        input_types,
+        return_type,
+        state_fields,
+        volatility,
+    ))
 }
 
 #[cfg(test)]
@@ -729,7 +977,7 @@ mod wire_header_tests {
     }
 
     #[test]
-    fn write_then_strip_round_trips_payload() {
+    fn write_then_strip_round_trips_scalar_payload() {
         let mut buf = Vec::new();
         write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, TEST_PY);
         buf.extend_from_slice(b"scalar-payload");
@@ -738,5 +986,40 @@ mod wire_header_tests {
             .unwrap()
             .unwrap();
         assert_eq!(payload, b"scalar-payload");
+    }
+
+    #[test]
+    fn write_then_strip_round_trips_agg_payload() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_AGG_UDF_FAMILY, TEST_PY);
+        buf.extend_from_slice(b"agg-payload");
+
+        let payload = strip_wire_header(&buf, PY_AGG_UDF_FAMILY, "aggregate UDF", TEST_PY)
+            .unwrap()
+            .unwrap();
+        assert_eq!(payload, b"agg-payload");
+    }
+
+    #[test]
+    fn write_then_strip_round_trips_window_payload() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_WINDOW_UDF_FAMILY, TEST_PY);
+        buf.extend_from_slice(b"window-payload");
+
+        let payload = strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF", TEST_PY)
+            .unwrap()
+            .unwrap();
+        assert_eq!(payload, b"window-payload");
+    }
+
+    #[test]
+    fn strip_does_not_match_a_different_family() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, TEST_PY);
+        buf.extend_from_slice(b"payload");
+        assert!(matches!(
+            strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF", TEST_PY),
+            Ok(None)
+        ));
     }
 }
