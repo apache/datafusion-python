@@ -1750,4 +1750,22 @@ class SessionContext:
         This only supports codecs that have been implemented using the
         FFI interface.
         """
-        return self.ctx.with_logical_extension_codec(codec)
+        new_internal = self.ctx.with_logical_extension_codec(codec)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new
+
+    def __datafusion_physical_extension_codec__(self) -> Any:
+        """Access the PyCapsule FFI_PhysicalExtensionCodec."""
+        return self.ctx.__datafusion_physical_extension_codec__()
+
+    def with_physical_extension_codec(self, codec: Any) -> SessionContext:
+        """Create a new session context with the specified physical codec.
+
+        This only supports codecs that have been implemented using the
+        FFI interface.
+        """
+        new_internal = self.ctx.with_physical_extension_codec(codec)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new

@@ -30,5 +30,6 @@ tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
 pyo3 = { workspace = true }
 datafusion = { workspace = true }
 datafusion-ffi = { workspace = true }
+datafusion-proto = { workspace = true }
 arrow = { workspace = true }
 prost = { workspace = true }
