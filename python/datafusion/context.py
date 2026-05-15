@@ -1770,8 +1770,14 @@ class SessionContext:
         new.ctx = new_internal
         return new
 
-    def with_python_udf_inlining(self, enabled: bool) -> SessionContext:
+    def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
         """Toggle inline encoding of Python-defined UDFs on this session.
+
+        ``enabled`` is keyword-only:
+        ``with_python_udf_inlining(enabled=False)`` reads at the call
+        site as the inverse of
+        ``with_python_udf_inlining(enabled=True)``, where a positional
+        ``True`` / ``False`` would not.
 
         When ``True`` (the default), Python scalar, aggregate, and window
         UDFs travel inside the serialized expression and are

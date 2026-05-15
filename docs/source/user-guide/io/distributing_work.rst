@@ -170,7 +170,7 @@ worker slots are unused.
    To opt into the strict format,
    :py:func:`~datafusion.ipc.set_sender_ctx`
    with a session built via
-   :py:meth:`SessionContext.with_python_udf_inlining(False)
+   :py:meth:`SessionContext.with_python_udf_inlining(enabled=False)
    <datafusion.SessionContext.with_python_udf_inlining>`.
 
 2. *Worker side — what registrations does decode need?* For built-ins
@@ -265,7 +265,7 @@ Disabling Python UDF inlining
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For a stricter wire format, call
-:py:meth:`SessionContext.with_python_udf_inlining(False)
+:py:meth:`SessionContext.with_python_udf_inlining(enabled=False)
 <datafusion.SessionContext.with_python_udf_inlining>` on the session
 producing or consuming the bytes. With inlining disabled, Python
 UDFs travel by name only — the same way FFI-capsule UDFs do — and
@@ -295,7 +295,7 @@ session as the driver's *sender context*:
     from datafusion import SessionContext
     from datafusion.ipc import set_sender_ctx
 
-    set_sender_ctx(SessionContext().with_python_udf_inlining(False))
+    set_sender_ctx(SessionContext().with_python_udf_inlining(enabled=False))
     # Every subsequent pickle.dumps(expr) on this thread encodes
     # without inlining the Python callable.
 

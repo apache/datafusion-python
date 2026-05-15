@@ -247,7 +247,7 @@ class TestWindowUDFCodec:
 
 
 class TestPythonUdfInliningToggle:
-    """`SessionContext.with_python_udf_inlining(False)` opts out of
+    """`SessionContext.with_python_udf_inlining(enabled=False)` opts out of
     inline Python UDF encoding for both encode and decode paths."""
 
     def _build_double_udf(self):
@@ -263,7 +263,7 @@ class TestPythonUdfInliningToggle:
         """Strict mode skips cloudpickle of the Python callable, so the
         encoded bytes are dramatically smaller than the inline form."""
         ctx_inline = SessionContext()
-        ctx_strict = ctx_inline.with_python_udf_inlining(False)
+        ctx_strict = ctx_inline.with_python_udf_inlining(enabled=False)
         u = self._build_double_udf()
         e = u(col("a"))
 
@@ -276,11 +276,11 @@ class TestPythonUdfInliningToggle:
         """When both sender and receiver disable inlining, the UDF
         travels by name only and the receiver resolves it from its
         registered functions."""
-        strict_sender = SessionContext().with_python_udf_inlining(False)
+        strict_sender = SessionContext().with_python_udf_inlining(enabled=False)
         u = self._build_double_udf()
         blob = u(col("a")).to_bytes(strict_sender)
 
-        receiver = SessionContext().with_python_udf_inlining(False)
+        receiver = SessionContext().with_python_udf_inlining(enabled=False)
         receiver.register_udf(u)
         restored = Expr.from_bytes(blob, ctx=receiver)
         assert "double" in restored.canonical_name()
@@ -292,7 +292,7 @@ class TestPythonUdfInliningToggle:
         u = self._build_double_udf()
         blob = u(col("a")).to_bytes(sender)
 
-        strict_receiver = SessionContext().with_python_udf_inlining(False)
+        strict_receiver = SessionContext().with_python_udf_inlining(enabled=False)
         strict_receiver.register_udf(u)
         # `RuntimeError` (not bare `Exception`): the codec refusal is
         # surfaced through `parse_expr` → `PyRuntimeError`. Tightening
@@ -314,7 +314,7 @@ class TestPythonUdfInliningToggle:
 
         blob_default = pickle.dumps(e)
 
-        strict_sender = SessionContext().with_python_udf_inlining(False)
+        strict_sender = SessionContext().with_python_udf_inlining(enabled=False)
         set_sender_ctx(strict_sender)
         try:
             blob_strict = pickle.dumps(e)
@@ -333,14 +333,14 @@ class TestPythonUdfInliningToggle:
         u = self._build_double_udf()
         e = u(col("a"))
 
-        strict_sender = SessionContext().with_python_udf_inlining(False)
+        strict_sender = SessionContext().with_python_udf_inlining(enabled=False)
         set_sender_ctx(strict_sender)
         try:
             blob = pickle.dumps(e)
         finally:
             clear_sender_ctx()
 
-        worker = SessionContext().with_python_udf_inlining(False)
+        worker = SessionContext().with_python_udf_inlining(enabled=False)
         worker.register_udf(u)
         set_worker_ctx(worker)
         try:
@@ -358,7 +358,7 @@ class TestPythonUdfInliningToggle:
         u = self._build_double_udf()
         e = u(col("a"))
 
-        strict_sender = SessionContext().with_python_udf_inlining(False)
+        strict_sender = SessionContext().with_python_udf_inlining(enabled=False)
         set_sender_ctx(strict_sender)
         try:
             blob = pickle.dumps(e)

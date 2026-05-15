@@ -49,7 +49,7 @@ expression on this thread:
     from datafusion import SessionContext
     from datafusion.ipc import set_sender_ctx
 
-    driver_ctx = SessionContext().with_python_udf_inlining(False)
+    driver_ctx = SessionContext().with_python_udf_inlining(enabled=False)
     set_sender_ctx(driver_ctx)
     pickle.dumps(expr)  # encoded with inlining disabled
 
