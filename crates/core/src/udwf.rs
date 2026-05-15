@@ -319,12 +319,16 @@ impl PartialEq for PythonFunctionWindowUDF {
         self.name == other.name
             && self.signature == other.signature
             && self.return_type == other.return_type
-            && Python::attach(|py| {
-                self.evaluator
-                    .bind(py)
-                    .eq(other.evaluator.bind(py))
-                    .unwrap_or(false)
-            })
+            // Pointer-identity fast path: `Arc`-shared clones of the
+            // same UDF skip the GIL roundtrip. Falls through to Python
+            // `__eq__` only for two distinct callables.
+            && (self.evaluator.as_ptr() == other.evaluator.as_ptr()
+                || Python::attach(|py| {
+                    self.evaluator
+                        .bind(py)
+                        .eq(other.evaluator.bind(py))
+                        .unwrap_or(false)
+                }))
     }
 }
 

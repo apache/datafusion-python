@@ -106,7 +106,14 @@ impl PartialEq for PythonFunctionScalarUDF {
         self.name == other.name
             && self.signature == other.signature
             && self.return_field == other.return_field
-            && Python::attach(|py| self.func.bind(py).eq(other.func.bind(py)).unwrap_or(false))
+            // Identical pointers ⇒ same Python object. Most equality
+            // checks compare `Arc`-shared clones of the same UDF
+            // (e.g. expression rewriting), so the pointer match short-
+            // circuits before touching the GIL.
+            && (self.func.as_ptr() == other.func.as_ptr()
+                || Python::attach(|py| {
+                    self.func.bind(py).eq(other.func.bind(py)).unwrap_or(false)
+                }))
     }
 }
 

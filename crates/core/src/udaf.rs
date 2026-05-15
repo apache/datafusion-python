@@ -238,12 +238,16 @@ impl PartialEq for PythonFunctionAggregateUDF {
             && self.signature == other.signature
             && self.return_type == other.return_type
             && self.state_fields == other.state_fields
-            && Python::attach(|py| {
-                self.accumulator
-                    .bind(py)
-                    .eq(other.accumulator.bind(py))
-                    .unwrap_or(false)
-            })
+            // Pointer-identity fast path: `Arc`-shared clones of the
+            // same UDF skip the GIL roundtrip. Falls through to Python
+            // `__eq__` only for two distinct callables.
+            && (self.accumulator.as_ptr() == other.accumulator.as_ptr()
+                || Python::attach(|py| {
+                    self.accumulator
+                        .bind(py)
+                        .eq(other.accumulator.bind(py))
+                        .unwrap_or(false)
+                }))
     }
 }
 
