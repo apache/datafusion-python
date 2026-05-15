@@ -112,7 +112,27 @@ impl PartialEq for PythonFunctionScalarUDF {
             // circuits before touching the GIL.
             && (self.func.as_ptr() == other.func.as_ptr()
                 || Python::attach(|py| {
-                    self.func.bind(py).eq(other.func.bind(py)).unwrap_or(false)
+                    // Rust's `PartialEq` cannot return `Result`, so we
+                    // have to pick a side when Python `__eq__` raises.
+                    // `false` is the conservative choice — better to
+                    // report two UDFs as distinct than to wrongly
+                    // merge them — but the silent miss can still
+                    // surface as expression-dedup or cache-lookup
+                    // anomalies. Log at `debug` so the failure is
+                    // observable without flooding production logs.
+                    // FIXME: revisit if upstream `ScalarUDFImpl`
+                    // exposes a fallible `PartialEq`.
+                    self.func
+                        .bind(py)
+                        .eq(other.func.bind(py))
+                        .unwrap_or_else(|e| {
+                            log::debug!(
+                                target: "datafusion_python::udf",
+                                "PythonFunctionScalarUDF {:?} __eq__ raised; treating as unequal: {e}",
+                                self.name,
+                            );
+                            false
+                        })
                 }))
     }
 }

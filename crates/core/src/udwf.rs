@@ -329,10 +329,22 @@ impl PartialEq for PythonFunctionWindowUDF {
             // `__eq__` only for two distinct callables.
             && (self.evaluator.as_ptr() == other.evaluator.as_ptr()
                 || Python::attach(|py| {
+                    // See `PythonFunctionScalarUDF::eq` for the
+                    // rationale on swallowing the exception as `false`
+                    // and logging at `debug`. FIXME: revisit if
+                    // upstream `WindowUDFImpl` exposes a fallible
+                    // `PartialEq`.
                     self.evaluator
                         .bind(py)
                         .eq(other.evaluator.bind(py))
-                        .unwrap_or(false)
+                        .unwrap_or_else(|e| {
+                            log::debug!(
+                                target: "datafusion_python::udwf",
+                                "PythonFunctionWindowUDF {:?} __eq__ raised; treating as unequal: {e}",
+                                self.name,
+                            );
+                            false
+                        })
                 }))
     }
 }
