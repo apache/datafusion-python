@@ -78,4 +78,5 @@ def test_ffi_logical_codec_roundtrip():
     blob = df.logical_plan().to_bytes(ctx)
 
     restored = LogicalPlan.from_bytes(ctx, blob)
-    assert restored is not None
+    df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
+    assert df.collect() == df_round_trip.collect()

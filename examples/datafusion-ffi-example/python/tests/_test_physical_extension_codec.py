@@ -71,7 +71,8 @@ def test_ffi_physical_codec_roundtrip():
     codec inlines the UDF body, which the counting codec does not."""
     ctx, _codec = _setup_session_with_codec()
     df = ctx.sql("SELECT abs(a) AS x FROM t")
-    blob = df.execution_plan().to_bytes(ctx)
+    original = df.execution_plan()
+    blob = original.to_bytes(ctx)
 
     restored = ExecutionPlan.from_bytes(ctx, blob)
-    assert restored is not None
+    assert str(original) == str(restored)
