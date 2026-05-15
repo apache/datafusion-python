@@ -64,6 +64,9 @@ def make_above_threshold_udf(threshold: int) -> ScalarUDF:
     """
 
     def above(arr: pa.Array) -> pa.Array:
+        # `v.as_py() or 0` coerces nulls to 0 — the demo dataset has no
+        # nulls, but real-world code should decide explicitly how nulls
+        # compare against the threshold.
         return pa.array([1 if (v.as_py() or 0) > threshold else 0 for v in arr])
 
     return udf(
