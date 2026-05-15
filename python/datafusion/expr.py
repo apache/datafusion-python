@@ -443,7 +443,7 @@ class Expr:  # noqa: PLW1641
         travel inside the returned bytes; the worker does not need to
         pre-register them. UDFs imported via the FFI capsule protocol
         travel by name only and must be registered on the worker. See
-        :doc:`/user-guide/io/distributing_expressions`.
+        :doc:`/user-guide/io/distributing_work`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return bytes(self.expr.to_bytes(ctx_arg))

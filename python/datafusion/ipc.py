@@ -38,7 +38,7 @@ Built-in functions and Python UDFs (scalar, aggregate, window) travel
 inside the shipped expression itself and do not need pre-registration
 on the worker.
 
-See :doc:`/user-guide/io/distributing_expressions` for the full pattern.
+See :doc:`/user-guide/io/distributing_work` for the full pattern.
 """
 
 from __future__ import annotations

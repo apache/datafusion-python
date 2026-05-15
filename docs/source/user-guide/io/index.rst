@@ -24,7 +24,7 @@ IO
    arrow
    avro
    csv
-   distributing_expressions
+   distributing_work
    json
    parquet
    table_provider
