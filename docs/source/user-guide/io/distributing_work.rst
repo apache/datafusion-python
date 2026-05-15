@@ -201,7 +201,10 @@ into ``cloudpickle.loads``.
 Note that :py:func:`pickle.loads` itself remains unsafe on untrusted
 input regardless of this setting — an attacker producing the outer
 pickle envelope can execute arbitrary code before the codec ever
-sees the bytes. The toggle only protects the
+sees the bytes (see the
+`pickle module security warning
+<https://docs.python.org/3/library/pickle.html#module-pickle>`_ in
+the Python standard library docs). The toggle only protects the
 :py:meth:`Expr.from_bytes` API surface.
 
 Security
@@ -211,12 +214,14 @@ Security
 
    Reconstructing an expression containing a Python UDF executes
    arbitrary Python code on the receiver — pickle is doing the work
-   under the hood and pickle is unsafe on untrusted input. Only
-   accept expressions from trusted sources. For untrusted-source
-   workflows, disable Python UDF inlining (see above), restrict
-   senders to built-in functions and pre-registered Rust-side UDFs,
-   and avoid :py:func:`pickle.loads` on externally supplied bytes
-   entirely.
+   under the hood and pickle is unsafe on untrusted input (see the
+   `pickle module security warning
+   <https://docs.python.org/3/library/pickle.html#module-pickle>`_
+   in the Python standard library docs). Only accept expressions
+   from trusted sources. For untrusted-source workflows, disable
+   Python UDF inlining (see above), restrict senders to built-in
+   functions and pre-registered Rust-side UDFs, and avoid
+   :py:func:`pickle.loads` on externally supplied bytes entirely.
 
 Query-level distribution via datafusion-distributed
 ---------------------------------------------------

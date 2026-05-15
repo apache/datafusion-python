@@ -1408,12 +1408,6 @@ impl PySessionContext {
         })
     }
 
-    /// Toggle inline encoding of Python-defined UDFs on this session's
-    /// codec stack. Disable when producing bytes that must round-trip
-    /// through a non-Python decoder, or when reconstructing bytes from
-    /// an untrusted source via `Expr.from_bytes` (cloudpickle.loads
-    /// will not be invoked on the receiver). Pickle remains unsafe on
-    /// untrusted input regardless of this flag.
     pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
         let logical_codec = Arc::new(
             PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))

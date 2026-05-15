@@ -1787,8 +1787,10 @@ class SessionContext:
           source — ``cloudpickle.loads`` will not be invoked.
 
         ``pickle.loads`` on untrusted bytes remains unsafe regardless of
-        this setting; only the ``to_bytes`` / ``from_bytes`` API is
-        affected.
+        this setting (see the `pickle module security warning
+        <https://docs.python.org/3/library/pickle.html#module-pickle>`_
+        in the Python standard library docs). Only the
+        ``to_bytes`` / ``from_bytes`` API is affected.
         """
         new_internal = self.ctx.with_python_udf_inlining(enabled)
         new = SessionContext.__new__(SessionContext)
