@@ -86,7 +86,7 @@ use datafusion::datasource::file_format::FileFormatFactory;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{
     AggregateUDF, AggregateUDFImpl, Extension, LogicalPlan, ScalarUDF, ScalarUDFImpl,
-    TypeSignature, WindowUDF, WindowUDFImpl,
+    TypeSignature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::ExecutionPlan;
@@ -494,7 +494,7 @@ fn encode_python_scalar_udf(py: Python<'_>, udf: &PythonFunctionScalarUDF) -> Py
     let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    let volatility = format!("{:?}", signature.volatility).to_lowercase();
+    let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
         py,
@@ -577,6 +577,18 @@ fn schema_from_ipc_bytes(bytes: &[u8]) -> arrow::error::Result<Schema> {
     Ok(reader.schema().as_ref().clone())
 }
 
+/// Stable wire-format string for a `Volatility`. Pinned to the three
+/// tokens [`datafusion_python_util::parse_volatility`] accepts, so an
+/// upstream change to `Volatility`'s `Debug` repr cannot silently
+/// produce bytes the decoder rejects.
+fn volatility_wire_str(v: Volatility) -> &'static str {
+    match v {
+        Volatility::Immutable => "immutable",
+        Volatility::Stable => "stable",
+        Volatility::Volatile => "volatile",
+    }
+}
+
 // =============================================================================
 // Shared Python window UDF encode / decode helpers
 //
@@ -641,7 +653,7 @@ fn encode_python_window_udf(py: Python<'_>, udf: &PythonFunctionWindowUDF) -> Py
     let return_schema_bytes = schema_to_ipc_bytes(&return_schema)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    let volatility = format!("{:?}", signature.volatility).to_lowercase();
+    let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
         py,
@@ -776,7 +788,7 @@ fn encode_python_agg_udf(py: Python<'_>, udf: &PythonFunctionAggregateUDF) -> Py
     let state_schema_bytes = schema_to_ipc_bytes(&Schema::new(state_fields))
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    let volatility = format!("{:?}", signature.volatility).to_lowercase();
+    let volatility = volatility_wire_str(signature.volatility);
 
     let payload = PyTuple::new(
         py,
