@@ -1802,11 +1802,11 @@ class SessionContext:
         :func:`datafusion.ipc.set_worker_ctx` for the corresponding
         :func:`pickle.loads`.
 
-        ``pickle.loads`` on untrusted bytes remains unsafe regardless of
-        this setting (see the `pickle module security warning
-        <https://docs.python.org/3/library/pickle.html#module-pickle>`_
-        in the Python standard library docs). Only the
-        ``to_bytes`` / ``from_bytes`` API is affected.
+        For the full security model, see
+        :doc:`/user-guide/io/distributing_work` (Security section). In
+        short: this toggle narrows only the :meth:`Expr.from_bytes`
+        surface; :func:`pickle.loads` on untrusted bytes remains
+        unsafe regardless of the toggle.
         """
         new_internal = self.ctx.with_python_udf_inlining(enabled)
         new = SessionContext.__new__(SessionContext)

@@ -308,14 +308,10 @@ side also refuses inline payloads. Explicit
 honor the supplied ``ctx`` directly and ignore the sender / worker
 contexts.
 
-Note that :py:func:`pickle.loads` itself remains unsafe on untrusted
-input regardless of this setting — an attacker producing the outer
-pickle envelope can execute arbitrary code before the codec ever
-sees the bytes (see the
-`pickle module security warning
-<https://docs.python.org/3/library/pickle.html#module-pickle>`_ in
-the Python standard library docs). The toggle only protects the
-:py:meth:`Expr.from_bytes` API surface.
+The toggle only narrows the :py:meth:`Expr.from_bytes` surface;
+:py:func:`pickle.loads` on untrusted bytes remains unsafe regardless
+of this setting. See the `Security`_ section below for the full
+threat model.
 
 Security
 ~~~~~~~~
