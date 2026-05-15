@@ -48,29 +48,36 @@
 //! plans to survive a serialization round-trip. Both codecs share
 //! the same payload framing for that reason.
 //!
-//! Payloads emitted by these codecs are tagged with an 8-byte magic
-//! prefix so the decoder can distinguish them from arbitrary bytes
-//! (empty `fun_definition` from the default codec, user FFI payloads
-//! that picked a non-colliding prefix). Dispatch precedence on
-//! decode: **Python-inline payload (magic prefix match) → `inner`
-//! codec → caller's `FunctionRegistry` fallback.**
+//! Payloads emitted by these codecs are framed as
+//! `<family_magic: 7 bytes> <version: u8> <cloudpickle blob>`. The
+//! family magic identifies the UDF flavor; the version byte lets the
+//! decoder reject too-new or too-old payloads with a clean error
+//! instead of falling into an opaque `cloudpickle` tuple-unpack
+//! failure when the tuple shape changes. Dispatch precedence on
+//! decode: **family match + supported version → `inner` codec →
+//! caller's `FunctionRegistry` fallback.**
 //!
-//! ## Wire-format magic prefix registry
+//! ## Wire-format family registry
 //!
-//! | Layer + kind                  | Magic prefix |
-//! | ----------------------------- | ------------ |
-//! | `PythonLogicalCodec` scalar   | `DFPYUDF1`   |
-//! | `PythonLogicalCodec` agg      | `DFPYUDA1`   |
-//! | `PythonLogicalCodec` window   | `DFPYUDW1`   |
-//! | `PythonPhysicalCodec` scalar  | `DFPYUDF1`   |
-//! | `PythonPhysicalCodec` agg     | `DFPYUDA1`   |
-//! | `PythonPhysicalCodec` window  | `DFPYUDW1`   |
-//! | `PythonPhysicalCodec` expr    | `DFPYPE1`    |
-//! | User FFI extension codec      | user-chosen  |
-//! | Default codec                 | (none)       |
+//! | Layer + kind                  | Family prefix |
+//! | ----------------------------- | ------------- |
+//! | `PythonLogicalCodec` scalar   | `DFPYUDF`     |
+//! | `PythonLogicalCodec` agg      | `DFPYUDA`     |
+//! | `PythonLogicalCodec` window   | `DFPYUDW`     |
+//! | `PythonPhysicalCodec` scalar  | `DFPYUDF`     |
+//! | `PythonPhysicalCodec` agg     | `DFPYUDA`     |
+//! | `PythonPhysicalCodec` window  | `DFPYUDW`     |
+//! | User FFI extension codec      | user-chosen   |
+//! | Default codec                 | (none)        |
 //!
-//! Downstream FFI codecs should pick non-colliding prefixes (use a
-//! `DF` namespace plus a crate-specific suffix). The codec
+//! Current wire-format version is [`WIRE_VERSION_CURRENT`]; supported
+//! receive range is `WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT`.
+//! Bump [`WIRE_VERSION_CURRENT`] whenever the cloudpickle tuple shape
+//! changes; raise [`WIRE_VERSION_MIN_SUPPORTED`] when dropping support
+//! for an older shape.
+//!
+//! Downstream FFI codecs should pick non-colliding family prefixes
+//! (use a `DF` namespace plus a crate-specific suffix). The codec
 //! implementations in this module currently delegate every method to
 //! `inner`; the encoder/decoder hooks for each kind are added as the
 //! corresponding Python-side type becomes serializable.
@@ -100,21 +107,76 @@ use crate::udaf::PythonFunctionAggregateUDF;
 use crate::udf::PythonFunctionScalarUDF;
 use crate::udwf::PythonFunctionWindowUDF;
 
-/// Wire-format prefix that tags a `fun_definition` payload as an
-/// inlined Python scalar UDF (cloudpickled tuple of name, callable,
-/// input schema, return field, volatility). Defined once here so
-/// the encoder and decoder cannot drift.
-pub(crate) const PY_SCALAR_UDF_MAGIC: &[u8] = b"DFPYUDF1";
+// Wire-format framing for inlined Python UDF payloads.
+//
+// Layout: `<family_magic: 7 bytes> <version: u8> <cloudpickle blob>`.
+// The family magic identifies the UDF flavor; the version byte lets
+// the decoder reject too-new or too-old payloads with a clean error
+// instead of falling into an opaque `cloudpickle` tuple-unpack failure
+// when the tuple shape changes. Bump [`WIRE_VERSION_CURRENT`] whenever
+// the tuple shape changes; raise [`WIRE_VERSION_MIN_SUPPORTED`] when
+// dropping support for an older shape.
 
-/// Wire-format prefix for an inlined Python aggregate UDF
+/// Family prefix for an inlined Python scalar UDF
+/// (cloudpickled tuple of name, callable, input schema, return field,
+/// volatility).
+pub(crate) const PY_SCALAR_UDF_FAMILY: &[u8] = b"DFPYUDF";
+
+/// Family prefix for an inlined Python aggregate UDF
 /// (cloudpickled tuple of name, accumulator factory, input schema,
 /// return type, state types schema, volatility).
-pub(crate) const PY_AGG_UDF_MAGIC: &[u8] = b"DFPYUDA1";
+pub(crate) const PY_AGG_UDF_FAMILY: &[u8] = b"DFPYUDA";
 
-/// Wire-format prefix for an inlined Python window UDF (cloudpickled
-/// tuple of name, evaluator factory, input schema, return type,
-/// volatility).
-pub(crate) const PY_WINDOW_UDF_MAGIC: &[u8] = b"DFPYUDW1";
+/// Family prefix for an inlined Python window UDF
+/// (cloudpickled tuple of name, evaluator factory, input schema,
+/// return type, volatility).
+pub(crate) const PY_WINDOW_UDF_FAMILY: &[u8] = b"DFPYUDW";
+
+/// Wire-format version this build emits.
+pub(crate) const WIRE_VERSION_CURRENT: u8 = 1;
+
+/// Oldest wire-format version this build still decodes. Bump when
+/// retiring support for an older payload shape.
+pub(crate) const WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
+
+/// Tag `buf` with the framing header for `family` at the current
+/// wire-format version. Append-only — the caller writes the
+/// cloudpickle payload after.
+fn write_wire_header(buf: &mut Vec<u8>, family: &[u8]) {
+    buf.extend_from_slice(family);
+    buf.push(WIRE_VERSION_CURRENT);
+}
+
+/// Inspect the framing on `buf`.
+///
+/// * `Ok(None)` — `buf` does not carry `family`. The caller should
+///   delegate to its `inner` codec.
+/// * `Ok(Some(payload))` — `buf` carries `family` at a version this
+///   build accepts; `payload` is the cloudpickle blob.
+/// * `Err(_)` — `buf` carries `family` but at a version outside
+///   `WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT`. The error
+///   names the version and the supported range so an operator can
+///   diagnose sender/receiver version drift instead of seeing an
+///   opaque cloudpickle tuple-unpack failure.
+fn strip_wire_header<'a>(buf: &'a [u8], family: &[u8], kind: &str) -> Result<Option<&'a [u8]>> {
+    if !buf.starts_with(family) {
+        return Ok(None);
+    }
+    let version_idx = family.len();
+    let Some(&version) = buf.get(version_idx) else {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Truncated inline Python {kind} payload: missing wire-format version byte"
+        )));
+    };
+    if !(WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT).contains(&version) {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Inline Python {kind} payload wire-format version v{version}; \
+             this build supports v{WIRE_VERSION_MIN_SUPPORTED}..=v{WIRE_VERSION_CURRENT}. \
+             Align datafusion-python versions on sender and receiver."
+        )));
+    }
+    Ok(Some(&buf[version_idx + 1..]))
+}
 
 /// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
 /// the Python-aware encoding hooks for logical-layer types
@@ -239,7 +301,7 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udf) = try_decode_python_scalar_udf(buf)? {
                 return Ok(udf);
             }
-        } else if buf.starts_with(PY_SCALAR_UDF_MAGIC) {
+        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
             return Err(refuse_inline_payload("scalar UDF", name));
         }
         self.inner.try_decode_udf(name, buf)
@@ -257,7 +319,7 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udaf) = try_decode_python_agg_udf(buf)? {
                 return Ok(udaf);
             }
-        } else if buf.starts_with(PY_AGG_UDF_MAGIC) {
+        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
             return Err(refuse_inline_payload("aggregate UDF", name));
         }
         self.inner.try_decode_udaf(name, buf)
@@ -275,7 +337,7 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udwf) = try_decode_python_window_udf(buf)? {
                 return Ok(udwf);
             }
-        } else if buf.starts_with(PY_WINDOW_UDF_MAGIC) {
+        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
             return Err(refuse_inline_payload("window UDF", name));
         }
         self.inner.try_decode_udwf(name, buf)
@@ -309,7 +371,7 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// encoding on this layer too — otherwise a plan with a Python UDF
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
-/// ([`PY_SCALAR_UDF_MAGIC`] et al.) so the wire format is identical.
+/// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
@@ -371,7 +433,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udf) = try_decode_python_scalar_udf(buf)? {
                 return Ok(udf);
             }
-        } else if buf.starts_with(PY_SCALAR_UDF_MAGIC) {
+        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
             return Err(refuse_inline_payload("scalar UDF", name));
         }
         self.inner.try_decode_udf(name, buf)
@@ -401,7 +463,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udaf) = try_decode_python_agg_udf(buf)? {
                 return Ok(udaf);
             }
-        } else if buf.starts_with(PY_AGG_UDF_MAGIC) {
+        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
             return Err(refuse_inline_payload("aggregate UDF", name));
         }
         self.inner.try_decode_udaf(name, buf)
@@ -419,7 +481,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udwf) = try_decode_python_window_udf(buf)? {
                 return Ok(udwf);
             }
-        } else if buf.starts_with(PY_WINDOW_UDF_MAGIC) {
+        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
             return Err(refuse_inline_payload("window UDF", name));
         }
         self.inner.try_decode_udwf(name, buf)
@@ -452,21 +514,20 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
     Python::attach(|py| -> Result<bool> {
         let bytes = encode_python_scalar_udf(py, py_udf)
             .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        buf.extend_from_slice(PY_SCALAR_UDF_MAGIC);
+        write_wire_header(buf, PY_SCALAR_UDF_FAMILY);
         buf.extend_from_slice(&bytes);
         Ok(true)
     })
 }
 
 /// Decode an inline Python scalar UDF payload. Returns `Ok(None)`
-/// when `buf` does not carry the `DFPYUDF1` prefix, signalling the
-/// caller to delegate to its `inner` codec (and eventually the
+/// when `buf` does not carry the `DFPYUDF` family prefix, signalling
+/// the caller to delegate to its `inner` codec (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
-    if !buf.starts_with(PY_SCALAR_UDF_MAGIC) {
+    let Some(payload) = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")? else {
         return Ok(None);
-    }
-    let payload = &buf[PY_SCALAR_UDF_MAGIC.len()..];
+    };
 
     Python::attach(|py| -> Result<Option<Arc<ScalarUDF>>> {
         let udf = decode_python_scalar_udf(py, payload)
@@ -675,17 +736,16 @@ pub(crate) fn try_encode_python_window_udf(node: &WindowUDF, buf: &mut Vec<u8>) 
     Python::attach(|py| -> Result<bool> {
         let bytes = encode_python_window_udf(py, py_udf)
             .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        buf.extend_from_slice(PY_WINDOW_UDF_MAGIC);
+        write_wire_header(buf, PY_WINDOW_UDF_FAMILY);
         buf.extend_from_slice(&bytes);
         Ok(true)
     })
 }
 
 pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
-    if !buf.starts_with(PY_WINDOW_UDF_MAGIC) {
+    let Some(payload) = strip_wire_header(buf, PY_WINDOW_UDF_FAMILY, "window UDF")? else {
         return Ok(None);
-    }
-    let payload = &buf[PY_WINDOW_UDF_MAGIC.len()..];
+    };
 
     Python::attach(|py| -> Result<Option<Arc<WindowUDF>>> {
         let udf = decode_python_window_udf(py, payload)
@@ -765,17 +825,16 @@ pub(crate) fn try_encode_python_agg_udf(node: &AggregateUDF, buf: &mut Vec<u8>) 
     Python::attach(|py| -> Result<bool> {
         let bytes = encode_python_agg_udf(py, py_udf)
             .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        buf.extend_from_slice(PY_AGG_UDF_MAGIC);
+        write_wire_header(buf, PY_AGG_UDF_FAMILY);
         buf.extend_from_slice(&bytes);
         Ok(true)
     })
 }
 
 pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
-    if !buf.starts_with(PY_AGG_UDF_MAGIC) {
+    let Some(payload) = strip_wire_header(buf, PY_AGG_UDF_FAMILY, "aggregate UDF")? else {
         return Ok(None);
-    }
-    let payload = &buf[PY_AGG_UDF_MAGIC.len()..];
+    };
 
     Python::attach(|py| -> Result<Option<Arc<AggregateUDF>>> {
         let udf = decode_python_agg_udf(py, payload)
@@ -849,4 +908,71 @@ fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunct
         state_fields,
         volatility,
     ))
+}
+
+#[cfg(test)]
+mod wire_header_tests {
+    use super::*;
+
+    #[test]
+    fn strip_returns_none_when_family_absent() {
+        let buf = b"OTHER_PAYLOAD";
+        assert!(matches!(
+            strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF"),
+            Ok(None)
+        ));
+    }
+
+    #[test]
+    fn strip_errors_on_truncated_version_byte() {
+        let buf = PY_SCALAR_UDF_FAMILY;
+        let err = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").unwrap_err();
+        assert!(format!("{err}").contains("missing wire-format version byte"));
+    }
+
+    #[test]
+    fn strip_errors_on_too_new_version() {
+        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
+        buf.push(WIRE_VERSION_CURRENT.saturating_add(1));
+        buf.extend_from_slice(b"payload");
+        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").unwrap_err();
+        let msg = format!("{err}");
+        assert!(msg.contains("wire-format version v"));
+        assert!(msg.contains("supports"));
+        assert!(msg.contains("Align datafusion-python versions"));
+    }
+
+    #[test]
+    fn strip_errors_on_too_old_version() {
+        if WIRE_VERSION_MIN_SUPPORTED == 0 {
+            return;
+        }
+        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
+        buf.push(WIRE_VERSION_MIN_SUPPORTED - 1);
+        buf.extend_from_slice(b"payload");
+        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").is_err());
+    }
+
+    #[test]
+    fn write_then_strip_round_trips_payload() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_AGG_UDF_FAMILY);
+        buf.extend_from_slice(b"agg-payload");
+
+        let payload = strip_wire_header(&buf, PY_AGG_UDF_FAMILY, "aggregate UDF")
+            .unwrap()
+            .unwrap();
+        assert_eq!(payload, b"agg-payload");
+    }
+
+    #[test]
+    fn strip_does_not_match_a_different_family() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY);
+        buf.extend_from_slice(b"payload");
+        assert!(matches!(
+            strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF"),
+            Ok(None)
+        ));
+    }
 }
