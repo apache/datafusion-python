@@ -272,7 +272,11 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
 /// Build the error returned by a strict codec when it receives an
 /// inline Python-UDF payload it has been told not to deserialize.
 fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusionError {
-    datafusion::error::DataFusionError::Plan(format!(
+    // `Execution`, not `Plan`: this is a wire-format decode refusal at
+    // codec time, not a planner-stage failure. Downstream error
+    // classification keys off the variant — surfacing this as a planner
+    // error would mis-route it into "fix your SQL" buckets.
+    datafusion::error::DataFusionError::Execution(format!(
         "Refusing to deserialize inline Python {kind} '{name}': Python UDF \
          inlining is disabled on this session. Re-encode the bytes with \
          inlining enabled, or register '{name}' on the sender's session \
