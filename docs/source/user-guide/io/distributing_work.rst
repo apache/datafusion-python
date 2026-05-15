@@ -238,12 +238,13 @@ context to resolve.
 Python 3.14 default change
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Python 3.14 changed the POSIX default start method for
-:py:mod:`multiprocessing` from ``fork`` to ``forkserver``. With
-``fork``, any state set in the parent was visible in workers via
-copy-on-write; with ``forkserver`` and ``spawn`` it is not. The
-:py:func:`~datafusion.ipc.set_worker_ctx` pattern works on every
-start method — prefer it over relying on inherited state.
+Python 3.14 changed the Linux default start method for
+:py:mod:`multiprocessing` from ``fork`` to ``forkserver`` (macOS has
+defaulted to ``spawn`` since Python 3.8; Windows has always used
+``spawn``). With ``fork``, any state set in the parent was visible in
+workers via copy-on-write; with ``forkserver`` and ``spawn`` it is
+not. The :py:func:`~datafusion.ipc.set_worker_ctx` pattern works on
+every start method — prefer it over relying on inherited state.
 
 Practical considerations
 ~~~~~~~~~~~~~~~~~~~~~~~~
