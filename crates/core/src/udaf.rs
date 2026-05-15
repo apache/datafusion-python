@@ -180,7 +180,7 @@ impl PythonFunctionAggregateUDF {
         let state_fields = state_types
             .into_iter()
             .enumerate()
-            .map(|(i, t)| Arc::new(Field::new(format!("{i}"), t, true)))
+            .map(|(i, t)| Arc::new(Field::new(format!("state_{i}"), t, true)))
             .collect();
         Self {
             name,
