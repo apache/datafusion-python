@@ -446,7 +446,7 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 /// caller to delegate to its `inner` codec (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
-    if buf.is_empty() || !buf.starts_with(PY_SCALAR_UDF_MAGIC) {
+    if !buf.starts_with(PY_SCALAR_UDF_MAGIC) {
         return Ok(None);
     }
     let payload = &buf[PY_SCALAR_UDF_MAGIC.len()..];
@@ -643,7 +643,7 @@ pub(crate) fn try_encode_python_window_udf(node: &WindowUDF, buf: &mut Vec<u8>) 
 }
 
 pub(crate) fn try_decode_python_window_udf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
-    if buf.is_empty() || !buf.starts_with(PY_WINDOW_UDF_MAGIC) {
+    if !buf.starts_with(PY_WINDOW_UDF_MAGIC) {
         return Ok(None);
     }
     let payload = &buf[PY_WINDOW_UDF_MAGIC.len()..];
@@ -771,7 +771,7 @@ pub(crate) fn try_encode_python_agg_udf(node: &AggregateUDF, buf: &mut Vec<u8>) 
 }
 
 pub(crate) fn try_decode_python_agg_udf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
-    if buf.is_empty() || !buf.starts_with(PY_AGG_UDF_MAGIC) {
+    if !buf.starts_with(PY_AGG_UDF_MAGIC) {
         return Ok(None);
     }
     let payload = &buf[PY_AGG_UDF_MAGIC.len()..];
