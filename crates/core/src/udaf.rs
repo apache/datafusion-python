@@ -368,4 +368,9 @@ impl PyAggregateUDF {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("AggregateUDF({})", self.function.name()))
     }
+
+    #[getter]
+    fn name(&self) -> &str {
+        self.function.name()
+    }
 }

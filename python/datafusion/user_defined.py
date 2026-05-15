@@ -132,7 +132,6 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
-        self._name = name
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
@@ -144,8 +143,13 @@ class ScalarUDF:
 
     @property
     def name(self) -> str:
-        """Return the registered name of this UDF."""
-        return self._name
+        """Return the registered name of this UDF.
+
+        For UDFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Scalar UDF."""
@@ -400,7 +404,6 @@ class AggregateUDF:
         See :py:func:`udaf` for a convenience function and argument
         descriptions.
         """
-        self._name = name
         if hasattr(accumulator, "__datafusion_aggregate_udf__"):
             self._udaf = df_internal.AggregateUDF.from_pycapsule(accumulator)
             return
@@ -427,8 +430,13 @@ class AggregateUDF:
 
     @property
     def name(self) -> str:
-        """Return the registered name of this UDAF."""
-        return self._name
+        """Return the registered name of this UDAF.
+
+        For UDAFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udaf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Aggregate UDF."""
@@ -833,7 +841,6 @@ class WindowUDF:
         See :py:func:`udwf` for a convenience function and argument
         descriptions.
         """
-        self._name = name
         if hasattr(func, "__datafusion_window_udf__"):
             self._udwf = df_internal.WindowUDF.from_pycapsule(func)
             return
@@ -843,8 +850,13 @@ class WindowUDF:
 
     @property
     def name(self) -> str:
-        """Return the registered name of this UDWF."""
-        return self._name
+        """Return the registered name of this UDWF.
+
+        For UDWFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udwf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Window UDF."""
