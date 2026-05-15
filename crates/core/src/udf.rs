@@ -79,18 +79,24 @@ impl PythonFunctionScalarUDF {
     }
 
     /// Reconstruct a `PythonFunctionScalarUDF` from the parts emitted
-    /// by the codec. `input_fields` here only contributes `data_type`
-    /// info (collapsed into `Signature::exact`); their names,
-    /// nullability, and metadata are not retained, so the decoder is
-    /// free to fabricate them from `Vec<DataType>`.
+    /// by the codec. Inputs collapse to `Vec<DataType>` because
+    /// `Signature::exact` cannot carry per-input nullability or
+    /// metadata — the encoder is free to discard that side of the
+    /// schema. `return_field` is kept as a `Field` so the post-decode
+    /// nullability and metadata match the sender's instance.
     pub(crate) fn from_parts(
         name: String,
         func: Py<PyAny>,
-        input_fields: Vec<Field>,
+        input_types: Vec<DataType>,
         return_field: Field,
         volatility: Volatility,
     ) -> Self {
-        Self::new(name, func, input_fields, return_field, volatility)
+        Self {
+            name,
+            func,
+            signature: Signature::exact(input_types, volatility),
+            return_field: Arc::new(return_field),
+        }
     }
 }
 

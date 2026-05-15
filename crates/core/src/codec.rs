@@ -527,10 +527,10 @@ fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
 
     let input_schema = schema_from_ipc_bytes(&input_schema_bytes)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let input_fields: Vec<Field> = input_schema
+    let input_types: Vec<arrow::datatypes::DataType> = input_schema
         .fields()
         .iter()
-        .map(|f| f.as_ref().clone())
+        .map(|f| f.data_type().clone())
         .collect();
 
     let return_schema = schema_from_ipc_bytes(&return_schema_bytes)
@@ -552,7 +552,7 @@ fn decode_python_scalar_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
     Ok(PythonFunctionScalarUDF::from_parts(
         name,
         func,
-        input_fields,
+        input_types,
         return_field,
         volatility,
     ))
