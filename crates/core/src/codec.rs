@@ -744,7 +744,7 @@ fn decode_python_window_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFu
     let volatility = datafusion_python_util::parse_volatility(&volatility_str)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
 
-    Ok(PythonFunctionWindowUDF::from_parts(
+    Ok(PythonFunctionWindowUDF::new(
         name,
         evaluator,
         input_types,

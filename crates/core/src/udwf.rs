@@ -311,16 +311,6 @@ impl PythonFunctionWindowUDF {
     pub(crate) fn return_type(&self) -> &DataType {
         &self.return_type
     }
-
-    pub(crate) fn from_parts(
-        name: String,
-        evaluator: Py<PyAny>,
-        input_types: Vec<DataType>,
-        return_type: DataType,
-        volatility: Volatility,
-    ) -> Self {
-        Self::new(name, evaluator, input_types, return_type, volatility)
-    }
 }
 
 impl Eq for PythonFunctionWindowUDF {}
