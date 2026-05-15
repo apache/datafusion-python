@@ -149,6 +149,18 @@ impl PythonLogicalCodec {
     /// when the codec sits on a session that must produce
     /// cross-language wire bytes, or reject `cloudpickle.loads` on
     /// untrusted `from_bytes` input.
+    ///
+    /// Security scope: strict mode (`false`) protects only the codec
+    /// layer — it stops `Expr::from_bytes` from invoking
+    /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
+    /// **not** make `pickle.loads(untrusted_bytes)` safe. Python's
+    /// pickle protocol permits arbitrary code execution via
+    /// `__reduce__` (and `Expr.__reduce__` returns
+    /// `Expr._reconstruct(bytes)` — an honest reducer here, but the
+    /// outer pickle stream can contain any reducer). Treat every
+    /// `pickle.loads` on untrusted input as unsafe regardless of this
+    /// setting; the toggle only narrows the surface inside
+    /// `from_bytes`.
     pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
         self.python_udf_inlining = enabled;
         self
