@@ -350,7 +350,7 @@ class TestPythonUdfInliningToggle:
 
         assert "double" in decoded.canonical_name()
 
-    def test_sender_ctx_strict_pickle_refused_by_inline_worker(self):
+    def test_sender_ctx_strict_pickle_accepted_by_inline_worker_with_registry(self):
         """A strict-encoded blob still decodes fine on an inline worker
         because the wire format is the same default-codec by-name form.
         Sanity check: cross-config works as long as the receiver can
