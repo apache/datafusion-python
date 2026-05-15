@@ -272,6 +272,36 @@ class TestPythonUdfInliningToggle:
 
         assert len(blob_strict) < len(blob_inline) // 4
 
+    def test_toggle_off_then_on_restores_inline_encoding(self):
+        """`with_python_udf_inlining` is per-call clone semantics:
+        flipping off and then on must produce a context that emits the
+        same inline form as a fresh default context, byte-for-byte.
+
+        Guards against a regression where the off→on transition leaves
+        the codec in a sticky strict state (e.g. by mutating shared
+        codec state instead of cloning).
+        """
+        u = self._build_double_udf()
+        e = u(col("a"))
+
+        baseline = SessionContext()
+        toggled = (
+            SessionContext()
+            .with_python_udf_inlining(enabled=False)
+            .with_python_udf_inlining(enabled=True)
+        )
+
+        blob_baseline = e.to_bytes(baseline)
+        blob_toggled = e.to_bytes(toggled)
+
+        assert blob_baseline == blob_toggled
+
+        # Sanity check the decoded form against a fresh ctx — the
+        # toggled-back blob should be self-contained inline, not a
+        # strict by-name payload that needs registry resolution.
+        decoded = Expr.from_bytes(blob_toggled, ctx=SessionContext())
+        assert "double" in decoded.canonical_name()
+
     def test_strict_roundtrip_via_registry(self):
         """When both sender and receiver disable inlining, the UDF
         travels by name only and the receiver resolves it from its
