@@ -353,10 +353,10 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
     // error would mis-route it into "fix your SQL" buckets.
     datafusion::error::DataFusionError::Execution(format!(
         "Refusing to deserialize inline Python {kind} '{name}': Python UDF \
-         inlining is disabled on this session. Re-encode the bytes with \
-         inlining enabled, or register '{name}' on the sender's session \
-         before encode (and on the receiver before decode) so the UDF \
-         travels by name."
+         inlining is disabled on this session. Ask the sender to re-encode \
+         with inlining disabled (so the UDF travels by name), or register \
+         '{name}' on this receiver's session and enable inlining on both \
+         sides — receivers cannot re-encode bytes they did not produce."
     ))
 }
 
