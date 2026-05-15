@@ -46,6 +46,7 @@ Here is a direct link to the file used in the examples:
 
 ### Distributing DataFusion expressions
 
+- [Fan out distinct expressions to a multiprocessing pool](./multiprocessing_pickle_expr.py)
 - [Distribute expression evaluation across Ray actors](./ray_pickle_expr.py)
 
 ### Substrait Support

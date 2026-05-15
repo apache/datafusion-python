@@ -354,4 +354,7 @@ See also
 --------
 
 * :py:mod:`datafusion.ipc` — worker context API.
+* ``examples/multiprocessing_pickle_expr.py`` — runnable
+  ``multiprocessing.Pool`` example that ships a different parametric
+  expression to each worker and collects results back.
 * ``examples/ray_pickle_expr.py`` — runnable Ray actor example.
