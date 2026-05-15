@@ -287,13 +287,18 @@ class TestPythonUdfInliningToggle:
 
     def test_strict_decoder_refuses_inline_payload(self):
         """An inline-encoded blob fed to a strict receiver raises with a
-        clear error rather than silently invoking cloudpickle.loads."""
+        clear error rather than silently invoking cloudpickle.loads.
+
+        The receiver is intentionally *not* given a matching
+        registration: the codec refusal must trip before the registry
+        is ever consulted, so registering the UDF here would only mask
+        a regression that moved the check after registry lookup.
+        """
         sender = SessionContext()
         u = self._build_double_udf()
         blob = u(col("a")).to_bytes(sender)
 
         strict_receiver = SessionContext().with_python_udf_inlining(enabled=False)
-        strict_receiver.register_udf(u)
         # `RuntimeError` (not bare `Exception`): the codec refusal is
         # surfaced through `parse_expr` → `PyRuntimeError`. Tightening
         # the assertion catches a regression that swallows the refusal
