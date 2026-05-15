@@ -446,7 +446,7 @@ class Expr:  # noqa: PLW1641
         :doc:`/user-guide/io/distributing_work`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
-        return bytes(self.expr.to_bytes(ctx_arg))
+        return self.expr.to_bytes(ctx_arg)
 
     @classmethod
     def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
