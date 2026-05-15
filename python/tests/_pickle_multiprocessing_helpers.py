@@ -69,7 +69,7 @@ def unpickle_and_describe(blob: bytes) -> str:
     """Unpickle a proto-bytes blob and return its canonical name."""
     import pickle
 
-    expr = pickle.loads(blob)
+    expr = pickle.loads(blob)  # noqa: S301
     return expr.canonical_name()
 
 
@@ -82,7 +82,7 @@ def unpickle_and_evaluate(blob: bytes, batch: list[int]) -> list[int]:
     """
     import pickle
 
-    expr = pickle.loads(blob)
+    expr = pickle.loads(blob)  # noqa: S301
     ctx = SessionContext()
     df = ctx.from_pydict({"a": batch})
     out = df.with_column("result", expr).select("result")

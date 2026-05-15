@@ -98,7 +98,7 @@ def test_strict_ffi_udf_pickle_roundtrip_via_thread_locals():
 
     set_worker_ctx(receiver)
     try:
-        restored = pickle.loads(blob)
+        restored = pickle.loads(blob)  # noqa: S301
     finally:
         clear_worker_ctx()
 

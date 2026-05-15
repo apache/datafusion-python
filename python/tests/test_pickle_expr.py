@@ -67,7 +67,7 @@ class TestProtoRoundTrip:
     def test_builtin_round_trip(self):
         e = col("a") + lit(1)
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         assert decoded.canonical_name() == e.canonical_name()
 
     def test_to_bytes_from_bytes(self):
@@ -107,14 +107,14 @@ class TestUDFCodec:
     def test_udf_decodes_via_pickle_with_no_worker_ctx(self):
         e = _double_udf()(col("a"))
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         assert "double" in decoded.canonical_name()
 
     def test_udf_decodes_via_pickle_with_worker_ctx(self):
         set_worker_ctx(SessionContext())
         e = _double_udf()(col("a"))
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         assert "double" in decoded.canonical_name()
 
     def test_closure_capturing_udf_names_match(self):
@@ -132,7 +132,7 @@ class TestUDFCodec:
         )
         e = u(col("a"))
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         # Round-trip names match; functional verification of captured state
         # happens in test_pickle_multiprocessing via an actual UDF call.
         assert decoded.canonical_name() == e.canonical_name()
@@ -189,7 +189,7 @@ class TestAggregateUDFCodec:
         u = self._build_aggregate_udf()
         e = u(col("a"))
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         assert "count_all" in decoded.canonical_name()
 
     def test_agg_udf_evaluates_after_roundtrip(self):
@@ -197,7 +197,7 @@ class TestAggregateUDFCodec:
         partitions, exercising the round-tripped state-field schema."""
         u = self._build_aggregate_udf()
         e = u(col("a"))
-        decoded = pickle.loads(pickle.dumps(e))
+        decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
 
         ctx = SessionContext()
         df = ctx.from_pydict({"a": [1, 2, 3, 4, 5]})
@@ -242,7 +242,7 @@ class TestWindowUDFCodec:
         u = self._build_window_udf()
         e = u(col("a"))
         blob = pickle.dumps(e)
-        decoded = pickle.loads(blob)
+        decoded = pickle.loads(blob)  # noqa: S301
         assert "count_up" in decoded.canonical_name()
 
 
@@ -344,7 +344,7 @@ class TestPythonUdfInliningToggle:
         worker.register_udf(u)
         set_worker_ctx(worker)
         try:
-            decoded = pickle.loads(blob)
+            decoded = pickle.loads(blob)  # noqa: S301
         finally:
             clear_worker_ctx()
 
@@ -369,7 +369,7 @@ class TestPythonUdfInliningToggle:
         worker.register_udf(u)
         set_worker_ctx(worker)
         try:
-            decoded = pickle.loads(blob)
+            decoded = pickle.loads(blob)  # noqa: S301
         finally:
             clear_worker_ctx()
 

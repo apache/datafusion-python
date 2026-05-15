@@ -127,7 +127,6 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
   "PT011",
   "RUF015",
   "S101",
-  "S301",
   "S608",
   "SLF",
 ]
@@ -141,7 +140,6 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
   "PLR2004",
   "RUF015",
   "S101",
-  "S301",
   "T201",
   "W505",
 ]
