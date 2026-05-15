@@ -194,6 +194,18 @@ class TestAggregateUDFCodec:
         decoded = pickle.loads(blob)
         assert "count_all" in decoded.canonical_name()
 
+    def test_agg_udf_evaluates_after_roundtrip(self):
+        """End-to-end: the decoded aggregate UDF runs and merges across
+        partitions, exercising the round-tripped state-field schema."""
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        decoded = pickle.loads(pickle.dumps(e))
+
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [1, 2, 3, 4, 5]})
+        out = df.aggregate([], [decoded.alias("n")]).to_pydict()
+        assert out["n"] == [5]
+
 
 class TestWindowUDFCodec:
     """Python window UDFs travel inline like scalar UDFs."""

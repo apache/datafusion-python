@@ -206,22 +206,28 @@ impl PythonFunctionAggregateUDF {
         &self.state_fields
     }
 
+    /// Reconstruct a `PythonFunctionAggregateUDF` from the parts emitted
+    /// by the codec. `state_fields` carries the full state schema
+    /// (names, data types, nullability, metadata) — the codec extracts
+    /// it from the IPC payload, so the post-decode state schema is
+    /// identical to the pre-encode one. Use [`Self::new`] when only
+    /// `Vec<DataType>` is available (e.g. the Python constructor path,
+    /// where field names are synthesized).
     pub(crate) fn from_parts(
         name: String,
         accumulator: Py<PyAny>,
         input_types: Vec<DataType>,
         return_type: DataType,
-        state_types: Vec<DataType>,
+        state_fields: Vec<FieldRef>,
         volatility: Volatility,
     ) -> Self {
-        Self::new(
+        Self {
             name,
             accumulator,
-            input_types,
+            signature: Signature::exact(input_types, volatility),
             return_type,
-            state_types,
-            volatility,
-        )
+            state_fields,
+        }
     }
 }
 

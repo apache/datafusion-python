@@ -831,11 +831,13 @@ fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunct
 
     let state_schema = schema_from_ipc_bytes(&state_schema_bytes)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
-    let state_types: Vec<arrow::datatypes::DataType> = state_schema
-        .fields()
-        .iter()
-        .map(|f| f.data_type().clone())
-        .collect();
+    // Preserve the encoded state field metadata (names, nullability,
+    // arbitrary key/value attributes) so the post-decode UDF reports
+    // the same state schema as the sender's instance — important for
+    // accumulators whose `StateFieldsArgs` consumers key off names or
+    // nullability rather than positional `DataType`.
+    let state_fields: Vec<arrow::datatypes::FieldRef> =
+        state_schema.fields().iter().cloned().collect();
 
     let volatility = datafusion_python_util::parse_volatility(&volatility_str)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{e}")))?;
@@ -845,7 +847,7 @@ fn decode_python_agg_udf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunct
         accumulator,
         input_types,
         return_type,
-        state_types,
+        state_fields,
         volatility,
     ))
 }
