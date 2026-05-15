@@ -75,7 +75,7 @@
 //! `inner`; the encoder/decoder hooks for each kind are added as the
 //! corresponding Python-side type becomes serializable.
 
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 
 use arrow::datatypes::{Field, Schema, SchemaRef};
 use arrow::ipc::reader::StreamReader;
@@ -93,6 +93,7 @@ use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
 use pyo3::prelude::*;
+use pyo3::sync::PyOnceLock;
 use pyo3::types::{PyBytes, PyTuple};
 
 use crate::udaf::PythonFunctionAggregateUDF;
@@ -605,26 +606,17 @@ fn volatility_wire_str(v: Volatility) -> &'static str {
 /// Six encode/decode helpers below would otherwise re-resolve the
 /// module on every call. `py.import` is backed by `sys.modules` and
 /// therefore cheap, but each call still walks a dict and re-binds the
-/// result; a plan with many Python UDFs pays that cost per UDF. The
-/// `OnceLock` collapses it to a single import per process while the
-/// `Py<PyAny>` lets us hand out a fresh `Bound` against the current
-/// GIL token without holding one in the static slot.
+/// result; a plan with many Python UDFs pays that cost per UDF.
+///
+/// `PyOnceLock` scopes the cached `Py<PyAny>` to the current
+/// interpreter, so the slot drops cleanly on interpreter teardown
+/// (relevant under CPython subinterpreters, PEP 684) instead of
+/// resurrecting a `Py` rooted in a dead interpreter on the next call.
 fn cloudpickle<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-    static CLOUDPICKLE: OnceLock<Py<PyAny>> = OnceLock::new();
-    if let Some(cached) = CLOUDPICKLE.get() {
-        return Ok(cached.bind(py).clone());
-    }
-    // Race: two threads can both miss and import. CPython's
-    // `sys.modules` makes the second import essentially free, and
-    // `set` losing the race still leaves the winning value in the
-    // slot — both threads end up returning the same module.
-    let module = py.import("cloudpickle")?;
-    let _ = CLOUDPICKLE.set(module.clone().unbind().into_any());
-    Ok(CLOUDPICKLE
-        .get()
-        .expect("cloudpickle slot populated above")
-        .bind(py)
-        .clone())
+    static CLOUDPICKLE: PyOnceLock<Py<PyAny>> = PyOnceLock::new();
+    CLOUDPICKLE
+        .get_or_try_init(py, || Ok(py.import("cloudpickle")?.unbind().into_any()))
+        .map(|cached| cached.bind(py).clone())
 }
 
 // =============================================================================
