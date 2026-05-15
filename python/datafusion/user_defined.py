@@ -148,6 +148,19 @@ class ScalarUDF:
         For UDFs imported via the FFI capsule protocol, this is the
         name the capsule itself reports — not the ``name`` argument
         passed to the constructor (which is ignored on the FFI path).
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> from datafusion import udf
+            >>> double = udf(
+            ...     lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+            ...     [pa.int64()],
+            ...     pa.int64(),
+            ...     volatility="immutable",
+            ...     name="double",
+            ... )
+            >>> double.name
+            'double'
         """
         return self._udf.name
 

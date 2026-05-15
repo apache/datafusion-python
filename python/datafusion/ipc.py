@@ -65,6 +65,14 @@ def set_worker_ctx(ctx: SessionContext) -> None:
     initializer or a Ray actor ``__init__``. Idempotent: overwrites any
     previous value. Stored in a thread-local slot, so each thread within a
     worker may install its own context independently.
+
+    Examples:
+        >>> from datafusion import SessionContext
+        >>> from datafusion.ipc import set_worker_ctx, get_worker_ctx, clear_worker_ctx
+        >>> set_worker_ctx(SessionContext())
+        >>> get_worker_ctx() is not None
+        True
+        >>> clear_worker_ctx()
     """
     _local.ctx = ctx
 
@@ -76,13 +84,28 @@ def clear_worker_ctx() -> None:
     the global :class:`SessionContext` — adequate for built-ins and Python
     scalar UDFs, but anything imported via the FFI capsule protocol must
     be registered on the global context to resolve.
+
+    Examples:
+        >>> from datafusion import SessionContext
+        >>> from datafusion.ipc import set_worker_ctx, clear_worker_ctx, get_worker_ctx
+        >>> set_worker_ctx(SessionContext())
+        >>> clear_worker_ctx()
+        >>> get_worker_ctx() is None
+        True
     """
     if hasattr(_local, "ctx"):
         del _local.ctx
 
 
 def get_worker_ctx() -> SessionContext | None:
-    """Return this worker's installed :class:`SessionContext`, or ``None``."""
+    """Return this worker's installed :class:`SessionContext`, or ``None``.
+
+    Examples:
+        >>> from datafusion.ipc import get_worker_ctx, clear_worker_ctx
+        >>> clear_worker_ctx()
+        >>> get_worker_ctx() is None
+        True
+    """
     return getattr(_local, "ctx", None)
 
 
@@ -95,6 +118,16 @@ def _resolve_ctx(
     Falling back to the global :class:`SessionContext` (instead of a
     freshly constructed one) preserves any registrations the user has
     installed on it.
+
+    Examples:
+        >>> from datafusion import SessionContext
+        >>> from datafusion.ipc import _resolve_ctx, clear_worker_ctx
+        >>> clear_worker_ctx()
+        >>> isinstance(_resolve_ctx(), SessionContext)
+        True
+        >>> ctx = SessionContext()
+        >>> _resolve_ctx(ctx) is ctx
+        True
     """
     if explicit_ctx is not None:
         return explicit_ctx

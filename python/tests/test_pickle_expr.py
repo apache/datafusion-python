@@ -125,3 +125,33 @@ class TestUDFCodec:
         blob = pickle.dumps(e)
         decoded = pickle.loads(blob)  # noqa: S301
         assert decoded.canonical_name() == e.canonical_name()
+
+    def test_multi_arg_udf_round_trip(self):
+        """Wire format builds synthetic `arg_{i}` fields per input — exercise
+        with a 2-arg UDF spanning two distinct DataTypes."""
+        add_scaled = udf(
+            lambda a, b: pa.array(
+                [
+                    (x.as_py() or 0) + (y.as_py() or 0.0)
+                    for x, y in zip(a, b, strict=False)
+                ]
+            ),
+            [pa.int64(), pa.float64()],
+            pa.float64(),
+            volatility="immutable",
+            name="add_scaled",
+        )
+        e = add_scaled(col("a"), col("b"))
+        decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
+        assert decoded.canonical_name() == e.canonical_name()
+        assert "add_scaled" in decoded.canonical_name()
+
+
+class TestErrorPaths:
+    def test_from_bytes_rejects_garbage(self):
+        with pytest.raises(Exception):  # noqa: B017
+            Expr.from_bytes(b"not a valid protobuf payload")
+
+    def test_from_bytes_rejects_empty(self):
+        with pytest.raises(Exception):  # noqa: B017
+            Expr.from_bytes(b"")
