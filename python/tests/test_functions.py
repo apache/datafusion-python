@@ -1957,6 +1957,37 @@ def test_get_field(df):
     assert result.column(1) == pa.array([4, 5, 6])
 
 
+def test_get_field_path(df):
+    df = df.with_column(
+        "outer",
+        f.named_struct(
+            [
+                (
+                    "inner",
+                    f.named_struct(
+                        [
+                            ("x", column("a")),
+                            ("y", column("b")),
+                        ]
+                    ),
+                ),
+            ]
+        ),
+    )
+    result = df.select(
+        f.get_field(column("outer"), "inner", "x").alias("x_val"),
+        f.get_field(column("outer"), "inner", "y").alias("y_val"),
+    ).collect()[0]
+
+    assert result.column(0) == pa.array(["Hello", "World", "!"], type=pa.string_view())
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
+def test_get_field_requires_a_name():
+    with pytest.raises(ValueError, match="at least one field name"):
+        f.get_field(column("s"))
+
+
 def test_arrow_metadata():
     ctx = SessionContext()
     field = pa.field("val", pa.int64(), metadata={"key1": "value1", "key2": "value2"})

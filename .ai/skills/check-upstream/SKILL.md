@@ -66,11 +66,17 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 - Python API: `python/datafusion/functions.py` — each function wraps a call to `datafusion._internal.functions`
 - Rust bindings: `crates/core/src/functions.rs` — `#[pyfunction]` definitions registered via `init_module()`
 
+**Evaluated and not requiring separate Python exposure:**
+- `get_field_path` — already covered by `get_field(expr, *names)`, which takes a
+  variadic field path and dispatches to the same underlying
+  `functions::core::get_field` UDF as the upstream `get_field_path` helper.
+
 **How to check:**
 1. Fetch the upstream scalar function documentation page
 2. Compare against functions listed in `python/datafusion/functions.py` (check the `__all__` list and function definitions)
 3. A function is covered if it exists in the Python API — it does NOT need a dedicated Rust `#[pyfunction]`. Many functions are aliases that reuse another function's Rust binding.
-4. Only report functions that are missing from the Python `__all__` list / function definitions
+4. Check against the "evaluated and not requiring exposure" list before flagging as a gap
+5. Only report functions that are missing from the Python `__all__` list / function definitions
 
 ### 2. Aggregate Functions
 
