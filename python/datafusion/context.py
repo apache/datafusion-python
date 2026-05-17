@@ -1310,6 +1310,65 @@ class SessionContext:
         """
         self.ctx.deregister_udwf(name)
 
+    def udf(self, name: str) -> ScalarUDF:
+        """Look up a registered scalar UDF by name.
+
+        Args:
+            name: Name of the registered scalar UDF.
+
+        Raises:
+            Exception: If no scalar UDF is registered under ``name``.
+        """
+        from datafusion.user_defined import ScalarUDF as _ScalarUDF  # noqa: PLC0415
+
+        wrapper = _ScalarUDF.__new__(_ScalarUDF)
+        wrapper._udf = self.ctx.udf(name)
+        return wrapper
+
+    def udaf(self, name: str) -> AggregateUDF:
+        """Look up a registered aggregate UDF by name.
+
+        Args:
+            name: Name of the registered aggregate UDF.
+
+        Raises:
+            Exception: If no aggregate UDF is registered under ``name``.
+        """
+        from datafusion.user_defined import (  # noqa: PLC0415
+            AggregateUDF as _AggregateUDF,
+        )
+
+        wrapper = _AggregateUDF.__new__(_AggregateUDF)
+        wrapper._udaf = self.ctx.udaf(name)
+        return wrapper
+
+    def udwf(self, name: str) -> WindowUDF:
+        """Look up a registered window UDF by name.
+
+        Args:
+            name: Name of the registered window UDF.
+
+        Raises:
+            Exception: If no window UDF is registered under ``name``.
+        """
+        from datafusion.user_defined import WindowUDF as _WindowUDF  # noqa: PLC0415
+
+        wrapper = _WindowUDF.__new__(_WindowUDF)
+        wrapper._udwf = self.ctx.udwf(name)
+        return wrapper
+
+    def udfs(self) -> list[str]:
+        """Return the sorted names of all registered scalar UDFs."""
+        return self.ctx.udfs()
+
+    def udafs(self) -> list[str]:
+        """Return the sorted names of all registered aggregate UDFs."""
+        return self.ctx.udafs()
+
+    def udwfs(self) -> list[str]:
+        """Return the sorted names of all registered window UDFs."""
+        return self.ctx.udwfs()
+
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
         return Catalog(self.ctx.catalog(name))

@@ -35,7 +35,6 @@ use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
 use datafusion::datasource::{MemTable, TableProvider};
-use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -44,6 +43,7 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
+use datafusion::execution::{FunctionRegistry, TaskContextProvider};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -1070,6 +1070,39 @@ impl PySessionContext {
 
     pub fn deregister_udwf(&self, name: &str) {
         self.ctx.deregister_udwf(name);
+    }
+
+    pub fn udf(&self, name: &str) -> PyDataFusionResult<PyScalarUDF> {
+        let function = (*self.ctx.udf(name)?).clone();
+        Ok(PyScalarUDF { function })
+    }
+
+    pub fn udaf(&self, name: &str) -> PyDataFusionResult<PyAggregateUDF> {
+        let function = (*self.ctx.udaf(name)?).clone();
+        Ok(PyAggregateUDF { function })
+    }
+
+    pub fn udwf(&self, name: &str) -> PyDataFusionResult<PyWindowUDF> {
+        let function = (*self.ctx.udwf(name)?).clone();
+        Ok(PyWindowUDF { function })
+    }
+
+    pub fn udfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udfs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udafs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udafs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udwfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udwfs().into_iter().collect();
+        names.sort();
+        names
     }
 
     #[pyo3(signature = (name="datafusion"))]

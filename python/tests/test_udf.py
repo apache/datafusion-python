@@ -76,6 +76,27 @@ def test_register_udf(ctx, df) -> None:
     assert result == pa.array([False, False, True])
 
 
+def test_udf_lookup(ctx, df) -> None:
+    is_null = udf(
+        lambda x: x.is_null(),
+        [pa.float64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="lookup_is_null",
+    )
+    ctx.register_udf(is_null)
+
+    assert "lookup_is_null" in ctx.udfs()
+
+    looked_up = ctx.udf("lookup_is_null")
+    df_result = df.select(looked_up(column("b")))
+    result = df_result.collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+    with pytest.raises(Exception, match="no UDF named"):
+        ctx.udf("does_not_exist")
+
+
 class OverThresholdUDF:
     def __init__(self, threshold: int = 0) -> None:
         self.threshold = threshold
