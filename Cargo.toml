@@ -71,12 +71,12 @@ codegen-units = 2
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-common = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
-datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "3d06bedcc9afbd65781ac1de28741c36140d2cbb" }
+datafusion = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
