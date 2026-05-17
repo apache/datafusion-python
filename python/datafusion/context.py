@@ -86,6 +86,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
+    from _typeshed import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
@@ -93,6 +94,8 @@ if TYPE_CHECKING:
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
+        LogicalExtensionCodecExportable,
+        PhysicalExtensionCodecExportable,
         ScalarUDF,
         TableFunction,
         WindowUDF,
@@ -1744,11 +1747,15 @@ class SessionContext:
         """Access the PyCapsule FFI_LogicalExtensionCodec."""
         return self.ctx.__datafusion_logical_extension_codec__()
 
-    def with_logical_extension_codec(self, codec: Any) -> SessionContext:
+    def with_logical_extension_codec(
+        self, codec: LogicalExtensionCodecExportable | _PyCapsule
+    ) -> SessionContext:
         """Create a new session context with specified codec.
 
         This only supports codecs that have been implemented using the
-        FFI interface.
+        FFI interface. ``codec`` must either be a raw ``FFI_LogicalExtensionCodec``
+        ``PyCapsule`` or an object exposing
+        ``__datafusion_logical_extension_codec__``.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -1759,11 +1766,15 @@ class SessionContext:
         """Access the PyCapsule FFI_PhysicalExtensionCodec."""
         return self.ctx.__datafusion_physical_extension_codec__()
 
-    def with_physical_extension_codec(self, codec: Any) -> SessionContext:
+    def with_physical_extension_codec(
+        self, codec: PhysicalExtensionCodecExportable | _PyCapsule
+    ) -> SessionContext:
         """Create a new session context with the specified physical codec.
 
         This only supports codecs that have been implemented using the
-        FFI interface.
+        FFI interface. ``codec`` must either be a raw
+        ``FFI_PhysicalExtensionCodec`` ``PyCapsule`` or an object exposing
+        ``__datafusion_physical_extension_codec__``.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)

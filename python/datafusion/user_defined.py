@@ -113,6 +113,18 @@ def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
     return value.__class__.__name__ == "PyCapsule"
 
 
+class LogicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_logical_extension_codec__``."""
+
+    def __datafusion_logical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
+class PhysicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_physical_extension_codec__``."""
+
+    def __datafusion_physical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
