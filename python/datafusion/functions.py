@@ -4521,6 +4521,7 @@ def grouping(
 
 def avg(
     expression: Expr,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Returns the average value.
@@ -4528,10 +4529,12 @@ def avg(
     This aggregate function expects a numeric expression and will return a float.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Values to combine into an array
+        distinct: If True, only distinct values are averaged. Equivalent to the
+            upstream ``avg_distinct`` shortcut.
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -4551,9 +4554,17 @@ def avg(
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         2.5
+
+        >>> df = ctx.from_pydict({"a": [1.0, 1.0, 2.0, 3.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.avg(
+        ...         dfn.col("a"), distinct=True,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.avg(expression.expr, filter=filter_raw))
+    return Expr(f.avg(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
@@ -4838,6 +4849,7 @@ def min(expression: Expr, filter: Expr | None = None) -> Expr:
 
 def sum(
     expression: Expr,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of a set of numbers.
@@ -4845,10 +4857,12 @@ def sum(
     This aggregate function expects a numeric expression.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Values to combine into an array
+        distinct: If True, only distinct values are summed. Equivalent to the
+            upstream ``sum_distinct`` shortcut.
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -4868,9 +4882,17 @@ def sum(
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         5
+
+        >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.sum(
+        ...         dfn.col("a"), distinct=True,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        6
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.sum(expression.expr, filter=filter_raw))
+    return Expr(f.sum(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def stddev(expression: Expr, filter: Expr | None = None) -> Expr:

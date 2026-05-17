@@ -1957,6 +1957,36 @@ def test_get_field(df):
     assert result.column(1) == pa.array([4, 5, 6])
 
 
+def test_sum_distinct_kwarg():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+    distinct = (
+        df.aggregate([], [f.sum(column("a"), distinct=True).alias("v")])
+        .collect_column("v")[0]
+        .as_py()
+    )
+    total = (
+        df.aggregate([], [f.sum(column("a")).alias("v")]).collect_column("v")[0].as_py()
+    )
+    assert distinct == 6
+    assert total == 7
+
+
+def test_avg_distinct_kwarg():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 1.0, 2.0, 3.0]})
+    distinct = (
+        df.aggregate([], [f.avg(column("a"), distinct=True).alias("v")])
+        .collect_column("v")[0]
+        .as_py()
+    )
+    mean = (
+        df.aggregate([], [f.avg(column("a")).alias("v")]).collect_column("v")[0].as_py()
+    )
+    assert distinct == 2.0
+    assert mean == 1.75
+
+
 def test_arrow_metadata():
     ctx = SessionContext()
     field = pa.field("val", pa.int64(), metadata={"key1": "value1", "key2": "value2"})
