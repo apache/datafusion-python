@@ -1054,6 +1054,47 @@ class WindowUDF:
         )
 
 
+def _callable_accepts_session_kwarg(func: object) -> bool:
+    """Return True if ``func`` accepts a ``session`` keyword argument.
+
+    Used to opt a Python UDTF callback into receiving the calling
+    :class:`SessionContext` at invocation time. ``**kwargs`` callables
+    are treated as accepting it; built-ins and objects without an
+    introspectable signature fall back to ``False``.
+    """
+    import inspect  # noqa: PLC0415
+
+    try:
+        signature = inspect.signature(func)
+    except (TypeError, ValueError):
+        return False
+
+    for parameter in signature.parameters.values():
+        if parameter.name == "session":
+            return True
+        if parameter.kind is inspect.Parameter.VAR_KEYWORD:
+            return True
+    return False
+
+
+def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Adapt the raw internal session pyo3 object back to a Python wrapper.
+
+    The Rust call site forwards a ``datafusion._internal.SessionContext``,
+    but UDTF authors expect to interact with the public
+    :class:`datafusion.SessionContext` wrapper. This closure wraps the
+    internal object once per call before delegating to ``func``.
+    """
+
+    @functools.wraps(func, updated=())
+    def adapter(*args: Any, session: Any, **kwargs: Any) -> Any:
+        wrapped = SessionContext.__new__(SessionContext)
+        wrapped.ctx = session
+        return func(*args, session=wrapped, **kwargs)
+
+    return adapter
+
+
 class TableFunction:
     """Class for performing user-defined table functions (UDTF).
 
@@ -1066,10 +1107,19 @@ class TableFunction:
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
+        If ``func``'s signature accepts a ``session`` keyword (or
+        ``**kwargs``), the calling :class:`SessionContext` is threaded
+        through to it on each invocation. Use it inside the body to look
+        up registered tables, UDFs, or session configuration. Callables
+        whose signatures do not declare ``session`` are invoked with the
+        positional expression arguments only.
+
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.TableFunction(name, func, ctx)
+        accepts_session = _callable_accepts_session_kwarg(func)
+        registered = _wrap_session_kwarg_for_udtf(func) if accepts_session else func
+        self._udtf = df_internal.TableFunction(name, registered, ctx, accepts_session)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""

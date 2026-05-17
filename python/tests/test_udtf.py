@@ -134,3 +134,68 @@ def test_python_table_function_with_string_args() -> None:
     result = ctx.sql("SELECT * FROM string_arg_func('test')").collect()
     assert len(result) == 1
     assert result[0].schema.names == ["test_a", "test_b"]
+
+
+def test_python_table_function_receives_session() -> None:
+    """A UDTF whose signature declares ``session`` gets the calling ctx."""
+    ctx = SessionContext()
+    captured: list[SessionContext] = []
+
+    @udtf("session_aware_func")
+    def session_aware_func(*, session: SessionContext) -> TableProviderExportable:
+        captured.append(session)
+        batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(session_aware_func)
+    result = ctx.sql("SELECT * FROM session_aware_func()").collect()
+
+    assert len(captured) == 1
+    assert isinstance(captured[0], SessionContext)
+    # Sharing the same catalog confirms the wrapper points at the caller's state.
+    assert captured[0].catalog().schema().names() == ctx.catalog().schema().names()
+    assert result[0].column(0).to_pylist() == [1, 2, 3]
+
+
+def test_python_table_function_session_used_for_metadata() -> None:
+    """The UDTF can inspect session state through the passed-in context."""
+    ctx = SessionContext()
+    base_batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
+    ctx.register_batch("base_tbl", base_batch)
+
+    seen_tables: list[set[str]] = []
+
+    @udtf("table_inventory")
+    def table_inventory(*, session: SessionContext) -> TableProviderExportable:
+        # Stash the visible tables to verify the session wired through.
+        seen_tables.append(session.catalog().schema().names())
+        batch = pa.RecordBatch.from_pydict({"name": ["base_tbl"]})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(table_inventory)
+    result = ctx.sql("SELECT * FROM table_inventory()").collect()
+
+    assert seen_tables == [{"base_tbl"}]
+    assert result[0].column(0).to_pylist() == ["base_tbl"]
+
+
+def test_python_table_function_class_callable_session_kwarg() -> None:
+    """Class-based UDTFs whose __call__ accepts ``session`` get it too."""
+    ctx = SessionContext()
+    captured: list[SessionContext] = []
+
+    class SessionAware:
+        def __call__(
+            self, n: Expr, *, session: SessionContext
+        ) -> TableProviderExportable:
+            captured.append(session)
+            count = n.to_variant().value_i64()
+            batch = pa.RecordBatch.from_pydict({"a": list(range(count))})
+            return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(udtf(SessionAware(), "session_class_func"))
+    result = ctx.sql("SELECT * FROM session_class_func(3)").collect()
+
+    assert len(captured) == 1
+    assert isinstance(captured[0], SessionContext)
+    assert result[0].column(0).to_pylist() == [0, 1, 2]

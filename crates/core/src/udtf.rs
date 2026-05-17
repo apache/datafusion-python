@@ -18,19 +18,32 @@
 use std::ptr::NonNull;
 use std::sync::Arc;
 
-use datafusion::catalog::{TableFunctionArgs, TableFunctionImpl, TableProvider};
-use datafusion::error::Result as DataFusionResult;
+use datafusion::catalog::{Session, TableFunctionArgs, TableFunctionImpl, TableProvider};
+use datafusion::error::{DataFusionError, Result as DataFusionResult};
+use datafusion::execution::context::SessionContext;
+use datafusion::execution::session_state::SessionState;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyImportError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyTuple, PyType};
+use pyo3::types::{PyCapsule, PyDict, PyTuple, PyType};
 
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTable;
+
+/// A pure-Python UDTF callable plus the metadata we discovered about it
+/// at registration time.
+#[derive(Debug, Clone)]
+pub(crate) struct PythonTableFunctionCallable {
+    pub(crate) callable: Arc<Py<PyAny>>,
+    /// Whether the callable's signature accepts a ``session`` keyword
+    /// argument (or ``**kwargs``). When true the calling
+    /// :class:`SessionContext` is threaded through on each invocation.
+    pub(crate) accepts_session: bool,
+}
 
 /// Represents a user defined table function
 #[pyclass(from_py_object, frozen, name = "TableFunction", module = "datafusion")]
@@ -40,21 +53,21 @@ pub struct PyTableFunction {
     pub(crate) inner: PyTableFunctionInner,
 }
 
-// TODO: Implement pure python based user defined table functions
 #[derive(Debug, Clone)]
 pub(crate) enum PyTableFunctionInner {
-    PythonFunction(Arc<Py<PyAny>>),
+    PythonFunction(PythonTableFunctionCallable),
     FFIFunction(Arc<dyn TableFunctionImpl>),
 }
 
 #[pymethods]
 impl PyTableFunction {
     #[new]
-    #[pyo3(signature=(name, func, session))]
+    #[pyo3(signature=(name, func, session, accepts_session=false))]
     pub fn new(
         name: &str,
         func: Bound<'_, PyAny>,
         session: Option<Bound<PyAny>>,
+        accepts_session: bool,
     ) -> PyResult<Self> {
         let inner = if func.hasattr("__datafusion_table_function__")? {
             let py = func.py();
@@ -80,8 +93,10 @@ impl PyTableFunction {
 
             PyTableFunctionInner::FFIFunction(foreign_func)
         } else {
-            let py_obj = Arc::new(func.unbind());
-            PyTableFunctionInner::PythonFunction(py_obj)
+            PyTableFunctionInner::PythonFunction(PythonTableFunctionCallable {
+                callable: Arc::new(func.unbind()),
+                accepts_session,
+            })
         };
 
         Ok(Self {
@@ -107,20 +122,59 @@ impl PyTableFunction {
     }
 }
 
+/// Materialize a fresh :class:`PySessionContext` from the borrowed
+/// ``&dyn Session`` handed in at call time.
+///
+/// Upstream invokes ``call_with_args`` with a trait-object reference
+/// rather than an owned context; we downcast it to the canonical
+/// :class:`SessionState` impl and rebuild a :class:`SessionContext`
+/// (sharing the same registries via the Arc-heavy interior of
+/// :class:`SessionState`). Returns an error if the trait object is a
+/// non-:class:`SessionState` implementation (e.g. a foreign FFI
+/// session) — those are not exposed to Python today.
+fn py_session_from_session(session: &dyn Session) -> DataFusionResult<PySessionContext> {
+    let state = session
+        .as_any()
+        .downcast_ref::<SessionState>()
+        .ok_or_else(|| {
+            DataFusionError::Execution(
+                "Cannot expose this UDTF's calling session to Python: \
+             the session is not a SessionState. Drop the `session` \
+             keyword from the callback signature to fall back to the \
+             expression-only call form."
+                    .to_string(),
+            )
+        })?;
+    Ok(PySessionContext::from(SessionContext::new_with_state(
+        state.clone(),
+    )))
+}
+
 #[allow(clippy::result_large_err)]
 fn call_python_table_function(
-    func: &Arc<Py<PyAny>>,
-    args: &[Expr],
+    func: &PythonTableFunctionCallable,
+    args: TableFunctionArgs,
 ) -> DataFusionResult<Arc<dyn TableProvider>> {
-    let args = args
+    let py_session = if func.accepts_session {
+        Some(py_session_from_session(args.session())?)
+    } else {
+        None
+    };
+    let py_exprs = args
+        .exprs()
         .iter()
         .map(|arg| PyExpr::from(arg.clone()))
         .collect::<Vec<_>>();
 
-    // move |args: &[ArrayRef]| -> Result<ArrayRef, DataFusionError> {
     Python::attach(|py| {
-        let py_args = PyTuple::new(py, args)?;
-        let provider_obj = func.call1(py, py_args)?;
+        let py_args = PyTuple::new(py, py_exprs)?;
+        let provider_obj = if let Some(session) = py_session {
+            let kwargs = PyDict::new(py);
+            kwargs.set_item("session", session.into_pyobject(py)?)?;
+            func.callable.call(py, py_args, Some(&kwargs))?
+        } else {
+            func.callable.call1(py, py_args)?
+        };
         let provider = provider_obj.bind(py).clone();
 
         Ok::<Arc<dyn TableProvider>, PyErr>(PyTable::new(provider, None)?.table)
@@ -132,8 +186,8 @@ impl TableFunctionImpl for PyTableFunction {
     fn call_with_args(&self, args: TableFunctionArgs) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
             PyTableFunctionInner::FFIFunction(func) => func.call_with_args(args),
-            PyTableFunctionInner::PythonFunction(obj) => {
-                call_python_table_function(obj, args.exprs())
+            PyTableFunctionInner::PythonFunction(callable) => {
+                call_python_table_function(callable, args)
             }
         }
     }
