@@ -962,6 +962,45 @@ class SessionContext:
         """
         self.ctx.register_record_batches(name, partitions)
 
+    def read_batch(self, batch: pa.RecordBatch) -> DataFrame:
+        """Return a :py:class:`~datafusion.DataFrame` reading a single batch.
+
+        Convenience wrapper around :py:meth:`read_batches` for the single-batch
+        case. Unlike :py:meth:`register_batch`, this does not register the
+        batch as a named table; it returns an anonymous
+        :py:class:`~datafusion.DataFrame` directly.
+
+        Args:
+            batch: Record batch to wrap as a DataFrame.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+            >>> ctx.read_batch(batch).to_pydict()
+            {'a': [1, 2, 3]}
+        """
+        return self.read_batches([batch])
+
+    def read_batches(self, batches: list[pa.RecordBatch]) -> DataFrame:
+        """Return a :py:class:`~datafusion.DataFrame` reading the given batches.
+
+        All batches must share the same schema. Unlike
+        :py:meth:`register_record_batches`, this does not register the batches
+        as a named table; it returns an anonymous
+        :py:class:`~datafusion.DataFrame` directly.
+
+        Args:
+            batches: Record batches to wrap as a DataFrame.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+            >>> b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+            >>> ctx.read_batches([b1, b2]).to_pydict()
+            {'a': [1, 2, 3, 4]}
+        """
+        return DataFrame(self.ctx.read_batches(batches))
+
     def register_parquet(
         self,
         name: str,

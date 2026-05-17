@@ -847,6 +847,13 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn read_batches(
+        &self,
+        batches: PyArrowType<Vec<RecordBatch>>,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        Ok(PyDataFrame::new(self.ctx.read_batches(batches.0)?))
+    }
+
     #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name, path, table_partition_cols=vec![],
                         parquet_pruning=true,
