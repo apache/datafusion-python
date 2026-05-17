@@ -1145,6 +1145,18 @@ impl PySessionContext {
         self.ctx.remove_optimizer_rule(name)
     }
 
+    pub fn add_optimizer_rule(&self, rule: Bound<'_, PyAny>) -> PyResult<()> {
+        let adapter = crate::optimizer_rules::build_optimizer_rule(rule)?;
+        self.ctx.add_optimizer_rule(adapter);
+        Ok(())
+    }
+
+    pub fn add_analyzer_rule(&self, rule: Bound<'_, PyAny>) -> PyResult<()> {
+        let adapter = crate::optimizer_rules::build_analyzer_rule(rule)?;
+        self.ctx.add_analyzer_rule(adapter);
+        Ok(())
+    }
+
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {
         let provider = wait_for_future(py, self.ctx.table_provider(name))
             // Outer error: runtime/async failure

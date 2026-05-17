@@ -45,6 +45,7 @@ pub mod expr;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
 pub mod metrics;
+pub mod optimizer_rules;
 mod options;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
