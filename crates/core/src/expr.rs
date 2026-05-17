@@ -31,9 +31,13 @@ use datafusion::logical_expr::{
     Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder, ExprFunctionExt, Like, LogicalPlan,
     Operator, TryCast, WindowFunctionDefinition, col, lit, lit_with_metadata,
 };
+use datafusion_proto::logical_plan::{from_proto, to_proto};
+use prost::Message;
 use pyo3::IntoPyObjectExt;
 use pyo3::basic::CompareOp;
+use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 use window::PyWindowFrame;
 
 use self::alias::PyAlias;
@@ -43,7 +47,9 @@ use self::bool_expr::{
 };
 use self::like::{PyILike, PyLike, PySimilarTo};
 use self::scalar_variable::PyScalarVariable;
+use crate::codec::PythonLogicalCodec;
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
+use crate::context::PySessionContext;
 use crate::errors::{PyDataFusionResult, py_runtime_err, py_type_err, py_unsupported_variant_err};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
@@ -680,6 +686,55 @@ impl PyExpr {
             ))
             .into()),
         }
+    }
+
+    /// Serialize this `Expr` to protobuf bytes.
+    ///
+    /// When `ctx` is supplied, encoding routes through the session's
+    /// installed `LogicalExtensionCodec` so user FFI codecs see the
+    /// encode path. Without `ctx` a default-inner Python codec is
+    /// used; Python scalar UDFs still inline when in-band encoding
+    /// lands, non-Python UDFs fall through to the default codec.
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &'py self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        let default_codec;
+        let codec: &dyn datafusion_proto::logical_plan::LogicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.logical_codec().as_ref(),
+            None => {
+                default_codec = PythonLogicalCodec::default();
+                &default_codec
+            }
+        };
+        let proto = to_proto::serialize_expr(&self.expr, codec)
+            .map_err(|e| PyRuntimeError::new_err(format!("Unable to serialize expr: {e}")))?;
+        let bytes = proto.encode_to_vec();
+        Ok(PyBytes::new(py, &bytes))
+    }
+
+    /// Decode an `Expr` from protobuf bytes against the session's
+    /// function registry and logical codec.
+    #[staticmethod]
+    pub fn from_bytes(
+        ctx: PySessionContext,
+        proto_msg: Bound<'_, PyBytes>,
+    ) -> PyDataFusionResult<Self> {
+        let bytes: &[u8] = proto_msg.extract().map_err(Into::<PyErr>::into)?;
+        let proto_expr =
+            datafusion_proto::protobuf::LogicalExprNode::decode(bytes).map_err(|e| {
+                PyRuntimeError::new_err(format!(
+                    "Unable to decode expression from serialized bytes: {e}"
+                ))
+            })?;
+
+        let codec = ctx.logical_codec();
+        let task_ctx = ctx.ctx.task_ctx();
+        let expr = from_proto::parse_expr(&proto_expr, task_ctx.as_ref(), codec.as_ref())
+            .map_err(|e| PyRuntimeError::new_err(format!("Unable to decode expr: {e}")))?;
+        Ok(Self { expr })
     }
 }
 

@@ -28,6 +28,7 @@ use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+pub mod codec;
 pub mod common;
 
 #[allow(clippy::borrow_deref_ref)]

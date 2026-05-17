@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         NullTreatment,
         RexType,
     )
+    from datafusion.context import SessionContext
     from datafusion.plan import LogicalPlan
 
 
@@ -437,6 +438,25 @@ class Expr:  # noqa: PLW1641
         Ex: ``IsNotNull``, ``Literal``, ``BinaryExpr``, etc
         """
         return self.expr.variant_name()
+
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
+        """Serialize this expression to protobuf bytes.
+
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
+        default codec is used.
+        """
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self.expr.to_bytes(ctx_arg)
+
+    @staticmethod
+    def from_bytes(ctx: SessionContext, data: bytes) -> Expr:
+        """Decode an expression from serialized protobuf bytes.
+
+        ``ctx`` provides the function registry for resolving UDF
+        references and the logical codec for in-band Python payloads.
+        """
+        return Expr(expr_internal.RawExpr.from_bytes(ctx.ctx, data))
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""

@@ -18,12 +18,13 @@
 use std::sync::Arc;
 
 use datafusion::logical_expr::{DdlStatement, LogicalPlan, Statement};
-use datafusion_proto::logical_plan::{AsLogicalPlan, DefaultLogicalExtensionCodec};
+use datafusion_proto::logical_plan::AsLogicalPlan;
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
+use crate::codec::PythonLogicalCodec;
 use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
 use crate::expr::aggregate::PyAggregate;
@@ -196,17 +197,29 @@ impl PyLogicalPlan {
         format!("{}", self.plan.display_graphviz())
     }
 
-    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = DefaultLogicalExtensionCodec {};
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &'py self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        let default_codec;
+        let codec: &dyn datafusion_proto::logical_plan::LogicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.logical_codec().as_ref(),
+            None => {
+                default_codec = PythonLogicalCodec::default();
+                &default_codec
+            }
+        };
         let proto =
-            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, &codec)?;
+            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, codec)?;
 
         let bytes = proto.encode_to_vec();
         Ok(PyBytes::new(py, &bytes))
     }
 
     #[staticmethod]
-    pub fn from_proto(
+    pub fn from_bytes(
         ctx: PySessionContext,
         proto_msg: Bound<'_, PyBytes>,
     ) -> PyDataFusionResult<Self> {
@@ -218,8 +231,8 @@ impl PyLogicalPlan {
                 ))
             })?;
 
-        let codec = DefaultLogicalExtensionCodec {};
-        let plan = proto_plan.try_into_logical_plan(&ctx.ctx.task_ctx(), &codec)?;
+        let codec = ctx.logical_codec();
+        let plan = proto_plan.try_into_logical_plan(&ctx.ctx.task_ctx(), codec.as_ref())?;
         Ok(Self::new(plan))
     }
 }

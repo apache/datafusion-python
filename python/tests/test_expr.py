@@ -1181,3 +1181,29 @@ def test_round_trip_pyscalar_value(ctx: SessionContext, value: pa.Scalar):
     df = ctx.sql("select 1 as a")
     df = df.select(lit(value))
     assert pa.table(df)[0][0] == value
+
+
+def test_expr_to_bytes_roundtrip(ctx: SessionContext) -> None:
+    """An Expr round-trips through the session's logical codec."""
+    from datafusion import Expr
+
+    original = col("a") + lit(1)
+    blob = original.to_bytes(ctx)
+    restored = Expr.from_bytes(ctx, blob)
+
+    # Canonical name preserves the structure of the expression even
+    # though the underlying PyExpr instances are different.
+    assert restored.canonical_name() == original.canonical_name()
+
+
+def test_expr_to_bytes_no_ctx_default_codec() -> None:
+    """to_bytes(ctx=None) uses a default codec; builtin-only Exprs
+    still round-trip when a session is supplied on decode."""
+    from datafusion import Expr
+
+    fresh = SessionContext()
+    original = col("a") * lit(2)
+    blob = original.to_bytes()  # encode side: default codec
+    restored = Expr.from_bytes(fresh, blob)
+
+    assert restored.canonical_name() == original.canonical_name()

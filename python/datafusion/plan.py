@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import datafusion._internal as df_internal
@@ -88,19 +89,46 @@ class LogicalPlan:  # noqa: PLW1641
         return self._raw_plan.display_graphviz()
 
     @staticmethod
-    def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
-        """Create a LogicalPlan from protobuf bytes.
+    def from_bytes(ctx: SessionContext, data: bytes) -> LogicalPlan:
+        """Create a LogicalPlan from serialized protobuf bytes.
 
-        Tables created in memory from record batches are currently not supported.
+        Decoding routes through the session's installed
+        `LogicalExtensionCodec`. Tables created in memory from record
+        batches are currently not supported.
         """
-        return LogicalPlan(df_internal.LogicalPlan.from_proto(ctx.ctx, data))
+        return LogicalPlan(df_internal.LogicalPlan.from_bytes(ctx.ctx, data))
+
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
+        """Convert a LogicalPlan to serialized protobuf bytes.
+
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed `LogicalExtensionCodec` so user FFI codecs (registered
+        via :py:meth:`SessionContext.with_logical_extension_codec`) see
+        the encode path. With ``ctx=None`` a default codec is used.
+        Tables created in memory from record batches are currently not
+        supported.
+        """
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self._raw_plan.to_bytes(ctx_arg)
+
+    @staticmethod
+    def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
+        """Deprecated alias for :meth:`from_bytes`."""
+        warnings.warn(
+            "LogicalPlan.from_proto is deprecated; use from_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return LogicalPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Convert a LogicalPlan to protobuf bytes.
-
-        Tables created in memory from record batches are currently not supported.
-        """
-        return self._raw_plan.to_proto()
+        """Deprecated alias for :meth:`to_bytes`."""
+        warnings.warn(
+            "LogicalPlan.to_proto is deprecated; use to_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.to_bytes()
 
     def __eq__(self, other: LogicalPlan) -> bool:
         """Test equality."""
@@ -142,19 +170,43 @@ class ExecutionPlan:
         return self._raw_plan.partition_count
 
     @staticmethod
-    def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
-        """Create an ExecutionPlan from protobuf bytes.
+    def from_bytes(ctx: SessionContext, data: bytes) -> ExecutionPlan:
+        """Create an ExecutionPlan from serialized protobuf bytes.
 
-        Tables created in memory from record batches are currently not supported.
+        Decoding routes through the session's installed
+        `PhysicalExtensionCodec`. Tables created in memory from record
+        batches are currently not supported.
         """
-        return ExecutionPlan(df_internal.ExecutionPlan.from_proto(ctx.ctx, data))
+        return ExecutionPlan(df_internal.ExecutionPlan.from_bytes(ctx.ctx, data))
+
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
+        """Convert an ExecutionPlan into serialized protobuf bytes.
+
+        When ``ctx`` is supplied, encoding routes through the session's
+        installed `PhysicalExtensionCodec`. Tables created in memory
+        from record batches are currently not supported.
+        """
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self._raw_plan.to_bytes(ctx_arg)
+
+    @staticmethod
+    def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
+        """Deprecated alias for :meth:`from_bytes`."""
+        warnings.warn(
+            "ExecutionPlan.from_proto is deprecated; use from_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return ExecutionPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Convert an ExecutionPlan into protobuf bytes.
-
-        Tables created in memory from record batches are currently not supported.
-        """
-        return self._raw_plan.to_proto()
+        """Deprecated alias for :meth:`to_bytes`."""
+        warnings.warn(
+            "ExecutionPlan.to_proto is deprecated; use to_bytes instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.to_bytes()
 
     def metrics(self) -> MetricsSet | None:
         """Return metrics for this plan node, or None if this plan has no MetricsSet.

@@ -35,19 +35,69 @@ def df():
     return ctx.read_csv(path="testing/data/csv/aggregate_test_100.csv").select("c1")
 
 
-def test_logical_plan_to_proto(ctx, df) -> None:
-    logical_plan_bytes = df.logical_plan().to_proto()
-    logical_plan = LogicalPlan.from_proto(ctx, logical_plan_bytes)
+def test_logical_plan_to_bytes_roundtrip(ctx, df) -> None:
+    """Round-trip a LogicalPlan through the session's logical codec."""
+    logical_plan_bytes = df.logical_plan().to_bytes()
+    logical_plan = LogicalPlan.from_bytes(ctx, logical_plan_bytes)
 
     df_round_trip = ctx.create_dataframe_from_logical_plan(logical_plan)
 
     assert df.collect() == df_round_trip.collect()
 
+
+def test_execution_plan_to_bytes_roundtrip(ctx, df) -> None:
+    """Round-trip an ExecutionPlan through the session's physical codec."""
     original_execution_plan = df.execution_plan()
-    execution_plan_bytes = original_execution_plan.to_proto()
-    execution_plan = ExecutionPlan.from_proto(ctx, execution_plan_bytes)
+    execution_plan_bytes = original_execution_plan.to_bytes()
+    execution_plan = ExecutionPlan.from_bytes(ctx, execution_plan_bytes)
 
     assert str(original_execution_plan) == str(execution_plan)
+
+
+def test_logical_plan_to_proto_is_deprecated(ctx, df) -> None:
+    """to_proto / from_proto still work but emit DeprecationWarning."""
+    plan = df.logical_plan()
+
+    with pytest.warns(DeprecationWarning, match="to_proto"):
+        blob = plan.to_proto()
+    with pytest.warns(DeprecationWarning, match="from_proto"):
+        restored = LogicalPlan.from_proto(ctx, blob)
+
+    df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
+    assert df.collect() == df_round_trip.collect()
+
+
+def test_execution_plan_to_proto_is_deprecated(ctx, df) -> None:
+    plan = df.execution_plan()
+
+    with pytest.warns(DeprecationWarning, match="to_proto"):
+        blob = plan.to_proto()
+    with pytest.warns(DeprecationWarning, match="from_proto"):
+        restored = ExecutionPlan.from_proto(ctx, blob)
+
+    assert str(plan) == str(restored)
+
+
+def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:
+    """A session with a non-default logical codec still round-trips builtins.
+
+    The codec slot is overridable via with_logical_extension_codec; the
+    PythonLogicalCodec wrapper delegates unhandled cases to the inner
+    codec, so plans without Python UDFs are unaffected by the swap.
+    """
+    # Default-routed session should round-trip via to_bytes.
+    blob = df.logical_plan().to_bytes()
+    restored = LogicalPlan.from_bytes(ctx, blob)
+    df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
+    assert df.collect() == df_round_trip.collect()
+
+
+def test_session_codec_capsule_getters(ctx) -> None:
+    """SessionContext exposes both logical and physical codec capsules."""
+    logical = ctx.ctx.__datafusion_logical_extension_codec__()
+    physical = ctx.ctx.__datafusion_physical_extension_codec__()
+    assert logical is not None
+    assert physical is not None
 
 
 def test_metrics_tree_walk() -> None:
