@@ -381,11 +381,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 /// inner codec. Returns `Ok(false)` for any non-Python UDF, signalling
 /// the caller to delegate to its `inner`.
 pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<bool> {
-    let Some(py_udf) = node
-        .inner()
-        .as_any()
-        .downcast_ref::<PythonFunctionScalarUDF>()
-    else {
+    let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionScalarUDF>() else {
         return Ok(false);
     };
 
