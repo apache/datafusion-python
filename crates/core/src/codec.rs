@@ -49,12 +49,16 @@
 //! the same payload framing for that reason.
 //!
 //! Payloads emitted by these codecs are framed as
-//! `<family_magic: 7 bytes> <version: u8> <cloudpickle blob>`. The
-//! family magic identifies the UDF flavor; the version byte lets the
-//! decoder reject too-new or too-old payloads with a clean error
+//! `<family_magic: 7 bytes> <version: u8> <py_major: u8> <py_minor: u8> <cloudpickle blob>`.
+//! The family magic identifies the UDF flavor; the version byte lets
+//! the decoder reject too-new or too-old payloads with a clean error
 //! instead of falling into an opaque `cloudpickle` tuple-unpack
-//! failure when the tuple shape changes. Dispatch precedence on
-//! decode: **family match + supported version → `inner` codec →
+//! failure when the tuple shape changes; the Python `(major, minor)`
+//! bytes catch the cloudpickle-cross-minor-version case and raise an
+//! actionable error instead of an opaque `marshal` failure on load
+//! (cloudpickle payloads are not portable across Python minor
+//! versions). Dispatch precedence on decode: **family match +
+//! supported version + matching Python version → `inner` codec →
 //! caller's `FunctionRegistry` fallback.**
 //!
 //! ## Wire-format family registry
@@ -105,13 +109,17 @@ use crate::udf::PythonFunctionScalarUDF;
 
 // Wire-format framing for inlined Python UDF payloads.
 //
-// Layout: `<family_magic: 7 bytes> <version: u8> <cloudpickle blob>`.
+// Layout: `<family_magic: 7 bytes> <version: u8> <py_major: u8> <py_minor: u8> <cloudpickle blob>`.
 // The family magic identifies the UDF flavor; the version byte lets
 // the decoder reject too-new or too-old payloads with a clean error
 // instead of falling into an opaque `cloudpickle` tuple-unpack failure
-// when the tuple shape changes. Bump [`WIRE_VERSION_CURRENT`] whenever
-// the tuple shape changes; raise [`WIRE_VERSION_MIN_SUPPORTED`] when
-// dropping support for an older shape.
+// when the tuple shape changes; the Python `(major, minor)` bytes
+// catch the cloudpickle-cross-minor-version case (cloudpickle is not
+// portable across Python minor versions) and raise an actionable
+// error instead of an opaque `marshal` failure on load. Bump
+// [`WIRE_VERSION_CURRENT`] whenever the tuple shape changes; raise
+// [`WIRE_VERSION_MIN_SUPPORTED`] when dropping support for an older
+// shape.
 
 /// Family prefix for an inlined Python scalar UDF
 /// (cloudpickled tuple of name, callable, input schema, return field,
@@ -126,11 +134,14 @@ pub(crate) const WIRE_VERSION_CURRENT: u8 = 1;
 pub(crate) const WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
 
 /// Tag `buf` with the framing header for `family` at the current
-/// wire-format version. Append-only — the caller writes the
-/// cloudpickle payload after.
-fn write_wire_header(buf: &mut Vec<u8>, family: &[u8]) {
+/// wire-format version, stamping `py_version` as `(major, minor)`
+/// bytes. Append-only — the caller writes the cloudpickle payload
+/// after.
+fn write_wire_header(buf: &mut Vec<u8>, family: &[u8], py_version: (u8, u8)) {
     buf.extend_from_slice(family);
     buf.push(WIRE_VERSION_CURRENT);
+    buf.push(py_version.0);
+    buf.push(py_version.1);
 }
 
 /// Inspect the framing on `buf`.
@@ -138,13 +149,20 @@ fn write_wire_header(buf: &mut Vec<u8>, family: &[u8]) {
 /// * `Ok(None)` — `buf` does not carry `family`. The caller should
 ///   delegate to its `inner` codec.
 /// * `Ok(Some(payload))` — `buf` carries `family` at a version this
-///   build accepts; `payload` is the cloudpickle blob.
-/// * `Err(_)` — `buf` carries `family` but at a version outside
-///   `WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT`. The error
-///   names the version and the supported range so an operator can
-///   diagnose sender/receiver version drift instead of seeing an
-///   opaque cloudpickle tuple-unpack failure.
-fn strip_wire_header<'a>(buf: &'a [u8], family: &[u8], kind: &str) -> Result<Option<&'a [u8]>> {
+///   build accepts and a Python `(major, minor)` matching
+///   `expected_py`; `payload` is the cloudpickle blob.
+/// * `Err(_)` — `buf` carries `family` but the wire-format version
+///   is outside `WIRE_VERSION_MIN_SUPPORTED..=WIRE_VERSION_CURRENT`,
+///   or the stamped Python `(major, minor)` does not match
+///   `expected_py`. The error names the offending values so an
+///   operator can diagnose sender/receiver drift instead of seeing
+///   an opaque cloudpickle tuple-unpack or `marshal` failure.
+fn strip_wire_header<'a>(
+    buf: &'a [u8],
+    family: &[u8],
+    kind: &str,
+    expected_py: (u8, u8),
+) -> Result<Option<&'a [u8]>> {
     if !buf.starts_with(family) {
         return Ok(None);
     }
@@ -161,7 +179,28 @@ fn strip_wire_header<'a>(buf: &'a [u8], family: &[u8], kind: &str) -> Result<Opt
              Align datafusion-python versions on sender and receiver."
         )));
     }
-    Ok(Some(&buf[version_idx + 1..]))
+    let py_major_idx = version_idx + 1;
+    let Some(&encoded_major) = buf.get(py_major_idx) else {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Truncated inline Python {kind} payload: missing Python major version byte"
+        )));
+    };
+    let py_minor_idx = version_idx + 2;
+    let Some(&encoded_minor) = buf.get(py_minor_idx) else {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Truncated inline Python {kind} payload: missing Python minor version byte"
+        )));
+    };
+    let (current_major, current_minor) = expected_py;
+    if encoded_major != current_major || encoded_minor != current_minor {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Inline Python {kind} payload was serialized on Python \
+             {encoded_major}.{encoded_minor} but this process is running Python \
+             {current_major}.{current_minor}. cloudpickle payloads are not portable \
+             across Python minor versions. Align Python versions on sender and receiver."
+        )));
+    }
+    Ok(Some(&buf[py_minor_idx + 1..]))
 }
 
 /// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
@@ -386,9 +425,11 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
     };
 
     Python::attach(|py| -> Result<bool> {
+        let py_version = current_python_version(py)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
         let bytes = encode_python_scalar_udf(py, py_udf)
             .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
-        write_wire_header(buf, PY_SCALAR_UDF_FAMILY);
+        write_wire_header(buf, PY_SCALAR_UDF_FAMILY, py_version);
         buf.extend_from_slice(&bytes);
         Ok(true)
     })
@@ -399,11 +440,13 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 /// the caller to delegate to its `inner` codec (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
-    let Some(payload) = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")? else {
-        return Ok(None);
-    };
-
     Python::attach(|py| -> Result<Option<Arc<ScalarUDF>>> {
+        let py_version = current_python_version(py)
+            .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
+        let Some(payload) = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", py_version)?
+        else {
+            return Ok(None);
+        };
         let udf = decode_python_scalar_udf(py, payload)
             .map_err(|e| datafusion::error::DataFusionError::External(Box::new(e)))?;
         Ok(Some(Arc::new(ScalarUDF::new_from_impl(udf))))
@@ -567,6 +610,20 @@ fn volatility_wire_str(v: Volatility) -> &'static str {
     }
 }
 
+/// Read the interpreter's `sys.version_info` as `(major, minor)`.
+///
+/// Used by encoder/decoder to stamp and verify the Python version a
+/// cloudpickle payload was produced on. cloudpickle is not portable
+/// across Python minor versions; the wire header carries these bytes
+/// so a mismatch surfaces an actionable error instead of an opaque
+/// `marshal` failure at `cloudpickle.loads` time.
+fn current_python_version(py: Python<'_>) -> PyResult<(u8, u8)> {
+    let version_info = py.import("sys")?.getattr("version_info")?;
+    let major: u8 = version_info.getattr("major")?.extract()?;
+    let minor: u8 = version_info.getattr("minor")?.extract()?;
+    Ok((major, minor))
+}
+
 /// Cached handle to the `cloudpickle` module.
 ///
 /// The encode/decode helpers above would otherwise re-resolve the
@@ -589,11 +646,13 @@ fn cloudpickle<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
 mod wire_header_tests {
     use super::*;
 
+    const TEST_PY: (u8, u8) = (3, 12);
+
     #[test]
     fn strip_returns_none_when_family_absent() {
         let buf = b"OTHER_PAYLOAD";
         assert!(matches!(
-            strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF"),
+            strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY),
             Ok(None)
         ));
     }
@@ -601,7 +660,7 @@ mod wire_header_tests {
     #[test]
     fn strip_errors_on_truncated_version_byte() {
         let buf = PY_SCALAR_UDF_FAMILY;
-        let err = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").unwrap_err();
+        let err = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
         assert!(format!("{err}").contains("missing wire-format version byte"));
     }
 
@@ -609,8 +668,10 @@ mod wire_header_tests {
     fn strip_errors_on_too_new_version() {
         let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
         buf.push(WIRE_VERSION_CURRENT.saturating_add(1));
+        buf.push(TEST_PY.0);
+        buf.push(TEST_PY.1);
         buf.extend_from_slice(b"payload");
-        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").unwrap_err();
+        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
         let msg = format!("{err}");
         assert!(msg.contains("wire-format version v"));
         assert!(msg.contains("supports"));
@@ -624,17 +685,56 @@ mod wire_header_tests {
         }
         let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
         buf.push(WIRE_VERSION_MIN_SUPPORTED - 1);
+        buf.push(TEST_PY.0);
+        buf.push(TEST_PY.1);
         buf.extend_from_slice(b"payload");
-        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF").is_err());
+        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).is_err());
+    }
+
+    #[test]
+    fn strip_errors_on_truncated_py_major() {
+        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
+        buf.push(WIRE_VERSION_CURRENT);
+        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
+        assert!(format!("{err}").contains("missing Python major version byte"));
+    }
+
+    #[test]
+    fn strip_errors_on_truncated_py_minor() {
+        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
+        buf.push(WIRE_VERSION_CURRENT);
+        buf.push(TEST_PY.0);
+        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
+        assert!(format!("{err}").contains("missing Python minor version byte"));
+    }
+
+    #[test]
+    fn strip_errors_on_py_minor_mismatch() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, (3, 11));
+        buf.extend_from_slice(b"payload");
+        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", (3, 12)).unwrap_err();
+        let msg = format!("{err}");
+        assert!(msg.contains("Python 3.11"));
+        assert!(msg.contains("Python 3.12"));
+        assert!(msg.contains("not portable across Python minor versions"));
+    }
+
+    #[test]
+    fn strip_errors_on_py_major_mismatch() {
+        let mut buf = Vec::new();
+        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, (3, 12));
+        buf.extend_from_slice(b"payload");
+        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", (4, 0)).is_err());
     }
 
     #[test]
     fn write_then_strip_round_trips_payload() {
         let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY);
+        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, TEST_PY);
         buf.extend_from_slice(b"scalar-payload");
 
-        let payload = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")
+        let payload = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY)
             .unwrap()
             .unwrap();
         assert_eq!(payload, b"scalar-payload");

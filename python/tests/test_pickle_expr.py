@@ -155,3 +155,30 @@ class TestErrorPaths:
     def test_from_bytes_rejects_empty(self):
         with pytest.raises(Exception):  # noqa: B017
             Expr.from_bytes(b"")
+
+    def test_cross_version_error_message(self):
+        """Decoding a payload stamped with a different Python minor
+        version raises a clear, actionable error rather than an opaque
+        marshal/unpickle failure.
+
+        The wire frame inside the protobuf is:
+        ``DFPYUDF (7) | version (1) | py_major (1) | py_minor (1) | cloudpickle``.
+        We locate the frame inside the outer protobuf and patch the
+        minor byte at offset 9.
+        """
+        import sys
+
+        e = _double_udf()(col("a"))
+        blob = e.to_bytes()
+
+        idx = blob.find(b"DFPYUDF")
+        assert idx >= 0, "DFPYUDF frame not found in payload"
+
+        different_minor = (sys.version_info.minor + 1) % 256
+        tampered = bytearray(blob)
+        tampered[idx + 9] = different_minor
+
+        with pytest.raises(
+            Exception, match="not portable across Python minor versions"
+        ):
+            Expr.from_bytes(bytes(tampered))

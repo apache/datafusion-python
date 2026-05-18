@@ -454,12 +454,58 @@ class Expr:  # noqa: PLW1641
         UDFs imported via the FFI capsule protocol travel by name only
         and must be registered on the worker.
 
-        .. warning::
+        .. warning:: Security
             Bytes returned here may embed a cloudpickled Python
             callable (when the expression carries a Python scalar UDF).
             Reconstructing them via :meth:`from_bytes` or
             :func:`pickle.loads` executes arbitrary Python on the
             receiver. Only accept payloads from trusted sources.
+
+        .. warning:: Portability
+            cloudpickle serializes Python bytecode, which is **not
+            stable across Python minor versions**. A payload produced
+            on Python 3.11 will fail to load on Python 3.12. The
+            wire format stamps the sender's ``(major, minor)``;
+            :meth:`from_bytes` raises a :class:`ValueError` naming
+            both versions on mismatch.
+
+            cloudpickle captures the UDF callable **by value** —
+            bytecode and closure cells inlined — but names the
+            callable resolves via ``import`` are captured **by
+            reference** (module path only) and must be importable on
+            the receiver.
+
+            **Self-contained — works anywhere:**
+
+            .. code-block:: python
+
+                # Lambda: bytecode captured inline
+                udf(lambda x: x * 2, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+                # Locally-defined function: bytecode captured inline
+                def double(x):
+                    return x * 2
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Closure over a local variable: value captured inline
+                factor = 3
+                udf(lambda x: x * factor, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+            **Requires matching environment on receiver:**
+
+            .. code-block:: python
+
+                # Top-level import: `foo` must be installed on receiver
+                from foo import double
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Bound method of an imported class: same caveat
+                from mylib import Transformer
+                t = Transformer()
+                udf(t.transform, [pa.int64()], pa.int64(),
+                    volatility="immutable")
 
         Examples:
             >>> from datafusion import col, lit
@@ -483,11 +529,20 @@ class Expr:  # noqa: PLW1641
         (sufficient for built-ins and Python scalar UDFs, plus any UDFs
         registered on the global context).
 
-        .. warning::
+        .. warning:: Security
             Decoding may invoke ``cloudpickle.loads`` on bytes embedded
             in the payload, which executes arbitrary Python code. Treat
             ``buf`` as code, not data — only decode bytes you produced
             yourself or received from a trusted sender.
+
+        .. warning:: Portability
+            cloudpickle payloads are **not portable across Python
+            minor versions**. The wire format stamps the sender's
+            ``(major, minor)``; if it does not match the current
+            interpreter, this method raises :class:`ValueError`
+            naming both versions. Modules the UDF imports must also
+            be importable on the receiver — see :meth:`to_bytes` for
+            by-value vs. by-reference details.
 
         Examples:
             >>> from datafusion import Expr, col, lit
@@ -512,11 +567,17 @@ class Expr:  # noqa: PLW1641
         back to the global :class:`SessionContext` if none has been
         installed on the worker.
 
-        .. warning::
+        .. warning:: Security
             :func:`pickle.loads` on the returned tuple executes
             arbitrary Python on the receiver, including any
             cloudpickled UDF callable embedded in the payload. Only
             unpickle expressions from trusted sources.
+
+        .. warning:: Portability
+            Sender and receiver must run the same Python
+            ``(major, minor)`` version; cloudpickle bytecode is not
+            portable across minor versions. See :meth:`to_bytes` for
+            details on what travels by value vs. by reference.
 
         Examples:
             >>> import pickle

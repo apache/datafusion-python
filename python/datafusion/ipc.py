@@ -37,6 +37,21 @@ once per worker:
 
 Built-in functions and Python scalar UDFs travel inside the shipped
 expression itself and do not need pre-registration on the worker.
+
+.. note:: Serialization model
+
+   Expressions containing Python scalar UDFs are serialized using
+   :mod:`cloudpickle`. The callable itself travels **by value**
+   (bytecode and closure cells inlined), but any names the callable
+   resolves via ``import`` are captured **by reference** and must be
+   importable on the receiving worker.
+
+   The serialized payload is stamped with the sender's Python
+   ``(major, minor)`` version. Loading on a different minor version
+   raises :class:`ValueError` with an actionable message — cloudpickle
+   payloads are not portable across Python minor versions. See
+   :meth:`datafusion.Expr.to_bytes` for examples of what travels by
+   value vs. by reference.
 """
 
 from __future__ import annotations
