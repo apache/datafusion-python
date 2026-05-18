@@ -52,7 +52,7 @@ impl PyCast {
     }
 
     fn data_type(&self) -> PyResult<PyDataType> {
-        Ok(self.cast.data_type.clone().into())
+        Ok(self.cast.field.data_type().clone().into())
     }
 }
 
@@ -81,6 +81,6 @@ impl PyTryCast {
     }
 
     fn data_type(&self) -> PyResult<PyDataType> {
-        Ok(self.try_cast.data_type.clone().into())
+        Ok(self.try_cast.field.data_type().clone().into())
     }
 }

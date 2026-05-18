@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::hash::{Hash, Hasher};
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -94,10 +93,6 @@ impl Hash for PythonFunctionScalarUDF {
 }
 
 impl ScalarUDFImpl for PythonFunctionScalarUDF {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn name(&self) -> &str {
         &self.name
     }

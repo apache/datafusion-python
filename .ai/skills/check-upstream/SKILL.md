@@ -29,6 +29,29 @@ You are auditing the datafusion-python project to find features from the upstrea
 
 **IMPORTANT: The Python API is the source of truth for coverage.** A function or method is considered "exposed" if it exists in the Python API (e.g., `python/datafusion/functions.py`), even if there is no corresponding entry in the Rust bindings. Many upstream functions are aliases of other functions — the Python layer can expose these aliases by calling a different underlying Rust binding. Do NOT report a function as missing if it appears in the Python `__all__` list and has a working implementation, regardless of whether a matching `#[pyfunction]` exists in Rust.
 
+**IMPORTANT: audit the total upstream surface, not the delta since the last pin.** Gaps accumulate across syncs. A patch-release bump with a "bug fixes only" changelog does not mean there is nothing to find — pre-existing gaps from earlier majors still need to be surfaced. Always run the full comparison.
+
+## Compile-Signal Triggers
+
+If a recent upstream bump required *any* of the following while fixing
+compile errors in `crates/core/` or the FFI example, treat that as a
+**hard signal** that user-facing surface area grew and run this skill
+before considering the bump done. Each pattern corresponds to a class of
+gap that frequently shows up in the audit:
+
+| Signal during PR 1 compile fix | Likely gap to check |
+|---|---|
+| New `Expr::*` variant added to a non-exhaustive `match` (`HigherOrderFunction`, `Lambda`, `LambdaVariable`, …) | New lambda / higher-order scalar functions (`any_match`, `array_transform`, `list_transform`, …) |
+| New `ScalarValue::*` variant (`ListView`, `LargeListView`, …) | New scalar / array functions that consume or produce the type |
+| New required trait method on `ExecutionPlan` / `TableProvider` / `*UDFImpl` (`apply_expressions`, …) | Corresponding capability on the Python wrapper class |
+| Renamed or restructured struct field (e.g. `Cast.data_type` → `Cast.field: FieldRef`) | Any Python accessor / SKILL.md doc that read the old field |
+| Newly deprecated trait method with a `_with_args` / `_with_options` replacement | The `*_with_options` variant frequently warrants a separate Python entry point |
+
+PR 1 of `dev/release/upstream-sync.md` asks you to log these signals as
+they appear. When you run this skill, use that log as a checklist: every
+entry must either show up in the audit output or be explicitly skipped
+with a reason.
+
 ## Areas to Check
 
 The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" is given, check all areas.
@@ -172,6 +195,28 @@ These upstream FFI types have been reviewed and do not need to be independently 
    - Registered in Rust `init_module()` and Python `__init__.py`
    - FFI example in `examples/datafusion-ffi-example/`
    - Type appears in union type hints where accepted
+
+### 8. `__all__` Hygiene (functions.py)
+
+Independent of upstream parity, also flag public `def` symbols in
+`python/datafusion/functions.py` that are missing from the module's
+`__all__`. These are functions a user can call but that do not show up in
+`from datafusion.functions import *`, in tab-completion against the
+namespace, or in generated API docs — typically an oversight rather than
+an intentional omission.
+
+**How to check:**
+1. Grep for `^def ([a-z_][a-z0-9_]*)\(` in `python/datafusion/functions.py`
+   to enumerate every public function definition.
+2. Read the `__all__` list at the top of the same file.
+3. Report any function in (1) that is not in (2). Skip private helpers
+   (names starting with `_`).
+
+A historical example: `instr` and `position` shipped as public `def`s but
+were absent from `__all__` until the gap was caught here.
+
+For each finding, propose adding the name to `__all__` in alphabetical
+position with the existing entries.
 
 ## Checking for Existing GitHub Issues
 

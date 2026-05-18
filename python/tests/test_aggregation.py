@@ -125,18 +125,34 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             pa.array([1], type=pa.uint64()),
             False,
         ),
-        (f.approx_median(column("b")), pa.array([4]), False),
-        (f.median(column("b"), distinct=True), pa.array([5]), False),
-        (f.median(column("b"), filter=column("a") != 2), pa.array([5]), False),
-        (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5]), False),
-        (f.approx_percentile_cont(column("b"), 0.5), pa.array([4]), False),
+        (f.approx_median(column("b")), pa.array([4], type=pa.float64()), False),
+        (
+            f.median(column("b"), distinct=True),
+            pa.array([5], type=pa.float64()),
+            False,
+        ),
+        (
+            f.median(column("b"), filter=column("a") != 2),
+            pa.array([5], type=pa.float64()),
+            False,
+        ),
+        (
+            f.approx_median(column("b"), filter=column("a") != 2),
+            pa.array([5], type=pa.float64()),
+            False,
+        ),
+        (
+            f.approx_percentile_cont(column("b"), 0.5),
+            pa.array([4], type=pa.float64()),
+            False,
+        ),
         (
             f.approx_percentile_cont(
                 column("b").sort(ascending=True, nulls_first=False),
                 0.5,
                 num_centroids=2,
             ),
-            pa.array([4]),
+            pa.array([4.75], type=pa.float64()),
             False,
         ),
         (
@@ -212,19 +228,19 @@ def test_aggregation(df, agg_expr, expected, array_sort):
         (
             "approx_percentile_cont",
             f.approx_percentile_cont(column("c3"), 0.95, num_centroids=200),
-            [73, 68, 122, 124, 115],
+            [73.55, 68.0, 122.5, 124.2, 115.6],
         ),
         (
             "approx_perc_cont_few_centroids",
             f.approx_percentile_cont(column("c3"), 0.95, num_centroids=5),
-            [72, 68, 119, 124, 115],
+            [72.775, 68.0, 119.4075, 124.825, 115.44],
         ),
         (
             "approx_perc_cont_filtered",
             f.approx_percentile_cont(
                 column("c3"), 0.95, num_centroids=200, filter=column("c3") > lit(0)
             ),
-            [83, 68, 122, 124, 117],
+            [83.0, 68.0, 122.75, 124.9, 117.6],
         ),
         (
             "corr",

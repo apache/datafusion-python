@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::sync::Arc;
 
 use arrow::datatypes::SchemaRef;
@@ -150,10 +149,6 @@ impl TempViewTable {
 
 #[async_trait]
 impl TableProvider for TempViewTable {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn schema(&self) -> SchemaRef {
         Arc::new(self.df.schema().as_arrow().clone())
     }
