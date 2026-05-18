@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::ops::Range;
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -317,10 +316,6 @@ impl MultiColumnWindowUDF {
 }
 
 impl WindowUDFImpl for MultiColumnWindowUDF {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn name(&self) -> &str {
         &self.name
     }

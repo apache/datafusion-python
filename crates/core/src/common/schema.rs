@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::sync::Arc;
@@ -219,10 +218,6 @@ impl SqlTableSource {
 
 /// Implement TableSource, used in the logical query plan and in logical query optimizations
 impl TableSource for SqlTableSource {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn schema(&self) -> SchemaRef {
         self.schema.clone()
     }

@@ -184,6 +184,7 @@ __all__ = [
     "ifnull",
     "in_list",
     "initcap",
+    "instr",
     "isnan",
     "iszero",
     "lag",
@@ -273,6 +274,7 @@ __all__ = [
     "percent_rank",
     "percentile_cont",
     "pi",
+    "position",
     "pow",
     "power",
     "quantile_cont",
@@ -3874,7 +3876,7 @@ def arrays_zip(*arrays: Expr) -> Expr:
         >>> result = df.select(
         ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
         >>> result.collect_column("result")[0].as_py()
-        [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
+        [{'1': 1, '2': 3}, {'1': 2, '2': 4}]
     """
     args = [a.expr for a in arrays]
     return Expr(f.arrays_zip(args))

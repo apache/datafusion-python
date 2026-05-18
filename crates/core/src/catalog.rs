@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::collections::HashSet;
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -143,15 +142,12 @@ impl PyCatalogList {
                 "Schema with name {name} doesn't exist."
             )))?;
 
-        Python::attach(|py| {
-            match catalog
-                .as_any()
-                .downcast_ref::<RustWrappedPyCatalogProvider>()
-            {
+        Python::attach(
+            |py| match catalog.downcast_ref::<RustWrappedPyCatalogProvider>() {
                 Some(wrapped_catalog) => Ok(wrapped_catalog.catalog_provider.clone_ref(py)),
                 None => PyCatalog::new_from_parts(catalog, self.codec.clone()).into_py_any(py),
-            }
-        })
+            },
+        )
     }
 
     pub fn register_catalog(&self, name: &str, catalog_provider: Bound<'_, PyAny>) -> PyResult<()> {
@@ -201,15 +197,12 @@ impl PyCatalog {
                 "Schema with name {name} doesn't exist."
             )))?;
 
-        Python::attach(|py| {
-            match schema
-                .as_any()
-                .downcast_ref::<RustWrappedPySchemaProvider>()
-            {
+        Python::attach(
+            |py| match schema.downcast_ref::<RustWrappedPySchemaProvider>() {
                 Some(wrapped_schema) => Ok(wrapped_schema.schema_provider.clone_ref(py)),
                 None => PySchema::new_from_parts(schema, self.codec.clone()).into_py_any(py),
-            }
-        })
+            },
+        )
     }
 
     pub fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {
@@ -356,10 +349,6 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         self.owner_name.as_deref()
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn table_names(&self) -> Vec<String> {
         Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
@@ -465,10 +454,6 @@ impl RustWrappedPyCatalogProvider {
 
 #[async_trait]
 impl CatalogProvider for RustWrappedPyCatalogProvider {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn schema_names(&self) -> Vec<String> {
         Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
@@ -496,10 +481,7 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
         schema: Arc<dyn SchemaProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
         Python::attach(|py| {
-            let py_schema = match schema
-                .as_any()
-                .downcast_ref::<RustWrappedPySchemaProvider>()
-            {
+            let py_schema = match schema.downcast_ref::<RustWrappedPySchemaProvider>() {
                 Some(wrapped_schema) => wrapped_schema.schema_provider.as_any(),
                 None => &PySchema::new_from_parts(schema, self.codec.clone())
                     .into_py_any(py)
@@ -573,10 +555,6 @@ impl RustWrappedPyCatalogProviderList {
 
 #[async_trait]
 impl CatalogProviderList for RustWrappedPyCatalogProviderList {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn catalog_names(&self) -> Vec<String> {
         Python::attach(|py| {
             let provider = self.catalog_provider_list.bind(py);
@@ -604,10 +582,7 @@ impl CatalogProviderList for RustWrappedPyCatalogProviderList {
         catalog: Arc<dyn CatalogProvider>,
     ) -> Option<Arc<dyn CatalogProvider>> {
         Python::attach(|py| {
-            let py_catalog = match catalog
-                .as_any()
-                .downcast_ref::<RustWrappedPyCatalogProvider>()
-            {
+            let py_catalog = match catalog.downcast_ref::<RustWrappedPyCatalogProvider>() {
                 Some(wrapped_schema) => wrapped_schema.catalog_provider.as_any().clone_ref(py),
                 None => {
                     match PyCatalog::new_from_parts(catalog, self.codec.clone()).into_py_any(py) {
@@ -661,8 +636,8 @@ fn extract_catalog_provider_from_pyobj(
             .pointer_checked(Some(c"datafusion_catalog_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
-        let provider: Arc<dyn CatalogProvider + Send> = provider.into();
-        provider as Arc<dyn CatalogProvider>
+        let provider: Arc<dyn CatalogProvider> = provider.into();
+        provider
     } else {
         match catalog_provider.extract::<PyCatalog>() {
             Ok(py_catalog) => py_catalog.catalog,
@@ -693,8 +668,8 @@ fn extract_schema_provider_from_pyobj(
             .pointer_checked(Some(c"datafusion_schema_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
-        let provider: Arc<dyn SchemaProvider + Send> = provider.into();
-        provider as Arc<dyn SchemaProvider>
+        let provider: Arc<dyn SchemaProvider> = provider.into();
+        provider
     } else {
         match schema_provider.extract::<PySchema>() {
             Ok(py_schema) => py_schema.schema,

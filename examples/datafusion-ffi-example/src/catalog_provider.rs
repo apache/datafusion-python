@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -106,10 +105,6 @@ impl FixedSchemaProvider {
 
 #[async_trait]
 impl SchemaProvider for FixedSchemaProvider {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn table_names(&self) -> Vec<String> {
         self.inner.table_names()
     }
@@ -149,10 +144,6 @@ pub(crate) struct MyCatalogProvider {
 }
 
 impl CatalogProvider for MyCatalogProvider {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn schema_names(&self) -> Vec<String> {
         self.inner.schema_names()
     }
@@ -220,10 +211,6 @@ pub(crate) struct MyCatalogProviderList {
 }
 
 impl CatalogProviderList for MyCatalogProviderList {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn catalog_names(&self) -> Vec<String> {
         self.inner.catalog_names()
     }

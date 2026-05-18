@@ -172,7 +172,10 @@ def test_relational_expr(test_ctx):
     assert df.filter(col("b") == "beta").count() == 1
     assert df.filter(col("b") != "beta").count() == 2
 
-    assert df.filter(col("a") == "beta").count() == 0
+    # Upstream DataFusion now errors on string→Int64 implicit cast in filter
+    # (previously silently produced 0 matches).
+    with pytest.raises(Exception, match="Cannot cast string 'beta'"):
+        df.filter(col("a") == "beta").count()
     assert df.filter(col("a") == None).count() == 1  # noqa: E711
     assert df.filter(col("a") != None).count() == 3  # noqa: E711
     assert df.filter(col("b") == None).count() == 1  # noqa: E711
@@ -613,7 +616,7 @@ def test_alias_with_metadata(df):
         #
         pytest.param(
             col("c").reverse(),
-            pa.array(["olleH", " dlrow ", "!", None], type=pa.string()),
+            pa.array(["olleH", " dlrow ", "!", None], type=pa.string_view()),
             id="reverse",
         ),
         pytest.param(
@@ -633,7 +636,7 @@ def test_alias_with_metadata(df):
         ),
         pytest.param(
             col("c").lower(),
-            pa.array(["hello", " world ", "!", None], type=pa.string()),
+            pa.array(["hello", " world ", "!", None], type=pa.string_view()),
             id="lower",
         ),
         pytest.param(
@@ -767,7 +770,7 @@ def test_alias_with_metadata(df):
         ),
         pytest.param(
             col("c").upper(),
-            pa.array(["HELLO", " WORLD ", "!", None], type=pa.string()),
+            pa.array(["HELLO", " WORLD ", "!", None], type=pa.string_view()),
             id="upper",
         ),
         pytest.param(

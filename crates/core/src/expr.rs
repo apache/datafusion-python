@@ -23,8 +23,8 @@ use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::expr::{
-    AggregateFunction, AggregateFunctionParams, FieldMetadata, InList, InSubquery, ScalarFunction,
-    SetComparison, WindowFunction,
+    AggregateFunction, AggregateFunctionParams, FieldMetadata, HigherOrderFunction, InList,
+    InSubquery, Lambda, ScalarFunction, SetComparison, WindowFunction,
 };
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
@@ -91,9 +91,12 @@ pub mod explain;
 pub mod extension;
 pub mod filter;
 pub mod grouping_set;
+pub mod higher_order_function;
 pub mod in_list;
 pub mod in_subquery;
 pub mod join;
+pub mod lambda;
+pub mod lambda_variable;
 pub mod like;
 pub mod limit;
 pub mod literal;
@@ -225,6 +228,14 @@ impl PyExpr {
             }
             Expr::SetComparison(value) => {
                 Ok(set_comparison::PySetComparison::from(value.clone()).into_bound_py_any(py)?)
+            }
+            Expr::HigherOrderFunction(value) => Ok(
+                higher_order_function::PyHigherOrderFunction::from(value.clone())
+                    .into_bound_py_any(py)?,
+            ),
+            Expr::Lambda(value) => Ok(lambda::PyLambda::from(value.clone()).into_bound_py_any(py)?),
+            Expr::LambdaVariable(value) => {
+                Ok(lambda_variable::PyLambdaVariable::from(value.clone()).into_bound_py_any(py)?)
             }
         })
     }
@@ -393,7 +404,10 @@ impl PyExpr {
             | Expr::OuterReferenceColumn(_, _)
             | Expr::Unnest(_)
             | Expr::IsNotUnknown(_)
-            | Expr::SetComparison(_) => RexType::Call,
+            | Expr::SetComparison(_)
+            | Expr::HigherOrderFunction(..)
+            | Expr::Lambda(..) => RexType::Call,
+            Expr::LambdaVariable(..) => RexType::Reference,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
             #[allow(deprecated)]
             Expr::Wildcard { .. } => {
@@ -425,9 +439,10 @@ impl PyExpr {
     pub fn rex_call_operands(&self) -> PyResult<Vec<PyExpr>> {
         match &self.expr {
             // Expr variants that are themselves the operand to return
-            Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
-                Ok(vec![PyExpr::from(self.expr.clone())])
-            }
+            Expr::Column(..)
+            | Expr::ScalarVariable(..)
+            | Expr::Literal(..)
+            | Expr::LambdaVariable(..) => Ok(vec![PyExpr::from(self.expr.clone())]),
 
             Expr::Alias(alias) => Ok(vec![PyExpr::from(*alias.expr.clone())]),
 
@@ -454,13 +469,15 @@ impl PyExpr {
                 params: AggregateFunctionParams { args, .. },
                 ..
             })
-            | Expr::ScalarFunction(ScalarFunction { args, .. }) => {
+            | Expr::ScalarFunction(ScalarFunction { args, .. })
+            | Expr::HigherOrderFunction(HigherOrderFunction { args, .. }) => {
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
             Expr::WindowFunction(boxed_window_fn) => {
                 let args = &boxed_window_fn.params.args;
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
+            Expr::Lambda(Lambda { body, .. }) => Ok(vec![PyExpr::from(*body.clone())]),
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -550,6 +567,10 @@ impl PyExpr {
                 right: _,
             }) => format!("{op}"),
             Expr::ScalarFunction(ScalarFunction { func, args: _ }) => func.name().to_string(),
+            Expr::HigherOrderFunction(HigherOrderFunction { func, args: _ }) => {
+                func.name().to_string()
+            }
+            Expr::Lambda(..) => "lambda".to_string(),
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
             Expr::Case { .. } => "case".to_string(),
@@ -837,7 +858,9 @@ impl PyExpr {
                 | Operator::QuestionPipe
                 | Operator::Colon => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
-            Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
+            Expr::Cast(Cast { expr: _, field }) => {
+                DataTypeMap::map_from_arrow_type(field.data_type())
+            }
             Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {expr:?}"
@@ -893,6 +916,9 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<union::PyUnion>()?;
     m.add_class::<unnest::PyUnnest>()?;
     m.add_class::<unnest_expr::PyUnnestExpr>()?;
+    m.add_class::<higher_order_function::PyHigherOrderFunction>()?;
+    m.add_class::<lambda::PyLambda>()?;
+    m.add_class::<lambda_variable::PyLambdaVariable>()?;
     m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;

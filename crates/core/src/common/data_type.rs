@@ -334,6 +334,9 @@ impl DataTypeMap {
                 Ok(DataType::Interval(IntervalUnit::MonthDayNano))
             }
             ScalarValue::List(arr) => Ok(arr.data_type().to_owned()),
+            ScalarValue::LargeList(arr) => Ok(arr.data_type().to_owned()),
+            ScalarValue::ListView(arr) => Ok(arr.data_type().to_owned()),
+            ScalarValue::LargeListView(arr) => Ok(arr.data_type().to_owned()),
             ScalarValue::Struct(_fields) => Err(PyNotImplementedError::new_err(
                 "ScalarValue::Struct".to_string(),
             )),
@@ -346,9 +349,6 @@ impl DataTypeMap {
                     "ScalarValue::FixedSizeList".to_string(),
                 ))
             }
-            ScalarValue::LargeList(_) => Err(PyNotImplementedError::new_err(
-                "ScalarValue::LargeList".to_string(),
-            )),
             ScalarValue::DurationSecond(_) => Ok(DataType::Duration(TimeUnit::Second)),
             ScalarValue::DurationMillisecond(_) => Ok(DataType::Duration(TimeUnit::Millisecond)),
             ScalarValue::DurationMicrosecond(_) => Ok(DataType::Duration(TimeUnit::Microsecond)),

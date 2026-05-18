@@ -836,7 +836,7 @@ def test_map_functions(func, expected):
         (f.chr(literal(68)), pa.array(["D", "D", "D"])),
         (
             f.concat_ws("-", column("a"), literal("test")),
-            pa.array(["Hello-test", "World-test", "!-test"]),
+            pa.array(["Hello-test", "World-test", "!-test"], type=pa.string_view()),
         ),
         (
             f.concat(column("a").cast(pa.string()), literal("?")),
@@ -851,7 +851,10 @@ def test_map_functions(func, expected):
             pa.array(["Hel", "Wor", "!"], type=pa.string_view()),
         ),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
-        (f.lower(column("a")), pa.array(["hello", "world", "!"])),
+        (
+            f.lower(column("a")),
+            pa.array(["hello", "world", "!"], type=pa.string_view()),
+        ),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
         (
             f.ltrim(column("c")),
@@ -871,13 +874,16 @@ def test_map_functions(func, expected):
         (f.octet_length(column("a")), pa.array([5, 5, 1], type=pa.int32())),
         (
             f.repeat(column("a"), literal(2)),
-            pa.array(["HelloHello", "WorldWorld", "!!"]),
+            pa.array(["HelloHello", "WorldWorld", "!!"], type=pa.string_view()),
         ),
         (
             f.replace(column("a"), literal("l"), literal("?")),
             pa.array(["He??o", "Wor?d", "!"]),
         ),
-        (f.reverse(column("a")), pa.array(["olleH", "dlroW", "!"])),
+        (
+            f.reverse(column("a")),
+            pa.array(["olleH", "dlroW", "!"], type=pa.string_view()),
+        ),
         (
             f.right(column("a"), literal(4)),
             pa.array(["ello", "orld", "!"], type=pa.string_view()),
@@ -892,7 +898,7 @@ def test_map_functions(func, expected):
         ),
         (
             f.split_part(column("a"), literal("l"), literal(1)),
-            pa.array(["He", "Wor", "!"]),
+            pa.array(["He", "Wor", "!"], type=pa.string_view()),
         ),
         (f.contains(column("a"), literal("ell")), pa.array([True, False, False])),
         (f.starts_with(column("a"), literal("Wor")), pa.array([False, True, False])),
@@ -903,14 +909,17 @@ def test_map_functions(func, expected):
         ),
         (
             f.translate(column("a"), literal("or"), literal("ld")),
-            pa.array(["Helll", "Wldld", "!"]),
+            pa.array(["Helll", "Wldld", "!"], type=pa.string_view()),
         ),
         (f.trim(column("c")), pa.array(["hello", "world", "!"], type=pa.string_view())),
-        (f.upper(column("c")), pa.array(["HELLO ", " WORLD ", " !"])),
+        (
+            f.upper(column("c")),
+            pa.array(["HELLO ", " WORLD ", " !"], type=pa.string_view()),
+        ),
         (f.ends_with(column("a"), literal("llo")), pa.array([True, False, False])),
         (
             f.overlay(column("a"), literal("--"), literal(2)),
-            pa.array(["H--lo", "W--ld", "--"]),
+            pa.array(["H--lo", "W--ld", "!--"]),
         ),
         (
             f.regexp_like(column("a"), literal("(ell|orl)")),
@@ -2063,7 +2072,7 @@ def test_arrays_zip_aliases(func):
     df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
     result = df.select(func(column("a"), column("b")).alias("v")).collect()
     values = result[0].column(0)[0].as_py()
-    assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
+    assert values == [{"1": 1, "2": 3}, {"1": 2, "2": 4}]
 
 
 @pytest.mark.parametrize("func", [f.string_to_array, f.string_to_list])

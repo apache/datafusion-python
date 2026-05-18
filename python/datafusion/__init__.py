@@ -69,7 +69,12 @@ from . import functions, ipc, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
-from .catalog import Catalog, Table
+from .catalog import (
+    Catalog,
+    Table,
+    TableProviderFactory,
+    TableProviderFactoryExportable,
+)
 from .col import col, column
 from .common import DFSchema
 from .context import (
@@ -133,6 +138,8 @@ __all__ = [
     "SessionContext",
     "Table",
     "TableFunction",
+    "TableProviderFactory",
+    "TableProviderFactoryExportable",
     "WindowFrame",
     "WindowUDF",
     "catalog",

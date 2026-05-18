@@ -150,6 +150,9 @@ TransactionIsolationLevel = expr_internal.TransactionIsolationLevel
 TransactionStart = expr_internal.TransactionStart
 TryCast = expr_internal.TryCast
 Union = expr_internal.Union
+HigherOrderFunction = expr_internal.HigherOrderFunction
+Lambda = expr_internal.Lambda
+LambdaVariable = expr_internal.LambdaVariable
 Unnest = expr_internal.Unnest
 UnnestExpr = expr_internal.UnnestExpr
 Values = expr_internal.Values
@@ -193,6 +196,7 @@ __all__ = [
     "FileType",
     "Filter",
     "GroupingSet",
+    "HigherOrderFunction",
     "ILike",
     "InList",
     "InSubquery",
@@ -207,6 +211,8 @@ __all__ = [
     "Join",
     "JoinConstraint",
     "JoinType",
+    "Lambda",
+    "LambdaVariable",
     "Like",
     "Limit",
     "Literal",

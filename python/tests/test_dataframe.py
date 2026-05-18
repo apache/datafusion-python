@@ -292,6 +292,20 @@ def test_select_exprs(df):
     assert result.column(1) == pa.array([3, 3, 3])
 
 
+def test_alias_self_join(df):
+    left = df.alias("l")
+    right = df.alias("r")
+    joined = left.join(right, left_on="a", right_on="a").select(
+        "a",
+        column("l.b").alias("lb"),
+        column("r.b").alias("rb"),
+    )
+    result = joined.sort(column("a")).collect()[0]
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([4, 5, 6])
+
+
 def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
