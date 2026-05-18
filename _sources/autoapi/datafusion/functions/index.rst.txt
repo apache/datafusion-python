@@ -169,6 +169,7 @@ Functions
    datafusion.functions.ifnull
    datafusion.functions.in_list
    datafusion.functions.initcap
+   datafusion.functions.instr
    datafusion.functions.isnan
    datafusion.functions.iszero
    datafusion.functions.lag
@@ -258,6 +259,7 @@ Functions
    datafusion.functions.percent_rank
    datafusion.functions.percentile_cont
    datafusion.functions.pi
+   datafusion.functions.position
    datafusion.functions.pow
    datafusion.functions.power
    datafusion.functions.quantile_cont
@@ -1238,7 +1240,7 @@ Module Contents
    >>> result = df.select(
    ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
    >>> result.collect_column("result")[0].as_py()
-   [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
+   [{'1': 1, '2': 3}, {'1': 2, '2': 4}]
 
 
 .. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr | str | pyarrow.DataType) -> datafusion.expr.Expr
@@ -2658,6 +2660,13 @@ Module Contents
    'The Cat'
 
 
+.. py:function:: instr(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Finds the position from where the ``substring`` matches the ``string``.
+
+   .. seealso:: This is an alias for :py:func:`strpos`.
+
+
 .. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if a given number is +NaN or -NaN otherwise returns false.
@@ -3943,6 +3952,13 @@ Module Contents
    ... )
    >>> result.collect_column("pi")[0].as_py() == pi
    True
+
+
+.. py:function:: position(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Finds the position from where the ``substring`` matches the ``string``.
+
+   .. seealso:: This is an alias for :py:func:`strpos`.
 
 
 .. py:function:: pow(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr | int | float) -> datafusion.expr.Expr

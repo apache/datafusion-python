@@ -73,6 +73,7 @@ Attributes
    datafusion.expr.Extension
    datafusion.expr.FileType
    datafusion.expr.Filter
+   datafusion.expr.HigherOrderFunction
    datafusion.expr.ILike
    datafusion.expr.InList
    datafusion.expr.InSubquery
@@ -87,6 +88,8 @@ Attributes
    datafusion.expr.Join
    datafusion.expr.JoinConstraint
    datafusion.expr.JoinType
+   datafusion.expr.Lambda
+   datafusion.expr.LambdaVariable
    datafusion.expr.Like
    datafusion.expr.Limit
    datafusion.expr.Literal
@@ -1463,6 +1466,8 @@ Module Contents
 
 .. py:data:: Filter
 
+.. py:data:: HigherOrderFunction
+
 .. py:data:: ILike
 
 .. py:data:: InList
@@ -1490,6 +1495,10 @@ Module Contents
 .. py:data:: JoinConstraint
 
 .. py:data:: JoinType
+
+.. py:data:: Lambda
+
+.. py:data:: LambdaVariable
 
 .. py:data:: Like
 
