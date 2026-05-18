@@ -22,6 +22,8 @@ from datafusion import (
     DataFrame,
     ScalarUDF,
     SessionContext,
+    TableProviderFactory,
+    TableProviderFactoryExportable,
     functions,
 )
 from datafusion.common import (
@@ -47,6 +49,7 @@ from datafusion.expr import (
     Extension,
     Filter,
     GroupingSet,
+    HigherOrderFunction,
     ILike,
     InList,
     InSubquery,
@@ -60,6 +63,8 @@ from datafusion.expr import (
     Join,
     JoinConstraint,
     JoinType,
+    Lambda,
+    LambdaVariable,
     Like,
     Limit,
     Literal,
@@ -160,8 +165,15 @@ def test_class_module_is_datafusion():
         DropTable,
         Repartition,
         Partitioning,
+        HigherOrderFunction,
+        Lambda,
+        LambdaVariable,
     ]:
         assert klass.__module__ == "datafusion.expr"
+
+    # catalog factory types (re-exported at top level)
+    for klass in [TableProviderFactory, TableProviderFactoryExportable]:
+        assert klass.__module__ == "datafusion.catalog"
 
     # schema
     for klass in [DFSchema]:
