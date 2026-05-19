@@ -46,7 +46,7 @@ operators and helpers.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import pyarrow as pa
@@ -440,23 +440,165 @@ class Expr:  # noqa: PLW1641
         return self.expr.variant_name()
 
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
-        """Serialize this expression to protobuf bytes.
+        """Serialize this expression to bytes for shipping to another process.
 
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed :class:`LogicalExtensionCodec`. Without ``ctx`` a
-        default codec is used.
+        Use this — or :func:`pickle.dumps` — to send an expression to a
+        worker process for distributed evaluation.
+
+        When ``ctx`` is supplied, encoding routes through that session's
+        installed :class:`LogicalExtensionCodec`. When ``ctx`` is
+        ``None``, the default codec is used.
+
+        Built-in functions and Python scalar UDFs travel inside the
+        returned bytes; the worker does not need to pre-register them.
+        UDFs imported via the FFI capsule protocol travel by name only
+        and must be registered on the worker.
+
+        .. warning:: Security
+            Bytes returned here may embed a cloudpickled Python
+            callable (when the expression carries a Python scalar UDF).
+            Reconstructing them via :meth:`from_bytes` or
+            :func:`pickle.loads` executes arbitrary Python on the
+            receiver. Only accept payloads from trusted sources.
+
+        .. warning:: Portability
+            cloudpickle serializes Python bytecode, which is **not
+            stable across Python minor versions**. A payload produced
+            on Python 3.11 will fail to load on Python 3.12. The
+            wire format stamps the sender's ``(major, minor)``;
+            :meth:`from_bytes` raises a :class:`ValueError` naming
+            both versions on mismatch.
+
+            cloudpickle captures the UDF callable **by value** —
+            bytecode and closure cells inlined — but names the
+            callable resolves via ``import`` are captured **by
+            reference** (module path only) and must be importable on
+            the receiver.
+
+            **Self-contained — works anywhere:**
+
+            .. code-block:: python
+
+                # Lambda: bytecode captured inline
+                udf(lambda x: x * 2, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+                # Locally-defined function: bytecode captured inline
+                def double(x):
+                    return x * 2
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Closure over a local variable: value captured inline
+                factor = 3
+                udf(lambda x: x * factor, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+            **Requires matching environment on receiver:**
+
+            .. code-block:: python
+
+                # Top-level import: `foo` must be installed on receiver
+                from foo import double
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Bound method of an imported class: same caveat
+                from mylib import Transformer
+                t = Transformer()
+                udf(t.transform, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+        Examples:
+            >>> from datafusion import col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> isinstance(blob, bytes)
+            True
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return self.expr.to_bytes(ctx_arg)
 
-    @staticmethod
-    def from_bytes(ctx: SessionContext, data: bytes) -> Expr:
-        """Decode an expression from serialized protobuf bytes.
+    @classmethod
+    def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
+        """Reconstruct an expression from serialized bytes.
 
-        ``ctx`` provides the function registry for resolving UDF
-        references and the logical codec for in-band Python payloads.
+        Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
+        ``ctx`` is the :class:`SessionContext` used to resolve any
+        function references that travel by name (e.g. FFI UDFs). When
+        ``ctx`` is ``None`` the worker context installed via
+        :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
+        context is installed, the global :class:`SessionContext` is used
+        (sufficient for built-ins and Python scalar UDFs, plus any UDFs
+        registered on the global context).
+
+        .. warning:: Security
+            Decoding may invoke ``cloudpickle.loads`` on bytes embedded
+            in the payload, which executes arbitrary Python code. Treat
+            ``buf`` as code, not data — only decode bytes you produced
+            yourself or received from a trusted sender.
+
+        .. warning:: Portability
+            cloudpickle payloads are **not portable across Python
+            minor versions**. The wire format stamps the sender's
+            ``(major, minor)``; if it does not match the current
+            interpreter, this method raises :class:`ValueError`
+            naming both versions. Modules the UDF imports must also
+            be importable on the receiver — see :meth:`to_bytes` for
+            by-value vs. by-reference details.
+
+        Examples:
+            >>> from datafusion import Expr, col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> Expr.from_bytes(blob).canonical_name()
+            'a + Int64(1)'
         """
-        return Expr(expr_internal.RawExpr.from_bytes(ctx.ctx, data))
+        from datafusion.ipc import _resolve_ctx
+
+        resolved = _resolve_ctx(ctx)
+        return cls(expr_internal.RawExpr.from_bytes(resolved.ctx, buf))
+
+    def __reduce__(self) -> tuple[Callable[[bytes], Expr], tuple[bytes]]:
+        """Pickle protocol hook.
+
+        Lets expressions be shipped to worker processes via
+        :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
+        and Python scalar UDFs travel inside the pickle bytes; only
+        FFI-capsule UDFs require pre-registration on the worker. The
+        worker's :class:`SessionContext` for resolving those references
+        is looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
+        back to the global :class:`SessionContext` if none has been
+        installed on the worker.
+
+        .. warning:: Security
+            :func:`pickle.loads` on the returned tuple executes
+            arbitrary Python on the receiver, including any
+            cloudpickled UDF callable embedded in the payload. Only
+            unpickle expressions from trusted sources.
+
+        .. warning:: Portability
+            Sender and receiver must run the same Python
+            ``(major, minor)`` version; cloudpickle bytecode is not
+            portable across minor versions. See :meth:`to_bytes` for
+            details on what travels by value vs. by reference.
+
+        Examples:
+            >>> import pickle
+            >>> from datafusion import col, lit
+            >>> e = col("a") * lit(2)
+            >>> pickle.loads(pickle.dumps(e)).canonical_name()
+            'a * Int64(2)'
+        """
+        return (Expr._reconstruct, (self.to_bytes(),))
+
+    @classmethod
+    def _reconstruct(cls, proto_bytes: bytes) -> Expr:
+        """Internal entry point used by :meth:`__reduce__` on unpickle.
+
+        Examples:
+            >>> from datafusion import Expr, col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> Expr._reconstruct(blob).canonical_name()
+            'a + Int64(1)'
+        """
+        return cls.from_bytes(proto_bytes)
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""

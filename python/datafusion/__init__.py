@@ -65,7 +65,7 @@ except ImportError:
     import importlib_metadata  # type: ignore[import]
 
 # Public submodules
-from . import functions, object_store, substrait, unparser
+from . import functions, ipc, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
@@ -149,6 +149,7 @@ __all__ = [
     "configure_formatter",
     "expr",
     "functions",
+    "ipc",
     "lit",
     "literal",
     "object_store",
