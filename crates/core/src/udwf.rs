@@ -26,7 +26,7 @@ use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
 use datafusion::logical_expr::window_state::WindowAggState;
 use datafusion::logical_expr::{
-    PartitionEvaluator, Signature, Volatility, WindowUDF, WindowUDFImpl,
+    PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
@@ -205,6 +205,17 @@ fn instantiate_partition_evaluator(evaluator: &Py<PyAny>) -> Result<Box<dyn Part
     Ok(Box::new(RustPartitionEvaluator::new(instance)))
 }
 
+/// Wrap a Python evaluator factory in a `PartitionEvaluatorFactory`.
+///
+/// Retained for downstream callers that previously consumed this
+/// helper to build a [`PartitionEvaluatorFactory`] for factory-based
+/// APIs. New in-crate code should construct a
+/// [`PythonFunctionWindowUDF`] directly so the codec can downcast and
+/// ship it inline.
+pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFactory {
+    Arc::new(move || instantiate_partition_evaluator(&evaluator))
+}
+
 /// Represents an WindowUDF
 #[pyclass(
     from_py_object,
@@ -279,16 +290,26 @@ impl PyWindowUDF {
     }
 }
 
+/// `WindowUDFImpl` for Python-defined window UDFs.
+///
+/// Holds the Python evaluator factory directly so the codec can
+/// downcast and cloudpickle it across process boundaries. Replaces
+/// the prior factory-erased `MultiColumnWindowUDF`; the old name is
+/// kept as a type alias below for backward compatibility.
 #[derive(Debug)]
-pub(crate) struct PythonFunctionWindowUDF {
+pub struct PythonFunctionWindowUDF {
     name: String,
     evaluator: Py<PyAny>,
     signature: Signature,
     return_type: DataType,
 }
 
+/// Backward-compatible alias for downstream crates that referenced the
+/// previous struct name. New code should use [`PythonFunctionWindowUDF`].
+pub type MultiColumnWindowUDF = PythonFunctionWindowUDF;
+
 impl PythonFunctionWindowUDF {
-    pub(crate) fn new(
+    pub fn new(
         name: impl Into<String>,
         evaluator: Py<PyAny>,
         input_types: Vec<DataType>,

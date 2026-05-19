@@ -254,6 +254,23 @@ class TestWindowUDFCodec:
         decoded = pickle.loads(blob)  # noqa: S301
         assert "count_up" in decoded.canonical_name()
 
+    def test_window_udf_evaluates_after_roundtrip(self):
+        """End-to-end: decoded window UDF runs and emits per-row values
+        produced by the round-tripped evaluator factory."""
+        from datafusion.expr import WindowFrame
+
+        u = self._build_window_udf()
+        e = u(col("a"))
+        decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
+
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [1, 2, 3, 4, 5]})
+        framed = (
+            decoded.window_frame(WindowFrame("rows", None, None)).build().alias("c")
+        )
+        out = df.select(framed).to_pydict()
+        assert out["c"] == [0, 1, 2, 3, 4]
+
 
 class TestErrorPaths:
     def test_from_bytes_rejects_garbage(self):

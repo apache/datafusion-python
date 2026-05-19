@@ -25,7 +25,7 @@ use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::function::{AccumulatorArgs, StateFieldsArgs};
 use datafusion::logical_expr::{
-    Accumulator, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
+    Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
 use datafusion_python_util::parse_volatility;
@@ -152,6 +152,17 @@ fn instantiate_accumulator(accum: &Py<PyAny>) -> Result<Box<dyn Accumulator>> {
             .map_err(|e| DataFusionError::Execution(format!("{e}")))
     })?;
     Ok(Box::new(RustAccumulator::new(instance)))
+}
+
+/// Wrap a Python accumulator factory in an `AccumulatorFactoryFunction`.
+///
+/// Retained for downstream callers that previously consumed this
+/// helper to build a [`AccumulatorFactoryFunction`] for `create_udaf`
+/// or similar factory-based APIs. New in-crate code should construct
+/// a [`PythonFunctionAggregateUDF`] directly so the codec can downcast
+/// and ship it inline.
+pub fn to_rust_accumulator(accum: Py<PyAny>) -> AccumulatorFactoryFunction {
+    Arc::new(move |_args| instantiate_accumulator(&accum))
 }
 
 /// Named-struct `AggregateUDFImpl` for Python-defined aggregate UDFs.

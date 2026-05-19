@@ -59,11 +59,11 @@ mod array;
 #[cfg(feature = "substrait")]
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
-mod udaf;
+pub mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod udtf;
-mod udwf;
+pub mod udwf;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
