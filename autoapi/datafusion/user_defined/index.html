@@ -359,6 +359,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../ipc/index.html">
+       datafusion.ipc
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../object_store/index.html">
        datafusion.object_store
       </a>
@@ -614,6 +619,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          ScalarUDF._udf
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.name
         </span>
        </code>
       </a>
@@ -1440,6 +1454,29 @@ data aggregation, or window function calls.</p>
 <dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF._udf">
 <span class="sig-name descname"><span class="pre">_udf</span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF._udf" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.user_defined.ScalarUDF.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the registered name of this UDF.</p>
+<p>For UDFs imported via the FFI capsule protocol, this is the
+name the capsule itself reports — not the <code class="docutils literal notranslate"><span class="pre">name</span></code> argument
+passed to the constructor (which is ignored on the FFI path).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">double</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="k">lambda</span> <span class="n">arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">v</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span>
+<span class="gp">... </span>    <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;double&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">double</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;double&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </dd></dl>
 

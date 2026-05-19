@@ -360,6 +360,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../ipc/index.html">
+       datafusion.ipc
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../object_store/index.html">
        datafusion.object_store
       </a>
@@ -616,6 +621,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.__reduce__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__reduce__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.__repr__">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -647,6 +661,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.__truediv__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr._reconstruct">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr._reconstruct()
         </span>
        </code>
       </a>
@@ -3146,6 +3169,44 @@ where the index begins at <code class="docutils literal notranslate"><span class
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.__reduce__">
+<span class="sig-name descname"><span class="pre">__reduce__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.expr.Expr.__reduce__" title="Link to this definition">¶</a></dt>
+<dd><p>Pickle protocol hook.</p>
+<p>Lets expressions be shipped to worker processes via
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> / <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code>. Built-in functions
+and Python scalar UDFs travel inside the pickle bytes; only
+FFI-capsule UDFs require pre-registration on the worker. The
+worker’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for resolving those references
+is looked up via <a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a>, falling
+back to the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> if none has been
+installed on the worker.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Security
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> on the returned tuple executes
+arbitrary Python on the receiver, including any
+cloudpickled UDF callable embedded in the payload. Only
+unpickle expressions from trusted sources.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Portability
+Sender and receiver must run the same Python
+<code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code> version; cloudpickle bytecode is not
+portable across minor versions. See <a class="reference internal" href="#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> for
+details on what travels by value vs. by reference.</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">e</span><span class="p">))</span><span class="o">.</span><span class="n">canonical_name</span><span class="p">()</span>
+<span class="go">&#39;a * Int64(2)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.__repr__" title="Link to this definition">¶</a></dt>
 <dd><p>Generate a string representation of this expression.</p>
@@ -3169,6 +3230,19 @@ where the index begins at <code class="docutils literal notranslate"><span class
 <span class="sig-name descname"><span class="pre">__truediv__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.__truediv__" title="Link to this definition">¶</a></dt>
 <dd><p>Division operator.</p>
 <p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr._reconstruct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proto_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr._reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Internal entry point used by <a class="reference internal" href="#datafusion.expr.Expr.__reduce__" title="datafusion.expr.Expr.__reduce__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__reduce__()</span></code></a> on unpickle.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Expr</span><span class="o">.</span><span class="n">_reconstruct</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span><span class="o">.</span><span class="n">canonical_name</span><span class="p">()</span>
+<span class="go">&#39;a + Int64(1)&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -3471,10 +3545,42 @@ type of expression, an error will be generated when <code class="docutils litera
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.from_bytes">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.from_bytes" title="Link to this definition">¶</a></dt>
-<dd><p>Decode an expression from serialized protobuf bytes.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ctx</span></code> provides the function registry for resolving UDF
-references and the logical codec for in-band Python payloads.</p>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.from_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct an expression from serialized bytes.</p>
+<p>Accepts output of <a class="reference internal" href="#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> or <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code>.
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> is the <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> used to resolve any
+function references that travel by name (e.g. FFI UDFs). When
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> the worker context installed via
+<a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> is consulted; if no worker
+context is installed, the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> is used
+(sufficient for built-ins and Python scalar UDFs, plus any UDFs
+registered on the global context).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Security
+Decoding may invoke <code class="docutils literal notranslate"><span class="pre">cloudpickle.loads</span></code> on bytes embedded
+in the payload, which executes arbitrary Python code. Treat
+<code class="docutils literal notranslate"><span class="pre">buf</span></code> as code, not data — only decode bytes you produced
+yourself or received from a trusted sender.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Portability
+cloudpickle payloads are <strong>not portable across Python
+minor versions</strong>. The wire format stamps the sender’s
+<code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code>; if it does not match the current
+interpreter, this method raises <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code>
+naming both versions. Modules the UDF imports must also
+be importable on the receiver — see <a class="reference internal" href="#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> for
+by-value vs. by-reference details.</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Expr</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span><span class="o">.</span><span class="n">canonical_name</span><span class="p">()</span>
+<span class="go">&#39;a + Int64(1)&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -3803,10 +3909,75 @@ UTF8View literal, like in:
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.to_bytes">
 <span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.to_bytes" title="Link to this definition">¶</a></dt>
-<dd><p>Serialize this expression to protobuf bytes.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
-installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code>. Without <code class="docutils literal notranslate"><span class="pre">ctx</span></code> a
-default codec is used.</p>
+<dd><p>Serialize this expression to bytes for shipping to another process.</p>
+<p>Use this — or <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> — to send an expression to a
+worker process for distributed evaluation.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through that session’s
+installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code>. When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, the default codec is used.</p>
+<p>Built-in functions and Python scalar UDFs travel inside the
+returned bytes; the worker does not need to pre-register them.
+UDFs imported via the FFI capsule protocol travel by name only
+and must be registered on the worker.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Security
+Bytes returned here may embed a cloudpickled Python
+callable (when the expression carries a Python scalar UDF).
+Reconstructing them via <a class="reference internal" href="#datafusion.expr.Expr.from_bytes" title="datafusion.expr.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> or
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> executes arbitrary Python on the
+receiver. Only accept payloads from trusted sources.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Portability
+cloudpickle serializes Python bytecode, which is <strong>not
+stable across Python minor versions</strong>. A payload produced
+on Python 3.11 will fail to load on Python 3.12. The
+wire format stamps the sender’s <code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code>;
+<a class="reference internal" href="#datafusion.expr.Expr.from_bytes" title="datafusion.expr.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> raises a <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> naming
+both versions on mismatch.</p>
+<p>cloudpickle captures the UDF callable <strong>by value</strong> —
+bytecode and closure cells inlined — but names the
+callable resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by
+reference</strong> (module path only) and must be importable on
+the receiver.</p>
+<p><strong>Self-contained — works anywhere:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Lambda: bytecode captured inline</span>
+<span class="n">udf</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span>
+    <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+
+<span class="c1"># Locally-defined function: bytecode captured inline</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">double</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="n">udf</span><span class="p">(</span><span class="n">double</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+
+<span class="c1"># Closure over a local variable: value captured inline</span>
+<span class="n">factor</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">udf</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span>
+    <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Requires matching environment on receiver:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Top-level import: `foo` must be installed on receiver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">foo</span><span class="w"> </span><span class="kn">import</span> <span class="n">double</span>
+<span class="n">udf</span><span class="p">(</span><span class="n">double</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+
+<span class="c1"># Bound method of an imported class: same caveat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mylib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transformer</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">()</span>
+<span class="n">udf</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span>
+    <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span> <span class="o">=</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

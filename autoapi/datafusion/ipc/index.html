@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>datafusion.object_store &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>datafusion.ipc &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,8 +34,8 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.options" href="../options/index.html" />
-    <link rel="prev" title="datafusion.ipc" href="../ipc/index.html" />
+    <link rel="next" title="datafusion.object_store" href="../object_store/index.html" />
+    <link rel="prev" title="datafusion.io" href="../io/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -359,13 +359,13 @@
        datafusion.io
       </a>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../ipc/index.html">
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
        datafusion.ipc
       </a>
      </li>
-     <li class="toctree-l3 current active">
-      <a class="current reference internal" href="#">
+     <li class="toctree-l3">
+      <a class="reference internal" href="../object_store/index.html">
        datafusion.object_store
       </a>
      </li>
@@ -428,8 +428,8 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#attributes">
-   Attributes
+  <a class="reference internal nav-link" href="#functions">
+   Functions
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -438,46 +438,28 @@
   </a>
   <ul class="visible nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.object_store.AmazonS3">
+    <a class="reference internal nav-link" href="#datafusion.ipc.clear_worker_ctx">
      <code class="docutils literal notranslate">
       <span class="pre">
-       AmazonS3
+       clear_worker_ctx()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.object_store.GoogleCloud">
+    <a class="reference internal nav-link" href="#datafusion.ipc.get_worker_ctx">
      <code class="docutils literal notranslate">
       <span class="pre">
-       GoogleCloud
+       get_worker_ctx()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.object_store.Http">
+    <a class="reference internal nav-link" href="#datafusion.ipc.set_worker_ctx">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Http
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.object_store.LocalFileSystem">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       LocalFileSystem
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.object_store.MicrosoftAzure">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MicrosoftAzure
+       set_worker_ctx()
       </span>
      </code>
     </a>
@@ -505,57 +487,110 @@
               
               <div>
                 
-  <section id="module-datafusion.object_store">
-<span id="datafusion-object-store"></span><h1>datafusion.object_store<a class="headerlink" href="#module-datafusion.object_store" title="Link to this heading">¶</a></h1>
-<p>Object store functionality.</p>
-<section id="attributes">
-<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+  <section id="module-datafusion.ipc">
+<span id="datafusion-ipc"></span><h1>datafusion.ipc<a class="headerlink" href="#module-datafusion.ipc" title="Link to this heading">¶</a></h1>
+<p>Worker-side setup for distributing DataFusion expressions.</p>
+<p>When a <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> is shipped to a worker process (e.g. through
+<code class="xref py py-func docutils literal notranslate"><span class="pre">multiprocessing.Pool()</span></code> or a Ray actor), the worker reconstructs the
+expression against a <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>. If the expression references
+UDFs imported via the FFI capsule protocol — or any UDF the worker would
+otherwise resolve from its registered functions rather than from inside
+the shipped expression — install a configured <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>
+once per worker:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">init_worker</span><span class="p">():</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">register_udaf</span><span class="p">(</span><span class="n">my_ffi_aggregate</span><span class="p">)</span>
+    <span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Built-in functions and Python scalar UDFs travel inside the shipped
+expression itself and do not need pre-registration on the worker.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Serialization model</p>
+<p>Expressions containing Python scalar UDFs are serialized using
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">cloudpickle</span></code>. The callable itself travels <strong>by value</strong>
+(bytecode and closure cells inlined), but any names the callable
+resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by reference</strong> and must be
+importable on the receiving worker.</p>
+<p>The serialized payload is stamped with the sender’s Python
+<code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code> version. Loading on a different minor version
+raises <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> with an actionable message — cloudpickle
+payloads are not portable across Python minor versions. See
+<a class="reference internal" href="../index.html#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.to_bytes()</span></code></a> for examples of what travels by
+value vs. by reference.</p>
+</div>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.AmazonS3" title="datafusion.object_store.AmazonS3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AmazonS3</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.clear_worker_ctx" title="datafusion.ipc.clear_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_worker_ctx</span></code></a>(→ None)</p></td>
+<td><p>Remove this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.object_store.GoogleCloud" title="datafusion.object_store.GoogleCloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GoogleCloud</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.get_worker_ctx" title="datafusion.ipc.get_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_worker_ctx</span></code></a>(→ datafusion.context.SessionContext | None)</p></td>
+<td><p>Return this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.Http" title="datafusion.object_store.Http"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Http</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.object_store.LocalFileSystem" title="datafusion.object_store.LocalFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalFileSystem</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.MicrosoftAzure" title="datafusion.object_store.MicrosoftAzure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MicrosoftAzure</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_worker_ctx</span></code></a>(→ None)</p></td>
+<td><p>Install this worker's <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for shipped expressions.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
-<dl class="py data">
-<dt class="sig sig-object py" id="datafusion.object_store.AmazonS3">
-<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">AmazonS3</span></span><a class="headerlink" href="#datafusion.object_store.AmazonS3" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.clear_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">clear_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.clear_worker_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Remove this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<p>After clearing, expressions reconstructed in this worker fall back to
+the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> — adequate for built-ins and Python
+scalar UDFs, but anything imported via the FFI capsule protocol must
+be registered on the global context to resolve.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span><span class="p">,</span> <span class="n">get_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="datafusion.object_store.GoogleCloud">
-<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">GoogleCloud</span></span><a class="headerlink" href="#datafusion.object_store.GoogleCloud" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.get_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">get_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.get_worker_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Return this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="datafusion.object_store.Http">
-<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">Http</span></span><a class="headerlink" href="#datafusion.object_store.Http" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="datafusion.object_store.LocalFileSystem">
-<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">LocalFileSystem</span></span><a class="headerlink" href="#datafusion.object_store.LocalFileSystem" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="datafusion.object_store.MicrosoftAzure">
-<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">MicrosoftAzure</span></span><a class="headerlink" href="#datafusion.object_store.MicrosoftAzure" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.set_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">set_worker_ctx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.set_worker_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Install this worker’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for shipped expressions.</p>
+<p>Call once per worker — typically from a <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code>
+initializer or a Ray actor <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. Idempotent: overwrites any
+previous value. Stored in a thread-local slot, so each thread within a
+worker may install its own context independently.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span><span class="p">,</span> <span class="n">get_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </section>
 </section>
@@ -566,17 +601,17 @@
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../ipc/index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../io/index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.ipc</p>
+            <p class="prev-next-title">datafusion.io</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../options/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../object_store/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.options</p>
+        <p class="prev-next-title">datafusion.object_store</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
