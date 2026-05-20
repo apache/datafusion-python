@@ -506,16 +506,17 @@ once per worker:</p>
     <span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Built-in functions and Python scalar UDFs travel inside the shipped
-expression itself and do not need pre-registration on the worker.</p>
+<p>Built-in functions and Python UDFs (scalar, aggregate, window) travel
+inside the shipped expression itself and do not need pre-registration
+on the worker.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Serialization model</p>
-<p>Expressions containing Python scalar UDFs are serialized using
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">cloudpickle</span></code>. The callable itself travels <strong>by value</strong>
-(bytecode and closure cells inlined), but any names the callable
-resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by reference</strong> and must be
-importable on the receiving worker.</p>
+<p>Expressions containing Python UDFs (scalar, aggregate, window) are
+serialized using <code class="xref py py-mod docutils literal notranslate"><span class="pre">cloudpickle</span></code>. The callable itself travels
+<strong>by value</strong> (bytecode and closure cells inlined), but any names the
+callable resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by reference</strong> and
+must be importable on the receiving worker.</p>
 <p>The serialized payload is stamped with the sender’s Python
 <code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code> version. Loading on a different minor version
 raises <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> with an actionable message — cloudpickle
@@ -547,8 +548,8 @@ value vs. by reference.</p>
 <dd><p>Remove this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
 <p>After clearing, expressions reconstructed in this worker fall back to
 the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> — adequate for built-ins and Python
-scalar UDFs, but anything imported via the FFI capsule protocol must
-be registered on the global context to resolve.</p>
+UDFs (scalar, aggregate, window), but anything imported via the FFI
+capsule protocol must be registered on the global context to resolve.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span><span class="p">,</span> <span class="n">get_worker_ctx</span>

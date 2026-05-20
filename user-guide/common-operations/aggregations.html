@@ -486,6 +486,11 @@
    Aggregate Functions
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#user-defined-aggregate-functions">
+   User-Defined Aggregate Functions
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -657,15 +662,15 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                      <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Dark</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="p">,</span> <span class="n">Poison</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Water</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[,</span> <span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">,</span> <span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="p">[]</span>                                               <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
@@ -681,14 +686,14 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+--------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+--------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ground</span> <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">+--------+------------------------------------------------+</span>
@@ -700,15 +705,15 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Water</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">]</span>                                       <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span>                                                <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
@@ -1224,6 +1229,24 @@ Where <code class="docutils literal notranslate"><span class="pre">grouping(Type
 - <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.cube()</span></code></a>
 - <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.grouping_sets()</span></code></a></p></li>
 </ol>
+</section>
+<section id="user-defined-aggregate-functions">
+<h2>User-Defined Aggregate Functions<a class="headerlink" href="#user-defined-aggregate-functions" title="Link to this heading">¶</a></h2>
+<p>You can ship custom aggregations to the engine by subclassing
+<a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> and registering it via
+<a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a>. See <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> for
+the accumulator interface and worked examples.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Serialization</p>
+<p>Python aggregate UDFs travel inline inside pickled or
+<a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>-serialized expressions —
+the accumulator class is captured by value via <code class="xref py py-mod docutils literal notranslate"><span class="pre">cloudpickle</span></code>,
+so worker processes do not need to pre-register the UDF. Any names
+the accumulator resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by reference</strong>
+and must be importable on the receiving worker. See
+<a class="reference internal" href="../../autoapi/datafusion/ipc/index.html#module-datafusion.ipc" title="datafusion.ipc"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.ipc</span></code></a> for the full IPC model and security caveats.</p>
+</div>
 </section>
 </section>
 

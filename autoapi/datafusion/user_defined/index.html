@@ -547,6 +547,15 @@
        </code>
       </a>
      </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.name
+        </span>
+       </code>
+      </a>
+     </li>
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
@@ -948,6 +957,15 @@
        </code>
       </a>
      </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.name
+        </span>
+       </code>
+      </a>
+     </li>
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
@@ -1335,6 +1353,15 @@ aggregation or window function calls.</p>
 <dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF._udaf">
 <span class="sig-name descname"><span class="pre">_udaf</span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF._udaf" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.user_defined.AggregateUDF.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the registered name of this UDAF.</p>
+<p>For UDAFs imported via the FFI capsule protocol, this is the
+name the capsule itself reports — not the <code class="docutils literal notranslate"><span class="pre">name</span></code> argument
+passed to the constructor (which is ignored on the FFI path).</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1899,6 +1926,15 @@ the online documentation for more information.</p></li>
 <dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._udwf">
 <span class="sig-name descname"><span class="pre">_udwf</span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._udwf" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.user_defined.WindowUDF.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the registered name of this UDWF.</p>
+<p>For UDWFs imported via the FFI capsule protocol, this is the
+name the capsule itself reports — not the <code class="docutils literal notranslate"><span class="pre">name</span></code> argument
+passed to the constructor (which is ignored on the FFI path).</p>
+</dd></dl>
 
 </dd></dl>
 

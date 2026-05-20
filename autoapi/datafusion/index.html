@@ -563,6 +563,15 @@
        </code>
       </a>
      </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.name
+        </span>
+       </code>
+      </a>
+     </li>
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
@@ -3608,6 +3617,15 @@
        </code>
       </a>
      </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowUDF.name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.name
+        </span>
+       </code>
+      </a>
+     </li>
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
@@ -4156,6 +4174,15 @@ aggregation or window function calls.</p>
 <span class="sig-name descname"><span class="pre">_udaf</span></span><a class="headerlink" href="#datafusion.AggregateUDF._udaf" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.AggregateUDF.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the registered name of this UDAF.</p>
+<p>For UDAFs imported via the FFI capsule protocol, this is the
+name the capsule itself reports — not the <code class="docutils literal notranslate"><span class="pre">name</span></code> argument
+passed to the constructor (which is ignored on the FFI path).</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -4701,12 +4728,13 @@ where the index begins at <code class="docutils literal notranslate"><span class
 <dd><p>Pickle protocol hook.</p>
 <p>Lets expressions be shipped to worker processes via
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> / <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code>. Built-in functions
-and Python scalar UDFs travel inside the pickle bytes; only
-FFI-capsule UDFs require pre-registration on the worker. The
-worker’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for resolving those references
-is looked up via <a class="reference internal" href="ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a>, falling
-back to the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> if none has been
-installed on the worker.</p>
+and Python UDFs (scalar, aggregate, window) travel inside the
+pickle bytes; only FFI-capsule UDFs require pre-registration on
+the worker. The worker’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for resolving
+those references is looked up via
+<a class="reference internal" href="ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a>, falling back to the
+global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> if none has been installed on
+the worker.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Security
@@ -5080,7 +5108,7 @@ function references that travel by name (e.g. FFI UDFs). When
 <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> the worker context installed via
 <a class="reference internal" href="ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> is consulted; if no worker
 context is installed, the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> is used
-(sufficient for built-ins and Python scalar UDFs, plus any UDFs
+(sufficient for built-ins and Python UDFs, plus any UDFs
 registered on the global context).</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -5442,15 +5470,15 @@ worker process for distributed evaluation.</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through that session’s
 installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code>. When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is
 <code class="docutils literal notranslate"><span class="pre">None</span></code>, the default codec is used.</p>
-<p>Built-in functions and Python scalar UDFs travel inside the
-returned bytes; the worker does not need to pre-register them.
-UDFs imported via the FFI capsule protocol travel by name only
-and must be registered on the worker.</p>
+<p>Built-in functions and Python UDFs (scalar, aggregate, window)
+travel inside the returned bytes; the worker does not need to
+pre-register them. UDFs imported via the FFI capsule protocol
+travel by name only and must be registered on the worker.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Security
 Bytes returned here may embed a cloudpickled Python
-callable (when the expression carries a Python scalar UDF).
+callable (when the expression carries a Python UDF).
 Reconstructing them via <a class="reference internal" href="#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> or
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> executes arbitrary Python on the
 receiver. Only accept payloads from trusted sources.</p>
@@ -7074,6 +7102,15 @@ the online documentation for more information.</p></li>
 <dt class="sig sig-object py" id="datafusion.WindowUDF._udwf">
 <span class="sig-name descname"><span class="pre">_udwf</span></span><a class="headerlink" href="#datafusion.WindowUDF._udwf" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.WindowUDF.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.WindowUDF.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the registered name of this UDWF.</p>
+<p>For UDWFs imported via the FFI capsule protocol, this is the
+name the capsule itself reports — not the <code class="docutils literal notranslate"><span class="pre">name</span></code> argument
+passed to the constructor (which is ignored on the FFI path).</p>
+</dd></dl>
 
 </dd></dl>
 

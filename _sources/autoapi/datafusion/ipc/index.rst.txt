@@ -25,16 +25,17 @@ datafusion.ipc
            ctx.register_udaf(my_ffi_aggregate)
            set_worker_ctx(ctx)
 
-   Built-in functions and Python scalar UDFs travel inside the shipped
-   expression itself and do not need pre-registration on the worker.
+   Built-in functions and Python UDFs (scalar, aggregate, window) travel
+   inside the shipped expression itself and do not need pre-registration
+   on the worker.
 
    .. note:: Serialization model
 
-      Expressions containing Python scalar UDFs are serialized using
-      :mod:`cloudpickle`. The callable itself travels **by value**
-      (bytecode and closure cells inlined), but any names the callable
-      resolves via ``import`` are captured **by reference** and must be
-      importable on the receiving worker.
+      Expressions containing Python UDFs (scalar, aggregate, window) are
+      serialized using :mod:`cloudpickle`. The callable itself travels
+      **by value** (bytecode and closure cells inlined), but any names the
+      callable resolves via ``import`` are captured **by reference** and
+      must be importable on the receiving worker.
 
       The serialized payload is stamped with the sender's Python
       ``(major, minor)`` version. Loading on a different minor version
@@ -64,8 +65,8 @@ Module Contents
 
    After clearing, expressions reconstructed in this worker fall back to
    the global :class:`SessionContext` — adequate for built-ins and Python
-   scalar UDFs, but anything imported via the FFI capsule protocol must
-   be registered on the global context to resolve.
+   UDFs (scalar, aggregate, window), but anything imported via the FFI
+   capsule protocol must be registered on the global context to resolve.
 
    .. rubric:: Examples
 

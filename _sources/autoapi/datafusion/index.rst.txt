@@ -331,6 +331,17 @@ Package Contents
    .. py:attribute:: _udaf
 
 
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDAF.
+
+      For UDAFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+
 .. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
    DataFusion data catalog.
@@ -895,12 +906,13 @@ Package Contents
 
       Lets expressions be shipped to worker processes via
       :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
-      and Python scalar UDFs travel inside the pickle bytes; only
-      FFI-capsule UDFs require pre-registration on the worker. The
-      worker's :class:`SessionContext` for resolving those references
-      is looked up via :func:`datafusion.ipc.set_worker_ctx`, falling
-      back to the global :class:`SessionContext` if none has been
-      installed on the worker.
+      and Python UDFs (scalar, aggregate, window) travel inside the
+      pickle bytes; only FFI-capsule UDFs require pre-registration on
+      the worker. The worker's :class:`SessionContext` for resolving
+      those references is looked up via
+      :func:`datafusion.ipc.set_worker_ctx`, falling back to the
+      global :class:`SessionContext` if none has been installed on
+      the worker.
 
       .. warning:: Security
           :func:`pickle.loads` on the returned tuple executes
@@ -1266,7 +1278,7 @@ Package Contents
       ``ctx`` is ``None`` the worker context installed via
       :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
       context is installed, the global :class:`SessionContext` is used
-      (sufficient for built-ins and Python scalar UDFs, plus any UDFs
+      (sufficient for built-ins and Python UDFs, plus any UDFs
       registered on the global context).
 
       .. warning:: Security
@@ -1633,14 +1645,14 @@ Package Contents
       installed :class:`LogicalExtensionCodec`. When ``ctx`` is
       ``None``, the default codec is used.
 
-      Built-in functions and Python scalar UDFs travel inside the
-      returned bytes; the worker does not need to pre-register them.
-      UDFs imported via the FFI capsule protocol travel by name only
-      and must be registered on the worker.
+      Built-in functions and Python UDFs (scalar, aggregate, window)
+      travel inside the returned bytes; the worker does not need to
+      pre-register them. UDFs imported via the FFI capsule protocol
+      travel by name only and must be registered on the worker.
 
       .. warning:: Security
           Bytes returned here may embed a cloudpickled Python
-          callable (when the expression carries a Python scalar UDF).
+          callable (when the expression carries a Python UDF).
           Reconstructing them via :meth:`from_bytes` or
           :func:`pickle.loads` executes arbitrary Python on the
           receiver. Only accept payloads from trusted sources.
@@ -3169,6 +3181,17 @@ Package Contents
 
 
    .. py:attribute:: _udwf
+
+
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDWF.
+
+      For UDWFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
 
 
 .. py:function:: configure_formatter(**kwargs: Any) -> None

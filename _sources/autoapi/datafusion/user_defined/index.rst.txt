@@ -248,6 +248,17 @@ Module Contents
    .. py:attribute:: _udaf
 
 
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDAF.
+
+      For UDAFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+
 .. py:class:: AggregateUDFExportable
 
    Bases: :py:obj:`Protocol`
@@ -826,6 +837,17 @@ Module Contents
 
 
    .. py:attribute:: _udwf
+
+
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDWF.
+
+      For UDWFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
 
 
 .. py:class:: WindowUDFExportable
