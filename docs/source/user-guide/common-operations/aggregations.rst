@@ -434,3 +434,21 @@ The available aggregate functions are:
     - :py:meth:`datafusion.expr.GroupingSet.cube`
     - :py:meth:`datafusion.expr.GroupingSet.grouping_sets`
 
+User-Defined Aggregate Functions
+--------------------------------
+
+You can ship custom aggregations to the engine by subclassing
+:py:class:`~datafusion.user_defined.Accumulator` and registering it via
+:py:func:`~datafusion.udaf`. See :py:mod:`datafusion.user_defined` for
+the accumulator interface and worked examples.
+
+.. note:: Serialization
+
+   Python aggregate UDFs travel inline inside pickled or
+   :py:meth:`~datafusion.expr.Expr.to_bytes`-serialized expressions —
+   the accumulator class is captured by value via :mod:`cloudpickle`,
+   so worker processes do not need to pre-register the UDF. Any names
+   the accumulator resolves via ``import`` are captured **by reference**
+   and must be importable on the receiving worker. See
+   :py:mod:`datafusion.ipc` for the full IPC model and security caveats.
+

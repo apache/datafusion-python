@@ -213,3 +213,21 @@ The possible window functions are:
 
 3. Aggregate Functions
     - All :ref:`Aggregation Functions<aggregation>` can be used as window functions.
+
+User-Defined Window Functions
+-----------------------------
+
+You can ship custom window functions to the engine by subclassing
+:py:class:`~datafusion.user_defined.WindowEvaluator` and registering it
+via :py:func:`~datafusion.udwf`. See :py:mod:`datafusion.user_defined`
+for the evaluator interface and worked examples.
+
+.. note:: Serialization
+
+   Python window UDFs travel inline inside pickled or
+   :py:meth:`~datafusion.expr.Expr.to_bytes`-serialized expressions —
+   the evaluator class is captured by value via :mod:`cloudpickle`, so
+   worker processes do not need to pre-register the UDF. Any names the
+   evaluator resolves via ``import`` are captured **by reference** and
+   must be importable on the receiving worker. See
+   :py:mod:`datafusion.ipc` for the full IPC model and security caveats.

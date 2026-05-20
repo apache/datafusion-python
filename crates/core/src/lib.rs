@@ -65,6 +65,11 @@ mod udf;
 pub mod udtf;
 mod udwf;
 
+// Re-export helpers previously consumed by downstream Rust crates.
+// Modules stay private to keep the public Rust API surface small.
+pub use udaf::to_rust_accumulator;
+pub use udwf::{MultiColumnWindowUDF, PythonFunctionWindowUDF, to_rust_partition_evaluator};
+
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;

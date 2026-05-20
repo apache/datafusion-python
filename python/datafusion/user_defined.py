@@ -441,6 +441,16 @@ class AggregateUDF:
             str(volatility),
         )
 
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDAF.
+
+        For UDAFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udaf.name
+
     def __repr__(self) -> str:
         """Print a string representation of the Aggregate UDF."""
         return self._udaf.__repr__()
@@ -850,6 +860,16 @@ class WindowUDF:
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDWF.
+
+        For UDWFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udwf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Window UDF."""

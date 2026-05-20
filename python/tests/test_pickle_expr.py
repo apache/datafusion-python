@@ -17,10 +17,10 @@
 
 """In-process pickle round-trip tests for :class:`Expr`.
 
-Built-in functions and Python scalar UDFs travel with the pickled
-expression and do not need worker-side pre-registration. The worker
-context (:mod:`datafusion.ipc`) is only consulted for UDFs imported
-via the FFI capsule protocol.
+Built-in functions and Python UDFs (scalar, aggregate, window) travel
+with the pickled expression and do not need worker-side pre-registration.
+The worker context (:mod:`datafusion.ipc`) is only consulted for UDFs
+imported via the FFI capsule protocol.
 """
 
 from __future__ import annotations
@@ -145,6 +145,135 @@ class TestUDFCodec:
         decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
         assert decoded.canonical_name() == e.canonical_name()
         assert "add_scaled" in decoded.canonical_name()
+
+
+class TestAggregateUDFCodec:
+    """Python aggregate UDFs travel inline like scalar UDFs."""
+
+    def _build_aggregate_udf(self):
+        from datafusion import udaf
+        from datafusion.user_defined import Accumulator
+
+        class CountAcc(Accumulator):
+            def __init__(self):
+                self._count = 0
+
+            def state(self):
+                return [pa.scalar(self._count, type=pa.int64())]
+
+            def update(self, values):
+                self._count += len(values)
+
+            def merge(self, states):
+                partition_counts = states[0]
+                for i in range(len(partition_counts)):
+                    self._count += partition_counts[i].as_py()
+
+            def evaluate(self):
+                return pa.scalar(self._count, type=pa.int64())
+
+        return udaf(
+            CountAcc,
+            [pa.int64()],
+            pa.int64(),
+            [pa.int64()],
+            "immutable",
+            name="count_all",
+        )
+
+    def test_agg_udf_self_contained_blob(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        assert len(blob) > 200
+
+    def test_agg_udf_decodes_into_fresh_ctx(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = e.to_bytes()
+        fresh = SessionContext()
+        decoded = Expr.from_bytes(blob, ctx=fresh)
+        assert "count_all" in decoded.canonical_name()
+
+    def test_agg_udf_decodes_via_pickle_with_no_worker_ctx(self):
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        decoded = pickle.loads(blob)  # noqa: S301
+        assert "count_all" in decoded.canonical_name()
+
+    def test_agg_udf_evaluates_after_roundtrip(self):
+        """End-to-end: the decoded aggregate UDF runs and merges across
+        partitions, exercising the round-tripped state-field schema."""
+        u = self._build_aggregate_udf()
+        e = u(col("a"))
+        decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
+
+        ctx = SessionContext()
+        schema = pa.schema([pa.field("a", pa.int64())])
+        batch1 = pa.record_batch([pa.array([1, 2, 3], type=pa.int64())], schema=schema)
+        batch2 = pa.record_batch([pa.array([4, 5], type=pa.int64())], schema=schema)
+        df = ctx.create_dataframe([[batch1], [batch2]])
+        out = df.aggregate([], [decoded.alias("n")]).to_pydict()
+        assert out["n"] == [5]
+
+
+class TestWindowUDFCodec:
+    """Python window UDFs travel inline like scalar UDFs."""
+
+    def _build_window_udf(self):
+        from datafusion import udwf
+        from datafusion.user_defined import WindowEvaluator
+
+        class CountUpEvaluator(WindowEvaluator):
+            def evaluate_all(self, values, num_rows):
+                return pa.array(list(range(num_rows)))
+
+        return udwf(
+            CountUpEvaluator,
+            [pa.int64()],
+            pa.int64(),
+            "immutable",
+            name="count_up",
+        )
+
+    def test_window_udf_self_contained_blob(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        assert len(blob) > 200
+
+    def test_window_udf_decodes_into_fresh_ctx(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = e.to_bytes()
+        fresh = SessionContext()
+        decoded = Expr.from_bytes(blob, ctx=fresh)
+        assert "count_up" in decoded.canonical_name()
+
+    def test_window_udf_decodes_via_pickle_with_no_worker_ctx(self):
+        u = self._build_window_udf()
+        e = u(col("a"))
+        blob = pickle.dumps(e)
+        decoded = pickle.loads(blob)  # noqa: S301
+        assert "count_up" in decoded.canonical_name()
+
+    def test_window_udf_evaluates_after_roundtrip(self):
+        """End-to-end: decoded window UDF runs and emits per-row values
+        produced by the round-tripped evaluator factory."""
+        from datafusion.expr import WindowFrame
+
+        u = self._build_window_udf()
+        e = u(col("a"))
+        decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
+
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [1, 2, 3, 4, 5]})
+        framed = (
+            decoded.window_frame(WindowFrame("rows", None, None)).build().alias("c")
+        )
+        out = df.select(framed).to_pydict()
+        assert out["c"] == [0, 1, 2, 3, 4]
 
 
 class TestErrorPaths:
