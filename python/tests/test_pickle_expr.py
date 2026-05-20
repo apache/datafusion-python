@@ -165,8 +165,9 @@ class TestAggregateUDFCodec:
                 self._count += len(values)
 
             def merge(self, states):
-                for s in states:
-                    self._count += s[0].as_py()
+                partition_counts = states[0]
+                for i in range(len(partition_counts)):
+                    self._count += partition_counts[i].as_py()
 
             def evaluate(self):
                 return pa.scalar(self._count, type=pa.int64())
@@ -209,7 +210,10 @@ class TestAggregateUDFCodec:
         decoded = pickle.loads(pickle.dumps(e))  # noqa: S301
 
         ctx = SessionContext()
-        df = ctx.from_pydict({"a": [1, 2, 3, 4, 5]})
+        schema = pa.schema([pa.field("a", pa.int64())])
+        batch1 = pa.record_batch([pa.array([1, 2, 3], type=pa.int64())], schema=schema)
+        batch2 = pa.record_batch([pa.array([4, 5], type=pa.int64())], schema=schema)
+        df = ctx.create_dataframe([[batch1], [batch2]])
         out = df.aggregate([], [decoded.alias("n")]).to_pydict()
         assert out["n"] == [5]
 
