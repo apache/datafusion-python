@@ -337,9 +337,13 @@ class TestPythonUdfInliningToggle:
             name="double",
         )
 
-    def test_strict_encoder_emits_smaller_blob(self):
-        """Strict mode skips cloudpickle of the Python callable, so the
-        encoded bytes are dramatically smaller than the inline form."""
+    def test_strict_encoder_omits_inline_payload(self):
+        """Strict mode emits the by-name wire form: no `DFPYUDF` magic
+        in the blob, no cloudpickled callable. Semantic check is
+        sharper than a size-ratio heuristic — a renamed UDF or a
+        smaller-than-expected closure would still flip the magic
+        bytes, but might not move the size by 4x.
+        """
         ctx_inline = SessionContext()
         ctx_strict = ctx_inline.with_python_udf_inlining(enabled=False)
         u = self._build_double_udf()
@@ -348,7 +352,10 @@ class TestPythonUdfInliningToggle:
         blob_inline = e.to_bytes(ctx_inline)
         blob_strict = e.to_bytes(ctx_strict)
 
-        assert len(blob_strict) < len(blob_inline) // 4
+        # `DFPYUDF` is the scalar Python-UDF family prefix; see
+        # `PY_SCALAR_UDF_FAMILY` in crates/core/src/codec.rs.
+        assert b"DFPYUDF" in blob_inline
+        assert b"DFPYUDF" not in blob_strict
 
     def test_toggle_off_then_on_restores_inline_encoding(self):
         """`with_python_udf_inlining` is per-call clone semantics:
@@ -417,10 +424,10 @@ class TestPythonUdfInliningToggle:
     def test_sender_ctx_propagates_through_pickle(self):
         """`set_sender_ctx` makes `pickle.dumps` use a strict codec.
 
-        Without a sender context, pickle defaults to the inline codec and
-        the blob is large. With a strict sender context installed, the
-        blob shrinks because the Python callable is encoded by name
-        instead of cloudpickled.
+        Without a sender context, pickle defaults to the inline codec
+        and the blob contains the `DFPYUDF` family prefix. With a
+        strict sender context installed, the callable encodes by name
+        and the prefix is absent.
         """
         u = self._build_double_udf()
         e = u(col("a"))
@@ -434,7 +441,8 @@ class TestPythonUdfInliningToggle:
         finally:
             clear_sender_ctx()
 
-        assert len(blob_strict) < len(blob_default) // 4
+        assert b"DFPYUDF" in blob_default
+        assert b"DFPYUDF" not in blob_strict
 
     def test_sender_ctx_strict_roundtrip_via_pickle(self):
         """End-to-end pickle round-trip with strict mode on both sides.

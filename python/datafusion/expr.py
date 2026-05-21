@@ -53,6 +53,7 @@ import pyarrow as pa
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
+from .ipc import get_sender_ctx
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -594,10 +595,10 @@ class Expr:  # noqa: PLW1641
         The encoding side honors a driver-side sender context installed
         via :func:`datafusion.ipc.set_sender_ctx` — that is how
         :meth:`SessionContext.with_python_udf_inlining` propagates
-        through ``pickle.dumps``.
+        through ``pickle.dumps``. The sender context is read by
+        ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+        — which also go through ``__reduce__`` — pick it up too.
         """
-        from datafusion.ipc import get_sender_ctx
-
         return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
 
     @classmethod

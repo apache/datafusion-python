@@ -340,8 +340,8 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udf) = try_decode_python_scalar_udf(buf)? {
                 return Ok(udf);
             }
-        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
-            return Err(refuse_inline_payload("scalar UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
         self.inner.try_decode_udf(name, buf)
     }
@@ -358,8 +358,8 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udaf) = try_decode_python_udaf(buf)? {
                 return Ok(udaf);
             }
-        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
-            return Err(refuse_inline_payload("aggregate UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
         self.inner.try_decode_udaf(name, buf)
     }
@@ -376,11 +376,28 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
             if let Some(udwf) = try_decode_python_udwf(buf)? {
                 return Ok(udwf);
             }
-        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
-            return Err(refuse_inline_payload("window UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
         self.inner.try_decode_udwf(name, buf)
     }
+}
+
+/// Strict-mode gate: if `buf` is a well-framed inline payload for
+/// `family`, return the strict-refusal error; otherwise return
+/// `Ok(())` so the caller can delegate to its `inner` codec.
+///
+/// Routing through [`read_framed_payload`] (rather than a bare
+/// `starts_with` probe) means malformed inline bytes — wrong
+/// wire-format version, mismatched Python version, truncated header —
+/// surface *their* diagnostic instead of the strict-mode message.
+/// The strict message implies sender intent ("inlining is disabled"),
+/// so it should fire only when the bytes really would have decoded.
+fn refuse_if_inline(buf: &[u8], family: &[u8], kind: &str, name: &str) -> Result<()> {
+    Python::attach(|py| match read_framed_payload(py, buf, family, kind)? {
+        Some(_) => Err(refuse_inline_payload(kind, name)),
+        None => Ok(()),
+    })
 }
 
 /// Build the error returned by a strict codec when it receives an
@@ -429,7 +446,10 @@ impl PythonPhysicalCodec {
         &self.inner
     }
 
-    /// See [`PythonLogicalCodec::with_python_udf_inlining`].
+    /// Toggle inline encoding of Python UDFs on this physical codec.
+    ///
+    /// Mirrors [`PythonLogicalCodec::with_python_udf_inlining`]; see
+    /// that method for the full security and portability discussion.
     pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
         self.python_udf_inlining = enabled;
         self
@@ -472,8 +492,8 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udf) = try_decode_python_scalar_udf(buf)? {
                 return Ok(udf);
             }
-        } else if buf.starts_with(PY_SCALAR_UDF_FAMILY) {
-            return Err(refuse_inline_payload("scalar UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
         self.inner.try_decode_udf(name, buf)
     }
@@ -502,8 +522,8 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udaf) = try_decode_python_udaf(buf)? {
                 return Ok(udaf);
             }
-        } else if buf.starts_with(PY_AGG_UDF_FAMILY) {
-            return Err(refuse_inline_payload("aggregate UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
         self.inner.try_decode_udaf(name, buf)
     }
@@ -520,8 +540,8 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
             if let Some(udwf) = try_decode_python_udwf(buf)? {
                 return Ok(udwf);
             }
-        } else if buf.starts_with(PY_WINDOW_UDF_FAMILY) {
-            return Err(refuse_inline_payload("window UDF", name));
+        } else {
+            refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
         self.inner.try_decode_udwf(name, buf)
     }

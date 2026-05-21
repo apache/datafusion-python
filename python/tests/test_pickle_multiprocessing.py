@@ -123,9 +123,6 @@ def test_closure_capturing_udf_via_pool(start_method):
 
     ctx = mp.get_context(start_method)
     with ctx.Pool(processes=2) as pool:
-        results = pool.starmap(
-            helpers.unpickle_and_evaluate,
-            [(blob, [1, 2, 3])],
-        )
+        result = pool.apply(helpers.unpickle_and_evaluate, (blob, [1, 2, 3]))
 
-    assert results[0] == [7, 14, 21]
+    assert result == [7, 14, 21]
