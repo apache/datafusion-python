@@ -1313,11 +1313,44 @@ class SessionContext:
     def udf(self, name: str) -> ScalarUDF:
         """Look up a registered scalar UDF by name.
 
+        Returns the same :py:class:`~datafusion.user_defined.ScalarUDF`
+        wrapper that :py:meth:`register_udf` accepts, so it can be invoked
+        as an expression in the DataFrame API or re-registered into a
+        different :py:class:`SessionContext`. Built-in scalar functions
+        from the session's function registry are also looked up.
+
         Args:
             name: Name of the registered scalar UDF.
 
         Raises:
             Exception: If no scalar UDF is registered under ``name``.
+
+        Examples:
+            Register a UDF, then look it up by name and use it in the
+            DataFrame API:
+
+            >>> ctx = dfn.SessionContext()
+            >>> nullcheck = dfn.udf(
+            ...     lambda x: x.is_null(),
+            ...     [pa.int64()],
+            ...     pa.bool_(),
+            ...     volatility="immutable",
+            ...     name="nullcheck",
+            ... )
+            >>> ctx.register_udf(nullcheck)
+            >>> fn = ctx.udf("nullcheck")
+            >>> df = ctx.from_pydict({"a": [1, None, 3]})
+            >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+            {'is_null': [False, True, False]}
+
+            Late-binding: the function name can come from configuration
+            rather than an imported symbol, which is useful when the set
+            of UDFs is plugin-driven or chosen at runtime:
+
+            >>> config = {"null_check": "nullcheck"}
+            >>> fn = ctx.udf(config["null_check"])
+            >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+            {'is_null': [False, True, False]}
         """
         from datafusion.user_defined import ScalarUDF as _ScalarUDF  # noqa: PLC0415
 
@@ -1328,11 +1361,27 @@ class SessionContext:
     def udaf(self, name: str) -> AggregateUDF:
         """Look up a registered aggregate UDF by name.
 
+        Returns the same :py:class:`~datafusion.user_defined.AggregateUDF`
+        wrapper that :py:meth:`register_udaf` accepts. Built-in aggregate
+        functions such as ``sum`` or ``avg`` are also discoverable through
+        this lookup. See :py:meth:`udf` for a worked late-binding example;
+        the pattern is identical for aggregates.
+
         Args:
             name: Name of the registered aggregate UDF.
 
         Raises:
             Exception: If no aggregate UDF is registered under ``name``.
+
+        Examples:
+            Look up a built-in aggregate by name and use it in
+            :py:meth:`~datafusion.DataFrame.aggregate`:
+
+            >>> ctx = dfn.SessionContext()
+            >>> sum_fn = ctx.udaf("sum")
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.aggregate([], [sum_fn(col("a")).alias("total")]).to_pydict()
+            {'total': [6]}
         """
         from datafusion.user_defined import (  # noqa: PLC0415
             AggregateUDF as _AggregateUDF,
@@ -1345,11 +1394,27 @@ class SessionContext:
     def udwf(self, name: str) -> WindowUDF:
         """Look up a registered window UDF by name.
 
+        Returns the same :py:class:`~datafusion.user_defined.WindowUDF`
+        wrapper that :py:meth:`register_udwf` accepts. Built-in window
+        functions such as ``row_number`` or ``rank`` are also discoverable
+        through this lookup. See :py:meth:`udf` for a worked late-binding
+        example; the pattern is identical for window functions.
+
         Args:
             name: Name of the registered window UDF.
 
         Raises:
             Exception: If no window UDF is registered under ``name``.
+
+        Examples:
+            Look up a built-in window function by name and use it in
+            ``select``:
+
+            >>> ctx = dfn.SessionContext()
+            >>> rn = ctx.udwf("row_number")
+            >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+            >>> df.select(col("a"), rn().alias("rn")).to_pydict()
+            {'a': [10, 20, 30], 'rn': [1, 2, 3]}
         """
         from datafusion.user_defined import WindowUDF as _WindowUDF  # noqa: PLC0415
 
@@ -1358,15 +1423,37 @@ class SessionContext:
         return wrapper
 
     def udfs(self) -> list[str]:
-        """Return the sorted names of all registered scalar UDFs."""
+        """Return the sorted names of all registered scalar UDFs.
+
+        Includes both user-registered and built-in scalar functions. Pair
+        with :py:meth:`udf` to drive discovery, validation, or config-based
+        dispatch.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "abs" in ctx.udfs()
+            True
+        """
         return self.ctx.udfs()
 
     def udafs(self) -> list[str]:
-        """Return the sorted names of all registered aggregate UDFs."""
+        """Return the sorted names of all registered aggregate UDFs.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "sum" in ctx.udafs()
+            True
+        """
         return self.ctx.udafs()
 
     def udwfs(self) -> list[str]:
-        """Return the sorted names of all registered window UDFs."""
+        """Return the sorted names of all registered window UDFs.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "row_number" in ctx.udwfs()
+            True
+        """
         return self.ctx.udwfs()
 
     def catalog(self, name: str = "datafusion") -> Catalog:
