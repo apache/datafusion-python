@@ -80,12 +80,16 @@ START_METHODS = [
 @pytest.mark.timeout(120)
 def test_builtin_pickle_via_pool(start_method):
     """Built-in expressions round-trip in every start method."""
+    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: enter")
     expr = col("a") + lit(1)
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    with ctx.Pool(processes=2) as pool:
+    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: creating Pool")
+    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+        helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool ready, map")
         results = pool.map(helpers.unpickle_and_describe, [blob, blob, blob])
+    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool closed")
 
     assert all(r == expr.canonical_name() for r in results)
 
@@ -98,16 +102,22 @@ def test_udf_pickle_self_contained(start_method):
     Workers start with no UDF registered. The Rust-side ``PythonUDFCodec``
     reconstructs the UDF from bytes embedded in the pickle blob.
     """
+    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: enter")
     udf_obj = helpers.make_double_udf()
     expr = udf_obj(col("a"))
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    with ctx.Pool(processes=2) as pool:
+    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: creating Pool")
+    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+        helpers._diag(
+            f"test_udf_pickle_self_contained[{start_method}]: pool ready, starmap"
+        )
         results = pool.starmap(
             helpers.unpickle_and_evaluate,
             [(blob, [1, 2, 3]), (blob, [10, 20, 30])],
         )
+    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: pool closed")
 
     assert results[0] == [2, 4, 6]
     assert results[1] == [20, 40, 60]
@@ -117,12 +127,18 @@ def test_udf_pickle_self_contained(start_method):
 @pytest.mark.timeout(120)
 def test_closure_capturing_udf_via_pool(start_method):
     """Cloudpickle preserves closure state across the codec boundary."""
+    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: enter")
     udf_obj = helpers.make_times_seven_udf()
     expr = udf_obj(col("a"))
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    with ctx.Pool(processes=2) as pool:
+    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: creating Pool")
+    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+        helpers._diag(
+            f"test_closure_capturing_udf_via_pool[{start_method}]: pool ready, apply"
+        )
         result = pool.apply(helpers.unpickle_and_evaluate, (blob, [1, 2, 3]))
+    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: pool closed")
 
     assert result == [7, 14, 21]

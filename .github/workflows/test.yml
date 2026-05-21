@@ -102,6 +102,20 @@ jobs:
           git submodule update --init
           uv run --no-project pytest -v --import-mode=importlib
 
+      # Always dump the multiprocessing worker diagnostic log, even on
+      # job timeout, so we can see where forkserver/spawn workers stalled.
+      # See python/tests/_pickle_multiprocessing_helpers.py for what each
+      # line means. Safe to remove once forkserver/spawn hang is resolved.
+      - name: Dump multiprocessing diagnostic log
+        if: always()
+        run: |
+          echo "=== /tmp/df_mp_worker_diag.log ==="
+          if [ -f /tmp/df_mp_worker_diag.log ]; then
+            cat /tmp/df_mp_worker_diag.log
+          else
+            echo "(no diagnostic log produced)"
+          fi
+
       - name: FFI unit tests
         run: |
           cd examples/datafusion-ffi-example
