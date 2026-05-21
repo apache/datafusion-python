@@ -89,4 +89,6 @@ runs:
     - name: Build via native maturin
       if: inputs.manylinux == ''
       shell: bash
-      run: uv run --no-project maturin build ${{ steps.args.outputs.args }}
+      # Use `uvx` so maturin is available even when `uv sync` was skipped
+      # (free-threaded matrix entries don't pre-populate the project venv).
+      run: uvx maturin@1.8.1 build ${{ steps.args.outputs.args }}
