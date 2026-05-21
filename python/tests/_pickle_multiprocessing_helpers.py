@@ -122,6 +122,71 @@ def diag_init():
     _diag("worker init: ready for tasks")
 
 
+def _read_text(path: str) -> str:
+    """Read a /proc file; return ``"<unreadable>"`` if not accessible."""
+    try:
+        return Path(path).read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return "<unreadable>"
+
+
+def _descendants(root_pid: int) -> list[int]:
+    """Return ``root_pid`` plus all descendant pids via /proc/<pid>/task/.../children.
+
+    Linux-only; returns ``[root_pid]`` on platforms without ``/proc``.
+    """
+    out: list[int] = [root_pid]
+    if not Path("/proc").is_dir():
+        return out
+    queue = [root_pid]
+    while queue:
+        pid = queue.pop()
+        try:
+            task_dir = Path(f"/proc/{pid}/task")
+            if not task_dir.is_dir():
+                continue
+            for tdir in task_dir.iterdir():
+                children_file = tdir / "children"
+                try:
+                    children = children_file.read_text(encoding="utf-8").split()
+                except OSError:
+                    continue
+                for child in children:
+                    try:
+                        cpid = int(child)
+                    except ValueError:
+                        continue
+                    out.append(cpid)
+                    queue.append(cpid)
+        except OSError:
+            continue
+    return out
+
+
+def snapshot_processes(label: str, root_pid: int | None = None) -> None:
+    """Dump a process-state snapshot to the diagnostic log.
+
+    For each descendant of ``root_pid`` (default: current process), record
+    cmdline, status (``R``/``S``/``D``), wchan (kernel function the task
+    is blocked in), and kernel stack. Use this to localize a worker hang:
+    a wchan of ``do_futex`` points at a lock; ``poll_schedule_timeout``
+    points at a blocking I/O wait; ``do_select`` at multiprocessing's
+    pipe read.
+    """
+    pid = root_pid if root_pid is not None else os.getpid()
+    _diag(f"snapshot[{label}] root_pid={pid}")
+    for cpid in _descendants(pid):
+        cmd = _read_text(f"/proc/{cpid}/cmdline").replace("\x00", " ").strip()
+        stat = _read_text(f"/proc/{cpid}/status").splitlines()
+        state_line = next((s for s in stat if s.startswith("State:")), "State: ?")
+        wchan = _read_text(f"/proc/{cpid}/wchan")
+        stack = _read_text(f"/proc/{cpid}/stack")
+        _diag(f"snapshot[{label}] pid={cpid} {state_line} wchan={wchan} cmd={cmd!r}")
+        if stack and stack != "<unreadable>":
+            for line in stack.splitlines()[:10]:
+                _diag(f"snapshot[{label}] pid={cpid} stack: {line}")
+
+
 def unpickle_and_describe(blob: bytes) -> str:
     """Unpickle a proto-bytes blob and return its canonical name."""
     import pickle

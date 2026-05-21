@@ -27,15 +27,38 @@ its real name in worker subprocesses.
 
 from __future__ import annotations
 
+import contextlib
 import functools
 import multiprocessing as mp
 import pickle
 import sys
+import threading
 
 import pytest
 from datafusion import col, lit
 
 from . import _pickle_multiprocessing_helpers as helpers
+
+
+@contextlib.contextmanager
+def _snapshot_on_hang(label: str, fire_after_seconds: float = 30.0):
+    """Schedule a process-state snapshot ``fire_after_seconds`` from now.
+
+    Cancelled if the ``with`` block exits before then. Used to capture
+    worker state mid-hang — fork tests return in well under the delay,
+    so the timer only fires when something is actually stuck.
+    """
+    timer = threading.Timer(
+        fire_after_seconds,
+        helpers.snapshot_processes,
+        args=(label,),
+    )
+    timer.daemon = True
+    timer.start()
+    try:
+        yield
+    finally:
+        timer.cancel()
 
 
 @functools.cache
@@ -86,7 +109,10 @@ def test_builtin_pickle_via_pool(start_method):
 
     ctx = mp.get_context(start_method)
     helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: creating Pool")
-    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+    with (
+        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
+        _snapshot_on_hang(f"builtin[{start_method}]"),
+    ):
         helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool ready, map")
         results = pool.map(helpers.unpickle_and_describe, [blob, blob, blob])
     helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool closed")
@@ -109,7 +135,10 @@ def test_udf_pickle_self_contained(start_method):
 
     ctx = mp.get_context(start_method)
     helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: creating Pool")
-    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+    with (
+        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
+        _snapshot_on_hang(f"udf[{start_method}]"),
+    ):
         helpers._diag(
             f"test_udf_pickle_self_contained[{start_method}]: pool ready, starmap"
         )
@@ -134,7 +163,10 @@ def test_closure_capturing_udf_via_pool(start_method):
 
     ctx = mp.get_context(start_method)
     helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: creating Pool")
-    with ctx.Pool(processes=2, initializer=helpers.diag_init) as pool:
+    with (
+        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
+        _snapshot_on_hang(f"closure[{start_method}]"),
+    ):
         helpers._diag(
             f"test_closure_capturing_udf_via_pool[{start_method}]: pool ready, apply"
         )
