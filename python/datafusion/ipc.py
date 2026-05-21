@@ -72,8 +72,6 @@ Without a sender context the default codec is used (Python UDF
 inlining on). The sender context only affects pickle / ``to_bytes``
 encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
 ``ctx``.
-
-See :doc:`/user-guide/io/distributing_work` for the full pattern.
 """
 
 from __future__ import annotations

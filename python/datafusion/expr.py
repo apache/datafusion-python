@@ -454,8 +454,7 @@ class Expr:  # noqa: PLW1641
         Built-in functions and Python UDFs (scalar, aggregate, window)
         travel inside the returned bytes; the worker does not need to
         pre-register them. UDFs imported via the FFI capsule protocol
-        travel by name only and must be registered on the worker. See
-        :doc:`/user-guide/io/distributing_work`.
+        travel by name only and must be registered on the worker.
 
         .. warning:: Security
             Bytes returned here may embed a cloudpickled Python

@@ -1771,42 +1771,35 @@ class SessionContext:
         return new
 
     def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
-        """Toggle inline encoding of Python-defined UDFs on this session.
+        """Control whether Python UDFs are embedded in serialized expressions.
 
-        ``enabled`` is keyword-only:
-        ``with_python_udf_inlining(enabled=False)`` reads at the call
-        site as the inverse of
-        ``with_python_udf_inlining(enabled=True)``, where a positional
-        ``True`` / ``False`` would not.
+        When ``enabled=True`` (the default), serialized expressions carry
+        the Python code for any scalar, aggregate, or window UDFs they
+        reference. The receiver rebuilds the UDFs from those bytes and
+        does not need to register them first.
 
-        When ``True`` (the default), Python scalar, aggregate, and window
-        UDFs travel inside the serialized expression and are
-        reconstructed on the receiver without pre-registration.
+        When ``enabled=False``, serialized expressions store only the
+        UDF names. This has two uses:
 
-        Set ``False`` to:
+        * **Cross-language portability.** The bytes can be decoded by a
+          non-Python receiver, which must already have UDFs registered
+          under matching names.
+        * **Safer deserialization.** :meth:`Expr.from_bytes` will refuse
+          to rebuild Python UDFs rather than call ``cloudpickle.loads``
+          on untrusted input.
 
-        * Produce serialized bytes that round-trip through a non-Python
-          decoder (cross-language portability). UDFs are stored by name
-          only; the receiver must have matching registrations.
-        * Refuse to reconstruct Python UDFs from
-          :meth:`Expr.from_bytes` input that may come from an untrusted
-          source — ``cloudpickle.loads`` will not be invoked.
+        The setting affects :meth:`Expr.to_bytes` and
+        :meth:`Expr.from_bytes` whenever this session is passed as the
+        ``ctx`` argument. :func:`pickle.dumps` and :func:`pickle.loads`
+        do not pass a context, so to apply the setting through pickle,
+        register this session with
+        :func:`datafusion.ipc.set_sender_ctx` on the sender and
+        :func:`datafusion.ipc.set_worker_ctx` on the receiver.
 
-        The toggle applies directly to :meth:`Expr.to_bytes` /
-        :meth:`Expr.from_bytes` calls that pass this session as their
-        ``ctx`` argument. To make the toggle apply through
-        :func:`pickle.dumps` (which calls :meth:`Expr.to_bytes` with no
-        context), install this session as the driver's sender context
-        via :func:`datafusion.ipc.set_sender_ctx` — and install it as
-        the worker's context via
-        :func:`datafusion.ipc.set_worker_ctx` for the corresponding
-        :func:`pickle.loads`.
-
-        For the full security model, see
-        :doc:`/user-guide/io/distributing_work` (Security section). In
-        short: this toggle narrows only the :meth:`Expr.from_bytes`
-        surface; :func:`pickle.loads` on untrusted bytes remains
-        unsafe regardless of the toggle.
+        .. warning:: Security
+            This setting narrows only :meth:`Expr.from_bytes`. Calling
+            :func:`pickle.loads` on untrusted bytes remains unsafe
+            regardless of the toggle.
         """
         new_internal = self.ctx.with_python_udf_inlining(enabled)
         new = SessionContext.__new__(SessionContext)
