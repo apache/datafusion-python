@@ -1800,6 +1800,15 @@ class SessionContext:
             This setting narrows only :meth:`Expr.from_bytes`. Calling
             :func:`pickle.loads` on untrusted bytes remains unsafe
             regardless of the toggle.
+
+        Returns a new :class:`SessionContext` with the toggle applied;
+        the original session is unchanged.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> strict = SessionContext().with_python_udf_inlining(enabled=False)
+            >>> isinstance(strict, SessionContext)
+            True
         """
         new_internal = self.ctx.with_python_udf_inlining(enabled)
         new = SessionContext.__new__(SessionContext)

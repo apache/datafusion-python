@@ -161,6 +161,17 @@ def set_sender_ctx(ctx: SessionContext) -> None:
     slot, so worker threads on the driver may install their own contexts.
     Does not affect :meth:`Expr.to_bytes` calls that pass an explicit
     ``ctx`` — those continue to use the supplied context.
+
+    Examples:
+        >>> from datafusion import SessionContext
+        >>> from datafusion.ipc import (
+        ...     set_sender_ctx, get_sender_ctx, clear_sender_ctx,
+        ... )
+        >>> driver = SessionContext().with_python_udf_inlining(enabled=False)
+        >>> set_sender_ctx(driver)
+        >>> get_sender_ctx() is driver
+        True
+        >>> clear_sender_ctx()
     """
     _local.sender_ctx = ctx
 
@@ -170,13 +181,30 @@ def clear_sender_ctx() -> None:
 
     After clearing, pickled expressions fall back to the default codec
     (Python UDF inlining on).
+
+    Examples:
+        >>> from datafusion import SessionContext
+        >>> from datafusion.ipc import (
+        ...     set_sender_ctx, clear_sender_ctx, get_sender_ctx,
+        ... )
+        >>> set_sender_ctx(SessionContext())
+        >>> clear_sender_ctx()
+        >>> get_sender_ctx() is None
+        True
     """
     if hasattr(_local, "sender_ctx"):
         del _local.sender_ctx
 
 
 def get_sender_ctx() -> SessionContext | None:
-    """Return this driver's installed sender :class:`SessionContext`, or ``None``."""
+    """Return this driver's installed sender :class:`SessionContext`, or ``None``.
+
+    Examples:
+        >>> from datafusion.ipc import get_sender_ctx, clear_sender_ctx
+        >>> clear_sender_ctx()
+        >>> get_sender_ctx() is None
+        True
+    """
     return getattr(_local, "sender_ctx", None)
 
 
