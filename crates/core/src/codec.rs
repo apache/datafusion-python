@@ -393,7 +393,16 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
 /// surface *their* diagnostic instead of the strict-mode message.
 /// The strict message implies sender intent ("inlining is disabled"),
 /// so it should fire only when the bytes really would have decoded.
+///
+/// Fast path: short-circuit on the family-magic prefix before
+/// acquiring the GIL. Plans with many non-Python UDFs would otherwise
+/// pay a GIL acquisition per decode call just to confirm "not a
+/// Python UDF". `read_framed_payload` itself rejects buffers that
+/// don't start with `family`, so this is purely an optimization.
 fn refuse_if_inline(buf: &[u8], family: &[u8], kind: &str, name: &str) -> Result<()> {
+    if !buf.starts_with(family) {
+        return Ok(());
+    }
     Python::attach(|py| match read_framed_payload(py, buf, family, kind)? {
         Some(_) => Err(refuse_inline_payload(kind, name)),
         None => Ok(()),
@@ -578,6 +587,9 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 /// the caller to delegate to its `inner` codec (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
+    if !buf.starts_with(PY_SCALAR_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<ScalarUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")?
         else {
@@ -834,6 +846,9 @@ pub(crate) fn try_encode_python_udwf(node: &WindowUDF, buf: &mut Vec<u8>) -> Res
 }
 
 pub(crate) fn try_decode_python_udwf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
+    if !buf.starts_with(PY_WINDOW_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<WindowUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_WINDOW_UDF_FAMILY, "window UDF")?
         else {
@@ -916,6 +931,9 @@ pub(crate) fn try_encode_python_udaf(node: &AggregateUDF, buf: &mut Vec<u8>) -> 
 }
 
 pub(crate) fn try_decode_python_udaf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
+    if !buf.starts_with(PY_AGG_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<AggregateUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_AGG_UDF_FAMILY, "aggregate UDF")?
         else {

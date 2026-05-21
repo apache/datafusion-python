@@ -62,16 +62,27 @@ expression on this thread:
 .. code-block:: python
 
     from datafusion import SessionContext
-    from datafusion.ipc import set_sender_ctx
+    from datafusion.ipc import clear_sender_ctx, set_sender_ctx
 
     driver_ctx = SessionContext().with_python_udf_inlining(enabled=False)
     set_sender_ctx(driver_ctx)
-    pickle.dumps(expr)  # encoded with inlining disabled
+    try:
+        pickle.dumps(expr)  # encoded with inlining disabled
+    finally:
+        clear_sender_ctx()
 
 Without a sender context the default codec is used (Python UDF
 inlining on). The sender context only affects pickle / ``to_bytes``
 encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
 ``ctx``.
+
+The thread-local holds a strong reference to the installed
+:class:`SessionContext` until :func:`clear_sender_ctx` is called or
+the thread exits. Long-running driver threads that install a sender
+context once and never clear it will retain that session for the
+lifetime of the thread; pair :func:`set_sender_ctx` with
+:func:`clear_sender_ctx` (e.g. in a ``try``/``finally``) when the
+sender context is only needed for a bounded scope.
 """
 
 from __future__ import annotations

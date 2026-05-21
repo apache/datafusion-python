@@ -1770,7 +1770,7 @@ class SessionContext:
         new.ctx = new_internal
         return new
 
-    def with_python_udf_inlining(self, enabled: bool) -> SessionContext:
+    def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
         """Control whether Python UDFs are embedded in serialized expressions.
 
         When ``enabled=True`` (the default), serialized expressions carry
