@@ -98,7 +98,7 @@ runs:
       with:
         target: ${{ inputs.target }}
         manylinux: ${{ inputs.manylinux }}
-        maturin-version: "1.8.1"
+        maturin-version: "1.13.3"
         args: ${{ steps.args.outputs.args }}
         rustup-components: rust-std
 
@@ -107,4 +107,4 @@ runs:
       shell: bash
       # Use `uvx` so maturin is available even when `uv sync` was skipped
       # (free-threaded matrix entries don't pre-populate the project venv).
-      run: uvx maturin@1.8.1 build ${{ steps.args.outputs.args }}
+      run: uvx maturin@1.13.3 build ${{ steps.args.outputs.args }}
