@@ -247,21 +247,16 @@ impl PythonLogicalCodec {
         &self.inner
     }
 
-    /// Whether Python-defined UDFs are encoded inline (and decoded
-    /// from cloudpickle blobs). Defaults to `true`. Set to `false`
-    /// when the codec sits on a session that must produce
-    /// cross-language wire bytes, or reject `cloudpickle.loads` on
-    /// untrusted `from_bytes` input.
+    /// Toggle inline encoding of Python UDFs. See
+    /// `SessionContext.with_python_udf_inlining` (Python) for full
+    /// behavior and use cases.
     ///
     /// Security scope: strict mode (`false`) narrows only the codec
     /// layer — it stops `Expr::from_bytes` from invoking
     /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
     /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
     /// `pickle.loads` on untrusted input as unsafe regardless of this
-    /// setting. See Python's [pickle module security warning][1] for
-    /// why `pickle.loads` is unsafe in general.
-    ///
-    /// [1]: https://docs.python.org/3/library/pickle.html#module-pickle
+    /// setting.
     pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
         self.python_udf_inlining = enabled;
         self
