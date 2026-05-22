@@ -452,10 +452,13 @@ class Expr:  # noqa: PLW1641
         When ``ctx`` is ``None``, the default codec is used (Python UDF
         inlining on, no user-installed extension codec).
 
-        Built-in functions and Python UDFs (scalar, aggregate, window)
-        travel inside the returned bytes; the worker does not need to
-        pre-register them. UDFs imported via the FFI capsule protocol
-        travel by name only and must be registered on the worker.
+        Built-in functions travel inside the returned bytes. Python UDFs
+        (scalar, aggregate, window) also inline by default, so the worker
+        does not need to pre-register them; when the encoding session has
+        :meth:`SessionContext.with_python_udf_inlining` set to ``False``,
+        Python UDFs travel by name only and must be registered on the
+        worker. UDFs imported via the FFI capsule protocol always travel
+        by name only and must be registered on the worker.
 
         .. warning:: Security
             Bytes returned here may embed a cloudpickled Python
