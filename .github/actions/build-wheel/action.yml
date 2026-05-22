@@ -67,7 +67,23 @@ runs:
           BUILD_ARGS="--features ${FEATURES}"
         else
           # Free-threaded build: disable abi3, force mimalloc back in, pin interpreter.
-          BUILD_ARGS="--no-default-features --features mimalloc,${FEATURES} --interpreter python${TAG}"
+          if [ "${RUNNER_OS:-}" = "Windows" ]; then
+            # Windows free-threaded builds ship as `python.exe` (no `tN`
+            # suffix). Resolve sys.executable so the path is independent of
+            # PATH ordering, and assert the interpreter is actually
+            # free-threaded before we hand the wheel off.
+            INTERP=$(python -c 'import sys; print(sys.executable)')
+            python -c "import sysconfig, sys; \
+              v = sysconfig.get_config_var('Py_GIL_DISABLED'); \
+              sys.exit(0 if v == 1 else f'expected free-threaded interpreter, got Py_GIL_DISABLED={v!r} at {sys.executable}')"
+            # Backslashes in BUILD_ARGS would be parsed as escapes when the
+            # output is re-expanded in the next step; use forward slashes
+            # (maturin/Rust accept them on Windows).
+            INTERP="${INTERP//\\//}"
+          else
+            INTERP="python${TAG}"
+          fi
+          BUILD_ARGS="--no-default-features --features mimalloc,${FEATURES} --interpreter ${INTERP}"
         fi
         if [ "${{ inputs.build-mode }}" = "release" ]; then
           BUILD_ARGS="--release --strip ${BUILD_ARGS}"
