@@ -135,7 +135,7 @@ jobs:
   # ============================================
   build-manylinux-x86_64:
     needs: [generate-license, lint-rust, lint-python]
-    name: ManyLinux x86_64 (${{ matrix.python-tag }})
+    name: Linux x86_64 (${{ matrix.python-tag }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -214,7 +214,7 @@ jobs:
   # ============================================
   build-manylinux-aarch64:
     needs: [generate-license, lint-rust, lint-python]
-    name: ManyLinux arm64 (${{ matrix.python-tag }})
+    name: Linux arm64 (${{ matrix.python-tag }})
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
@@ -276,7 +276,7 @@ jobs:
   # ============================================
   build-python-mac-win:
     needs: [generate-license, lint-rust, lint-python]
-    name: macOS arm64 & Windows (${{ matrix.python-tag }} / ${{ matrix.os }})
+    name: ${{ matrix.os == 'macos-latest' && 'macOS arm64' || 'Windows x86_64' }} (${{ matrix.python-tag }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
