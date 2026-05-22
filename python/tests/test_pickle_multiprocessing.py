@@ -27,12 +27,10 @@ its real name in worker subprocesses.
 
 from __future__ import annotations
 
-import contextlib
 import functools
 import multiprocessing as mp
 import pickle
 import sys
-import threading
 from pathlib import Path
 
 import pytest
@@ -55,27 +53,6 @@ from . import _pickle_multiprocessing_helpers as helpers
 _TESTS_PARENT = str(Path(__file__).resolve().parent.parent)
 if _TESTS_PARENT not in sys.path:
     sys.path.append(_TESTS_PARENT)
-
-
-@contextlib.contextmanager
-def _snapshot_on_hang(label: str, fire_after_seconds: float = 30.0):
-    """Schedule a process-state snapshot ``fire_after_seconds`` from now.
-
-    Cancelled if the ``with`` block exits before then. Used to capture
-    worker state mid-hang — fork tests return in well under the delay,
-    so the timer only fires when something is actually stuck.
-    """
-    timer = threading.Timer(
-        fire_after_seconds,
-        helpers.snapshot_processes,
-        args=(label,),
-    )
-    timer.daemon = True
-    timer.start()
-    try:
-        yield
-    finally:
-        timer.cancel()
 
 
 @functools.cache
@@ -120,19 +97,12 @@ START_METHODS = [
 @pytest.mark.timeout(120)
 def test_builtin_pickle_via_pool(start_method):
     """Built-in expressions round-trip in every start method."""
-    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: enter")
     expr = col("a") + lit(1)
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: creating Pool")
-    with (
-        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
-        _snapshot_on_hang(f"builtin[{start_method}]"),
-    ):
-        helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool ready, map")
+    with ctx.Pool(processes=2) as pool:
         results = pool.map(helpers.unpickle_and_describe, [blob, blob, blob])
-    helpers._diag(f"test_builtin_pickle_via_pool[{start_method}]: pool closed")
 
     assert all(r == expr.canonical_name() for r in results)
 
@@ -145,25 +115,16 @@ def test_udf_pickle_self_contained(start_method):
     Workers start with no UDF registered. The Rust-side ``PythonUDFCodec``
     reconstructs the UDF from bytes embedded in the pickle blob.
     """
-    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: enter")
     udf_obj = helpers.make_double_udf()
     expr = udf_obj(col("a"))
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: creating Pool")
-    with (
-        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
-        _snapshot_on_hang(f"udf[{start_method}]"),
-    ):
-        helpers._diag(
-            f"test_udf_pickle_self_contained[{start_method}]: pool ready, starmap"
-        )
+    with ctx.Pool(processes=2) as pool:
         results = pool.starmap(
             helpers.unpickle_and_evaluate,
             [(blob, [1, 2, 3]), (blob, [10, 20, 30])],
         )
-    helpers._diag(f"test_udf_pickle_self_contained[{start_method}]: pool closed")
 
     assert results[0] == [2, 4, 6]
     assert results[1] == [20, 40, 60]
@@ -173,21 +134,12 @@ def test_udf_pickle_self_contained(start_method):
 @pytest.mark.timeout(120)
 def test_closure_capturing_udf_via_pool(start_method):
     """Cloudpickle preserves closure state across the codec boundary."""
-    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: enter")
     udf_obj = helpers.make_times_seven_udf()
     expr = udf_obj(col("a"))
     blob = pickle.dumps(expr)
 
     ctx = mp.get_context(start_method)
-    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: creating Pool")
-    with (
-        ctx.Pool(processes=2, initializer=helpers.diag_init) as pool,
-        _snapshot_on_hang(f"closure[{start_method}]"),
-    ):
-        helpers._diag(
-            f"test_closure_capturing_udf_via_pool[{start_method}]: pool ready, apply"
-        )
+    with ctx.Pool(processes=2) as pool:
         result = pool.apply(helpers.unpickle_and_evaluate, (blob, [1, 2, 3]))
-    helpers._diag(f"test_closure_capturing_udf_via_pool[{start_method}]: pool closed")
 
     assert result == [7, 14, 21]
