@@ -33,11 +33,24 @@ import multiprocessing as mp
 import pickle
 import sys
 import threading
+from pathlib import Path
 
 import pytest
 from datafusion import col, lit
 
 from . import _pickle_multiprocessing_helpers as helpers
+
+# `pytest --import-mode=importlib` (used in CI) does not prepend the test
+# parent directory to `sys.path`; pytest loads `tests` via its own importlib
+# hook. multiprocessing forkserver / spawn workers receive only the parent's
+# `sys.path` snapshot, not pytest's hook, so they fail to import
+# `tests._pickle_multiprocessing_helpers` with `ModuleNotFoundError: No module
+# named 'tests'`. Ensure the parent directory of the `tests` package is on
+# `sys.path` so workers can resolve it the standard way. Fork start method is
+# unaffected (inherits the already-imported module object).
+_TESTS_PARENT = str(Path(__file__).resolve().parent.parent)
+if _TESTS_PARENT not in sys.path:
+    sys.path.insert(0, _TESTS_PARENT)
 
 
 @contextlib.contextmanager
