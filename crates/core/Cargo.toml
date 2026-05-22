@@ -40,7 +40,10 @@ tokio = { workspace = true, features = [
   "rt-multi-thread",
   "sync",
 ] }
-pyo3 = { workspace = true, features = ["extension-module", "generate-import-lib"] }
+pyo3 = { workspace = true, features = [
+  "extension-module",
+  "generate-import-lib",
+] }
 pyo3-async-runtimes = { workspace = true, features = ["tokio-runtime"] }
 pyo3-log = { workspace = true }
 chrono = { workspace = true }
