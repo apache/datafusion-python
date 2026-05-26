@@ -568,10 +568,10 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 // =============================================================================
 
 /// Encode a Python scalar UDF inline if `node` is one. Returns
-/// `Ok(true)` when the payload (`DFPYUDF1` prefix + cloudpickled
-/// tuple) was written and the caller should skip its inner codec.
-/// Returns `Ok(false)` for any non-Python UDF, signalling the caller
-/// to delegate to its `inner`.
+/// `Ok(true)` when the payload (`DFPYUDF` family prefix, version byte,
+/// cloudpickled tuple) was written and the caller should skip its
+/// inner codec. Returns `Ok(false)` for any non-Python UDF, signalling
+/// the caller to delegate to its `inner`.
 pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<bool> {
     let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionScalarUDF>() else {
         return Ok(false);
@@ -811,7 +811,7 @@ fn read_framed_payload<'a>(
 
 /// Cached handle to the `cloudpickle` module.
 ///
-/// Six encode/decode helpers below would otherwise re-resolve the
+/// The encode/decode helpers above would otherwise re-resolve the
 /// module on every call. `py.import` is backed by `sys.modules` and
 /// therefore cheap, but each call still walks a dict and re-binds the
 /// result; a plan with many Python UDFs pays that cost per UDF.
