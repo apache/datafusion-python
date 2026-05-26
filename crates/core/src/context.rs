@@ -1072,18 +1072,27 @@ impl PySessionContext {
         self.ctx.deregister_udwf(name);
     }
 
-    pub fn udf(&self, name: &str) -> PyDataFusionResult<PyScalarUDF> {
-        let function = (*self.ctx.udf(name)?).clone();
+    pub fn udf(&self, name: &str) -> PyResult<PyScalarUDF> {
+        if !self.ctx.udfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDF named '{name}'")));
+        }
+        let function = (*self.ctx.udf(name).map_err(py_datafusion_err)?).clone();
         Ok(PyScalarUDF { function })
     }
 
-    pub fn udaf(&self, name: &str) -> PyDataFusionResult<PyAggregateUDF> {
-        let function = (*self.ctx.udaf(name)?).clone();
+    pub fn udaf(&self, name: &str) -> PyResult<PyAggregateUDF> {
+        if !self.ctx.udafs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDAF named '{name}'")));
+        }
+        let function = (*self.ctx.udaf(name).map_err(py_datafusion_err)?).clone();
         Ok(PyAggregateUDF { function })
     }
 
-    pub fn udwf(&self, name: &str) -> PyDataFusionResult<PyWindowUDF> {
-        let function = (*self.ctx.udwf(name)?).clone();
+    pub fn udwf(&self, name: &str) -> PyResult<PyWindowUDF> {
+        if !self.ctx.udwfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDWF named '{name}'")));
+        }
+        let function = (*self.ctx.udwf(name).map_err(py_datafusion_err)?).clone();
         Ok(PyWindowUDF { function })
     }
 

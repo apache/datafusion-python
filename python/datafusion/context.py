@@ -1323,7 +1323,7 @@ class SessionContext:
             name: Name of the registered scalar UDF.
 
         Raises:
-            Exception: If no scalar UDF is registered under ``name``.
+            KeyError: If no scalar UDF is registered under ``name``.
 
         Examples:
             Register a UDF, then look it up by name and use it in the
@@ -1371,7 +1371,7 @@ class SessionContext:
             name: Name of the registered aggregate UDF.
 
         Raises:
-            Exception: If no aggregate UDF is registered under ``name``.
+            KeyError: If no aggregate UDF is registered under ``name``.
 
         Examples:
             Look up a built-in aggregate by name and use it in
@@ -1404,7 +1404,7 @@ class SessionContext:
             name: Name of the registered window UDF.
 
         Raises:
-            Exception: If no window UDF is registered under ``name``.
+            KeyError: If no window UDF is registered under ``name``.
 
         Examples:
             Look up a built-in window function by name and use it in

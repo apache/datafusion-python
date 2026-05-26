@@ -93,7 +93,7 @@ def test_udf_lookup(ctx, df) -> None:
     result = df_result.collect()[0].column(0)
     assert result == pa.array([False, False, True])
 
-    with pytest.raises(Exception, match="no UDF named"):
+    with pytest.raises(KeyError, match="no UDF named"):
         ctx.udf("does_not_exist")
 
 
@@ -133,7 +133,7 @@ def test_udaf_lookup_builtin(ctx, df) -> None:
     result = df.aggregate([], [sum_fn(column("a")).alias("total")]).collect()
     assert result[0].column(0).to_pylist() == [6]
 
-    with pytest.raises(Exception, match="no UDAF named"):
+    with pytest.raises(KeyError, match="no UDAF named"):
         ctx.udaf("does_not_exist")
 
 
@@ -143,7 +143,7 @@ def test_udwf_lookup_builtin(ctx, df) -> None:
     result = df.select(column("a"), rn().alias("rn")).collect()
     assert result[0].column(1).to_pylist() == [1, 2, 3]
 
-    with pytest.raises(Exception, match="no UDWF named"):
+    with pytest.raises(KeyError, match="no UDWF named"):
         ctx.udwf("does_not_exist")
 
 
