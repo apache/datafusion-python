@@ -1033,6 +1033,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_batch">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.read_batch()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_batches">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.read_batches()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_csv">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1334,6 +1352,60 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.table_provider()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udaf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udaf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udafs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udafs()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udfs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udfs()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udwf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwfs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.udwfs()
         </span>
        </code>
       </a>
@@ -2368,6 +2440,58 @@ a struct array.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.read_batch">
+<span class="sig-name descname"><span class="pre">read_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.RecordBatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.read_batch" title="Link to this definition">¶</a></dt>
+<dd><p>Return a <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> reading a single batch.</p>
+<p>Convenience wrapper around <a class="reference internal" href="#datafusion.context.SessionContext.read_batches" title="datafusion.context.SessionContext.read_batches"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_batches()</span></code></a> for the single-batch
+case. Unlike <a class="reference internal" href="#datafusion.context.SessionContext.register_batch" title="datafusion.context.SessionContext.register_batch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_batch()</span></code></a>, this does not register the
+batch as a named table; it returns an anonymous
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> – Record batch to wrap as a DataFrame.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">read_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.read_batches">
+<span class="sig-name descname"><span class="pre">read_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.RecordBatch</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.read_batches" title="Link to this definition">¶</a></dt>
+<dd><p>Return a <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> reading the given batches.</p>
+<p>All batches must share the same schema. Any iterable of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code> is accepted (list, tuple, generator);
+it is materialized into a list before being handed to the
+underlying Rust binding. Unlike <a class="reference internal" href="#datafusion.context.SessionContext.register_record_batches" title="datafusion.context.SessionContext.register_record_batches"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_record_batches()</span></code></a>,
+this does not register the batches as a named table; it returns
+an anonymous <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batches</strong> – Record batches to wrap as a DataFrame.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b2</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">read_batches</span><span class="p">([</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3, 4]}</span>
+</pre></div>
+</div>
+<p>A generator works too:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">read_batches</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, 2, 3, 4]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.read_csv">
 <span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_MAX_INFER_SCHEMA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../options/index.html#datafusion.options.CsvReadOptions" title="datafusion.options.CsvReadOptions"><span class="pre">datafusion.options.CsvReadOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.read_csv" title="Link to this definition">¶</a></dt>
 <dd><p>Read a CSV data source.</p>
@@ -2959,19 +3083,163 @@ after parsing.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udaf">
+<span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><span class="pre">datafusion.user_defined.AggregateUDF</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udaf" title="Link to this definition">¶</a></dt>
+<dd><p>Look up a registered aggregate UDF by name.</p>
+<p>Returns the same <code class="docutils literal notranslate"><span class="pre">AggregateUDF</span></code> wrapper that <a class="reference internal" href="#datafusion.context.SessionContext.register_udaf" title="datafusion.context.SessionContext.register_udaf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_udaf()</span></code></a>
+accepts. Built-in aggregate functions such as <code class="docutils literal notranslate"><span class="pre">sum</span></code> or <code class="docutils literal notranslate"><span class="pre">avg</span></code> are
+also discoverable through this lookup. See <a class="reference internal" href="#datafusion.context.SessionContext.udf" title="datafusion.context.SessionContext.udf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">udf()</span></code></a> for a worked
+late-binding example; the pattern is identical for aggregates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the registered aggregate UDF.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If no aggregate UDF is registered under <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Look up a built-in aggregate by name and use it in
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">aggregate()</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sum_fn</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udaf</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([],</span> <span class="p">[</span><span class="n">sum_fn</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;total&#39;: [6]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udafs">
+<span class="sig-name descname"><span class="pre">udafs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udafs" title="Link to this definition">¶</a></dt>
+<dd><p>Return the sorted names of all registered aggregate UDFs.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;sum&quot;</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udafs</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udf">
+<span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">datafusion.user_defined.ScalarUDF</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udf" title="Link to this definition">¶</a></dt>
+<dd><p>Look up a registered scalar UDF by name.</p>
+<p>Returns the same <code class="docutils literal notranslate"><span class="pre">ScalarUDF</span></code> wrapper that <a class="reference internal" href="#datafusion.context.SessionContext.register_udf" title="datafusion.context.SessionContext.register_udf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_udf()</span></code></a>
+accepts, so it can be invoked as an expression in the DataFrame API
+or re-registered into a different <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.
+Built-in scalar functions from the session’s function registry are
+also looked up.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the registered scalar UDF.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If no scalar UDF is registered under <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Register a UDF, then look it up by name and use it in the
+DataFrame API:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nullcheck</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">is_null</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span>
+<span class="gp">... </span>    <span class="n">pa</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nullcheck&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">nullcheck</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fn</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="s2">&quot;nullcheck&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;is_null&#39;: [False, True, False]}</span>
+</pre></div>
+</div>
+<p>Late-binding: the function name can come from configuration
+rather than an imported symbol, which is useful when the set
+of UDFs is plugin-driven or chosen at runtime:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;null_check&quot;</span><span class="p">:</span> <span class="s2">&quot;nullcheck&quot;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fn</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;null_check&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;is_null&#39;: [False, True, False]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udfs">
+<span class="sig-name descname"><span class="pre">udfs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udfs" title="Link to this definition">¶</a></dt>
+<dd><p>Return the sorted names of all registered scalar UDFs.</p>
+<p>Includes both user-registered and built-in scalar functions. Pair
+with <a class="reference internal" href="#datafusion.context.SessionContext.udf" title="datafusion.context.SessionContext.udf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">udf()</span></code></a> to drive discovery, validation, or config-based
+dispatch.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;abs&quot;</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udfs</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udwf">
+<span class="sig-name descname"><span class="pre">udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">datafusion.user_defined.WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udwf" title="Link to this definition">¶</a></dt>
+<dd><p>Look up a registered window UDF by name.</p>
+<p>Returns the same <code class="docutils literal notranslate"><span class="pre">WindowUDF</span></code> wrapper that <a class="reference internal" href="#datafusion.context.SessionContext.register_udwf" title="datafusion.context.SessionContext.register_udwf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register_udwf()</span></code></a>
+accepts. Built-in window functions such as <code class="docutils literal notranslate"><span class="pre">row_number</span></code> or <code class="docutils literal notranslate"><span class="pre">rank</span></code>
+are also discoverable through this lookup. See <a class="reference internal" href="#datafusion.context.SessionContext.udf" title="datafusion.context.SessionContext.udf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">udf()</span></code></a> for a
+worked late-binding example; the pattern is identical for window
+functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the registered window UDF.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If no window UDF is registered under <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Look up a built-in window function by name and use it in
+<code class="docutils literal notranslate"><span class="pre">select</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rn</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udwf</span><span class="p">(</span><span class="s2">&quot;row_number&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">rn</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rn&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [10, 20, 30], &#39;rn&#39;: [1, 2, 3]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.udwfs">
+<span class="sig-name descname"><span class="pre">udwfs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.udwfs" title="Link to this definition">¶</a></dt>
+<dd><p>Return the sorted names of all registered window UDFs.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;row_number&quot;</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">udwfs</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.with_logical_extension_codec">
-<span class="sig-name descname"><span class="pre">with_logical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">with_logical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><span class="pre">datafusion.user_defined.LogicalExtensionCodecExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="Link to this definition">¶</a></dt>
 <dd><p>Create a new session context with specified codec.</p>
-<p>This only supports codecs that have been implemented using the
-FFI interface.</p>
+<p>Only FFI codecs are supported. Pass any object implementing
+<code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code> (see
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a>).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.with_physical_extension_codec">
-<span class="sig-name descname"><span class="pre">with_physical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_physical_extension_codec" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">with_physical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><span class="pre">datafusion.user_defined.PhysicalExtensionCodecExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_physical_extension_codec" title="Link to this definition">¶</a></dt>
 <dd><p>Create a new session context with the specified physical codec.</p>
-<p>This only supports codecs that have been implemented using the
-FFI interface.</p>
+<p>Only FFI codecs are supported. Pass any object implementing
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> (see
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable</span></code></a>).</p>
 </dd></dl>
 
 <dl class="py attribute">

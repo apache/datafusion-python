@@ -778,6 +778,54 @@ Module Contents
 
 
 
+   .. py:method:: read_batch(batch: pyarrow.RecordBatch) -> datafusion.dataframe.DataFrame
+
+      Return a :py:class:`~datafusion.DataFrame` reading a single batch.
+
+      Convenience wrapper around :py:meth:`read_batches` for the single-batch
+      case. Unlike :py:meth:`register_batch`, this does not register the
+      batch as a named table; it returns an anonymous
+      :py:class:`~datafusion.DataFrame` directly.
+
+      :param batch: Record batch to wrap as a DataFrame.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+      >>> ctx.read_batch(batch).to_pydict()
+      {'a': [1, 2, 3]}
+
+
+
+   .. py:method:: read_batches(batches: collections.abc.Iterable[pyarrow.RecordBatch]) -> datafusion.dataframe.DataFrame
+
+      Return a :py:class:`~datafusion.DataFrame` reading the given batches.
+
+      All batches must share the same schema. Any iterable of
+      :py:class:`pa.RecordBatch` is accepted (list, tuple, generator);
+      it is materialized into a list before being handed to the
+      underlying Rust binding. Unlike :py:meth:`register_record_batches`,
+      this does not register the batches as a named table; it returns
+      an anonymous :py:class:`~datafusion.DataFrame` directly.
+
+      :param batches: Record batches to wrap as a DataFrame.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+      >>> b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+      >>> ctx.read_batches([b1, b2]).to_pydict()
+      {'a': [1, 2, 3, 4]}
+
+      A generator works too:
+
+      >>> ctx.read_batches(b for b in [b1, b2]).to_pydict()
+      {'a': [1, 2, 3, 4]}
+
+
+
    .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = DEFAULT_MAX_INFER_SCHEMA, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None, options: datafusion.options.CsvReadOptions | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
@@ -1278,21 +1326,160 @@ Module Contents
 
 
 
-   .. py:method:: with_logical_extension_codec(codec: Any) -> SessionContext
+   .. py:method:: udaf(name: str) -> datafusion.user_defined.AggregateUDF
+
+      Look up a registered aggregate UDF by name.
+
+      Returns the same ``AggregateUDF`` wrapper that :py:meth:`register_udaf`
+      accepts. Built-in aggregate functions such as ``sum`` or ``avg`` are
+      also discoverable through this lookup. See :py:meth:`udf` for a worked
+      late-binding example; the pattern is identical for aggregates.
+
+      :param name: Name of the registered aggregate UDF.
+
+      :raises KeyError: If no aggregate UDF is registered under ``name``.
+
+      .. rubric:: Examples
+
+      Look up a built-in aggregate by name and use it in
+      :py:meth:`~datafusion.DataFrame.aggregate`:
+
+      >>> ctx = dfn.SessionContext()
+      >>> sum_fn = ctx.udaf("sum")
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.aggregate([], [sum_fn(col("a")).alias("total")]).to_pydict()
+      {'total': [6]}
+
+
+
+   .. py:method:: udafs() -> list[str]
+
+      Return the sorted names of all registered aggregate UDFs.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> "sum" in ctx.udafs()
+      True
+
+
+
+   .. py:method:: udf(name: str) -> datafusion.user_defined.ScalarUDF
+
+      Look up a registered scalar UDF by name.
+
+      Returns the same ``ScalarUDF`` wrapper that :py:meth:`register_udf`
+      accepts, so it can be invoked as an expression in the DataFrame API
+      or re-registered into a different :py:class:`SessionContext`.
+      Built-in scalar functions from the session's function registry are
+      also looked up.
+
+      :param name: Name of the registered scalar UDF.
+
+      :raises KeyError: If no scalar UDF is registered under ``name``.
+
+      .. rubric:: Examples
+
+      Register a UDF, then look it up by name and use it in the
+      DataFrame API:
+
+      >>> ctx = dfn.SessionContext()
+      >>> nullcheck = dfn.udf(
+      ...     lambda x: x.is_null(),
+      ...     [pa.int64()],
+      ...     pa.bool_(),
+      ...     volatility="immutable",
+      ...     name="nullcheck",
+      ... )
+      >>> ctx.register_udf(nullcheck)
+      >>> fn = ctx.udf("nullcheck")
+      >>> df = ctx.from_pydict({"a": [1, None, 3]})
+      >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+      {'is_null': [False, True, False]}
+
+      Late-binding: the function name can come from configuration
+      rather than an imported symbol, which is useful when the set
+      of UDFs is plugin-driven or chosen at runtime:
+
+      >>> config = {"null_check": "nullcheck"}
+      >>> fn = ctx.udf(config["null_check"])
+      >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+      {'is_null': [False, True, False]}
+
+
+
+   .. py:method:: udfs() -> list[str]
+
+      Return the sorted names of all registered scalar UDFs.
+
+      Includes both user-registered and built-in scalar functions. Pair
+      with :py:meth:`udf` to drive discovery, validation, or config-based
+      dispatch.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> "abs" in ctx.udfs()
+      True
+
+
+
+   .. py:method:: udwf(name: str) -> datafusion.user_defined.WindowUDF
+
+      Look up a registered window UDF by name.
+
+      Returns the same ``WindowUDF`` wrapper that :py:meth:`register_udwf`
+      accepts. Built-in window functions such as ``row_number`` or ``rank``
+      are also discoverable through this lookup. See :py:meth:`udf` for a
+      worked late-binding example; the pattern is identical for window
+      functions.
+
+      :param name: Name of the registered window UDF.
+
+      :raises KeyError: If no window UDF is registered under ``name``.
+
+      .. rubric:: Examples
+
+      Look up a built-in window function by name and use it in
+      ``select``:
+
+      >>> ctx = dfn.SessionContext()
+      >>> rn = ctx.udwf("row_number")
+      >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+      >>> df.select(col("a"), rn().alias("rn")).to_pydict()
+      {'a': [10, 20, 30], 'rn': [1, 2, 3]}
+
+
+
+   .. py:method:: udwfs() -> list[str]
+
+      Return the sorted names of all registered window UDFs.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> "row_number" in ctx.udwfs()
+      True
+
+
+
+   .. py:method:: with_logical_extension_codec(codec: datafusion.user_defined.LogicalExtensionCodecExportable | _typeshed.CapsuleType) -> SessionContext
 
       Create a new session context with specified codec.
 
-      This only supports codecs that have been implemented using the
-      FFI interface.
+      Only FFI codecs are supported. Pass any object implementing
+      ``__datafusion_logical_extension_codec__`` (see
+      :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
 
 
-   .. py:method:: with_physical_extension_codec(codec: Any) -> SessionContext
+   .. py:method:: with_physical_extension_codec(codec: datafusion.user_defined.PhysicalExtensionCodecExportable | _typeshed.CapsuleType) -> SessionContext
 
       Create a new session context with the specified physical codec.
 
-      This only supports codecs that have been implemented using the
-      FFI interface.
+      Only FFI codecs are supported. Pass any object implementing
+      ``__datafusion_physical_extension_codec__`` (see
+      :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
 
 

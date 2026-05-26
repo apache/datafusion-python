@@ -29,6 +29,8 @@ Classes
    datafusion.user_defined.Accumulator
    datafusion.user_defined.AggregateUDF
    datafusion.user_defined.AggregateUDFExportable
+   datafusion.user_defined.LogicalExtensionCodecExportable
+   datafusion.user_defined.PhysicalExtensionCodecExportable
    datafusion.user_defined.ScalarUDF
    datafusion.user_defined.ScalarUDFExportable
    datafusion.user_defined.TableFunction
@@ -130,6 +132,18 @@ Module Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Aggregate UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.AggregateUDF) -> AggregateUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udaf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 
@@ -270,6 +284,28 @@ Module Contents
    .. py:method:: __datafusion_aggregate_udf__() -> object
 
 
+.. py:class:: LogicalExtensionCodecExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
+
+
+   .. py:method:: __datafusion_logical_extension_codec__() -> object
+
+
+.. py:class:: PhysicalExtensionCodecExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
+
+
+   .. py:method:: __datafusion_physical_extension_codec__() -> object
+
+
 .. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: _R, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
@@ -294,6 +330,18 @@ Module Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Scalar UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.ScalarUDF) -> ScalarUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 
@@ -738,6 +786,18 @@ Module Contents
 
 
       Create a decorator for a WindowUDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.WindowUDF) -> WindowUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``WindowUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udwf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 

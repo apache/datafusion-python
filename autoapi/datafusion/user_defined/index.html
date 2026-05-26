@@ -521,6 +521,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF._from_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF._from_internal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.from_pycapsule">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -579,6 +588,46 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.LogicalExtensionCodecExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LogicalExtensionCodecExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.PhysicalExtensionCodecExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PhysicalExtensionCodecExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -601,6 +650,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          ScalarUDF.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF._from_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF._from_internal()
         </span>
        </code>
       </a>
@@ -913,6 +971,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._from_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._from_internal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._get_default_name">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1121,6 +1188,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.AggregateUDFExportable" title="datafusion.user_defined.AggregateUDFExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregateUDFExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_aggregate_udf__ PyCapsule.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a></p></td>
+<td><p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable</span></code></a></p></td>
+<td><p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code>.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a></p></td>
 <td><p>Class for performing scalar user-defined functions (UDF).</p></td>
 </tr>
@@ -1230,6 +1303,15 @@ occur during the evaluation of the dataframe.</p>
 <dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF.__repr__" title="Link to this definition">¶</a></dt>
 <dd><p>Print a string representation of the Aggregate UDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF._from_internal">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_from_internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">internal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.AggregateUDF</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><span class="pre">AggregateUDF</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF._from_internal" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap an already-constructed internal <code class="docutils literal notranslate"><span class="pre">AggregateUDF</span></code> handle.</p>
+<p>Used by <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.udaf()</span></code> to surface a function looked
+up from the session’s function registry without re-running
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1378,6 +1460,30 @@ passed to the constructor (which is ignored on the FFI path).</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.LogicalExtensionCodecExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">LogicalExtensionCodecExportable</span></span><a class="headerlink" href="#datafusion.user_defined.LogicalExtensionCodecExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__">
+<span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.PhysicalExtensionCodecExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">PhysicalExtensionCodecExportable</span></span><a class="headerlink" href="#datafusion.user_defined.PhysicalExtensionCodecExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__">
+<span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">ScalarUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Field</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF" title="Link to this definition">¶</a></dt>
 <dd><p>Class for performing scalar user-defined functions (UDF).</p>
@@ -1397,6 +1503,15 @@ occur during the evaluation of the dataframe.</p>
 <dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF.__repr__" title="Link to this definition">¶</a></dt>
 <dd><p>Print a string representation of the Scalar UDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF._from_internal">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_from_internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">internal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.ScalarUDF</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF._from_internal" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap an already-constructed internal <code class="docutils literal notranslate"><span class="pre">ScalarUDF</span></code> handle.</p>
+<p>Used by <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.udf()</span></code> to surface a function looked
+up from the session’s function registry without re-running
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1825,6 +1940,15 @@ occur during the evaluation of the dataframe.</p>
 <dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._create_window_udf_decorator">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_window_udf_decorator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._create_window_udf_decorator" title="Link to this definition">¶</a></dt>
 <dd><p>Create a decorator for a WindowUDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._from_internal">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_from_internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">internal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.WindowUDF</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._from_internal" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap an already-constructed internal <code class="docutils literal notranslate"><span class="pre">WindowUDF</span></code> handle.</p>
+<p>Used by <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.udwf()</span></code> to surface a function looked
+up from the session’s function registry without re-running
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

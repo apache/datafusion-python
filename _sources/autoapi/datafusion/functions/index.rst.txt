@@ -2508,26 +2508,33 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`gen_series`.
 
 
-.. py:function:: get_field(expr: datafusion.expr.Expr, name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: get_field(expr: datafusion.expr.Expr, *names: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
-   Extracts a field from a struct or map by name.
+   Extracts a (possibly nested) field from a struct or map by name.
 
-   When the field name is a static string, the bracket operator
-   ``expr["field"]`` is a convenient shorthand. Use ``get_field``
-   when the field name is a dynamic expression.
+   Pass one name for a single-level lookup, or several names to walk a path
+   of nested struct/map fields in a single ``get_field`` call. For a single
+   static-string name, ``expr["field"]`` is a convenient shorthand; use
+   ``get_field`` when the field name is a dynamic
+   :py:class:`~datafusion.expr.Expr` or when traversing multiple levels at
+   once.
+
+   :param expr: The struct or map expression to read from.
+   :param \*names: One or more field names (``str``) or expressions
+                   (:py:class:`~datafusion.expr.Expr`).
 
    .. rubric:: Examples
+
+   Single-level lookup:
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1], "b": [2]})
    >>> df = df.with_column(
    ...     "s",
-   ...     dfn.functions.named_struct(
-   ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
-   ...     ),
+   ...     F.named_struct([("x", dfn.col("a")), ("y", dfn.col("b"))]),
    ... )
    >>> result = df.select(
-   ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+   ...     F.get_field(dfn.col("s"), "x").alias("x_val")
    ... )
    >>> result.collect_column("x_val")[0].as_py()
    1
@@ -2536,6 +2543,18 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.col("s")["x"].alias("x_val")
+   ... )
+   >>> result.collect_column("x_val")[0].as_py()
+   1
+
+   Multi-level lookup:
+
+   >>> df = df.with_column(
+   ...     "outer",
+   ...     F.named_struct([("inner", dfn.col("s"))]),
+   ... )
+   >>> result = df.select(
+   ...     F.get_field(dfn.col("outer"), "inner", "x").alias("x_val")
    ... )
    >>> result.collect_column("x_val")[0].as_py()
    1

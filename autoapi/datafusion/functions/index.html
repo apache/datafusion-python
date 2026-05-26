@@ -3546,7 +3546,7 @@ for categorized catalogs of aggregate and window functions.</p>
 <td><p>Creates a list of values in the range between start and stop.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.get_field" title="datafusion.functions.get_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_field</span></code></a>(→ datafusion.expr.Expr)</p></td>
-<td><p>Extracts a field from a struct or map by name.</p></td>
+<td><p>Extracts a (possibly nested) field from a struct or map by name.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.greatest" title="datafusion.functions.greatest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">greatest</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the greatest value from a list of expressions.</p></td>
@@ -6486,22 +6486,33 @@ column names or expressions.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.get_field">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.get_field" title="Link to this definition">¶</a></dt>
-<dd><p>Extracts a field from a struct or map by name.</p>
-<p>When the field name is a static string, the bracket operator
-<code class="docutils literal notranslate"><span class="pre">expr[&quot;field&quot;]</span></code> is a convenient shorthand. Use <code class="docutils literal notranslate"><span class="pre">get_field</span></code>
-when the field name is a dynamic expression.</p>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.get_field" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts a (possibly nested) field from a struct or map by name.</p>
+<p>Pass one name for a single-level lookup, or several names to walk a path
+of nested struct/map fields in a single <code class="docutils literal notranslate"><span class="pre">get_field</span></code> call. For a single
+static-string name, <code class="docutils literal notranslate"><span class="pre">expr[&quot;field&quot;]</span></code> is a convenient shorthand; use
+<code class="docutils literal notranslate"><span class="pre">get_field</span></code> when the field name is a dynamic
+<a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> or when traversing multiple levels at
+once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> – The struct or map expression to read from.</p></li>
+<li><p><strong>*names</strong> – One or more field names (<code class="docutils literal notranslate"><span class="pre">str</span></code>) or expressions
+(<a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>).</p></li>
+</ul>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
+<p>Single-level lookup:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">]})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="s2">&quot;s&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">named_struct</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="p">[(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)),</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))]</span>
-<span class="gp">... </span>    <span class="p">),</span>
+<span class="gp">... </span>    <span class="n">F</span><span class="o">.</span><span class="n">named_struct</span><span class="p">([(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)),</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))]),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">F</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 <span class="go">1</span>
@@ -6510,6 +6521,18 @@ when the field name is a dynamic expression.</p>
 <p>Equivalent using bracket syntax:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<p>Multi-level lookup:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;outer&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">F</span><span class="o">.</span><span class="n">named_struct</span><span class="p">([(</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">))]),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">F</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="n">dfn</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;outer&quot;</span><span class="p">),</span> <span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;x_val&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 <span class="go">1</span>

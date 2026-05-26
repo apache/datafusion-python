@@ -216,6 +216,18 @@ Package Contents
 
 
 
+   .. py:method:: _from_internal(internal: datafusion._internal.AggregateUDF) -> AggregateUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udaf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
    .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
       :staticmethod:
 
@@ -2590,6 +2602,18 @@ Package Contents
 
 
 
+   .. py:method:: _from_internal(internal: datafusion._internal.ScalarUDF) -> ScalarUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
    .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
       :staticmethod:
 
@@ -3082,6 +3106,18 @@ Package Contents
 
 
       Create a decorator for a WindowUDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.WindowUDF) -> WindowUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``WindowUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udwf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 
