@@ -47,6 +47,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Python
+        id: setup-python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
@@ -80,7 +81,10 @@ jobs:
       - name: Install from pre-built wheels
         run: |
           set -x
-          uv venv --python ${{ matrix.python-version }}
+          # Use the interpreter installed by setup-python. Passing a bare
+          # version like "3.13t" lets uv fall back to a different system
+          # interpreter (e.g. 3.12), producing a wheel/ABI mismatch.
+          uv venv --python "${{ steps.setup-python.outputs.python-path }}"
           uv sync --dev --no-install-package datafusion
           WHEELS=$(find wheels/ -name "*.whl")
           if [ -n "$WHEELS" ]; then
