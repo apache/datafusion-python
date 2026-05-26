@@ -438,6 +438,15 @@
   </a>
   <ul class="visible nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ipc.clear_sender_ctx">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       clear_sender_ctx()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.ipc.clear_worker_ctx">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -447,10 +456,28 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ipc.get_sender_ctx">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       get_sender_ctx()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.ipc.get_worker_ctx">
      <code class="docutils literal notranslate">
       <span class="pre">
        get_worker_ctx()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ipc.set_sender_ctx">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       set_sender_ctx()
       </span>
      </code>
     </a>
@@ -489,7 +516,7 @@
                 
   <section id="module-datafusion.ipc">
 <span id="datafusion-ipc"></span><h1>datafusion.ipc<a class="headerlink" href="#module-datafusion.ipc" title="Link to this heading">¶</a></h1>
-<p>Worker-side setup for distributing DataFusion expressions.</p>
+<p>Driver- and worker-side setup for distributing DataFusion expressions.</p>
 <p>When a <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> is shipped to a worker process (e.g. through
 <code class="xref py py-func docutils literal notranslate"><span class="pre">multiprocessing.Pool()</span></code> or a Ray actor), the worker reconstructs the
 expression against a <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>. If the expression references
@@ -524,17 +551,54 @@ payloads are not portable across Python minor versions. See
 <a class="reference internal" href="../index.html#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.to_bytes()</span></code></a> for examples of what travels by
 value vs. by reference.</p>
 </div>
+<p>On the driver side, call <a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a> to control how
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> encodes expressions — for example, to apply
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> to every pickled
+expression on this thread:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">clear_sender_ctx</span><span class="p">,</span> <span class="n">set_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver_ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_python_udf_inlining</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">driver_ctx</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">blob</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">... </span><span class="k">finally</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Without a sender context the default codec is used (Python UDF
+inlining on). The sender context only affects pickle / <code class="docutils literal notranslate"><span class="pre">to_bytes</span></code>
+encoding; explicit <code class="docutils literal notranslate"><span class="pre">expr.to_bytes(ctx)</span></code> calls still use the supplied
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code>.</p>
+<p>The thread-local sender context holds a strong reference to the
+installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> until <a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">clear_sender_ctx()</span></code></a> is
+called or the thread exits. Long-running driver threads that install a sender
+context once and never clear it will retain that session for the
+lifetime of the thread; pair <a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a> with
+<a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">clear_sender_ctx()</span></code></a> (e.g. in a <code class="docutils literal notranslate"><span class="pre">try</span></code>/<code class="docutils literal notranslate"><span class="pre">finally</span></code>) when the
+sender context is only needed for a bounded scope.</p>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.clear_worker_ctx" title="datafusion.ipc.clear_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_worker_ctx</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_sender_ctx</span></code></a>(→ None)</p></td>
+<td><p>Remove this driver's installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.clear_worker_ctx" title="datafusion.ipc.clear_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_worker_ctx</span></code></a>(→ None)</p></td>
 <td><p>Remove this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.get_sender_ctx" title="datafusion.ipc.get_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sender_ctx</span></code></a>(→ datafusion.context.SessionContext | None)</p></td>
+<td><p>Return this driver's installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.get_worker_ctx" title="datafusion.ipc.get_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_worker_ctx</span></code></a>(→ datafusion.context.SessionContext | None)</p></td>
 <td><p>Return this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_worker_ctx</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_sender_ctx</span></code></a>(→ None)</p></td>
+<td><p>Install this driver's <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for outbound pickles.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_worker_ctx</span></code></a>(→ None)</p></td>
 <td><p>Install this worker's <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for shipped expressions.</p></td>
 </tr>
 </tbody>
@@ -542,6 +606,25 @@ value vs. by reference.</p>
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.clear_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">clear_sender_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.clear_sender_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Remove this driver’s installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<p>After clearing, pickled expressions fall back to the default codec
+(Python UDF inlining on).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">set_sender_ctx</span><span class="p">,</span> <span class="n">clear_sender_ctx</span><span class="p">,</span> <span class="n">get_sender_ctx</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.ipc.clear_worker_ctx">
 <span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">clear_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.clear_worker_ctx" title="Link to this definition">¶</a></dt>
@@ -562,6 +645,19 @@ capsule protocol must be registered on the global context to resolve.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.get_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">get_sender_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.get_sender_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Return this driver’s installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sender_ctx</span><span class="p">,</span> <span class="n">clear_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.ipc.get_worker_ctx">
 <span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">get_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.get_worker_ctx" title="Link to this definition">¶</a></dt>
 <dd><p>Return this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
@@ -569,6 +665,31 @@ capsule protocol must be registered on the global context to resolve.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.set_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">set_sender_ctx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.set_sender_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>Install this driver’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for outbound pickles.</p>
+<p>Controls how <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> encodes <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> instances on
+this thread. The most useful application is propagating a session
+configured with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> so the toggle takes
+effect through pickle (which otherwise calls
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> with no context and uses the default codec).</p>
+<p>Idempotent: overwrites any previous value. Stored in a thread-local
+slot, so worker threads on the driver may install their own contexts.
+Does not affect <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> calls that pass an explicit
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> — those continue to use the supplied context.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_sender_ctx</span><span class="p">,</span> <span class="n">get_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_python_udf_inlining</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="n">driver</span>
 <span class="go">True</span>
 </pre></div>
 </div>

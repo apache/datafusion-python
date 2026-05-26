@@ -1483,6 +1483,63 @@ Module Contents
 
 
 
+   .. py:method:: with_python_udf_inlining(*, enabled: bool) -> SessionContext
+
+      Control whether Python UDFs are embedded in serialized expressions.
+
+      ``enabled`` is keyword-only and required: callers must pick a
+      mode explicitly. Fresh sessions inline UDFs (``enabled=True``
+      behavior) until this method overrides the toggle.
+
+      With ``enabled=True``, serialized expressions carry the Python
+      code for any scalar, aggregate, or window UDFs they reference.
+      The receiver rebuilds the UDFs from those bytes and does not
+      need to register them first.
+
+      With ``enabled=False``, serialized expressions store only the
+      UDF names. This has two uses:
+
+      * **Cross-language portability.** The bytes can be decoded by a
+        non-Python receiver, which must already have UDFs registered
+        under matching names.
+      * **Safer deserialization.** :meth:`Expr.from_bytes` will refuse
+        to rebuild Python UDFs rather than call ``cloudpickle.loads``
+        on untrusted input.
+
+      The setting affects :meth:`Expr.to_bytes` and
+      :meth:`Expr.from_bytes` whenever this session is passed as the
+      ``ctx`` argument. :func:`pickle.dumps` and :func:`pickle.loads`
+      do not pass a context, so to apply the setting through pickle,
+      register this session with
+      :func:`datafusion.ipc.set_sender_ctx` on the sender and
+      :func:`datafusion.ipc.set_worker_ctx` on the receiver.
+
+      .. warning:: Security
+          This setting narrows only :meth:`Expr.from_bytes`. Calling
+          :func:`pickle.loads` on untrusted bytes remains unsafe
+          regardless of the toggle.
+
+      Returns a new :class:`SessionContext` with the toggle applied;
+      the original session is unchanged.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionContext, Expr, col, udf
+      >>> ctx = SessionContext()
+      >>> identity = udf(lambda a: a, [pa.int64()], pa.int64(),
+      ...                volatility="immutable", name="identity_demo")
+      >>> ctx.register_udf(identity)
+      >>> blob = identity(col("x")).to_bytes(ctx)
+      >>> strict = SessionContext().with_python_udf_inlining(enabled=False)
+      >>> try:
+      ...     Expr.from_bytes(blob, strict)
+      ... except Exception as e:
+      ...     print("Refusing to deserialize" in str(e))
+      True
+
+
+
    .. py:attribute:: ctx
 
 

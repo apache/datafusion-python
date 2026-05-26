@@ -1429,6 +1429,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_python_udf_inlining">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.with_python_udf_inlining()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.ctx">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -3240,6 +3249,61 @@ functions.</p>
 <p>Only FFI codecs are supported. Pass any object implementing
 <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> (see
 <a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.with_python_udf_inlining">
+<span class="sig-name descname"><span class="pre">with_python_udf_inlining</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_python_udf_inlining" title="Link to this definition">¶</a></dt>
+<dd><p>Control whether Python UDFs are embedded in serialized expressions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> is keyword-only and required: callers must pick a
+mode explicitly. Fresh sessions inline UDFs (<code class="docutils literal notranslate"><span class="pre">enabled=True</span></code>
+behavior) until this method overrides the toggle.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">enabled=True</span></code>, serialized expressions carry the Python
+code for any scalar, aggregate, or window UDFs they reference.
+The receiver rebuilds the UDFs from those bytes and does not
+need to register them first.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">enabled=False</span></code>, serialized expressions store only the
+UDF names. This has two uses:</p>
+<ul class="simple">
+<li><p><strong>Cross-language portability.</strong> The bytes can be decoded by a
+non-Python receiver, which must already have UDFs registered
+under matching names.</p></li>
+<li><p><strong>Safer deserialization.</strong> <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code> will refuse
+to rebuild Python UDFs rather than call <code class="docutils literal notranslate"><span class="pre">cloudpickle.loads</span></code>
+on untrusted input.</p></li>
+</ul>
+<p>The setting affects <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code> whenever this session is passed as the
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> argument. <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code>
+do not pass a context, so to apply the setting through pickle,
+register this session with
+<a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> on the sender and
+<a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> on the receiver.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Security
+This setting narrows only <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code>. Calling
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> on untrusted bytes remains unsafe
+regardless of the toggle.</p>
+</div>
+<p>Returns a new <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> with the toggle applied;
+the original session is unchanged.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">udf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">identity</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span>
+<span class="gp">... </span>               <span class="n">volatility</span><span class="o">=</span><span class="s2">&quot;immutable&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;identity_demo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">identity</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span> <span class="o">=</span> <span class="n">identity</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">strict</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_python_udf_inlining</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">Expr</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">strict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Refusing to deserialize&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py attribute">

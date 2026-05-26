@@ -3205,6 +3205,12 @@ details on what travels by value vs. by reference.</p>
 <span class="go">&#39;a * Int64(2)&#39;</span>
 </pre></div>
 </div>
+<p>The encoding side honors a driver-side sender context installed
+via <a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> — that is how
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> propagates
+through <code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>. The sender context is read by
+<code class="docutils literal notranslate"><span class="pre">__reduce__</span></code>, so <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code>
+— which also go through <code class="docutils literal notranslate"><span class="pre">__reduce__</span></code> — pick it up too.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3550,7 +3556,9 @@ type of expression, an error will be generated when <code class="docutils litera
 <dd><p>Reconstruct an expression from serialized bytes.</p>
 <p>Accepts output of <a class="reference internal" href="#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> or <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code>.
 <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is the <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> used to resolve any
-function references that travel by name (e.g. FFI UDFs). When
+function references that travel by name (e.g. FFI UDFs, or
+Python UDFs sent with inlining disabled via
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code>). When
 <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> the worker context installed via
 <a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> is consulted; if no worker
 context is installed, the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> is used
@@ -3914,12 +3922,17 @@ UTF8View literal, like in:
 <p>Use this — or <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> — to send an expression to a
 worker process for distributed evaluation.</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through that session’s
-installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code>. When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is
-<code class="docutils literal notranslate"><span class="pre">None</span></code>, the default codec is used.</p>
-<p>Built-in functions and Python UDFs (scalar, aggregate, window)
-travel inside the returned bytes; the worker does not need to
-pre-register them. UDFs imported via the FFI capsule protocol
-travel by name only and must be registered on the worker.</p>
+installed <code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> (so settings like
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> take effect).
+When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, the default codec is used (Python UDF
+inlining on, no user-installed extension codec).</p>
+<p>Built-in functions travel inside the returned bytes. Python UDFs
+(scalar, aggregate, window) also inline by default, so the worker
+does not need to pre-register them; when the encoding session has
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> set to <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+Python UDFs travel by name only and must be registered on the
+worker. UDFs imported via the FFI capsule protocol always travel
+by name only and must be registered on the worker.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Security
