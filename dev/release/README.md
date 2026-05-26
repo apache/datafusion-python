@@ -75,6 +75,7 @@ We maintain a `CHANGELOG.md` so our users know what has been changed between rel
 The changelog is generated using a Python script:
 
 ```bash
+$ uv sync --group release
 $ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py 52.0.0 HEAD 53.0.0 > dev/changelog/53.0.0.md
 ```
 

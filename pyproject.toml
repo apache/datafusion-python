@@ -202,12 +202,17 @@ dev = [
   "numpy>=2.3.2;python_version>='3.14'",
   "pre-commit>=4.3.0",
   "pyarrow>=19.0.0",
-  "pygithub==2.5.0",
   "pytest-asyncio>=0.23.3",
   "pytest>=7.4.4",
   "pyyaml>=6.0.3",
   "ruff>=0.15.1",
   "toml>=0.10.2",
+]
+# Release tooling only. Kept out of `dev` because pygithub pulls in
+# cryptography, which ships no free-threaded wheel and fails to build
+# from sdist under free-threaded interpreters (PyO3 < 3.14 support).
+release = [
+  "pygithub==2.5.0",
 ]
 docs = [
   "ipython>=8.12.3",

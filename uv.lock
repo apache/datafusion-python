@@ -340,7 +340,6 @@ dev = [
     { name = "numpy", version = "2.3.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.14'" },
     { name = "pre-commit" },
     { name = "pyarrow" },
-    { name = "pygithub" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pyyaml" },
@@ -357,6 +356,9 @@ docs = [
     { name = "setuptools" },
     { name = "sphinx" },
     { name = "sphinx-autoapi" },
+]
+release = [
+    { name = "pygithub" },
 ]
 
 [package.metadata]
@@ -377,7 +379,6 @@ dev = [
     { name = "numpy", marker = "python_full_version >= '3.14'", specifier = ">=2.3.2" },
     { name = "pre-commit", specifier = ">=4.3.0" },
     { name = "pyarrow", specifier = ">=19.0.0" },
-    { name = "pygithub", specifier = "==2.5.0" },
     { name = "pytest", specifier = ">=7.4.4" },
     { name = "pytest-asyncio", specifier = ">=0.23.3" },
     { name = "pyyaml", specifier = ">=6.0.3" },
@@ -395,6 +396,7 @@ docs = [
     { name = "sphinx", specifier = ">=7.1.2" },
     { name = "sphinx-autoapi", specifier = ">=3.4.0" },
 ]
+release = [{ name = "pygithub", specifier = "==2.5.0" }]
 
 [[package]]
 name = "decorator"
