@@ -920,6 +920,17 @@ def test_read_batches_concatenates(ctx):
     assert df.to_pydict() == {"a": [1, 2, 3, 4]}
 
 
+def test_read_batches_accepts_iterable(ctx):
+    b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+    b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+    # Generator: ensures non-list iterables are materialized before FFI.
+    df = ctx.read_batches(b for b in (b1, b2))
+    assert df.to_pydict() == {"a": [1, 2, 3, 4]}
+    # Tuple: same.
+    df = ctx.read_batches((b1, b2))
+    assert df.to_pydict() == {"a": [1, 2, 3, 4]}
+
+
 def test_create_sql_options():
     SQLOptions()
 

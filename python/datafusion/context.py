@@ -82,7 +82,7 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
@@ -981,13 +981,15 @@ class SessionContext:
         """
         return self.read_batches([batch])
 
-    def read_batches(self, batches: list[pa.RecordBatch]) -> DataFrame:
+    def read_batches(self, batches: Iterable[pa.RecordBatch]) -> DataFrame:
         """Return a :py:class:`~datafusion.DataFrame` reading the given batches.
 
-        All batches must share the same schema. Unlike
-        :py:meth:`register_record_batches`, this does not register the batches
-        as a named table; it returns an anonymous
-        :py:class:`~datafusion.DataFrame` directly.
+        All batches must share the same schema. Any iterable of
+        :py:class:`pa.RecordBatch` is accepted (list, tuple, generator);
+        it is materialized into a list before being handed to the
+        underlying Rust binding. Unlike :py:meth:`register_record_batches`,
+        this does not register the batches as a named table; it returns
+        an anonymous :py:class:`~datafusion.DataFrame` directly.
 
         Args:
             batches: Record batches to wrap as a DataFrame.
@@ -998,8 +1000,13 @@ class SessionContext:
             >>> b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
             >>> ctx.read_batches([b1, b2]).to_pydict()
             {'a': [1, 2, 3, 4]}
+
+            A generator works too:
+
+            >>> ctx.read_batches(b for b in [b1, b2]).to_pydict()
+            {'a': [1, 2, 3, 4]}
         """
-        return DataFrame(self.ctx.read_batches(batches))
+        return DataFrame(self.ctx.read_batches(list(batches)))
 
     def register_parquet(
         self,
