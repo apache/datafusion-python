@@ -2727,24 +2727,32 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     return Expr(f.arrow_metadata(expr.expr, key.expr))
 
 
-def get_field(expr: Expr, name: Expr | str) -> Expr:
-    """Extracts a field from a struct or map by name.
+def get_field(expr: Expr, *names: Expr | str) -> Expr:
+    """Extracts a (possibly nested) field from a struct or map by name.
 
-    When the field name is a static string, the bracket operator
-    ``expr["field"]`` is a convenient shorthand. Use ``get_field``
-    when the field name is a dynamic expression.
+    Pass one name for a single-level lookup, or several names to walk a path
+    of nested struct/map fields in a single ``get_field`` call. For a single
+    static-string name, ``expr["field"]`` is a convenient shorthand; use
+    ``get_field`` when the field name is a dynamic
+    :py:class:`~datafusion.expr.Expr` or when traversing multiple levels at
+    once.
+
+    Args:
+        expr: The struct or map expression to read from.
+        *names: One or more field names (``str``) or expressions
+            (:py:class:`~datafusion.expr.Expr`).
 
     Examples:
+        Single-level lookup:
+
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1], "b": [2]})
         >>> df = df.with_column(
         ...     "s",
-        ...     dfn.functions.named_struct(
-        ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
-        ...     ),
+        ...     F.named_struct([("x", dfn.col("a")), ("y", dfn.col("b"))]),
         ... )
         >>> result = df.select(
-        ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+        ...     F.get_field(dfn.col("s"), "x").alias("x_val")
         ... )
         >>> result.collect_column("x_val")[0].as_py()
         1
@@ -2756,10 +2764,24 @@ def get_field(expr: Expr, name: Expr | str) -> Expr:
         ... )
         >>> result.collect_column("x_val")[0].as_py()
         1
+
+        Multi-level lookup:
+
+        >>> df = df.with_column(
+        ...     "outer",
+        ...     F.named_struct([("inner", dfn.col("s"))]),
+        ... )
+        >>> result = df.select(
+        ...     F.get_field(dfn.col("outer"), "inner", "x").alias("x_val")
+        ... )
+        >>> result.collect_column("x_val")[0].as_py()
+        1
     """
-    if isinstance(name, str):
-        name = Expr.string_literal(name)
-    return Expr(f.get_field(expr.expr, name.expr))
+    if not names:
+        msg = "get_field requires at least one field name"
+        raise ValueError(msg)
+    resolved = [Expr.string_literal(n) if isinstance(n, str) else n for n in names]
+    return Expr(f.get_field(expr.expr, [n.expr for n in resolved]))
 
 
 def union_extract(union_expr: Expr, field_name: Expr | str) -> Expr:

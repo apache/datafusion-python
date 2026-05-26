@@ -17,9 +17,8 @@
 
 use std::sync::Arc;
 
-use datafusion_catalog::{TableFunctionImpl, TableProvider};
+use datafusion_catalog::{TableFunctionArgs, TableFunctionImpl, TableProvider};
 use datafusion_common::error::Result as DataFusionResult;
-use datafusion_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
 use datafusion_python_util::ffi_logical_codec_from_pycapsule;
 use pyo3::types::PyCapsule;
@@ -59,7 +58,7 @@ impl MyTableFunction {
 }
 
 impl TableFunctionImpl for MyTableFunction {
-    fn call(&self, _args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
+    fn call_with_args(&self, _args: TableFunctionArgs) -> DataFusionResult<Arc<dyn TableProvider>> {
         let provider = MyTableProvider::new(4, 3, 2).create_table()?;
         Ok(Arc::new(provider))
     }

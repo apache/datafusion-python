@@ -253,6 +253,7 @@ polars_df = df.to_polars()              # pl.DataFrame
 py_dict = df.to_pydict()                # dict[str, list]
 py_list = df.to_pylist()                # list[dict]
 count = df.count()                      # int
+df = df.cache()                         # materialize in memory, return DataFrame
 ```
 
 ### Date and Timestamp Type Conversion
@@ -308,6 +309,29 @@ for stream in df.execute_stream_partitioned():
 Async iteration is also supported via `async for batch in df: ...` (or
 `df.execute_stream()`), which is useful when batches are interleaved with
 other I/O.
+
+### Caching Intermediate Results
+
+`df.cache()` materializes a DataFrame as an in-memory table and returns a new
+DataFrame backed by it. Reach for it when the same intermediate result feeds
+multiple downstream queries — without `cache()`, each branch re-executes the
+full upstream plan (re-reading files, recomputing filters/aggregates).
+
+```python
+base = (
+    ctx.read_parquet("orders.parquet")
+    .filter(col("status") == "shipped")
+    .cache()                                # materialize once, reuse below
+)
+by_region = base.aggregate(["region"], [F.sum(col("amount")).alias("total")])
+by_customer = base.aggregate(["customer"], [F.sum(col("amount")).alias("total")])
+```
+
+Skip `cache()` for single-use DataFrames — the lazy plan is already optimal.
+
+The cached table is owned by the DataFrame returned from `cache()` (and any
+DataFrames chained from it). To free the memory, drop every reference — let
+them go out of scope, or `del base; del by_region; del by_customer`.
 
 ### Writing Results
 
