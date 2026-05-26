@@ -26,7 +26,7 @@ pickling story rather than a same-expression fan-out.
 
 Worker layout:
 
-* Each worker receives a different ``(expr, label)`` task.
+* Each worker receives a different ``(label, expr)`` task.
 * Each worker materializes the shared dataset locally and runs its
   own expression against it.
 * The result and the worker's PID travel back to the driver, so the
