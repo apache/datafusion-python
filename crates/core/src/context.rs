@@ -1453,6 +1453,22 @@ impl PySessionContext {
             physical_codec,
         })
     }
+
+    pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
+        let logical_codec = Arc::new(
+            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        let physical_codec = Arc::new(
+            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec,
+            physical_codec,
+        }
+    }
 }
 
 impl PySessionContext {
