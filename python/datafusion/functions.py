@@ -2749,12 +2749,10 @@ def get_field(expr: Expr, *names: Expr | str) -> Expr:
         >>> df = ctx.from_pydict({"a": [1], "b": [2]})
         >>> df = df.with_column(
         ...     "s",
-        ...     dfn.functions.named_struct(
-        ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
-        ...     ),
+        ...     F.named_struct([("x", dfn.col("a")), ("y", dfn.col("b"))]),
         ... )
         >>> result = df.select(
-        ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+        ...     F.get_field(dfn.col("s"), "x").alias("x_val")
         ... )
         >>> result.collect_column("x_val")[0].as_py()
         1
@@ -2771,12 +2769,10 @@ def get_field(expr: Expr, *names: Expr | str) -> Expr:
 
         >>> df = df.with_column(
         ...     "outer",
-        ...     dfn.functions.named_struct([("inner", dfn.col("s"))]),
+        ...     F.named_struct([("inner", dfn.col("s"))]),
         ... )
         >>> result = df.select(
-        ...     dfn.functions.get_field(
-        ...         dfn.col("outer"), "inner", "x"
-        ...     ).alias("x_val")
+        ...     F.get_field(dfn.col("outer"), "inner", "x").alias("x_val")
         ... )
         >>> result.collect_column("x_val")[0].as_py()
         1
