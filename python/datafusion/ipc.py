@@ -76,9 +76,9 @@ inlining on). The sender context only affects pickle / ``to_bytes``
 encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
 ``ctx``.
 
-The thread-local holds a strong reference to the installed
-:class:`SessionContext` until :func:`clear_sender_ctx` is called or
-the thread exits. Long-running driver threads that install a sender
+The thread-local sender context holds a strong reference to the
+installed :class:`SessionContext` until :func:`clear_sender_ctx` is
+called or the thread exits. Long-running driver threads that install a sender
 context once and never clear it will retain that session for the
 lifetime of the thread; pair :func:`set_sender_ctx` with
 :func:`clear_sender_ctx` (e.g. in a ``try``/``finally``) when the
