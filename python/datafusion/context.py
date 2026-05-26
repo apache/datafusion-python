@@ -1938,10 +1938,9 @@ class SessionContext:
     ) -> SessionContext:
         """Create a new session context with specified codec.
 
-        This only supports codecs that have been implemented using the
-        FFI interface. ``codec`` must either be a raw ``FFI_LogicalExtensionCodec``
-        ``PyCapsule`` or an object exposing
-        ``__datafusion_logical_extension_codec__``.
+        Only FFI codecs are supported. Pass any object implementing
+        ``__datafusion_logical_extension_codec__`` (see
+        :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -1957,10 +1956,9 @@ class SessionContext:
     ) -> SessionContext:
         """Create a new session context with the specified physical codec.
 
-        This only supports codecs that have been implemented using the
-        FFI interface. ``codec`` must either be a raw
-        ``FFI_PhysicalExtensionCodec`` ``PyCapsule`` or an object exposing
-        ``__datafusion_physical_extension_codec__``.
+        Only FFI codecs are supported. Pass any object implementing
+        ``__datafusion_physical_extension_codec__`` (see
+        :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
