@@ -1320,11 +1320,11 @@ class SessionContext:
     def udf(self, name: str) -> ScalarUDF:
         """Look up a registered scalar UDF by name.
 
-        Returns the same :py:class:`~datafusion.user_defined.ScalarUDF`
-        wrapper that :py:meth:`register_udf` accepts, so it can be invoked
-        as an expression in the DataFrame API or re-registered into a
-        different :py:class:`SessionContext`. Built-in scalar functions
-        from the session's function registry are also looked up.
+        Returns the same ``ScalarUDF`` wrapper that :py:meth:`register_udf`
+        accepts, so it can be invoked as an expression in the DataFrame API
+        or re-registered into a different :py:class:`SessionContext`.
+        Built-in scalar functions from the session's function registry are
+        also looked up.
 
         Args:
             name: Name of the registered scalar UDF.
@@ -1366,11 +1366,10 @@ class SessionContext:
     def udaf(self, name: str) -> AggregateUDF:
         """Look up a registered aggregate UDF by name.
 
-        Returns the same :py:class:`~datafusion.user_defined.AggregateUDF`
-        wrapper that :py:meth:`register_udaf` accepts. Built-in aggregate
-        functions such as ``sum`` or ``avg`` are also discoverable through
-        this lookup. See :py:meth:`udf` for a worked late-binding example;
-        the pattern is identical for aggregates.
+        Returns the same ``AggregateUDF`` wrapper that :py:meth:`register_udaf`
+        accepts. Built-in aggregate functions such as ``sum`` or ``avg`` are
+        also discoverable through this lookup. See :py:meth:`udf` for a worked
+        late-binding example; the pattern is identical for aggregates.
 
         Args:
             name: Name of the registered aggregate UDF.
@@ -1397,11 +1396,11 @@ class SessionContext:
     def udwf(self, name: str) -> WindowUDF:
         """Look up a registered window UDF by name.
 
-        Returns the same :py:class:`~datafusion.user_defined.WindowUDF`
-        wrapper that :py:meth:`register_udwf` accepts. Built-in window
-        functions such as ``row_number`` or ``rank`` are also discoverable
-        through this lookup. See :py:meth:`udf` for a worked late-binding
-        example; the pattern is identical for window functions.
+        Returns the same ``WindowUDF`` wrapper that :py:meth:`register_udwf`
+        accepts. Built-in window functions such as ``row_number`` or ``rank``
+        are also discoverable through this lookup. See :py:meth:`udf` for a
+        worked late-binding example; the pattern is identical for window
+        functions.
 
         Args:
             name: Name of the registered window UDF.
