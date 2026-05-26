@@ -1809,9 +1809,18 @@ class SessionContext:
         the original session is unchanged.
 
         Examples:
-            >>> from datafusion import SessionContext
+            >>> import pyarrow as pa
+            >>> from datafusion import SessionContext, Expr, col, udf
+            >>> ctx = SessionContext()
+            >>> identity = udf(lambda a: a, [pa.int64()], pa.int64(),
+            ...                volatility="immutable", name="identity_demo")
+            >>> ctx.register_udf(identity)
+            >>> blob = identity(col("x")).to_bytes(ctx)
             >>> strict = SessionContext().with_python_udf_inlining(enabled=False)
-            >>> isinstance(strict, SessionContext)
+            >>> try:
+            ...     Expr.from_bytes(blob, strict)
+            ... except Exception as e:
+            ...     print("Refusing to deserialize" in str(e))
             True
         """
         new_internal = self.ctx.with_python_udf_inlining(enabled)
