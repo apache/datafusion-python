@@ -1704,8 +1704,12 @@ def test_repr_rows_backward_compatibility(clean_formatter_state):
     assert formatter.max_rows == 15
     assert formatter.repr_rows == 15
 
-    # Should fail when conflicting with max_rows
-    with pytest.raises(ValueError, match="Cannot specify both repr_rows and max_rows"):
+    # Should fail when conflicting with max_rows. The deprecation warning still
+    # fires before the ValueError, so assert both.
+    with (
+        pytest.raises(ValueError, match="Cannot specify both repr_rows and max_rows"),
+        pytest.warns(DeprecationWarning, match="repr_rows parameter is deprecated"),
+    ):
         DataFrameHtmlFormatter(repr_rows=5, max_rows=10)
 
     # Setting repr_rows via property should warn
