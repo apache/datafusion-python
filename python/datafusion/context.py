@@ -1773,12 +1773,16 @@ class SessionContext:
     def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
         """Control whether Python UDFs are embedded in serialized expressions.
 
-        When ``enabled=True`` (the default), serialized expressions carry
-        the Python code for any scalar, aggregate, or window UDFs they
-        reference. The receiver rebuilds the UDFs from those bytes and
-        does not need to register them first.
+        ``enabled`` is keyword-only and required: callers must pick a
+        mode explicitly. Fresh sessions inline UDFs (``enabled=True``
+        behavior) until this method overrides the toggle.
 
-        When ``enabled=False``, serialized expressions store only the
+        With ``enabled=True``, serialized expressions carry the Python
+        code for any scalar, aggregate, or window UDFs they reference.
+        The receiver rebuilds the UDFs from those bytes and does not
+        need to register them first.
+
+        With ``enabled=False``, serialized expressions store only the
         UDF names. This has two uses:
 
         * **Cross-language portability.** The bytes can be decoded by a
