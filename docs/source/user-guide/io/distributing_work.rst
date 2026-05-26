@@ -103,10 +103,10 @@ What travels with the expression
 
 * **Built-in functions** (``abs``, ``length``, arithmetic, comparisons,
   etc.) — fully portable. Worker needs nothing pre-registered.
-* **Python UDFs** — fully portable. The callable, its signature, and
-  any state captured in closures travel inside the serialized
-  expression and are reconstructed on the worker automatically.
-  Applies equally to:
+* **Python UDFs** — travel inline (subject to the two portability
+  requirements below). The callable, its signature, and any state
+  captured in closures travel inside the serialized expression and are
+  reconstructed on the worker automatically. Applies equally to:
 
   * **scalar UDFs** (:py:func:`datafusion.udf`)
   * **aggregate UDFs** (:py:func:`datafusion.udaf`)
@@ -115,6 +115,31 @@ What travels with the expression
   only**. The worker must already have a matching registration on its
   :py:class:`SessionContext`. Without that registration, evaluation
   raises an error.
+
+Portability requirements for inline Python UDFs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inline Python UDFs ride on `cloudpickle
+<https://github.com/cloudpipe/cloudpickle>`_, which imposes two
+requirements on the worker environment:
+
+* **Matching Python minor version.** A cloudpickle payload serializes
+  Python bytecode, which is not stable across Python minor versions. A
+  UDF pickled on Python 3.12 cannot be reconstructed on a 3.11 or 3.13
+  worker. The wire format stamps the sender's ``(major, minor)``; a
+  mismatch raises a clear error naming both versions rather than
+  failing obscurely deep inside ``cloudpickle.loads``. Align the Python
+  version on driver and workers.
+* **Imported modules must be importable on the worker.** cloudpickle
+  captures the UDF callable *by value* — bytecode and closure cells are
+  inlined, so locally-defined functions and lambdas travel whole. But
+  any name the callable resolves through ``import`` is captured *by
+  reference* (module path only). If a UDF body does
+  ``from mylib import transform`` and calls ``transform(...)``, the
+  worker reconstructs the reference by importing ``mylib`` — which must
+  therefore be installed on the worker. The same applies to bound
+  methods of imported classes. Self-contained UDFs (no imports beyond
+  what the worker already has, e.g. ``pyarrow``) avoid this entirely.
 
 Session contexts at a glance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -260,7 +285,8 @@ Practical considerations
   state — local variables, module-level objects, file paths — that
   state is captured at serialization time. Surprises are possible if
   the captured state is large, mutable, or not portable to the
-  worker's environment.
+  worker's environment. See `Portability requirements for inline
+  Python UDFs`_ for the Python-version and imported-module rules.
 
 Disabling Python UDF inlining
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
