@@ -59,17 +59,17 @@ On the driver side, call :func:`set_sender_ctx` to control how
 :meth:`SessionContext.with_python_udf_inlining` to every pickled
 expression on this thread:
 
-.. code-block:: python
-
-    from datafusion import SessionContext
-    from datafusion.ipc import clear_sender_ctx, set_sender_ctx
-
-    driver_ctx = SessionContext().with_python_udf_inlining(enabled=False)
-    set_sender_ctx(driver_ctx)
-    try:
-        pickle.dumps(expr)  # encoded with inlining disabled
-    finally:
-        clear_sender_ctx()
+>>> import pickle
+>>> from datafusion import SessionContext, col, lit
+>>> from datafusion.ipc import clear_sender_ctx, set_sender_ctx
+>>> driver_ctx = SessionContext().with_python_udf_inlining(enabled=False)
+>>> set_sender_ctx(driver_ctx)
+>>> try:
+...     blob = pickle.dumps(col("a") + lit(1))
+... finally:
+...     clear_sender_ctx()
+>>> isinstance(blob, bytes)
+True
 
 Without a sender context the default codec is used (Python UDF
 inlining on). The sender context only affects pickle / ``to_bytes``
