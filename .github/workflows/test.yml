@@ -102,7 +102,6 @@ jobs:
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
-          UV_PYTHON: ${{ steps.setup-python.outputs.python-path }}
           # On free-threaded interpreters, fail loud if any C extension
           # re-enables the GIL implicitly.
           PYTHON_GIL: ${{ matrix.freethreaded && '0' || '' }}
