@@ -175,14 +175,11 @@ def set_sender_ctx(ctx: SessionContext) -> None:
 
     Examples:
         >>> from datafusion import SessionContext
-        >>> from datafusion.ipc import (
-        ...     set_sender_ctx, get_sender_ctx, clear_sender_ctx,
-        ... )
+        >>> from datafusion.ipc import set_sender_ctx, get_sender_ctx
         >>> driver = SessionContext().with_python_udf_inlining(enabled=False)
         >>> set_sender_ctx(driver)
         >>> get_sender_ctx() is driver
         True
-        >>> clear_sender_ctx()
     """
     _local.sender_ctx = ctx
 
