@@ -211,9 +211,7 @@ dev = [
 # Release tooling only. Kept out of `dev` because pygithub pulls in
 # cryptography, which ships no free-threaded wheel and fails to build
 # from sdist under free-threaded interpreters (PyO3 < 3.14 support).
-release = [
-  "pygithub==2.5.0",
-]
+release = ["pygithub==2.5.0"]
 docs = [
   "ipython>=8.12.3",
   "jinja2>=3.1.5",
