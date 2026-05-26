@@ -153,6 +153,18 @@ class ScalarUDF:
             name, func, input_fields, return_field, str(volatility)
         )
 
+    @classmethod
+    def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
+        """Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udf = internal
+        return wrapper
+
     @property
     def name(self) -> str:
         """Return the registered name of this UDF.
@@ -452,6 +464,18 @@ class AggregateUDF:
             state_type,
             str(volatility),
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
+        """Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udaf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udaf = internal
+        return wrapper
 
     @property
     def name(self) -> str:
@@ -872,6 +896,18 @@ class WindowUDF:
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
+        """Wrap an already-constructed internal ``WindowUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udwf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udwf = internal
+        return wrapper
 
     @property
     def name(self) -> str:

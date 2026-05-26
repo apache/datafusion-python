@@ -1354,9 +1354,7 @@ class SessionContext:
         """
         from datafusion.user_defined import ScalarUDF as _ScalarUDF  # noqa: PLC0415
 
-        wrapper = _ScalarUDF.__new__(_ScalarUDF)
-        wrapper._udf = self.ctx.udf(name)
-        return wrapper
+        return _ScalarUDF._from_internal(self.ctx.udf(name))
 
     def udaf(self, name: str) -> AggregateUDF:
         """Look up a registered aggregate UDF by name.
@@ -1387,9 +1385,7 @@ class SessionContext:
             AggregateUDF as _AggregateUDF,
         )
 
-        wrapper = _AggregateUDF.__new__(_AggregateUDF)
-        wrapper._udaf = self.ctx.udaf(name)
-        return wrapper
+        return _AggregateUDF._from_internal(self.ctx.udaf(name))
 
     def udwf(self, name: str) -> WindowUDF:
         """Look up a registered window UDF by name.
@@ -1418,9 +1414,7 @@ class SessionContext:
         """
         from datafusion.user_defined import WindowUDF as _WindowUDF  # noqa: PLC0415
 
-        wrapper = _WindowUDF.__new__(_WindowUDF)
-        wrapper._udwf = self.ctx.udwf(name)
-        return wrapper
+        return _WindowUDF._from_internal(self.ctx.udwf(name))
 
     def udfs(self) -> list[str]:
         """Return the sorted names of all registered scalar UDFs.
