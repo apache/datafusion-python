@@ -145,6 +145,48 @@ This function returns a new array with the elements repeated.
 
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
 
+Higher-order functions and lambdas
+----------------------------------
+
+Some array functions are *higher-order*: they take a lambda that runs once per
+element. :py:func:`~datafusion.functions.array_transform` maps a lambda over
+every element, and :py:func:`~datafusion.functions.array_any_match` returns
+whether any element satisfies a predicate lambda.
+
+The simplest way to supply a lambda is a Python ``lambda``. Its parameter names
+become the lambda parameters, and its return value becomes the body.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion import functions as f
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
+    df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
+    df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
+
+If you need explicit control over parameter names, build the lambda with
+:py:func:`~datafusion.functions.lambda_` and reference its parameters with
+:py:func:`~datafusion.functions.lambda_var`. The following is equivalent to the
+``array_transform`` call above.
+
+.. ipython:: python
+
+    from datafusion import lit
+
+    double_fn = f.lambda_(["v"], f.lambda_var("v") * lit(2))
+    df.select(f.array_transform(col("a"), double_fn).alias("doubled"))
+
+.. note::
+
+    Lambda expressions cannot yet be serialized: calling
+    :py:meth:`~datafusion.expr.Expr.to_bytes` or pickling an expression that
+    contains a lambda raises ``Lambda not implemented``. SQL lambda syntax
+    (``x -> x * 2``) is only parsed by dialects that support lambdas; set
+    ``datafusion.sql_parser.dialect`` to ``DuckDB`` to use it. The Python
+    expression builder shown above works regardless of dialect.
+
 
 Testing membership in a list
 ----------------------------

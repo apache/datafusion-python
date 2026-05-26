@@ -27,6 +27,7 @@ use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
+pub mod analyzer;
 pub mod catalog;
 pub mod codec;
 pub mod common;
