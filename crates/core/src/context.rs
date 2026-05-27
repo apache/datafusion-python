@@ -375,11 +375,12 @@ pub struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    #[pyo3(signature = (config=None, runtime=None))]
+    #[pyo3(signature = (config=None, runtime=None, physical_optimizer_rules=None))]
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
         runtime: Option<PyRuntimeEnvBuilder>,
+        physical_optimizer_rules: Option<Vec<Bound<'_, PyAny>>>,
     ) -> PyDataFusionResult<Self> {
         let config = if let Some(c) = config {
             c.config
@@ -392,11 +393,20 @@ impl PySessionContext {
             RuntimeEnvBuilder::default()
         };
         let runtime = Arc::new(runtime_env_builder.build()?);
-        let session_state = SessionStateBuilder::new()
+        let mut state_builder = SessionStateBuilder::new()
             .with_config(config)
             .with_runtime_env(runtime)
-            .with_default_features()
-            .build();
+            .with_default_features();
+        // DataFusion exposes no FFI bridge for the logical optimizer or
+        // analyzer, so only physical optimizer rules can be supplied from
+        // another library. They are appended after the default rules at
+        // construction time; there is no upstream API to add them to a live
+        // `SessionContext`.
+        for rule in physical_optimizer_rules.unwrap_or_default() {
+            let rule = crate::physical_optimizer::physical_optimizer_rule_from_pyobject(&rule)?;
+            state_builder = state_builder.with_physical_optimizer_rule(rule);
+        }
+        let session_state = state_builder.build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
         Ok(PySessionContext {
             ctx,
@@ -1143,18 +1153,6 @@ impl PySessionContext {
 
     pub fn remove_optimizer_rule(&self, name: &str) -> bool {
         self.ctx.remove_optimizer_rule(name)
-    }
-
-    pub fn add_optimizer_rule(&self, rule: Bound<'_, PyAny>) -> PyResult<()> {
-        let adapter = crate::optimizer_rules::build_optimizer_rule(rule)?;
-        self.ctx.add_optimizer_rule(adapter);
-        Ok(())
-    }
-
-    pub fn add_analyzer_rule(&self, rule: Bound<'_, PyAny>) -> PyResult<()> {
-        let adapter = crate::optimizer_rules::build_analyzer_rule(rule)?;
-        self.ctx.add_analyzer_rule(adapter);
-        Ok(())
     }
 
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {

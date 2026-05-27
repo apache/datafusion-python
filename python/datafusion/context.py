@@ -90,7 +90,6 @@ if TYPE_CHECKING:
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
     from datafusion.expr import Expr, SortKey
-    from datafusion.optimizer import AnalyzerRule, OptimizerRule
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -525,6 +524,7 @@ class SessionContext:
         self,
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
+        physical_optimizer_rules: list[Any] | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -535,6 +535,14 @@ class SessionContext:
         Args:
             config: Session configuration options.
             runtime: Runtime configuration options.
+            physical_optimizer_rules: User-defined physical optimizer rules to
+                append to the default set. Each item is an object that exposes a
+                ``__datafusion_physical_optimizer_rule__`` method returning a
+                PyCapsule around a ``FFI_PhysicalOptimizerRule`` (typically built
+                in a separate compiled extension). DataFusion provides no FFI
+                bridge for logical optimizer or analyzer rules, and there is no
+                upstream API to add physical rules to a live context, so these
+                can only be supplied at construction time.
 
         Example usage:
 
@@ -545,11 +553,21 @@ class SessionContext:
 
             ctx = SessionContext()
             df = ctx.read_csv("data.csv")
+
+        To register a physical optimizer rule supplied by a compiled
+        extension, pass it via ``physical_optimizer_rules``::
+
+            from datafusion import SessionContext
+            from my_extension import MyPhysicalOptimizerRule
+
+            ctx = SessionContext(
+                physical_optimizer_rules=[MyPhysicalOptimizerRule()]
+            )
         """
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if runtime is not None else None
 
-        self.ctx = SessionContextInternal(config, runtime)
+        self.ctx = SessionContextInternal(config, runtime, physical_optimizer_rules)
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -1260,52 +1278,6 @@ class SessionContext:
     def register_udwf(self, udwf: WindowUDF) -> None:
         """Register a user-defined window function (UDWF) with the context."""
         self.ctx.register_udwf(udwf._udwf)
-
-    def add_optimizer_rule(self, rule: OptimizerRule) -> None:
-        """Append a user-defined :class:`OptimizerRule` to the session.
-
-        The rule's :py:meth:`OptimizerRule.rewrite` method is invoked
-        during query planning. Returning ``None`` from ``rewrite``
-        signals no change; returning a new
-        :class:`~datafusion.plan.LogicalPlan` signals a rewrite.
-
-        Args:
-            rule: An instance of a class that implements
-                :class:`datafusion.optimizer.OptimizerRule`.
-
-        Examples:
-            >>> from datafusion.optimizer import OptimizerRule
-            >>> class NoopRule(OptimizerRule):
-            ...     def name(self) -> str: return "noop"
-            ...     def rewrite(self, plan): return None
-            >>> ctx = dfn.SessionContext()
-            >>> ctx.add_optimizer_rule(NoopRule())
-            >>> ctx.remove_optimizer_rule("noop")
-            True
-        """
-        self.ctx.add_optimizer_rule(rule)
-
-    def add_analyzer_rule(self, rule: AnalyzerRule) -> None:
-        """Append a user-defined :class:`AnalyzerRule` to the session.
-
-        The rule's :py:meth:`AnalyzerRule.analyze` method is invoked
-        during the analysis phase of query planning. Analyzer rules
-        must always return a :class:`~datafusion.plan.LogicalPlan`
-        (return the input plan unchanged when no rewrite applies).
-
-        Args:
-            rule: An instance of a class that implements
-                :class:`datafusion.optimizer.AnalyzerRule`.
-
-        Examples:
-            >>> from datafusion.optimizer import AnalyzerRule
-            >>> class Identity(AnalyzerRule):
-            ...     def name(self) -> str: return "identity"
-            ...     def analyze(self, plan): return plan
-            >>> ctx = dfn.SessionContext()
-            >>> ctx.add_analyzer_rule(Identity())
-        """
-        self.ctx.add_analyzer_rule(rule)
 
     def deregister_udwf(self, name: str) -> None:
         """Remove a user-defined window function from the session.
