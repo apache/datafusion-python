@@ -130,6 +130,16 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
+
+    The capsule wraps an ``FFI_PhysicalOptimizerRule``, typically produced by a
+    separate compiled extension.
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -524,7 +534,7 @@ class SessionContext:
         self,
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
-        physical_optimizer_rules: list[Any] | None = None,
+        physical_optimizer_rules: list[PhysicalOptimizerRuleExportable] | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
