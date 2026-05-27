@@ -18,6 +18,29 @@
 Upgrade Guides
 ==============
 
+DataFusion 54.0.0
+-----------------
+
+The aggregate functions :py:func:`~datafusion.functions.sum` and
+:py:func:`~datafusion.functions.avg` now accept a ``distinct`` argument, matching
+the other aggregate functions. ``distinct`` is inserted *before* ``filter`` in the
+argument list, so any code that passed ``filter`` positionally must be updated to
+pass it as a keyword argument.
+
+Before:
+
+.. code-block:: python
+
+    f.sum(column("a"), my_filter)
+    f.avg(column("a"), my_filter)
+
+Now:
+
+.. code-block:: python
+
+    f.sum(column("a"), filter=my_filter)
+    f.avg(column("a"), filter=my_filter)
+
 DataFusion 53.0.0
 -----------------
 
