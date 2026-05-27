@@ -59,7 +59,8 @@ use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, create_physical_extension_capsule,
     ffi_logical_codec_from_pycapsule, get_global_ctx, get_tokio_runtime,
-    physical_codec_from_pycapsule, spawn_future, wait_for_future,
+    physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
+    wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -398,7 +399,7 @@ impl PySessionContext {
             .with_runtime_env(runtime)
             .with_default_features();
         for rule in physical_optimizer_rules.unwrap_or_default() {
-            let rule = crate::physical_optimizer::physical_optimizer_rule_from_pyobject(&rule)?;
+            let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
             state_builder = state_builder.with_physical_optimizer_rule(rule);
         }
         let session_state = state_builder.build();

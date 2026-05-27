@@ -46,7 +46,6 @@ pub mod expr;
 mod functions;
 pub mod metrics;
 mod options;
-pub mod physical_optimizer;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod pyarrow_util;

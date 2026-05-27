@@ -24,7 +24,9 @@ use datafusion::datasource::TableProvider;
 use datafusion::execution::TaskContext;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
+use datafusion::physical_optimizer::PhysicalOptimizerRule;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
+use datafusion_ffi::physical_optimizer::FFI_PhysicalOptimizerRule;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
@@ -330,6 +332,13 @@ from_pycapsule!(
     "datafusion_physical_extension_codec",
     FFI_PhysicalExtensionCodec,
     dyn PhysicalExtensionCodec
+);
+
+from_pycapsule!(
+    physical_optimizer_rule_from_pycapsule,
+    "datafusion_physical_optimizer_rule",
+    FFI_PhysicalOptimizerRule,
+    dyn PhysicalOptimizerRule + Send + Sync
 );
 
 try_from_pycapsule!(
