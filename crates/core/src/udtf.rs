@@ -129,19 +129,26 @@ impl PyTableFunction {
 /// rather than an owned context; we downcast it to the canonical
 /// :class:`SessionState` impl and rebuild a :class:`SessionContext`
 /// (sharing the same registries via the Arc-heavy interior of
-/// :class:`SessionState`). Returns an error if the trait object is a
-/// non-:class:`SessionState` implementation (e.g. a foreign FFI
-/// session) — those are not exposed to Python today.
+/// :class:`SessionState`).
+///
+/// The downcast is defensive. Every path that reaches a pure-Python
+/// UDTF today hands us a `SessionState`: the SQL planner builds the
+/// args from its own `SessionState`, and `PyTableFunction::__call__`
+/// uses the global context's state. A non-`SessionState` session
+/// (e.g. a `ForeignSession`) would only arrive if this UDTF were
+/// exported across the FFI boundary to a foreign-library consumer,
+/// which datafusion-python does not do. Should that change, this
+/// returns an error rather than silently misbehaving.
 fn py_session_from_session(session: &dyn Session) -> DataFusionResult<PySessionContext> {
     let state = session
         .as_any()
         .downcast_ref::<SessionState>()
         .ok_or_else(|| {
             DataFusionError::Execution(
-                "Cannot expose this UDTF's calling session to Python: \
-             the session is not a SessionState. Drop the `session` \
-             keyword from the callback signature to fall back to the \
-             expression-only call form."
+                "Cannot expose this UDTF's calling session to Python: the \
+                 session is not a SessionState. Drop the `session` keyword \
+                 from the callback signature to fall back to the \
+                 expression-only call form."
                     .to_string(),
             )
         })?;
