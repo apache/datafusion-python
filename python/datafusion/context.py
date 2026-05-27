@@ -134,9 +134,7 @@ class PhysicalOptimizerRuleExportable(Protocol):
     """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
 
     The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension. DataFusion provides no
-    FFI bridge for logical optimizer or analyzer rules, so only physical
-    optimizer rules can be supplied this way.
+    typically produced by a separate compiled extension.
     """
 
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
