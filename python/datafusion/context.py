@@ -546,8 +546,9 @@ class SessionContext:
             config: Session configuration options.
             runtime: Runtime configuration options.
             physical_optimizer_rules: User-defined physical optimizer rules to
-                append to the default set. Each item is an object that exposes a
-                ``__datafusion_physical_optimizer_rule__`` method returning a
+                append to the default set. Each item is a
+                :class:`PhysicalOptimizerRuleExportable` — an object exposing a
+                ``__datafusion_physical_optimizer_rule__`` method that returns a
                 PyCapsule around a ``FFI_PhysicalOptimizerRule`` (typically built
                 in a separate compiled extension). DataFusion provides no FFI
                 bridge for logical optimizer or analyzer rules, and there is no
