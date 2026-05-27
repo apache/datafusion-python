@@ -79,16 +79,17 @@ jobs:
           path: wheels/
 
       - name: Install from pre-built wheels
-        env:
-          # Pin every uv command to the interpreter from setup-python.
-          # Without this, `uv sync` ignores the existing .venv, runs its
-          # own discovery, and grabs the system 3.12, producing a
-          # wheel/ABI mismatch on free-threaded jobs.
-          UV_PYTHON: ${{ steps.setup-python.outputs.python-path }}
         run: |
           set -x
-          uv venv
-          uv sync --dev --no-install-package datafusion
+          # Create the venv with the setup-python interpreter, then activate
+          # it so every uv command targets that same .venv. Using UV_PYTHON
+          # instead diverges: `uv sync` populates .venv while `uv pip install`
+          # targets the bare interpreter, so the datafusion wheel never lands
+          # in .venv. `--active` stops `uv sync` from discovering and
+          # recreating the env with the system 3.12.
+          uv venv --python "${{ steps.setup-python.outputs.python-path }}"
+          source .venv/bin/activate
+          uv sync --active --dev --no-install-package datafusion
           WHEELS=$(find wheels/ -name "*.whl")
           if [ -n "$WHEELS" ]; then
             echo "Installing wheels:"
