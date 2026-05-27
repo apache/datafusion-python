@@ -40,15 +40,15 @@ arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
 arrow-select = { version = "58" }
-datafusion = { version = "53" }
-datafusion-substrait = { version = "53" }
-datafusion-proto = { version = "53" }
-datafusion-ffi = { version = "53" }
-datafusion-catalog = { version = "53", default-features = false }
-datafusion-common = { version = "53", default-features = false }
-datafusion-functions-aggregate = { version = "53" }
-datafusion-functions-window = { version = "53" }
-datafusion-expr = { version = "53" }
+datafusion = { version = "54" }
+datafusion-substrait = { version = "54" }
+datafusion-proto = { version = "54" }
+datafusion-ffi = { version = "54" }
+datafusion-catalog = { version = "54", default-features = false }
+datafusion-common = { version = "54", default-features = false }
+datafusion-functions-aggregate = { version = "54" }
+datafusion-functions-window = { version = "54" }
+datafusion-expr = { version = "54" }
 prost = "0.14.3"
 serde_json = "1"
 uuid = { version = "1.23" }
@@ -71,12 +71,12 @@ codegen-units = 2
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-common = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
-datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
