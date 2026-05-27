@@ -4533,8 +4533,7 @@ def avg(
 
     Args:
         expression: Values to combine into an array
-        distinct: If True, only distinct values are averaged. Equivalent to the
-            upstream ``avg_distinct`` shortcut.
+        distinct: If True, duplicate values are removed before averaging.
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -4861,8 +4860,7 @@ def sum(
 
     Args:
         expression: Values to combine into an array
-        distinct: If True, only distinct values are summed. Equivalent to the
-            upstream ``sum_distinct`` shortcut.
+        distinct: If True, duplicate values are removed before summing.
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
