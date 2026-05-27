@@ -905,6 +905,32 @@ def test_register_batch_empty(ctx):
     assert result[0].num_rows == 0
 
 
+def test_read_batch_returns_dataframe(ctx):
+    batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    df = ctx.read_batch(batch)
+    assert df.to_pydict() == {"a": [1, 2, 3], "b": [4, 5, 6]}
+    # read_batch should not register a named table.
+    assert ctx.catalog().schema().names() == set()
+
+
+def test_read_batches_concatenates(ctx):
+    b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+    b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+    df = ctx.read_batches([b1, b2])
+    assert df.to_pydict() == {"a": [1, 2, 3, 4]}
+
+
+def test_read_batches_accepts_iterable(ctx):
+    b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+    b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+    # Generator: ensures non-list iterables are materialized before FFI.
+    df = ctx.read_batches(b for b in (b1, b2))
+    assert df.to_pydict() == {"a": [1, 2, 3, 4]}
+    # Tuple: same.
+    df = ctx.read_batches((b1, b2))
+    assert df.to_pydict() == {"a": [1, 2, 3, 4]}
+
+
 def test_create_sql_options():
     SQLOptions()
 
@@ -964,12 +990,12 @@ def test_csv_read_options_builder_pattern():
 
     options = (
         CsvReadOptions()
-        .with_has_header(False)  # noqa: FBT003
+        .with_has_header(False)
         .with_delimiter("|")
         .with_quote("'")
         .with_schema_infer_max_records(2000)
-        .with_truncated_rows(True)  # noqa: FBT003
-        .with_newlines_in_values(True)  # noqa: FBT003
+        .with_truncated_rows(True)
+        .with_newlines_in_values(True)
         .with_file_extension(".tsv")
     )
     assert options.has_header is False

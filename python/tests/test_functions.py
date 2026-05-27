@@ -836,7 +836,7 @@ def test_map_functions(func, expected):
         (f.chr(literal(68)), pa.array(["D", "D", "D"])),
         (
             f.concat_ws("-", column("a"), literal("test")),
-            pa.array(["Hello-test", "World-test", "!-test"]),
+            pa.array(["Hello-test", "World-test", "!-test"], type=pa.string_view()),
         ),
         (
             f.concat(column("a").cast(pa.string()), literal("?")),
@@ -851,7 +851,10 @@ def test_map_functions(func, expected):
             pa.array(["Hel", "Wor", "!"], type=pa.string_view()),
         ),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
-        (f.lower(column("a")), pa.array(["hello", "world", "!"])),
+        (
+            f.lower(column("a")),
+            pa.array(["hello", "world", "!"], type=pa.string_view()),
+        ),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
         (
             f.ltrim(column("c")),
@@ -871,13 +874,16 @@ def test_map_functions(func, expected):
         (f.octet_length(column("a")), pa.array([5, 5, 1], type=pa.int32())),
         (
             f.repeat(column("a"), literal(2)),
-            pa.array(["HelloHello", "WorldWorld", "!!"]),
+            pa.array(["HelloHello", "WorldWorld", "!!"], type=pa.string_view()),
         ),
         (
             f.replace(column("a"), literal("l"), literal("?")),
             pa.array(["He??o", "Wor?d", "!"]),
         ),
-        (f.reverse(column("a")), pa.array(["olleH", "dlroW", "!"])),
+        (
+            f.reverse(column("a")),
+            pa.array(["olleH", "dlroW", "!"], type=pa.string_view()),
+        ),
         (
             f.right(column("a"), literal(4)),
             pa.array(["ello", "orld", "!"], type=pa.string_view()),
@@ -892,7 +898,7 @@ def test_map_functions(func, expected):
         ),
         (
             f.split_part(column("a"), literal("l"), literal(1)),
-            pa.array(["He", "Wor", "!"]),
+            pa.array(["He", "Wor", "!"], type=pa.string_view()),
         ),
         (f.contains(column("a"), literal("ell")), pa.array([True, False, False])),
         (f.starts_with(column("a"), literal("Wor")), pa.array([False, True, False])),
@@ -903,14 +909,17 @@ def test_map_functions(func, expected):
         ),
         (
             f.translate(column("a"), literal("or"), literal("ld")),
-            pa.array(["Helll", "Wldld", "!"]),
+            pa.array(["Helll", "Wldld", "!"], type=pa.string_view()),
         ),
         (f.trim(column("c")), pa.array(["hello", "world", "!"], type=pa.string_view())),
-        (f.upper(column("c")), pa.array(["HELLO ", " WORLD ", " !"])),
+        (
+            f.upper(column("c")),
+            pa.array(["HELLO ", " WORLD ", " !"], type=pa.string_view()),
+        ),
         (f.ends_with(column("a"), literal("llo")), pa.array([True, False, False])),
         (
             f.overlay(column("a"), literal("--"), literal(2)),
-            pa.array(["H--lo", "W--ld", "--"]),
+            pa.array(["H--lo", "W--ld", "!--"]),
         ),
         (
             f.regexp_like(column("a"), literal("(ell|orl)")),
@@ -1948,6 +1957,37 @@ def test_get_field(df):
     assert result.column(1) == pa.array([4, 5, 6])
 
 
+def test_get_field_path(df):
+    df = df.with_column(
+        "outer",
+        f.named_struct(
+            [
+                (
+                    "inner",
+                    f.named_struct(
+                        [
+                            ("x", column("a")),
+                            ("y", column("b")),
+                        ]
+                    ),
+                ),
+            ]
+        ),
+    )
+    result = df.select(
+        f.get_field(column("outer"), "inner", "x").alias("x_val"),
+        f.get_field(column("outer"), "inner", "y").alias("y_val"),
+    ).collect()[0]
+
+    assert result.column(0) == pa.array(["Hello", "World", "!"], type=pa.string_view())
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
+def test_get_field_requires_a_name():
+    with pytest.raises(ValueError, match="at least one field name"):
+        f.get_field(column("s"))
+
+
 def test_arrow_metadata():
     ctx = SessionContext()
     field = pa.field("val", pa.int64(), metadata={"key1": "value1", "key2": "value2"})
@@ -2063,7 +2103,7 @@ def test_arrays_zip_aliases(func):
     df = ctx.from_pydict({"a": [[1, 2]], "b": [[3, 4]]})
     result = df.select(func(column("a"), column("b")).alias("v")).collect()
     values = result[0].column(0)[0].as_py()
-    assert values == [{"c0": 1, "c1": 3}, {"c0": 2, "c1": 4}]
+    assert values == [{"1": 1, "2": 3}, {"1": 2, "2": 4}]
 
 
 @pytest.mark.parametrize("func", [f.string_to_array, f.string_to_list])
@@ -2099,3 +2139,96 @@ def test_gen_series_with_step():
         f.gen_series(literal(1), literal(10), literal(3)).alias("v")
     ).collect()
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
+
+
+class TestPythonicNativeTypes:
+    """Tests for accepting native Python types instead of requiring lit()."""
+
+    def test_split_part_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a,b,c"]})
+        result = df.select(f.split_part(column("a"), ",", 2).alias("s")).collect()
+        assert result[0].column(0)[0].as_py() == "b"
+
+    def test_encode_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["hello"]})
+        result = df.select(f.encode(column("a"), "base64").alias("e")).collect()
+        assert result[0].column(0)[0].as_py() == "aGVsbG8"
+
+    def test_date_part_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
+        df = df.select(f.to_timestamp(column("a")).alias("a"))
+        result = df.select(f.date_part("year", column("a")).alias("y")).collect()
+        assert result[0].column(0)[0].as_py() == 2021
+
+    def test_date_trunc_native_str(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
+        df = df.select(f.to_timestamp(column("a")).alias("a"))
+        result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
+        assert str(result[0].column(0)[0].as_py()) == "2021-07-01 00:00:00"
+
+    def test_left_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["the cat"]})
+        result = df.select(f.left(column("a"), 3).alias("l")).collect()
+        assert result[0].column(0)[0].as_py() == "the"
+
+    def test_round_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [1.567]})
+        result = df.select(f.round(column("a"), 2).alias("r")).collect()
+        assert result[0].column(0)[0].as_py() == 1.57
+
+    def test_regexp_count_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["abcabc"]})
+        result = df.select(
+            f.regexp_count(column("a"), "abc", start=4, flags="i").alias("c")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == 1
+
+    def test_log_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [100.0]})
+        result = df.select(f.log(10, column("a")).alias("l")).collect()
+        assert result[0].column(0)[0].as_py() == 2.0
+
+    def test_power_native_int(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [2.0]})
+        result = df.select(f.power(column("a"), 3).alias("p")).collect()
+        assert result[0].column(0)[0].as_py() == 8.0
+
+    def test_array_slice_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+        result = df.select(f.array_slice(column("a"), 2, 3).alias("s")).collect()
+        assert result[0].column(0)[0].as_py() == [2, 3]
+
+    def test_string_to_array_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["hello,NA,world"]})
+        result = df.select(
+            f.string_to_array(column("a"), ",", null_string="NA").alias("v")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == ["hello", None, "world"]
+
+    def test_regexp_replace_native(self):
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a1 b2 c3"]})
+        result = df.select(
+            f.regexp_replace(column("a"), r"\d+", "X", flags="g").alias("r")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == "aX bX cX"
+
+    def test_backward_compat_with_lit(self):
+        """Verify that existing code using lit() still works."""
+        ctx = SessionContext()
+        df = ctx.from_pydict({"a": ["a,b,c"]})
+        result = df.select(
+            f.split_part(column("a"), literal(","), literal(2)).alias("s")
+        ).collect()
+        assert result[0].column(0)[0].as_py() == "b"

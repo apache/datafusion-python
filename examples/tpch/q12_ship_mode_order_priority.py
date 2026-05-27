@@ -27,18 +27,49 @@ HIGH.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        l_shipmode,
+        sum(case
+                when o_orderpriority = '1-URGENT'
+                        or o_orderpriority = '2-HIGH'
+                        then 1
+                else 0
+        end) as high_line_count,
+        sum(case
+                when o_orderpriority <> '1-URGENT'
+                        and o_orderpriority <> '2-HIGH'
+                        then 1
+                else 0
+        end) as low_line_count
+    from
+        orders,
+        lineitem
+    where
+        o_orderkey = l_orderkey
+        and l_shipmode in ('MAIL', 'SHIP')
+        and l_commitdate < l_receiptdate
+        and l_shipdate < l_commitdate
+        and l_receiptdate >= date '1994-01-01'
+        and l_receiptdate < date '1994-01-01' + interval '1' year
+    group by
+        l_shipmode
+    order by
+        l_shipmode;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
 SHIP_MODE_1 = "MAIL"
 SHIP_MODE_2 = "SHIP"
-DATE_OF_INTEREST = "1994-01-01"
+YEAR_START = date(1994, 1, 1)
+YEAR_END = date(1995, 1, 1)
 
 # Load the dataframes we need
 
@@ -51,63 +82,30 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_shipmode", "l_commitdate", "l_shipdate", "l_receiptdate"
 )
 
-date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
-interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
+df = df_lineitem.filter(
+    col("l_receiptdate") >= lit(YEAR_START),
+    col("l_receiptdate") < lit(YEAR_END),
+    # ``in_list`` maps directly to ``l_shipmode in (...)`` from the SQL.
+    F.in_list(col("l_shipmode"), [lit(SHIP_MODE_1), lit(SHIP_MODE_2)]),
+    col("l_shipdate") < col("l_commitdate"),
+    col("l_commitdate") < col("l_receiptdate"),
+).join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
 
+# Flag each line item as belonging to a high-priority order or not.
+high_priorities = [lit("1-URGENT"), lit("2-HIGH")]
+is_high = F.in_list(col("o_orderpriority"), high_priorities)
+is_low = F.in_list(col("o_orderpriority"), high_priorities, negated=True)
 
-df = df_lineitem.filter(col("l_receiptdate") >= lit(date)).filter(
-    col("l_receiptdate") < lit(date) + lit(interval)
-)
-
-# Note: It is not recommended to use array_has because it treats the second argument as an argument
-# so if you pass it col("l_shipmode") it will pass the entire array to process which is very slow.
-# Instead check the position of the entry is not null.
-df = df.filter(
-    ~F.array_position(
-        F.make_array(lit(SHIP_MODE_1), lit(SHIP_MODE_2)), col("l_shipmode")
-    ).is_null()
-)
-
-# Since we have only two values, it's much easier to do this as a filter where the l_shipmode
-# matches either of the two values, but we want to show doing some array operations in this
-# example. If you want to see this done with filters, comment out the above line and uncomment
-# this one.
-# df = df.filter((col("l_shipmode") == lit(SHIP_MODE_1)) | (col("l_shipmode") == lit(SHIP_MODE_2))) # noqa: ERA001
-
-
-# We need order priority, so join order df to line item
-df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
-
-# Restrict to line items we care about based on the problem statement.
-df = df.filter(col("l_commitdate") < col("l_receiptdate"))
-
-df = df.filter(col("l_shipdate") < col("l_commitdate"))
-
-df = df.with_column(
-    "high_line_value",
-    F.case(col("o_orderpriority"))
-    .when(lit("1-URGENT"), lit(1))
-    .when(lit("2-HIGH"), lit(1))
-    .otherwise(lit(0)),
-)
-
-# Aggregate the results
+# Count the high-priority and low-priority lineitems per ship mode via the
+# ``filter`` kwarg on ``F.count`` (DataFrame form of SQL's ``count(*)
+# FILTER (WHERE ...)``).
 df = df.aggregate(
-    [col("l_shipmode")],
+    ["l_shipmode"],
     [
-        F.sum(col("high_line_value")).alias("high_line_count"),
-        F.count(col("high_line_value")).alias("all_lines_count"),
+        F.count(col("o_orderkey"), filter=is_high).alias("high_line_count"),
+        F.count(col("o_orderkey"), filter=is_low).alias("low_line_count"),
     ],
-)
-
-# Compute the final output
-df = df.select(
-    col("l_shipmode"),
-    col("high_line_count"),
-    (col("all_lines_count") - col("high_line_count")).alias("low_line_count"),
-)
-
-df = df.sort(col("l_shipmode").sort())
+).sort_by("l_shipmode")
 
 df.show()

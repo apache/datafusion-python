@@ -47,6 +47,7 @@ pyo3 = { workspace = true, features = [
 ] }
 pyo3-async-runtimes = { workspace = true, features = ["tokio-runtime"] }
 pyo3-log = { workspace = true }
+chrono = { workspace = true }
 arrow = { workspace = true, features = ["pyarrow"] }
 arrow-select = { workspace = true }
 datafusion = { workspace = true, features = ["avro", "unicode_expressions"] }

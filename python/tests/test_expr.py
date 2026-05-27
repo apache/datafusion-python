@@ -53,6 +53,8 @@ from datafusion.expr import (
     TransactionEnd,
     TransactionStart,
     Values,
+    coerce_to_expr,
+    coerce_to_expr_or_none,
     ensure_expr,
     ensure_expr_list,
 )
@@ -153,8 +155,8 @@ def test_relational_expr(test_ctx):
 
     batch = pa.RecordBatch.from_arrays(
         [
-            pa.array([1, 2, 3]),
-            pa.array(["alpha", "beta", "gamma"], type=pa.string_view()),
+            pa.array([1, 2, 3, None]),
+            pa.array(["alpha", "beta", "gamma", None], type=pa.string_view()),
         ],
         names=["a", "b"],
     )
@@ -170,7 +172,14 @@ def test_relational_expr(test_ctx):
     assert df.filter(col("b") == "beta").count() == 1
     assert df.filter(col("b") != "beta").count() == 2
 
-    assert df.filter(col("a") == "beta").count() == 0
+    # Upstream DataFusion now errors on string→Int64 implicit cast in filter
+    # (previously silently produced 0 matches).
+    with pytest.raises(Exception, match="Cannot cast string 'beta'"):
+        df.filter(col("a") == "beta").count()
+    assert df.filter(col("a") == None).count() == 1  # noqa: E711
+    assert df.filter(col("a") != None).count() == 3  # noqa: E711
+    assert df.filter(col("b") == None).count() == 1  # noqa: E711
+    assert df.filter(col("b") != None).count() == 3  # noqa: E711
 
 
 def test_expr_to_variant():
@@ -607,7 +616,7 @@ def test_alias_with_metadata(df):
         #
         pytest.param(
             col("c").reverse(),
-            pa.array(["olleH", " dlrow ", "!", None], type=pa.string()),
+            pa.array(["olleH", " dlrow ", "!", None], type=pa.string_view()),
             id="reverse",
         ),
         pytest.param(
@@ -627,7 +636,7 @@ def test_alias_with_metadata(df):
         ),
         pytest.param(
             col("c").lower(),
-            pa.array(["hello", " world ", "!", None], type=pa.string()),
+            pa.array(["hello", " world ", "!", None], type=pa.string_view()),
             id="lower",
         ),
         pytest.param(
@@ -761,7 +770,7 @@ def test_alias_with_metadata(df):
         ),
         pytest.param(
             col("c").upper(),
-            pa.array(["HELLO", " WORLD ", "!", None], type=pa.string()),
+            pa.array(["HELLO", " WORLD ", "!", None], type=pa.string_view()),
             id="upper",
         ),
         pytest.param(
@@ -1026,12 +1035,55 @@ def test_ensure_expr_list_bytearray():
         ensure_expr_list(bytearray(b"a"))
 
 
+def test_coerce_to_expr_passes_expr_through():
+    e = col("a")
+    result = coerce_to_expr(e)
+    assert isinstance(result, type(e))
+    assert str(result) == str(e)
+
+
+def test_coerce_to_expr_wraps_int():
+    result = coerce_to_expr(42)
+    assert isinstance(result, type(lit(42)))
+
+
+def test_coerce_to_expr_wraps_str():
+    result = coerce_to_expr("hello")
+    assert isinstance(result, type(lit("hello")))
+
+
+def test_coerce_to_expr_wraps_float():
+    result = coerce_to_expr(3.14)
+    assert isinstance(result, type(lit(3.14)))
+
+
+def test_coerce_to_expr_wraps_bool():
+    result = coerce_to_expr(True)
+    assert isinstance(result, type(lit(True)))
+
+
+def test_coerce_to_expr_or_none_returns_none():
+    assert coerce_to_expr_or_none(None) is None
+
+
+def test_coerce_to_expr_or_none_wraps_value():
+    result = coerce_to_expr_or_none(42)
+    assert isinstance(result, type(lit(42)))
+
+
+def test_coerce_to_expr_or_none_passes_expr_through():
+    e = col("a")
+    result = coerce_to_expr_or_none(e)
+    assert isinstance(result, type(e))
+    assert str(result) == str(e)
+
+
 @pytest.mark.parametrize(
     "value",
     [
         # Boolean
-        pa.scalar(True, type=pa.bool_()),  # noqa: FBT003
-        pa.scalar(False, type=pa.bool_()),  # noqa: FBT003
+        pa.scalar(True, type=pa.bool_()),
+        pa.scalar(False, type=pa.bool_()),
         # Integers - signed
         pa.scalar(127, type=pa.int8()),
         pa.scalar(-128, type=pa.int8()),
@@ -1129,3 +1181,29 @@ def test_round_trip_pyscalar_value(ctx: SessionContext, value: pa.Scalar):
     df = ctx.sql("select 1 as a")
     df = df.select(lit(value))
     assert pa.table(df)[0][0] == value
+
+
+def test_expr_to_bytes_roundtrip(ctx: SessionContext) -> None:
+    """An Expr round-trips through the session's logical codec."""
+    from datafusion import Expr
+
+    original = col("a") + lit(1)
+    blob = original.to_bytes(ctx)
+    restored = Expr.from_bytes(blob, ctx=ctx)
+
+    # Canonical name preserves the structure of the expression even
+    # though the underlying PyExpr instances are different.
+    assert restored.canonical_name() == original.canonical_name()
+
+
+def test_expr_to_bytes_no_ctx_default_codec() -> None:
+    """to_bytes(ctx=None) uses a default codec; builtin-only Exprs
+    still round-trip when a session is supplied on decode."""
+    from datafusion import Expr
+
+    fresh = SessionContext()
+    original = col("a") * lit(2)
+    blob = original.to_bytes()  # encode side: default codec
+    restored = Expr.from_bytes(blob, ctx=fresh)
+
+    assert restored.canonical_name() == original.canonical_name()

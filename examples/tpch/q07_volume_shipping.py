@@ -26,9 +26,51 @@ Supplier nation, Customer nation, and year (all ascending).
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        supp_nation,
+        cust_nation,
+        l_year,
+        sum(volume) as revenue
+    from
+        (
+                select
+                        n1.n_name as supp_nation,
+                        n2.n_name as cust_nation,
+                        extract(year from l_shipdate) as l_year,
+                        l_extendedprice * (1 - l_discount) as volume
+                from
+                        supplier,
+                        lineitem,
+                        orders,
+                        customer,
+                        nation n1,
+                        nation n2
+                where
+                        s_suppkey = l_suppkey
+                        and o_orderkey = l_orderkey
+                        and c_custkey = o_custkey
+                        and s_nationkey = n1.n_nationkey
+                        and c_nationkey = n2.n_nationkey
+                        and (
+                                (n1.n_name = 'FRANCE' and n2.n_name = 'GERMANY')
+                                or (n1.n_name = 'GERMANY' and n2.n_name = 'FRANCE')
+                        )
+                        and l_shipdate between date '1995-01-01' and date '1996-12-31'
+        ) as shipping
+    group by
+        supp_nation,
+        cust_nation,
+        l_year
+    order by
+        supp_nation,
+        cust_nation,
+        l_year;
 """
 
-from datetime import datetime
+from datetime import date
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit
@@ -40,11 +82,8 @@ from util import get_data_path
 nation_1 = lit("FRANCE")
 nation_2 = lit("GERMANY")
 
-START_DATE = "1995-01-01"
-END_DATE = "1996-12-31"
-
-start_date = lit(datetime.strptime(START_DATE, "%Y-%m-%d").date())
-end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
+START_DATE = date(1995, 1, 1)
+END_DATE = date(1996, 12, 31)
 
 
 # Load the dataframes we need
@@ -69,60 +108,44 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 
 
 # Filter to time of interest
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= start_date).filter(
-    col("l_shipdate") <= end_date
+df_lineitem = df_lineitem.filter(
+    col("l_shipdate") >= lit(START_DATE), col("l_shipdate") <= lit(END_DATE)
 )
 
 
-# A simpler way to do the following operation is to use a filter, but we also want to demonstrate
-# how to use case statements. Here we are assigning `n_name` to be itself when it is either of
-# the two nations of interest. Since there is no `otherwise()` statement, any values that do
-# not match these will result in a null value and then get filtered out.
-#
-# To do the same using a simple filter would be:
-# df_nation = df_nation.filter((F.col("n_name") == nation_1) | (F.col("n_name") == nation_2)) # noqa: ERA001
-df_nation = df_nation.with_column(
-    "n_name",
-    F.case(col("n_name"))
-    .when(nation_1, col("n_name"))
-    .when(nation_2, col("n_name"))
-    .end(),
-).filter(~col("n_name").is_null())
+# Limit the nation table to the two nations of interest.
+df_nation = df_nation.filter(F.in_list(col("n_name"), [nation_1, nation_2]))
 
 
 # Limit suppliers to either nation
 df_supplier = df_supplier.join(
-    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
-).select(col("s_suppkey"), col("n_name").alias("supp_nation"))
+    df_nation, left_on="s_nationkey", right_on="n_nationkey"
+).select("s_suppkey", col("n_name").alias("supp_nation"))
 
 # Limit customers to either nation
 df_customer = df_customer.join(
-    df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner"
-).select(col("c_custkey"), col("n_name").alias("cust_nation"))
+    df_nation, left_on="c_nationkey", right_on="n_nationkey"
+).select("c_custkey", col("n_name").alias("cust_nation"))
 
 # Join up all the data frames from line items, and make sure the supplier and customer are in
 # different nations.
 df = (
-    df_lineitem.join(
-        df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner"
-    )
-    .join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
-    .join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
+    df_lineitem.join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
+    .join(df_customer, left_on="o_custkey", right_on="c_custkey")
+    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
     .filter(col("cust_nation") != col("supp_nation"))
 )
 
 # Extract out two values for every line item
-df = df.with_column(
-    "l_year", F.datepart(lit("year"), col("l_shipdate")).cast(pa.int32())
-).with_column("volume", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
-
-# Aggregate the results
-df = df.aggregate(
-    [col("supp_nation"), col("cust_nation"), col("l_year")],
-    [F.sum(col("volume")).alias("revenue")],
+df = df.with_columns(
+    l_year=F.datepart(lit("year"), col("l_shipdate")).cast(pa.int32()),
+    volume=col("l_extendedprice") * (lit(1.0) - col("l_discount")),
 )
 
-# Sort based on problem statement requirements
-df = df.sort(col("supp_nation").sort(), col("cust_nation").sort(), col("l_year").sort())
+# Aggregate and sort per the spec.
+df = df.aggregate(
+    ["supp_nation", "cust_nation", "l_year"],
+    [F.sum(col("volume")).alias("revenue")],
+).sort_by("supp_nation", "cust_nation", "l_year")
 
 df.show()

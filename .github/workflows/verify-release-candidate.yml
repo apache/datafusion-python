@@ -27,7 +27,7 @@ on:
         required: true
         type: string
       rc_number:
-        description: Release candidate number (e.g., 0)
+        description: Release candidate number (e.g., 1)
         required: true
         type: string
 
@@ -72,6 +72,11 @@ jobs:
         with:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set RUSTFLAGS for Windows GNU linker
+        if: matrix.os == 'windows'
+        shell: bash
+        run: echo "RUSTFLAGS=-C link-arg=-Wl,--exclude-libs=ALL" >> "$GITHUB_ENV"
 
       - name: Run release candidate verification
         shell: bash

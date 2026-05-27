@@ -18,14 +18,16 @@
 use std::sync::Arc;
 
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
-use datafusion_proto::physical_plan::{AsExecutionPlan, DefaultPhysicalExtensionCodec};
+use datafusion_proto::physical_plan::AsExecutionPlan;
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
+use crate::codec::PythonPhysicalCodec;
 use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
+use crate::metrics::PyMetricsSet;
 
 #[pyclass(
     from_py_object,
@@ -67,11 +69,26 @@ impl PyExecutionPlan {
         format!("{}", d.indent(false))
     }
 
-    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = DefaultPhysicalExtensionCodec {};
+    #[pyo3(signature = (ctx=None))]
+    pub fn to_bytes<'py>(
+        &'py self,
+        py: Python<'py>,
+        ctx: Option<PySessionContext>,
+    ) -> PyDataFusionResult<Bound<'py, PyBytes>> {
+        // Route through the session's physical codec when supplied so
+        // user FFI codecs registered via
+        // `with_physical_extension_codec` see the encode path.
+        let default_codec;
+        let codec: &dyn datafusion_proto::physical_plan::PhysicalExtensionCodec = match ctx {
+            Some(ref ctx) => ctx.physical_codec().as_ref(),
+            None => {
+                default_codec = PythonPhysicalCodec::default();
+                &default_codec
+            }
+        };
         let proto = datafusion_proto::protobuf::PhysicalPlanNode::try_from_physical_plan(
             self.plan.clone(),
-            &codec,
+            codec,
         )?;
 
         let bytes = proto.encode_to_vec();
@@ -79,7 +96,7 @@ impl PyExecutionPlan {
     }
 
     #[staticmethod]
-    pub fn from_proto(
+    pub fn from_bytes(
         ctx: PySessionContext,
         proto_msg: Bound<'_, PyBytes>,
     ) -> PyDataFusionResult<Self> {
@@ -87,13 +104,18 @@ impl PyExecutionPlan {
         let proto_plan =
             datafusion_proto::protobuf::PhysicalPlanNode::decode(bytes).map_err(|e| {
                 PyRuntimeError::new_err(format!(
-                    "Unable to decode logical node from serialized bytes: {e}"
+                    "Unable to decode physical node from serialized bytes: {e}"
                 ))
             })?;
 
-        let codec = DefaultPhysicalExtensionCodec {};
-        let plan = proto_plan.try_into_physical_plan(ctx.ctx.task_ctx().as_ref(), &codec)?;
+        let codec = ctx.physical_codec();
+        let plan =
+            proto_plan.try_into_physical_plan(ctx.ctx.task_ctx().as_ref(), codec.as_ref())?;
         Ok(Self::new(plan))
+    }
+
+    pub fn metrics(&self) -> Option<PyMetricsSet> {
+        self.plan.metrics().map(PyMetricsSet::new)
     }
 
     fn __repr__(&self) -> String {

@@ -16,7 +16,7 @@
 # under the License.
 
 [workspace.package]
-version = "52.0.0"
+version = "53.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
 authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
@@ -31,10 +31,11 @@ members = ["crates/core", "crates/util", "examples/datafusion-ffi-example"]
 resolver = "3"
 
 [workspace.dependencies]
-tokio = { version = "1.50" }
+tokio = { version = "1.52" }
 pyo3 = { version = "0.28" }
 pyo3-async-runtimes = { version = "0.28" }
 pyo3-log = "0.13.3"
+chrono = { version = "0.4", default-features = false }
 arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
@@ -59,9 +60,9 @@ object_store = { version = "0.13.1" }
 url = "2"
 log = "0.4.29"
 parking_lot = "0.12"
-prost-types = "0.14.3"                                            # keep in line with `datafusion-substrait`
+prost-types = "0.14.3"                                                # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.28"
-datafusion-python-util = { path = "crates/util" }
+datafusion-python-util = { path = "crates/util", version = "53.0.0" }
 
 [profile.release]
 lto = "thin"
@@ -70,3 +71,12 @@ codegen-units = 2
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
+datafusion = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "47655fd6c9ef060d73497987e6ccb98e57196508" }

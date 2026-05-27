@@ -15,10 +15,44 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""DataFusion python package.
+"""DataFusion: an in-process query engine built on Apache Arrow.
 
-This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
-See https://datafusion.apache.org/python for more information.
+DataFusion is not a database -- it has no server and no external dependencies.
+You create a :py:class:`SessionContext`, point it at data sources (Parquet, CSV,
+JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
+using either SQL or the DataFrame API.
+
+Core abstractions
+-----------------
+- **SessionContext** -- entry point for loading data, running SQL, and creating
+  DataFrames.
+- **DataFrame** -- lazy query builder. Every method returns a new DataFrame;
+  call :py:meth:`~datafusion.dataframe.DataFrame.collect` or a ``to_*``
+  method to execute.
+- **Expr** -- expression tree node for column references, literals, and function
+  calls. Build with :py:func:`col` and :py:func:`lit`.
+- **functions** -- 290+ built-in scalar, aggregate, and window functions.
+
+Quick start
+-----------
+
+>>> from datafusion import SessionContext, col
+>>> from datafusion import functions as F
+>>> ctx = SessionContext()
+>>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+>>> result = (
+...     df.filter(col("a") > 1)
+...       .with_column("total", col("a") + col("b"))
+...       .aggregate([], [F.sum(col("total")).alias("grand_total")])
+... )
+>>> result.to_pydict()
+{'grand_total': [16]}
+
+User guide and full documentation: https://datafusion.apache.org/python
+
+AI agent reference (SQL-to-DataFrame mappings, expression-building patterns,
+common pitfalls), written in a dense, skill-oriented format:
+https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md
 """
 
 from __future__ import annotations
@@ -31,10 +65,16 @@ except ImportError:
     import importlib_metadata  # type: ignore[import]
 
 # Public submodules
-from . import functions, object_store, substrait, unparser
+from . import functions, ipc, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from .catalog import Catalog, Table
+from ._internal import Config
+from .catalog import (
+    Catalog,
+    Table,
+    TableProviderFactory,
+    TableProviderFactoryExportable,
+)
 from .col import col, column
 from .common import DFSchema
 from .context import (
@@ -55,7 +95,7 @@ from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
-from .plan import ExecutionPlan, LogicalPlan
+from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
@@ -84,6 +124,8 @@ __all__ = [
     "Expr",
     "InsertOp",
     "LogicalPlan",
+    "Metric",
+    "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
     "RecordBatch",
@@ -95,6 +137,8 @@ __all__ = [
     "SessionContext",
     "Table",
     "TableFunction",
+    "TableProviderFactory",
+    "TableProviderFactoryExportable",
     "WindowFrame",
     "WindowUDF",
     "catalog",
@@ -104,6 +148,7 @@ __all__ = [
     "configure_formatter",
     "expr",
     "functions",
+    "ipc",
     "lit",
     "literal",
     "object_store",

@@ -27,6 +27,41 @@ each nation, the year and profit in descending order by year (most recent first)
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        nation,
+        o_year,
+        sum(amount) as sum_profit
+    from
+        (
+                select
+                        n_name as nation,
+                        extract(year from o_orderdate) as o_year,
+                        l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity as amount
+                from
+                        part,
+                        supplier,
+                        lineitem,
+                        partsupp,
+                        orders,
+                        nation
+                where
+                        s_suppkey = l_suppkey
+                        and ps_suppkey = l_suppkey
+                        and ps_partkey = l_partkey
+                        and p_partkey = l_partkey
+                        and o_orderkey = l_orderkey
+                        and s_nationkey = n_nationkey
+                        and p_name like '%green%'
+        ) as profit
+    group by
+        nation,
+        o_year
+    order by
+        nation,
+        o_year desc;
 """
 
 import pyarrow as pa
@@ -34,7 +69,7 @@ from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-part_color = lit("green")
+part_color = "green"
 
 # Load the dataframes we need
 
@@ -62,37 +97,35 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name", "n_regionkey"
 )
 
-# Limit possible parts to the color specified
-df = df_part.filter(F.strpos(col("p_name"), part_color) > lit(0))
-
-# We have a series of joins that get us to limit down to the line items we need
-df = df.join(df_lineitem, left_on=["p_partkey"], right_on=["l_partkey"], how="inner")
-df = df.join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
-df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
-df = df.join(
-    df_partsupp,
-    left_on=["l_suppkey", "l_partkey"],
-    right_on=["ps_suppkey", "ps_partkey"],
-    how="inner",
+# Limit possible parts to the color specified, then walk the joins down to the
+# line-item rows we need and attach the supplier's nation. ``F.contains``
+# maps directly to the reference SQL's ``p_name like '%green%'``.
+df = (
+    df_part.filter(F.contains(col("p_name"), lit(part_color)))
+    .join(df_lineitem, left_on="p_partkey", right_on="l_partkey")
+    .join(df_supplier, left_on="l_suppkey", right_on="s_suppkey")
+    .join(df_orders, left_on="l_orderkey", right_on="o_orderkey")
+    .join(
+        df_partsupp,
+        left_on=["l_suppkey", "l_partkey"],
+        right_on=["ps_suppkey", "ps_partkey"],
+    )
+    .join(df_nation, left_on="s_nationkey", right_on="n_nationkey")
 )
-df = df.join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
 
 # Compute the intermediate values and limit down to the expressions we need
 df = df.select(
     col("n_name").alias("nation"),
     F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32()).alias("o_year"),
     (
-        (col("l_extendedprice") * (lit(1) - col("l_discount")))
-        - (col("ps_supplycost") * col("l_quantity"))
+        col("l_extendedprice") * (lit(1) - col("l_discount"))
+        - col("ps_supplycost") * col("l_quantity")
     ).alias("amount"),
 )
 
-# Sum up the values by nation and year
-df = df.aggregate(
-    [col("nation"), col("o_year")], [F.sum(col("amount")).alias("profit")]
+# Sum up the values by nation and year, then sort per the spec.
+df = df.aggregate(["nation", "o_year"], [F.sum(col("amount")).alias("profit")]).sort(
+    "nation", col("o_year").sort(ascending=False)
 )
-
-# Sort according to the problem specification
-df = df.sort(col("nation").sort(), col("o_year").sort(ascending=False))
 
 df.show()

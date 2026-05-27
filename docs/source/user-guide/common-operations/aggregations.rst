@@ -163,6 +163,56 @@ Suppose we want to find the speed values for only Pokemon that have low Attack v
         f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
 
 
+Comparing subsets within a group
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you need to compare the full membership of a group against a
+subset that meets some condition — for example, "which groups have at least
+one failure, but not every member failed?". The ``filter`` argument on an
+aggregate restricts the rows that contribute to *that* aggregate without
+dropping the group, so a single pass can produce both the full set and the
+filtered subset side by side. Pairing
+:py:func:`~datafusion.functions.array_agg` with ``distinct=True`` and
+``filter=`` is a compact way to express this: collect the distinct values
+of the group, collect the distinct values that satisfy the condition, then
+compare the two arrays.
+
+Suppose each row records a line item with the supplier that fulfilled it and
+a flag for whether that supplier met the commit date. We want to identify
+*partially failed* orders — orders where at least one supplier failed but
+not every supplier failed:
+
+.. ipython:: python
+
+    orders_df = ctx.from_pydict(
+        {
+            "order_id": [1, 1, 1, 2, 2, 3, 4, 4],
+            "supplier_id": [100, 101, 102, 200, 201, 300, 400, 401],
+            "failed":      [False, True, False, False, False, True, True, True],
+        },
+    )
+
+    grouped = orders_df.aggregate(
+        [col("order_id")],
+        [
+            f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
+            f.array_agg(
+                col("supplier_id"),
+                filter=col("failed"),
+                distinct=True,
+            ).alias("failed_suppliers"),
+        ],
+    )
+
+    grouped.filter(
+        (f.array_length(col("failed_suppliers")) > lit(0))
+        & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
+    ).select(col("order_id"), col("failed_suppliers"))
+
+Order 1 is partial (one of three suppliers failed). Order 2 is excluded
+because no supplier failed, order 3 because its only supplier failed, and
+order 4 because both of its suppliers failed.
+
 Grouping Sets
 -------------
 
@@ -383,4 +433,22 @@ The available aggregate functions are:
     - :py:meth:`datafusion.expr.GroupingSet.rollup`
     - :py:meth:`datafusion.expr.GroupingSet.cube`
     - :py:meth:`datafusion.expr.GroupingSet.grouping_sets`
+
+User-Defined Aggregate Functions
+--------------------------------
+
+You can ship custom aggregations to the engine by subclassing
+:py:class:`~datafusion.user_defined.Accumulator` and registering it via
+:py:func:`~datafusion.udaf`. See :py:mod:`datafusion.user_defined` for
+the accumulator interface and worked examples.
+
+.. note:: Serialization
+
+   Python aggregate UDFs travel inline inside pickled or
+   :py:meth:`~datafusion.expr.Expr.to_bytes`-serialized expressions —
+   the accumulator class is captured by value via :mod:`cloudpickle`,
+   so worker processes do not need to pre-register the UDF. Any names
+   the accumulator resolves via ``import`` are captured **by reference**
+   and must be importable on the receiving worker. See
+   :py:mod:`datafusion.ipc` for the full IPC model and security caveats.
 

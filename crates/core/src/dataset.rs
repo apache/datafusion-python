@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -62,12 +61,6 @@ impl Dataset {
 
 #[async_trait]
 impl TableProvider for Dataset {
-    /// Returns the table provider as [`Any`](std::any::Any) so that it can be
-    /// downcast to a specific implementation.
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     /// Get a reference to the schema for this table
     fn schema(&self) -> SchemaRef {
         Python::attach(|py| {

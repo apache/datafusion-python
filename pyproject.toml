@@ -44,6 +44,13 @@ classifiers = [
   "Programming Language :: Rust",
 ]
 dependencies = [
+  # cloudpickle is invoked by the Rust-side PythonLogicalCodec /
+  # PythonPhysicalCodec via pyo3 to serialize Python UDF callables —
+  # scalar, aggregate, and window — into the proto wire format.
+  # Lazy-imported on the encode / decode hot paths (and cached after
+  # the first import), so users who never serialize a plan or
+  # expression incur no runtime cost beyond the install footprint.
+  "cloudpickle>=2.0",
   "pyarrow>=16.0.0;python_version<'3.14'",
   "pyarrow>=22.0.0;python_version>='3.14'",
   "typing-extensions;python_version<'3.13'",
@@ -111,6 +118,7 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
   "ARG",
   "BLE001",
   "D",
+  "FBT003",
   "PD",
   "PLC0415",
   "PLR0913",
@@ -195,6 +203,7 @@ dev = [
   "pyarrow>=19.0.0",
   "pygithub==2.5.0",
   "pytest-asyncio>=0.23.3",
+  "pytest-timeout>=2.3.1",
   "pytest>=7.4.4",
   "pyyaml>=6.0.3",
   "ruff>=0.15.1",

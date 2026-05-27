@@ -27,6 +27,52 @@ comment information.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        s_acctbal,
+        s_name,
+        n_name,
+        p_partkey,
+        p_mfgr,
+        s_address,
+        s_phone,
+        s_comment
+    from
+        part,
+        supplier,
+        partsupp,
+        nation,
+        region
+    where
+        p_partkey = ps_partkey
+        and s_suppkey = ps_suppkey
+        and p_size = 15
+        and p_type like '%BRASS'
+        and s_nationkey = n_nationkey
+        and n_regionkey = r_regionkey
+        and r_name = 'EUROPE'
+        and ps_supplycost = (
+                select
+                        min(ps_supplycost)
+                from
+                        partsupp,
+                        supplier,
+                        nation,
+                        region
+                where
+                        p_partkey = ps_partkey
+                        and s_suppkey = ps_suppkey
+                        and s_nationkey = n_nationkey
+                        and n_regionkey = r_regionkey
+                        and r_name = 'EUROPE'
+        )
+    order by
+        s_acctbal desc,
+        n_name,
+        s_name,
+        p_partkey limit 100;
 """
 
 import datafusion
@@ -67,35 +113,30 @@ df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
     "r_regionkey", "r_name"
 )
 
-# Filter down parts. Part names contain the type of interest, so we can use strpos to find where
-# in the p_type column the word is. `strpos` will return 0 if not found, otherwise the position
-# in the string where it is located.
+# Filter down parts. The reference SQL uses ``p_type like '%BRASS'`` which
+# is an ``ends_with`` check; use the dedicated string function rather than
+# a manual substring match.
 
 df_part = df_part.filter(
-    F.strpos(col("p_type"), lit(TYPE_OF_INTEREST)) > lit(0)
-).filter(col("p_size") == lit(SIZE_OF_INTEREST))
+    F.ends_with(col("p_type"), lit(TYPE_OF_INTEREST)),
+    col("p_size") == SIZE_OF_INTEREST,
+)
 
 # Filter regions down to the one of interest
 
-df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
+df_region = df_region.filter(col("r_name") == REGION_OF_INTEREST)
 
 # Now that we have the region, find suppliers in that region. Suppliers are tied to their nation
 # and nations are tied to the region.
 
-df_nation = df_nation.join(
-    df_region, left_on=["n_regionkey"], right_on=["r_regionkey"], how="inner"
-)
-df_supplier = df_supplier.join(
-    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
-)
+df_nation = df_nation.join(df_region, left_on="n_regionkey", right_on="r_regionkey")
+df_supplier = df_supplier.join(df_nation, left_on="s_nationkey", right_on="n_nationkey")
 
 # Now that we know who the potential suppliers are for the part, we can limit out part
 # supplies table down. We can further join down to the specific parts we've identified
 # as matching the request
 
-df = df_partsupp.join(
-    df_supplier, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="inner"
-)
+df = df_partsupp.join(df_supplier, left_on="ps_suppkey", right_on="s_suppkey")
 
 # Locate the minimum cost across all suppliers. There are multiple ways you could do this,
 # but one way is to create a window function across all suppliers, find the minimum, and
@@ -112,9 +153,9 @@ df = df.with_column(
     ),
 )
 
-df = df.filter(col("min_cost") == col("ps_supplycost"))
-
-df = df.join(df_part, left_on=["ps_partkey"], right_on=["p_partkey"], how="inner")
+df = df.filter(col("min_cost") == col("ps_supplycost")).join(
+    df_part, left_on="ps_partkey", right_on="p_partkey"
+)
 
 # From the problem statement, these are the values we wish to output
 
@@ -132,12 +173,10 @@ df = df.select(
 # Sort and display 100 entries
 df = df.sort(
     col("s_acctbal").sort(ascending=False),
-    col("n_name").sort(),
-    col("s_name").sort(),
-    col("p_partkey").sort(),
-)
-
-df = df.limit(100)
+    "n_name",
+    "s_name",
+    "p_partkey",
+).limit(100)
 
 # Show results
 

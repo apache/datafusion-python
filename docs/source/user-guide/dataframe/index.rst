@@ -365,7 +365,16 @@ DataFusion provides many built-in functions for data manipulation:
 For a complete list of available functions, see the :py:mod:`datafusion.functions` module documentation.
 
 
+Execution Metrics
+-----------------
+
+After executing a DataFrame (via ``collect()``, ``execute_stream()``, etc.),
+DataFusion populates per-operator runtime statistics such as row counts and
+compute time. See :doc:`execution-metrics` for a full explanation and
+worked example.
+
 .. toctree::
    :maxdepth: 1
 
    rendering
+   execution-metrics

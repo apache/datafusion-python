@@ -35,7 +35,6 @@ use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
 use datafusion::datasource::{MemTable, TableProvider};
-use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -44,6 +43,7 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
+use datafusion::execution::{FunctionRegistry, TaskContextProvider};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -52,11 +52,14 @@ use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
+use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
-use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
+use datafusion_proto::logical_plan::LogicalExtensionCodec;
+use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
-    create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, get_global_ctx,
-    get_tokio_runtime, spawn_future, wait_for_future,
+    create_logical_extension_capsule, create_physical_extension_capsule,
+    ffi_logical_codec_from_pycapsule, get_global_ctx, get_tokio_runtime,
+    physical_codec_from_pycapsule, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -69,6 +72,7 @@ use uuid::Uuid;
 use crate::catalog::{
     PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
 };
+use crate::codec::{PythonLogicalCodec, PythonPhysicalCodec};
 use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
@@ -365,7 +369,8 @@ impl PySQLOptions {
 #[derive(Clone)]
 pub struct PySessionContext {
     pub ctx: Arc<SessionContext>,
-    logical_codec: Arc<FFI_LogicalExtensionCodec>,
+    logical_codec: Arc<PythonLogicalCodec>,
+    physical_codec: Arc<PythonPhysicalCodec>,
 }
 
 #[pymethods]
@@ -393,14 +398,18 @@ impl PySessionContext {
             .with_default_features()
             .build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
-        let logical_codec = Self::default_logical_codec(&ctx);
-        Ok(PySessionContext { ctx, logical_codec })
+        Ok(PySessionContext {
+            ctx,
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
+        })
     }
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
         Ok(PySessionContext {
             ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
             logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec: Arc::clone(&self.physical_codec),
         })
     }
 
@@ -408,8 +417,11 @@ impl PySessionContext {
     #[pyo3(signature = ())]
     pub fn global_ctx() -> PyResult<Self> {
         let ctx = get_global_ctx().clone();
-        let logical_codec = Self::default_logical_codec(&ctx);
-        Ok(Self { ctx, logical_codec })
+        Ok(Self {
+            ctx,
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
+        })
     }
 
     /// Register an object store with the given name
@@ -714,7 +726,8 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         if factory.hasattr("__datafusion_table_provider_factory__")? {
             let py = factory.py();
-            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            let ffi = self.ffi_logical_codec();
+            let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
             factory = factory
                 .getattr("__datafusion_table_provider_factory__")?
                 .call1((codec_capsule,))?;
@@ -730,7 +743,7 @@ impl PySessionContext {
             } else {
                 Arc::new(RustWrappedPyTableProviderFactory::new(
                     factory.into(),
-                    self.logical_codec.clone(),
+                    self.ffi_logical_codec(),
                 ))
             };
 
@@ -748,7 +761,8 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         if provider.hasattr("__datafusion_catalog_provider_list__")? {
             let py = provider.py();
-            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            let ffi = self.ffi_logical_codec();
+            let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
             provider = provider
                 .getattr("__datafusion_catalog_provider_list__")?
                 .call1((codec_capsule,))?;
@@ -759,14 +773,14 @@ impl PySessionContext {
                 .pointer_checked(Some(c"datafusion_catalog_provider_list"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
-            let provider: Arc<dyn CatalogProviderList + Send> = provider.into();
-            provider as Arc<dyn CatalogProviderList>
+            let provider: Arc<dyn CatalogProviderList> = provider.into();
+            provider
         } else {
             match provider.extract::<PyCatalogList>() {
                 Ok(py_catalog_list) => py_catalog_list.catalog_list,
                 Err(_) => Arc::new(RustWrappedPyCatalogProviderList::new(
                     provider.into(),
-                    Arc::clone(&self.logical_codec),
+                    self.ffi_logical_codec(),
                 )) as Arc<dyn CatalogProviderList>,
             }
         };
@@ -783,7 +797,8 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         if provider.hasattr("__datafusion_catalog_provider__")? {
             let py = provider.py();
-            let codec_capsule = create_logical_extension_capsule(py, self.logical_codec.as_ref())?;
+            let ffi = self.ffi_logical_codec();
+            let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
             provider = provider
                 .getattr("__datafusion_catalog_provider__")?
                 .call1((codec_capsule,))?;
@@ -794,14 +809,14 @@ impl PySessionContext {
                 .pointer_checked(Some(c"datafusion_catalog_provider"))?
                 .cast();
             let provider = unsafe { data.as_ref() };
-            let provider: Arc<dyn CatalogProvider + Send> = provider.into();
-            provider as Arc<dyn CatalogProvider>
+            let provider: Arc<dyn CatalogProvider> = provider.into();
+            provider
         } else {
             match provider.extract::<PyCatalog>() {
                 Ok(py_catalog) => py_catalog.catalog,
                 Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
                     provider.into(),
-                    Arc::clone(&self.logical_codec),
+                    self.ffi_logical_codec(),
                 )) as Arc<dyn CatalogProvider>,
             }
         };
@@ -830,6 +845,13 @@ impl PySessionContext {
         let table = MemTable::try_new(schema, partitions.0)?;
         self.ctx.register_table(name, Arc::new(table))?;
         Ok(())
+    }
+
+    pub fn read_batches(
+        &self,
+        batches: PyArrowType<Vec<RecordBatch>>,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        Ok(PyDataFrame::new(self.ctx.read_batches(batches.0)?))
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1050,21 +1072,59 @@ impl PySessionContext {
         self.ctx.deregister_udwf(name);
     }
 
+    pub fn udf(&self, name: &str) -> PyResult<PyScalarUDF> {
+        if !self.ctx.udfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDF named '{name}'")));
+        }
+        let function = (*self.ctx.udf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyScalarUDF { function })
+    }
+
+    pub fn udaf(&self, name: &str) -> PyResult<PyAggregateUDF> {
+        if !self.ctx.udafs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDAF named '{name}'")));
+        }
+        let function = (*self.ctx.udaf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyAggregateUDF { function })
+    }
+
+    pub fn udwf(&self, name: &str) -> PyResult<PyWindowUDF> {
+        if !self.ctx.udwfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDWF named '{name}'")));
+        }
+        let function = (*self.ctx.udwf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyWindowUDF { function })
+    }
+
+    pub fn udfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udfs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udafs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udafs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udwfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udwfs().into_iter().collect();
+        names.sort();
+        names
+    }
+
     #[pyo3(signature = (name="datafusion"))]
     pub fn catalog(&self, py: Python, name: &str) -> PyResult<Py<PyAny>> {
         let catalog = self.ctx.catalog(name).ok_or(PyKeyError::new_err(format!(
             "Catalog with name {name} doesn't exist."
         )))?;
 
-        match catalog
-            .as_any()
-            .downcast_ref::<RustWrappedPyCatalogProvider>()
-        {
+        match catalog.downcast_ref::<RustWrappedPyCatalogProvider>() {
             Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
-            None => Ok(
-                PyCatalog::new_from_parts(catalog, Arc::clone(&self.logical_codec))
-                    .into_py_any(py)?,
-            ),
+            None => {
+                Ok(PyCatalog::new_from_parts(catalog, self.ffi_logical_codec()).into_py_any(py)?)
+            }
         }
     }
 
@@ -1353,21 +1413,61 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        create_logical_extension_capsule(py, self.logical_codec.as_ref())
+        let ffi = self.ffi_logical_codec();
+        create_logical_extension_capsule(py, ffi.as_ref())
     }
 
     pub fn with_logical_extension_codec<'py>(
         &self,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let logical_codec = Arc::new(ffi_logical_codec_from_pycapsule(codec)?);
+        let inner_ffi = ffi_logical_codec_from_pycapsule(codec)?;
+        let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
+        let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
-        Ok({
-            Self {
-                ctx: Arc::clone(&self.ctx),
-                logical_codec,
-            }
+        Ok(Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec,
+            physical_codec: Arc::clone(&self.physical_codec),
         })
+    }
+
+    pub fn __datafusion_physical_extension_codec__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let ffi = self.ffi_physical_codec();
+        create_physical_extension_capsule(py, ffi.as_ref())
+    }
+
+    pub fn with_physical_extension_codec<'py>(
+        &self,
+        codec: Bound<'py, PyAny>,
+    ) -> PyDataFusionResult<Self> {
+        let inner = physical_codec_from_pycapsule(&codec)?;
+        let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
+
+        Ok(Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec,
+        })
+    }
+
+    pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
+        let logical_codec = Arc::new(
+            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        let physical_codec = Arc::new(
+            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec,
+            physical_codec,
+        }
     }
 }
 
@@ -1416,12 +1516,42 @@ impl PySessionContext {
         Ok(())
     }
 
-    fn default_logical_codec(ctx: &Arc<SessionContext>) -> Arc<FFI_LogicalExtensionCodec> {
-        let codec = Arc::new(DefaultLogicalExtensionCodec {});
+    /// Session-scoped logical codec. Sibling modules read this when they
+    /// need to serialize/deserialize logical-layer types (LogicalPlan,
+    /// Expr) against the user-installed (or default) codec stack.
+    pub(crate) fn logical_codec(&self) -> &Arc<PythonLogicalCodec> {
+        &self.logical_codec
+    }
+
+    /// Session-scoped physical codec. Sibling modules read this for
+    /// ExecutionPlan / PhysicalExpr serialization.
+    pub(crate) fn physical_codec(&self) -> &Arc<PythonPhysicalCodec> {
+        &self.physical_codec
+    }
+
+    /// Build an FFI-wrapped clone of the session's logical codec on demand.
+    /// Used at every site that exports the codec across an FFI boundary
+    /// (capsule getters, Rust wrappers for Python-defined providers, etc.).
+    pub(crate) fn ffi_logical_codec(&self) -> Arc<FFI_LogicalExtensionCodec> {
+        let inner: Arc<dyn LogicalExtensionCodec> =
+            Arc::clone(&self.logical_codec) as Arc<dyn LogicalExtensionCodec>;
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
         Arc::new(FFI_LogicalExtensionCodec::new(
-            codec,
+            inner,
+            Some(runtime),
+            &ctx_provider,
+        ))
+    }
+
+    /// Build an FFI-wrapped clone of the session's physical codec on demand.
+    pub(crate) fn ffi_physical_codec(&self) -> Arc<FFI_PhysicalExtensionCodec> {
+        let inner: Arc<dyn PhysicalExtensionCodec + Send> =
+            Arc::clone(&self.physical_codec) as Arc<dyn PhysicalExtensionCodec + Send>;
+        let runtime = get_tokio_runtime().handle().clone();
+        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
+        Arc::new(FFI_PhysicalExtensionCodec::new(
+            inner,
             Some(runtime),
             &ctx_provider,
         ))
@@ -1445,9 +1575,10 @@ impl From<PySessionContext> for SessionContext {
 
 impl From<SessionContext> for PySessionContext {
     fn from(ctx: SessionContext) -> PySessionContext {
-        let ctx = Arc::new(ctx);
-        let logical_codec = Self::default_logical_codec(&ctx);
-
-        PySessionContext { ctx, logical_codec }
+        PySessionContext {
+            ctx: Arc::new(ctx),
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
+        }
     }
 }

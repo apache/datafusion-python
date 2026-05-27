@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::any::Any;
 use std::ops::Range;
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -25,7 +24,6 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
-use datafusion::logical_expr::ptr_eq::PtrEq;
 use datafusion::logical_expr::window_state::WindowAggState;
 use datafusion::logical_expr::{
     PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
@@ -198,15 +196,24 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 }
 
+fn instantiate_partition_evaluator(evaluator: &Py<PyAny>) -> Result<Box<dyn PartitionEvaluator>> {
+    let instance = Python::attach(|py| {
+        evaluator
+            .call0(py)
+            .map_err(|e| DataFusionError::Execution(e.to_string()))
+    })?;
+    Ok(Box::new(RustPartitionEvaluator::new(instance)))
+}
+
+/// Wrap a Python evaluator factory in a `PartitionEvaluatorFactory`.
+///
+/// Retained for downstream callers that previously consumed this
+/// helper to build a [`PartitionEvaluatorFactory`] for factory-based
+/// APIs. New in-crate code should construct a
+/// [`PythonFunctionWindowUDF`] directly so the codec can downcast and
+/// ship it inline.
 pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFactory {
-    Arc::new(move || -> Result<Box<dyn PartitionEvaluator>> {
-        let evaluator = Python::attach(|py| {
-            evaluator
-                .call0(py)
-                .map_err(|e| DataFusionError::Execution(e.to_string()))
-        })?;
-        Ok(Box::new(RustPartitionEvaluator::new(evaluator)))
-    })
+    Arc::new(move || instantiate_partition_evaluator(&evaluator))
 }
 
 /// Represents an WindowUDF
@@ -234,14 +241,14 @@ impl PyWindowUDF {
         volatility: &str,
     ) -> PyResult<Self> {
         let return_type = return_type.0;
-        let input_types = input_types.into_iter().map(|t| t.0).collect();
+        let input_types: Vec<DataType> = input_types.into_iter().map(|t| t.0).collect();
 
-        let function = WindowUDF::from(MultiColumnWindowUDF::new(
+        let function = WindowUDF::from(PythonFunctionWindowUDF::new(
             name,
+            evaluator,
             input_types,
             return_type,
             parse_volatility(volatility)?,
-            to_rust_partition_evaluator(evaluator),
         ));
         Ok(Self { function })
     }
@@ -276,51 +283,104 @@ impl PyWindowUDF {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("WindowUDF({})", self.function.name()))
     }
-}
 
-#[derive(Hash, Eq, PartialEq)]
-pub struct MultiColumnWindowUDF {
-    name: String,
-    signature: Signature,
-    return_type: DataType,
-    partition_evaluator_factory: PtrEq<PartitionEvaluatorFactory>,
-}
-
-impl std::fmt::Debug for MultiColumnWindowUDF {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("WindowUDF")
-            .field("name", &self.name)
-            .field("signature", &self.signature)
-            .field("return_type", &"<func>")
-            .field("partition_evaluator_factory", &"<FUNC>")
-            .finish()
+    #[getter]
+    fn name(&self) -> &str {
+        self.function.name()
     }
 }
 
-impl MultiColumnWindowUDF {
+/// `WindowUDFImpl` for Python-defined window UDFs.
+///
+/// Holds the Python evaluator factory directly so the codec can
+/// downcast and cloudpickle it across process boundaries. Replaces
+/// the prior factory-erased `MultiColumnWindowUDF`; the old name is
+/// kept as a type alias below for backward compatibility.
+#[derive(Debug)]
+pub struct PythonFunctionWindowUDF {
+    name: String,
+    evaluator: Py<PyAny>,
+    signature: Signature,
+    return_type: DataType,
+}
+
+/// Backward-compatible alias for downstream crates that referenced the
+/// previous struct name. New code should use [`PythonFunctionWindowUDF`].
+pub type MultiColumnWindowUDF = PythonFunctionWindowUDF;
+
+impl PythonFunctionWindowUDF {
     pub fn new(
         name: impl Into<String>,
+        evaluator: Py<PyAny>,
         input_types: Vec<DataType>,
         return_type: DataType,
         volatility: Volatility,
-        partition_evaluator_factory: PartitionEvaluatorFactory,
     ) -> Self {
         let name = name.into();
         let signature = Signature::exact(input_types, volatility);
         Self {
             name,
+            evaluator,
             signature,
             return_type,
-            partition_evaluator_factory: partition_evaluator_factory.into(),
         }
+    }
+
+    /// Stored Python callable that produces a fresh partition
+    /// evaluator instance per partition. Consumed by the codec to
+    /// cloudpickle the evaluator factory across process boundaries.
+    pub(crate) fn evaluator(&self) -> &Py<PyAny> {
+        &self.evaluator
+    }
+
+    pub(crate) fn return_type(&self) -> &DataType {
+        &self.return_type
     }
 }
 
-impl WindowUDFImpl for MultiColumnWindowUDF {
-    fn as_any(&self) -> &dyn Any {
-        self
+impl Eq for PythonFunctionWindowUDF {}
+impl PartialEq for PythonFunctionWindowUDF {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.signature == other.signature
+            && self.return_type == other.return_type
+            // Pointer-identity fast path: `Arc`-shared clones of the
+            // same UDF skip the GIL roundtrip. Falls through to Python
+            // `__eq__` only for two distinct callables.
+            && (self.evaluator.as_ptr() == other.evaluator.as_ptr()
+                || Python::attach(|py| {
+                    // See `PythonFunctionScalarUDF::eq` for the
+                    // rationale on swallowing the exception as `false`
+                    // and logging at `debug`. FIXME: revisit if
+                    // upstream `WindowUDFImpl` exposes a fallible
+                    // `PartialEq`.
+                    self.evaluator
+                        .bind(py)
+                        .eq(other.evaluator.bind(py))
+                        .unwrap_or_else(|e| {
+                            log::debug!(
+                                target: "datafusion_python::udwf",
+                                "PythonFunctionWindowUDF {:?} __eq__ raised; treating as unequal: {e}",
+                                self.name,
+                            );
+                            false
+                        })
+                }))
     }
+}
 
+impl std::hash::Hash for PythonFunctionWindowUDF {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        // See `PythonFunctionScalarUDF`'s `Hash` impl for the
+        // rationale: hash the identifying header only and let
+        // `PartialEq` disambiguate evaluators.
+        self.name.hash(state);
+        self.signature.hash(state);
+        self.return_type.hash(state);
+    }
+}
+
+impl WindowUDFImpl for PythonFunctionWindowUDF {
     fn name(&self) -> &str {
         &self.name
     }
@@ -339,7 +399,6 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
         &self,
         _partition_evaluator_args: PartitionEvaluatorArgs,
     ) -> Result<Box<dyn PartitionEvaluator>> {
-        let _ = _partition_evaluator_args;
-        (self.partition_evaluator_factory)()
+        instantiate_partition_evaluator(&self.evaluator)
     }
 }

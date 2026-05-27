@@ -113,6 +113,18 @@ def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
     return value.__class__.__name__ == "PyCapsule"
 
 
+class LogicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_logical_extension_codec__``."""
+
+    def __datafusion_logical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
+class PhysicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_physical_extension_codec__``."""
+
+    def __datafusion_physical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -140,6 +152,41 @@ class ScalarUDF:
         self._udf = df_internal.ScalarUDF(
             name, func, input_fields, return_field, str(volatility)
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
+        """Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udf = internal
+        return wrapper
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDF.
+
+        For UDFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> from datafusion import udf
+            >>> double = udf(
+            ...     lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+            ...     [pa.int64()],
+            ...     pa.int64(),
+            ...     volatility="immutable",
+            ...     name="double",
+            ... )
+            >>> double.name
+            'double'
+        """
+        return self._udf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Scalar UDF."""
@@ -417,6 +464,28 @@ class AggregateUDF:
             state_type,
             str(volatility),
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
+        """Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udaf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udaf = internal
+        return wrapper
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDAF.
+
+        For UDAFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udaf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Aggregate UDF."""
@@ -827,6 +896,28 @@ class WindowUDF:
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
+        """Wrap an already-constructed internal ``WindowUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udwf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udwf = internal
+        return wrapper
+
+    @property
+    def name(self) -> str:
+        """Return the registered name of this UDWF.
+
+        For UDWFs imported via the FFI capsule protocol, this is the
+        name the capsule itself reports — not the ``name`` argument
+        passed to the constructor (which is ignored on the FFI path).
+        """
+        return self._udwf.name
 
     def __repr__(self) -> str:
         """Print a string representation of the Window UDF."""

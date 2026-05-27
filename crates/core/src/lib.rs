@@ -28,6 +28,7 @@ use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+pub mod codec;
 pub mod common;
 
 #[allow(clippy::borrow_deref_ref)]
@@ -41,6 +42,7 @@ pub mod errors;
 pub mod expr;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
+pub mod metrics;
 mod options;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
@@ -60,6 +62,11 @@ mod udaf;
 mod udf;
 pub mod udtf;
 mod udwf;
+
+// Re-export helpers previously consumed by downstream Rust crates.
+// Modules stay private to keep the public Rust API surface small.
+pub use udaf::to_rust_accumulator;
+pub use udwf::{MultiColumnWindowUDF, PythonFunctionWindowUDF, to_rust_partition_evaluator};
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
@@ -89,6 +96,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<udwf::PyWindowUDF>()?;
     m.add_class::<udtf::PyTableFunction>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
+    m.add_class::<metrics::PyMetricsSet>()?;
+    m.add_class::<metrics::PyMetric>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;

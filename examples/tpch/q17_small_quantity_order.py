@@ -26,6 +26,26 @@ taken?
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        sum(l_extendedprice) / 7.0 as avg_yearly
+    from
+        lineitem,
+        part
+    where
+        p_partkey = l_partkey
+        and p_brand = 'Brand#23'
+        and p_container = 'MED BOX'
+        and l_quantity < (
+                select
+                        0.2 * avg(l_quantity)
+                from
+                        lineitem
+                where
+                        l_partkey = p_partkey
+        );
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit
@@ -47,29 +67,23 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey", "l_quantity", "l_extendedprice"
 )
 
-# Limit to the problem statement's brand and container types
-df = df_part.filter(col("p_brand") == lit(BRAND)).filter(
-    col("p_container") == lit(CONTAINER)
+# Limit to parts of the target brand/container, join their line items, and
+# attach the per-part average quantity via a partitioned window function —
+# the DataFrame form of the SQL's correlated ``avg(l_quantity)`` subquery.
+whole_frame = WindowFrame("rows", None, None)
+
+df = (
+    df_part.filter(col("p_brand") == BRAND, col("p_container") == CONTAINER)
+    .join(df_lineitem, left_on="p_partkey", right_on="l_partkey")
+    .with_column(
+        "avg_quantity",
+        F.avg(col("l_quantity")).over(
+            Window(partition_by=[col("l_partkey")], window_frame=whole_frame)
+        ),
+    )
+    .filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
+    .aggregate([], [F.sum(col("l_extendedprice")).alias("total")])
+    .select((col("total") / lit(7.0)).alias("avg_yearly"))
 )
-
-# Combine data
-df = df.join(df_lineitem, left_on=["p_partkey"], right_on=["l_partkey"], how="inner")
-
-# Find the average quantity
-window_frame = WindowFrame("rows", None, None)
-df = df.with_column(
-    "avg_quantity",
-    F.avg(col("l_quantity")).over(
-        Window(partition_by=[col("l_partkey")], window_frame=window_frame)
-    ),
-)
-
-df = df.filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
-
-# Compute the total
-df = df.aggregate([], [F.sum(col("l_extendedprice")).alias("total")])
-
-# Divide by number of years in the problem statement to get average
-df = df.select((col("total") / lit(7)).alias("avg_yearly"))
 
 df.show()

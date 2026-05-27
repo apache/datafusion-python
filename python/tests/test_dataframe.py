@@ -292,6 +292,20 @@ def test_select_exprs(df):
     assert result.column(1) == pa.array([3, 3, 3])
 
 
+def test_alias_self_join(df):
+    left = df.alias("l")
+    right = df.alias("r")
+    joined = left.join(right, left_on="a", right_on="a").select(
+        "a",
+        column("l.b").alias("lb"),
+        column("r.b").alias("rb"),
+    )
+    result = joined.sort(column("a")).collect()[0]
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([4, 5, 6])
+
+
 def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
@@ -410,6 +424,16 @@ def test_show_empty(df, capsys):
     df_empty.show()
     captured = capsys.readouterr()
     assert "DataFrame has no rows" in captured.out
+
+
+def test_show_on_explain(ctx, capsys):
+    ctx.sql("explain select 1").show()
+    captured = capsys.readouterr()
+    assert "1 as Int64(1)" in captured.out
+
+    ctx.sql("explain analyze select 1").show()
+    captured = capsys.readouterr()
+    assert "1 as Int64(1)" in captured.out
 
 
 def test_sort(df):
@@ -1680,8 +1704,12 @@ def test_repr_rows_backward_compatibility(clean_formatter_state):
     assert formatter.max_rows == 15
     assert formatter.repr_rows == 15
 
-    # Should fail when conflicting with max_rows
-    with pytest.raises(ValueError, match="Cannot specify both repr_rows and max_rows"):
+    # Should fail when conflicting with max_rows. The deprecation warning still
+    # fires before the ValueError, so assert both.
+    with (
+        pytest.raises(ValueError, match="Cannot specify both repr_rows and max_rows"),
+        pytest.warns(DeprecationWarning, match="repr_rows parameter is deprecated"),
+    ):
         DataFrameHtmlFormatter(repr_rows=5, max_rows=10)
 
     # Setting repr_rows via property should warn
@@ -3416,10 +3444,18 @@ def test_fill_null_all_null_column(ctx):
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
 
 
+_slow_udf_started = threading.Event()
+
+
 @udf([pa.int64()], pa.int64(), "immutable")
 def slow_udf(x: pa.Array) -> pa.Array:
-    # This must be longer than the check interval in wait_for_future
-    time.sleep(2.0)
+    _slow_udf_started.set()
+    # Sleep in small increments so Python's eval loop checks for pending
+    # async exceptions (like KeyboardInterrupt via PyThreadState_SetAsyncExc)
+    # between iterations. A single long time.sleep() is a C call where async
+    # exceptions are not checked on all Python versions (notably 3.11).
+    for _ in range(200):
+        time.sleep(0.01)
     return x
 
 
@@ -3453,6 +3489,7 @@ def test_collect_or_stream_interrupted(slow_query, as_c_stream):  # noqa: C901 P
     if as_c_stream:
         reader = pa.RecordBatchReader.from_stream(df)
 
+    _slow_udf_started.clear()
     read_started = threading.Event()
     read_exception = []
     read_thread_id = None
@@ -3462,6 +3499,14 @@ def test_collect_or_stream_interrupted(slow_query, as_c_stream):  # noqa: C901 P
         """Wait for read to start, then raise KeyboardInterrupt in read thread."""
         if not read_started.wait(timeout=max_wait_time):
             msg = f"Read operation did not start within {max_wait_time} seconds"
+            raise RuntimeError(msg)
+
+        # For slow_query tests, wait until the UDF is actually executing Python
+        # bytecode before sending the interrupt. PyThreadState_SetAsyncExc only
+        # delivers exceptions when the thread is in the Python eval loop, not
+        # while in native (Rust/C) code.
+        if slow_query and not _slow_udf_started.wait(timeout=max_wait_time):
+            msg = f"UDF did not start within {max_wait_time} seconds"
             raise RuntimeError(msg)
 
         if read_thread_id is None:

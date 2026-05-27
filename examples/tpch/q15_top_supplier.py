@@ -24,21 +24,50 @@ whose contribution was equal to the maximum, presented in supplier number order.
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    create view revenue0 (supplier_no, total_revenue) as
+        select
+                l_suppkey,
+                sum(l_extendedprice * (1 - l_discount))
+        from
+                lineitem
+        where
+                l_shipdate >= date '1996-01-01'
+                and l_shipdate < date '1996-01-01' + interval '3' month
+        group by
+                l_suppkey;
+    select
+        s_suppkey,
+        s_name,
+        s_address,
+        s_phone,
+        total_revenue
+    from
+        supplier,
+        revenue0
+    where
+        s_suppkey = supplier_no
+        and total_revenue = (
+                select
+                        max(total_revenue)
+                from
+                        revenue0
+        )
+    order by
+        s_suppkey;
+    drop view revenue0;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
-from datafusion import SessionContext, WindowFrame, col, lit
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
-from datafusion.expr import Window
 from util import get_data_path
 
-DATE = "1996-01-01"
-
-date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
-
-interval_3_months = lit(pa.scalar((0, 91, 0), type=pa.month_day_nano_interval()))
+QUARTER_START = date(1996, 1, 1)
+QUARTER_END = date(1996, 4, 1)
 
 # Load the dataframes we need
 
@@ -54,38 +83,29 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_phone",
 )
 
-# Limit line items to the quarter of interest
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
-    col("l_shipdate") < date_of_interest + interval_3_months
+# Per-supplier revenue over the quarter of interest.
+revenue = col("l_extendedprice") * (lit(1) - col("l_discount"))
+
+per_supplier_revenue = df_lineitem.filter(
+    col("l_shipdate") >= lit(QUARTER_START),
+    col("l_shipdate") < lit(QUARTER_END),
+).aggregate(["l_suppkey"], [F.sum(revenue).alias("total_revenue")])
+
+# Compute the grand maximum revenue separately and join on equality — the
+# DataFrame stand-in for the reference SQL's
+# ``total_revenue = (select max(total_revenue) from revenue0)`` subquery.
+max_revenue = per_supplier_revenue.aggregate(
+    [], [F.max(col("total_revenue")).alias("max_rev")]
 )
 
-df = df_lineitem.aggregate(
-    [col("l_suppkey")],
-    [
-        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
-            "total_revenue"
-        )
-    ],
+top_suppliers = per_supplier_revenue.join_on(
+    max_revenue, col("total_revenue") == col("max_rev")
+).select("l_suppkey", "total_revenue")
+
+df = (
+    df_supplier.join(top_suppliers, left_on="s_suppkey", right_on="l_suppkey")
+    .select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
+    .sort_by("s_suppkey")
 )
-
-# Use a window function to find the maximum revenue across the entire dataframe
-window_frame = WindowFrame("rows", None, None)
-df = df.with_column(
-    "max_revenue",
-    F.max(col("total_revenue")).over(Window(window_frame=window_frame)),
-)
-
-# Find all suppliers whose total revenue is the same as the maximum
-df = df.filter(col("total_revenue") == col("max_revenue"))
-
-# Now that we know the supplier(s) with maximum revenue, get the rest of their information
-# from the supplier table
-df = df.join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
-
-# Return only the columns requested
-df = df.select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
-
-# If we have more than one, sort by supplier number (suppkey)
-df = df.sort(col("s_suppkey").sort())
 
 df.show()

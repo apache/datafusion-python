@@ -24,20 +24,32 @@ gives the percentage. Revenue is defined as (l_extendedprice * (1-l_discount)).
 
 The above problem statement text is copyrighted by the Transaction Processing Performance Council
 as part of their TPC Benchmark H Specification revision 2.18.0.
+
+Reference SQL (from TPC-H specification, used by the benchmark suite)::
+
+    select
+        100.00 * sum(case
+                when p_type like 'PROMO%'
+                        then l_extendedprice * (1 - l_discount)
+                else 0
+        end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
+    from
+        lineitem,
+        part
+    where
+        l_partkey = p_partkey
+        and l_shipdate >= date '1995-09-01'
+        and l_shipdate < date '1995-09-01' + interval '1' month;
 """
 
-from datetime import datetime
+from datetime import date
 
-import pyarrow as pa
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
 from util import get_data_path
 
-DATE = "1995-09-01"
-
-date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
-
-interval_one_month = lit(pa.scalar((0, 30, 0), type=pa.month_day_nano_interval()))
+MONTH_START = date(1995, 9, 1)
+MONTH_END = date(1995, 10, 1)
 
 # Load the dataframes we need
 
@@ -49,37 +61,30 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
 df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_type")
 
 
-# Check part type begins with PROMO
-df_part = df_part.filter(
-    F.substring(col("p_type"), lit(0), lit(6)) == lit("PROMO")
-).with_column("promo_factor", lit(1.0))
+# Restrict the line items to the month of interest, join the matching part
+# rows, and aggregate revenue totals with a ``filter`` clause on the promo
+# sum — the DataFrame form of SQL ``sum(... ) FILTER (WHERE ...)``.
+revenue = col("l_extendedprice") * (lit(1.0) - col("l_discount"))
+is_promo = F.starts_with(col("p_type"), lit("PROMO"))
 
-df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
-    col("l_shipdate") < date_of_interest + interval_one_month
-)
-
-# Left join so we can sum up the promo parts different from other parts
-df = df_lineitem.join(
-    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="left"
-)
-
-# Make a factor of 1.0 if it is a promotion, 0.0 otherwise
-df = df.with_column("promo_factor", F.coalesce(col("promo_factor"), lit(0.0)))
-df = df.with_column("revenue", col("l_extendedprice") * (lit(1.0) - col("l_discount")))
-
-
-# Sum up the promo and total revenue
-df = df.aggregate(
-    [],
-    [
-        F.sum(col("promo_factor") * col("revenue")).alias("promo_revenue"),
-        F.sum(col("revenue")).alias("total_revenue"),
-    ],
-)
-
-# Return the percentage of revenue from promotions
-df = df.select(
-    (lit(100.0) * col("promo_revenue") / col("total_revenue")).alias("promo_revenue")
+df = (
+    df_lineitem.filter(
+        col("l_shipdate") >= lit(MONTH_START),
+        col("l_shipdate") < lit(MONTH_END),
+    )
+    .join(df_part, left_on="l_partkey", right_on="p_partkey")
+    .aggregate(
+        [],
+        [
+            F.sum(revenue, filter=is_promo).alias("promo_revenue"),
+            F.sum(revenue).alias("total_revenue"),
+        ],
+    )
+    .select(
+        (lit(100.0) * col("promo_revenue") / col("total_revenue")).alias(
+            "promo_revenue"
+        )
+    )
 )
 
 df.show()

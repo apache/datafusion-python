@@ -37,6 +37,7 @@ Here is a direct link to the file used in the examples:
 - [Query a Parquet file using the DataFrame API](./dataframe-parquet.py)
 - [Run a SQL query and store the results in a Pandas DataFrame](./sql-to-pandas.py)
 - [Query PyArrow Data](./query-pyarrow-data.py)
+- [Array operations: membership tests, array_agg patterns, array inspection](./array-operations.py)
 
 ### Running User-Defined Python Code
 

@@ -15,22 +15,45 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module supports expressions, one of the core concepts in DataFusion.
+""":py:class:`Expr` — the logical expression type used to build DataFusion queries.
 
-See :ref:`Expressions` in the online documentation for more details.
+An :py:class:`Expr` represents a computation over columns or literals: a
+column reference (``col("a")``), a literal (``lit(5)``), an operator
+combination (``col("a") + lit(1)``), or the output of a function from
+:py:mod:`datafusion.functions`. Expressions are passed to
+:py:class:`~datafusion.dataframe.DataFrame` methods such as
+:py:meth:`~datafusion.dataframe.DataFrame.select`,
+:py:meth:`~datafusion.dataframe.DataFrame.filter`,
+:py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+:py:meth:`~datafusion.dataframe.DataFrame.sort`.
+
+Convenience constructors are re-exported at the package level:
+:py:func:`datafusion.col` / :py:func:`datafusion.column` for column references
+and :py:func:`datafusion.lit` / :py:func:`datafusion.literal` for scalar
+literals.
+
+Examples:
+    >>> ctx = dfn.SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+    >>> df.select((col("a") * lit(10)).alias("ten_a")).to_pydict()
+    {'ten_a': [10, 20, 30]}
+
+See :ref:`expressions` in the online documentation for details on available
+operators and helpers.
 """
 
 # ruff: noqa: PLC0415
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import pyarrow as pa
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
+from .ipc import get_sender_ctx
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -40,6 +63,7 @@ if TYPE_CHECKING:
         NullTreatment,
         RexType,
     )
+    from datafusion.context import SessionContext
     from datafusion.plan import LogicalPlan
 
 
@@ -127,6 +151,9 @@ TransactionIsolationLevel = expr_internal.TransactionIsolationLevel
 TransactionStart = expr_internal.TransactionStart
 TryCast = expr_internal.TryCast
 Union = expr_internal.Union
+HigherOrderFunction = expr_internal.HigherOrderFunction
+Lambda = expr_internal.Lambda
+LambdaVariable = expr_internal.LambdaVariable
 Unnest = expr_internal.Unnest
 UnnestExpr = expr_internal.UnnestExpr
 Values = expr_internal.Values
@@ -170,6 +197,7 @@ __all__ = [
     "FileType",
     "Filter",
     "GroupingSet",
+    "HigherOrderFunction",
     "ILike",
     "InList",
     "InSubquery",
@@ -184,6 +212,8 @@ __all__ = [
     "Join",
     "JoinConstraint",
     "JoinType",
+    "Lambda",
+    "LambdaVariable",
     "Like",
     "Limit",
     "Literal",
@@ -221,6 +251,8 @@ __all__ = [
     "WindowExpr",
     "WindowFrame",
     "WindowFrameBound",
+    "coerce_to_expr",
+    "coerce_to_expr_or_none",
     "ensure_expr",
     "ensure_expr_list",
 ]
@@ -232,6 +264,10 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     This helper rejects plain strings and other non-:class:`Expr` values so
     higher level APIs consistently require explicit :func:`~datafusion.col` or
     :func:`~datafusion.lit` expressions.
+
+    See Also:
+        :func:`coerce_to_expr` — the opposite behavior: *wraps* non-``Expr``
+        values as literals instead of rejecting them.
 
     Args:
         value: Candidate expression or other object.
@@ -275,6 +311,41 @@ def ensure_expr_list(
                 yield ensure_expr(expr)
 
     return list(_iter(exprs))
+
+
+def coerce_to_expr(value: Any) -> Expr:
+    """Coerce a native Python value to an ``Expr`` literal, passing ``Expr`` through.
+
+    This is the complement of :func:`ensure_expr`: where ``ensure_expr``
+    *rejects* non-``Expr`` values, ``coerce_to_expr`` *wraps* them via
+    :meth:`Expr.literal` so that functions can accept native Python types
+    (``int``, ``float``, ``str``, ``bool``, etc.) alongside ``Expr``.
+
+    Args:
+        value: An ``Expr`` instance (returned as-is) or a Python literal to wrap.
+
+    Returns:
+        An ``Expr`` representing the value.
+    """
+    if isinstance(value, Expr):
+        return value
+    return Expr.literal(value)
+
+
+def coerce_to_expr_or_none(value: Any | None) -> Expr | None:
+    """Coerce a value to ``Expr`` or pass ``None`` through unchanged.
+
+    Same as :func:`coerce_to_expr` but accepts ``None`` for optional parameters.
+
+    Args:
+        value: An ``Expr`` instance, a Python literal to wrap, or ``None``.
+
+    Returns:
+        An ``Expr`` representing the value, or ``None``.
+    """
+    if value is None:
+        return None
+    return coerce_to_expr(value)
 
 
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
@@ -368,6 +439,182 @@ class Expr:  # noqa: PLW1641
         Ex: ``IsNotNull``, ``Literal``, ``BinaryExpr``, etc
         """
         return self.expr.variant_name()
+
+    def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
+        """Serialize this expression to bytes for shipping to another process.
+
+        Use this — or :func:`pickle.dumps` — to send an expression to a
+        worker process for distributed evaluation.
+
+        When ``ctx`` is supplied, encoding routes through that session's
+        installed :class:`LogicalExtensionCodec` (so settings like
+        :meth:`SessionContext.with_python_udf_inlining` take effect).
+        When ``ctx`` is ``None``, the default codec is used (Python UDF
+        inlining on, no user-installed extension codec).
+
+        Built-in functions travel inside the returned bytes. Python UDFs
+        (scalar, aggregate, window) also inline by default, so the worker
+        does not need to pre-register them; when the encoding session has
+        :meth:`SessionContext.with_python_udf_inlining` set to ``False``,
+        Python UDFs travel by name only and must be registered on the
+        worker. UDFs imported via the FFI capsule protocol always travel
+        by name only and must be registered on the worker.
+
+        .. warning:: Security
+            Bytes returned here may embed a cloudpickled Python
+            callable (when the expression carries a Python UDF).
+            Reconstructing them via :meth:`from_bytes` or
+            :func:`pickle.loads` executes arbitrary Python on the
+            receiver. Only accept payloads from trusted sources.
+
+        .. warning:: Portability
+            cloudpickle serializes Python bytecode, which is **not
+            stable across Python minor versions**. A payload produced
+            on Python 3.11 will fail to load on Python 3.12. The
+            wire format stamps the sender's ``(major, minor)``;
+            :meth:`from_bytes` raises a :class:`ValueError` naming
+            both versions on mismatch.
+
+            cloudpickle captures the UDF callable **by value** —
+            bytecode and closure cells inlined — but names the
+            callable resolves via ``import`` are captured **by
+            reference** (module path only) and must be importable on
+            the receiver.
+
+            **Self-contained — works anywhere:**
+
+            .. code-block:: python
+
+                # Lambda: bytecode captured inline
+                udf(lambda x: x * 2, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+                # Locally-defined function: bytecode captured inline
+                def double(x):
+                    return x * 2
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Closure over a local variable: value captured inline
+                factor = 3
+                udf(lambda x: x * factor, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+            **Requires matching environment on receiver:**
+
+            .. code-block:: python
+
+                # Top-level import: `foo` must be installed on receiver
+                from foo import double
+                udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+                # Bound method of an imported class: same caveat
+                from mylib import Transformer
+                t = Transformer()
+                udf(t.transform, [pa.int64()], pa.int64(),
+                    volatility="immutable")
+
+        Examples:
+            >>> from datafusion import col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> isinstance(blob, bytes)
+            True
+        """
+        ctx_arg = ctx.ctx if ctx is not None else None
+        return self.expr.to_bytes(ctx_arg)
+
+    @classmethod
+    def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
+        """Reconstruct an expression from serialized bytes.
+
+        Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
+        ``ctx`` is the :class:`SessionContext` used to resolve any
+        function references that travel by name (e.g. FFI UDFs, or
+        Python UDFs sent with inlining disabled via
+        :meth:`SessionContext.with_python_udf_inlining`). When
+        ``ctx`` is ``None`` the worker context installed via
+        :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
+        context is installed, the global :class:`SessionContext` is used
+        (sufficient for built-ins and Python UDFs, plus any UDFs
+        registered on the global context).
+
+        .. warning:: Security
+            Decoding may invoke ``cloudpickle.loads`` on bytes embedded
+            in the payload, which executes arbitrary Python code. Treat
+            ``buf`` as code, not data — only decode bytes you produced
+            yourself or received from a trusted sender.
+
+        .. warning:: Portability
+            cloudpickle payloads are **not portable across Python
+            minor versions**. The wire format stamps the sender's
+            ``(major, minor)``; if it does not match the current
+            interpreter, this method raises :class:`ValueError`
+            naming both versions. Modules the UDF imports must also
+            be importable on the receiver — see :meth:`to_bytes` for
+            by-value vs. by-reference details.
+
+        Examples:
+            >>> from datafusion import Expr, col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> Expr.from_bytes(blob).canonical_name()
+            'a + Int64(1)'
+        """
+        from datafusion.ipc import _resolve_ctx
+
+        resolved = _resolve_ctx(ctx)
+        return cls(expr_internal.RawExpr.from_bytes(resolved.ctx, buf))
+
+    def __reduce__(self) -> tuple[Callable[[bytes], Expr], tuple[bytes]]:
+        """Pickle protocol hook.
+
+        Lets expressions be shipped to worker processes via
+        :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
+        and Python UDFs (scalar, aggregate, window) travel inside the
+        pickle bytes; only FFI-capsule UDFs require pre-registration on
+        the worker. The worker's :class:`SessionContext` for resolving
+        those references is looked up via
+        :func:`datafusion.ipc.set_worker_ctx`, falling back to the
+        global :class:`SessionContext` if none has been installed on
+        the worker.
+
+        .. warning:: Security
+            :func:`pickle.loads` on the returned tuple executes
+            arbitrary Python on the receiver, including any
+            cloudpickled UDF callable embedded in the payload. Only
+            unpickle expressions from trusted sources.
+
+        .. warning:: Portability
+            Sender and receiver must run the same Python
+            ``(major, minor)`` version; cloudpickle bytecode is not
+            portable across minor versions. See :meth:`to_bytes` for
+            details on what travels by value vs. by reference.
+
+        Examples:
+            >>> import pickle
+            >>> from datafusion import col, lit
+            >>> e = col("a") * lit(2)
+            >>> pickle.loads(pickle.dumps(e)).canonical_name()
+            'a * Int64(2)'
+
+        The encoding side honors a driver-side sender context installed
+        via :func:`datafusion.ipc.set_sender_ctx` — that is how
+        :meth:`SessionContext.with_python_udf_inlining` propagates
+        through ``pickle.dumps``. The sender context is read by
+        ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+        — which also go through ``__reduce__`` — pick it up too.
+        """
+        return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
+
+    @classmethod
+    def _reconstruct(cls, proto_bytes: bytes) -> Expr:
+        """Internal entry point used by :meth:`__reduce__` on unpickle.
+
+        Examples:
+            >>> from datafusion import Expr, col, lit
+            >>> blob = (col("a") + lit(1)).to_bytes()
+            >>> Expr._reconstruct(blob).canonical_name()
+            'a + Int64(1)'
+        """
+        return cls.from_bytes(proto_bytes)
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""
@@ -483,6 +730,8 @@ class Expr:  # noqa: PLW1641
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
+        if rhs is None:
+            return self.is_null()
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
@@ -492,6 +741,8 @@ class Expr:  # noqa: PLW1641
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
+        if rhs is None:
+            return self.is_not_null()
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__ne__(rhs.expr))

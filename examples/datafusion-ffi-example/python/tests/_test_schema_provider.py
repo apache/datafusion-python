@@ -63,15 +63,18 @@ def test_schema_provider_extract_values(inner_capsule: bool) -> None:
     result = ctx.table(f"{expected_schema_name}.{expected_table_name}").collect()
     assert len(result) == 2
 
+    # Multi-partition collect order is non-deterministic; sort batches by
+    # first value of col0 so col0 and col1 stay aligned.
+    result = sorted(result, key=lambda r: r.column(0)[0].as_py())
     col0_result = [r.column(0) for r in result]
     col1_result = [r.column(1) for r in result]
     expected_col0 = [
-        pa.array([10, 20, 30], type=pa.int32()),
         pa.array([5, 7], type=pa.int32()),
+        pa.array([10, 20, 30], type=pa.int32()),
     ]
     expected_col1 = [
-        pa.array([1, 2, 5], type=pa.float64()),
         pa.array([1.5, 2.5], type=pa.float64()),
+        pa.array([1, 2, 5], type=pa.float64()),
     ]
     assert col0_result == expected_col0
     assert col1_result == expected_col1
