@@ -145,15 +145,16 @@ This function returns a new array with the elements repeated.
 
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
 
-Higher-order functions and lambdas
-----------------------------------
+Lambda functions
+----------------
 
-Some array functions are *higher-order*: they take a lambda that runs once per
-element. :py:func:`~datafusion.functions.array_transform` maps a lambda over
+Some array functions take a *lambda function*: a small function that runs once
+per element. :py:func:`~datafusion.functions.array_transform` maps a lambda over
 every element, :py:func:`~datafusion.functions.array_filter` keeps the elements
 for which a predicate lambda is true, and
 :py:func:`~datafusion.functions.array_any_match` returns whether any element
-satisfies a predicate lambda.
+satisfies a predicate lambda. (Functions that take another function as an
+argument are sometimes called *higher-order* functions.)
 
 The simplest way to supply a lambda is a Python ``lambda``. Its parameter names
 become the lambda parameters, and its return value becomes the body.
