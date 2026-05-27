@@ -15,23 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//! Imports physical optimizer rules supplied by another library over FFI.
-//!
-//! DataFusion has no FFI bridge for the logical [`OptimizerRule`] /
-//! [`AnalyzerRule`] traits, but it does export
-//! [`FFI_PhysicalOptimizerRule`] for the physical
-//! [`PhysicalOptimizerRule`] trait. A producer crate (typically a separate
-//! compiled extension) exposes an object with a
-//! ``__datafusion_physical_optimizer_rule__`` method returning a
-//! :class:`PyCapsule` that wraps an [`FFI_PhysicalOptimizerRule`]. This
-//! module reads that capsule and converts it into an
-//! ``Arc<dyn PhysicalOptimizerRule>`` so it can be registered with a
-//! [`SessionContext`](datafusion::prelude::SessionContext) at construction
-//! time.
-//!
-//! [`OptimizerRule`]: datafusion::optimizer::optimizer::OptimizerRule
-//! [`AnalyzerRule`]: datafusion::optimizer::analyzer::AnalyzerRule
-
 use std::ptr::NonNull;
 use std::sync::Arc;
 
