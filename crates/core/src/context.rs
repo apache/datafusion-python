@@ -397,11 +397,6 @@ impl PySessionContext {
             .with_config(config)
             .with_runtime_env(runtime)
             .with_default_features();
-        // DataFusion exposes no FFI bridge for the logical optimizer or
-        // analyzer, so only physical optimizer rules can be supplied from
-        // another library. They are appended after the default rules at
-        // construction time; there is no upstream API to add them to a live
-        // `SessionContext`.
         for rule in physical_optimizer_rules.unwrap_or_default() {
             let rule = crate::physical_optimizer::physical_optimizer_rule_from_pyobject(&rule)?;
             state_builder = state_builder.with_physical_optimizer_rule(rule);
