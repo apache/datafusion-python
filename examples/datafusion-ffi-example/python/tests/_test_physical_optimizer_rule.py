@@ -22,7 +22,9 @@ from datafusion import SessionContext
 from datafusion_ffi_example import MyPhysicalOptimizerRule
 
 
-def _setup_session_with_rule() -> tuple[SessionContext, MyPhysicalOptimizerRule]:
+def test_ffi_physical_optimizer_rule_runs_during_planning():
+    """A rule supplied via physical_optimizer_rules is invoked while the
+    physical plan is built, and the query still returns correct results."""
     rule = MyPhysicalOptimizerRule()
     ctx = SessionContext(physical_optimizer_rules=[rule])
     batch = pa.RecordBatch.from_arrays(
@@ -30,13 +32,6 @@ def _setup_session_with_rule() -> tuple[SessionContext, MyPhysicalOptimizerRule]
         names=["a"],
     )
     ctx.register_record_batches("t", [[batch]])
-    return ctx, rule
-
-
-def test_ffi_physical_optimizer_rule_runs_during_planning():
-    """A rule supplied via physical_optimizer_rules is invoked while the
-    physical plan is built, and the query still returns correct results."""
-    ctx, rule = _setup_session_with_rule()
 
     before = rule.optimize_calls()
     result = ctx.sql("SELECT a FROM t").collect()
