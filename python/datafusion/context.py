@@ -133,8 +133,10 @@ class TableProviderExportable(Protocol):
 class PhysicalOptimizerRuleExportable(Protocol):
     """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
 
-    The capsule wraps an ``FFI_PhysicalOptimizerRule``, typically produced by a
-    separate compiled extension.
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension. DataFusion provides no
+    FFI bridge for logical optimizer or analyzer rules, so only physical
+    optimizer rules can be supplied this way.
     """
 
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
@@ -546,14 +548,10 @@ class SessionContext:
             config: Session configuration options.
             runtime: Runtime configuration options.
             physical_optimizer_rules: User-defined physical optimizer rules to
-                append to the default set. Each item is a
-                :class:`PhysicalOptimizerRuleExportable` — an object exposing a
-                ``__datafusion_physical_optimizer_rule__`` method that returns a
-                PyCapsule around a ``FFI_PhysicalOptimizerRule`` (typically built
-                in a separate compiled extension). DataFusion provides no FFI
-                bridge for logical optimizer or analyzer rules, and there is no
-                upstream API to add physical rules to a live context, so these
-                can only be supplied at construction time.
+                append to the default set, each a
+                :class:`PhysicalOptimizerRuleExportable`. There is no upstream
+                API to add physical rules to a live context, so these can only
+                be supplied at construction time.
 
         Example usage:
 
