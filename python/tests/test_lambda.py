@@ -31,42 +31,57 @@ def _column(df, expr, name):
     return df.select(expr.alias(name)).collect_column(name).to_pylist()
 
 
-def test_array_transform_callable(df):
-    expr = f.array_transform(col("a"), lambda v: v * 2)
-    assert _column(df, expr, "d") == [[2, 4, 6], [8, 10]]
-
-
-def test_array_transform_explicit_lambda(df):
-    transform = f.lambda_(["v"], f.lambda_var("v") * lit(2))
-    expr = f.array_transform(col("a"), transform)
-    assert _column(df, expr, "d") == [[2, 4, 6], [8, 10]]
-
-
-def test_array_transform_literal_body_is_coerced(df):
-    expr = f.array_transform(col("a"), lambda v: 0)
-    assert _column(df, expr, "z") == [[0, 0, 0], [0, 0]]
-
-
-def test_list_transform_alias(df):
-    expr = f.list_transform(col("a"), lambda v: v + 1)
-    assert _column(df, expr, "d") == [[2, 3, 4], [5, 6]]
-
-
-def test_array_any_match_callable(df):
-    expr = f.array_any_match(col("a"), lambda v: v > 3)
-    assert _column(df, expr, "m") == [False, True]
-
-
-def test_array_any_match_explicit_lambda(df):
-    predicate = f.lambda_(["v"], f.lambda_var("v") > lit(2))
-    expr = f.array_any_match(col("a"), predicate)
-    assert _column(df, expr, "m") == [True, True]
-
-
-@pytest.mark.parametrize("alias", [f.any_match, f.list_any_match])
-def test_any_match_aliases(df, alias):
-    expr = alias(col("a"), lambda v: v > 4)
-    assert _column(df, expr, "m") == [False, True]
+@pytest.mark.parametrize(
+    ("build_expr", "expected"),
+    [
+        pytest.param(
+            lambda: f.array_transform(col("a"), lambda v: v * 2),
+            [[2, 4, 6], [8, 10]],
+            id="array_transform_callable",
+        ),
+        pytest.param(
+            lambda: f.array_transform(
+                col("a"), f.lambda_(["v"], f.lambda_var("v") * lit(2))
+            ),
+            [[2, 4, 6], [8, 10]],
+            id="array_transform_explicit_lambda",
+        ),
+        pytest.param(
+            lambda: f.array_transform(col("a"), lambda v: 0),
+            [[0, 0, 0], [0, 0]],
+            id="array_transform_literal_body_is_coerced",
+        ),
+        pytest.param(
+            lambda: f.list_transform(col("a"), lambda v: v + 1),
+            [[2, 3, 4], [5, 6]],
+            id="list_transform_alias",
+        ),
+        pytest.param(
+            lambda: f.array_any_match(col("a"), lambda v: v > 3),
+            [False, True],
+            id="array_any_match_callable",
+        ),
+        pytest.param(
+            lambda: f.array_any_match(
+                col("a"), f.lambda_(["v"], f.lambda_var("v") > lit(2))
+            ),
+            [True, True],
+            id="array_any_match_explicit_lambda",
+        ),
+        pytest.param(
+            lambda: f.any_match(col("a"), lambda v: v > 4),
+            [False, True],
+            id="any_match_alias",
+        ),
+        pytest.param(
+            lambda: f.list_any_match(col("a"), lambda v: v > 4),
+            [False, True],
+            id="list_any_match_alias",
+        ),
+    ],
+)
+def test_higher_order_function_results(df, build_expr, expected):
+    assert _column(df, build_expr(), "r") == expected
 
 
 def test_lambda_param_name_appears_in_plan(df):
@@ -76,14 +91,21 @@ def test_lambda_param_name_appears_in_plan(df):
     assert "value" in expr.canonical_name()
 
 
-def test_to_lambda_rejects_non_callable():
-    with pytest.raises(TypeError, match="expected an Expr or callable"):
-        f.array_transform(col("a"), 42)
-
-
-def test_to_lambda_rejects_zero_arg_callable():
-    with pytest.raises(ValueError, match="at least one parameter"):
-        f.array_transform(col("a"), lambda: lit(1))
+@pytest.mark.parametrize(
+    ("arg", "exc_type", "match"),
+    [
+        pytest.param(42, TypeError, "expected an Expr or callable", id="non_callable"),
+        pytest.param(
+            lambda: lit(1),
+            ValueError,
+            "at least one parameter",
+            id="zero_arg_callable",
+        ),
+    ],
+)
+def test_to_lambda_rejects_invalid_arg(arg, exc_type, match):
+    with pytest.raises(exc_type, match=match):
+        f.array_transform(col("a"), arg)
 
 
 def test_sql_lambda_requires_duckdb_dialect():
