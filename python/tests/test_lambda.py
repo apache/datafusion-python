@@ -78,6 +78,23 @@ def _column(df, expr, name):
             [False, True],
             id="list_any_match_alias",
         ),
+        pytest.param(
+            lambda: f.array_filter(col("a"), lambda v: v > 2),
+            [[3], [4, 5]],
+            id="array_filter_callable",
+        ),
+        pytest.param(
+            lambda: f.array_filter(
+                col("a"), f.lambda_(["v"], f.lambda_var("v") > lit(2))
+            ),
+            [[3], [4, 5]],
+            id="array_filter_explicit_lambda",
+        ),
+        pytest.param(
+            lambda: f.list_filter(col("a"), lambda v: v > 2),
+            [[3], [4, 5]],
+            id="list_filter_alias",
+        ),
     ],
 )
 def test_higher_order_function_results(df, build_expr, expected):

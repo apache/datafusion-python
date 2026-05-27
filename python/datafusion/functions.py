@@ -85,6 +85,7 @@ __all__ = [
     "array_empty",
     "array_except",
     "array_extract",
+    "array_filter",
     "array_has",
     "array_has_all",
     "array_has_any",
@@ -217,6 +218,7 @@ __all__ = [
     "list_empty",
     "list_except",
     "list_extract",
+    "list_filter",
     "list_has",
     "list_has_all",
     "list_has_any",
@@ -630,6 +632,47 @@ def list_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         This is an alias for :py:func:`array_any_match`.
     """
     return array_any_match(array, predicate)
+
+
+def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Keep the elements of ``array`` for which ``predicate`` is ``True``.
+
+    ``predicate`` may be a Python callable, converted to a lambda
+    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    return a boolean expression. The result is a new array containing only the
+    matching elements.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4, 5]]})
+        >>> df.select(
+        ...     F.array_filter(col("a"), lambda v: v > 2).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        [3, 4, 5]
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+        >>> df.select(
+        ...     F.array_filter(col("a"), predicate).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        [3, 4, 5]
+
+    See Also:
+        :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_filter(array.expr, _to_lambda(predicate).expr))
+
+
+def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Keep the elements of a list for which a predicate is ``True``.
+
+    See Also:
+        This is an alias for :py:func:`array_filter`.
+    """
+    return array_filter(array, predicate)
 
 
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:

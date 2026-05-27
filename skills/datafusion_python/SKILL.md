@@ -496,11 +496,12 @@ return value becomes the body:
 
 ```python
 F.array_transform(col("a"), lambda v: v * 2)    # map: [1,2,3] -> [2,4,6]
+F.array_filter(col("a"), lambda v: v > 2)        # filter: [1,2,3] -> [3]
 F.array_any_match(col("a"), lambda v: v > 3)     # predicate: any element > 3
 ```
 
-Aliases: `list_transform` for `array_transform`; `any_match` / `list_any_match`
-for `array_any_match`.
+Aliases: `list_transform` for `array_transform`; `list_filter` for
+`array_filter`; `any_match` / `list_any_match` for `array_any_match`.
 
 For explicit parameter names, build the lambda by hand:
 

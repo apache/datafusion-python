@@ -150,8 +150,10 @@ Higher-order functions and lambdas
 
 Some array functions are *higher-order*: they take a lambda that runs once per
 element. :py:func:`~datafusion.functions.array_transform` maps a lambda over
-every element, and :py:func:`~datafusion.functions.array_any_match` returns
-whether any element satisfies a predicate lambda.
+every element, :py:func:`~datafusion.functions.array_filter` keeps the elements
+for which a predicate lambda is true, and
+:py:func:`~datafusion.functions.array_any_match` returns whether any element
+satisfies a predicate lambda.
 
 The simplest way to supply a lambda is a Python ``lambda``. Its parameter names
 become the lambda parameters, and its return value becomes the body.
@@ -164,6 +166,7 @@ become the lambda parameters, and its return value becomes the body.
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
     df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
+    df.select(f.array_filter(col("a"), lambda v: v > 2).alias("big_only"))
     df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
 
 If you need explicit control over parameter names, build the lambda with

@@ -190,6 +190,13 @@ fn array_any_match(array: PyExpr, predicate: PyExpr) -> PyExpr {
     datafusion::functions_nested::expr_fn::array_any_match(array.into(), predicate.into()).into()
 }
 
+/// Higher-order function: keep the elements of `array` for which `predicate`
+/// (a lambda returning a boolean) is true, returning a new filtered array.
+#[pyfunction]
+fn array_filter(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_filter(array.into(), predicate.into()).into()
+}
+
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
@@ -1118,6 +1125,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(lambda_var))?;
     m.add_wrapped(wrap_pyfunction!(array_transform))?;
     m.add_wrapped(wrap_pyfunction!(array_any_match))?;
+    m.add_wrapped(wrap_pyfunction!(array_filter))?;
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
