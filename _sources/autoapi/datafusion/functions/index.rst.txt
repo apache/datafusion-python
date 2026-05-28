@@ -1733,6 +1733,8 @@ Module Contents
 
    Returns the value of the first expr in ``args`` which is not NULL.
 
+   :param \*args: Expressions to evaluate in order.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -2633,6 +2635,9 @@ Module Contents
 .. py:function:: ifnull(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
+
+   :param x: Expression to return when it is not NULL.
+   :param y: Fallback expression to return when ``x`` is NULL.
 
    .. seealso:: This is an alias for :py:func:`nvl`.
 
@@ -3659,6 +3664,9 @@ Module Contents
 
    Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
 
+   :param x: Expression to return when it is not NaN.
+   :param y: Fallback expression to return when ``x`` is NaN.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -3800,6 +3808,9 @@ Module Contents
 
    Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
 
+   :param x: Expression to return when it is not NULL.
+   :param y: Fallback expression to return when ``x`` is NULL.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -3816,6 +3827,10 @@ Module Contents
 .. py:function:: nvl2(x: datafusion.expr.Expr, y: datafusion.expr.Expr, z: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+   :param x: Expression to check for NULL.
+   :param y: Expression to return when ``x`` is not NULL.
+   :param z: Expression to return when ``x`` is NULL.
 
    .. rubric:: Examples
 
