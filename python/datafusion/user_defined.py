@@ -33,7 +33,7 @@ from datafusion.expr import Expr
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
 
-    _R = TypeVar("_R", bound=pa.DataType)
+    _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
 
 
@@ -137,7 +137,7 @@ class ScalarUDF:
         name: str,
         func: Callable[..., _R],
         input_fields: list[pa.Field],
-        return_field: _R,
+        return_field: pa.Field,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
@@ -311,7 +311,7 @@ class ScalarUDF:
 
         def _decorator(
             input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
-            return_field: _R,
+            return_field: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> Callable:
