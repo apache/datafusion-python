@@ -550,9 +550,10 @@ def test_alias_with_metadata(df):
             id="atanh",
         ),
         pytest.param(
-            # large numbers cause an integer overflow so divid to make smaller
-            (col("b") / lit(4)).factorial(),
-            pa.array([1, 3628800, 1, None], type=pa.int64()),
+            # large numbers cause an integer overflow so divide to make smaller;
+            # factorial of a negative number is undefined, so take abs first
+            (col("b").abs() / lit(4)).factorial(),
+            pa.array([5040, 3628800, 1, None], type=pa.int64()),
             id="factorial",
         ),
         pytest.param(

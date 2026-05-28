@@ -19,11 +19,11 @@
 //!
 //! Datafusion-python plans can carry references to Python-defined
 //! objects that the upstream protobuf codecs do not know how to
-//! serialize: pure-Python scalar UDFs, Python query-planning
-//! extensions, and so on. Their state lives inside `Py<PyAny>`
-//! callables and closures rather than being recoverable from a name
-//! in the receiver's function registry. To ship a plan across a
-//! process boundary (pickle, `multiprocessing`, Ray actor,
+//! serialize: pure-Python scalar / aggregate / window UDFs, Python
+//! query-planning extensions, and so on. Their state lives inside
+//! `Py<PyAny>` callables and closures rather than being recoverable
+//! from a name in the receiver's function registry. To ship a plan
+//! across a process boundary (pickle, `multiprocessing`, Ray actor,
 //! `datafusion-distributed`, etc.) those payloads have to be encoded
 //! into the proto wire format itself.
 //!
@@ -256,7 +256,12 @@ impl PythonLogicalCodec {
     /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
     /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
     /// `pickle.loads` on untrusted input as unsafe regardless of this
-    /// setting.
+    /// setting. See `docs/source/user-guide/io/distributing_work.rst`
+    /// (Security section) for the full threat model, and Python's
+    /// [pickle module security warning][1] for why `pickle.loads` is
+    /// unsafe in general.
+    ///
+    /// [1]: https://docs.python.org/3/library/pickle.html#module-pickle
     pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
         self.python_udf_inlining = enabled;
         self
@@ -433,7 +438,7 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// encoding on this layer too — otherwise a plan with a Python UDF
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
-/// ([`PY_SCALAR_UDF_FAMILY`]) so the wire format is identical.
+/// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
