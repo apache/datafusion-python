@@ -17,6 +17,10 @@
 
 """Distribute DataFusion expressions to Ray actors.
 
+For background — the shipped-expression model, what travels inline vs
+by name, portability requirements, and the security threat model —
+see ``docs/source/user-guide/io/distributing_work.rst``.
+
 Build an expression in the driver, ship it to a pool of Ray actors, and
 have each actor evaluate it against its own slice of data. Python UDFs
 travel with the shipped expression — no actor-side registration needed.
