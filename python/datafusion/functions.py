@@ -910,6 +910,9 @@ def chr(arg: Expr) -> Expr:
 def coalesce(*args: Expr) -> Expr:
     """Returns the value of the first expr in ``args`` which is not NULL.
 
+    Args:
+        *args: Expressions to evaluate in order.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [None, 1], "b": [2, 3]})
@@ -1090,6 +1093,10 @@ def greatest(*args: Expr) -> Expr:
 
 def ifnull(x: Expr, y: Expr) -> Expr:
     """Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
+
+    Args:
+        x: Expression to return when it is not NULL.
+        y: Fallback expression to return when ``x`` is NULL.
 
     See Also:
         This is an alias for :py:func:`nvl`.
@@ -1325,6 +1332,10 @@ def md5(arg: Expr) -> Expr:
 def nanvl(x: Expr, y: Expr) -> Expr:
     """Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
 
+    Args:
+        x: Expression to return when it is not NaN.
+        y: Fallback expression to return when ``x`` is NaN.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [np.nan, 1.0], "b": [0.0, 0.0]})
@@ -1340,6 +1351,10 @@ def nanvl(x: Expr, y: Expr) -> Expr:
 
 def nvl(x: Expr, y: Expr) -> Expr:
     """Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
+
+    Args:
+        x: Expression to return when it is not NULL.
+        y: Fallback expression to return when ``x`` is NULL.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1357,6 +1372,11 @@ def nvl(x: Expr, y: Expr) -> Expr:
 
 def nvl2(x: Expr, y: Expr, z: Expr) -> Expr:
     """Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+    Args:
+        x: Expression to check for NULL.
+        y: Expression to return when ``x`` is not NULL.
+        z: Expression to return when ``x`` is NULL.
 
     Examples:
         >>> ctx = dfn.SessionContext()
