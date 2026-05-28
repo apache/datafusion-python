@@ -431,3 +431,39 @@ that you wish to expose via PyO3, you need to expose it as a ``PyCapsule``.
             PyCapsule::new(py, provider, Some(name))
         }
     }
+
+Accessing the Calling Session
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pure-Python UDTFs can opt into receiving the calling
+:py:class:`~datafusion.SessionContext` by registering with
+``with_session=True``. The context is passed as a ``session`` keyword
+argument on every invocation. Use it to look up registered tables,
+UDFs, or session configuration from inside the callback.
+
+.. code-block:: python
+
+    from datafusion import SessionContext, Table, udtf
+    from datafusion.context import TableProviderExportable
+    import pyarrow as pa
+    import pyarrow.dataset as ds
+
+    @udtf("list_tables", with_session=True)
+    def list_tables(*, session: SessionContext) -> TableProviderExportable:
+        names = sorted(session.catalog().schema().names())
+        batch = pa.RecordBatch.from_pydict({"name": names})
+        return Table(ds.dataset([batch]))
+
+    ctx = SessionContext()
+    ctx.register_batch("t1", pa.RecordBatch.from_pydict({"x": [1]}))
+    ctx.register_udtf(list_tables)
+    ctx.sql("SELECT * FROM list_tables()").show()
+
+Without ``with_session=True``, the callback receives only the positional
+expression arguments. The flag is opt-in so existing UDTFs keep working
+unchanged.
+
+The injected ``session`` is a fresh :py:class:`~datafusion.SessionContext`
+wrapper backed by the same underlying state as the caller, so registries
+(tables, UDFs, catalogs) are visible. Mutations made through it affect
+the live session.

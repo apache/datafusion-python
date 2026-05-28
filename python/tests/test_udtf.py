@@ -137,11 +137,11 @@ def test_python_table_function_with_string_args() -> None:
 
 
 def test_python_table_function_receives_session() -> None:
-    """A UDTF whose signature declares ``session`` gets the calling ctx."""
+    """A UDTF registered ``with_session=True`` gets the calling ctx."""
     ctx = SessionContext()
     captured: list[SessionContext] = []
 
-    @udtf("session_aware_func")
+    @udtf("session_aware_func", with_session=True)
     def session_aware_func(*, session: SessionContext) -> TableProviderExportable:
         captured.append(session)
         batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
@@ -165,7 +165,7 @@ def test_python_table_function_session_used_for_metadata() -> None:
 
     seen_tables: list[set[str]] = []
 
-    @udtf("table_inventory")
+    @udtf("table_inventory", with_session=True)
     def table_inventory(*, session: SessionContext) -> TableProviderExportable:
         # Stash the visible tables to verify the session wired through.
         seen_tables.append(session.catalog().schema().names())
@@ -179,8 +179,8 @@ def test_python_table_function_session_used_for_metadata() -> None:
     assert result[0].column(0).to_pylist() == ["base_tbl"]
 
 
-def test_python_table_function_class_callable_session_kwarg() -> None:
-    """Class-based UDTFs whose __call__ accepts ``session`` get it too."""
+def test_python_table_function_class_callable_with_session() -> None:
+    """Class-based UDTFs opt in via ``with_session=True``."""
     ctx = SessionContext()
     captured: list[SessionContext] = []
 
@@ -193,9 +193,25 @@ def test_python_table_function_class_callable_session_kwarg() -> None:
             batch = pa.RecordBatch.from_pydict({"a": list(range(count))})
             return Table(ds.dataset([batch]))
 
-    ctx.register_udtf(udtf(SessionAware(), "session_class_func"))
+    ctx.register_udtf(udtf(SessionAware(), "session_class_func", with_session=True))
     result = ctx.sql("SELECT * FROM session_class_func(3)").collect()
 
     assert len(captured) == 1
     assert isinstance(captured[0], SessionContext)
     assert result[0].column(0).to_pylist() == [0, 1, 2]
+
+
+def test_python_table_function_without_session_flag_no_injection() -> None:
+    """Default registration (no ``with_session``) calls func positionally."""
+    ctx = SessionContext()
+
+    @udtf("plain_func")
+    def plain_func(n: Expr) -> TableProviderExportable:
+        count = n.to_variant().value_i64()
+        batch = pa.RecordBatch.from_pydict({"a": list(range(count))})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(plain_func)
+    result = ctx.sql("SELECT * FROM plain_func(4)").collect()
+
+    assert result[0].column(0).to_pylist() == [0, 1, 2, 3]

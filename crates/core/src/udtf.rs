@@ -39,10 +39,11 @@ use crate::table::PyTable;
 #[derive(Debug, Clone)]
 pub(crate) struct PythonTableFunctionCallable {
     pub(crate) callable: Arc<Py<PyAny>>,
-    /// Whether the callable's signature accepts a ``session`` keyword
-    /// argument (or ``**kwargs``). When true the calling
-    /// :class:`SessionContext` is threaded through on each invocation.
-    pub(crate) accepts_session: bool,
+    /// When true, the calling :class:`SessionContext` is passed to the
+    /// callable as a ``session`` keyword argument on every invocation.
+    /// Opt-in at registration time via ``with_session=True`` on the
+    /// Python wrapper.
+    pub(crate) inject_session_on_call: bool,
 }
 
 /// Represents a user defined table function
@@ -62,12 +63,12 @@ pub(crate) enum PyTableFunctionInner {
 #[pymethods]
 impl PyTableFunction {
     #[new]
-    #[pyo3(signature=(name, func, session, accepts_session=false))]
+    #[pyo3(signature=(name, func, session, inject_session_on_call=false))]
     pub fn new(
         name: &str,
         func: Bound<'_, PyAny>,
         session: Option<Bound<PyAny>>,
-        accepts_session: bool,
+        inject_session_on_call: bool,
     ) -> PyResult<Self> {
         let inner = if func.hasattr("__datafusion_table_function__")? {
             let py = func.py();
@@ -95,7 +96,7 @@ impl PyTableFunction {
         } else {
             PyTableFunctionInner::PythonFunction(PythonTableFunctionCallable {
                 callable: Arc::new(func.unbind()),
-                accepts_session,
+                inject_session_on_call,
             })
         };
 
@@ -162,7 +163,7 @@ fn call_python_table_function(
     func: &PythonTableFunctionCallable,
     args: TableFunctionArgs,
 ) -> DataFusionResult<Arc<dyn TableProvider>> {
-    let py_session = if func.accepts_session {
+    let py_session = if func.inject_session_on_call {
         Some(py_session_from_session(args.session())?)
     } else {
         None

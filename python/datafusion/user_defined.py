@@ -1054,29 +1054,6 @@ class WindowUDF:
         )
 
 
-def _callable_accepts_session_kwarg(func: object) -> bool:
-    """Return True if ``func`` accepts a ``session`` keyword argument.
-
-    Used to opt a Python UDTF callback into receiving the calling
-    :class:`SessionContext` at invocation time. ``**kwargs`` callables
-    are treated as accepting it; built-ins and objects without an
-    introspectable signature fall back to ``False``.
-    """
-    import inspect  # noqa: PLC0415
-
-    try:
-        signature = inspect.signature(func)
-    except (TypeError, ValueError):
-        return False
-
-    for parameter in signature.parameters.values():
-        if parameter.name == "session":
-            return True
-        if parameter.kind is inspect.Parameter.VAR_KEYWORD:
-            return True
-    return False
-
-
 def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]:
     """Adapt the raw internal session pyo3 object back to a Python wrapper.
 
@@ -1103,23 +1080,27 @@ class TableFunction:
     """
 
     def __init__(
-        self, name: str, func: Callable[[], any], ctx: SessionContext | None = None
+        self,
+        name: str,
+        func: Callable[..., Any],
+        ctx: SessionContext | None = None,
+        *,
+        with_session: bool = False,
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
-        If ``func``'s signature accepts a ``session`` keyword (or
-        ``**kwargs``), the calling :class:`SessionContext` is threaded
-        through to it on each invocation. Use it inside the body to look
-        up registered tables, UDFs, or session configuration. Callables
-        whose signatures do not declare ``session`` are invoked with the
-        positional expression arguments only.
+        Set ``with_session=True`` to have the calling
+        :class:`SessionContext` passed as a ``session`` keyword argument
+        on each invocation. Use it inside the callback to look up
+        registered tables, UDFs, or session configuration. When
+        ``with_session`` is ``False`` (the default), ``func`` is invoked
+        with the positional expression arguments only.
 
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        accepts_session = _callable_accepts_session_kwarg(func)
-        registered = _wrap_session_kwarg_for_udtf(func) if accepts_session else func
-        self._udtf = df_internal.TableFunction(name, registered, ctx, accepts_session)
+        registered = _wrap_session_kwarg_for_udtf(func) if with_session else func
+        self._udtf = df_internal.TableFunction(name, registered, ctx, with_session)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""
@@ -1130,47 +1111,66 @@ class TableFunction:
     @staticmethod
     def udtf(
         name: str,
+        *,
+        with_session: bool = False,
     ) -> Callable[..., Any]: ...
 
     @overload
     @staticmethod
     def udtf(
-        func: Callable[[], Any],
+        func: Callable[..., Any],
         name: str,
+        *,
+        with_session: bool = False,
     ) -> TableFunction: ...
 
     @staticmethod
-    def udtf(*args: Any, **kwargs: Any):
-        """Create a new User-Defined Table Function (UDTF)."""
+    def udtf(*args: Any, with_session: bool = False, **kwargs: Any):
+        """Create a new User-Defined Table Function (UDTF).
+
+        Pass ``with_session=True`` to have the calling
+        :class:`SessionContext` injected as a ``session`` keyword
+        argument on each invocation.
+        """
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
-            return TableFunction._create_table_udf(*args, **kwargs)
+            return TableFunction._create_table_udf(
+                *args, with_session=with_session, **kwargs
+            )
         if args and hasattr(args[0], "__datafusion_table_function__"):
             # Case 2: We have a datafusion FFI provided function
             return TableFunction(args[1], args[0])
         # Case 3: Used as a decorator with parameters
-        return TableFunction._create_table_udf_decorator(*args, **kwargs)
+        return TableFunction._create_table_udf_decorator(
+            *args, with_session=with_session, **kwargs
+        )
 
     @staticmethod
     def _create_table_udf(
         func: Callable[..., Any],
         name: str,
+        *,
+        with_session: bool = False,
     ) -> TableFunction:
         """Create a TableFunction instance from function arguments."""
         if not callable(func):
             msg = "`func` must be callable."
             raise TypeError(msg)
 
-        return TableFunction(name, func)
+        return TableFunction(name, func, with_session=with_session)
 
     @staticmethod
     def _create_table_udf_decorator(
         name: str | None = None,
-    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
-        """Create a decorator for a WindowUDF."""
+        *,
+        with_session: bool = False,
+    ) -> Callable[[Callable[..., Any]], TableFunction]:
+        """Create a decorator for a TableFunction."""
 
-        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
-            return TableFunction._create_table_udf(func, name)
+        def decorator(func: Callable[..., Any]) -> TableFunction:
+            return TableFunction._create_table_udf(
+                func, name, with_session=with_session
+            )
 
         return decorator
 
