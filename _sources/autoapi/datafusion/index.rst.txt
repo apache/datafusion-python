@@ -2589,7 +2589,7 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
