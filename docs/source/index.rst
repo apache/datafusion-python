@@ -76,6 +76,7 @@ Example
    user-guide/common-operations/index
    user-guide/io/index
    user-guide/configuration
+   user-guide/distributing-work
    user-guide/sql
    user-guide/upgrade-guides
    user-guide/ai-coding-assistants

@@ -19,7 +19,7 @@
 
 For background — the shipped-expression model, what travels inline vs
 by name, portability requirements, and the security threat model —
-see ``docs/source/user-guide/io/distributing_work.rst``.
+see ``docs/source/user-guide/distributing-work.rst``.
 
 Build an expression in the driver, ship it to a pool of Ray actors, and
 have each actor evaluate it against its own slice of data. Python UDFs

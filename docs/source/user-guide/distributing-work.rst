@@ -15,30 +15,22 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-Distributing DataFusion work
-============================
+Distributing work
+=================
 
-Splitting a DataFusion workload across multiple processes — for
-throughput, isolation, or to use a worker pool — comes in a few
-different shapes depending on what is being split.
+DataFusion supports splitting work across processes by shipping
+serialized expressions to workers: the driver builds an
+:py:class:`~datafusion.Expr`, each worker evaluates it against its
+own slice of data. This pattern suits embarrassingly-parallel
+workloads where the driver decides partitioning up front.
 
-* **Expression-level distribution** ✅ *supported today*. The driver
-  builds a DataFusion :py:class:`~datafusion.Expr`, sends it to
-  worker processes, and each worker evaluates the expression against
-  its own slice of data. Suits embarrassingly-parallel workloads
-  where the driver decides up front how to partition.
-* **Query-level distribution via datafusion-distributed** 🚧 *work in
-  progress upstream*. A single logical / physical plan is split into
-  stages and run across worker nodes. The driver writes one SQL or
-  DataFrame query; the runtime decides partitioning.
-* **Query-level distribution via Apache Ballista** 🚧 *work in
-  progress upstream*. Similar query-level model, with a more
-  cluster-management-oriented runtime.
-
-Only the first option is ready for use from datafusion-python today.
-The other two are documented below so the surrounding story is in
-one place; integration details will land here as those projects
-become usable from datafusion-python.
+Query-level distribution — where the runtime partitions a single
+logical or physical plan across worker nodes — is in progress
+upstream via `datafusion-distributed
+<https://github.com/apache/datafusion-distributed>`_ and `Apache
+Ballista <https://github.com/apache/datafusion-ballista>`_. Both
+have short sections at the end of this page; integration details
+will land as those projects become usable from datafusion-python.
 
 Expression-level distribution
 -----------------------------
@@ -123,116 +115,26 @@ What travels with the expression
   raises an error.
 
 Portability requirements for inline Python UDFs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Inline Python UDFs ride on `cloudpickle
 <https://github.com/cloudpipe/cloudpickle>`_, which imposes two
 requirements on the worker environment:
 
-* **Matching Python minor version.** A cloudpickle payload serializes
-  Python bytecode, which is not stable across Python minor versions. A
-  UDF pickled on Python 3.12 cannot be reconstructed on a 3.11 or 3.13
-  worker. The wire format stamps the sender's ``(major, minor)``; a
-  mismatch raises a clear error naming both versions rather than
-  failing obscurely deep inside ``cloudpickle.loads``. Align the Python
-  version on driver and workers.
+* **Matching Python minor version.** cloudpickle serializes Python
+  bytecode, which is not stable across minor versions. A UDF pickled
+  on 3.12 cannot be reconstructed on 3.11 or 3.13. The wire format
+  stamps the sender's ``(major, minor)``; mismatches raise a clear
+  error naming both versions. Align the Python version on driver and
+  workers.
 * **Imported modules must be importable on the worker.** cloudpickle
-  captures the UDF callable *by value* — bytecode and closure cells are
-  inlined, so locally-defined functions and lambdas travel whole. But
-  any name the callable resolves through ``import`` is captured *by
-  reference* (module path only). If a UDF body does
-  ``from mylib import transform`` and calls ``transform(...)``, the
-  worker reconstructs the reference by importing ``mylib`` — which must
-  therefore be installed on the worker. The same applies to bound
-  methods of imported classes. Self-contained UDFs (no imports beyond
-  what the worker already has, e.g. ``pyarrow``) avoid this entirely.
-
-Session contexts at a glance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There is only one type — :py:class:`SessionContext`. It can occupy
-up to four *slots* in a running program:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 12 18 40 30
-
-   * - Slot
-     - Lifetime
-     - Purpose
-     - Set how
-   * - User-held
-     - Local variable / attribute
-     - Build and run queries
-     - ``ctx = SessionContext(...)``
-   * - Global
-     - Process singleton (lazy-init)
-     - Backs module-level
-       :py:func:`~datafusion.io.read_parquet`,
-       :py:func:`~datafusion.io.read_csv`,
-       :py:func:`~datafusion.io.read_json`,
-       :py:func:`~datafusion.io.read_avro`; final fallback for
-       :py:meth:`Expr.from_bytes`
-     - Implicit; access via
-       :py:meth:`SessionContext.global_ctx`
-   * - Sender
-     - Thread-local on the driver
-     - Codec settings for outbound :py:func:`pickle.dumps` /
-       :py:meth:`Expr.to_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_sender_ctx`
-   * - Worker
-     - Thread-local on the worker
-     - Function registry for inbound :py:func:`pickle.loads` /
-       :py:meth:`Expr.from_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_worker_ctx`
-
-The same :py:class:`SessionContext` object may occupy more than one
-slot simultaneously — installing it into a slot is a reference, not
-a copy.
-
-**Non-distributed user.** One user-held context. The global slot is
-invisible unless you call top-level ``read_*`` helpers. Sender and
-worker slots are unused.
-
-**Distributed user.** Two questions to answer:
-
-1. *Driver side — what wire format do I want?* The default (Python UDF
-   inlining on) is self-contained; you do not need a sender context.
-   To opt into the strict format,
-   :py:func:`~datafusion.ipc.set_sender_ctx`
-   with a session built via
-   :py:meth:`SessionContext.with_python_udf_inlining(enabled=False)
-   <datafusion.SessionContext.with_python_udf_inlining>`.
-
-2. *Worker side — what registrations does decode need?* For built-ins
-   and inline Python UDFs, nothing. For FFI-capsule UDFs (or
-   strict-mode round-trips that travel by name), call
-   :py:func:`~datafusion.ipc.set_worker_ctx` once per worker with a
-   context that has the relevant registrations.
-
-Resolution order on the worker side is *explicit argument →
-worker context → global context.* Explicit ``ctx=`` on
-:py:meth:`Expr.from_bytes` always wins; the sender slot is ignored
-on decode and the worker slot is ignored on encode.
-
-Sharp edges:
-
-* Sender and worker slots are **thread-local**. Background threads
-  on either side see ``None`` until they install their own.
-* Under the ``fork`` start method, the parent's ``threading.local()``
-  values are copied into the child by copy-on-write — a forked
-  worker initially observes whatever sender / worker slot the parent
-  had set, until the worker writes its own value (or calls the
-  matching ``clear_*_ctx``). ``spawn`` and ``forkserver`` workers
-  start with empty thread-local slots. Treat the slot as
-  uninitialized on worker entry and install (or clear) it explicitly
-  in the worker initializer; do not rely on inherited state.
-* The global slot persists across ``fork`` workers (copy-on-write
-  memory inherit) but not across ``spawn`` / ``forkserver`` workers
-  (fresh process — register or install a worker context on
-  start-up).
-* The inlining toggle is per-context state, not a global switch.
-  Two contexts with different toggles can coexist in one process.
+  captures the callable *by value* (bytecode and closure cells travel
+  whole), but names resolved through ``import`` are captured *by
+  reference* — module path only. A UDF doing
+  ``from mylib import transform`` requires ``mylib`` installed on the
+  worker. Same applies to bound methods of imported classes.
+  Self-contained UDFs (no imports beyond what the worker already has,
+  e.g. ``pyarrow``) avoid this entirely.
 
 Registering shared UDFs on workers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -360,6 +262,75 @@ Security
    Python UDF inlining (see above), restrict senders to built-in
    functions and pre-registered Rust-side UDFs, and avoid
    :py:func:`pickle.loads` on externally supplied bytes entirely.
+
+Reference: session context slots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is only one type — :py:class:`SessionContext`. It can occupy
+up to four *slots* in a running program:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 12 18 40 30
+
+   * - Slot
+     - Lifetime
+     - Purpose
+     - Set how
+   * - User-held
+     - Local variable / attribute
+     - Build and run queries
+     - ``ctx = SessionContext(...)``
+   * - Global
+     - Process singleton (lazy-init)
+     - Backs module-level
+       :py:func:`~datafusion.io.read_parquet`,
+       :py:func:`~datafusion.io.read_csv`,
+       :py:func:`~datafusion.io.read_json`,
+       :py:func:`~datafusion.io.read_avro`; final fallback for
+       :py:meth:`Expr.from_bytes`
+     - Implicit; access via
+       :py:meth:`SessionContext.global_ctx`
+   * - Sender
+     - Thread-local on the driver
+     - Codec settings for outbound :py:func:`pickle.dumps` /
+       :py:meth:`Expr.to_bytes` without ``ctx``
+     - :py:func:`~datafusion.ipc.set_sender_ctx`
+   * - Worker
+     - Thread-local on the worker
+     - Function registry for inbound :py:func:`pickle.loads` /
+       :py:meth:`Expr.from_bytes` without ``ctx``
+     - :py:func:`~datafusion.ipc.set_worker_ctx`
+
+The same :py:class:`SessionContext` object may occupy more than one
+slot simultaneously — installing it into a slot is a reference, not
+a copy. A non-distributed program only ever uses the user-held slot;
+the global slot is invisible unless you call top-level ``read_*``
+helpers.
+
+Resolution order on the worker side is *explicit argument →
+worker context → global context.* Explicit ``ctx=`` on
+:py:meth:`Expr.from_bytes` always wins; the sender slot is ignored
+on decode and the worker slot is ignored on encode.
+
+Sharp edges:
+
+* Sender and worker slots are **thread-local**. Background threads
+  on either side see ``None`` until they install their own.
+* Under the ``fork`` start method, the parent's ``threading.local()``
+  values are copied into the child by copy-on-write — a forked
+  worker initially observes whatever sender / worker slot the parent
+  had set, until the worker writes its own value (or calls the
+  matching ``clear_*_ctx``). ``spawn`` and ``forkserver`` workers
+  start with empty thread-local slots. Treat the slot as
+  uninitialized on worker entry and install (or clear) it explicitly
+  in the worker initializer; do not rely on inherited state.
+* The global slot persists across ``fork`` workers (copy-on-write
+  memory inherit) but not across ``spawn`` / ``forkserver`` workers
+  (fresh process — register or install a worker context on
+  start-up).
+* The inlining toggle is per-context state, not a global switch.
+  Two contexts with different toggles can coexist in one process.
 
 Query-level distribution via datafusion-distributed
 ---------------------------------------------------

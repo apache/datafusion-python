@@ -19,7 +19,7 @@
 
 For background — the shipped-expression model, what travels inline vs
 by name, portability requirements, and the security threat model —
-see ``docs/source/user-guide/io/distributing_work.rst``.
+see ``docs/source/user-guide/distributing-work.rst``.
 
 Builds a list of parametric expressions in the driver — each closing
 over a different threshold value — ships one per worker via
