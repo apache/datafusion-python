@@ -1096,9 +1096,26 @@ class TableFunction:
         ``with_session`` is ``False`` (the default), ``func`` is invoked
         with the positional expression arguments only.
 
+        ``with_session=True`` is only supported for pure-Python callables.
+        Passing it together with an FFI-exported table function (one
+        exposing ``__datafusion_table_function__``) raises
+        :class:`TypeError`.
+
+        Registry mutations performed through the injected session (such
+        as registering tables or UDFs) propagate to the caller's
+        :class:`SessionContext` because the registries are shared.
+        Configuration changes do **not** propagate; the wrapper holds
+        its own clone of the session config.
+
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
+        if with_session and hasattr(func, "__datafusion_table_function__"):
+            msg = (
+                "`with_session=True` is not supported for FFI-exported table "
+                "functions; session injection requires a pure-Python callable."
+            )
+            raise TypeError(msg)
         registered = _wrap_session_kwarg_for_udtf(func) if with_session else func
         self._udtf = df_internal.TableFunction(name, registered, ctx, with_session)
 
@@ -1139,6 +1156,13 @@ class TableFunction:
             )
         if args and hasattr(args[0], "__datafusion_table_function__"):
             # Case 2: We have a datafusion FFI provided function
+            if with_session:
+                msg = (
+                    "`with_session=True` is not supported for FFI-exported "
+                    "table functions; session injection requires a "
+                    "pure-Python callable."
+                )
+                raise TypeError(msg)
             return TableFunction(args[1], args[0])
         # Case 3: Used as a decorator with parameters
         return TableFunction._create_table_udf_decorator(

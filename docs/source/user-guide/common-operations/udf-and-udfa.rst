@@ -465,5 +465,8 @@ unchanged.
 
 The injected ``session`` is a fresh :py:class:`~datafusion.SessionContext`
 wrapper backed by the same underlying state as the caller, so registries
-(tables, UDFs, catalogs) are visible. Mutations made through it affect
-the live session.
+(tables, UDFs, catalogs) are visible. Registry mutations (e.g. registering
+a new table or UDF) propagate to the live session because the registries
+are reference-counted and shared. Configuration changes made through the
+wrapper (e.g. setting session options) do **not** propagate — the wrapper
+holds its own clone of the session config.

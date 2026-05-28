@@ -17,8 +17,10 @@
 
 import pyarrow as pa
 import pyarrow.dataset as ds
+import pytest
 from datafusion import Expr, SessionContext, Table, udtf
 from datafusion.context import TableProviderExportable
+from datafusion.user_defined import TableFunction
 
 
 def python_table_function_inner(
@@ -215,3 +217,19 @@ def test_python_table_function_without_session_flag_no_injection() -> None:
     result = ctx.sql("SELECT * FROM plain_func(4)").collect()
 
     assert result[0].column(0).to_pylist() == [0, 1, 2, 3]
+
+
+def test_with_session_rejected_for_ffi_table_function() -> None:
+    """`with_session=True` is incompatible with FFI-exported table functions."""
+
+    class FakeFFITableFunction:
+        # Presence of this attribute is what marks a function as FFI-exported.
+        __datafusion_table_function__ = "stub"
+
+    fake = FakeFFITableFunction()
+
+    with pytest.raises(TypeError, match="FFI-exported table functions"):
+        udtf(fake, "fake_ffi", with_session=True)
+
+    with pytest.raises(TypeError, match="FFI-exported table functions"):
+        TableFunction("fake_ffi", fake, with_session=True)
