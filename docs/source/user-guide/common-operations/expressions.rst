@@ -186,10 +186,13 @@ If you need explicit control over parameter names, build the lambda with
 
     Lambda expressions cannot yet be serialized: calling
     :py:meth:`~datafusion.expr.Expr.to_bytes` or pickling an expression that
-    contains a lambda raises ``Lambda not implemented``. SQL lambda syntax
-    (``x -> x * 2``) is only parsed by dialects that support lambdas; set
-    ``datafusion.sql_parser.dialect`` to ``DuckDB`` to use it. The Python
-    expression builder shown above works regardless of dialect.
+    contains a lambda raises ``Lambda not implemented``. SQL lambda syntax is
+    only parsed by dialects that support lambdas; set
+    ``datafusion.sql_parser.dialect`` to one of ``DuckDB``, ``ClickHouse``,
+    ``Snowflake``, or ``Databricks``. Both arrow syntax (``x -> x * 2``) and
+    keyword syntax (``lambda x: x * 2``) parse. DuckDB will drop the arrow
+    form in v2.1, so prefer ``lambda x: x * 2`` for forward compatibility.
+    The Python expression builder shown above works regardless of dialect.
 
 
 Testing membership in a list

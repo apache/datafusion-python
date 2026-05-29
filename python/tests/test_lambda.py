@@ -125,19 +125,14 @@ def test_to_lambda_rejects_invalid_arg(arg, exc_type, match):
         f.array_transform(col("a"), arg)
 
 
-def test_sql_lambda_requires_duckdb_dialect():
-    # Lambda arrow syntax (``x -> ...``) is only parsed by dialects that
-    # support lambda functions. The default Generic dialect treats ``->`` as
-    # the JSON arrow operator, so ``x`` is read as a column reference.
-    ctx = SessionContext()
-    with pytest.raises(Exception, match="No field named x"):
-        ctx.sql("select array_transform([1, 2, 3], x -> x * 2) as d").collect()
-
-    duckdb_ctx = SessionContext(
-        SessionConfig().set("datafusion.sql_parser.dialect", "DuckDB")
-    )
-    result = duckdb_ctx.sql(
-        "select array_transform([1, 2, 3], x -> x * 2) as d"
+@pytest.mark.parametrize("dialect", ["DuckDB", "ClickHouse", "Snowflake", "Databricks"])
+def test_sql_lambda_keyword_syntax(dialect):
+    # ``lambda x: x * 2`` is the forward-compatible syntax. DuckDB will drop
+    # the arrow form (``x -> ...``) in v2.1; the keyword form is supported by
+    # every dialect in sqlparser-rs that enables lambda functions.
+    ctx = SessionContext(SessionConfig().set("datafusion.sql_parser.dialect", dialect))
+    result = ctx.sql(
+        "select array_transform([1, 2, 3], lambda x: x * 2) as d"
     ).collect_column("d")
     assert result.to_pylist() == [[2, 4, 6]]
 
