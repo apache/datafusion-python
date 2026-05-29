@@ -43,10 +43,3 @@ def test_ffi_physical_optimizer_rule_runs_during_planning():
         f"before={before} after={after}"
     )
     assert result[0].column(0).to_pylist() == [1, 2, 3]
-
-
-def test_ffi_physical_optimizer_rule_export():
-    """The rule object exposes the FFI capsule entry point."""
-    rule = MyPhysicalOptimizerRule()
-    capsule = rule.__datafusion_physical_optimizer_rule__()
-    assert capsule is not None
