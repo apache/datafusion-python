@@ -1247,9 +1247,11 @@ def test_to_date_invalid_input(df):
         df.select(f.to_date(literal("not-a-date"))).collect()
 
 
-def test_temporal_formatter_requires_expr():
-    with pytest.raises(AttributeError, match="'str' object has no attribute 'expr'"):
-        f.to_time(literal("12:30:45"), "not-an-expr")
+def test_temporal_formatter_accepts_bare_str(df):
+    result = df.select(
+        f.to_time(literal("12h30m45s"), "%Hh%Mm%Ss").alias("t")
+    ).collect()[0]
+    assert str(result.column(0)[0].as_py()) == "12:30:45"
 
 
 def test_today_returns_date32(df):
