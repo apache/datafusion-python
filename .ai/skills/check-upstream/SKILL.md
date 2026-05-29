@@ -88,11 +88,18 @@ The user may specify an area via `$ARGUMENTS`. If no area is specified or "all" 
 - Python API: `python/datafusion/functions.py` (aggregate functions are mixed in with scalar functions)
 - Rust bindings: `crates/core/src/functions.rs`
 
+**Evaluated and not requiring separate Python exposure:**
+- `count_distinct` — covered by `count(expr, distinct=True)`. Both forms call
+  `count_udaf` with `distinct: bool = true` and produce the same logical plan.
+- `sum_distinct` — covered by `sum(expr, distinct=True)`.
+- `avg_distinct` — covered by `avg(expr, distinct=True)`.
+
 **How to check:**
 1. Fetch the upstream aggregate function documentation page
 2. Compare against aggregate functions in `python/datafusion/functions.py` (check `__all__` list and function definitions)
 3. A function is covered if it exists in the Python API, even if it aliases another function's Rust binding
-4. Report only functions missing from the Python API
+4. Check against the "evaluated and not requiring exposure" list before flagging as a gap
+5. Report only functions missing from the Python API
 
 ### 3. Window Functions
 
