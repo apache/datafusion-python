@@ -491,6 +491,21 @@ which is passed directly to <code class="docutils literal notranslate"><span cla
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The aggregate functions <a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.sum" title="datafusion.functions.sum"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum()</span></code></a> and
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.avg" title="datafusion.functions.avg"><code class="xref py py-func docutils literal notranslate"><span class="pre">avg()</span></code></a> now accept a <code class="docutils literal notranslate"><span class="pre">distinct</span></code> argument, matching
+the other aggregate functions. <code class="docutils literal notranslate"><span class="pre">distinct</span></code> is inserted <em>before</em> <code class="docutils literal notranslate"><span class="pre">filter</span></code> in the
+argument list, so any code that passed <code class="docutils literal notranslate"><span class="pre">filter</span></code> positionally must be updated to
+pass it as a keyword argument. The types are distinct so a type checker should flag this.</p>
+<p>Before:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">my_filter</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">my_filter</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="nb">filter</span><span class="o">=</span><span class="n">my_filter</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="nb">filter</span><span class="o">=</span><span class="n">my_filter</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="datafusion-53-0-0">
 <h2>DataFusion 53.0.0<a class="headerlink" href="#datafusion-53-0-0" title="Link to this heading">¶</a></h2>

@@ -45,6 +45,26 @@ After:
     config = SessionConfig().set("datafusion.execution.batch_size", "4096")
     ctx = SessionContext(config)
 
+The aggregate functions :py:func:`~datafusion.functions.sum` and
+:py:func:`~datafusion.functions.avg` now accept a ``distinct`` argument, matching
+the other aggregate functions. ``distinct`` is inserted *before* ``filter`` in the
+argument list, so any code that passed ``filter`` positionally must be updated to
+pass it as a keyword argument. The types are distinct so a type checker should flag this.
+
+Before:
+
+.. code-block:: python
+
+    f.sum(column("a"), my_filter)
+    f.avg(column("a"), my_filter)
+
+Now:
+
+.. code-block:: python
+
+    f.sum(column("a"), filter=my_filter)
+    f.avg(column("a"), filter=my_filter)
+
 DataFusion 53.0.0
 -----------------
 

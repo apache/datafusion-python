@@ -1395,16 +1395,17 @@ Module Contents
    0.0
 
 
-.. py:function:: avg(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: avg(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the average value.
 
    This aggregate function expects a numeric expression and will return a float.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
+   :param distinct: If True, duplicate values are removed before averaging.
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -1425,6 +1426,14 @@ Module Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    2.5
+
+   >>> df = ctx.from_pydict({"a": [1.0, 1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.avg(
+   ...         dfn.col("a"), distinct=True,
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: bit_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -5105,16 +5114,17 @@ Module Contents
    'hello'
 
 
-.. py:function:: sum(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: sum(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the sum of a set of numbers.
 
    This aggregate function expects a numeric expression.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
+   :param distinct: If True, duplicate values are removed before summing.
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -5135,6 +5145,14 @@ Module Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    5
+
+   >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.sum(
+   ...         dfn.col("a"), distinct=True,
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
