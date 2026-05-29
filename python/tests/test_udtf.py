@@ -17,8 +17,10 @@
 
 import pyarrow as pa
 import pyarrow.dataset as ds
+import pytest
 from datafusion import Expr, SessionContext, Table, udtf
 from datafusion.context import TableProviderExportable
+from datafusion.user_defined import TableFunction
 
 
 def python_table_function_inner(
@@ -134,3 +136,100 @@ def test_python_table_function_with_string_args() -> None:
     result = ctx.sql("SELECT * FROM string_arg_func('test')").collect()
     assert len(result) == 1
     assert result[0].schema.names == ["test_a", "test_b"]
+
+
+def test_python_table_function_receives_session() -> None:
+    """A UDTF registered ``with_session=True`` gets the calling ctx."""
+    ctx = SessionContext()
+    captured: list[SessionContext] = []
+
+    @udtf("session_aware_func", with_session=True)
+    def session_aware_func(*, session: SessionContext) -> TableProviderExportable:
+        captured.append(session)
+        batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(session_aware_func)
+    result = ctx.sql("SELECT * FROM session_aware_func()").collect()
+
+    assert len(captured) == 1
+    assert isinstance(captured[0], SessionContext)
+    # Sharing the same catalog confirms the wrapper points at the caller's state.
+    assert captured[0].catalog().schema().names() == ctx.catalog().schema().names()
+    assert result[0].column(0).to_pylist() == [1, 2, 3]
+
+
+def test_python_table_function_session_used_for_metadata() -> None:
+    """The UDTF can inspect session state through the passed-in context."""
+    ctx = SessionContext()
+    base_batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
+    ctx.register_batch("base_tbl", base_batch)
+
+    seen_tables: list[set[str]] = []
+
+    @udtf("table_inventory", with_session=True)
+    def table_inventory(*, session: SessionContext) -> TableProviderExportable:
+        # Stash the visible tables to verify the session wired through.
+        seen_tables.append(session.catalog().schema().names())
+        batch = pa.RecordBatch.from_pydict({"name": ["base_tbl"]})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(table_inventory)
+    result = ctx.sql("SELECT * FROM table_inventory()").collect()
+
+    assert seen_tables == [{"base_tbl"}]
+    assert result[0].column(0).to_pylist() == ["base_tbl"]
+
+
+def test_python_table_function_class_callable_with_session() -> None:
+    """Class-based UDTFs opt in via ``with_session=True``."""
+    ctx = SessionContext()
+    captured: list[SessionContext] = []
+
+    class SessionAware:
+        def __call__(
+            self, n: Expr, *, session: SessionContext
+        ) -> TableProviderExportable:
+            captured.append(session)
+            count = n.to_variant().value_i64()
+            batch = pa.RecordBatch.from_pydict({"a": list(range(count))})
+            return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(udtf(SessionAware(), "session_class_func", with_session=True))
+    result = ctx.sql("SELECT * FROM session_class_func(3)").collect()
+
+    assert len(captured) == 1
+    assert isinstance(captured[0], SessionContext)
+    assert result[0].column(0).to_pylist() == [0, 1, 2]
+
+
+def test_python_table_function_without_session_flag_no_injection() -> None:
+    """Default registration (no ``with_session``) calls func positionally."""
+    ctx = SessionContext()
+
+    @udtf("plain_func")
+    def plain_func(n: Expr) -> TableProviderExportable:
+        count = n.to_variant().value_i64()
+        batch = pa.RecordBatch.from_pydict({"a": list(range(count))})
+        return Table(ds.dataset([batch]))
+
+    ctx.register_udtf(plain_func)
+    result = ctx.sql("SELECT * FROM plain_func(4)").collect()
+
+    assert result[0].column(0).to_pylist() == [0, 1, 2, 3]
+
+
+def test_with_session_rejected_for_ffi_table_function() -> None:
+    """`with_session=True` is incompatible with FFI-exported table functions."""
+
+    class FakeFFITableFunction:
+        # Presence of this attribute is what marks a function as FFI-exported.
+        __datafusion_table_function__ = "stub"
+
+    fake = FakeFFITableFunction()
+
+    with pytest.raises(TypeError, match="FFI-exported table functions"):
+        udtf(fake, "fake_ffi", with_session=True)
+
+    with pytest.raises(TypeError, match="FFI-exported table functions"):
+        TableFunction("fake_ffi", fake, with_session=True)
