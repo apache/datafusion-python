@@ -15,8 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Reusable workflow for running tests
-# This ensures the same tests run for both debug (PRs) and release (main/tags) builds
+# Reusable workflow for running tests.
+# Single matrix covers both GIL (abi3 wheel) and free-threaded
+# (per-interpreter wheels) builds.
 
 name: Test
 
@@ -35,61 +36,69 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version:
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
-          - "3.14"
-        toolchain:
-          - "stable"
-
+        include:
+          # GIL builds — all share the same abi3 wheel.
+          - { python-version: "3.10", wheel-tag: "abi3", freethreaded: false }
+          - { python-version: "3.11", wheel-tag: "abi3", freethreaded: false }
+          - { python-version: "3.12", wheel-tag: "abi3", freethreaded: false }
+          - { python-version: "3.13", wheel-tag: "abi3", freethreaded: false }
+          - { python-version: "3.14", wheel-tag: "abi3", freethreaded: false }
+          # Free-threaded builds — one wheel per interpreter.
+          - { python-version: "3.13t", wheel-tag: "3.13t", freethreaded: true }
+          - { python-version: "3.14t", wheel-tag: "3.14t", freethreaded: true }
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup Python
+        id: setup-python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+          freethreaded: ${{ matrix.freethreaded }}
 
       - name: Cache Cargo
         uses: actions/cache@v5
         with:
           path: ~/.cargo
-          key: cargo-cache-${{ matrix.toolchain }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-cache-stable-${{ hashFiles('Cargo.lock') }}
 
       - name: Install dependencies
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           enable-cache: true
 
-      # Download the Linux wheel built in the build workflow
       - name: Download pre-built Linux wheel
         uses: actions/download-artifact@v8
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-${{ matrix.wheel-tag }}
           path: wheels/
 
-      # Download the FFI test wheel
+      # FFI test wheel only built once (under the abi3 matrix entry in build.yml).
       - name: Download pre-built FFI test wheel
+        if: matrix.wheel-tag == 'abi3'
         uses: actions/download-artifact@v8
         with:
           name: test-ffi-manylinux-x86_64
           path: wheels/
 
-      # Install from the pre-built wheels
       - name: Install from pre-built wheels
         run: |
           set -x
-          uv venv
-          # Install development dependencies
-          uv sync --dev --no-install-package datafusion
-          # Install all pre-built wheels
+          # Create the venv with the setup-python interpreter, then point
+          # every uv command explicitly at the venv's own interpreter.
+          # uv's interpreter discovery skips free-threaded builds unless
+          # asked by exact path, so plain `uv sync` (even with an activated
+          # venv or --active) re-picks the system 3.12 and recreates .venv.
+          # Targeting .venv/bin/python keeps sync and pip install in the
+          # same 3.13t/3.14t environment as the cp313t/cp314t wheel.
+          uv venv --python "${{ steps.setup-python.outputs.python-path }}"
+          VENV_PY="$PWD/.venv/bin/python"
+          uv sync --python "$VENV_PY" --dev --no-install-package datafusion
           WHEELS=$(find wheels/ -name "*.whl")
           if [ -n "$WHEELS" ]; then
             echo "Installing wheels:"
             echo "$WHEELS"
-            uv pip install wheels/*.whl
+            uv pip install --python "$VENV_PY" wheels/*.whl
           else
             echo "ERROR: No wheels found!"
             exit 1
@@ -98,16 +107,24 @@ jobs:
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
+          # On free-threaded interpreters, fail loud if any C extension
+          # re-enables the GIL implicitly.
+          PYTHON_GIL: ${{ matrix.freethreaded && '0' || '' }}
         run: |
           git submodule update --init
-          uv run --no-project pytest -v --import-mode=importlib
+          # Use the .venv interpreter directly; uv discovery would skip the
+          # free-threaded build and re-pick the system 3.12 (see install step).
+          uv run --python "$PWD/.venv/bin/python" --no-project pytest -v --import-mode=importlib
 
+      # FFI + TPC-H examples only need to run once; gate to abi3 entries.
       - name: FFI unit tests
+        if: matrix.wheel-tag == 'abi3'
         run: |
           cd examples/datafusion-ffi-example
           uv run --no-project pytest python/tests/_test*.py
 
       - name: Run tpchgen-cli to create 1 Gb dataset
+        if: matrix.wheel-tag == 'abi3'
         run: |
           mkdir examples/tpch/data
           cd examples/tpch/data
@@ -115,6 +132,7 @@ jobs:
           uv run --no-project tpchgen-cli -s 1 --format=parquet
 
       - name: Run TPC-H examples
+        if: matrix.wheel-tag == 'abi3'
         run: |
           cd examples/tpch
           uv run --no-project pytest _tests.py

@@ -42,8 +42,7 @@ tokio = { workspace = true, features = [
 ] }
 pyo3 = { workspace = true, features = [
   "extension-module",
-  "abi3",
-  "abi3-py310",
+  "generate-import-lib",
 ] }
 pyo3-async-runtimes = { workspace = true, features = ["tokio-runtime"] }
 pyo3-log = { workspace = true }
@@ -74,7 +73,11 @@ prost-types = { workspace = true }
 pyo3-build-config = { workspace = true }
 
 [features]
-default = ["mimalloc"]
+default = ["mimalloc", "abi3"]
+# Stable ABI build — single wheel covers Python 3.10..3.14 (GIL builds only).
+# Mutually exclusive with free-threaded interpreters (cp313t / cp314t); the
+# free-threaded wheel build must pass --no-default-features.
+abi3 = ["pyo3/abi3", "pyo3/abi3-py310"]
 protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
 

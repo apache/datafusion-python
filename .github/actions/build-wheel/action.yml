@@ -1,0 +1,110 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Composite action that builds a datafusion-python wheel with maturin.
+# Centralises the abi3-vs-free-threaded argument logic so platform jobs
+# stay short and changes to wheel-build flags happen in one place.
+
+name: "Build wheel"
+description: "Build datafusion-python wheel with maturin (abi3 or free-threaded)"
+
+inputs:
+  target:
+    description: "Rust target triple (e.g. x86_64-unknown-linux-gnu). Required when manylinux is set; ignored for native builds."
+    required: false
+    default: ""
+  python-tag:
+    description: "abi3 (covers 3.10..3.14 GIL builds) or a free-threaded interpreter such as 3.13t / 3.14t"
+    required: true
+  build-mode:
+    description: "release or debug"
+    required: true
+  features:
+    description: "Comma-separated extra features (in addition to those implied by the python-tag)"
+    required: false
+    default: "substrait"
+  manylinux:
+    description: "manylinux tag for maturin-action (e.g. 2_28). Leave empty to use uv-run maturin natively."
+    required: false
+    default: ""
+  out-dir:
+    description: "Output directory for built wheels"
+    required: false
+    default: "dist"
+
+outputs:
+  args:
+    description: "Computed maturin args (for debugging)"
+    value: ${{ steps.args.outputs.args }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compute maturin args
+      id: args
+      shell: bash
+      run: |
+        set -euo pipefail
+        FEATURES="${{ inputs.features }}"
+        TAG="${{ inputs.python-tag }}"
+        if [ "$TAG" = "abi3" ]; then
+          # Default features include the `abi3` cargo feature.
+          # One wheel covers Python 3.10..3.14 (GIL builds only).
+          BUILD_ARGS="--features ${FEATURES}"
+        else
+          # Free-threaded build: disable abi3, force mimalloc back in, pin interpreter.
+          if [ "${RUNNER_OS:-}" = "Windows" ]; then
+            # Windows free-threaded builds ship as `python.exe` (no `tN`
+            # suffix). Resolve sys.executable so the path is independent of
+            # PATH ordering, and assert the interpreter is actually
+            # free-threaded before we hand the wheel off.
+            INTERP=$(python -c 'import sys; print(sys.executable)')
+            python -c "import sysconfig, sys; \
+              v = sysconfig.get_config_var('Py_GIL_DISABLED'); \
+              sys.exit(0 if v == 1 else f'expected free-threaded interpreter, got Py_GIL_DISABLED={v!r} at {sys.executable}')"
+            # Backslashes in BUILD_ARGS would be parsed as escapes when the
+            # output is re-expanded in the next step; use forward slashes
+            # (maturin/Rust accept them on Windows).
+            INTERP="${INTERP//\\//}"
+          else
+            INTERP="python${TAG}"
+          fi
+          BUILD_ARGS="--no-default-features --features mimalloc,${FEATURES} --interpreter ${INTERP}"
+        fi
+        if [ "${{ inputs.build-mode }}" = "release" ]; then
+          BUILD_ARGS="--release --strip ${BUILD_ARGS}"
+        fi
+        BUILD_ARGS="${BUILD_ARGS} --out ${{ inputs.out-dir }}"
+        echo "args=${BUILD_ARGS}" >> "$GITHUB_OUTPUT"
+        echo "maturin args: ${BUILD_ARGS}"
+
+    - name: Build via maturin-action (manylinux container)
+      if: inputs.manylinux != ''
+      uses: PyO3/maturin-action@v1
+      with:
+        target: ${{ inputs.target }}
+        manylinux: ${{ inputs.manylinux }}
+        maturin-version: "1.13.3"
+        args: ${{ steps.args.outputs.args }}
+        rustup-components: rust-std
+
+    - name: Build via native maturin
+      if: inputs.manylinux == ''
+      shell: bash
+      # Use `uvx` so maturin is available even when `uv sync` was skipped
+      # (free-threaded matrix entries don't pre-populate the project venv).
+      run: uvx maturin@1.13.3 build ${{ steps.args.outputs.args }}

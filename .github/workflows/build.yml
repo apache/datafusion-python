@@ -135,8 +135,12 @@ jobs:
   # ============================================
   build-manylinux-x86_64:
     needs: [generate-license, lint-rust, lint-python]
-    name: ManyLinux x86_64
+    name: Linux x86_64 (${{ matrix.python-tag }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-tag: ["abi3", "3.13t", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -153,7 +157,7 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ inputs.build_mode }}
+          key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
@@ -172,25 +176,18 @@ jobs:
           free -h
           swapon --show
 
-      - name: Build (release mode)
-        uses: PyO3/maturin-action@v1
-        if: inputs.build_mode == 'release'
+      - name: Build wheel
+        uses: ./.github/actions/build-wheel
         with:
           target: x86_64-unknown-linux-gnu
+          python-tag: ${{ matrix.python-tag }}
+          build-mode: ${{ inputs.build_mode }}
+          features: "protoc,substrait"
           manylinux: "2_28"
-          args: --release --strip --features protoc,substrait --out dist
-          rustup-components: rust-std
 
-      - name: Build (debug mode)
-        uses: PyO3/maturin-action@v1
-        if: inputs.build_mode == 'debug'
-        with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
-          args: --features protoc,substrait --out dist
-          rustup-components: rust-std
-
+      # FFI test wheel only needs to be built once per platform; gate to abi3.
       - name: Build FFI test library
+        if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64-unknown-linux-gnu
@@ -202,10 +199,11 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v7
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-${{ matrix.python-tag }}
           path: dist/*
 
       - name: Archive FFI test wheel
+        if: matrix.python-tag == 'abi3'
         uses: actions/upload-artifact@v7
         with:
           name: test-ffi-manylinux-x86_64
@@ -216,8 +214,12 @@ jobs:
   # ============================================
   build-manylinux-aarch64:
     needs: [generate-license, lint-rust, lint-python]
-    name: ManyLinux arm64
+    name: Linux arm64 (${{ matrix.python-tag }})
     runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        python-tag: ["abi3", "3.13t", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -234,7 +236,7 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ inputs.build_mode }}
+          key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
@@ -253,29 +255,20 @@ jobs:
           free -h
           swapon --show
 
-      - name: Build (release mode)
-        uses: PyO3/maturin-action@v1
-        if: inputs.build_mode == 'release'
+      - name: Build wheel
+        uses: ./.github/actions/build-wheel
         with:
           target: aarch64-unknown-linux-gnu
+          python-tag: ${{ matrix.python-tag }}
+          build-mode: ${{ inputs.build_mode }}
+          features: "protoc,substrait"
           manylinux: "2_28"
-          args: --release --strip --features protoc,substrait --out dist
-          rustup-components: rust-std
-
-      - name: Build (debug mode)
-        uses: PyO3/maturin-action@v1
-        if: inputs.build_mode == 'debug'
-        with:
-          target: aarch64-unknown-linux-gnu
-          manylinux: "2_28"
-          args: --features protoc,substrait --out dist
-          rustup-components: rust-std
 
       - name: Archive wheels
         uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
-          name: dist-manylinux-aarch64
+          name: dist-manylinux-aarch64-${{ matrix.python-tag }}
           path: dist/*
 
   # ============================================
@@ -283,13 +276,13 @@ jobs:
   # ============================================
   build-python-mac-win:
     needs: [generate-license, lint-rust, lint-python]
-    name: macOS arm64 & Windows
+    name: ${{ matrix.os == 'macos-latest' && 'macOS arm64' || 'Windows x86_64' }} (${{ matrix.python-tag }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
         os: [macos-latest, windows-latest]
+        python-tag: ["abi3", "3.13t", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -305,7 +298,14 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ inputs.build_mode }}
+          key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
+
+      - name: Setup Python (free-threaded)
+        if: matrix.python-tag != 'abi3'
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-tag }}
+          freethreaded: true
 
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
@@ -318,22 +318,22 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
+        if: matrix.python-tag == 'abi3'
         run: uv sync --dev --no-install-package datafusion
 
-      # Run clippy BEFORE maturin so we can avoid rebuilding. The features must match
-      # exactly the features used by maturin. Linux maturin builds need to happen in a
-      # container so only run this for our mac runner.
+      # Clippy is interpreter-agnostic; run once per OS (against the abi3 entry)
+      # so the matrix doesn't pay the cost three times.
       - name: Run Clippy
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && matrix.python-tag == 'abi3'
         run: cargo clippy --no-deps --all-targets --features substrait -- -D warnings
 
-      - name: Build Python package (release mode)
-        if: inputs.build_mode == 'release'
-        run: uv run --no-project maturin build --release --strip --features substrait
-
-      - name: Build Python package (debug mode)
-        if: inputs.build_mode != 'release'
-        run: uv run --no-project maturin build --features substrait
+      - name: Build wheel
+        uses: ./.github/actions/build-wheel
+        with:
+          python-tag: ${{ matrix.python-tag }}
+          build-mode: ${{ inputs.build_mode }}
+          features: "substrait"
+          out-dir: "target/wheels"
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -350,7 +350,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: inputs.build_mode == 'release'
         with:
-          name: dist-${{ matrix.os  }}
+          name: dist-${{ matrix.os }}-${{ matrix.python-tag }}
           path: target/wheels/*
 
   # ============================================
@@ -359,11 +359,12 @@ jobs:
   build-macos-x86_64:
     if: inputs.build_mode == 'release'
     needs: [generate-license, lint-rust, lint-python]
+    name: macOS x86_64 (${{ matrix.python-tag }})
     runs-on: macos-15-intel
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-tag: ["abi3", "3.13t", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -379,7 +380,14 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ inputs.build_mode }}
+          key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
+
+      - name: Setup Python (free-threaded)
+        if: matrix.python-tag != 'abi3'
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-tag }}
+          freethreaded: true
 
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
@@ -392,11 +400,16 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
+        if: matrix.python-tag == 'abi3'
         run: uv sync --dev --no-install-package datafusion
 
-      - name: Build (release mode)
-        run: |
-          uv run --no-project maturin build --release --strip --features substrait
+      - name: Build wheel
+        uses: ./.github/actions/build-wheel
+        with:
+          python-tag: ${{ matrix.python-tag }}
+          build-mode: ${{ inputs.build_mode }}
+          features: "substrait"
+          out-dir: "target/wheels"
 
       - name: List Mac wheels
         run: find target/wheels/
@@ -404,7 +417,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v7
         with:
-          name: dist-macos-aarch64
+          name: dist-macos-aarch64-${{ matrix.python-tag }}
           path: target/wheels/*
 
   # ============================================
@@ -509,11 +522,12 @@ jobs:
         with:
           enable-cache: true
 
-      # Download the Linux wheel built in the previous job
+      # Download the Linux wheel built in the previous job.
+      # Docs only need the abi3 wheel — interpreter doesn't matter for sphinx.
       - name: Download pre-built Linux wheel
         uses: actions/download-artifact@v8
         with:
-          name: dist-manylinux-x86_64
+          name: dist-manylinux-x86_64-abi3
           path: wheels/
 
       # Install from the pre-built wheels
