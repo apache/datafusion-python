@@ -2955,7 +2955,7 @@ Package Contents
       Returns the schema associated with this table.
 
 
-.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any], ctx: datafusion.SessionContext | None = None)
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[Ellipsis, Any], ctx: datafusion.SessionContext | None = None, *, with_session: bool = False)
 
    Class for performing user-defined table functions (UDTF).
 
@@ -2963,6 +2963,24 @@ Package Contents
    input expressions.
 
    Instantiate a user-defined table function (UDTF).
+
+   Set ``with_session=True`` to have the calling
+   :class:`SessionContext` passed as a ``session`` keyword argument
+   on each invocation. Use it inside the callback to look up
+   registered tables, UDFs, or session configuration. When
+   ``with_session`` is ``False`` (the default), ``func`` is invoked
+   with the positional expression arguments only.
+
+   ``with_session=True`` is only supported for pure-Python callables.
+   Passing it together with an FFI-exported table function (one
+   exposing ``__datafusion_table_function__``) raises
+   :class:`TypeError`.
+
+   Registry mutations performed through the injected session (such
+   as registering tables or UDFs) propagate to the caller's
+   :class:`SessionContext` because the registries are shared.
+   Configuration changes do **not** propagate; the wrapper holds
+   its own clone of the session config.
 
    See :py:func:`udtf` for a convenience function and argument
    descriptions.
@@ -2980,7 +2998,7 @@ Package Contents
 
 
 
-   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
+   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
       :staticmethod:
 
 
@@ -2988,20 +3006,24 @@ Package Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_table_udf_decorator(name: str | None = None, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
       :staticmethod:
 
 
-      Create a decorator for a WindowUDF.
+      Create a decorator for a TableFunction.
 
 
 
-   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
-                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
+   .. py:method:: udtf(name: str, *, with_session: bool = False) -> collections.abc.Callable[Ellipsis, Any]
+                  udtf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
       :staticmethod:
 
 
       Create a new User-Defined Table Function (UDTF).
+
+      Pass ``with_session=True`` to have the calling
+      :class:`SessionContext` injected as a ``session`` keyword
+      argument on each invocation.
 
 
 
