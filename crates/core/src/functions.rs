@@ -159,6 +159,44 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
     .into()
 }
 
+/// Create a lambda expression from a list of parameter names and a body
+/// expression. The body should reference the parameters via [`lambda_var`].
+/// Exposed to Python as `lambda_` because `lambda` is a reserved keyword.
+#[pyfunction]
+#[pyo3(name = "lambda_")]
+fn py_lambda(params: Vec<String>, body: PyExpr) -> PyExpr {
+    datafusion::logical_expr::lambda(params, body.into()).into()
+}
+
+/// Create an unresolved lambda variable reference by name. The owning
+/// higher-order function resolves it against its lambda parameters during
+/// planning.
+#[pyfunction]
+fn lambda_var(name: String) -> PyExpr {
+    datafusion::logical_expr::lambda_var(name).into()
+}
+
+/// Higher-order function: apply `transform` (a lambda) to each element of
+/// `array`, returning a new array of the results.
+#[pyfunction]
+fn array_transform(array: PyExpr, transform: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_transform(array.into(), transform.into()).into()
+}
+
+/// Higher-order function: return true if any element of `array` satisfies
+/// `predicate` (a lambda returning a boolean).
+#[pyfunction]
+fn array_any_match(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_any_match(array.into(), predicate.into()).into()
+}
+
+/// Higher-order function: keep the elements of `array` for which `predicate`
+/// (a lambda returning a boolean) is true, returning a new filtered array.
+#[pyfunction]
+fn array_filter(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_filter(array.into(), predicate.into()).into()
+}
+
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
@@ -1081,6 +1119,13 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
     m.add_wrapped(wrap_pyfunction!(decode))?;
+
+    // Lambda / higher-order functions
+    m.add_wrapped(wrap_pyfunction!(py_lambda))?;
+    m.add_wrapped(wrap_pyfunction!(lambda_var))?;
+    m.add_wrapped(wrap_pyfunction!(array_transform))?;
+    m.add_wrapped(wrap_pyfunction!(array_any_match))?;
+    m.add_wrapped(wrap_pyfunction!(array_filter))?;
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;

@@ -396,6 +396,7 @@ impl PySessionContext {
             .with_config(config)
             .with_runtime_env(runtime)
             .with_default_features()
+            .with_analyzer_rule(Arc::new(crate::analyzer::ResolveLambdaVariables::new()))
             .build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
         Ok(PySessionContext {

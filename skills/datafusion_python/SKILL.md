@@ -488,6 +488,24 @@ col("array_col")[0]                  # access array element (0-indexed)
 col("array_col")[1:3]                # array slice (0-indexed)
 ```
 
+### Lambda Functions
+
+Some array functions take a lambda function that runs once per element. Pass a
+Python `lambda` directly — its parameter names become the lambda parameters and
+its return value becomes the body:
+
+```python
+F.array_transform(col("a"), lambda v: v * 2)    # map: [1,2,3] -> [2,4,6]
+F.array_filter(col("a"), lambda v: v > 2)        # filter: [1,2,3] -> [3]
+F.array_any_match(col("a"), lambda v: v > 3)     # predicate: any element > 3
+```
+
+For explicit parameter names, build the lambda by hand:
+
+```python
+F.array_transform(col("a"), F.lambda_(["v"], F.lambda_var("v") * lit(2)))
+```
+
 ## SQL-to-DataFrame Reference
 
 | SQL | DataFrame API |

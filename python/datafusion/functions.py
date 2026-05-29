@@ -38,9 +38,13 @@ for categorized catalogs of aggregate and window functions.
 
 from __future__ import annotations
 
-from typing import Any
+import inspect
+from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from datafusion._internal import functions as f
 from datafusion.common import NullTreatment
@@ -61,12 +65,14 @@ __all__ = [
     "acos",
     "acosh",
     "alias",
+    "any_match",
     "approx_distinct",
     "approx_median",
     "approx_percentile_cont",
     "approx_percentile_cont_with_weight",
     "array",
     "array_agg",
+    "array_any_match",
     "array_any_value",
     "array_append",
     "array_cat",
@@ -79,6 +85,7 @@ __all__ = [
     "array_empty",
     "array_except",
     "array_extract",
+    "array_filter",
     "array_has",
     "array_has_all",
     "array_has_any",
@@ -108,6 +115,7 @@ __all__ = [
     "array_slice",
     "array_sort",
     "array_to_string",
+    "array_transform",
     "array_union",
     "arrays_overlap",
     "arrays_zip",
@@ -188,6 +196,8 @@ __all__ = [
     "isnan",
     "iszero",
     "lag",
+    "lambda_",
+    "lambda_var",
     "last_value",
     "lcm",
     "lead",
@@ -195,6 +205,7 @@ __all__ = [
     "left",
     "length",
     "levenshtein",
+    "list_any_match",
     "list_any_value",
     "list_append",
     "list_cat",
@@ -207,6 +218,7 @@ __all__ = [
     "list_empty",
     "list_except",
     "list_extract",
+    "list_filter",
     "list_has",
     "list_has_all",
     "list_has_any",
@@ -237,6 +249,7 @@ __all__ = [
     "list_slice",
     "list_sort",
     "list_to_string",
+    "list_transform",
     "list_union",
     "list_zip",
     "ln",
@@ -457,6 +470,209 @@ def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
         This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
+
+
+def lambda_var(name: str) -> Expr:
+    """Create an unresolved reference to a lambda parameter by ``name``.
+
+    Use this inside the body passed to :py:func:`lambda_` to refer to one of the
+    lambda's parameters. The owning higher-order function (such as
+    :py:func:`array_transform`) binds the variable to a concrete element type
+    during query planning.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+        >>> df.select(
+        ...     F.array_transform(col("a"), double_fn).alias("d")
+        ... ).collect_column("d")[0].as_py()
+        [2, 4, 6]
+
+    See Also:
+        :py:func:`lambda_`, :py:func:`array_transform`, :py:func:`array_any_match`.
+    """
+    return Expr(f.lambda_var(name))
+
+
+def lambda_(params: list[str], body: Expr) -> Expr:
+    """Create a lambda expression from parameter names and a body expression.
+
+    This is the explicit form of building a lambda. Most callers can instead
+    pass a Python callable directly to a higher-order function such as
+    :py:func:`array_transform`, which builds the lambda automatically. Reach for
+    ``lambda_`` when you want explicit control over the parameter names.
+
+    Args:
+        params: Ordered lambda parameter names.
+        body: Body expression that references the parameters via
+            :py:func:`lambda_var`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+        >>> df.select(
+        ...     F.array_transform(col("a"), double_fn).alias("d")
+        ... ).collect_column("d")[0].as_py()
+        [2, 4, 6]
+
+    See Also:
+        :py:func:`lambda_var`, :py:func:`array_transform`, :py:func:`array_any_match`.
+    """
+    return Expr(f.lambda_(params, body.expr))
+
+
+def _to_lambda(fn: Expr | Callable[..., Any]) -> Expr:
+    """Coerce ``fn`` to a lambda ``Expr``.
+
+    Accepts either an ``Expr`` produced by :py:func:`lambda_` (returned
+    unchanged) or a Python callable. A callable is introspected for its
+    parameter names; those names become :py:func:`lambda_var` references passed
+    positionally into the callable, and its return value (coerced to an
+    ``Expr``) becomes the lambda body.
+    """
+    if isinstance(fn, Expr):
+        return fn
+    if not callable(fn):
+        msg = f"expected an Expr or callable, got {type(fn).__name__}"
+        raise TypeError(msg)
+    params = list(inspect.signature(fn).parameters)
+    if not params:
+        msg = "lambda callable must accept at least one parameter"
+        raise ValueError(msg)
+    body = coerce_to_expr(fn(*[lambda_var(p) for p in params]))
+    return lambda_(params, body)
+
+
+def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
+    """Transform each element of ``array`` with a lambda.
+
+    ``transform`` may be a Python callable, which is converted to a lambda
+    automatically (its parameter names become the lambda parameters), or an
+    explicit lambda built with :py:func:`lambda_`.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> df.select(
+        ...     F.array_transform(col("a"), lambda v: v * 2).alias("d")
+        ... ).collect_column("d")[0].as_py()
+        [2, 4, 6]
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+        >>> df.select(
+        ...     F.array_transform(col("a"), double_fn).alias("d")
+        ... ).collect_column("d")[0].as_py()
+        [2, 4, 6]
+
+    See Also:
+        :py:func:`array_any_match`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_transform(array.expr, _to_lambda(transform).expr))
+
+
+def list_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
+    """Transform each element of a list with a lambda.
+
+    See Also:
+        This is an alias for :py:func:`array_transform`.
+    """
+    return array_transform(array, transform)
+
+
+def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return ``True`` if any element of ``array`` satisfies ``predicate``.
+
+    ``predicate`` may be a Python callable, converted to a lambda
+    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    return a boolean expression.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> df.select(
+        ...     F.array_any_match(col("a"), lambda v: v > 2).alias("m")
+        ... ).collect_column("m")[0].as_py()
+        True
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+        >>> df.select(
+        ...     F.array_any_match(col("a"), predicate).alias("m")
+        ... ).collect_column("m")[0].as_py()
+        True
+
+    See Also:
+        :py:func:`array_transform`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_any_match(array.expr, _to_lambda(predicate).expr))
+
+
+def any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return ``True`` if any element of an array satisfies a predicate.
+
+    See Also:
+        This is an alias for :py:func:`array_any_match`.
+    """
+    return array_any_match(array, predicate)
+
+
+def list_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return ``True`` if any element of a list satisfies a predicate.
+
+    See Also:
+        This is an alias for :py:func:`array_any_match`.
+    """
+    return array_any_match(array, predicate)
+
+
+def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Keep the elements of ``array`` for which ``predicate`` is ``True``.
+
+    ``predicate`` may be a Python callable, converted to a lambda
+    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    return a boolean expression. The result is a new array containing only the
+    matching elements.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4, 5]]})
+        >>> df.select(
+        ...     F.array_filter(col("a"), lambda v: v > 2).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        [3, 4, 5]
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+        >>> df.select(
+        ...     F.array_filter(col("a"), predicate).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        [3, 4, 5]
+
+    See Also:
+        :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_filter(array.expr, _to_lambda(predicate).expr))
+
+
+def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Keep the elements of a list for which a predicate is ``True``.
+
+    See Also:
+        This is an alias for :py:func:`array_filter`.
+    """
+    return array_filter(array, predicate)
 
 
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
