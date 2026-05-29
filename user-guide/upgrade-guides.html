@@ -433,6 +433,11 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion-54-0-0">
+   DataFusion 54.0.0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion-53-0-0">
    DataFusion 53.0.0
   </a>
@@ -465,6 +470,28 @@
                 
   <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">¶</a></h1>
+<section id="datafusion-54-0-0">
+<h2>DataFusion 54.0.0<a class="headerlink" href="#datafusion-54-0-0" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Config</span></code> class has been removed. It was a standalone wrapper around
+<code class="docutils literal notranslate"><span class="pre">ConfigOptions</span></code> that could not be connected to a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>, making it
+effectively unusable. Use <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> instead,
+which is passed directly to <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<p>Before:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">,</span> <span class="s2">&quot;4096&quot;</span><span class="p">)</span>
+<span class="c1"># config could not be passed to SessionContext</span>
+</pre></div>
+</div>
+<p>After:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">,</span> <span class="s2">&quot;4096&quot;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="datafusion-53-0-0">
 <h2>DataFusion 53.0.0<a class="headerlink" href="#datafusion-53-0-0" title="Link to this heading">¶</a></h2>
 <p>This version includes an upgraded version of <code class="docutils literal notranslate"><span class="pre">pyo3</span></code>, which changed the way to extract an FFI
