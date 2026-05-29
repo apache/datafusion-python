@@ -376,12 +376,11 @@ pub struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    #[pyo3(signature = (config=None, runtime=None, physical_optimizer_rules=None))]
+    #[pyo3(signature = (config=None, runtime=None))]
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
         runtime: Option<PyRuntimeEnvBuilder>,
-        physical_optimizer_rules: Option<Vec<Bound<'_, PyAny>>>,
     ) -> PyDataFusionResult<Self> {
         let config = if let Some(c) = config {
             c.config
@@ -394,15 +393,11 @@ impl PySessionContext {
             RuntimeEnvBuilder::default()
         };
         let runtime = Arc::new(runtime_env_builder.build()?);
-        let mut state_builder = SessionStateBuilder::new()
+        let session_state = SessionStateBuilder::new()
             .with_config(config)
             .with_runtime_env(runtime)
-            .with_default_features();
-        for rule in physical_optimizer_rules.unwrap_or_default() {
-            let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
-            state_builder = state_builder.with_physical_optimizer_rule(rule);
-        }
-        let session_state = state_builder.build();
+            .with_default_features()
+            .build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
         Ok(PySessionContext {
             ctx,
@@ -1149,6 +1144,17 @@ impl PySessionContext {
 
     pub fn remove_optimizer_rule(&self, name: &str) -> bool {
         self.ctx.remove_optimizer_rule(name)
+    }
+
+    pub fn add_physical_optimizer_rule(&self, rule: Bound<'_, PyAny>) -> PyDataFusionResult<()> {
+        let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
+        let state_ref = self.ctx.state_ref();
+        let mut guard = state_ref.write();
+        let new_state = SessionStateBuilder::new_from_existing(guard.clone())
+            .with_physical_optimizer_rule(rule)
+            .build();
+        *guard = new_state;
+        Ok(())
     }
 
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {

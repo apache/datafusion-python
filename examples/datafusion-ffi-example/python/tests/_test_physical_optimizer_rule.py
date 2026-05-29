@@ -23,10 +23,11 @@ from datafusion_ffi_example import MyPhysicalOptimizerRule
 
 
 def test_ffi_physical_optimizer_rule_runs_during_planning():
-    """A rule supplied via physical_optimizer_rules is invoked while the
+    """A rule added via add_physical_optimizer_rule is invoked while the
     physical plan is built, and the query still returns correct results."""
     rule = MyPhysicalOptimizerRule()
-    ctx = SessionContext(physical_optimizer_rules=[rule])
+    ctx = SessionContext()
+    ctx.add_physical_optimizer_rule(rule)
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3])],
         names=["a"],
