@@ -25,7 +25,7 @@ The aggregate functions :py:func:`~datafusion.functions.sum` and
 :py:func:`~datafusion.functions.avg` now accept a ``distinct`` argument, matching
 the other aggregate functions. ``distinct`` is inserted *before* ``filter`` in the
 argument list, so any code that passed ``filter`` positionally must be updated to
-pass it as a keyword argument.
+pass it as a keyword argument. The types are distinct so a type checker should flag this.
 
 Before:
 
