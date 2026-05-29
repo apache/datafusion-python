@@ -450,13 +450,9 @@ _null_mask = np.array([False, True, False])
             pa.array([b"1111", b"2222", b"3333"], pa.binary(4), _null_mask),
             id="binary4",
         ),
-        # `timestamp[s]` does not roundtrip for pyarrow.parquet: https://github.com/apache/arrow/issues/41382
         pytest.param(
             helpers.data_datetime("s"),
             id="datetime_s",
-            marks=pytest.mark.xfail(
-                reason="pyarrow.parquet does not support timestamp[s] roundtrips"
-            ),
         ),
         pytest.param(
             helpers.data_datetime("ms"),
@@ -483,6 +479,16 @@ def test_simple_select(ctx, tmp_path, arr):
 
     batches = ctx.sql("SELECT a AS tt FROM t").collect()
     result = batches[0].column(0)
+
+    # pyarrow.parquet promotes timestamp[s] to timestamp[ms] on write
+    # (https://github.com/apache/arrow/issues/41382). Compensate so the
+    # comparison checks DataFusion reads what Arrow actually stored.
+    if (
+        isinstance(arr, pa.Array)
+        and pa.types.is_timestamp(arr.type)
+        and arr.type.unit == "s"
+    ):
+        arr = arr.cast(pa.timestamp("ms"))
 
     # In DF 43.0.0 we now default to having BinaryView and StringView
     # so the array that is saved to the parquet is slightly different

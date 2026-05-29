@@ -19,11 +19,11 @@
 //!
 //! Datafusion-python plans can carry references to Python-defined
 //! objects that the upstream protobuf codecs do not know how to
-//! serialize: pure-Python scalar UDFs, Python query-planning
-//! extensions, and so on. Their state lives inside `Py<PyAny>`
-//! callables and closures rather than being recoverable from a name
-//! in the receiver's function registry. To ship a plan across a
-//! process boundary (pickle, `multiprocessing`, Ray actor,
+//! serialize: pure-Python scalar / aggregate / window UDFs, Python
+//! query-planning extensions, and so on. Their state lives inside
+//! `Py<PyAny>` callables and closures rather than being recoverable
+//! from a name in the receiver's function registry. To ship a plan
+//! across a process boundary (pickle, `multiprocessing`, Ray actor,
 //! `datafusion-distributed`, etc.) those payloads have to be encoded
 //! into the proto wire format itself.
 //!
@@ -232,15 +232,43 @@ fn strip_wire_header<'a>(
 #[derive(Debug)]
 pub struct PythonLogicalCodec {
     inner: Arc<dyn LogicalExtensionCodec>,
+    python_udf_inlining: bool,
 }
 
 impl PythonLogicalCodec {
     pub fn new(inner: Arc<dyn LogicalExtensionCodec>) -> Self {
-        Self { inner }
+        Self {
+            inner,
+            python_udf_inlining: true,
+        }
     }
 
     pub fn inner(&self) -> &Arc<dyn LogicalExtensionCodec> {
         &self.inner
+    }
+
+    /// Toggle inline encoding of Python UDFs. See
+    /// `SessionContext.with_python_udf_inlining` (Python) for full
+    /// behavior and use cases.
+    ///
+    /// Security scope: strict mode (`false`) narrows only the codec
+    /// layer — it stops `Expr::from_bytes` from invoking
+    /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
+    /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
+    /// `pickle.loads` on untrusted input as unsafe regardless of this
+    /// setting. See `docs/source/user-guide/io/distributing_work.rst`
+    /// (Security section) for the full threat model, and Python's
+    /// [pickle module security warning][1] for why `pickle.loads` is
+    /// unsafe in general.
+    ///
+    /// [1]: https://docs.python.org/3/library/pickle.html#module-pickle
+    pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
+        self.python_udf_inlining = enabled;
+        self
+    }
+
+    pub fn python_udf_inlining(&self) -> bool {
+        self.python_udf_inlining
     }
 }
 
@@ -301,46 +329,102 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_scalar_udf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udf(node, buf)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
-        if let Some(udf) = try_decode_python_scalar_udf(buf)? {
-            return Ok(udf);
+        if self.python_udf_inlining {
+            if let Some(udf) = try_decode_python_scalar_udf(buf)? {
+                return Ok(udf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
         self.inner.try_decode_udf(name, buf)
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udaf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
-        if let Some(udaf) = try_decode_python_udaf(buf)? {
-            return Ok(udaf);
+        if self.python_udf_inlining {
+            if let Some(udaf) = try_decode_python_udaf(buf)? {
+                return Ok(udaf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udwf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
-        if let Some(udwf) = try_decode_python_udwf(buf)? {
-            return Ok(udwf);
+        if self.python_udf_inlining {
+            if let Some(udwf) = try_decode_python_udwf(buf)? {
+                return Ok(udwf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
         self.inner.try_decode_udwf(name, buf)
     }
+}
+
+/// Strict-mode gate: if `buf` is a well-framed inline payload for
+/// `family`, return the strict-refusal error; otherwise return
+/// `Ok(())` so the caller can delegate to its `inner` codec.
+///
+/// Routing through [`read_framed_payload`] (rather than a bare
+/// `starts_with` probe) means malformed inline bytes — wrong
+/// wire-format version, mismatched Python version, truncated header —
+/// surface *their* diagnostic instead of the strict-mode message.
+/// The strict message implies sender intent ("inlining is disabled"),
+/// so it should fire only when the bytes really would have decoded.
+///
+/// Fast path: short-circuit on the family-magic prefix before
+/// acquiring the GIL. Plans with many non-Python UDFs would otherwise
+/// pay a GIL acquisition per decode call just to confirm "not a
+/// Python UDF". `read_framed_payload` itself rejects buffers that
+/// don't start with `family`, so this is purely an optimization.
+fn refuse_if_inline(buf: &[u8], family: &[u8], kind: &str, name: &str) -> Result<()> {
+    if !buf.starts_with(family) {
+        return Ok(());
+    }
+    Python::attach(|py| match read_framed_payload(py, buf, family, kind)? {
+        Some(_) => Err(refuse_inline_payload(kind, name)),
+        None => Ok(()),
+    })
+}
+
+/// Build the error returned by a strict codec when it receives an
+/// inline Python-UDF payload it has been told not to deserialize.
+fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusionError {
+    // `Execution`, not `Plan`: this is a wire-format decode refusal at
+    // codec time, not a planner-stage failure. Downstream error
+    // classification keys off the variant — surfacing this as a planner
+    // error would mis-route it into "fix your SQL" buckets.
+    datafusion::error::DataFusionError::Execution(format!(
+        "Refusing to deserialize inline Python {kind} '{name}': Python UDF \
+         inlining is disabled on this session. Two remediations: \
+         (1) ask the sender to re-encode with inlining disabled so '{name}' \
+         travels by name, and register '{name}' on this receiver; or \
+         (2) enable inlining on this receiver (accepts the cloudpickle \
+         execution risk on inbound payloads). Receivers cannot re-encode \
+         bytes they did not produce."
+    ))
 }
 
 /// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`] parked
@@ -354,19 +438,36 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
 /// encoding on this layer too — otherwise a plan with a Python UDF
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
-/// ([`PY_SCALAR_UDF_FAMILY`]) so the wire format is identical.
+/// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
+    python_udf_inlining: bool,
 }
 
 impl PythonPhysicalCodec {
     pub fn new(inner: Arc<dyn PhysicalExtensionCodec>) -> Self {
-        Self { inner }
+        Self {
+            inner,
+            python_udf_inlining: true,
+        }
     }
 
     pub fn inner(&self) -> &Arc<dyn PhysicalExtensionCodec> {
         &self.inner
+    }
+
+    /// Toggle inline encoding of Python UDFs on this physical codec.
+    ///
+    /// Mirrors [`PythonLogicalCodec::with_python_udf_inlining`]; see
+    /// that method for the full security and portability discussion.
+    pub fn with_python_udf_inlining(mut self, enabled: bool) -> Self {
+        self.python_udf_inlining = enabled;
+        self
+    }
+
+    pub fn python_udf_inlining(&self) -> bool {
+        self.python_udf_inlining
     }
 }
 
@@ -391,15 +492,19 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_scalar_udf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udf(node, buf)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
-        if let Some(udf) = try_decode_python_scalar_udf(buf)? {
-            return Ok(udf);
+        if self.python_udf_inlining {
+            if let Some(udf) = try_decode_python_scalar_udf(buf)? {
+                return Ok(udf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
         self.inner.try_decode_udf(name, buf)
     }
@@ -417,29 +522,37 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udaf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udaf(node, buf)
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
-        if let Some(udaf) = try_decode_python_udaf(buf)? {
-            return Ok(udaf);
+        if self.python_udf_inlining {
+            if let Some(udaf) = try_decode_python_udaf(buf)? {
+                return Ok(udaf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
         self.inner.try_decode_udaf(name, buf)
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
-        if try_encode_python_udwf(node, buf)? {
+        if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
         self.inner.try_encode_udwf(node, buf)
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
-        if let Some(udwf) = try_decode_python_udwf(buf)? {
-            return Ok(udwf);
+        if self.python_udf_inlining {
+            if let Some(udwf) = try_decode_python_udwf(buf)? {
+                return Ok(udwf);
+            }
+        } else {
+            refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
         self.inner.try_decode_udwf(name, buf)
     }
@@ -476,6 +589,9 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 /// the caller to delegate to its `inner` codec (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
+    if !buf.starts_with(PY_SCALAR_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<ScalarUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_SCALAR_UDF_FAMILY, "scalar UDF")?
         else {
@@ -732,6 +848,9 @@ pub(crate) fn try_encode_python_udwf(node: &WindowUDF, buf: &mut Vec<u8>) -> Res
 }
 
 pub(crate) fn try_decode_python_udwf(buf: &[u8]) -> Result<Option<Arc<WindowUDF>>> {
+    if !buf.starts_with(PY_WINDOW_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<WindowUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_WINDOW_UDF_FAMILY, "window UDF")?
         else {
@@ -814,6 +933,9 @@ pub(crate) fn try_encode_python_udaf(node: &AggregateUDF, buf: &mut Vec<u8>) -> 
 }
 
 pub(crate) fn try_decode_python_udaf(buf: &[u8]) -> Result<Option<Arc<AggregateUDF>>> {
+    if !buf.starts_with(PY_AGG_UDF_FAMILY) {
+        return Ok(None);
+    }
     Python::attach(|py| -> Result<Option<Arc<AggregateUDF>>> {
         let Some(payload) = read_framed_payload(py, buf, PY_AGG_UDF_FAMILY, "aggregate UDF")?
         else {

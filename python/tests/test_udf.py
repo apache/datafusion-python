@@ -76,6 +76,77 @@ def test_register_udf(ctx, df) -> None:
     assert result == pa.array([False, False, True])
 
 
+def test_udf_lookup(ctx, df) -> None:
+    is_null = udf(
+        lambda x: x.is_null(),
+        [pa.float64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="lookup_is_null",
+    )
+    ctx.register_udf(is_null)
+
+    assert "lookup_is_null" in ctx.udfs()
+
+    looked_up = ctx.udf("lookup_is_null")
+    df_result = df.select(looked_up(column("b")))
+    result = df_result.collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+    with pytest.raises(KeyError, match="no UDF named"):
+        ctx.udf("does_not_exist")
+
+
+def test_udf_late_binding_dispatch(ctx, df) -> None:
+    """Resolve a UDF chosen by configuration string, then invoke it."""
+    late_is_null = udf(
+        lambda x: x.is_null(),
+        [pa.int64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="late_is_null",
+    )
+    late_is_not_null = udf(
+        lambda x: pc.invert(x.is_null()),
+        [pa.int64()],
+        pa.bool_(),
+        volatility="immutable",
+        name="late_is_not_null",
+    )
+
+    ctx.register_udf(late_is_null)
+    ctx.register_udf(late_is_not_null)
+
+    # Pretend this came from a config file / API request — only a string.
+    runtime_config = {"check_fn": "late_is_not_null"}
+
+    assert runtime_config["check_fn"] in ctx.udfs()
+
+    fn = ctx.udf(runtime_config["check_fn"])
+    result = df.select(fn(column("b")).alias("ok")).collect()[0].column(0)
+    assert result == pa.array([True, True, False])
+
+
+def test_udaf_lookup_builtin(ctx, df) -> None:
+    assert "sum" in ctx.udafs()
+    sum_fn = ctx.udaf("sum")
+    result = df.aggregate([], [sum_fn(column("a")).alias("total")]).collect()
+    assert result[0].column(0).to_pylist() == [6]
+
+    with pytest.raises(KeyError, match="no UDAF named"):
+        ctx.udaf("does_not_exist")
+
+
+def test_udwf_lookup_builtin(ctx, df) -> None:
+    assert "row_number" in ctx.udwfs()
+    rn = ctx.udwf("row_number")
+    result = df.select(column("a"), rn().alias("rn")).collect()
+    assert result[0].column(1).to_pylist() == [1, 2, 3]
+
+    with pytest.raises(KeyError, match="no UDWF named"):
+        ctx.udwf("does_not_exist")
+
+
 class OverThresholdUDF:
     def __init__(self, threshold: int = 0) -> None:
         self.threshold = threshold

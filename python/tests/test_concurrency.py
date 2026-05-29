@@ -20,7 +20,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 
 import pyarrow as pa
-from datafusion import Config, SessionContext, col, lit
+from datafusion import SessionContext, col, lit
 from datafusion import functions as f
 from datafusion.common import SqlSchema
 
@@ -34,16 +34,14 @@ def _run_in_threads(fn, count: int = 8) -> None:
 
 
 def test_concurrent_access_to_shared_structures() -> None:
-    """Exercise SqlSchema, Config, and DataFrame concurrently."""
+    """Exercise SqlSchema and DataFrame concurrently."""
 
     schema = SqlSchema("concurrency")
-    config = Config()
     ctx = SessionContext()
 
     batch = pa.record_batch([pa.array([1, 2, 3], type=pa.int32())], names=["value"])
     df = ctx.create_dataframe([[batch]])
 
-    config_key = "datafusion.execution.batch_size"
     expected_rows = batch.num_rows
 
     def worker(index: int) -> None:
@@ -54,39 +52,10 @@ def test_concurrent_access_to_shared_structures() -> None:
         assert isinstance(schema.views, list)
         assert isinstance(schema.functions, list)
 
-        config.set(config_key, str(1024 + index))
-        assert config.get(config_key) is not None
-        # Access the full config map to stress lock usage.
-        assert config_key in config.get_all()
-
         batches = df.collect()
         assert sum(batch.num_rows for batch in batches) == expected_rows
 
     _run_in_threads(worker, count=12)
-
-
-def test_config_set_during_get_all() -> None:
-    """Ensure config writes proceed while another thread reads all entries."""
-
-    config = Config()
-    key = "datafusion.execution.batch_size"
-
-    def reader() -> None:
-        for _ in range(200):
-            # get_all should not hold the lock while converting to Python objects
-            config.get_all()
-
-    def writer() -> None:
-        for index in range(200):
-            config.set(key, str(1024 + index))
-
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        reader_future = executor.submit(reader)
-        writer_future = executor.submit(writer)
-        reader_future.result(timeout=10)
-        writer_future.result(timeout=10)
-
-    assert config.get(key) is not None
 
 
 def test_case_builder_reuse_from_multiple_threads() -> None:

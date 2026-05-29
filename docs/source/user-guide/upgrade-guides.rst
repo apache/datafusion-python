@@ -21,6 +21,30 @@ Upgrade Guides
 DataFusion 54.0.0
 -----------------
 
+The ``Config`` class has been removed. It was a standalone wrapper around
+``ConfigOptions`` that could not be connected to a ``SessionContext``, making it
+effectively unusable. Use :py:class:`~datafusion.context.SessionConfig` instead,
+which is passed directly to ``SessionContext``.
+
+Before:
+
+.. code-block:: python
+
+    from datafusion import Config
+
+    config = Config()
+    config.set("datafusion.execution.batch_size", "4096")
+    # config could not be passed to SessionContext
+
+After:
+
+.. code-block:: python
+
+    from datafusion import SessionConfig, SessionContext
+
+    config = SessionConfig().set("datafusion.execution.batch_size", "4096")
+    ctx = SessionContext(config)
+
 The aggregate functions :py:func:`~datafusion.functions.sum` and
 :py:func:`~datafusion.functions.avg` now accept a ``distinct`` argument, matching
 the other aggregate functions. ``distinct`` is inserted *before* ``filter`` in the

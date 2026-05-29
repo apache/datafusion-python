@@ -35,7 +35,6 @@ use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
 use datafusion::datasource::{MemTable, TableProvider};
-use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -44,6 +43,7 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
+use datafusion::execution::{FunctionRegistry, TaskContextProvider};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -847,6 +847,13 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn read_batches(
+        &self,
+        batches: PyArrowType<Vec<RecordBatch>>,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        Ok(PyDataFrame::new(self.ctx.read_batches(batches.0)?))
+    }
+
     #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name, path, table_partition_cols=vec![],
                         parquet_pruning=true,
@@ -1063,6 +1070,48 @@ impl PySessionContext {
 
     pub fn deregister_udwf(&self, name: &str) {
         self.ctx.deregister_udwf(name);
+    }
+
+    pub fn udf(&self, name: &str) -> PyResult<PyScalarUDF> {
+        if !self.ctx.udfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDF named '{name}'")));
+        }
+        let function = (*self.ctx.udf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyScalarUDF { function })
+    }
+
+    pub fn udaf(&self, name: &str) -> PyResult<PyAggregateUDF> {
+        if !self.ctx.udafs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDAF named '{name}'")));
+        }
+        let function = (*self.ctx.udaf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyAggregateUDF { function })
+    }
+
+    pub fn udwf(&self, name: &str) -> PyResult<PyWindowUDF> {
+        if !self.ctx.udwfs().contains(name) {
+            return Err(PyKeyError::new_err(format!("no UDWF named '{name}'")));
+        }
+        let function = (*self.ctx.udwf(name).map_err(py_datafusion_err)?).clone();
+        Ok(PyWindowUDF { function })
+    }
+
+    pub fn udfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udfs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udafs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udafs().into_iter().collect();
+        names.sort();
+        names
+    }
+
+    pub fn udwfs(&self) -> Vec<String> {
+        let mut names: Vec<String> = self.ctx.udwfs().into_iter().collect();
+        names.sort();
+        names
     }
 
     #[pyo3(signature = (name="datafusion"))]
@@ -1403,6 +1452,22 @@ impl PySessionContext {
             logical_codec: Arc::clone(&self.logical_codec),
             physical_codec,
         })
+    }
+
+    pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
+        let logical_codec = Arc::new(
+            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        let physical_codec = Arc::new(
+            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+                .with_python_udf_inlining(enabled),
+        );
+        Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec,
+            physical_codec,
+        }
     }
 }
 

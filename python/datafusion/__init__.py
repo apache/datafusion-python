@@ -68,7 +68,6 @@ except ImportError:
 from . import functions, ipc, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
 from .catalog import (
     Catalog,
     Table,
@@ -115,7 +114,6 @@ __all__ = [
     "Accumulator",
     "AggregateUDF",
     "Catalog",
-    "Config",
     "CsvReadOptions",
     "DFSchema",
     "DataFrame",

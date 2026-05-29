@@ -33,7 +33,7 @@ from datafusion.expr import Expr
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
 
-    _R = TypeVar("_R", bound=pa.DataType)
+    _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
 
 
@@ -113,6 +113,18 @@ def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
     return value.__class__.__name__ == "PyCapsule"
 
 
+class LogicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_logical_extension_codec__``."""
+
+    def __datafusion_logical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
+class PhysicalExtensionCodecExportable(Protocol):
+    """Type hint for objects exposing ``__datafusion_physical_extension_codec__``."""
+
+    def __datafusion_physical_extension_codec__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -125,7 +137,7 @@ class ScalarUDF:
         name: str,
         func: Callable[..., _R],
         input_fields: list[pa.Field],
-        return_field: _R,
+        return_field: pa.Field,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
@@ -140,6 +152,18 @@ class ScalarUDF:
         self._udf = df_internal.ScalarUDF(
             name, func, input_fields, return_field, str(volatility)
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
+        """Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udf = internal
+        return wrapper
 
     @property
     def name(self) -> str:
@@ -287,7 +311,7 @@ class ScalarUDF:
 
         def _decorator(
             input_fields: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
-            return_field: _R,
+            return_field: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> Callable:
@@ -440,6 +464,18 @@ class AggregateUDF:
             state_type,
             str(volatility),
         )
+
+    @classmethod
+    def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
+        """Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udaf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udaf = internal
+        return wrapper
 
     @property
     def name(self) -> str:
@@ -861,6 +897,18 @@ class WindowUDF:
             name, func, input_types, return_type, str(volatility)
         )
 
+    @classmethod
+    def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
+        """Wrap an already-constructed internal ``WindowUDF`` handle.
+
+        Used by :py:meth:`SessionContext.udwf` to surface a function looked
+        up from the session's function registry without re-running
+        :py:meth:`__init__`.
+        """
+        wrapper = cls.__new__(cls)
+        wrapper._udwf = internal
+        return wrapper
+
     @property
     def name(self) -> str:
         """Return the registered name of this UDWF.
@@ -1054,6 +1102,24 @@ class WindowUDF:
         )
 
 
+def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Adapt the raw internal session pyo3 object back to a Python wrapper.
+
+    The Rust call site forwards a ``datafusion._internal.SessionContext``,
+    but UDTF authors expect to interact with the public
+    :class:`datafusion.SessionContext` wrapper. This closure wraps the
+    internal object once per call before delegating to ``func``.
+    """
+
+    @functools.wraps(func, updated=())
+    def adapter(*args: Any, session: Any, **kwargs: Any) -> Any:
+        wrapped = SessionContext.__new__(SessionContext)
+        wrapped.ctx = session
+        return func(*args, session=wrapped, **kwargs)
+
+    return adapter
+
+
 class TableFunction:
     """Class for performing user-defined table functions (UDTF).
 
@@ -1062,14 +1128,44 @@ class TableFunction:
     """
 
     def __init__(
-        self, name: str, func: Callable[[], any], ctx: SessionContext | None = None
+        self,
+        name: str,
+        func: Callable[..., Any],
+        ctx: SessionContext | None = None,
+        *,
+        with_session: bool = False,
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
+
+        Set ``with_session=True`` to have the calling
+        :class:`SessionContext` passed as a ``session`` keyword argument
+        on each invocation. Use it inside the callback to look up
+        registered tables, UDFs, or session configuration. When
+        ``with_session`` is ``False`` (the default), ``func`` is invoked
+        with the positional expression arguments only.
+
+        ``with_session=True`` is only supported for pure-Python callables.
+        Passing it together with an FFI-exported table function (one
+        exposing ``__datafusion_table_function__``) raises
+        :class:`TypeError`.
+
+        Registry mutations performed through the injected session (such
+        as registering tables or UDFs) propagate to the caller's
+        :class:`SessionContext` because the registries are shared.
+        Configuration changes do **not** propagate; the wrapper holds
+        its own clone of the session config.
 
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.TableFunction(name, func, ctx)
+        if with_session and hasattr(func, "__datafusion_table_function__"):
+            msg = (
+                "`with_session=True` is not supported for FFI-exported table "
+                "functions; session injection requires a pure-Python callable."
+            )
+            raise TypeError(msg)
+        registered = _wrap_session_kwarg_for_udtf(func) if with_session else func
+        self._udtf = df_internal.TableFunction(name, registered, ctx, with_session)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""
@@ -1080,47 +1176,73 @@ class TableFunction:
     @staticmethod
     def udtf(
         name: str,
+        *,
+        with_session: bool = False,
     ) -> Callable[..., Any]: ...
 
     @overload
     @staticmethod
     def udtf(
-        func: Callable[[], Any],
+        func: Callable[..., Any],
         name: str,
+        *,
+        with_session: bool = False,
     ) -> TableFunction: ...
 
     @staticmethod
-    def udtf(*args: Any, **kwargs: Any):
-        """Create a new User-Defined Table Function (UDTF)."""
+    def udtf(*args: Any, with_session: bool = False, **kwargs: Any):
+        """Create a new User-Defined Table Function (UDTF).
+
+        Pass ``with_session=True`` to have the calling
+        :class:`SessionContext` injected as a ``session`` keyword
+        argument on each invocation.
+        """
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
-            return TableFunction._create_table_udf(*args, **kwargs)
+            return TableFunction._create_table_udf(
+                *args, with_session=with_session, **kwargs
+            )
         if args and hasattr(args[0], "__datafusion_table_function__"):
             # Case 2: We have a datafusion FFI provided function
+            if with_session:
+                msg = (
+                    "`with_session=True` is not supported for FFI-exported "
+                    "table functions; session injection requires a "
+                    "pure-Python callable."
+                )
+                raise TypeError(msg)
             return TableFunction(args[1], args[0])
         # Case 3: Used as a decorator with parameters
-        return TableFunction._create_table_udf_decorator(*args, **kwargs)
+        return TableFunction._create_table_udf_decorator(
+            *args, with_session=with_session, **kwargs
+        )
 
     @staticmethod
     def _create_table_udf(
         func: Callable[..., Any],
         name: str,
+        *,
+        with_session: bool = False,
     ) -> TableFunction:
         """Create a TableFunction instance from function arguments."""
         if not callable(func):
             msg = "`func` must be callable."
             raise TypeError(msg)
 
-        return TableFunction(name, func)
+        return TableFunction(name, func, with_session=with_session)
 
     @staticmethod
     def _create_table_udf_decorator(
         name: str | None = None,
-    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
-        """Create a decorator for a WindowUDF."""
+        *,
+        with_session: bool = False,
+    ) -> Callable[[Callable[..., Any]], TableFunction]:
+        """Create a decorator for a TableFunction."""
 
-        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
-            return TableFunction._create_table_udf(func, name)
+        def decorator(func: Callable[..., Any]) -> TableFunction:
+            return TableFunction._create_table_udf(
+                func, name, with_session=with_session
+            )
 
         return decorator
 

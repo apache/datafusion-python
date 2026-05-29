@@ -574,10 +574,10 @@ expr_fn!(union_tag, arg1);
 expr_fn!(random);
 
 #[pyfunction]
-fn get_field(expr: PyExpr, name: PyExpr) -> PyExpr {
-    functions::core::get_field()
-        .call(vec![expr.into(), name.into()])
-        .into()
+fn get_field(expr: PyExpr, names: Vec<PyExpr>) -> PyExpr {
+    let mut args = vec![expr.into()];
+    args.extend(names.into_iter().map(Into::into));
+    functions::core::get_field().call(args).into()
 }
 
 #[pyfunction]

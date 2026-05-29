@@ -82,10 +82,11 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
+    from _typeshed import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
@@ -93,6 +94,8 @@ if TYPE_CHECKING:
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
+        LogicalExtensionCodecExportable,
+        PhysicalExtensionCodecExportable,
         ScalarUDF,
         TableFunction,
         WindowUDF,
@@ -959,6 +962,52 @@ class SessionContext:
         """
         self.ctx.register_record_batches(name, partitions)
 
+    def read_batch(self, batch: pa.RecordBatch) -> DataFrame:
+        """Return a :py:class:`~datafusion.DataFrame` reading a single batch.
+
+        Convenience wrapper around :py:meth:`read_batches` for the single-batch
+        case. Unlike :py:meth:`register_batch`, this does not register the
+        batch as a named table; it returns an anonymous
+        :py:class:`~datafusion.DataFrame` directly.
+
+        Args:
+            batch: Record batch to wrap as a DataFrame.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> batch = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+            >>> ctx.read_batch(batch).to_pydict()
+            {'a': [1, 2, 3]}
+        """
+        return self.read_batches([batch])
+
+    def read_batches(self, batches: Iterable[pa.RecordBatch]) -> DataFrame:
+        """Return a :py:class:`~datafusion.DataFrame` reading the given batches.
+
+        All batches must share the same schema. Any iterable of
+        :py:class:`pa.RecordBatch` is accepted (list, tuple, generator);
+        it is materialized into a list before being handed to the
+        underlying Rust binding. Unlike :py:meth:`register_record_batches`,
+        this does not register the batches as a named table; it returns
+        an anonymous :py:class:`~datafusion.DataFrame` directly.
+
+        Args:
+            batches: Record batches to wrap as a DataFrame.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> b1 = pa.RecordBatch.from_pydict({"a": [1, 2]})
+            >>> b2 = pa.RecordBatch.from_pydict({"a": [3, 4]})
+            >>> ctx.read_batches([b1, b2]).to_pydict()
+            {'a': [1, 2, 3, 4]}
+
+            A generator works too:
+
+            >>> ctx.read_batches(b for b in [b1, b2]).to_pydict()
+            {'a': [1, 2, 3, 4]}
+        """
+        return DataFrame(self.ctx.read_batches(list(batches)))
+
     def register_parquet(
         self,
         name: str,
@@ -1267,6 +1316,145 @@ class SessionContext:
             name: Name of the UDWF to deregister.
         """
         self.ctx.deregister_udwf(name)
+
+    def udf(self, name: str) -> ScalarUDF:
+        """Look up a registered scalar UDF by name.
+
+        Returns the same ``ScalarUDF`` wrapper that :py:meth:`register_udf`
+        accepts, so it can be invoked as an expression in the DataFrame API
+        or re-registered into a different :py:class:`SessionContext`.
+        Built-in scalar functions from the session's function registry are
+        also looked up.
+
+        Args:
+            name: Name of the registered scalar UDF.
+
+        Raises:
+            KeyError: If no scalar UDF is registered under ``name``.
+
+        Examples:
+            Register a UDF, then look it up by name and use it in the
+            DataFrame API:
+
+            >>> ctx = dfn.SessionContext()
+            >>> nullcheck = dfn.udf(
+            ...     lambda x: x.is_null(),
+            ...     [pa.int64()],
+            ...     pa.bool_(),
+            ...     volatility="immutable",
+            ...     name="nullcheck",
+            ... )
+            >>> ctx.register_udf(nullcheck)
+            >>> fn = ctx.udf("nullcheck")
+            >>> df = ctx.from_pydict({"a": [1, None, 3]})
+            >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+            {'is_null': [False, True, False]}
+
+            Late-binding: the function name can come from configuration
+            rather than an imported symbol, which is useful when the set
+            of UDFs is plugin-driven or chosen at runtime:
+
+            >>> config = {"null_check": "nullcheck"}
+            >>> fn = ctx.udf(config["null_check"])
+            >>> df.select(fn(col("a")).alias("is_null")).to_pydict()
+            {'is_null': [False, True, False]}
+        """
+        from datafusion.user_defined import ScalarUDF as _ScalarUDF  # noqa: PLC0415
+
+        return _ScalarUDF._from_internal(self.ctx.udf(name))
+
+    def udaf(self, name: str) -> AggregateUDF:
+        """Look up a registered aggregate UDF by name.
+
+        Returns the same ``AggregateUDF`` wrapper that :py:meth:`register_udaf`
+        accepts. Built-in aggregate functions such as ``sum`` or ``avg`` are
+        also discoverable through this lookup. See :py:meth:`udf` for a worked
+        late-binding example; the pattern is identical for aggregates.
+
+        Args:
+            name: Name of the registered aggregate UDF.
+
+        Raises:
+            KeyError: If no aggregate UDF is registered under ``name``.
+
+        Examples:
+            Look up a built-in aggregate by name and use it in
+            :py:meth:`~datafusion.DataFrame.aggregate`:
+
+            >>> ctx = dfn.SessionContext()
+            >>> sum_fn = ctx.udaf("sum")
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.aggregate([], [sum_fn(col("a")).alias("total")]).to_pydict()
+            {'total': [6]}
+        """
+        from datafusion.user_defined import (  # noqa: PLC0415
+            AggregateUDF as _AggregateUDF,
+        )
+
+        return _AggregateUDF._from_internal(self.ctx.udaf(name))
+
+    def udwf(self, name: str) -> WindowUDF:
+        """Look up a registered window UDF by name.
+
+        Returns the same ``WindowUDF`` wrapper that :py:meth:`register_udwf`
+        accepts. Built-in window functions such as ``row_number`` or ``rank``
+        are also discoverable through this lookup. See :py:meth:`udf` for a
+        worked late-binding example; the pattern is identical for window
+        functions.
+
+        Args:
+            name: Name of the registered window UDF.
+
+        Raises:
+            KeyError: If no window UDF is registered under ``name``.
+
+        Examples:
+            Look up a built-in window function by name and use it in
+            ``select``:
+
+            >>> ctx = dfn.SessionContext()
+            >>> rn = ctx.udwf("row_number")
+            >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+            >>> df.select(col("a"), rn().alias("rn")).to_pydict()
+            {'a': [10, 20, 30], 'rn': [1, 2, 3]}
+        """
+        from datafusion.user_defined import WindowUDF as _WindowUDF  # noqa: PLC0415
+
+        return _WindowUDF._from_internal(self.ctx.udwf(name))
+
+    def udfs(self) -> list[str]:
+        """Return the sorted names of all registered scalar UDFs.
+
+        Includes both user-registered and built-in scalar functions. Pair
+        with :py:meth:`udf` to drive discovery, validation, or config-based
+        dispatch.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "abs" in ctx.udfs()
+            True
+        """
+        return self.ctx.udfs()
+
+    def udafs(self) -> list[str]:
+        """Return the sorted names of all registered aggregate UDFs.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "sum" in ctx.udafs()
+            True
+        """
+        return self.ctx.udafs()
+
+    def udwfs(self) -> list[str]:
+        """Return the sorted names of all registered window UDFs.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> "row_number" in ctx.udwfs()
+            True
+        """
+        return self.ctx.udwfs()
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
@@ -1744,11 +1932,14 @@ class SessionContext:
         """Access the PyCapsule FFI_LogicalExtensionCodec."""
         return self.ctx.__datafusion_logical_extension_codec__()
 
-    def with_logical_extension_codec(self, codec: Any) -> SessionContext:
+    def with_logical_extension_codec(
+        self, codec: LogicalExtensionCodecExportable | _PyCapsule
+    ) -> SessionContext:
         """Create a new session context with specified codec.
 
-        This only supports codecs that have been implemented using the
-        FFI interface.
+        Only FFI codecs are supported. Pass any object implementing
+        ``__datafusion_logical_extension_codec__`` (see
+        :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -1759,13 +1950,74 @@ class SessionContext:
         """Access the PyCapsule FFI_PhysicalExtensionCodec."""
         return self.ctx.__datafusion_physical_extension_codec__()
 
-    def with_physical_extension_codec(self, codec: Any) -> SessionContext:
+    def with_physical_extension_codec(
+        self, codec: PhysicalExtensionCodecExportable | _PyCapsule
+    ) -> SessionContext:
         """Create a new session context with the specified physical codec.
 
-        This only supports codecs that have been implemented using the
-        FFI interface.
+        Only FFI codecs are supported. Pass any object implementing
+        ``__datafusion_physical_extension_codec__`` (see
+        :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new
+
+    def with_python_udf_inlining(self, *, enabled: bool) -> SessionContext:
+        """Control whether Python UDFs are embedded in serialized expressions.
+
+        ``enabled`` is keyword-only and required: callers must pick a
+        mode explicitly. Fresh sessions inline UDFs (``enabled=True``
+        behavior) until this method overrides the toggle.
+
+        With ``enabled=True``, serialized expressions carry the Python
+        code for any scalar, aggregate, or window UDFs they reference.
+        The receiver rebuilds the UDFs from those bytes and does not
+        need to register them first.
+
+        With ``enabled=False``, serialized expressions store only the
+        UDF names. This has two uses:
+
+        * **Cross-language portability.** The bytes can be decoded by a
+          non-Python receiver, which must already have UDFs registered
+          under matching names.
+        * **Safer deserialization.** :meth:`Expr.from_bytes` will refuse
+          to rebuild Python UDFs rather than call ``cloudpickle.loads``
+          on untrusted input.
+
+        The setting affects :meth:`Expr.to_bytes` and
+        :meth:`Expr.from_bytes` whenever this session is passed as the
+        ``ctx`` argument. :func:`pickle.dumps` and :func:`pickle.loads`
+        do not pass a context, so to apply the setting through pickle,
+        register this session with
+        :func:`datafusion.ipc.set_sender_ctx` on the sender and
+        :func:`datafusion.ipc.set_worker_ctx` on the receiver.
+
+        .. warning:: Security
+            This setting narrows only :meth:`Expr.from_bytes`. Calling
+            :func:`pickle.loads` on untrusted bytes remains unsafe
+            regardless of the toggle.
+
+        Returns a new :class:`SessionContext` with the toggle applied;
+        the original session is unchanged.
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> from datafusion import SessionContext, Expr, col, udf
+            >>> ctx = SessionContext()
+            >>> identity = udf(lambda a: a, [pa.int64()], pa.int64(),
+            ...                volatility="immutable", name="identity_demo")
+            >>> ctx.register_udf(identity)
+            >>> blob = identity(col("x")).to_bytes(ctx)
+            >>> strict = SessionContext().with_python_udf_inlining(enabled=False)
+            >>> try:
+            ...     Expr.from_bytes(blob, strict)
+            ... except Exception as e:
+            ...     print("Refusing to deserialize" in str(e))
+            True
+        """
+        new_internal = self.ctx.with_python_udf_inlining(enabled)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
