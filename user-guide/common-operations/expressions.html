@@ -453,6 +453,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#lambda-functions">
+   Lambda functions
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#testing-membership-in-a-list">
    Testing membership in a list
   </a>
@@ -658,6 +663,88 @@ This function returns a new array with the elements repeated.</p>
 </div>
 <p>In this example, the <cite>repeated_array</cite> column will contain <cite>[[1, 2, 3], [1, 2, 3]]</cite>.</p>
 </section>
+<section id="lambda-functions">
+<h2>Lambda functions<a class="headerlink" href="#lambda-functions" title="Link to this heading">¶</a></h2>
+<p>Some array functions take a <em>lambda function</em>: a small function that runs once
+per element. <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_transform" title="datafusion.functions.array_transform"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_transform()</span></code></a> maps a lambda over
+every element, <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_filter" title="datafusion.functions.array_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_filter()</span></code></a> keeps the elements
+for which a predicate lambda is true, and
+<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_any_match" title="datafusion.functions.array_any_match"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_any_match()</span></code></a> returns whether any element
+satisfies a predicate lambda. (Functions that take another function as an
+argument are sometimes called <em>higher-order</em> functions.)</p>
+<p>The simplest way to supply a lambda is a Python <code class="docutils literal notranslate"><span class="pre">lambda</span></code>. Its parameter names
+become the lambda parameters, and its return value becomes the body.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">32</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">33</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]})</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">34</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_transform</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;doubled&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">34</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">doubled</span>   <span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>   <span class="o">|</span>
+<span class="o">+-----------+</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">35</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;big_only&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">35</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">big_only</span> <span class="o">|</span>
+<span class="o">+----------+</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>   <span class="o">|</span>
+<span class="o">+----------+</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">36</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_any_match</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;has_big&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">36</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">has_big</span> <span class="o">|</span>
+<span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">false</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">true</span>    <span class="o">|</span>
+<span class="o">+---------+</span>
+</pre></div>
+</div>
+<p>If you need explicit control over parameter names, build the lambda with
+<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.lambda_" title="datafusion.functions.lambda_"><code class="xref py py-func docutils literal notranslate"><span class="pre">lambda_()</span></code></a> and reference its parameters with
+<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.lambda_var" title="datafusion.functions.lambda_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">lambda_var()</span></code></a>. The following is equivalent to the
+<code class="docutils literal notranslate"><span class="pre">array_transform</span></code> call above.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">37</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">lit</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">38</span><span class="p">]:</span> <span class="n">double_fn</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lambda_</span><span class="p">([</span><span class="s2">&quot;v&quot;</span><span class="p">],</span> <span class="n">f</span><span class="o">.</span><span class="n">lambda_var</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">39</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_transform</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">double_fn</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;doubled&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">39</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">doubled</span>   <span class="o">|</span>
+<span class="o">+-----------+</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>   <span class="o">|</span>
+<span class="o">+-----------+</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lambda expressions cannot yet be serialized: calling
+<a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> or pickling an expression that
+contains a lambda raises <code class="docutils literal notranslate"><span class="pre">Lambda</span> <span class="pre">not</span> <span class="pre">implemented</span></code>. SQL lambda syntax is
+only parsed by dialects that support lambdas; set
+<code class="docutils literal notranslate"><span class="pre">datafusion.sql_parser.dialect</span></code> to one of <code class="docutils literal notranslate"><span class="pre">DuckDB</span></code>, <code class="docutils literal notranslate"><span class="pre">ClickHouse</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Snowflake</span></code>, or <code class="docutils literal notranslate"><span class="pre">Databricks</span></code>. Both arrow syntax (<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-&gt;</span> <span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span></code>) and
+keyword syntax (<code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">x:</span> <span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span></code>) parse. DuckDB will drop the arrow
+form in v2.1, so prefer <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">x:</span> <span class="pre">x</span> <span class="pre">*</span> <span class="pre">2</span></code> for forward compatibility.
+The Python expression builder shown above works regardless of dialect.</p>
+</div>
+</section>
 <section id="testing-membership-in-a-list">
 <h2>Testing membership in a list<a class="headerlink" href="#testing-membership-in-a-list" title="Link to this heading">¶</a></h2>
 <p>A common need is filtering rows where a column equals <em>any</em> of a small set of
@@ -671,17 +758,17 @@ expressions and tests equality against all of them in one call.</p></li>
 <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.make_array" title="datafusion.functions.make_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_array()</span></code></a>, which returns the 1-based
 index of the value in a constructed array, or null if it is not present.</p></li>
 </ol>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">40</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">41</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">32</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">42</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">33</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;shipmode&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;SHIP&quot;</span><span class="p">,</span> <span class="s2">&quot;AIR&quot;</span><span class="p">,</span> <span class="s2">&quot;TRUCK&quot;</span><span class="p">,</span> <span class="s2">&quot;RAIL&quot;</span><span class="p">]})</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">43</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;shipmode&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;SHIP&quot;</span><span class="p">,</span> <span class="s2">&quot;AIR&quot;</span><span class="p">,</span> <span class="s2">&quot;TRUCK&quot;</span><span class="p">,</span> <span class="s2">&quot;RAIL&quot;</span><span class="p">]})</span>
 
 <span class="c1"># Option 1: compound boolean. Fine for two values; awkward past three.</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">34</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;MAIL&quot;</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;SHIP&quot;</span><span class="p">)))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">34</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">44</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;MAIL&quot;</span><span class="p">))</span> <span class="o">|</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;SHIP&quot;</span><span class="p">)))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">44</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+----------+</span>
 <span class="o">|</span> <span class="n">shipmode</span> <span class="o">|</span>
@@ -691,8 +778,8 @@ index of the value in a constructed array, or null if it is not present.</p></li
 <span class="o">+----------+</span>
 
 <span class="c1"># Option 2: in_list. Preferred for readability as the set grows.</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">35</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">),</span> <span class="p">[</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;MAIL&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;SHIP&quot;</span><span class="p">)]))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">35</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">45</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">),</span> <span class="p">[</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;MAIL&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;SHIP&quot;</span><span class="p">)]))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">45</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+----------+</span>
 <span class="o">|</span> <span class="n">shipmode</span> <span class="o">|</span>
@@ -703,13 +790,13 @@ index of the value in a constructed array, or null if it is not present.</p></li
 
 <span class="c1"># Option 3: array_position / make_array. Useful when you already have the</span>
 <span class="c1"># set as an array column and want &quot;is in that array&quot; semantics.</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">36</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">46</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="o">~</span><span class="n">f</span><span class="o">.</span><span class="n">array_position</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>         <span class="n">f</span><span class="o">.</span><span class="n">make_array</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;MAIL&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;SHIP&quot;</span><span class="p">)),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;shipmode&quot;</span><span class="p">)</span>
    <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">is_null</span><span class="p">()</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">36</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">46</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+----------+</span>
 <span class="o">|</span> <span class="n">shipmode</span> <span class="o">|</span>
@@ -731,12 +818,12 @@ column rather than a literal list.</p>
 <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.when" title="datafusion.functions.when"><code class="xref py py-func docutils literal notranslate"><span class="pre">when()</span></code></a> as a standalone builder for the
 searched form.</p>
 <p><strong>Switched CASE</strong> (one expression compared against several literal values):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">37</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">47</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;1-URGENT&quot;</span><span class="p">,</span> <span class="s2">&quot;2-HIGH&quot;</span><span class="p">,</span> <span class="s2">&quot;3-MEDIUM&quot;</span><span class="p">,</span> <span class="s2">&quot;5-LOW&quot;</span><span class="p">]},</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">38</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">48</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;priority&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;priority&quot;</span><span class="p">))</span>
    <span class="o">....</span><span class="p">:</span>      <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;1-URGENT&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
@@ -745,7 +832,7 @@ searched form.</p>
    <span class="o">....</span><span class="p">:</span>      <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_high_priority&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">38</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">48</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+----------+------------------+</span>
 <span class="o">|</span> <span class="n">priority</span> <span class="o">|</span> <span class="n">is_high_priority</span> <span class="o">|</span>
@@ -760,12 +847,12 @@ searched form.</p>
 <p><strong>Searched CASE</strong> (an independent boolean predicate per branch). Use this
 form whenever a branch tests more than simple equality — for example,
 checking whether a joined column is <code class="docutils literal notranslate"><span class="pre">NULL</span></code> to gate a computed value:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">39</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">49</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span> <span class="s2">&quot;supplier_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">40</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">50</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;supplier_id&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;supplier_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_not_null</span><span class="p">(),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">))</span>
@@ -773,7 +860,7 @@ checking whether a joined column is <code class="docutils literal notranslate"><
    <span class="o">....</span><span class="p">:</span>      <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;attributed_volume&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">40</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">50</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+--------+-------------+-------------------+</span>
 <span class="o">|</span> <span class="n">volume</span> <span class="o">|</span> <span class="n">supplier_id</span> <span class="o">|</span> <span class="n">attributed_volume</span> <span class="o">|</span>
@@ -795,14 +882,14 @@ simpler than the full <code class="docutils literal notranslate"><span class="pr
 <h2>Structs<a class="headerlink" href="#structs" title="Link to this heading">¶</a></h2>
 <p>Columns that contain struct elements can be accessed using the bracket notation as if they were
 Python dictionary style objects. This expects a string key as the parameter passed.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">41</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">51</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">42</span><span class="p">]:</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">}]}</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">52</span><span class="p">]:</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">}]}</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">43</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">53</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">44</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;a_size&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">44</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">54</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;a_size&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">54</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+--------+</span>
 <span class="o">|</span> <span class="n">a_size</span> <span class="o">|</span>
@@ -819,17 +906,17 @@ Python dictionary style objects. This expects a string key as the parameter pass
 a wide variety of expressions built up from other expressions. For example, <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.Expr.alias" title="datafusion.expr.Expr.alias"><code class="xref py py-func docutils literal notranslate"><span class="pre">alias()</span></code></a> is a function that takes
 as it input a single expression and returns an expression in which the name of the expression has changed.</p>
 <p>The following example shows a series of expressions that are built up from functions operating on expressions.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">45</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">55</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">46</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">column</span><span class="p">,</span> <span class="n">lit</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">56</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">column</span><span class="p">,</span> <span class="n">lit</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">47</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">57</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">48</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">58</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">49</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">59</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">50</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">60</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
    <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Albert&quot;</span><span class="p">,</span> <span class="s2">&quot;Becca&quot;</span><span class="p">,</span> <span class="s2">&quot;Carlos&quot;</span><span class="p">,</span> <span class="s2">&quot;Dante&quot;</span><span class="p">],</span>
    <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">67</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">71</span><span class="p">],</span>
@@ -839,20 +926,20 @@ as it input a single expression and returns an expression in which the name of t
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">51</span><span class="p">]:</span> <span class="n">age_col</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">61</span><span class="p">]:</span> <span class="n">age_col</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">52</span><span class="p">]:</span> <span class="n">renamed_age</span> <span class="o">=</span> <span class="n">age_col</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;age_in_years&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">62</span><span class="p">]:</span> <span class="n">renamed_age</span> <span class="o">=</span> <span class="n">age_col</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;age_in_years&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">53</span><span class="p">]:</span> <span class="n">start_age</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">63</span><span class="p">]:</span> <span class="n">start_age</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">54</span><span class="p">]:</span> <span class="n">started_young</span> <span class="o">=</span> <span class="n">start_age</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">64</span><span class="p">]:</span> <span class="n">started_young</span> <span class="o">=</span> <span class="n">start_age</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">55</span><span class="p">]:</span> <span class="n">can_retire</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">65</span><span class="p">]:</span> <span class="n">can_retire</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">56</span><span class="p">]:</span> <span class="n">long_timer</span> <span class="o">=</span> <span class="n">started_young</span> <span class="o">&amp;</span> <span class="n">can_retire</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">66</span><span class="p">]:</span> <span class="n">long_timer</span> <span class="o">=</span> <span class="n">started_young</span> <span class="o">&amp;</span> <span class="n">can_retire</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">57</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">long_timer</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">renamed_age</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">57</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">67</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">long_timer</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">renamed_age</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">67</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+-------+--------------+-------------------+</span>
 <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span> <span class="n">age_in_years</span> <span class="o">|</span> <span class="n">years_in_position</span> <span class="o">|</span>

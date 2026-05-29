@@ -46,12 +46,14 @@ Functions
    datafusion.functions.acos
    datafusion.functions.acosh
    datafusion.functions.alias
+   datafusion.functions.any_match
    datafusion.functions.approx_distinct
    datafusion.functions.approx_median
    datafusion.functions.approx_percentile_cont
    datafusion.functions.approx_percentile_cont_with_weight
    datafusion.functions.array
    datafusion.functions.array_agg
+   datafusion.functions.array_any_match
    datafusion.functions.array_any_value
    datafusion.functions.array_append
    datafusion.functions.array_cat
@@ -64,6 +66,7 @@ Functions
    datafusion.functions.array_empty
    datafusion.functions.array_except
    datafusion.functions.array_extract
+   datafusion.functions.array_filter
    datafusion.functions.array_has
    datafusion.functions.array_has_all
    datafusion.functions.array_has_any
@@ -93,6 +96,7 @@ Functions
    datafusion.functions.array_slice
    datafusion.functions.array_sort
    datafusion.functions.array_to_string
+   datafusion.functions.array_transform
    datafusion.functions.array_union
    datafusion.functions.arrays_overlap
    datafusion.functions.arrays_zip
@@ -173,6 +177,8 @@ Functions
    datafusion.functions.isnan
    datafusion.functions.iszero
    datafusion.functions.lag
+   datafusion.functions.lambda_
+   datafusion.functions.lambda_var
    datafusion.functions.last_value
    datafusion.functions.lcm
    datafusion.functions.lead
@@ -180,6 +186,7 @@ Functions
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
+   datafusion.functions.list_any_match
    datafusion.functions.list_any_value
    datafusion.functions.list_append
    datafusion.functions.list_cat
@@ -192,6 +199,7 @@ Functions
    datafusion.functions.list_empty
    datafusion.functions.list_except
    datafusion.functions.list_extract
+   datafusion.functions.list_filter
    datafusion.functions.list_has
    datafusion.functions.list_has_all
    datafusion.functions.list_has_any
@@ -222,6 +230,7 @@ Functions
    datafusion.functions.list_slice
    datafusion.functions.list_sort
    datafusion.functions.list_to_string
+   datafusion.functions.list_transform
    datafusion.functions.list_union
    datafusion.functions.list_zip
    datafusion.functions.ln
@@ -412,6 +421,13 @@ Module Contents
    b: int64
      -- field metadata --
      info: 'test'
+
+
+.. py:function:: any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of an array satisfies a predicate.
+
+   .. seealso:: This is an alias for :py:func:`array_any_match`.
 
 
 .. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -613,6 +629,36 @@ Module Contents
    [2, 3]
 
 
+.. py:function:: array_any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of ``array`` satisfies ``predicate``.
+
+   ``predicate`` may be a Python callable, converted to a lambda
+   automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+   return a boolean expression.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> df.select(
+   ...     F.array_any_match(col("a"), lambda v: v > 2).alias("m")
+   ... ).collect_column("m")[0].as_py()
+   True
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+   >>> df.select(
+   ...     F.array_any_match(col("a"), predicate).alias("m")
+   ... ).collect_column("m")[0].as_py()
+   True
+
+   .. seealso:: :py:func:`array_transform`, :py:func:`lambda_`.
+
+
 .. py:function:: array_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the first non-null element in the array.
@@ -763,6 +809,37 @@ Module Contents
    Extracts the element with the index n from the array.
 
    .. seealso:: This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: array_filter(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Keep the elements of ``array`` for which ``predicate`` is ``True``.
+
+   ``predicate`` may be a Python callable, converted to a lambda
+   automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+   return a boolean expression. The result is a new array containing only the
+   matching elements.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4, 5]]})
+   >>> df.select(
+   ...     F.array_filter(col("a"), lambda v: v > 2).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   [3, 4, 5]
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+   >>> df.select(
+   ...     F.array_filter(col("a"), predicate).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   [3, 4, 5]
+
+   .. seealso:: :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
 
 
 .. py:function:: array_has(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1199,6 +1276,36 @@ Module Contents
    ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
    >>> result.collect_column("s")[0].as_py()
    '1,2,3'
+
+
+.. py:function:: array_transform(array: datafusion.expr.Expr, transform: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Transform each element of ``array`` with a lambda.
+
+   ``transform`` may be a Python callable, which is converted to a lambda
+   automatically (its parameter names become the lambda parameters), or an
+   explicit lambda built with :py:func:`lambda_`.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> df.select(
+   ...     F.array_transform(col("a"), lambda v: v * 2).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`array_any_match`, :py:func:`lambda_`.
 
 
 .. py:function:: array_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2778,6 +2885,54 @@ Module Contents
    [0, 1, 0]
 
 
+.. py:function:: lambda_(params: list[str], body: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Create a lambda expression from parameter names and a body expression.
+
+   This is the explicit form of building a lambda. Most callers can instead
+   pass a Python callable directly to a higher-order function such as
+   :py:func:`array_transform`, which builds the lambda automatically. Reach for
+   ``lambda_`` when you want explicit control over the parameter names.
+
+   :param params: Ordered lambda parameter names.
+   :param body: Body expression that references the parameters via
+                :py:func:`lambda_var`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`lambda_var`, :py:func:`array_transform`, :py:func:`array_any_match`.
+
+
+.. py:function:: lambda_var(name: str) -> datafusion.expr.Expr
+
+   Create an unresolved reference to a lambda parameter by ``name``.
+
+   Use this inside the body passed to :py:func:`lambda_` to refer to one of the
+   lambda's parameters. The owning higher-order function (such as
+   :py:func:`array_transform`) binds the variable to a concrete element type
+   during query planning.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`lambda_`, :py:func:`array_transform`, :py:func:`array_any_match`.
+
+
 .. py:function:: last_value(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the last value in a group of values.
@@ -2947,6 +3102,13 @@ Module Contents
    3
 
 
+.. py:function:: list_any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of a list satisfies a predicate.
+
+   .. seealso:: This is an alias for :py:func:`array_any_match`.
+
+
 .. py:function:: list_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the first non-null element in the array.
@@ -3029,6 +3191,13 @@ Module Contents
    Extracts the element with the index n from the array.
 
    .. seealso:: This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: list_filter(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Keep the elements of a list for which a predicate is ``True``.
+
+   .. seealso:: This is an alias for :py:func:`array_filter`.
 
 
 .. py:function:: list_has(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3245,6 +3414,13 @@ Module Contents
    Converts each element to its text representation.
 
    .. seealso:: This is an alias for :py:func:`array_to_string`.
+
+
+.. py:function:: list_transform(array: datafusion.expr.Expr, transform: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Transform each element of a list with a lambda.
+
+   .. seealso:: This is an alias for :py:func:`array_transform`.
 
 
 .. py:function:: list_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr

@@ -145,6 +145,55 @@ This function returns a new array with the elements repeated.
 
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
 
+Lambda functions
+----------------
+
+Some array functions take a *lambda function*: a small function that runs once
+per element. :py:func:`~datafusion.functions.array_transform` maps a lambda over
+every element, :py:func:`~datafusion.functions.array_filter` keeps the elements
+for which a predicate lambda is true, and
+:py:func:`~datafusion.functions.array_any_match` returns whether any element
+satisfies a predicate lambda. (Functions that take another function as an
+argument are sometimes called *higher-order* functions.)
+
+The simplest way to supply a lambda is a Python ``lambda``. Its parameter names
+become the lambda parameters, and its return value becomes the body.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion import functions as f
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
+    df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
+    df.select(f.array_filter(col("a"), lambda v: v > 2).alias("big_only"))
+    df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
+
+If you need explicit control over parameter names, build the lambda with
+:py:func:`~datafusion.functions.lambda_` and reference its parameters with
+:py:func:`~datafusion.functions.lambda_var`. The following is equivalent to the
+``array_transform`` call above.
+
+.. ipython:: python
+
+    from datafusion import lit
+
+    double_fn = f.lambda_(["v"], f.lambda_var("v") * lit(2))
+    df.select(f.array_transform(col("a"), double_fn).alias("doubled"))
+
+.. note::
+
+    Lambda expressions cannot yet be serialized: calling
+    :py:meth:`~datafusion.expr.Expr.to_bytes` or pickling an expression that
+    contains a lambda raises ``Lambda not implemented``. SQL lambda syntax is
+    only parsed by dialects that support lambdas; set
+    ``datafusion.sql_parser.dialect`` to one of ``DuckDB``, ``ClickHouse``,
+    ``Snowflake``, or ``Databricks``. Both arrow syntax (``x -> x * 2``) and
+    keyword syntax (``lambda x: x * 2``) parse. DuckDB will drop the arrow
+    form in v2.1, so prefer ``lambda x: x * 2`` for forward compatibility.
+    The Python expression builder shown above works regardless of dialect.
+
 
 Testing membership in a list
 ----------------------------
