@@ -32,8 +32,6 @@ pub mod codec;
 pub mod common;
 
 #[allow(clippy::borrow_deref_ref)]
-mod config;
-#[allow(clippy::borrow_deref_ref)]
 pub mod context;
 #[allow(clippy::borrow_deref_ref)]
 pub mod dataframe;
@@ -97,7 +95,6 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<udwf::PyWindowUDF>()?;
     m.add_class::<udtf::PyTableFunction>()?;
-    m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<metrics::PyMetricsSet>()?;
     m.add_class::<metrics::PyMetric>()?;
