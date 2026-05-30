@@ -45,9 +45,9 @@ implementation to call by which module you import from.
 DataFrame API
 -------------
 
-Import the submodule and call functions directly. Returned values are
-:py:class:`~datafusion.expr.Expr` instances that compose with the rest of
-the DataFrame API.
+Import ``spark`` and use it like any other functions module. The Spark
+functions can go anywhere you'd put a DataFusion expression — inside
+``select``, ``filter``, ``with_column``, ``aggregate``, and so on.
 
 .. code-block:: python
 
