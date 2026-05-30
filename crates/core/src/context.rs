@@ -1576,10 +1576,9 @@ impl PySessionContext {
 pub fn parse_file_compression_type(
     file_compression_type: Option<String>,
 ) -> Result<FileCompressionType, PyErr> {
-    FileCompressionType::from_str(&*file_compression_type.unwrap_or("".to_string()).as_str())
-        .map_err(|_| {
-            PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
-        })
+    FileCompressionType::from_str(&file_compression_type.unwrap_or_default()).map_err(|_| {
+        PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
+    })
 }
 
 impl From<PySessionContext> for SessionContext {

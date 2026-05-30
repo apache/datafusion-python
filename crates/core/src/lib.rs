@@ -26,21 +26,16 @@ pub use datafusion_substrait;
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
-#[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
 pub mod codec;
 pub mod common;
 
-#[allow(clippy::borrow_deref_ref)]
 pub mod context;
-#[allow(clippy::borrow_deref_ref)]
 pub mod dataframe;
 mod dataset;
 mod dataset_exec;
 pub mod errors;
-#[allow(clippy::borrow_deref_ref)]
 pub mod expr;
-#[allow(clippy::borrow_deref_ref)]
 mod functions;
 pub mod metrics;
 mod options;
@@ -48,7 +43,6 @@ pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod pyarrow_util;
 mod record_batch;
-#[allow(clippy::borrow_deref_ref)]
 mod spark_functions;
 pub mod sql;
 pub mod store;
@@ -58,9 +52,7 @@ pub mod unparser;
 mod array;
 #[cfg(feature = "substrait")]
 pub mod substrait;
-#[allow(clippy::borrow_deref_ref)]
 mod udaf;
-#[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod udtf;
 mod udwf;
