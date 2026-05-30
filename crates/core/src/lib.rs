@@ -26,6 +26,7 @@ pub use datafusion_substrait;
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
+pub mod analyzer;
 pub mod catalog;
 pub mod codec;
 pub mod common;
