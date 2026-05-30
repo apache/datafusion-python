@@ -18,19 +18,11 @@
 //! PyO3 wrappers for the [`datafusion-spark`] crate.
 //!
 //! Exposes Spark-compatible scalar and aggregate function builders for use
-//! from Python under `datafusion.functions.spark`. Each scalar wrapper
-//! resolves the underlying `ScalarUDF` from `datafusion_spark` and builds an
-//! `Expr::ScalarFunction` directly, so behaviour matches what
-//! `datafusion_spark::register_all` registers for SQL.
+//! from Python under `datafusion.functions.spark`.
 
 use datafusion::logical_expr::Expr;
 use datafusion::logical_expr::expr::ScalarFunction;
-use datafusion_spark::function::{
-    aggregate as fn_aggregate, array as fn_array, bitmap as fn_bitmap, bitwise as fn_bitwise,
-    collection as fn_collection, conditional as fn_conditional, conversion as fn_conversion,
-    datetime as fn_datetime, hash as fn_hash, json as fn_json, map as fn_map, math as fn_math,
-    string as fn_string, url as fn_url,
-};
+use datafusion_spark::{expr_fn, function as udf};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
@@ -40,20 +32,26 @@ use crate::expr::PyExpr;
 use crate::expr::sort_expr::PySortExpr;
 use crate::functions::add_builder_fns_to_aggregate;
 
-/// Build an `Expr::ScalarFunction` by invoking the given `ScalarUDF` factory
-/// with the supplied arguments.
-macro_rules! spark_udf_fixed {
-    ($PY_NAME:ident, $UDF_PATH:path, $($arg:ident),+ $(,)?) => {
+/// Generates a [pyo3] wrapper for [datafusion_spark::expr_fn].
+///
+/// These functions have explicit named arguments and mirror the upstream
+/// `expr_fn::$FUNC` signature.
+macro_rules! spark_expr_fn {
+    ($FUNC:ident) => {
+        spark_expr_fn!($FUNC,);
+    };
+    ($FUNC:ident, $($arg:ident)*) => {
         #[pyfunction]
-        fn $PY_NAME($($arg: PyExpr),+) -> PyExpr {
-            let udf = $UDF_PATH();
-            let args: Vec<Expr> = vec![$($arg.into()),+];
-            Expr::ScalarFunction(ScalarFunction::new_udf(udf, args)).into()
+        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
+            expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
 }
 
-/// Build an `Expr::ScalarFunction` from a variadic `*args` list.
+/// Generates a variadic [pyo3] wrapper that calls the [`ScalarUDF`] factory
+/// directly. Required for functions whose upstream `expr_fn` wrapper accepts
+/// a single `Expr` instead of `Vec<Expr>` (an upstream `export_functions!`
+/// macro-arm quirk), so we bypass it to get true Python `*args` semantics.
 macro_rules! spark_udf_vec {
     ($PY_NAME:ident, $UDF_PATH:path) => {
         #[pyfunction]
@@ -66,24 +64,24 @@ macro_rules! spark_udf_vec {
     };
 }
 
-/// Build an aggregate `Expr` from a Spark `AggregateUDF` factory and the
-/// optional builder fields (distinct/filter/order_by/null_treatment),
-/// mirroring the existing `aggregate_function!` macro for default DataFusion
-/// aggregates.
-macro_rules! spark_aggregate_fixed {
-    ($PY_NAME:ident, $UDF_PATH:path, $($arg:ident),+ $(,)?) => {
+/// Generates a [pyo3] wrapper for Spark aggregate functions. Mirrors
+/// [`crate::functions::aggregate_function`] but points at
+/// [`datafusion_spark::expr_fn`].
+macro_rules! spark_aggregate {
+    ($NAME:ident) => {
+        spark_aggregate!($NAME, expr);
+    };
+    ($NAME:ident, $($arg:ident)*) => {
         #[pyfunction]
-        #[pyo3(signature = ($($arg),+, distinct=None, filter=None, order_by=None, null_treatment=None))]
-        fn $PY_NAME(
-            $($arg: PyExpr),+,
+        #[pyo3(signature = ($($arg),*, distinct=None, filter=None, order_by=None, null_treatment=None))]
+        fn $NAME(
+            $($arg: PyExpr),*,
             distinct: Option<bool>,
             filter: Option<PyExpr>,
             order_by: Option<Vec<PySortExpr>>,
             null_treatment: Option<NullTreatment>,
         ) -> PyDataFusionResult<PyExpr> {
-            let udf = $UDF_PATH();
-            let args: Vec<Expr> = vec![$($arg.into()),+];
-            let agg_fn = udf.call(args);
+            let agg_fn = expr_fn::$NAME($($arg.into()),*);
             add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
         }
     };
@@ -93,211 +91,167 @@ macro_rules! spark_aggregate_fixed {
 // Aggregate functions
 // ---------------------------------------------------------------------------
 
-spark_aggregate_fixed!(avg, fn_aggregate::avg, arg1);
-spark_aggregate_fixed!(try_sum, fn_aggregate::try_sum, arg1);
-spark_aggregate_fixed!(collect_list, fn_aggregate::collect_list, arg1);
-spark_aggregate_fixed!(collect_set, fn_aggregate::collect_set, arg1);
+spark_aggregate!(avg, arg1);
+spark_aggregate!(try_sum, arg1);
+spark_aggregate!(collect_list, arg1);
+spark_aggregate!(collect_set, arg1);
 
 // ---------------------------------------------------------------------------
 // Array functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(
-    array_contains,
-    fn_array::spark_array_contains,
-    array,
-    element
-);
-spark_udf_vec!(array, fn_array::array);
-spark_udf_fixed!(shuffle, fn_array::shuffle, arg1);
-spark_udf_fixed!(array_repeat, fn_array::array_repeat, element, count);
-spark_udf_fixed!(slice, fn_array::slice, arg_array, start, length);
+// Upstream factory is `spark_array_contains`; expose under the Spark SQL
+// name `array_contains` on the Python side.
+#[pyfunction]
+fn array_contains(arr: PyExpr, element: PyExpr) -> PyExpr {
+    expr_fn::spark_array_contains(arr.into(), element.into()).into()
+}
+spark_udf_vec!(array, udf::array::array);
+spark_expr_fn!(shuffle, arg1);
+spark_expr_fn!(array_repeat, element count);
+spark_expr_fn!(slice, arr start length);
 
 // ---------------------------------------------------------------------------
 // Bitmap functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(bitmap_count, fn_bitmap::bitmap_count, arg1);
-spark_udf_fixed!(bitmap_bit_position, fn_bitmap::bitmap_bit_position, arg1);
-spark_udf_fixed!(bitmap_bucket_number, fn_bitmap::bitmap_bucket_number, arg1);
+spark_expr_fn!(bitmap_count, arg1);
+spark_expr_fn!(bitmap_bit_position, arg1);
+spark_expr_fn!(bitmap_bucket_number, arg1);
 
 // ---------------------------------------------------------------------------
 // Bitwise functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(bit_get, fn_bitwise::bit_get, col, pos);
-spark_udf_fixed!(bit_count, fn_bitwise::bit_count, col);
-spark_udf_fixed!(bitwise_not, fn_bitwise::bitwise_not, col);
-spark_udf_fixed!(shiftleft, fn_bitwise::shiftleft, value, shift);
-spark_udf_fixed!(shiftright, fn_bitwise::shiftright, value, shift);
-spark_udf_fixed!(
-    shiftrightunsigned,
-    fn_bitwise::shiftrightunsigned,
-    value,
-    shift
-);
+spark_expr_fn!(bit_get, col pos);
+spark_expr_fn!(bit_count, col);
+spark_expr_fn!(bitwise_not, col);
+spark_expr_fn!(shiftleft, value shift);
+spark_expr_fn!(shiftright, value shift);
+spark_expr_fn!(shiftrightunsigned, value shift);
 
 // ---------------------------------------------------------------------------
-// Collection functions
+// Collection / Conditional / Conversion
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(size, fn_collection::size, arg1);
+spark_expr_fn!(size, arg1);
 
-// ---------------------------------------------------------------------------
-// Conditional functions
-// ---------------------------------------------------------------------------
-
-// Python keyword `if` → exposed as `if_`.
-spark_udf_fixed!(if_, fn_conditional::r#if, condition, if_true, if_false);
-
-// ---------------------------------------------------------------------------
-// Conversion functions
-// ---------------------------------------------------------------------------
-
-// `spark_cast` requires session ConfigOptions in upstream; use the
-// crate-provided `expr_fn` helper which applies defaults.
+// Python keyword `if` → exposed as `if_`. Upstream Rust ident is `r#if`.
 #[pyfunction]
-fn spark_cast(arg1: PyExpr, arg2: PyExpr) -> PyExpr {
-    fn_conversion::expr_fn::spark_cast(arg1.into(), arg2.into()).into()
+fn if_(condition: PyExpr, if_true: PyExpr, if_false: PyExpr) -> PyExpr {
+    expr_fn::r#if(condition.into(), if_true.into(), if_false.into()).into()
 }
+
+// `spark_cast` is config-injected by the upstream `expr_fn` helper; defaults
+// applied automatically there.
+spark_expr_fn!(spark_cast, arg1 arg2);
 
 // ---------------------------------------------------------------------------
 // Datetime functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(add_months, fn_datetime::add_months, start_date, num_months);
-spark_udf_fixed!(date_add, fn_datetime::date_add, start_date, days);
-spark_udf_fixed!(date_sub, fn_datetime::date_sub, start_date, days);
-spark_udf_fixed!(hour, fn_datetime::hour, arg1);
-spark_udf_fixed!(minute, fn_datetime::minute, arg1);
-spark_udf_fixed!(second, fn_datetime::second, arg1);
-spark_udf_fixed!(last_day, fn_datetime::last_day, arg1);
-spark_udf_fixed!(
-    make_dt_interval,
-    fn_datetime::make_dt_interval,
-    days,
-    hours,
-    mins,
-    secs
-);
-spark_udf_fixed!(
-    make_interval,
-    fn_datetime::make_interval,
-    years,
-    months,
-    weeks,
-    days,
-    hours,
-    mins,
-    secs
-);
-spark_udf_fixed!(next_day, fn_datetime::next_day, start_date, day_of_week);
-spark_udf_fixed!(date_diff, fn_datetime::date_diff, end_date, start_date);
-spark_udf_fixed!(date_trunc, fn_datetime::date_trunc, fmt, ts);
-spark_udf_fixed!(time_trunc, fn_datetime::time_trunc, fmt, t);
-spark_udf_fixed!(trunc, fn_datetime::trunc, dt, fmt);
-spark_udf_fixed!(date_part, fn_datetime::date_part, field, source);
-spark_udf_fixed!(from_utc_timestamp, fn_datetime::from_utc_timestamp, ts, tz);
-spark_udf_fixed!(to_utc_timestamp, fn_datetime::to_utc_timestamp, ts, tz);
-spark_udf_fixed!(unix_date, fn_datetime::unix_date, dt);
-spark_udf_fixed!(unix_micros, fn_datetime::unix_micros, ts);
-spark_udf_fixed!(unix_millis, fn_datetime::unix_millis, ts);
-spark_udf_fixed!(unix_seconds, fn_datetime::unix_seconds, ts);
+spark_expr_fn!(add_months, start_date num_months);
+spark_expr_fn!(date_add, start_date days);
+spark_expr_fn!(date_sub, start_date days);
+spark_expr_fn!(hour, arg1);
+spark_expr_fn!(minute, arg1);
+spark_expr_fn!(second, arg1);
+spark_expr_fn!(last_day, arg1);
+spark_expr_fn!(make_dt_interval, days hours mins secs);
+spark_expr_fn!(make_interval, years months weeks days hours mins secs);
+spark_expr_fn!(next_day, start_date day_of_week);
+spark_expr_fn!(date_diff, end_date start_date);
+spark_expr_fn!(date_trunc, fmt ts);
+spark_expr_fn!(time_trunc, fmt t);
+spark_expr_fn!(trunc, dt fmt);
+spark_expr_fn!(date_part, field source);
+spark_expr_fn!(from_utc_timestamp, ts tz);
+spark_expr_fn!(to_utc_timestamp, ts tz);
+spark_expr_fn!(unix_date, dt);
+spark_expr_fn!(unix_micros, ts);
+spark_expr_fn!(unix_millis, ts);
+spark_expr_fn!(unix_seconds, ts);
 
 // ---------------------------------------------------------------------------
 // Hash functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(crc32, fn_hash::crc32, arg1);
-spark_udf_fixed!(sha1, fn_hash::sha1, arg1);
-spark_udf_fixed!(sha2, fn_hash::sha2, arg1, bit_length);
-spark_udf_vec!(xxhash64, fn_hash::xxhash64);
+spark_expr_fn!(crc32, arg1);
+spark_expr_fn!(sha1, arg1);
+spark_expr_fn!(sha2, arg1 bit_length);
+spark_udf_vec!(xxhash64, udf::hash::xxhash64);
 
 // ---------------------------------------------------------------------------
 // JSON functions
 // ---------------------------------------------------------------------------
 
-spark_udf_vec!(json_tuple, fn_json::json_tuple);
+spark_udf_vec!(json_tuple, udf::json::json_tuple);
 
 // ---------------------------------------------------------------------------
 // Map functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(map_from_arrays, fn_map::map_from_arrays, keys, values);
-spark_udf_fixed!(map_from_entries, fn_map::map_from_entries, arg1);
-spark_udf_fixed!(
-    str_to_map,
-    fn_map::str_to_map,
-    text,
-    pair_delim,
-    key_value_delim
-);
+spark_expr_fn!(map_from_arrays, keys values);
+spark_expr_fn!(map_from_entries, arg1);
+spark_expr_fn!(str_to_map, text pair_delim key_value_delim);
 
 // ---------------------------------------------------------------------------
 // Math functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(abs, fn_math::abs, arg1);
-spark_udf_fixed!(ceil, fn_math::ceil, arg1);
-spark_udf_fixed!(expm1, fn_math::expm1, arg1);
-spark_udf_fixed!(factorial, fn_math::factorial, arg1);
-spark_udf_fixed!(floor, fn_math::floor, arg1);
-spark_udf_fixed!(hex, fn_math::hex, arg1);
-spark_udf_fixed!(modulus, fn_math::modulus, dividend, divisor);
-spark_udf_fixed!(pmod, fn_math::pmod, dividend, divisor);
-spark_udf_fixed!(rint, fn_math::rint, arg1);
-spark_udf_fixed!(round, fn_math::round, value, scale);
-spark_udf_fixed!(unhex, fn_math::unhex, arg1);
-spark_udf_fixed!(
-    width_bucket,
-    fn_math::width_bucket,
-    value,
-    min_value,
-    max_value,
-    num_buckets
-);
-spark_udf_fixed!(csc, fn_math::csc, arg1);
-spark_udf_fixed!(sec, fn_math::sec, arg1);
-spark_udf_fixed!(negative, fn_math::negative, arg1);
-spark_udf_fixed!(bin, fn_math::bin, arg1);
+spark_expr_fn!(abs, arg1);
+spark_expr_fn!(ceil, arg1);
+spark_expr_fn!(expm1, arg1);
+spark_expr_fn!(factorial, arg1);
+spark_expr_fn!(floor, arg1);
+spark_expr_fn!(hex, arg1);
+spark_expr_fn!(modulus, dividend divisor);
+spark_expr_fn!(pmod, dividend divisor);
+spark_expr_fn!(rint, arg1);
+spark_expr_fn!(round, value scale);
+spark_expr_fn!(unhex, arg1);
+spark_expr_fn!(width_bucket, value min_value max_value num_buckets);
+spark_expr_fn!(csc, arg1);
+spark_expr_fn!(sec, arg1);
+spark_expr_fn!(negative, arg1);
+spark_expr_fn!(bin, arg1);
 
 // ---------------------------------------------------------------------------
 // String functions
 // ---------------------------------------------------------------------------
 
-spark_udf_fixed!(ascii, fn_string::ascii, arg1);
-spark_udf_fixed!(base64, fn_string::base64, bin_input);
+spark_expr_fn!(ascii, arg1);
+spark_expr_fn!(base64, bin_input);
 // `char` collides with the Rust primitive type in macro hygiene; rename the
 // Rust ident and re-expose under the original name to Python.
 #[pyfunction]
 #[pyo3(name = "char")]
 fn char_fn(arg1: PyExpr) -> PyExpr {
-    let udf = fn_string::char();
-    Expr::ScalarFunction(ScalarFunction::new_udf(udf, vec![arg1.into()])).into()
+    expr_fn::char(arg1.into()).into()
 }
-spark_udf_vec!(concat, fn_string::concat);
-spark_udf_vec!(elt, fn_string::elt);
-spark_udf_fixed!(ilike, fn_string::ilike, str, pattern);
-spark_udf_fixed!(length, fn_string::length, arg1);
-spark_udf_fixed!(like, fn_string::like, str, pattern);
-spark_udf_fixed!(luhn_check, fn_string::luhn_check, arg1);
-spark_udf_vec!(format_string, fn_string::format_string);
-spark_udf_fixed!(space, fn_string::space, arg1);
-spark_udf_fixed!(substring, fn_string::substring, str, pos, length);
-spark_udf_fixed!(unbase64, fn_string::unbase64, str);
-spark_udf_fixed!(soundex, fn_string::soundex, str);
-spark_udf_fixed!(is_valid_utf8, fn_string::is_valid_utf8, str);
-spark_udf_fixed!(make_valid_utf8, fn_string::make_valid_utf8, str);
+spark_udf_vec!(concat, udf::string::concat);
+spark_udf_vec!(elt, udf::string::elt);
+spark_expr_fn!(ilike, str pattern);
+spark_expr_fn!(length, arg1);
+spark_expr_fn!(like, str pattern);
+spark_expr_fn!(luhn_check, arg1);
+spark_udf_vec!(format_string, udf::string::format_string);
+spark_expr_fn!(space, arg1);
+spark_expr_fn!(substring, str pos length);
+spark_expr_fn!(unbase64, str);
+spark_expr_fn!(soundex, str);
+spark_expr_fn!(is_valid_utf8, str);
+spark_expr_fn!(make_valid_utf8, str);
 
 // ---------------------------------------------------------------------------
 // URL functions
 // ---------------------------------------------------------------------------
 
-spark_udf_vec!(parse_url, fn_url::parse_url);
-spark_udf_vec!(try_parse_url, fn_url::try_parse_url);
-spark_udf_vec!(url_decode, fn_url::url_decode);
-spark_udf_vec!(try_url_decode, fn_url::try_url_decode);
-spark_udf_vec!(url_encode, fn_url::url_encode);
+spark_udf_vec!(parse_url, udf::url::parse_url);
+spark_udf_vec!(try_parse_url, udf::url::try_parse_url);
+spark_udf_vec!(url_decode, udf::url::url_decode);
+spark_udf_vec!(try_url_decode, udf::url::try_url_decode);
+spark_udf_vec!(url_encode, udf::url::url_encode);
 
 // ---------------------------------------------------------------------------
 // Module init
