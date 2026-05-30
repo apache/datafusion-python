@@ -18,11 +18,12 @@
 Spark-Compatible Functions
 ==========================
 
-DataFusion ships Spark-compatible versions of a wide set of SQL functions
+DataFusion ships Spark-compatible versions of a wide set of functions
 (string, math, datetime, hash, array, aggregate) through the upstream
 ``datafusion-spark`` crate. ``datafusion-python`` exposes these under
-``datafusion.functions.spark`` for the DataFrame API and via
-:py:meth:`~datafusion.SessionContext.enable_spark_functions` for SQL.
+``datafusion.functions.spark`` for use from the DataFrame API, and via
+:py:meth:`~datafusion.SessionContext.enable_spark_functions` for use from
+SQL.
 
 Why a Separate Namespace?
 -------------------------
