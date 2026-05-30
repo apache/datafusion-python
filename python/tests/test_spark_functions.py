@@ -230,6 +230,73 @@ def test_round_half_up():
 
 
 # ---------------------------------------------------------------------------
+# Optional parameter defaults / NotImplementedError
+# ---------------------------------------------------------------------------
+
+
+def test_round_scale_default():
+    """spark.round defaults scale to 0."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    assert _val(df, spark.round(lit(2.5))) == 3.0
+
+
+def test_make_dt_interval_defaults():
+    """spark.make_dt_interval with no args returns a zero day-time interval."""
+    import datetime as dt
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    assert _val(df, spark.make_dt_interval()) == dt.timedelta(0)
+
+
+def test_make_interval_defaults():
+    """spark.make_interval with no args returns a zero interval."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    assert _val(df, spark.make_interval()).months == 0
+
+
+def test_str_to_map_defaults():
+    """spark.str_to_map defaults delimiters to ',' and ':'."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    assert _val(df, spark.str_to_map(lit("a:1,b:2"))) == [("a", "1"), ("b", "2")]
+
+
+def test_shuffle_seed_raises():
+    """spark.shuffle(seed=...) raises NotImplementedError until Rust supports it."""
+    with pytest.raises(NotImplementedError, match="seed"):
+        spark.shuffle(spark.array(lit(1), lit(2)), seed=1)
+
+
+def test_like_escape_raises():
+    """spark.like/ilike escapeChar raises NotImplementedError until Rust supports."""
+    with pytest.raises(NotImplementedError, match="escapeChar"):
+        spark.like(lit("a"), lit("a"), escapeChar="\\")
+    with pytest.raises(NotImplementedError, match="escapeChar"):
+        spark.ilike(lit("a"), lit("a"), escapeChar="\\")
+
+
+def test_aggregate_positional_compat():
+    """Pyspark-style positional calls still work after the rename to ``col``."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+    out = df.aggregate(
+        [],
+        [
+            spark.avg(col("a")).alias("av"),
+            spark.try_sum(col("a")).alias("ts"),
+            spark.collect_list(col("a")).alias("cl"),
+            spark.collect_set(col("a")).alias("cs"),
+        ],
+    ).collect()
+    rec = pa.Table.from_batches(out)
+    assert rec.column("av")[0].as_py() == 2.0
+    assert rec.column("ts")[0].as_py() == 6.0
+
+
+# ---------------------------------------------------------------------------
 # SQL path via enable_spark_functions
 # ---------------------------------------------------------------------------
 

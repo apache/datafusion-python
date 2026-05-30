@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import pyarrow as pa
+
 from datafusion._internal import functions as _functions
 from datafusion.expr import Expr, sort_list_to_raw_sort_list
 
@@ -40,6 +42,9 @@ if TYPE_CHECKING:
     from datafusion.expr import SortKey
 
 _f = _functions.spark
+
+# Reused int32 literal so optional-arg defaults don't rebuild it per call.
+_ZERO_I32 = Expr.literal(pa.scalar(0, type=pa.int32()))
 
 
 def _filter_raw(filter: Expr | None) -> Any:
@@ -203,8 +208,11 @@ def array(*cols: Expr) -> Expr:
     return Expr(_f.array(*[c.expr for c in cols]))
 
 
-def shuffle(col: Expr) -> Expr:
+def shuffle(col: Expr, seed: int | None = None) -> Expr:
     """Spark ``shuffle``: returns a random permutation of the input array.
+
+    ``seed`` is accepted for pyspark parity but is not yet wired through the
+    Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -217,6 +225,9 @@ def shuffle(col: Expr) -> Expr:
         >>> sorted(r.collect_column("v")[0].as_py())
         [1, 2, 3]
     """
+    if seed is not None:
+        msg = "shuffle(seed=...) is not yet supported by the Spark UDF binding"
+        raise NotImplementedError(msg)
     return Expr(_f.shuffle(col.expr))
 
 
@@ -589,59 +600,78 @@ def last_day(col: Expr) -> Expr:
     return Expr(_f.last_day(col.expr))
 
 
-def make_dt_interval(days: Expr, hours: Expr, mins: Expr, secs: Expr) -> Expr:
+def make_dt_interval(
+    days: Expr | None = None,
+    hours: Expr | None = None,
+    mins: Expr | None = None,
+    secs: Expr | None = None,
+) -> Expr:
     """Spark ``make_dt_interval``: day-time interval from components.
 
+    All parts are optional; omitted parts default to zero, matching pyspark.
+
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.make_dt_interval().alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.timedelta(0)
+
+        >>> import pyarrow as pa
         >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
         >>> r = df.select(
         ...     dfn.functions.spark.make_dt_interval(
-        ...         i32(1), i32(2), i32(3), dfn.lit(4.5)
+        ...         days=i32(1), hours=i32(2), mins=i32(3), secs=dfn.lit(4.5)
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         datetime.timedelta(days=1, seconds=7384, microseconds=500000)
     """
-    return Expr(_f.make_dt_interval(days.expr, hours.expr, mins.expr, secs.expr))
+    return Expr(
+        _f.make_dt_interval(
+            (days if days is not None else _ZERO_I32).expr,
+            (hours if hours is not None else _ZERO_I32).expr,
+            (mins if mins is not None else _ZERO_I32).expr,
+            (secs if secs is not None else Expr.literal(0.0)).expr,
+        )
+    )
 
 
 def make_interval(
-    years: Expr,
-    months: Expr,
-    weeks: Expr,
-    days: Expr,
-    hours: Expr,
-    mins: Expr,
-    secs: Expr,
+    years: Expr | None = None,
+    months: Expr | None = None,
+    weeks: Expr | None = None,
+    days: Expr | None = None,
+    hours: Expr | None = None,
+    mins: Expr | None = None,
+    secs: Expr | None = None,
 ) -> Expr:
     """Spark ``make_interval``: interval from year/month/week/day/hour/min/sec parts.
 
+    All parts are optional; omitted parts default to zero, matching pyspark.
+
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.make_interval().alias("v"))
+        >>> r.collect_column("v")[0].as_py().months
+        0
+
+        >>> import pyarrow as pa
         >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.make_interval(
-        ...         i32(1), i32(0), i32(0), i32(0),
-        ...         i32(0), i32(0), dfn.lit(0.0)
-        ...     ).alias("v")
-        ... )
+        >>> r = df.select(dfn.functions.spark.make_interval(years=i32(1)).alias("v"))
         >>> r.collect_column("v")[0].as_py().months
         12
     """
     return Expr(
         _f.make_interval(
-            years.expr,
-            months.expr,
-            weeks.expr,
-            days.expr,
-            hours.expr,
-            mins.expr,
-            secs.expr,
+            (years if years is not None else _ZERO_I32).expr,
+            (months if months is not None else _ZERO_I32).expr,
+            (weeks if weeks is not None else _ZERO_I32).expr,
+            (days if days is not None else _ZERO_I32).expr,
+            (hours if hours is not None else _ZERO_I32).expr,
+            (mins if mins is not None else _ZERO_I32).expr,
+            (secs if secs is not None else Expr.literal(0.0)).expr,
         )
     )
 
@@ -984,21 +1014,36 @@ def map_from_entries(col: Expr) -> Expr:
     return Expr(_f.map_from_entries(col.expr))
 
 
-def str_to_map(text: Expr, pair_delim: Expr, key_value_delim: Expr) -> Expr:
+def str_to_map(
+    text: Expr,
+    pair_delim: Expr | None = None,
+    key_value_delim: Expr | None = None,
+) -> Expr:
     """Spark ``str_to_map``: split text into key/value pairs using delimiters.
+
+    Delimiters default to ``","`` and ``":"`` when omitted, matching pyspark.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
+        ...     dfn.functions.spark.str_to_map(dfn.lit("a:1,b:2")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        [('a', '1'), ('b', '2')]
+
+        >>> r = df.select(
         ...     dfn.functions.spark.str_to_map(
-        ...         dfn.lit("a:1,b:2"), dfn.lit(","), dfn.lit(":")
+        ...         dfn.lit("a=1;b=2"),
+        ...         pair_delim=dfn.lit(";"),
+        ...         key_value_delim=dfn.lit("="),
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         [('a', '1'), ('b', '2')]
     """
-    return Expr(_f.str_to_map(text.expr, pair_delim.expr, key_value_delim.expr))
+    pd = pair_delim if pair_delim is not None else Expr.literal(",")
+    kvd = key_value_delim if key_value_delim is not None else Expr.literal(":")
+    return Expr(_f.str_to_map(text.expr, pd.expr, kvd.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -1130,18 +1175,28 @@ def rint(col: Expr) -> Expr:
     return Expr(_f.rint(col.expr))
 
 
-def round(col: Expr, scale: Expr) -> Expr:
+def round(col: Expr, scale: Expr | None = None) -> Expr:
     """Spark ``round``: round to ``scale`` decimal places, HALF_UP rounding.
+
+    ``scale`` defaults to zero when omitted, matching pyspark.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
-        >>> r = df.select(
-        ...     dfn.functions.spark.round(dfn.lit(2.5), dfn.lit(0)).alias("v"))
+        >>> r = df.select(dfn.functions.spark.round(dfn.lit(2.5)).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         3.0
+
+        >>> r = df.select(
+        ...     dfn.functions.spark.round(
+        ...         dfn.lit(2.345), scale=dfn.lit(2)
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        2.35
     """
-    return Expr(_f.round(col.expr, scale.expr))
+    scale_expr = scale if scale is not None else _ZERO_I32
+    return Expr(_f.round(col.expr, scale_expr.expr))
 
 
 def unhex(col: Expr) -> Expr:
@@ -1306,8 +1361,15 @@ def elt(*inputs: Expr) -> Expr:
     return Expr(_f.elt(*[i.expr for i in inputs]))
 
 
-def ilike(string: Expr, pattern: Expr) -> Expr:
+def ilike(
+    str: Expr,
+    pattern: Expr,
+    escapeChar: str | None = None,  # noqa: N803
+) -> Expr:
     """Spark ``ilike``: case-insensitive pattern match.
+
+    ``escapeChar`` is accepted for pyspark parity but is not yet wired through
+    the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1317,7 +1379,10 @@ def ilike(string: Expr, pattern: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.ilike(string.expr, pattern.expr))
+    if escapeChar is not None:
+        msg = "ilike(escapeChar=...) is not yet supported by the Spark UDF binding"
+        raise NotImplementedError(msg)
+    return Expr(_f.ilike(str.expr, pattern.expr))
 
 
 def length(col: Expr) -> Expr:
@@ -1333,8 +1398,15 @@ def length(col: Expr) -> Expr:
     return Expr(_f.length(col.expr))
 
 
-def like(string: Expr, pattern: Expr) -> Expr:
+def like(
+    str: Expr,
+    pattern: Expr,
+    escapeChar: str | None = None,  # noqa: N803
+) -> Expr:
     """Spark ``like``: case-sensitive pattern match.
+
+    ``escapeChar`` is accepted for pyspark parity but is not yet wired through
+    the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1344,7 +1416,10 @@ def like(string: Expr, pattern: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.like(string.expr, pattern.expr))
+    if escapeChar is not None:
+        msg = "like(escapeChar=...) is not yet supported by the Spark UDF binding"
+        raise NotImplementedError(msg)
+    return Expr(_f.like(str.expr, pattern.expr))
 
 
 def luhn_check(col: Expr) -> Expr:
