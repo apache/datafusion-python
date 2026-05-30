@@ -278,6 +278,22 @@ def test_like_escape_raises():
         spark.ilike(lit("a"), lit("a"), escapeChar="\\")
 
 
+def test_parse_url_three_arg():
+    """parse_url(url, partToExtract, key=...) extracts query parameters."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    url = lit("http://example.com/p?q=hello&n=1")
+    assert _val(df, spark.parse_url(url, lit("QUERY"), key=lit("q"))) == "hello"
+    assert _val(df, spark.try_parse_url(url, lit("QUERY"), key=lit("n"))) == "1"
+
+
+def test_format_string_plain_str_format():
+    """format_string accepts a plain str format that is auto-promoted to lit."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"x": [1]})
+    assert _val(df, spark.format_string("%d-%s", lit(42), lit("hi"))) == "42-hi"
+
+
 def test_aggregate_positional_compat():
     """Pyspark-style positional calls still work after the rename to ``col``."""
     ctx = SessionContext()

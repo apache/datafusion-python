@@ -958,7 +958,7 @@ def xxhash64(*cols: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def json_tuple(*args: Expr) -> Expr:
+def json_tuple(col: Expr, *fields: Expr) -> Expr:
     """Spark ``json_tuple``: extract top-level fields from a JSON string.
 
     Examples:
@@ -972,7 +972,7 @@ def json_tuple(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         {'c0': '1', 'c1': 'x'}
     """
-    return Expr(_f.json_tuple(*[a.expr for a in args]))
+    return Expr(_f.json_tuple(col.expr, *[f.expr for f in fields]))
 
 
 # ---------------------------------------------------------------------------
@@ -1439,23 +1439,25 @@ def luhn_check(col: Expr) -> Expr:
     return Expr(_f.luhn_check(col.expr))
 
 
-def format_string(*args: Expr) -> Expr:
+def format_string(format: str | Expr, *cols: Expr) -> Expr:
     """Spark ``format_string``: printf-style format string.
 
-    First arg is the format, remaining args are values to substitute.
+    ``format`` is the printf-style template (a plain ``str`` is auto-promoted
+    to a literal expression); remaining args are values to substitute.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.format_string(
-        ...         dfn.lit("%d-%s"), dfn.lit(42), dfn.lit("hi")
+        ...         "%d-%s", dfn.lit(42), dfn.lit("hi")
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         '42-hi'
     """
-    return Expr(_f.format_string(*[a.expr for a in args]))
+    fmt_expr = format if isinstance(format, Expr) else Expr.literal(format)
+    return Expr(_f.format_string(fmt_expr.expr, *[c.expr for c in cols]))
 
 
 def space(col: Expr) -> Expr:
@@ -1555,8 +1557,16 @@ def make_valid_utf8(str: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def parse_url(*args: Expr) -> Expr:
+def parse_url(
+    url: Expr,
+    partToExtract: Expr,  # noqa: N803
+    key: Expr | None = None,
+) -> Expr:
     """Spark ``parse_url``: extract a part from a URL; errors on invalid URLs.
+
+    ``partToExtract`` is one of ``"HOST"``, ``"PATH"``, ``"QUERY"``,
+    ``"REF"``, ``"PROTOCOL"``, ``"FILE"``, ``"AUTHORITY"``, ``"USERINFO"``.
+    Pass ``key`` only with ``"QUERY"`` to extract a single parameter.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1568,11 +1578,27 @@ def parse_url(*args: Expr) -> Expr:
         ... )
         >>> r.collect_column("v")[0].as_py()
         'example.com'
+
+        >>> r = df.select(
+        ...     dfn.functions.spark.parse_url(
+        ...         dfn.lit("http://example.com/path?q=1"),
+        ...         dfn.lit("QUERY"),
+        ...         key=dfn.lit("q"),
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        '1'
     """
-    return Expr(_f.parse_url(*[a.expr for a in args]))
+    if key is None:
+        return Expr(_f.parse_url(url.expr, partToExtract.expr))
+    return Expr(_f.parse_url(url.expr, partToExtract.expr, key.expr))
 
 
-def try_parse_url(*args: Expr) -> Expr:
+def try_parse_url(
+    url: Expr,
+    partToExtract: Expr,  # noqa: N803
+    key: Expr | None = None,
+) -> Expr:
     """Spark ``try_parse_url``: like ``parse_url`` but returns NULL on invalid URLs.
 
     Examples:
@@ -1586,10 +1612,12 @@ def try_parse_url(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'example.com'
     """
-    return Expr(_f.try_parse_url(*[a.expr for a in args]))
+    if key is None:
+        return Expr(_f.try_parse_url(url.expr, partToExtract.expr))
+    return Expr(_f.try_parse_url(url.expr, partToExtract.expr, key.expr))
 
 
-def url_decode(*args: Expr) -> Expr:
+def url_decode(str: Expr) -> Expr:
     """Spark ``url_decode``: decode an application/x-www-form-urlencoded string.
 
     Examples:
@@ -1600,10 +1628,10 @@ def url_decode(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'a b'
     """
-    return Expr(_f.url_decode(*[a.expr for a in args]))
+    return Expr(_f.url_decode(str.expr))
 
 
-def try_url_decode(*args: Expr) -> Expr:
+def try_url_decode(str: Expr) -> Expr:
     """Spark ``try_url_decode``: like ``url_decode``; returns NULL on invalid input.
 
     Examples:
@@ -1614,10 +1642,10 @@ def try_url_decode(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'a b'
     """
-    return Expr(_f.try_url_decode(*[a.expr for a in args]))
+    return Expr(_f.try_url_decode(str.expr))
 
 
-def url_encode(*args: Expr) -> Expr:
+def url_encode(str: Expr) -> Expr:
     """Spark ``url_encode``: encode a string in application/x-www-form-urlencoded.
 
     Examples:
@@ -1628,7 +1656,7 @@ def url_encode(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'a+b'
     """
-    return Expr(_f.url_encode(*[a.expr for a in args]))
+    return Expr(_f.url_encode(str.expr))
 
 
 __all__ = [
