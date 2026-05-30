@@ -244,10 +244,6 @@ namespace while pyspark's single-positional form continues to work.
    aliases another function's Rust binding.
 4. Report functions that are missing from the Python spark namespace.
 
-**Cross-cutting reference:** The longer-form roadmap for spark coverage
-lives in `PYSPARK_ALIGNMENT_PLAN.md` (root of repo). Use it as the source
-of truth for which gaps are intentionally deferred vs. ready to land.
-
 ### 9. `__all__` Hygiene (functions.py and functions/spark.py)
 
 Independent of upstream parity, also flag public `def` symbols in

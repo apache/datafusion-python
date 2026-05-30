@@ -44,8 +44,8 @@ still on-brand:
   takes `format: str | Column`; the spark wrapper already auto-promotes a
   plain `str` to a literal — keep parity.
 - **Strictly additive optional kwargs** that pyspark also has (e.g.
-  `like(escapeChar=...)`). These belong in the [PYSPARK_ALIGNMENT_PLAN.md]
-  follow-up PRs, not in a make-pythonic pass.
+  `like(escapeChar=...)`). These belong in pyspark-alignment follow-up
+  PRs, not in a make-pythonic pass.
 
 If the user explicitly scopes to "spark", validate parity with pyspark
 rather than applying generic coercion.
