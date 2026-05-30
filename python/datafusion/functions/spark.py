@@ -52,7 +52,7 @@ def _filter_raw(filter: Expr | None) -> Any:
 
 
 def avg(
-    expression: Expr,
+    col: Expr,
     distinct: bool | None = None,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -70,7 +70,7 @@ def avg(
     """
     return Expr(
         _f.avg(
-            expression.expr,
+            col.expr,
             distinct=distinct,
             filter=_filter_raw(filter),
             order_by=sort_list_to_raw_sort_list(order_by),
@@ -80,7 +80,7 @@ def avg(
 
 
 def try_sum(
-    expression: Expr,
+    col: Expr,
     distinct: bool | None = None,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -98,7 +98,7 @@ def try_sum(
     """
     return Expr(
         _f.try_sum(
-            expression.expr,
+            col.expr,
             distinct=distinct,
             filter=_filter_raw(filter),
             order_by=sort_list_to_raw_sort_list(order_by),
@@ -108,7 +108,7 @@ def try_sum(
 
 
 def collect_list(
-    expression: Expr,
+    col: Expr,
     distinct: bool | None = None,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -126,7 +126,7 @@ def collect_list(
     """
     return Expr(
         _f.collect_list(
-            expression.expr,
+            col.expr,
             distinct=distinct,
             filter=_filter_raw(filter),
             order_by=sort_list_to_raw_sort_list(order_by),
@@ -136,7 +136,7 @@ def collect_list(
 
 
 def collect_set(
-    expression: Expr,
+    col: Expr,
     distinct: bool | None = None,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -154,7 +154,7 @@ def collect_set(
     """
     return Expr(
         _f.collect_set(
-            expression.expr,
+            col.expr,
             distinct=distinct,
             filter=_filter_raw(filter),
             order_by=sort_list_to_raw_sort_list(order_by),
@@ -168,7 +168,7 @@ def collect_set(
 # ---------------------------------------------------------------------------
 
 
-def array_contains(array: Expr, element: Expr) -> Expr:
+def array_contains(col: Expr, value: Expr) -> Expr:
     """Spark ``array_contains``: true if the array contains the element.
 
     Examples:
@@ -183,10 +183,10 @@ def array_contains(array: Expr, element: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.array_contains(array.expr, element.expr))
+    return Expr(_f.array_contains(col.expr, value.expr))
 
 
-def array(*args: Expr) -> Expr:
+def array(*cols: Expr) -> Expr:
     """Spark ``array``: builds an array from the given elements.
 
     Examples:
@@ -200,10 +200,10 @@ def array(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         [1, 2, 3]
     """
-    return Expr(_f.array(*[a.expr for a in args]))
+    return Expr(_f.array(*[c.expr for c in cols]))
 
 
-def shuffle(array: Expr) -> Expr:
+def shuffle(col: Expr) -> Expr:
     """Spark ``shuffle``: returns a random permutation of the input array.
 
     Examples:
@@ -217,10 +217,10 @@ def shuffle(array: Expr) -> Expr:
         >>> sorted(r.collect_column("v")[0].as_py())
         [1, 2, 3]
     """
-    return Expr(_f.shuffle(array.expr))
+    return Expr(_f.shuffle(col.expr))
 
 
-def array_repeat(element: Expr, count: Expr) -> Expr:
+def array_repeat(col: Expr, count: Expr) -> Expr:
     """Spark ``array_repeat``: array of ``element`` repeated ``count`` times.
 
     Examples:
@@ -231,10 +231,10 @@ def array_repeat(element: Expr, count: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         ['a', 'a', 'a']
     """
-    return Expr(_f.array_repeat(element.expr, count.expr))
+    return Expr(_f.array_repeat(col.expr, count.expr))
 
 
-def slice(array: Expr, start: Expr, length: Expr) -> Expr:
+def slice(x: Expr, start: Expr, length: Expr) -> Expr:
     """Spark ``slice``: subset of the array from 1-indexed ``start`` with ``length``.
 
     Negative ``start`` counts from the end.
@@ -252,7 +252,7 @@ def slice(array: Expr, start: Expr, length: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         [2, 3]
     """
-    return Expr(_f.slice(array.expr, start.expr, length.expr))
+    return Expr(_f.slice(x.expr, start.expr, length.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +260,7 @@ def slice(array: Expr, start: Expr, length: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def bitmap_count(arg: Expr) -> Expr:
+def bitmap_count(col: Expr) -> Expr:
     r"""Spark ``bitmap_count``: number of set bits in a bitmap.
 
     Examples:
@@ -271,10 +271,10 @@ def bitmap_count(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         8
     """
-    return Expr(_f.bitmap_count(arg.expr))
+    return Expr(_f.bitmap_count(col.expr))
 
 
-def bitmap_bit_position(arg: Expr) -> Expr:
+def bitmap_bit_position(col: Expr) -> Expr:
     """Spark ``bitmap_bit_position``: bit position for a child expression.
 
     Examples:
@@ -285,10 +285,10 @@ def bitmap_bit_position(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         14
     """
-    return Expr(_f.bitmap_bit_position(arg.expr))
+    return Expr(_f.bitmap_bit_position(col.expr))
 
 
-def bitmap_bucket_number(arg: Expr) -> Expr:
+def bitmap_bucket_number(col: Expr) -> Expr:
     """Spark ``bitmap_bucket_number``: bucket number for a child expression.
 
     Examples:
@@ -299,7 +299,7 @@ def bitmap_bucket_number(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1
     """
-    return Expr(_f.bitmap_bucket_number(arg.expr))
+    return Expr(_f.bitmap_bucket_number(col.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -347,7 +347,7 @@ def bitwise_not(col: Expr) -> Expr:
     return Expr(_f.bitwise_not(col.expr))
 
 
-def shiftleft(value: Expr, shift: Expr) -> Expr:
+def shiftleft(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
     """Spark ``shiftleft``: ``value`` shifted left by ``shift`` bits.
 
     Examples:
@@ -358,10 +358,10 @@ def shiftleft(value: Expr, shift: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         8
     """
-    return Expr(_f.shiftleft(value.expr, shift.expr))
+    return Expr(_f.shiftleft(col.expr, numBits.expr))
 
 
-def shiftright(value: Expr, shift: Expr) -> Expr:
+def shiftright(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
     """Spark ``shiftright``: arithmetic right shift.
 
     Examples:
@@ -372,10 +372,10 @@ def shiftright(value: Expr, shift: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.shiftright(value.expr, shift.expr))
+    return Expr(_f.shiftright(col.expr, numBits.expr))
 
 
-def shiftrightunsigned(value: Expr, shift: Expr) -> Expr:
+def shiftrightunsigned(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
     """Spark ``shiftrightunsigned``: logical (unsigned) right shift.
 
     Examples:
@@ -389,7 +389,7 @@ def shiftrightunsigned(value: Expr, shift: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.shiftrightunsigned(value.expr, shift.expr))
+    return Expr(_f.shiftrightunsigned(col.expr, numBits.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -397,7 +397,7 @@ def shiftrightunsigned(value: Expr, shift: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def size(arg: Expr) -> Expr:
+def size(col: Expr) -> Expr:
     """Spark ``size``: length of an array or map.
 
     Examples:
@@ -411,7 +411,7 @@ def size(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         3
     """
-    return Expr(_f.size(arg.expr))
+    return Expr(_f.size(col.expr))
 
 
 def if_(condition: Expr, if_true: Expr, if_false: Expr) -> Expr:
@@ -459,7 +459,7 @@ def spark_cast(arg: Expr, type_str: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def add_months(start_date: Expr, num_months: Expr) -> Expr:
+def add_months(start: Expr, months: Expr) -> Expr:
     """Spark ``add_months``: date + N months.
 
     Examples:
@@ -476,10 +476,10 @@ def add_months(start_date: Expr, num_months: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 3, 15)
     """
-    return Expr(_f.add_months(start_date.expr, num_months.expr))
+    return Expr(_f.add_months(start.expr, months.expr))
 
 
-def date_add(start_date: Expr, days: Expr) -> Expr:
+def date_add(start: Expr, days: Expr) -> Expr:
     """Spark ``date_add``: date + N days.
 
     Examples:
@@ -496,10 +496,10 @@ def date_add(start_date: Expr, days: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 20)
     """
-    return Expr(_f.date_add(start_date.expr, days.expr))
+    return Expr(_f.date_add(start.expr, days.expr))
 
 
-def date_sub(start_date: Expr, days: Expr) -> Expr:
+def date_sub(start: Expr, days: Expr) -> Expr:
     """Spark ``date_sub``: date - N days.
 
     Examples:
@@ -516,10 +516,10 @@ def date_sub(start_date: Expr, days: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 10)
     """
-    return Expr(_f.date_sub(start_date.expr, days.expr))
+    return Expr(_f.date_sub(start.expr, days.expr))
 
 
-def hour(arg: Expr) -> Expr:
+def hour(col: Expr) -> Expr:
     """Spark ``hour``: extract hour component of a timestamp.
 
     Examples:
@@ -534,10 +534,10 @@ def hour(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         14
     """
-    return Expr(_f.hour(arg.expr))
+    return Expr(_f.hour(col.expr))
 
 
-def minute(arg: Expr) -> Expr:
+def minute(col: Expr) -> Expr:
     """Spark ``minute``: extract minute component of a timestamp.
 
     Examples:
@@ -552,10 +552,10 @@ def minute(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         30
     """
-    return Expr(_f.minute(arg.expr))
+    return Expr(_f.minute(col.expr))
 
 
-def second(arg: Expr) -> Expr:
+def second(col: Expr) -> Expr:
     """Spark ``second``: extract second component of a timestamp.
 
     Examples:
@@ -570,10 +570,10 @@ def second(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         45
     """
-    return Expr(_f.second(arg.expr))
+    return Expr(_f.second(col.expr))
 
 
-def last_day(arg: Expr) -> Expr:
+def last_day(col: Expr) -> Expr:
     """Spark ``last_day``: last day of the month containing the date.
 
     Examples:
@@ -586,7 +586,7 @@ def last_day(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 31)
     """
-    return Expr(_f.last_day(arg.expr))
+    return Expr(_f.last_day(col.expr))
 
 
 def make_dt_interval(days: Expr, hours: Expr, mins: Expr, secs: Expr) -> Expr:
@@ -646,7 +646,7 @@ def make_interval(
     )
 
 
-def next_day(start_date: Expr, day_of_week: Expr) -> Expr:
+def next_day(date: Expr, dayOfWeek: Expr) -> Expr:  # noqa: N803
     """Spark ``next_day``: first date after ``start_date`` named ``day_of_week``.
 
     Examples:
@@ -660,10 +660,10 @@ def next_day(start_date: Expr, day_of_week: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 20)
     """
-    return Expr(_f.next_day(start_date.expr, day_of_week.expr))
+    return Expr(_f.next_day(date.expr, dayOfWeek.expr))
 
 
-def date_diff(end_date: Expr, start_date: Expr) -> Expr:
+def date_diff(end: Expr, start: Expr) -> Expr:
     """Spark ``date_diff``: number of days from ``start_date`` to ``end_date``.
 
     Examples:
@@ -677,10 +677,10 @@ def date_diff(end_date: Expr, start_date: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         5
     """
-    return Expr(_f.date_diff(end_date.expr, start_date.expr))
+    return Expr(_f.date_diff(end.expr, start.expr))
 
 
-def date_trunc(fmt: Expr, ts: Expr) -> Expr:
+def date_trunc(format: Expr, timestamp: Expr) -> Expr:
     """Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
 
     Examples:
@@ -696,10 +696,10 @@ def date_trunc(fmt: Expr, ts: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 1, 0, 0)
     """
-    return Expr(_f.date_trunc(fmt.expr, ts.expr))
+    return Expr(_f.date_trunc(format.expr, timestamp.expr))
 
 
-def time_trunc(fmt: Expr, t: Expr) -> Expr:
+def time_trunc(unit: Expr, time: Expr) -> Expr:
     """Spark ``time_trunc``: truncate time value to unit ``fmt``.
 
     Examples:
@@ -713,10 +713,10 @@ def time_trunc(fmt: Expr, t: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.time(14, 0)
     """
-    return Expr(_f.time_trunc(fmt.expr, t.expr))
+    return Expr(_f.time_trunc(unit.expr, time.expr))
 
 
-def trunc(dt: Expr, fmt: Expr) -> Expr:
+def trunc(date: Expr, format: Expr) -> Expr:
     """Spark ``trunc``: truncate date to unit ``fmt``.
 
     Examples:
@@ -730,7 +730,7 @@ def trunc(dt: Expr, fmt: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 1)
     """
-    return Expr(_f.trunc(dt.expr, fmt.expr))
+    return Expr(_f.trunc(date.expr, format.expr))
 
 
 def date_part(field: Expr, source: Expr) -> Expr:
@@ -750,7 +750,7 @@ def date_part(field: Expr, source: Expr) -> Expr:
     return Expr(_f.date_part(field.expr, source.expr))
 
 
-def from_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
+def from_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
     """Spark ``from_utc_timestamp``: interpret ``ts`` as UTC, convert to ``tz``.
 
     Examples:
@@ -769,10 +769,10 @@ def from_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
-    return Expr(_f.from_utc_timestamp(ts.expr, tz.expr))
+    return Expr(_f.from_utc_timestamp(timestamp.expr, tz.expr))
 
 
-def to_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
+def to_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
     """Spark ``to_utc_timestamp``: interpret ``ts`` as ``tz``, convert to UTC.
 
     Examples:
@@ -791,10 +791,10 @@ def to_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
-    return Expr(_f.to_utc_timestamp(ts.expr, tz.expr))
+    return Expr(_f.to_utc_timestamp(timestamp.expr, tz.expr))
 
 
-def unix_date(dt: Expr) -> Expr:
+def unix_date(col: Expr) -> Expr:
     """Spark ``unix_date``: days since 1970-01-01 for ``dt``.
 
     Examples:
@@ -807,10 +807,10 @@ def unix_date(dt: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         18276
     """
-    return Expr(_f.unix_date(dt.expr))
+    return Expr(_f.unix_date(col.expr))
 
 
-def unix_micros(ts: Expr) -> Expr:
+def unix_micros(col: Expr) -> Expr:
     """Spark ``unix_micros``: microseconds since epoch for ``ts``.
 
     Examples:
@@ -825,10 +825,10 @@ def unix_micros(ts: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1579098645000000
     """
-    return Expr(_f.unix_micros(ts.expr))
+    return Expr(_f.unix_micros(col.expr))
 
 
-def unix_millis(ts: Expr) -> Expr:
+def unix_millis(col: Expr) -> Expr:
     """Spark ``unix_millis``: milliseconds since epoch for ``ts``.
 
     Examples:
@@ -843,10 +843,10 @@ def unix_millis(ts: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1579098645000
     """
-    return Expr(_f.unix_millis(ts.expr))
+    return Expr(_f.unix_millis(col.expr))
 
 
-def unix_seconds(ts: Expr) -> Expr:
+def unix_seconds(col: Expr) -> Expr:
     """Spark ``unix_seconds``: seconds since epoch for ``ts``.
 
     Examples:
@@ -861,7 +861,7 @@ def unix_seconds(ts: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1579098645
     """
-    return Expr(_f.unix_seconds(ts.expr))
+    return Expr(_f.unix_seconds(col.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -869,7 +869,7 @@ def unix_seconds(ts: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def crc32(arg: Expr) -> Expr:
+def crc32(col: Expr) -> Expr:
     """Spark ``crc32``: cyclic redundancy check value as a bigint.
 
     Examples:
@@ -879,10 +879,10 @@ def crc32(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2743272264
     """
-    return Expr(_f.crc32(arg.expr))
+    return Expr(_f.crc32(col.expr))
 
 
-def sha1(arg: Expr) -> Expr:
+def sha1(col: Expr) -> Expr:
     """Spark ``sha1``: SHA-1 hash as a hex string.
 
     Examples:
@@ -892,10 +892,10 @@ def sha1(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d'
     """
-    return Expr(_f.sha1(arg.expr))
+    return Expr(_f.sha1(col.expr))
 
 
-def sha2(arg: Expr, bit_length: Expr) -> Expr:
+def sha2(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
     """Spark ``sha2``: SHA-2 family hash (224, 256, 384, 512). Bit length 0 = 256.
 
     Examples:
@@ -906,10 +906,10 @@ def sha2(arg: Expr, bit_length: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
     """
-    return Expr(_f.sha2(arg.expr, bit_length.expr))
+    return Expr(_f.sha2(col.expr, numBits.expr))
 
 
-def xxhash64(*args: Expr) -> Expr:
+def xxhash64(*cols: Expr) -> Expr:
     """Spark ``xxhash64``: 64-bit xxHash of the arguments.
 
     Examples:
@@ -920,7 +920,7 @@ def xxhash64(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         -4367754540140381902
     """
-    return Expr(_f.xxhash64(*[a.expr for a in args]))
+    return Expr(_f.xxhash64(*[c.expr for c in cols]))
 
 
 # ---------------------------------------------------------------------------
@@ -950,7 +950,7 @@ def json_tuple(*args: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def map_from_arrays(keys: Expr, values: Expr) -> Expr:
+def map_from_arrays(col1: Expr, col2: Expr) -> Expr:
     """Spark ``map_from_arrays``: build a map from parallel key/value arrays.
 
     Examples:
@@ -963,10 +963,10 @@ def map_from_arrays(keys: Expr, values: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         [('a', 1), ('b', 2)]
     """
-    return Expr(_f.map_from_arrays(keys.expr, values.expr))
+    return Expr(_f.map_from_arrays(col1.expr, col2.expr))
 
 
-def map_from_entries(arg: Expr) -> Expr:
+def map_from_entries(col: Expr) -> Expr:
     """Spark ``map_from_entries``: build a map from an array of key/value structs.
 
     Examples:
@@ -981,7 +981,7 @@ def map_from_entries(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         [('a', 1)]
     """
-    return Expr(_f.map_from_entries(arg.expr))
+    return Expr(_f.map_from_entries(col.expr))
 
 
 def str_to_map(text: Expr, pair_delim: Expr, key_value_delim: Expr) -> Expr:
@@ -1006,7 +1006,7 @@ def str_to_map(text: Expr, pair_delim: Expr, key_value_delim: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def abs(arg: Expr) -> Expr:
+def abs(col: Expr) -> Expr:
     """Spark ``abs``: absolute value.
 
     Examples:
@@ -1016,10 +1016,10 @@ def abs(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         5
     """
-    return Expr(_f.abs(arg.expr))
+    return Expr(_f.abs(col.expr))
 
 
-def ceil(arg: Expr) -> Expr:
+def ceil(col: Expr) -> Expr:
     """Spark ``ceil``: smallest integer ≥ arg.
 
     Examples:
@@ -1029,10 +1029,10 @@ def ceil(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.ceil(arg.expr))
+    return Expr(_f.ceil(col.expr))
 
 
-def expm1(arg: Expr) -> Expr:
+def expm1(col: Expr) -> Expr:
     """Spark ``expm1``: exp(arg) - 1.
 
     Examples:
@@ -1042,10 +1042,10 @@ def expm1(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         0.0
     """
-    return Expr(_f.expm1(arg.expr))
+    return Expr(_f.expm1(col.expr))
 
 
-def factorial(arg: Expr) -> Expr:
+def factorial(col: Expr) -> Expr:
     """Spark ``factorial``: n! for n in [0..20], else NULL.
 
     Examples:
@@ -1060,10 +1060,10 @@ def factorial(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         120
     """
-    return Expr(_f.factorial(arg.expr))
+    return Expr(_f.factorial(col.expr))
 
 
-def floor(arg: Expr) -> Expr:
+def floor(col: Expr) -> Expr:
     """Spark ``floor``: largest integer ≤ arg.
 
     Examples:
@@ -1073,10 +1073,10 @@ def floor(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1
     """
-    return Expr(_f.floor(arg.expr))
+    return Expr(_f.floor(col.expr))
 
 
-def hex(arg: Expr) -> Expr:
+def hex(col: Expr) -> Expr:
     """Spark ``hex``: hexadecimal representation.
 
     Examples:
@@ -1086,7 +1086,7 @@ def hex(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'FF'
     """
-    return Expr(_f.hex(arg.expr))
+    return Expr(_f.hex(col.expr))
 
 
 def modulus(dividend: Expr, divisor: Expr) -> Expr:
@@ -1117,7 +1117,7 @@ def pmod(dividend: Expr, divisor: Expr) -> Expr:
     return Expr(_f.pmod(dividend.expr, divisor.expr))
 
 
-def rint(arg: Expr) -> Expr:
+def rint(col: Expr) -> Expr:
     """Spark ``rint``: round to nearest mathematical integer (as double).
 
     Examples:
@@ -1127,10 +1127,10 @@ def rint(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2.0
     """
-    return Expr(_f.rint(arg.expr))
+    return Expr(_f.rint(col.expr))
 
 
-def round(value: Expr, scale: Expr) -> Expr:
+def round(col: Expr, scale: Expr) -> Expr:
     """Spark ``round``: round to ``scale`` decimal places, HALF_UP rounding.
 
     Examples:
@@ -1141,10 +1141,10 @@ def round(value: Expr, scale: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         3.0
     """
-    return Expr(_f.round(value.expr, scale.expr))
+    return Expr(_f.round(col.expr, scale.expr))
 
 
-def unhex(arg: Expr) -> Expr:
+def unhex(col: Expr) -> Expr:
     r"""Spark ``unhex``: convert hexadecimal string to binary.
 
     Examples:
@@ -1154,11 +1154,14 @@ def unhex(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         b'\xff'
     """
-    return Expr(_f.unhex(arg.expr))
+    return Expr(_f.unhex(col.expr))
 
 
 def width_bucket(
-    value: Expr, min_value: Expr, max_value: Expr, num_buckets: Expr
+    v: Expr,
+    min: Expr,
+    max: Expr,
+    numBucket: Expr,  # noqa: N803
 ) -> Expr:
     """Spark ``width_bucket``: bucket number for ``value`` in equi-width histogram.
 
@@ -1173,12 +1176,10 @@ def width_bucket(
         >>> r.collect_column("v")[0].as_py()
         3
     """
-    return Expr(
-        _f.width_bucket(value.expr, min_value.expr, max_value.expr, num_buckets.expr)
-    )
+    return Expr(_f.width_bucket(v.expr, min.expr, max.expr, numBucket.expr))
 
 
-def csc(arg: Expr) -> Expr:
+def csc(col: Expr) -> Expr:
     """Spark ``csc``: cosecant.
 
     Examples:
@@ -1188,10 +1189,10 @@ def csc(arg: Expr) -> Expr:
         >>> f"{r.collect_column('v')[0].as_py():.4f}"
         '1.0000'
     """
-    return Expr(_f.csc(arg.expr))
+    return Expr(_f.csc(col.expr))
 
 
-def sec(arg: Expr) -> Expr:
+def sec(col: Expr) -> Expr:
     """Spark ``sec``: secant.
 
     Examples:
@@ -1201,10 +1202,10 @@ def sec(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1.0
     """
-    return Expr(_f.sec(arg.expr))
+    return Expr(_f.sec(col.expr))
 
 
-def negative(arg: Expr) -> Expr:
+def negative(col: Expr) -> Expr:
     """Spark ``negative``: unary minus.
 
     Examples:
@@ -1214,10 +1215,10 @@ def negative(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         -3
     """
-    return Expr(_f.negative(arg.expr))
+    return Expr(_f.negative(col.expr))
 
 
-def bin(arg: Expr) -> Expr:
+def bin(col: Expr) -> Expr:
     """Spark ``bin``: binary string representation of a long.
 
     Examples:
@@ -1227,7 +1228,7 @@ def bin(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         '111'
     """
-    return Expr(_f.bin(arg.expr))
+    return Expr(_f.bin(col.expr))
 
 
 # ---------------------------------------------------------------------------
@@ -1235,7 +1236,7 @@ def bin(arg: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def ascii(arg: Expr) -> Expr:
+def ascii(col: Expr) -> Expr:
     """Spark ``ascii``: code point of the first character.
 
     Examples:
@@ -1245,10 +1246,10 @@ def ascii(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         65
     """
-    return Expr(_f.ascii(arg.expr))
+    return Expr(_f.ascii(col.expr))
 
 
-def base64(bin_input: Expr) -> Expr:
+def base64(col: Expr) -> Expr:
     """Spark ``base64``: encode binary as a base64 string.
 
     Examples:
@@ -1258,10 +1259,10 @@ def base64(bin_input: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'aGk='
     """
-    return Expr(_f.base64(bin_input.expr))
+    return Expr(_f.base64(col.expr))
 
 
-def char(arg: Expr) -> Expr:
+def char(col: Expr) -> Expr:
     """Spark ``char``: ASCII character for a code point (mod 256).
 
     Examples:
@@ -1271,10 +1272,10 @@ def char(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'A'
     """
-    return Expr(_f.char(arg.expr))
+    return Expr(_f.char(col.expr))
 
 
-def concat(*args: Expr) -> Expr:
+def concat(*cols: Expr) -> Expr:
     """Spark ``concat``: concatenates strings; NULL if any input is NULL.
 
     Examples:
@@ -1285,10 +1286,10 @@ def concat(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'ab'
     """
-    return Expr(_f.concat(*[a.expr for a in args]))
+    return Expr(_f.concat(*[c.expr for c in cols]))
 
 
-def elt(*args: Expr) -> Expr:
+def elt(*inputs: Expr) -> Expr:
     """Spark ``elt``: returns the n-th input (1-indexed).
 
     Examples:
@@ -1302,7 +1303,7 @@ def elt(*args: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'b'
     """
-    return Expr(_f.elt(*[a.expr for a in args]))
+    return Expr(_f.elt(*[i.expr for i in inputs]))
 
 
 def ilike(string: Expr, pattern: Expr) -> Expr:
@@ -1319,7 +1320,7 @@ def ilike(string: Expr, pattern: Expr) -> Expr:
     return Expr(_f.ilike(string.expr, pattern.expr))
 
 
-def length(arg: Expr) -> Expr:
+def length(col: Expr) -> Expr:
     """Spark ``length``: character length of a string, or byte length of binary.
 
     Examples:
@@ -1329,7 +1330,7 @@ def length(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         5
     """
-    return Expr(_f.length(arg.expr))
+    return Expr(_f.length(col.expr))
 
 
 def like(string: Expr, pattern: Expr) -> Expr:
@@ -1346,7 +1347,7 @@ def like(string: Expr, pattern: Expr) -> Expr:
     return Expr(_f.like(string.expr, pattern.expr))
 
 
-def luhn_check(arg: Expr) -> Expr:
+def luhn_check(col: Expr) -> Expr:
     """Spark ``luhn_check``: true if the digit string passes the Luhn check.
 
     Examples:
@@ -1360,7 +1361,7 @@ def luhn_check(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.luhn_check(arg.expr))
+    return Expr(_f.luhn_check(col.expr))
 
 
 def format_string(*args: Expr) -> Expr:
@@ -1382,7 +1383,7 @@ def format_string(*args: Expr) -> Expr:
     return Expr(_f.format_string(*[a.expr for a in args]))
 
 
-def space(arg: Expr) -> Expr:
+def space(col: Expr) -> Expr:
     """Spark ``space``: string of n spaces.
 
     Examples:
@@ -1397,10 +1398,10 @@ def space(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         '   '
     """
-    return Expr(_f.space(arg.expr))
+    return Expr(_f.space(col.expr))
 
 
-def substring(string: Expr, pos: Expr, length: Expr) -> Expr:
+def substring(str: Expr, pos: Expr, len: Expr) -> Expr:
     """Spark ``substring``: 1-indexed substring starting at ``pos`` of given ``length``.
 
     Negative ``pos`` counts from the end.
@@ -1416,10 +1417,10 @@ def substring(string: Expr, pos: Expr, length: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'hel'
     """
-    return Expr(_f.substring(string.expr, pos.expr, length.expr))
+    return Expr(_f.substring(str.expr, pos.expr, len.expr))
 
 
-def unbase64(arg: Expr) -> Expr:
+def unbase64(col: Expr) -> Expr:
     """Spark ``unbase64``: decode a base64 string to binary.
 
     Examples:
@@ -1430,10 +1431,10 @@ def unbase64(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         b'hi'
     """
-    return Expr(_f.unbase64(arg.expr))
+    return Expr(_f.unbase64(col.expr))
 
 
-def soundex(arg: Expr) -> Expr:
+def soundex(col: Expr) -> Expr:
     """Spark ``soundex``: Soundex phonetic code.
 
     Examples:
@@ -1443,10 +1444,10 @@ def soundex(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'R163'
     """
-    return Expr(_f.soundex(arg.expr))
+    return Expr(_f.soundex(col.expr))
 
 
-def is_valid_utf8(arg: Expr) -> Expr:
+def is_valid_utf8(str: Expr) -> Expr:
     """Spark ``is_valid_utf8``: true if the string is valid UTF-8.
 
     Examples:
@@ -1457,10 +1458,10 @@ def is_valid_utf8(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.is_valid_utf8(arg.expr))
+    return Expr(_f.is_valid_utf8(str.expr))
 
 
-def make_valid_utf8(arg: Expr) -> Expr:
+def make_valid_utf8(str: Expr) -> Expr:
     """Spark ``make_valid_utf8``: replace invalid UTF-8 bytes with U+FFFD.
 
     Examples:
@@ -1471,7 +1472,7 @@ def make_valid_utf8(arg: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         'hello'
     """
-    return Expr(_f.make_valid_utf8(arg.expr))
+    return Expr(_f.make_valid_utf8(str.expr))
 
 
 # ---------------------------------------------------------------------------
