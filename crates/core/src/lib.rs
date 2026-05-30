@@ -48,6 +48,8 @@ pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod pyarrow_util;
 mod record_batch;
+#[allow(clippy::borrow_deref_ref)]
+mod spark_functions;
 pub mod sql;
 pub mod store;
 pub mod table;
@@ -123,6 +125,10 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;
     functions::init_module(&funcs)?;
+    // Spark-compatible functions live under `functions.spark`.
+    let spark_funcs = PyModule::new(py, "spark")?;
+    spark_functions::init_module(&spark_funcs)?;
+    funcs.add_submodule(&spark_funcs)?;
     m.add_submodule(&funcs)?;
 
     let store = PyModule::new(py, "object_store")?;

@@ -48,6 +48,7 @@ datafusion-catalog = { version = "54", default-features = false }
 datafusion-common = { version = "54", default-features = false }
 datafusion-functions-aggregate = { version = "54" }
 datafusion-functions-window = { version = "54" }
+datafusion-spark = { version = "54" }
 datafusion-expr = { version = "54" }
 prost = "0.14.3"
 serde_json = "1"
@@ -79,4 +80,5 @@ datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "1321
 datafusion-common = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
 datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
 datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
+datafusion-spark = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }
 datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "1321d60cc37ee487d1e7ce7f501357c3236b2542" }

@@ -21,6 +21,12 @@ Functions
 DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
 In here we will cover some of the more popular use cases. If you want to view all the functions go to the :py:mod:`Functions <datafusion.functions>` API Reference.
 
+.. note::
+
+   For Apache Spark-compatible versions of these functions (with Spark
+   NULL-propagation, 1-indexed substrings, HALF_UP rounding, etc.), see
+   :doc:`spark-functions`.
+
 We'll use the pokemon dataset in the following examples.
 
 .. ipython:: python

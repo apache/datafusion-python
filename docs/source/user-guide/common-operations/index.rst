@@ -29,6 +29,7 @@ The contents of this section are designed to guide a new user through how to use
    expressions
    joins
    functions
+   spark-functions
    aggregations
    windows
    udf-and-udfa

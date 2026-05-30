@@ -1059,6 +1059,21 @@ impl PySessionContext {
         Ok(())
     }
 
+    /// Register all `datafusion-spark` UDFs/UDAFs/UDWFs, overriding any built-in
+    /// DataFusion functions of the same name with their Spark-semantics version.
+    pub fn enable_spark_functions(&self) -> PyResult<()> {
+        for udf in datafusion_spark::all_default_scalar_functions() {
+            self.ctx.register_udf((*udf).clone());
+        }
+        for udaf in datafusion_spark::all_default_aggregate_functions() {
+            self.ctx.register_udaf((*udaf).clone());
+        }
+        for udwf in datafusion_spark::all_default_window_functions() {
+            self.ctx.register_udwf((*udwf).clone());
+        }
+        Ok(())
+    }
+
     pub fn deregister_udaf(&self, name: &str) {
         self.ctx.deregister_udaf(name);
     }

@@ -55,6 +55,7 @@ from datafusion.expr import (
     sort_list_to_raw_sort_list,
     sort_or_default,
 )
+from datafusion.functions import spark
 
 __all__ = [
     "abs",
@@ -312,6 +313,7 @@ __all__ = [
     "signum",
     "sin",
     "sinh",
+    "spark",
     "split_part",
     "sqrt",
     "starts_with",
