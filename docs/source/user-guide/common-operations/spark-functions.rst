@@ -84,39 +84,9 @@ of the same name.
 The override applies for the lifetime of the session. To call DataFusion's
 built-in versions afterwards, create a fresh ``SessionContext``.
 
-Function Categories
--------------------
+Function Reference
+------------------
 
-The full list is available in the
-:py:mod:`API reference <datafusion.functions.spark>`. Highlights by
-category:
-
-- **String**: ``ascii``, ``base64``, ``char``, ``concat``, ``elt``,
-  ``format_string``, ``ilike``, ``is_valid_utf8``, ``length``, ``like``,
-  ``luhn_check``, ``make_valid_utf8``, ``soundex``, ``space``,
-  ``substring``, ``unbase64``.
-- **Math**: ``abs``, ``bin``, ``ceil``, ``csc``, ``expm1``, ``factorial``,
-  ``floor``, ``hex``, ``modulus``, ``negative``, ``pmod``, ``rint``,
-  ``round``, ``sec``, ``unhex``, ``width_bucket``.
-- **Datetime**: ``add_months``, ``date_add``, ``date_diff``, ``date_part``,
-  ``date_sub``, ``date_trunc``, ``from_utc_timestamp``, ``hour``,
-  ``last_day``, ``make_dt_interval``, ``make_interval``, ``minute``,
-  ``next_day``, ``second``, ``time_trunc``, ``to_utc_timestamp``,
-  ``trunc``, ``unix_date``, ``unix_micros``, ``unix_millis``,
-  ``unix_seconds``.
-- **Hash**: ``crc32``, ``sha1``, ``sha2``, ``xxhash64``.
-- **Array**: ``array``, ``array_contains``, ``array_repeat``, ``shuffle``,
-  ``slice``.
-- **Aggregate**: ``avg``, ``collect_list``, ``collect_set``, ``try_sum``.
-- **Bitwise**: ``bit_count``, ``bit_get``, ``bitwise_not``, ``shiftleft``,
-  ``shiftright``, ``shiftrightunsigned``.
-- **Bitmap**: ``bitmap_bit_position``, ``bitmap_bucket_number``,
-  ``bitmap_count``.
-- **Collection**: ``size``.
-- **Conditional**: ``if_`` (exposed under that name because ``if`` is a
-  Python keyword).
-- **Conversion**: ``spark_cast``.
-- **JSON**: ``json_tuple``.
-- **Map**: ``map_from_arrays``, ``map_from_entries``, ``str_to_map``.
-- **URL**: ``parse_url``, ``try_parse_url``, ``url_decode``,
-  ``try_url_decode``, ``url_encode``.
+The full, up-to-date list of available Spark functions — with signatures
+and per-function docstrings — lives in the
+:py:mod:`datafusion.functions.spark` API reference.
