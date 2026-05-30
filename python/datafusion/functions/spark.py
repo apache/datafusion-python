@@ -261,10 +261,15 @@ def slice(array: Expr, start: Expr, length: Expr) -> Expr:
 
 
 def bitmap_count(arg: Expr) -> Expr:
-    """Spark ``bitmap_count``: number of set bits in a bitmap.
+    r"""Spark ``bitmap_count``: number of set bits in a bitmap.
 
     Examples:
-        >>> dfn.functions.spark.bitmap_count(dfn.col("b"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.bitmap_count(dfn.lit(b"\xff")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        8
     """
     return Expr(_f.bitmap_count(arg.expr))
 
@@ -273,7 +278,12 @@ def bitmap_bit_position(arg: Expr) -> Expr:
     """Spark ``bitmap_bit_position``: bit position for a child expression.
 
     Examples:
-        >>> dfn.functions.spark.bitmap_bit_position(dfn.col("b"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.bitmap_bit_position(dfn.lit(15)).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        14
     """
     return Expr(_f.bitmap_bit_position(arg.expr))
 
@@ -282,7 +292,12 @@ def bitmap_bucket_number(arg: Expr) -> Expr:
     """Spark ``bitmap_bucket_number``: bucket number for a child expression.
 
     Examples:
-        >>> dfn.functions.spark.bitmap_bucket_number(dfn.col("b"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.bitmap_bucket_number(dfn.lit(15)).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1
     """
     return Expr(_f.bitmap_bucket_number(arg.expr))
 
@@ -423,10 +438,18 @@ def spark_cast(arg: Expr, type_str: Expr) -> Expr:
 
     Uses Spark cast semantics (e.g. overflow returns NULL, not error).
 
+    Currently only supports casting numeric values to ``"timestamp"``.
+
     Examples:
-        >>> dfn.functions.spark.spark_cast(  # doctest: +SKIP
-        ...     dfn.col("x"), dfn.lit("string")
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.spark_cast(
+        ...         dfn.lit(1579098645), dfn.lit("timestamp")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.datetime(2020, 1, 15, 14, 30, 45, tzinfo=<UTC>)
     """
     return Expr(_f.spark_cast(arg.expr, type_str.expr))
 
@@ -440,7 +463,18 @@ def add_months(start_date: Expr, num_months: Expr) -> Expr:
     """Spark ``add_months``: date + N months.
 
     Examples:
-        >>> dfn.functions.spark.add_months(dfn.col("d"), dfn.lit(1))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.add_months(
+        ...         d, dfn.lit(pa.scalar(2, type=pa.int32()))
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 3, 15)
     """
     return Expr(_f.add_months(start_date.expr, num_months.expr))
 
@@ -449,7 +483,18 @@ def date_add(start_date: Expr, days: Expr) -> Expr:
     """Spark ``date_add``: date + N days.
 
     Examples:
-        >>> dfn.functions.spark.date_add(dfn.col("d"), dfn.lit(7))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.date_add(
+        ...         d, dfn.lit(pa.scalar(5, type=pa.int32()))
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 1, 20)
     """
     return Expr(_f.date_add(start_date.expr, days.expr))
 
@@ -458,7 +503,18 @@ def date_sub(start_date: Expr, days: Expr) -> Expr:
     """Spark ``date_sub``: date - N days.
 
     Examples:
-        >>> dfn.functions.spark.date_sub(dfn.col("d"), dfn.lit(7))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.date_sub(
+        ...         d, dfn.lit(pa.scalar(5, type=pa.int32()))
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 1, 10)
     """
     return Expr(_f.date_sub(start_date.expr, days.expr))
 
@@ -467,7 +523,16 @@ def hour(arg: Expr) -> Expr:
     """Spark ``hour``: extract hour component of a timestamp.
 
     Examples:
-        >>> dfn.functions.spark.hour(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.hour(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        14
     """
     return Expr(_f.hour(arg.expr))
 
@@ -476,7 +541,16 @@ def minute(arg: Expr) -> Expr:
     """Spark ``minute``: extract minute component of a timestamp.
 
     Examples:
-        >>> dfn.functions.spark.minute(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.minute(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        30
     """
     return Expr(_f.minute(arg.expr))
 
@@ -485,7 +559,16 @@ def second(arg: Expr) -> Expr:
     """Spark ``second``: extract second component of a timestamp.
 
     Examples:
-        >>> dfn.functions.spark.second(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.second(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        45
     """
     return Expr(_f.second(arg.expr))
 
@@ -494,7 +577,14 @@ def last_day(arg: Expr) -> Expr:
     """Spark ``last_day``: last day of the month containing the date.
 
     Examples:
-        >>> dfn.functions.spark.last_day(dfn.col("d"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(dfn.functions.spark.last_day(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 1, 31)
     """
     return Expr(_f.last_day(arg.expr))
 
@@ -503,8 +593,17 @@ def make_dt_interval(days: Expr, hours: Expr, mins: Expr, secs: Expr) -> Expr:
     """Spark ``make_dt_interval``: day-time interval from components.
 
     Examples:
-        >>> dfn.functions.spark.make_dt_interval(
-        ...     dfn.lit(1), dfn.lit(2), dfn.lit(3), dfn.lit(4))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.make_dt_interval(
+        ...         i32(1), i32(2), i32(3), dfn.lit(4.5)
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.timedelta(days=1, seconds=7384, microseconds=500000)
     """
     return Expr(_f.make_dt_interval(days.expr, hours.expr, mins.expr, secs.expr))
 
@@ -521,9 +620,18 @@ def make_interval(
     """Spark ``make_interval``: interval from year/month/week/day/hour/min/sec parts.
 
     Examples:
-        >>> dfn.functions.spark.make_interval(
-        ...     dfn.lit(1), dfn.lit(0), dfn.lit(0),
-        ...     dfn.lit(0), dfn.lit(0), dfn.lit(0), dfn.lit(0))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.make_interval(
+        ...         i32(1), i32(0), i32(0), i32(0),
+        ...         i32(0), i32(0), dfn.lit(0.0)
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py().months
+        12
     """
     return Expr(
         _f.make_interval(
@@ -542,9 +650,15 @@ def next_day(start_date: Expr, day_of_week: Expr) -> Expr:
     """Spark ``next_day``: first date after ``start_date`` named ``day_of_week``.
 
     Examples:
-        >>> dfn.functions.spark.next_day(  # doctest: +SKIP
-        ...     dfn.col("d"), dfn.lit("Sunday")
-        ... )
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.next_day(d, dfn.lit("Mon")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 1, 20)
     """
     return Expr(_f.next_day(start_date.expr, day_of_week.expr))
 
@@ -553,7 +667,15 @@ def date_diff(end_date: Expr, start_date: Expr) -> Expr:
     """Spark ``date_diff``: number of days from ``start_date`` to ``end_date``.
 
     Examples:
-        >>> dfn.functions.spark.date_diff(dfn.col("e"), dfn.col("s"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> end = dfn.lit(pa.scalar(date(2020, 1, 20), type=pa.date32()))
+        >>> r = df.select(dfn.functions.spark.date_diff(end, d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        5
     """
     return Expr(_f.date_diff(end_date.expr, start_date.expr))
 
@@ -562,9 +684,17 @@ def date_trunc(fmt: Expr, ts: Expr) -> Expr:
     """Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
 
     Examples:
-        >>> dfn.functions.spark.date_trunc(  # doctest: +SKIP
-        ...     dfn.lit("year"), dfn.col("ts")
-        ... )
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(
+        ...     dfn.functions.spark.date_trunc(dfn.lit("month"), ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.datetime(2020, 1, 1, 0, 0)
     """
     return Expr(_f.date_trunc(fmt.expr, ts.expr))
 
@@ -573,9 +703,15 @@ def time_trunc(fmt: Expr, t: Expr) -> Expr:
     """Spark ``time_trunc``: truncate time value to unit ``fmt``.
 
     Examples:
-        >>> dfn.functions.spark.time_trunc(  # doctest: +SKIP
-        ...     dfn.lit("hour"), dfn.col("t")
-        ... )
+        >>> import pyarrow as pa
+        >>> from datetime import time
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> t = dfn.lit(pa.scalar(time(14, 30, 45), type=pa.time64('us')))
+        >>> r = df.select(
+        ...     dfn.functions.spark.time_trunc(dfn.lit("hour"), t).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.time(14, 0)
     """
     return Expr(_f.time_trunc(fmt.expr, t.expr))
 
@@ -584,7 +720,15 @@ def trunc(dt: Expr, fmt: Expr) -> Expr:
     """Spark ``trunc``: truncate date to unit ``fmt``.
 
     Examples:
-        >>> dfn.functions.spark.trunc(dfn.col("d"), dfn.lit("YEAR"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.trunc(d, dfn.lit("YEAR")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        datetime.date(2020, 1, 1)
     """
     return Expr(_f.trunc(dt.expr, fmt.expr))
 
@@ -593,9 +737,15 @@ def date_part(field: Expr, source: Expr) -> Expr:
     """Spark ``date_part``: extract ``field`` from a date/time/timestamp.
 
     Examples:
-        >>> dfn.functions.spark.date_part(  # doctest: +SKIP
-        ...     dfn.lit("year"), dfn.col("d")
-        ... )
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(
+        ...     dfn.functions.spark.date_part(dfn.lit("year"), d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        2020
     """
     return Expr(_f.date_part(field.expr, source.expr))
 
@@ -604,9 +754,20 @@ def from_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
     """Spark ``from_utc_timestamp``: interpret ``ts`` as UTC, convert to ``tz``.
 
     Examples:
-        >>> dfn.functions.spark.from_utc_timestamp(  # doctest: +SKIP
-        ...     dfn.col("ts"), dfn.lit("PST")
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(
+        ...     dfn.functions.spark.from_utc_timestamp(
+        ...         ts, dfn.lit("UTC")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
     return Expr(_f.from_utc_timestamp(ts.expr, tz.expr))
 
@@ -615,9 +776,20 @@ def to_utc_timestamp(ts: Expr, tz: Expr) -> Expr:
     """Spark ``to_utc_timestamp``: interpret ``ts`` as ``tz``, convert to UTC.
 
     Examples:
-        >>> dfn.functions.spark.to_utc_timestamp(  # doctest: +SKIP
-        ...     dfn.col("ts"), dfn.lit("PST")
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(
+        ...     dfn.functions.spark.to_utc_timestamp(
+        ...         ts, dfn.lit("UTC")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
     return Expr(_f.to_utc_timestamp(ts.expr, tz.expr))
 
@@ -626,7 +798,14 @@ def unix_date(dt: Expr) -> Expr:
     """Spark ``unix_date``: days since 1970-01-01 for ``dt``.
 
     Examples:
-        >>> dfn.functions.spark.unix_date(dfn.col("d"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+        >>> r = df.select(dfn.functions.spark.unix_date(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        18276
     """
     return Expr(_f.unix_date(dt.expr))
 
@@ -635,7 +814,16 @@ def unix_micros(ts: Expr) -> Expr:
     """Spark ``unix_micros``: microseconds since epoch for ``ts``.
 
     Examples:
-        >>> dfn.functions.spark.unix_micros(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.unix_micros(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1579098645000000
     """
     return Expr(_f.unix_micros(ts.expr))
 
@@ -644,7 +832,16 @@ def unix_millis(ts: Expr) -> Expr:
     """Spark ``unix_millis``: milliseconds since epoch for ``ts``.
 
     Examples:
-        >>> dfn.functions.spark.unix_millis(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.unix_millis(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1579098645000
     """
     return Expr(_f.unix_millis(ts.expr))
 
@@ -653,7 +850,16 @@ def unix_seconds(ts: Expr) -> Expr:
     """Spark ``unix_seconds``: seconds since epoch for ``ts``.
 
     Examples:
-        >>> dfn.functions.spark.unix_seconds(dfn.col("ts"))  # doctest: +SKIP
+        >>> import pyarrow as pa
+        >>> from datetime import datetime
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> ts = dfn.lit(
+        ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+        ...               type=pa.timestamp('us')))
+        >>> r = df.select(dfn.functions.spark.unix_seconds(ts).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1579098645
     """
     return Expr(_f.unix_seconds(ts.expr))
 
@@ -707,7 +913,12 @@ def xxhash64(*args: Expr) -> Expr:
     """Spark ``xxhash64``: 64-bit xxHash of the arguments.
 
     Examples:
-        >>> dfn.functions.spark.xxhash64(dfn.col("s"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.xxhash64(dfn.lit("hello")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        -4367754540140381902
     """
     return Expr(_f.xxhash64(*[a.expr for a in args]))
 
@@ -721,9 +932,15 @@ def json_tuple(*args: Expr) -> Expr:
     """Spark ``json_tuple``: extract top-level fields from a JSON string.
 
     Examples:
-        >>> dfn.functions.spark.json_tuple(  # doctest: +SKIP
-        ...     dfn.col("j"), dfn.lit("a"), dfn.lit("b")
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.json_tuple(
+        ...         dfn.lit('{"a":1,"b":"x"}'), dfn.lit("a"), dfn.lit("b")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        {'c0': '1', 'c1': 'x'}
     """
     return Expr(_f.json_tuple(*[a.expr for a in args]))
 
@@ -737,9 +954,14 @@ def map_from_arrays(keys: Expr, values: Expr) -> Expr:
     """Spark ``map_from_arrays``: build a map from parallel key/value arrays.
 
     Examples:
-        >>> dfn.functions.spark.map_from_arrays(  # doctest: +SKIP
-        ...     dfn.col("k"), dfn.col("v")
-        ... )
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> keys = dfn.functions.spark.array(dfn.lit("a"), dfn.lit("b"))
+        >>> vals = dfn.functions.spark.array(dfn.lit(1), dfn.lit(2))
+        >>> r = df.select(
+        ...     dfn.functions.spark.map_from_arrays(keys, vals).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        [('a', 1), ('b', 2)]
     """
     return Expr(_f.map_from_arrays(keys.expr, values.expr))
 
@@ -748,7 +970,16 @@ def map_from_entries(arg: Expr) -> Expr:
     """Spark ``map_from_entries``: build a map from an array of key/value structs.
 
     Examples:
-        >>> dfn.functions.spark.map_from_entries(dfn.col("entries"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.map_from_arrays(
+        ...         dfn.functions.spark.array(dfn.lit("a")),
+        ...         dfn.functions.spark.array(dfn.lit(1)),
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        [('a', 1)]
     """
     return Expr(_f.map_from_entries(arg.expr))
 
@@ -757,8 +988,15 @@ def str_to_map(text: Expr, pair_delim: Expr, key_value_delim: Expr) -> Expr:
     """Spark ``str_to_map``: split text into key/value pairs using delimiters.
 
     Examples:
-        >>> dfn.functions.spark.str_to_map(
-        ...     dfn.col("s"), dfn.lit(","), dfn.lit(":"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.str_to_map(
+        ...         dfn.lit("a:1,b:2"), dfn.lit(","), dfn.lit(":")
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        [('a', '1'), ('b', '2')]
     """
     return Expr(_f.str_to_map(text.expr, pair_delim.expr, key_value_delim.expr))
 
@@ -944,7 +1182,11 @@ def csc(arg: Expr) -> Expr:
     """Spark ``csc``: cosecant.
 
     Examples:
-        >>> dfn.functions.spark.csc(dfn.lit(1.0))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.csc(dfn.lit(1.5708)).alias("v"))
+        >>> f"{r.collect_column('v')[0].as_py():.4f}"
+        '1.0000'
     """
     return Expr(_f.csc(arg.expr))
 
@@ -953,7 +1195,11 @@ def sec(arg: Expr) -> Expr:
     """Spark ``sec``: secant.
 
     Examples:
-        >>> dfn.functions.spark.sec(dfn.lit(0.0))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.sec(dfn.lit(0.0)).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1.0
     """
     return Expr(_f.sec(arg.expr))
 
@@ -1006,7 +1252,11 @@ def base64(bin_input: Expr) -> Expr:
     """Spark ``base64``: encode binary as a base64 string.
 
     Examples:
-        >>> dfn.functions.spark.base64(dfn.col("b"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.base64(dfn.lit(b"hi")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'aGk='
     """
     return Expr(_f.base64(bin_input.expr))
 
@@ -1100,7 +1350,15 @@ def luhn_check(arg: Expr) -> Expr:
     """Spark ``luhn_check``: true if the digit string passes the Luhn check.
 
     Examples:
-        >>> dfn.functions.spark.luhn_check(dfn.col("card"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.luhn_check(
+        ...         dfn.lit("4111111111111111")
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        True
     """
     return Expr(_f.luhn_check(arg.expr))
 
@@ -1111,9 +1369,15 @@ def format_string(*args: Expr) -> Expr:
     First arg is the format, remaining args are values to substitute.
 
     Examples:
-        >>> dfn.functions.spark.format_string(  # doctest: +SKIP
-        ...     dfn.lit("%d/%d"), dfn.lit(1), dfn.lit(2)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.format_string(
+        ...         dfn.lit("%d-%s"), dfn.lit(42), dfn.lit("hi")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        '42-hi'
     """
     return Expr(_f.format_string(*[a.expr for a in args]))
 
@@ -1159,7 +1423,12 @@ def unbase64(arg: Expr) -> Expr:
     """Spark ``unbase64``: decode a base64 string to binary.
 
     Examples:
-        >>> dfn.functions.spark.unbase64(dfn.col("s"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.unbase64(dfn.lit("aGk=")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        b'hi'
     """
     return Expr(_f.unbase64(arg.expr))
 
@@ -1214,9 +1483,15 @@ def parse_url(*args: Expr) -> Expr:
     """Spark ``parse_url``: extract a part from a URL; errors on invalid URLs.
 
     Examples:
-        >>> dfn.functions.spark.parse_url(  # doctest: +SKIP
-        ...     dfn.col("u"), dfn.lit("HOST")
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.parse_url(
+        ...         dfn.lit("http://example.com/path?q=1"), dfn.lit("HOST")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        'example.com'
     """
     return Expr(_f.parse_url(*[a.expr for a in args]))
 
@@ -1225,9 +1500,15 @@ def try_parse_url(*args: Expr) -> Expr:
     """Spark ``try_parse_url``: like ``parse_url`` but returns NULL on invalid URLs.
 
     Examples:
-        >>> dfn.functions.spark.try_parse_url(  # doctest: +SKIP
-        ...     dfn.col("u"), dfn.lit("HOST")
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.try_parse_url(
+        ...         dfn.lit("http://example.com/"), dfn.lit("HOST")
+        ...     ).alias("v")
         ... )
+        >>> r.collect_column("v")[0].as_py()
+        'example.com'
     """
     return Expr(_f.try_parse_url(*[a.expr for a in args]))
 
@@ -1236,7 +1517,12 @@ def url_decode(*args: Expr) -> Expr:
     """Spark ``url_decode``: decode an application/x-www-form-urlencoded string.
 
     Examples:
-        >>> dfn.functions.spark.url_decode(dfn.col("s"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.url_decode(dfn.lit("a%20b")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'a b'
     """
     return Expr(_f.url_decode(*[a.expr for a in args]))
 
@@ -1245,7 +1531,12 @@ def try_url_decode(*args: Expr) -> Expr:
     """Spark ``try_url_decode``: like ``url_decode``; returns NULL on invalid input.
 
     Examples:
-        >>> dfn.functions.spark.try_url_decode(dfn.col("s"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.try_url_decode(dfn.lit("a%20b")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'a b'
     """
     return Expr(_f.try_url_decode(*[a.expr for a in args]))
 
@@ -1254,7 +1545,12 @@ def url_encode(*args: Expr) -> Expr:
     """Spark ``url_encode``: encode a string in application/x-www-form-urlencoded.
 
     Examples:
-        >>> dfn.functions.spark.url_encode(dfn.col("s"))  # doctest: +SKIP
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.url_encode(dfn.lit("a b")).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'a+b'
     """
     return Expr(_f.url_encode(*[a.expr for a in args]))
 
