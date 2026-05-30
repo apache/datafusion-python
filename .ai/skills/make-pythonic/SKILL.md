@@ -29,9 +29,30 @@ You are improving the datafusion-python API to feel more natural to Python users
 
 **Core principle:** A Python user should be able to write `split_part(col("a"), ",", 2)` instead of `split_part(col("a"), lit(","), lit(2))` when the arguments are contextually obvious literals.
 
+## Scope: `functions` vs `functions.spark`
+
+This skill targets the **default `datafusion.functions` namespace** (file:
+`python/datafusion/functions/__init__.py`). Do **not** apply pythonic
+coercion to `python/datafusion/functions/spark.py` — that namespace is a
+deliberate mirror of `pyspark.sql.functions`, so its parameter names,
+order, and types must match pyspark exactly. Adding `Expr | int` style
+unions there would diverge from the pyspark contract callers rely on.
+
+Two exceptions where pythonic-style additions in `functions.spark` are
+still on-brand:
+- **Pyspark itself accepts a native type.** Pyspark's `format_string`
+  takes `format: str | Column`; the spark wrapper already auto-promotes a
+  plain `str` to a literal — keep parity.
+- **Strictly additive optional kwargs** that pyspark also has (e.g.
+  `like(escapeChar=...)`). These belong in the [PYSPARK_ALIGNMENT_PLAN.md]
+  follow-up PRs, not in a make-pythonic pass.
+
+If the user explicitly scopes to "spark", validate parity with pyspark
+rather than applying generic coercion.
+
 ## How to Identify Candidates
 
-The user may specify a scope via `$ARGUMENTS`. If no scope is given or "all" is specified, audit all functions in `python/datafusion/functions.py`.
+The user may specify a scope via `$ARGUMENTS`. If no scope is given or "all" is specified, audit all functions in `python/datafusion/functions/__init__.py`.
 
 For each function, determine if any parameter can accept native Python types by evaluating **two complementary signals**:
 
@@ -309,7 +330,7 @@ For each function being updated:
 
 ### Step 1: Analyze the Function
 
-1. Read the current Python function signature in `python/datafusion/functions.py`
+1. Read the current Python function signature in `python/datafusion/functions/__init__.py`
 2. Read the Rust binding in `crates/core/src/functions.rs`
 3. Optionally check the upstream DataFusion docs for the function
 4. Determine which category (A, B, or C) applies to each parameter
@@ -346,7 +367,7 @@ dfn.functions.left(dfn.col("a"), 3)
 
 After making changes, run the doctests to verify:
 ```bash
-python -m pytest --doctest-modules python/datafusion/functions.py -v
+python -m pytest --doctest-modules python/datafusion/functions/__init__.py -v
 ```
 
 ## Coercion Helper Pattern

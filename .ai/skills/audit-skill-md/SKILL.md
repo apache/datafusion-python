@@ -48,7 +48,8 @@ exposed at the package root), include it.
 | `SessionContext` | `python/datafusion/context.py` | "Data Loading" |
 | `DataFrame` | `python/datafusion/dataframe.py` | "DataFrame Operations Quick Reference", "Executing and Collecting Results", "Idiomatic Patterns" |
 | `Expr` | `python/datafusion/expr.py` | "Expression Building", "Common Pitfalls" |
-| `functions` | `python/datafusion/functions.py` | "Available Functions (Categorized)", scattered uses throughout |
+| `functions` | `python/datafusion/functions/__init__.py` | "Available Functions (Categorized)", scattered uses throughout |
+| `functions.spark` | `python/datafusion/functions/spark.py` | "Available Functions (Categorized)" → "Spark-Compatible Functions" subsection |
 | Top-level helpers (`col`, `lit`, `WindowFrame`, ...) | `python/datafusion/__init__.py` | "Import Conventions", "Core Abstractions" |
 
 ## Scope argument
@@ -61,7 +62,8 @@ is given or `all` is specified, audit every area.
 | `session-context` | `SessionContext` methods and the "Data Loading" section |
 | `dataframe` | `DataFrame` methods and the operations / executing / patterns sections |
 | `expr` | `Expr` methods/operators and the "Expression Building" section |
-| `functions` | `functions.py` `__all__` and the "Available Functions (Categorized)" section |
+| `functions` | `functions/__init__.py` `__all__` and the "Available Functions (Categorized)" section |
+| `spark-functions` | `functions/spark.py` `__all__`, the "Spark-Compatible Functions" subsection, and the divergent-semantics table |
 | `patterns` | "Idiomatic Patterns" section — confirm patterns still match recommended style |
 | `pitfalls` | "Common Pitfalls" — confirm each pitfall still reproduces, drop ones fixed upstream |
 | `version-notes` | Cross-check version annotations (see below) |
@@ -123,7 +125,11 @@ For each function name, method name, or import shown in `SKILL.md`, verify it
 still exists in the current API:
 
 - Function names mentioned in prose or in the categorized list should appear
-  in `python/datafusion/functions.py`'s `__all__`.
+  in `python/datafusion/functions/__init__.py`'s `__all__`.
+- Spark function names mentioned in the "Spark-Compatible Functions"
+  subsection should appear in `python/datafusion/functions/spark.py`'s
+  `__all__`. Also confirm the divergent-semantics table still matches the
+  current spark vs. main signatures.
 - Method calls in code blocks should resolve against the current class.
 - Imports (`from datafusion import ...`) should succeed against the current
   `__init__.py`.

@@ -26,12 +26,14 @@ can interoperate with DataFusion.
 | `DataFrame` | Lazy query builder. Each method returns a new DataFrame. | Returned by context methods |
 | `Expr` | Expression tree node (column ref, literal, function call, ...). | `from datafusion import col, lit` |
 | `functions` | 290+ built-in scalar, aggregate, and window functions. | `from datafusion import functions as F` |
+| `functions.spark` | PySpark-compatible function surface (parameter names match `pyspark.sql.functions`). | `from datafusion.functions import spark` |
 
 ## Import Conventions
 
 ```python
 from datafusion import SessionContext, col, lit
 from datafusion import functions as F
+from datafusion.functions import spark   # only when porting pyspark code
 ```
 
 ## Data Loading
@@ -762,3 +764,58 @@ F.left(col("c_phone"), lit(2))                # prefix shortcut
 
 **Other**: `in_list`, `order_by`, `alias`, `col`, `encode`, `decode`,
 `to_hex`, `to_char`, `uuid`, `version`, `bit_length`, `octet_length`
+
+### Spark-Compatible Functions
+
+A separate `datafusion.functions.spark` namespace mirrors the
+`pyspark.sql.functions` API for callers porting code from PySpark.
+
+```python
+from datafusion.functions import spark
+```
+
+Use it for DataFrame work; for SQL, register the Spark UDFs first:
+
+```python
+ctx = SessionContext()
+ctx.enable_spark_functions()                  # makes Spark UDFs visible to SQL
+ctx.sql("SELECT sha2('hello', 256)").show()
+```
+
+Coverage spans aggregate (`avg`, `try_sum`, `collect_list`, `collect_set`),
+array (`array`, `array_contains`, `array_repeat`, `shuffle`, `slice`,
+`size`), bitmap, bitwise (`shiftleft`, `shiftright`, `shiftrightunsigned`,
+`bit_get`, `bit_count`, `bitwise_not`), datetime (`add_months`,
+`date_add`, `date_sub`, `date_diff`, `date_trunc`, `time_trunc`, `trunc`,
+`next_day`, `from_utc_timestamp`, `to_utc_timestamp`, `unix_date`,
+`unix_micros`/`millis`/`seconds`, `make_interval`, `make_dt_interval`),
+hash (`crc32`, `sha1`, `sha2`, `xxhash64`), JSON (`json_tuple`),
+map (`map_from_arrays`, `map_from_entries`, `str_to_map`), math
+(`abs`, `ceil`, `floor`, `round`, `expm1`, `factorial`, `hex`,
+`modulus`/`pmod`, `rint`, `unhex`, `width_bucket`, `csc`/`sec`,
+`negative`, `bin`), string (`ascii`, `base64`/`unbase64`, `char`,
+`concat`, `elt`, `like`/`ilike`, `length`, `luhn_check`, `format_string`,
+`space`, `substring`, `soundex`, `is_valid_utf8`/`make_valid_utf8`),
+URL (`parse_url`/`try_parse_url`, `url_decode`/`url_encode`,
+`try_url_decode`), and conditional (`if_`, `spark_cast`).
+
+The full list is in the API reference; see
+`python/datafusion/functions/spark.py`.
+
+**Semantic divergences vs the default namespace.** Functions that exist in
+both `functions` and `functions.spark` may behave differently:
+
+| Function | Default `functions` | `functions.spark` |
+|---|---|---|
+| `concat` | NULL inputs treated as empty | NULL inputs propagate to NULL |
+| `round` | HALF_EVEN (banker's) | HALF_UP |
+| `trunc` | Numeric truncation | Date truncation |
+| `substring` | 1-indexed | 1-indexed (parity) |
+
+Pick the namespace whose semantics match your intent — both stay imported
+side by side; `enable_spark_functions()` only affects SQL.
+
+**Parameter names match pyspark exactly.** The spark namespace uses
+pyspark parameter names (`col`, `str`, `numBits`, `partToExtract`, ...) so
+you can paste pyspark code and keep keyword arguments working. The default
+namespace keeps DataFusion's parameter names.

@@ -209,18 +209,58 @@ These upstream FFI types have been reviewed and do not need to be independently 
    - FFI example in `examples/datafusion-ffi-example/`
    - Type appears in union type hints where accepted
 
-### 8. `__all__` Hygiene (functions.py)
+### 8. Spark-Compatible Functions (`datafusion-spark` crate)
+
+**Upstream source of truth:**
+- Crate source: https://github.com/apache/datafusion/tree/main/datafusion/spark/src
+- Rust docs: https://docs.rs/datafusion-spark/latest/datafusion_spark/
+
+**Where they are exposed in this project:**
+- Python API: `python/datafusion/functions/spark.py` — each function wraps
+  a call to `datafusion._internal.functions.spark`; the public surface is
+  the module's `__all__` list.
+- Rust bindings: `crates/core/src/spark_functions.rs` — `#[pyfunction]`
+  definitions registered via `init_module()` and re-exported under
+  `datafusion._internal.functions.spark`.
+
+**Coverage policy:** The spark namespace mirrors
+`pyspark.sql.functions` parameter names and shapes exactly so pyspark
+callers can paste code unchanged. Extras over pyspark are permitted as
+long as positional pyspark calls still work — for example, the spark
+`avg` / `try_sum` / `collect_list` / `collect_set` retain the
+`distinct`/`filter`/`order_by`/`null_treatment` kwargs from the main
+namespace while pyspark's single-positional form continues to work.
+
+**How to check:**
+1. Fetch the upstream `datafusion-spark` function list from the crate
+   source under `datafusion/spark/src/function/` (each subdirectory is a
+   category: `string/`, `math/`, `datetime/`, etc.). The crate's
+   `function.rs` collects all `ScalarUDF` factories.
+2. Cross-reference against `pyspark.sql.functions` for the public-facing
+   shape — pyspark is the contract this namespace is matching.
+3. Compare against the functions listed in
+   `python/datafusion/functions/spark.py`'s `__all__`. A function is
+   covered if it exists in the Python `spark` namespace, even if it
+   aliases another function's Rust binding.
+4. Report functions that are missing from the Python spark namespace.
+
+**Cross-cutting reference:** The longer-form roadmap for spark coverage
+lives in `PYSPARK_ALIGNMENT_PLAN.md` (root of repo). Use it as the source
+of truth for which gaps are intentionally deferred vs. ready to land.
+
+### 9. `__all__` Hygiene (functions.py and functions/spark.py)
 
 Independent of upstream parity, also flag public `def` symbols in
-`python/datafusion/functions.py` that are missing from the module's
-`__all__`. These are functions a user can call but that do not show up in
+`python/datafusion/functions.py` **and** `python/datafusion/functions/spark.py`
+that are missing from that file's `__all__`. These are functions a user
+can call but that do not show up in
 `from datafusion.functions import *`, in tab-completion against the
 namespace, or in generated API docs — typically an oversight rather than
 an intentional omission.
 
 **How to check:**
-1. Grep for `^def ([a-z_][a-z0-9_]*)\(` in `python/datafusion/functions.py`
-   to enumerate every public function definition.
+1. Grep for `^def ([a-z_][a-z0-9_]*)\(` in each file to enumerate every
+   public function definition.
 2. Read the `__all__` list at the top of the same file.
 3. Report any function in (1) that is not in (2). Skip private helpers
    (names starting with `_`).
