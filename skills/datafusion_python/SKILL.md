@@ -782,25 +782,18 @@ ctx.enable_spark_functions()                  # makes Spark UDFs visible to SQL
 ctx.sql("SELECT sha2('hello', 256)").show()
 ```
 
-Coverage spans aggregate (`avg`, `try_sum`, `collect_list`, `collect_set`),
-array (`array`, `array_contains`, `array_repeat`, `shuffle`, `slice`,
-`size`), bitmap, bitwise (`shiftleft`, `shiftright`, `shiftrightunsigned`,
-`bit_get`, `bit_count`, `bitwise_not`), datetime (`add_months`,
-`date_add`, `date_sub`, `date_diff`, `date_trunc`, `time_trunc`, `trunc`,
-`next_day`, `from_utc_timestamp`, `to_utc_timestamp`, `unix_date`,
-`unix_micros`/`millis`/`seconds`, `make_interval`, `make_dt_interval`),
-hash (`crc32`, `sha1`, `sha2`, `xxhash64`), JSON (`json_tuple`),
-map (`map_from_arrays`, `map_from_entries`, `str_to_map`), math
-(`abs`, `ceil`, `floor`, `round`, `expm1`, `factorial`, `hex`,
-`modulus`/`pmod`, `rint`, `unhex`, `width_bucket`, `csc`/`sec`,
-`negative`, `bin`), string (`ascii`, `base64`/`unbase64`, `char`,
-`concat`, `elt`, `like`/`ilike`, `length`, `luhn_check`, `format_string`,
-`space`, `substring`, `soundex`, `is_valid_utf8`/`make_valid_utf8`),
-URL (`parse_url`/`try_parse_url`, `url_decode`/`url_encode`,
-`try_url_decode`), and conditional (`if_`, `spark_cast`).
+Coverage spans aggregate, array, bitmap, bitwise, datetime, hash, JSON,
+map, math, string, URL, and conditional categories. The authoritative
+list of what is currently exposed is the `__all__` in
+`python/datafusion/functions/spark.py`:
 
-The full list is in the API reference; see
-`python/datafusion/functions/spark.py`.
+```bash
+python -c "from datafusion.functions import spark; print(sorted(spark.__all__))"
+```
+
+When you need to know whether a specific pyspark function is available,
+check `__all__` rather than this skill — the list there moves with the
+code; any enumeration here would drift.
 
 **Semantic divergences vs the default namespace.** Functions that exist in
 both `functions` and `functions.spark` may behave differently:
