@@ -459,8 +459,8 @@ def spark_cast(arg: Expr, type_str: Expr) -> Expr:
         ...         dfn.lit(1579098645), dfn.lit("timestamp")
         ...     ).alias("v")
         ... )
-        >>> r.collect_column("v")[0].as_py()
-        datetime.datetime(2020, 1, 15, 14, 30, 45, tzinfo=<UTC>)
+        >>> r.collect_column("v")[0].as_py().isoformat()
+        '2020-01-15T14:30:45+00:00'
     """
     return Expr(_f.spark_cast(arg.expr, type_str.expr))
 
