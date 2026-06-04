@@ -607,7 +607,12 @@ expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
 expr_fn!(arrow_cast, arg_1 datatype);
+expr_fn!(arrow_try_cast, arg_1 datatype);
+expr_fn!(arrow_field, arg_1);
+expr_fn!(cast_to_type, arg_1 reference);
+expr_fn!(try_cast_to_type, arg_1 reference);
 expr_fn_vec!(arrow_metadata);
+expr_fn_vec!(with_metadata);
 expr_fn!(union_tag, arg1);
 expr_fn!(random);
 
@@ -962,7 +967,12 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(arrow_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_try_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_field))?;
+    m.add_wrapped(wrap_pyfunction!(cast_to_type))?;
+    m.add_wrapped(wrap_pyfunction!(try_cast_to_type))?;
     m.add_wrapped(wrap_pyfunction!(arrow_metadata))?;
+    m.add_wrapped(wrap_pyfunction!(with_metadata))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(asinh))?;
