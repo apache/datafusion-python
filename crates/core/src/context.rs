@@ -59,7 +59,8 @@ use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, create_physical_extension_capsule,
     ffi_logical_codec_from_pycapsule, get_global_ctx, get_tokio_runtime,
-    physical_codec_from_pycapsule, spawn_future, wait_for_future,
+    physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
+    wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -1193,6 +1194,17 @@ impl PySessionContext {
 
     pub fn remove_optimizer_rule(&self, name: &str) -> bool {
         self.ctx.remove_optimizer_rule(name)
+    }
+
+    pub fn add_physical_optimizer_rule(&self, rule: Bound<'_, PyAny>) -> PyDataFusionResult<()> {
+        let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
+        let state_ref = self.ctx.state_ref();
+        let mut guard = state_ref.write();
+        let new_state = SessionStateBuilder::new_from_existing(guard.clone())
+            .with_physical_optimizer_rule(rule)
+            .build();
+        *guard = new_state;
+        Ok(())
     }
 
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {

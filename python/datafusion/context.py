@@ -133,6 +133,16 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension.
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -1565,6 +1575,30 @@ class SessionContext:
             False
         """
         return self.ctx.remove_optimizer_rule(name)
+
+    def add_physical_optimizer_rule(
+        self, rule: PhysicalOptimizerRuleExportable
+    ) -> None:
+        """Append a user-defined physical optimizer rule to the session.
+
+        The rule is imported via its ``__datafusion_physical_optimizer_rule__``
+        PyCapsule, typically produced by a separate compiled extension. The
+        underlying :class:`SessionState` is rebuilt from its current state
+        with the new rule appended, so previously registered tables, UDFs,
+        and catalogs are preserved.
+
+        Args:
+            rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
+                a :class:`PhysicalOptimizerRuleExportable`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> from my_extension import MyPhysicalOptimizerRule  # doctest: +SKIP
+            >>> rule = MyPhysicalOptimizerRule()  # doctest: +SKIP
+            >>> ctx.add_physical_optimizer_rule(rule)  # doctest: +SKIP
+        """
+        self.ctx.add_physical_optimizer_rule(rule)
 
     def table_provider(self, name: str) -> Table:
         """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
