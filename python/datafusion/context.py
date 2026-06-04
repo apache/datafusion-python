@@ -1902,6 +1902,63 @@ class SessionContext:
         """Execute the ``plan`` and return the results."""
         return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
 
+    def write_csv(self, plan: ExecutionPlan, path: str | pathlib.Path) -> None:
+        """Execute ``plan`` and write the results to a partitioned CSV file.
+
+        ``path`` is treated as a directory; one file per partition is written
+        inside it. For per-DataFrame writes with options (header control,
+        write options), use :py:meth:`DataFrame.write_csv` instead.
+
+        Examples:
+            >>> import tempfile, pathlib
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> with tempfile.TemporaryDirectory() as tmp:
+            ...     out = pathlib.Path(tmp) / "out"
+            ...     ctx.write_csv(df.execution_plan(), str(out))
+            ...     sorted(p.suffix for p in out.iterdir())
+            ['.csv']
+        """
+        self.ctx.write_csv(plan._raw_plan, str(path))
+
+    def write_json(self, plan: ExecutionPlan, path: str | pathlib.Path) -> None:
+        """Execute ``plan`` and write the results to a partitioned NDJSON file.
+
+        ``path`` is treated as a directory; one newline-delimited JSON file
+        per partition is written inside it. For per-DataFrame writes with
+        options, use :py:meth:`DataFrame.write_json` instead.
+
+        Examples:
+            >>> import tempfile, pathlib
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> with tempfile.TemporaryDirectory() as tmp:
+            ...     out = pathlib.Path(tmp) / "out"
+            ...     ctx.write_json(df.execution_plan(), str(out))
+            ...     sorted(p.suffix for p in out.iterdir())
+            ['.json']
+        """
+        self.ctx.write_json(plan._raw_plan, str(path))
+
+    def write_parquet(self, plan: ExecutionPlan, path: str | pathlib.Path) -> None:
+        """Execute ``plan`` and write the results to a partitioned Parquet file.
+
+        ``path`` is treated as a directory; one Parquet file per partition is
+        written inside it. For per-DataFrame writes with compression and
+        writer options, use :py:meth:`DataFrame.write_parquet` instead.
+
+        Examples:
+            >>> import tempfile, pathlib
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> with tempfile.TemporaryDirectory() as tmp:
+            ...     out = pathlib.Path(tmp) / "out"
+            ...     ctx.write_parquet(df.execution_plan(), str(out))
+            ...     sorted(p.suffix for p in out.iterdir())
+            ['.parquet']
+        """
+        self.ctx.write_parquet(plan._raw_plan, str(path))
+
     @staticmethod
     def _convert_file_sort_order(
         file_sort_order: Sequence[Sequence[SortKey]] | None,

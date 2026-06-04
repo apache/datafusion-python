@@ -44,6 +44,7 @@ use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -1408,6 +1409,42 @@ impl PySessionContext {
         let plan = plan.plan.clone();
         let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
+    }
+
+    /// Execute an `ExecutionPlan` and write the results to a partitioned CSV file at `path`.
+    pub fn write_csv(
+        &self,
+        plan: PyExecutionPlan,
+        path: &str,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let plan: Arc<dyn ExecutionPlan> = plan.into();
+        wait_for_future(py, self.ctx.write_csv(plan, path))??;
+        Ok(())
+    }
+
+    /// Execute an `ExecutionPlan` and write the results to a partitioned newline-delimited JSON file at `path`.
+    pub fn write_json(
+        &self,
+        plan: PyExecutionPlan,
+        path: &str,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let plan: Arc<dyn ExecutionPlan> = plan.into();
+        wait_for_future(py, self.ctx.write_json(plan, path))??;
+        Ok(())
+    }
+
+    /// Execute an `ExecutionPlan` and write the results to a partitioned Parquet file at `path`.
+    pub fn write_parquet(
+        &self,
+        plan: PyExecutionPlan,
+        path: &str,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let plan: Arc<dyn ExecutionPlan> = plan.into();
+        wait_for_future(py, self.ctx.write_parquet(plan, path, None))??;
+        Ok(())
     }
 
     pub fn __datafusion_task_context_provider__<'py>(
