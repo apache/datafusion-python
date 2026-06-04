@@ -84,11 +84,17 @@ START_METHODS = [
     pytest.param(
         "fork",
         marks=pytest.mark.skipif(
-            sys.platform == "darwin",
-            reason="fork start method is unsafe with PyArrow/tokio on macOS",
+            sys.platform in ("darwin", "win32"),
+            reason="fork start method is not supported on Windows and unsafe with PyArrow/tokio on macOS",
         ),
     ),
-    "forkserver",
+    pytest.param(
+        "forkserver",
+        marks=pytest.mark.skipif(
+            sys.platform == "win32",
+            reason="forkserver start method is not supported on Windows",
+        ),
+    ),
     "spawn",
 ]
 
