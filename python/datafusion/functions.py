@@ -2982,8 +2982,7 @@ def cast_to_type(value: Expr, type_ref: Expr, *, try_cast: bool = False) -> Expr
     Only the *type* of ``type_ref`` is used; its value is ignored. This is
     useful when the target type comes from another column or expression
     rather than being known up-front. When ``try_cast=True``, casts that
-    fail produce NULL instead of erroring (this dispatches to upstream
-    ``try_cast_to_type``).
+    fail produce NULL instead of erroring.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -3005,9 +3004,7 @@ def cast_to_type(value: Expr, type_ref: Expr, *, try_cast: bool = False) -> Expr
         >>> result.collect_column("c")[0].as_py() is None
         True
     """
-    if try_cast:
-        return Expr(f.try_cast_to_type(value.expr, type_ref.expr))
-    return Expr(f.cast_to_type(value.expr, type_ref.expr))
+    return Expr(f.cast_to_type(value.expr, type_ref.expr, try_cast=try_cast))
 
 
 def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
