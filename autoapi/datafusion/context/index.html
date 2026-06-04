@@ -483,6 +483,26 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PhysicalOptimizerRuleExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -817,6 +837,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext._convert_table_partition_cols()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.add_physical_optimizer_rule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.add_physical_optimizer_rule()
         </span>
        </code>
       </a>
@@ -1531,19 +1560,22 @@ execution model.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.ArrowStreamExportable" title="datafusion.context.ArrowStreamExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a></p></td>
 <td><p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a></p></td>
+<td><p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -1573,6 +1605,20 @@ execution model.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.ArrowStreamExportable.__arrow_c_stream__">
 <span class="sig-name descname"><span class="pre">__arrow_c_stream__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">PhysicalOptimizerRuleExportable</span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p>
+<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_PhysicalOptimizerRule</span></code>,
+typically produced by a separate compiled extension.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
+<span class="sig-name descname"><span class="pre">__datafusion_physical_optimizer_rule__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2070,6 +2116,31 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dt class="sig sig-object py" id="datafusion.context.SessionContext._convert_table_partition_cols">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_convert_table_partition_cols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.SessionContext._convert_table_partition_cols" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.add_physical_optimizer_rule">
+<span class="sig-name descname"><span class="pre">add_physical_optimizer_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><span class="pre">PhysicalOptimizerRuleExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="Link to this definition">¶</a></dt>
+<dd><p>Append a user-defined physical optimizer rule to the session.</p>
+<p>The rule is imported via its <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_optimizer_rule__</span></code>
+PyCapsule, typically produced by a separate compiled extension. The
+underlying <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionState</span></code> is rebuilt from its current state
+with the new rule appended, so previously registered tables, UDFs,
+and catalogs are preserved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rule</strong> – Object exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_optimizer_rule__</span></code>,
+a <a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">my_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyPhysicalOptimizerRule</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rule</span> <span class="o">=</span> <span class="n">MyPhysicalOptimizerRule</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">add_physical_optimizer_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>  
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.catalog">
