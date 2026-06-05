@@ -138,12 +138,6 @@ html_theme_options = {
             "icon": "fa-brands fa-rust",
         },
     ],
-    "external_links": [
-        {
-            "name": "Examples",
-            "url": "https://github.com/apache/datafusion-python/tree/main/examples",
-        },
-    ],
     "secondary_sidebar_items": [],
     "collapse_navigation": True,
     "show_nav_level": 2,

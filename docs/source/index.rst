@@ -59,13 +59,4 @@ Example
    user-guide/index
    contributor-guide/index
    API Reference <autoapi/index>
-
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   :caption: Links
-
-   GitHub and Issue Tracker <https://github.com/apache/datafusion-python>
-   Rust API Docs <https://docs.rs/datafusion/latest/datafusion/>
-   Code of Conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>
-   Examples <https://github.com/apache/datafusion-python/tree/main/examples>
+   links
