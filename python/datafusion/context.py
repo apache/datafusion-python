@@ -641,7 +641,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_listing_table(
             name,
-            str(path),
+            path,
             table_partition_cols,
             file_extension,
             schema,
@@ -1055,7 +1055,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_parquet(
             name,
-            str(path),
+            path,
             table_partition_cols,
             parquet_pruning,
             file_extension,
@@ -1097,8 +1097,6 @@ class SessionContext:
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
         """
-        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
-
         if options is not None and (
             schema is not None
             or not has_header
@@ -1132,7 +1130,7 @@ class SessionContext:
 
         self.ctx.register_csv(
             name,
-            path_arg,
+            path,
             options.to_inner(),
         )
 
@@ -1167,7 +1165,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_json(
             name,
-            str(path),
+            path,
             schema,
             schema_infer_max_records,
             file_extension,
@@ -1198,9 +1196,7 @@ class SessionContext:
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
-        self.ctx.register_avro(
-            name, str(path), schema, file_extension, table_partition_cols
-        )
+        self.ctx.register_avro(name, path, schema, file_extension, table_partition_cols)
 
     def register_arrow(
         self,
@@ -1279,7 +1275,7 @@ class SessionContext:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_arrow(
-            name, str(path), schema, file_extension, table_partition_cols
+            name, path, schema, file_extension, table_partition_cols
         )
 
     def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
@@ -1693,7 +1689,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         return DataFrame(
             self.ctx.read_json(
-                str(path),
+                path,
                 schema,
                 schema_infer_max_records,
                 file_extension,
@@ -1736,8 +1732,6 @@ class SessionContext:
         Returns:
             DataFrame representation of the read CSV files
         """
-        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
-
         if options is not None and (
             schema is not None
             or not has_header
@@ -1773,7 +1767,7 @@ class SessionContext:
 
         return DataFrame(
             self.ctx.read_csv(
-                path_arg,
+                path,
                 options.to_inner(),
             )
         )
@@ -1816,7 +1810,7 @@ class SessionContext:
         file_sort_order = self._convert_file_sort_order(file_sort_order)
         return DataFrame(
             self.ctx.read_parquet(
-                str(path),
+                path,
                 table_partition_cols,
                 parquet_pruning,
                 file_extension,
@@ -1848,7 +1842,7 @@ class SessionContext:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
-            self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
+            self.ctx.read_avro(path, schema, file_partition_cols, file_extension)
         )
 
     def read_arrow(
@@ -1920,7 +1914,7 @@ class SessionContext:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
-            self.ctx.read_arrow(str(path), schema, file_extension, file_partition_cols)
+            self.ctx.read_arrow(path, schema, file_extension, file_partition_cols)
         )
 
     def read_empty(self) -> DataFrame:
