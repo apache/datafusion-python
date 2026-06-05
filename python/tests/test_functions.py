@@ -735,7 +735,22 @@ def test_array_function_aliases(alias_fn, primary_fn, data):
     )
 
 
-@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product])
+def test_dot_product_alias_matches_inner_product():
+    """dot_product should be an exact alias for inner_product."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]})
+    alias_result = df.select(
+        f.dot_product(column("a"), column("b")).alias("r")
+    ).collect()
+    primary_result = df.select(
+        f.inner_product(column("a"), column("b")).alias("r")
+    ).collect()
+    assert (
+        alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
+    )
+
+
+@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product, f.dot_product])
 def test_array_distance_length_mismatch_raises(fn):
     """Length-mismatched inputs to vector distance fns should raise at execute."""
     ctx = SessionContext()

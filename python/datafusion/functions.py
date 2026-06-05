@@ -174,6 +174,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "dot_product",
     "element_at",
     "empty",
     "encode",
@@ -3319,7 +3320,16 @@ def cosine_distance(array1: Expr, array2: Expr) -> Expr:
 def inner_product(array1: Expr, array2: Expr) -> Expr:
     """Returns the inner (dot) product of two numeric arrays.
 
-    The SQL name ``dot_product`` is an alias for this function in raw SQL.
+    Treats each input as a vector and returns the sum of the element-wise
+    products: ``sum(array1[i] * array2[i])``. For ``[1, 2, 3]`` and
+    ``[4, 5, 6]`` the result is ``1*4 + 2*5 + 3*6 = 32``.
+
+    Also available as :py:func:`dot_product` (and as ``dot_product`` in
+    raw SQL).
+
+    Both arrays must have the same length; otherwise execution fails. NULL
+    is returned when either input array is NULL or when any element of
+    either array is NULL.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -3333,8 +3343,30 @@ def inner_product(array1: Expr, array2: Expr) -> Expr:
         ... )
         >>> result.collect_column("result")[0].as_py()
         32.0
+
+        NULL elements propagate to NULL output:
+
+        >>> df_null = ctx.from_pydict(
+        ...     {"a": [[1.0, None, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+        ... )
+        >>> result = df_null.select(
+        ...     dfn.functions.inner_product(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
     """
     return Expr(f.inner_product(array1.expr, array2.expr))
+
+
+def dot_product(array1: Expr, array2: Expr) -> Expr:
+    """Returns the inner (dot) product of two numeric arrays.
+
+    See Also:
+        This is an alias for :py:func:`inner_product`.
+    """
+    return inner_product(array1, array2)
 
 
 def list_cat(*args: Expr) -> Expr:
