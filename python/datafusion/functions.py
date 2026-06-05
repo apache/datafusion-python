@@ -2981,8 +2981,9 @@ def arrow_field(expr: Expr) -> Expr:
         >>> result = df.select(
         ...     dfn.functions.arrow_field(dfn.col("val")).alias("f")
         ... )
-        >>> result.collect_column("f")[0].as_py()["name"]
-        'val'
+        >>> out = result.collect_column("f")[0].as_py()
+        >>> out["name"], out["data_type"], out["nullable"], out["metadata"]
+        ('val', 'Int64', True, [('k', 'v')])
     """
     return Expr(f.arrow_field(expr.expr))
 
