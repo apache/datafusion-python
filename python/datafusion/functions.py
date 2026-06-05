@@ -3058,6 +3058,9 @@ def with_metadata(expr: Expr, metadata: dict[str, str]) -> Expr:
     input field is preserved; new keys overwrite on collision. Keys must be
     non-empty strings; empty values are allowed.
 
+    An empty ``metadata`` dict is a no-op and returns the input expression
+    unchanged. Empty keys raise :py:class:`ValueError`.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
@@ -3071,11 +3074,16 @@ def with_metadata(expr: Expr, metadata: dict[str, str]) -> Expr:
         ... ).collect_column("u")[0].as_py()
         'ms'
     """
-    args = [expr]
+    if not metadata:
+        return expr
+    args = [expr.expr]
     for k, v in metadata.items():
-        args.append(Expr.string_literal(k))
-        args.append(Expr.string_literal(v))
-    return Expr(f.with_metadata(*(a.expr for a in args)))
+        if not k:
+            msg = "with_metadata keys must be non-empty strings"
+            raise ValueError(msg)
+        args.append(Expr.string_literal(k).expr)
+        args.append(Expr.string_literal(v).expr)
+    return Expr(f.with_metadata(*args))
 
 
 def get_field(expr: Expr, *names: Expr | str) -> Expr:
