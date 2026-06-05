@@ -527,6 +527,23 @@ Module Contents
 
 
 
+   .. py:method:: copied_config() -> SessionConfig
+
+      Return a copy of the active :py:class:`SessionConfig`.
+
+      Mutating the returned config does not affect this context; use
+      the result when you need a starting point for a new context or
+      want to inspect the current settings independent of further
+      changes here.
+
+      .. rubric:: Examples
+
+      >>> ctx = SessionContext(SessionConfig().with_batch_size(1024))
+      >>> isinstance(ctx.copied_config(), SessionConfig)
+      True
+
+
+
    .. py:method:: create_dataframe(partitions: list[list[pyarrow.RecordBatch]], name: str | None = None, schema: pyarrow.Schema | None = None) -> datafusion.dataframe.DataFrame
 
       Create and return a dataframe using the provided partitions.
@@ -720,6 +737,31 @@ Module Contents
       Retrieve the global context as a `SessionContext` wrapper.
 
       :returns: A `SessionContext` object that wraps the global `SessionContextInternal`.
+
+
+
+   .. py:method:: parse_capacity_limit(config_name: str, limit: str) -> int
+      :staticmethod:
+
+
+      Parse a size string into a byte count.
+
+      Accepts strings like ``"100M"``, ``"1.5G"``, or ``"512K"``.
+      ``"0"`` is accepted and returns 0. ``config_name`` is used purely
+      for error messages and identifies which configuration setting the
+      limit belongs to. Use this helper when constructing a
+      :py:class:`RuntimeEnvBuilder` from a human-friendly size string.
+
+      .. rubric:: Examples
+
+      >>> SessionContext.parse_capacity_limit(
+      ...     "datafusion.runtime.memory_limit", "1M"
+      ... )
+      1048576
+      >>> SessionContext.parse_capacity_limit(
+      ...     "datafusion.runtime.memory_limit", "0"
+      ... )
+      0
 
 
 

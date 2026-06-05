@@ -869,6 +869,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.copied_config">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.copied_config()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.create_dataframe">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1035,6 +1044,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.global_ctx()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.parse_capacity_limit">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.parse_capacity_limit()
         </span>
        </code>
       </a>
@@ -2155,6 +2173,22 @@ a <a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleE
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.copied_config">
+<span class="sig-name descname"><span class="pre">copied_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.copied_config" title="Link to this definition">¶</a></dt>
+<dd><p>Return a copy of the active <a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a>.</p>
+<p>Mutating the returned config does not affect this context; use
+the result when you need a starting point for a new context or
+want to inspect the current settings independent of further
+changes here.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_batch_size</span><span class="p">(</span><span class="mi">1024</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">copied_config</span><span class="p">(),</span> <span class="n">SessionConfig</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.create_dataframe">
 <span class="sig-name descname"><span class="pre">create_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.RecordBatch</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.create_dataframe" title="Link to this definition">¶</a></dt>
 <dd><p>Create and return a dataframe using the provided partitions.</p>
@@ -2411,6 +2445,28 @@ a struct array.</p>
 <dd class="field-odd"><p>A <cite>SessionContext</cite> object that wraps the global <cite>SessionContextInternal</cite>.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.parse_capacity_limit">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_capacity_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.parse_capacity_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a size string into a byte count.</p>
+<p>Accepts strings like <code class="docutils literal notranslate"><span class="pre">&quot;100M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1.5G&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;512K&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&quot;0&quot;</span></code> is accepted and returns 0. <code class="docutils literal notranslate"><span class="pre">config_name</span></code> is used purely
+for error messages and identifies which configuration setting the
+limit belongs to. Use this helper when constructing a
+<a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> from a human-friendly size string.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SessionContext</span><span class="o">.</span><span class="n">parse_capacity_limit</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;datafusion.runtime.memory_limit&quot;</span><span class="p">,</span> <span class="s2">&quot;1M&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">1048576</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SessionContext</span><span class="o">.</span><span class="n">parse_capacity_limit</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;datafusion.runtime.memory_limit&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
