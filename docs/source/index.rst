@@ -52,14 +52,6 @@ Example
     df.show()
 
 
-Further reading:
-
-* `Examples <https://github.com/apache/datafusion-python/tree/main/examples>`_ — runnable scripts demonstrating common patterns.
-* `GitHub repository and issue tracker <https://github.com/apache/datafusion-python>`_.
-* `Rust API docs <https://docs.rs/datafusion/latest/datafusion/>`_ for the underlying engine.
-* `Apache DataFusion code of conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>`_.
-
-
 .. toctree::
    :hidden:
    :maxdepth: 1

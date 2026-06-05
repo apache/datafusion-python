@@ -26,3 +26,4 @@ Guides for contributors to the DataFusion in Python project.
 
    introduction
    ffi
+   Code of Conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>

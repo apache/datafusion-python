@@ -133,6 +133,16 @@ html_theme_options = {
             "icon": "fa-brands fa-github",
         },
     ],
+    "external_links": [
+        {
+            "name": "Examples",
+            "url": "https://github.com/apache/datafusion-python/tree/main/examples",
+        },
+        {
+            "name": "Rust API",
+            "url": "https://docs.rs/datafusion/latest/datafusion/",
+        },
+    ],
     "secondary_sidebar_items": [],
     "collapse_navigation": True,
     "show_nav_level": 1,
