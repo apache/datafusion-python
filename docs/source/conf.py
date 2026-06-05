@@ -146,7 +146,7 @@ html_theme_options = {
     ],
     "secondary_sidebar_items": [],
     "collapse_navigation": True,
-    "show_nav_level": 1,
+    "show_nav_level": 2,
 }
 
 html_context = {
