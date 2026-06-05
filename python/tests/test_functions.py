@@ -1299,66 +1299,32 @@ def test_make_time(df):
     assert result.column(0)[0].as_py() == time(12, 30)
 
 
-def test_arrow_cast(df):
-    df = df.select(
-        f.arrow_cast(column("b"), "Float64").alias("b_as_float"),
-        f.arrow_cast(column("b"), "Int32").alias("b_as_int"),
-    )
-    result = df.collect()
-    assert len(result) == 1
-    result = result[0]
-
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
-
-
-def test_arrow_cast_with_pyarrow_type(df):
-    df = df.select(
-        f.arrow_cast(column("b"), pa.float64()).alias("b_as_float"),
-        f.arrow_cast(column("b"), pa.int32()).alias("b_as_int"),
-        f.arrow_cast(column("b"), pa.string()).alias("b_as_str"),
-    )
-    result = df.collect()[0]
-
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
-    assert result.column(2) == pa.array(["4", "5", "6"], type=pa.string())
+@pytest.mark.parametrize("cast_fn", [f.arrow_cast, f.arrow_try_cast])
+@pytest.mark.parametrize(
+    ("data_type", "expected"),
+    [
+        ("Float64", pa.array([4.0, 5.0, 6.0], type=pa.float64())),
+        ("Int32", pa.array([4, 5, 6], type=pa.int32())),
+        (pa.float64(), pa.array([4.0, 5.0, 6.0], type=pa.float64())),
+        (pa.int32(), pa.array([4, 5, 6], type=pa.int32())),
+        (pa.string(), pa.array(["4", "5", "6"], type=pa.string())),
+    ],
+)
+def test_arrow_cast_variants(df, cast_fn, data_type, expected):
+    """arrow_cast / arrow_try_cast accept str and pyarrow target types."""
+    result = df.select(cast_fn(column("b"), data_type).alias("c")).collect()[0]
+    assert result.column(0) == expected
 
 
-def test_arrow_try_cast(df):
-    df = df.select(
-        f.arrow_try_cast(column("b"), "Float64").alias("b_as_float"),
-        f.arrow_try_cast(column("b"), "Int32").alias("b_as_int"),
-    )
-    result = df.collect()[0]
-
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
-
-
-def test_arrow_try_cast_with_pyarrow_type(df):
-    df = df.select(
-        f.arrow_try_cast(column("b"), pa.float64()).alias("b_as_float"),
-        f.arrow_try_cast(column("b"), pa.int32()).alias("b_as_int"),
-    )
-    result = df.collect()[0]
-
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
-
-
-def test_arrow_try_cast_null_on_failure():
+@pytest.mark.parametrize("data_type", ["Float64", pa.float64()])
+def test_arrow_try_cast_null_on_failure(data_type):
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array(["1.5", "oops", "3"])], names=["s"])
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(
-        f.arrow_try_cast(column("s"), "Float64").alias("c"),
-        f.arrow_try_cast(column("s"), pa.float64()).alias("c_pa"),
-    ).collect()[0]
+    result = df.select(f.arrow_try_cast(column("s"), data_type).alias("c")).collect()[0]
 
     assert result.column(0).to_pylist() == [1.5, None, 3.0]
-    assert result.column(1).to_pylist() == [1.5, None, 3.0]
 
 
 def test_arrow_field():
@@ -1381,34 +1347,26 @@ def test_arrow_field():
     }
 
 
-def test_cast_to_type():
+@pytest.mark.parametrize(
+    ("values", "try_cast", "expected"),
+    [
+        (pa.array([4, 5, 6]), False, [4.0, 5.0, 6.0]),
+        (pa.array(["oops", "2", "3"]), True, [None, 2.0, 3.0]),
+    ],
+)
+def test_cast_to_type(values, try_cast, expected):
+    """cast_to_type takes target type from ``type_ref``; try_cast nullifies failures."""
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([4, 5, 6]), pa.array([1.0, 2.0, 3.0])],
-        names=["b", "fl"],
-    )
-    df = ctx.create_dataframe([[batch]])
-
-    result = df.select(f.cast_to_type(column("b"), column("fl")).alias("c")).collect()[
-        0
-    ]
-
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-
-
-def test_cast_to_type_try_cast_null_on_failure():
-    ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array(["oops", "2", "3"]), pa.array([1.0, 2.0, 3.0])],
-        names=["a", "fl"],
+        [values, pa.array([1.0, 2.0, 3.0])], names=["v", "fl"]
     )
     df = ctx.create_dataframe([[batch]])
 
     result = df.select(
-        f.cast_to_type(column("a"), column("fl"), try_cast=True).alias("c")
+        f.cast_to_type(column("v"), column("fl"), try_cast=try_cast).alias("c")
     ).collect()[0]
 
-    assert result.column(0).to_pylist() == [None, 2.0, 3.0]
+    assert result.column(0).to_pylist() == expected
     assert result.column(0).type == pa.float64()
 
 
@@ -1425,7 +1383,7 @@ def test_with_metadata_empty_dict_noop(df):
     assert out.column(0) == pa.array([4, 5, 6])
 
 
-def test_with_metadata_empty_key_raises(df):
+def test_with_metadata_empty_key_raises():
     with pytest.raises(ValueError, match="non-empty"):
         f.with_metadata(column("b"), {"": "v"})
 
