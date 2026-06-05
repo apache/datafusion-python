@@ -53,6 +53,10 @@ extensions = [
     "autoapi.extension",
 ]
 
+# NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
+# under autoapi/ and Sphinx needs the suffix to parse it. The human-
+# authored docs are all MyST .md now; the .rst entry is only for the
+# autoapi build artifacts.
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
@@ -171,5 +175,9 @@ html_sidebars = {
 # tell myst_parser to auto-generate anchor links for headers h1, h2, h3
 myst_heading_anchors = 3
 
-# enable nice rendering of checkboxes for the task lists
-myst_enable_extensions = ["tasklist"]
+# MyST extensions:
+# - tasklist: GitHub-style `- [x]` checkboxes
+# - colon_fence: `:::{directive}` blocks (needed by execution-metrics.md
+#   after the RST -> MyST conversion)
+# - deflist: definition lists (used in a couple of converted pages)
+myst_enable_extensions = ["tasklist", "colon_fence", "deflist"]
