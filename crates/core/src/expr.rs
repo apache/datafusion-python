@@ -358,6 +358,11 @@ impl PyExpr {
         expr.into()
     }
 
+    pub fn try_cast(&self, to: PyArrowType<DataType>) -> PyExpr {
+        let expr = Expr::TryCast(TryCast::new(Box::new(self.expr.clone()), to.0));
+        expr.into()
+    }
+
     #[pyo3(signature = (low, high, negated=false))]
     pub fn between(&self, low: PyExpr, high: PyExpr, negated: bool) -> PyExpr {
         let expr = Expr::Between(Between::new(
