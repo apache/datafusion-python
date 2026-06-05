@@ -219,8 +219,9 @@ docs = [
   "myst-parser>=3.0.1",
   "pandas>=2.0.3",
   "pickleshare>=0.7.5",
-  "pydata-sphinx-theme==0.8.0",
+  "pydata-sphinx-theme>=0.16,<0.17",
   "setuptools>=75.3.0",
   "sphinx-autoapi>=3.4.0",
+  "sphinx-reredirects>=0.1.5",
   "sphinx>=7.1.2",
 ]
