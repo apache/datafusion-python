@@ -156,6 +156,8 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+html_favicon = "_static/favicon.svg"
+
 # Copy agent-facing files (llms.txt) verbatim to the site root so they
 # resolve at conventional URLs like `https://.../python/llms.txt`.
 html_extra_path = ["llms.txt"]
