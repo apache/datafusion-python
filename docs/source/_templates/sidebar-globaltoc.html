@@ -13,8 +13,9 @@
   <div class="bd-toc-item navbar-nav">
     {# collapse=False so nested <ul>s render into the DOM for every
        branch; the theme's JS then adds the expand/collapse chevrons
-       on top. show_nav_level=1 keeps deeper levels collapsed by
-       default so the landing-page sidebar isn't a wall of links. #}
+       on top. show_nav_level is driven by theme_show_nav_level (set
+       in conf.py) so callers can adjust how deep the sidebar opens
+       by default without editing this template. #}
     {{- generate_toctree_html(
       "sidebar",
       startdepth=0,
