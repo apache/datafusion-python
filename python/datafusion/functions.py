@@ -2996,6 +2996,10 @@ def cast_to_type(value: Expr, type_ref: Expr, *, try_cast: bool = False) -> Expr
     rather than being known up-front. When ``try_cast=True``, casts that
     fail produce NULL instead of erroring.
 
+    If the target type is known statically, prefer :py:func:`arrow_cast`
+    (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
+    pass a type string or ``pyarrow.DataType`` directly.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1], "b": [1.0]})
