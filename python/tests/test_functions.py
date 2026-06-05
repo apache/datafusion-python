@@ -718,6 +718,33 @@ def test_array_function_obj_tests(stmt, py_expr):
 
 
 @pytest.mark.parametrize(
+    ("alias_fn", "primary_fn", "data"),
+    [
+        (f.list_compact, f.array_compact, [[1.0, None, 2.0, None, 3.0]]),
+        (f.list_normalize, f.array_normalize, [[3.0, 4.0]]),
+    ],
+)
+def test_array_function_aliases(alias_fn, primary_fn, data):
+    """list_* helpers should be exact aliases for their array_* counterparts."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": data})
+    alias_result = df.select(alias_fn(column("a")).alias("r")).collect()
+    primary_result = df.select(primary_fn(column("a")).alias("r")).collect()
+    assert (
+        alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
+    )
+
+
+@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product])
+def test_array_distance_length_mismatch_raises(fn):
+    """Length-mismatched inputs to vector distance fns should raise at execute."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 2.0, 3.0]]})
+    with pytest.raises(Exception, match="same length"):
+        df.select(fn(column("a"), column("b")).alias("r")).collect()
+
+
+@pytest.mark.parametrize(
     ("args", "expected"),
     [
         pytest.param(
