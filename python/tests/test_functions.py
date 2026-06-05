@@ -1325,6 +1325,111 @@ def test_arrow_cast_with_pyarrow_type(df):
     assert result.column(2) == pa.array(["4", "5", "6"], type=pa.string())
 
 
+def test_arrow_try_cast(df):
+    df = df.select(
+        f.arrow_try_cast(column("b"), "Float64").alias("b_as_float"),
+        f.arrow_try_cast(column("b"), "Int32").alias("b_as_int"),
+    )
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
+
+
+def test_arrow_try_cast_with_pyarrow_type(df):
+    df = df.select(
+        f.arrow_try_cast(column("b"), pa.float64()).alias("b_as_float"),
+        f.arrow_try_cast(column("b"), pa.int32()).alias("b_as_int"),
+    )
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
+
+
+def test_arrow_try_cast_null_on_failure():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array(["1.5", "oops", "3"])], names=["s"])
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(
+        f.arrow_try_cast(column("s"), "Float64").alias("c"),
+        f.arrow_try_cast(column("s"), pa.float64()).alias("c_pa"),
+    ).collect()[0]
+
+    assert result.column(0).to_pylist() == [1.5, None, 3.0]
+    assert result.column(1).to_pylist() == [1.5, None, 3.0]
+
+
+def test_arrow_field():
+    ctx = SessionContext()
+    field = pa.field("val", pa.int64(), metadata={"k": "v"})
+    schema = pa.schema([field])
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+    df = ctx.create_dataframe([[batch]])
+
+    out = (
+        df.select(f.arrow_field(column("val")).alias("f"))
+        .collect_column("f")[0]
+        .as_py()
+    )
+    assert out == {
+        "name": "val",
+        "data_type": "Int64",
+        "nullable": True,
+        "metadata": [("k", "v")],
+    }
+
+
+def test_cast_to_type():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([4, 5, 6]), pa.array([1.0, 2.0, 3.0])],
+        names=["b", "fl"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(f.cast_to_type(column("b"), column("fl")).alias("c")).collect()[
+        0
+    ]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+
+
+def test_cast_to_type_try_cast_null_on_failure():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array(["oops", "2", "3"]), pa.array([1.0, 2.0, 3.0])],
+        names=["a", "fl"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(
+        f.cast_to_type(column("a"), column("fl"), try_cast=True).alias("c")
+    ).collect()[0]
+
+    assert result.column(0).to_pylist() == [None, 2.0, 3.0]
+    assert result.column(0).type == pa.float64()
+
+
+def test_with_metadata_round_trip(df):
+    df = df.select(f.with_metadata(column("b"), {"unit": "ms"}).alias("b"))
+    result = df.select(f.arrow_metadata(column("b"), "unit").alias("u")).collect_column(
+        "u"
+    )
+    assert result[0].as_py() == "ms"
+
+
+def test_with_metadata_empty_dict_noop(df):
+    out = df.select(f.with_metadata(column("b"), {}).alias("b")).collect()[0]
+    assert out.column(0) == pa.array([4, 5, 6])
+
+
+def test_with_metadata_empty_key_raises(df):
+    with pytest.raises(ValueError, match="non-empty"):
+        f.with_metadata(column("b"), {"": "v"})
+
+
 def test_case(df):
     df = df.select(
         f.case(column("b")).when(literal(4), literal(10)).otherwise(literal(8)),
