@@ -132,15 +132,16 @@ html_theme_options = {
             "url": "https://github.com/apache/datafusion-python",
             "icon": "fa-brands fa-github",
         },
+        {
+            "name": "Rust API docs (docs.rs)",
+            "url": "https://docs.rs/datafusion/latest/datafusion/",
+            "icon": "fa-brands fa-rust",
+        },
     ],
     "external_links": [
         {
             "name": "Examples",
             "url": "https://github.com/apache/datafusion-python/tree/main/examples",
-        },
-        {
-            "name": "Rust API",
-            "url": "https://docs.rs/datafusion/latest/datafusion/",
         },
     ],
     "secondary_sidebar_items": [],
