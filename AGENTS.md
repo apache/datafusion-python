@@ -84,9 +84,9 @@ Every Python function must include a docstring with usage examples.
 When adding or updating an aggregate or window function, ensure the corresponding
 site documentation is kept in sync:
 
-- **Aggregations**: `docs/source/user-guide/common-operations/aggregations.rst` —
+- **Aggregations**: `docs/source/user-guide/common-operations/aggregations.md` —
   add new aggregate functions to the "Aggregate Functions" list and include usage
   examples if appropriate.
-- **Window functions**: `docs/source/user-guide/common-operations/windows.rst` —
+- **Window functions**: `docs/source/user-guide/common-operations/windows.md` —
   add new window functions to the "Available Functions" list and include usage
   examples if appropriate.
