@@ -3226,7 +3226,20 @@ def array_compact(array: Expr) -> Expr:
 
 
 def array_normalize(array: Expr) -> Expr:
-    """Returns the L2-normalized vector for a numeric array.
+    """Scales a numeric array so it has Euclidean length 1.
+
+    Treats the array as a vector and divides every element by the vector's
+    Euclidean (L2) norm — the square root of the sum of the squared
+    elements. The returned array points in the same direction as the input
+    but has a magnitude of 1, which makes it suitable for cosine-similarity
+    comparisons and other operations that expect unit vectors.
+
+    For the input ``[3.0, 4.0]`` the L2 norm is ``sqrt(3**2 + 4**2) = 5``,
+    so each element is divided by 5 to produce ``[0.6, 0.8]``.
+
+    Normalizing the zero vector is undefined (it would divide by zero), so
+    the function returns NULL for an all-zero input. NULL is also returned
+    if any element of the input array is NULL.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -3236,16 +3249,45 @@ def array_normalize(array: Expr) -> Expr:
         ... )
         >>> result.collect_column("result")[0].as_py()
         [0.6, 0.8]
+
+        The zero vector has no direction to preserve, so the result is NULL:
+
+        >>> df_zero = ctx.from_pydict({"a": [[0.0, 0.0]]})
+        >>> result = df_zero.select(
+        ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
     """
     return Expr(f.array_normalize(array.expr))
 
 
 def cosine_distance(array1: Expr, array2: Expr) -> Expr:
-    """Returns the cosine distance between two numeric arrays.
+    """Measures how much two numeric arrays differ in direction.
 
-    Computed as ``1 - cosine_similarity(array1, array2)``.
+    Treats each input as a vector and compares the angle between them,
+    ignoring their magnitudes. The result is ``1 - cosine_similarity``,
+    where cosine similarity is the dot product of the two vectors divided
+    by the product of their Euclidean (L2) norms.
+
+    The returned value ranges from 0 to 2:
+
+    * ``0`` — vectors point in the same direction (any positive scaling
+      of one yields the other).
+    * ``1`` — vectors are orthogonal (no shared direction).
+    * ``2`` — vectors point in exactly opposite directions.
+
+    This is the standard distance metric for comparing embedding vectors
+    (text, image, audio) where direction carries the meaning and overall
+    magnitude does not.
+
+    Both arrays must have the same length; otherwise execution fails. If
+    either input is the zero vector the cosine is undefined and the
+    function returns NULL.
 
     Examples:
+        Identical vectors have distance ``0``:
+
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict(
         ...     {"a": [[1.0, 2.0, 3.0]], "b": [[1.0, 2.0, 3.0]]}
@@ -3257,6 +3299,19 @@ def cosine_distance(array1: Expr, array2: Expr) -> Expr:
         ... )
         >>> result.collect_column("result")[0].as_py()
         0.0
+
+        Orthogonal vectors have distance ``1``:
+
+        >>> df_orth = ctx.from_pydict(
+        ...     {"a": [[1.0, 0.0]], "b": [[0.0, 1.0]]}
+        ... )
+        >>> result = df_orth.select(
+        ...     dfn.functions.cosine_distance(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        1.0
     """
     return Expr(f.cosine_distance(array1.expr, array2.expr))
 
@@ -3319,7 +3374,7 @@ def list_compact(array: Expr) -> Expr:
 
 
 def list_normalize(array: Expr) -> Expr:
-    """Returns the L2-normalized vector for a numeric array.
+    """Scales a numeric array so it has Euclidean length 1.
 
     See Also:
         This is an alias for :py:func:`array_normalize`.
