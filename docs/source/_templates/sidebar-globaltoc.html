@@ -1,15 +1,29 @@
-{# Overrides pydata-sphinx-theme's sidebar-nav-bs to render the global
-   document toctree on every page (including the landing page). The
-   stock template's generate_toctree_html starts at the current
-   section, which leaves the root index with no sidebar at all. Using
-   the toctree() Jinja global instead always shows the top-level
-   structure, with the current section expanded and highlighted. #}
+{# Renders the global document toctree on every page (including the
+   landing page) with pydata-sphinx-theme's collapsible chevrons.
+
+   The stock sidebar-nav-bs.html starts at the current section and is
+   stripped from the sidebar list by suppress_sidebar_toctree() on the
+   root page (no parent section). Using generate_toctree_html with
+   startdepth=0 renders the whole tree from root with the bootstrap
+   classes the theme's JS uses for expand/collapse toggles. Naming the
+   template "sidebar-globaltoc" sidesteps the suppress filter, which
+   matches on "sidebar-nav-bs.html" specifically. #}
 <nav class="bd-docs-nav bd-links" aria-label="{{ _('Section Navigation') }}">
   <p class="bd-links__title" role="heading" aria-level="1">{{ _("Section Navigation") }}</p>
   <div class="bd-toc-item navbar-nav">
-    {{ toctree(maxdepth=theme_navigation_depth | int,
-                collapse=theme_collapse_navigation | tobool,
-                includehidden=True,
-                titles_only=True) }}
+    {# collapse=False so nested <ul>s render into the DOM for every
+       branch; the theme's JS then adds the expand/collapse chevrons
+       on top. show_nav_level=1 keeps deeper levels collapsed by
+       default so the landing-page sidebar isn't a wall of links. #}
+    {{- generate_toctree_html(
+      "sidebar",
+      startdepth=0,
+      show_nav_level=theme_show_nav_level | int,
+      maxdepth=theme_navigation_depth | int,
+      collapse=False,
+      includehidden=True,
+      titles_only=True
+      )
+    -}}
   </div>
 </nav>
