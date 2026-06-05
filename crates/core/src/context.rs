@@ -1162,6 +1162,20 @@ impl PySessionContext {
         self.ctx.session_id()
     }
 
+    /// Return a copy of the active `SessionConfig`. Mutating the returned
+    /// config does not affect this context.
+    pub fn copied_config(&self) -> PySessionConfig {
+        self.ctx.copied_config().into()
+    }
+
+    /// Parse a string like `"100M"`, `"1.5G"`, or `"512K"` into a byte count.
+    /// `"0"` is accepted and returns 0. Use this when constructing a
+    /// `RuntimeEnvBuilder` from a human-friendly size string.
+    #[staticmethod]
+    pub fn parse_capacity_limit(config_name: &str, limit: &str) -> PyDataFusionResult<usize> {
+        Ok(SessionContext::parse_capacity_limit(config_name, limit)?)
+    }
+
     pub fn session_start_time(&self) -> String {
         self.ctx.session_start_time().to_rfc3339()
     }

@@ -1506,6 +1506,45 @@ class SessionContext:
         """
         return self.ctx.enable_ident_normalization()
 
+    def copied_config(self) -> SessionConfig:
+        """Return a copy of the active :py:class:`SessionConfig`.
+
+        Mutating the returned config does not affect this context; use
+        the result when you need a starting point for a new context or
+        want to inspect the current settings independent of further
+        changes here.
+
+        Examples:
+            >>> ctx = SessionContext(SessionConfig().with_batch_size(1024))
+            >>> isinstance(ctx.copied_config(), SessionConfig)
+            True
+        """
+        config = SessionConfig()
+        config.config_internal = self.ctx.copied_config()
+        return config
+
+    @staticmethod
+    def parse_capacity_limit(config_name: str, limit: str) -> int:
+        """Parse a size string into a byte count.
+
+        Accepts strings like ``"100M"``, ``"1.5G"``, or ``"512K"``.
+        ``"0"`` is accepted and returns 0. ``config_name`` is used purely
+        for error messages and identifies which configuration setting the
+        limit belongs to. Use this helper when constructing a
+        :py:class:`RuntimeEnvBuilder` from a human-friendly size string.
+
+        Examples:
+            >>> SessionContext.parse_capacity_limit(
+            ...     "datafusion.runtime.memory_limit", "1M"
+            ... )
+            1048576
+            >>> SessionContext.parse_capacity_limit(
+            ...     "datafusion.runtime.memory_limit", "0"
+            ... )
+            0
+        """
+        return SessionContextInternal.parse_capacity_limit(config_name, limit)
+
     def parse_sql_expr(self, sql: str, schema: DFSchema) -> Expr:
         """Parse a SQL expression string into a logical expression.
 
