@@ -41,8 +41,8 @@ to form a single summary value. For performing an aggregation, DataFusion provid
         f.approx_median(col_speed).alias("Median Speed"),
         f.approx_percentile_cont(col_speed, 0.9).alias("90% Speed")])
 
-When the :code:`group_by` list is empty the aggregation is done over the whole :class:`.DataFrame`.
-For grouping the :code:`group_by` list must contain at least one column.
+When :code:`group_by` is :code:`None` or an empty list, the aggregation is done over the whole
+:class:`.DataFrame`. For grouping the :code:`group_by` list must contain at least one column.
 
 .. ipython:: python
 
