@@ -202,7 +202,7 @@ Module Contents
    .. py:method:: _repr_html_() -> str
 
 
-   .. py:method:: aggregate(group_by: collections.abc.Sequence[datafusion.expr.Expr | str] | datafusion.expr.Expr | str, aggs: collections.abc.Sequence[datafusion.expr.Expr] | datafusion.expr.Expr) -> DataFrame
+   .. py:method:: aggregate(group_by: collections.abc.Sequence[datafusion.expr.Expr | str] | datafusion.expr.Expr | str | None, aggs: collections.abc.Sequence[datafusion.expr.Expr] | datafusion.expr.Expr) -> DataFrame
 
       Aggregates the rows of the current DataFrame.
 
@@ -218,23 +218,24 @@ Module Contents
       :ref:`aggregation` user guide for detailed examples.
 
       :param group_by: Sequence of expressions or column names to group
-                       by. A :py:class:`~datafusion.expr.GroupingSet`
-                       expression may be included to produce multiple grouping
-                       levels (rollup, cube, or explicit grouping sets).
+                       by, or ``None`` for aggregation over the whole DataFrame.
+                       A :py:class:`~datafusion.expr.GroupingSet` expression may
+                       be included to produce multiple grouping levels (rollup,
+                       cube, or explicit grouping sets).
       :param aggs: Sequence of expressions to aggregate.
 
       :returns: DataFrame after aggregation.
 
       .. rubric:: Examples
 
-      Aggregate without grouping — an empty ``group_by`` produces a
-      single row:
+      Aggregate without grouping — ``None`` or an empty ``group_by``
+      produces a single row:
 
       >>> ctx = dfn.SessionContext()
       >>> df = ctx.from_pydict(
       ...     {"team": ["x", "x", "y"], "score": [1, 2, 5]}
       ... )
-      >>> df.aggregate([], [F.sum(col("score")).alias("total")]).to_pydict()
+      >>> df.aggregate(None, [F.sum(col("score")).alias("total")]).to_pydict()
       {'total': [8]}
 
       Group by a column and produce one row per group:
