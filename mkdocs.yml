@@ -117,7 +117,7 @@ nav:
   - User Guide:
       - user-guide/index.md
       - Introduction: user-guide/introduction.ipynb
-      - Basics: user-guide/basics.ipynb
+      - Concepts: user-guide/basics.ipynb
       - Data Sources: user-guide/data-sources.ipynb
       - DataFrame:
           - user-guide/dataframe/index.md

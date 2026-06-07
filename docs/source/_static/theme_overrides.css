@@ -52,6 +52,25 @@
   display: none !important;
 }
 
+/* Notebook code output (e.g. `df.show()` ASCII tables) often exceeds
+ * the content width. Force a non-wrapping pre with horizontal scroll
+ * so wide tables stay legible instead of wrapping mid-row.
+ *
+ * Material's `.md-typeset pre` rule sets `white-space: pre-wrap`, which
+ * would otherwise wrap each row across lines and destroy column
+ * alignment. */
+.jp-OutputArea-output,
+.jp-OutputArea-output pre,
+.jp-RenderedText,
+.jp-RenderedText pre,
+.md-typeset .jp-RenderedText pre,
+.md-typeset .jp-OutputArea-output pre {
+  white-space: pre !important;
+  overflow-x: auto !important;
+  max-width: 100%;
+  word-wrap: normal;
+}
+
 /* Center the footer copyright/trademark block */
 .md-copyright {
   text-align: center;
