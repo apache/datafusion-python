@@ -44,6 +44,14 @@
   color: #FF8A75;
 }
 
+/* Hide notebook setup cells (chdir + boilerplate imports) so they don't
+ * appear as empty containers in the rendered output. The cells still
+ * execute — mkdocs-jupyter's TagRemovePreprocessor only strips input
+ * and outputs, leaving the wrapping div behind. */
+.celltag_nb-setup {
+  display: none !important;
+}
+
 /* Center the footer copyright/trademark block */
 .md-copyright {
   text-align: center;

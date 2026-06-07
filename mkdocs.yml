@@ -60,6 +60,10 @@ plugins:
       allow_errors: false
       include_source: false
       ignore_h1_titles: true
+      remove_tag_config:
+        remove_cell_tags: ["remove-cell"]
+        remove_input_tags: ["remove-input"]
+        remove_all_outputs_tags: ["remove-output"]
   - mkdocstrings:
       default_handler: python
       handlers:
