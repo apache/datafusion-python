@@ -798,7 +798,7 @@ class DataFrame:
 
     def aggregate(
         self,
-        group_by: Sequence[Expr | str] | Expr | str,
+        group_by: Sequence[Expr | str] | Expr | str | None,
         aggs: Sequence[Expr] | Expr,
     ) -> DataFrame:
         """Aggregates the rows of the current DataFrame.
@@ -816,23 +816,24 @@ class DataFrame:
 
         Args:
             group_by: Sequence of expressions or column names to group
-                by. A :py:class:`~datafusion.expr.GroupingSet`
-                expression may be included to produce multiple grouping
-                levels (rollup, cube, or explicit grouping sets).
+                by, or ``None`` for aggregation over the whole DataFrame.
+                A :py:class:`~datafusion.expr.GroupingSet` expression may
+                be included to produce multiple grouping levels (rollup,
+                cube, or explicit grouping sets).
             aggs: Sequence of expressions to aggregate.
 
         Returns:
             DataFrame after aggregation.
 
         Examples:
-            Aggregate without grouping — an empty ``group_by`` produces a
-            single row:
+            Aggregate without grouping — ``None`` or an empty ``group_by``
+            produces a single row:
 
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict(
             ...     {"team": ["x", "x", "y"], "score": [1, 2, 5]}
             ... )
-            >>> df.aggregate([], [F.sum(col("score")).alias("total")]).to_pydict()
+            >>> df.aggregate(None, [F.sum(col("score")).alias("total")]).to_pydict()
             {'total': [8]}
 
             Group by a column and produce one row per group:
@@ -842,11 +843,15 @@ class DataFrame:
             ... ).sort("team").to_pydict()
             {'team': ['x', 'y'], 'total': [3, 5]}
         """
-        group_by_list = (
-            list(group_by)
-            if isinstance(group_by, Sequence) and not isinstance(group_by, Expr | str)
-            else [group_by]
-        )
+        if group_by is None:
+            group_by_list = []
+        else:
+            group_by_list = (
+                list(group_by)
+                if isinstance(group_by, Sequence)
+                and not isinstance(group_by, Expr | str)
+                else [group_by]
+            )
         aggs_list = (
             list(aggs)
             if isinstance(aggs, Sequence) and not isinstance(aggs, Expr)

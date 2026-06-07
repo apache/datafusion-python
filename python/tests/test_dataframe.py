@@ -475,6 +475,12 @@ def test_aggregate_tuple_group_by(df):
     assert result_tuple == result_list
 
 
+def test_aggregate_none_group_by_equivalent_to_empty_list(df):
+    result_none = df.aggregate(None, [f.count()]).to_pydict()
+    result_empty = df.aggregate([], [f.count()]).to_pydict()
+    assert result_none == result_empty
+
+
 def test_aggregate_tuple_aggs(df):
     result_list = df.aggregate("a", [f.count()]).sort("a").to_pydict()
     result_tuple = df.aggregate("a", (f.count(),)).sort("a").to_pydict()
