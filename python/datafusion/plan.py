@@ -103,7 +103,7 @@ class LogicalPlan:  # noqa: PLW1641
 
         When ``ctx`` is supplied, encoding routes through the session's
         installed `LogicalExtensionCodec` so user FFI codecs (registered
-        via :py:meth:`SessionContext.with_logical_extension_codec`) see
+        via `with_logical_extension_codec`) see
         the encode path. With ``ctx=None`` a default codec is used.
         Tables created in memory from record batches are currently not
         supported.
@@ -227,15 +227,15 @@ class ExecutionPlan:
         DataFusion executes a query as a pipeline of operators — for example a
         data source scan, followed by a filter, followed by a projection. After
         the DataFrame has been executed (via
-        :py:meth:`~datafusion.DataFrame.collect`,
-        :py:meth:`~datafusion.DataFrame.execute_stream`, etc.), each operator
+        [`collect`][datafusion.DataFrame.collect],
+        [`execute_stream`][datafusion.DataFrame.execute_stream], etc.), each operator
         records statistics such as how many rows it produced and how much CPU
         time it consumed.
 
         Each entry in the returned list corresponds to one operator that
         recorded metrics. The first element of the tuple is the operator's
         description string — the same text shown by
-        :py:meth:`display_indent` — which identifies both the operator type
+        [`display_indent`][display_indent] — which identifies both the operator type
         and its key parameters, for example ``"FilterExec: column1@0 > 1"``
         or ``"DataSourceExec: partitions=1"``.
 
@@ -263,8 +263,8 @@ class MetricsSet:
     """A set of metrics for a single execution plan operator.
 
     A physical plan operator runs independently across one or more partitions.
-    :py:meth:`metrics` returns the raw per-partition :py:class:`Metric` objects.
-    The convenience properties (:py:attr:`output_rows`, :py:attr:`elapsed_compute`,
+    [`metrics`][metrics] returns the raw per-partition `Metric` objects.
+    The convenience properties (`output_rows`, [`elapsed_compute`][elapsed_compute],
     etc.) automatically sum the named metric across *all* partitions, giving a
     single aggregate value for the operator as a whole.
     """
@@ -343,7 +343,7 @@ class Metric:
         """The value of this metric.
 
         Returns an ``int`` for counters, gauges, and time-based metrics
-        (nanoseconds), a :py:class:`~datetime.datetime` (UTC) for
+        (nanoseconds), a [`datetime`][datetime.datetime] (UTC) for
         ``start_timestamp`` / ``end_timestamp`` metrics, or ``None``
         when the value has not been set or is not representable.
         """
@@ -351,7 +351,7 @@ class Metric:
 
     @property
     def value_as_datetime(self) -> datetime.datetime | None:
-        """The value as a UTC :py:class:`~datetime.datetime` for timestamp metrics.
+        """The value as a UTC [`datetime`][datetime.datetime] for timestamp metrics.
 
         Returns ``None`` for all non-timestamp metrics and for timestamp
         metrics whose value has not been set (e.g. before execution).

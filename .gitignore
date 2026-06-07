@@ -3,6 +3,7 @@ target
 .idea
 /docs/temp
 /docs/build
+/.cache
 .DS_Store
 .vscode
 

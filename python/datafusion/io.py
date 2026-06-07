@@ -43,7 +43,7 @@ def read_parquet(
     schema: pa.Schema | None = None,
     file_sort_order: list[list[Expr]] | None = None,
 ) -> DataFrame:
-    """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
+    """Read a Parquet source into a [`Dataframe`][datafusion.dataframe.Dataframe].
 
     This function will use the global context. Any functions or tables registered
     with another context may not be accessible when used with a DataFrame created
@@ -175,7 +175,7 @@ def read_avro(
     file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     file_extension: str = ".avro",
 ) -> DataFrame:
-    """Create a :py:class:`DataFrame` for reading Avro data source.
+    """Create a `DataFrame` for reading Avro data source.
 
     This function will use the global context. Any functions or tables registered
     with another context may not be accessible when used with a DataFrame created

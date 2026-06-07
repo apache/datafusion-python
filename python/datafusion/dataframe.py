@@ -14,23 +14,23 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-""":py:class:`DataFrame` — lazy, chainable query representation.
+"""[`DataFrame`][datafusion.dataframe.DataFrame] — lazy, chainable query representation.
 
-A :py:class:`DataFrame` is a logical plan over one or more data sources.
-Methods that reshape the plan (:py:meth:`DataFrame.select`,
-:py:meth:`DataFrame.filter`, :py:meth:`DataFrame.aggregate`,
-:py:meth:`DataFrame.sort`, :py:meth:`DataFrame.join`,
-:py:meth:`DataFrame.limit`, the set-operation methods, ...) return a new
-:py:class:`DataFrame` and do no work until a terminal method such as
-:py:meth:`DataFrame.collect`, :py:meth:`DataFrame.to_pydict`,
-:py:meth:`DataFrame.show`, or one of the ``write_*`` methods is called.
+A `DataFrame` is a logical plan over one or more data sources.
+Methods that reshape the plan ([`select`][datafusion.dataframe.DataFrame.select],
+`filter`, `aggregate`,
+[`sort`][DataFrame.sort], [`join`][DataFrame.join],
+`limit`, the set-operation methods, ...) return a new
+`DataFrame` and do no work until a terminal method such as
+[`collect`][datafusion.dataframe.DataFrame.collect], [`to_pydict`][DataFrame.to_pydict],
+[`show`][DataFrame.show], or one of the ``write_*`` methods is called.
 
 DataFrames are produced from a
-:py:class:`~datafusion.context.SessionContext`, typically via
-:py:meth:`~datafusion.context.SessionContext.sql`,
-:py:meth:`~datafusion.context.SessionContext.read_csv`,
-:py:meth:`~datafusion.context.SessionContext.read_parquet`, or
-:py:meth:`~datafusion.context.SessionContext.from_pydict`.
+[`SessionContext`][datafusion.context.SessionContext], typically via
+[`sql`][datafusion.context.SessionContext.sql],
+[`read_csv`][datafusion.context.SessionContext.read_csv],
+[`read_parquet`][datafusion.context.SessionContext.read_parquet], or
+[`from_pydict`][datafusion.context.SessionContext.from_pydict].
 
 Examples:
     >>> ctx = dfn.SessionContext()
@@ -92,7 +92,7 @@ from enum import Enum
 class ExplainFormat(Enum):
     """Output format for explain plans.
 
-    Controls how the query plan is rendered in :py:meth:`DataFrame.explain`.
+    Controls how the query plan is rendered in [`explain`][DataFrame.explain].
     """
 
     INDENT = "indent"
@@ -356,8 +356,8 @@ class DataFrame:
     def __init__(self, df: DataFrameInternal) -> None:
         """This constructor is not to be used by the end user.
 
-        See :py:class:`~datafusion.context.SessionContext` for methods to
-        create a :py:class:`DataFrame`.
+        See [`SessionContext`][datafusion.context.SessionContext] for methods to
+        create a [`DataFrame`][datafusion.dataframe.DataFrame].
         """
         self.df = df
 
@@ -379,7 +379,7 @@ class DataFrame:
         return _Table(self.df.into_view(temporary))
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
-        """Return a new :py:class:`DataFrame` with the specified column or columns.
+        """Return a new `DataFrame` with the specified column or columns.
 
         Args:
             key: Column name or list of column names to select.
@@ -428,7 +428,7 @@ class DataFrame:
         return DataFrame(self.df.describe())
 
     def schema(self) -> pa.Schema:
-        """Return the :py:class:`pyarrow.Schema` of this DataFrame.
+        """Return the [`Schema`][pyarrow.Schema] of this DataFrame.
 
         The output schema contains information on the name, data type, and
         nullability for each column.
@@ -442,7 +442,7 @@ class DataFrame:
         """Return a fully qualified column expression for ``name``.
 
         Resolves an unqualified column name against this DataFrame's schema
-        and returns an :py:class:`Expr` whose underlying column reference
+        and returns an [`Expr`][datafusion.expr.Expr] whose underlying column reference
         includes the table qualifier. This is especially useful after joins,
         where the same column name may appear in multiple relations.
 
@@ -477,17 +477,17 @@ class DataFrame:
         return self.find_qualified_columns(name)[0]
 
     def col(self, name: str) -> Expr:
-        """Alias for :py:meth:`column`.
+        """Alias for [`column`][datafusion.col.column].
 
         See Also:
-            :py:meth:`column`
+            [`column`][datafusion.col.column]
         """
         return self.column(name)
 
     def find_qualified_columns(self, *names: str) -> list[Expr]:
         """Return fully qualified column expressions for the given names.
 
-        This is a batch version of :py:meth:`column` — it resolves each
+        This is a batch version of [`column`][datafusion.col.column] — it resolves each
         unqualified name against the DataFrame's schema and returns a list
         of qualified column expressions.
 
@@ -524,7 +524,7 @@ class DataFrame:
         return self.df.select_exprs(*args)
 
     def alias(self, alias: str) -> DataFrame:
-        """Assign a table alias to this :py:class:`DataFrame`.
+        """Assign a table alias to this [`DataFrame`][datafusion.dataframe.DataFrame].
 
         Replaces the qualifiers of the output columns with ``alias``. Useful for
         self-joins and any situation that needs an unambiguous table-style
@@ -550,13 +550,13 @@ class DataFrame:
         return DataFrame(self.df.alias(alias))
 
     def select(self, *exprs: Expr | str) -> DataFrame:
-        """Project arbitrary expressions into a new :py:class:`DataFrame`.
+        """Project arbitrary expressions into a new `DataFrame`.
 
-        String arguments are treated as column names; :py:class:`~datafusion.expr.Expr`
+        String arguments are treated as column names; [`Expr`][datafusion.expr.Expr]
         arguments can reshape, rename, or compute new columns.
 
         Args:
-            exprs: Either column names or :py:class:`~datafusion.expr.Expr` to select.
+            exprs: Either column names or [`Expr`][datafusion.expr.Expr] to select.
 
         Returns:
             DataFrame after projection. It has one column for each expression.
@@ -647,7 +647,7 @@ class DataFrame:
         :class:`~datafusion.expr.Expr` created using helper functions such as
         :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression string
         that will be parsed against the DataFrame schema. If more complex logic is
-        required, see the logical operations in :py:mod:`~datafusion.functions`.
+        required, see the logical operations in [`functions`][datafusion.functions].
 
         Examples:
             >>> ctx = dfn.SessionContext()
@@ -806,18 +806,18 @@ class DataFrame:
         By default each unique combination of the ``group_by`` columns
         produces one row. To get multiple levels of subtotals in a
         single pass, pass a
-        :py:class:`~datafusion.expr.GroupingSet` expression
+        [`GroupingSet`][datafusion.expr.GroupingSet] expression
         (created via
-        :py:meth:`~datafusion.expr.GroupingSet.rollup`,
-        :py:meth:`~datafusion.expr.GroupingSet.cube`, or
-        :py:meth:`~datafusion.expr.GroupingSet.grouping_sets`)
+        [`rollup`][datafusion.expr.GroupingSet.rollup],
+        [`cube`][datafusion.expr.GroupingSet.cube], or
+        [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets])
         as the ``group_by`` argument.  See the
         :ref:`aggregation` user guide for detailed examples.
 
         Args:
             group_by: Sequence of expressions or column names to group
                 by, or ``None`` for aggregation over the whole DataFrame.
-                A :py:class:`~datafusion.expr.GroupingSet` expression may
+                A [`GroupingSet`][datafusion.expr.GroupingSet] expression may
                 be included to produce multiple grouping levels (rollup,
                 cube, or explicit grouping sets).
             aggs: Sequence of expressions to aggregate.
@@ -867,7 +867,7 @@ class DataFrame:
 
         Note that any expression can be turned into a sort expression by
         calling its ``sort`` method. For ascending-only sorts, the shorter
-        :py:meth:`sort_by` is usually more convenient.
+        [`sort_by`][sort_by] is usually more convenient.
 
         Args:
             exprs: Sort expressions or column names, applied in order.
@@ -883,7 +883,7 @@ class DataFrame:
             >>> df.sort("a").to_pydict()
             {'a': [1, 2, 3], 'b': [20, 30, 10]}
 
-            Sort descending using :py:meth:`Expr.sort`:
+            Sort descending using [`sort`][Expr.sort]:
 
             >>> df.sort(col("a").sort(ascending=False)).to_pydict()
             {'a': [3, 2, 1], 'b': [10, 30, 20]}
@@ -904,10 +904,10 @@ class DataFrame:
         return self.with_columns(exprs)
 
     def limit(self, count: int, offset: int = 0) -> DataFrame:
-        """Return a new :py:class:`DataFrame` with a limited number of rows.
+        """Return a new `DataFrame` with a limited number of rows.
 
         Results are returned in unspecified order unless the DataFrame is
-        explicitly sorted first via :py:meth:`sort` or :py:meth:`sort_by`.
+        explicitly sorted first via [`sort`][sort] or [`sort_by`][sort_by].
 
         Args:
             count: Number of rows to limit the DataFrame to.
@@ -932,7 +932,7 @@ class DataFrame:
         return DataFrame(self.df.limit(count, offset))
 
     def head(self, n: int = 5) -> DataFrame:
-        """Return a new :py:class:`DataFrame` with a limited number of rows.
+        """Return a new `DataFrame` with a limited number of rows.
 
         Args:
             n: Number of rows to take from the head of the DataFrame.
@@ -943,7 +943,7 @@ class DataFrame:
         return DataFrame(self.df.limit(n, 0))
 
     def tail(self, n: int = 5) -> DataFrame:
-        """Return a new :py:class:`DataFrame` with a limited number of rows.
+        """Return a new `DataFrame` with a limited number of rows.
 
         Be aware this could be potentially expensive since the row size needs to be
         determined of the dataframe. This is done by collecting it.
@@ -957,19 +957,19 @@ class DataFrame:
         return DataFrame(self.df.limit(n, max(0, self.count() - n)))
 
     def collect(self) -> list[pa.RecordBatch]:
-        """Execute this :py:class:`DataFrame` and collect results into memory.
+        """Execute this `DataFrame` and collect results into memory.
 
         Prior to calling ``collect``, modifying a DataFrame simply updates a plan
         (no actual computation is performed). Calling ``collect`` triggers the
         computation.
 
         Returns:
-            List of :py:class:`pyarrow.RecordBatch` collected from the DataFrame.
+            List of [`RecordBatch`][pyarrow.RecordBatch] collected from the DataFrame.
         """
         return self.df.collect()
 
     def collect_column(self, column_name: str) -> pa.Array | pa.ChunkedArray:
-        """Executes this :py:class:`DataFrame` for a single column."""
+        """Executes this `DataFrame` for a single column."""
         return self.df.collect_column(column_name)
 
     def cache(self) -> DataFrame:
@@ -983,11 +983,11 @@ class DataFrame:
     def collect_partitioned(self) -> list[list[pa.RecordBatch]]:
         """Execute this DataFrame and collect all partitioned results.
 
-        This operation returns :py:class:`pyarrow.RecordBatch` maintaining the input
+        This operation returns `RecordBatch` maintaining the input
         partitioning.
 
         Returns:
-            List of list of :py:class:`RecordBatch` collected from the
+            List of list of `RecordBatch` collected from the
                 DataFrame.
         """
         return self.df.collect_partitioned()
@@ -1001,7 +1001,7 @@ class DataFrame:
         self.df.show(num)
 
     def distinct(self) -> DataFrame:
-        """Return a new :py:class:`DataFrame` with all duplicated rows removed.
+        """Return a new `DataFrame` with all duplicated rows removed.
 
         Returns:
             DataFrame after removing duplicates.
@@ -1058,15 +1058,15 @@ class DataFrame:
         join_keys: tuple[list[str], list[str]] | None = None,
         coalesce_duplicate_keys: bool = True,
     ) -> DataFrame:
-        """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
+        """Join this `DataFrame` with another `DataFrame`.
 
         ``on`` has to be provided or both ``left_on`` and ``right_on`` in
         conjunction.
 
         When non-key columns share the same name in both DataFrames, use
-        :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        [`col`][DataFrame.col] on each DataFrame **before** the join to
         obtain fully qualified column references that can disambiguate them.
-        See :py:meth:`join_on` for an example.
+        See [`join_on`][join_on] for an example.
 
         Args:
             right: Other DataFrame to join with.
@@ -1156,13 +1156,13 @@ class DataFrame:
         *on_exprs: Expr,
         how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
     ) -> DataFrame:
-        """Join two :py:class:`DataFrame` using the specified expressions.
+        """Join two `DataFrame` using the specified expressions.
 
         Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
         built with :func:`datafusion.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
-        Use :py:meth:`DataFrame.col` on each DataFrame **before** the join to
+        Use [`col`][DataFrame.col] on each DataFrame **before** the join to
         obtain fully qualified column references. These qualified references
         can then be used in the join predicate and to disambiguate columns
         with the same name when selecting from the result.
@@ -1178,7 +1178,7 @@ class DataFrame:
             ... ).sort(col("x")).to_pydict()
             {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
 
-            Use :py:meth:`col` to disambiguate shared column names:
+            Use [`col`][datafusion.col.col] to disambiguate shared column names:
 
             >>> left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
             >>> right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
@@ -1216,7 +1216,7 @@ class DataFrame:
             verbose: If ``True``, more details will be included.
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
-                :py:attr:`ExplainFormat.INDENT`.
+                [`INDENT`][ExplainFormat.INDENT].
 
         Examples:
             Show the plan in tree format:
@@ -1287,9 +1287,9 @@ class DataFrame:
         return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
-        """Calculate the union of two :py:class:`DataFrame`.
+        """Calculate the union of two [`DataFrame`][datafusion.dataframe.DataFrame].
 
-        The two :py:class:`DataFrame` must have exactly the same schema.
+        The two `DataFrame` must have exactly the same schema.
 
         Args:
             other: DataFrame to union with.
@@ -1318,17 +1318,17 @@ class DataFrame:
         "union_distinct() is deprecated. Use union(other, distinct=True) instead."
     )
     def union_distinct(self, other: DataFrame) -> DataFrame:
-        """Calculate the distinct union of two :py:class:`DataFrame`.
+        """Calculate the distinct union of two `DataFrame`.
 
         See Also:
-            :py:meth:`union`
+            [`union`][union]
         """
         return self.union(other, distinct=True)
 
     def intersect(self, other: DataFrame, distinct: bool = False) -> DataFrame:
-        """Calculate the intersection of two :py:class:`DataFrame`.
+        """Calculate the intersection of two `DataFrame`.
 
-        The two :py:class:`DataFrame` must have exactly the same schema.
+        The two `DataFrame` must have exactly the same schema.
 
         Args:
             other: DataFrame to intersect with.
@@ -1356,11 +1356,11 @@ class DataFrame:
         return DataFrame(self.df.intersect(other.df, distinct))
 
     def except_all(self, other: DataFrame, distinct: bool = False) -> DataFrame:
-        """Calculate the set difference of two :py:class:`DataFrame`.
+        """Calculate the set difference of two `DataFrame`.
 
         Returns rows that are in this DataFrame but not in ``other``.
 
-        The two :py:class:`DataFrame` must have exactly the same schema.
+        The two `DataFrame` must have exactly the same schema.
 
         Args:
             other: DataFrame to calculate exception with.
@@ -1386,9 +1386,9 @@ class DataFrame:
         return DataFrame(self.df.except_all(other.df, distinct))
 
     def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
-        """Union two :py:class:`DataFrame` matching columns by name.
+        """Union two `DataFrame` matching columns by name.
 
-        Unlike :py:meth:`union` which matches columns by position, this method
+        Unlike [`union`][union] which matches columns by position, this method
         matches columns by their names, allowing DataFrames with different
         column orders to be combined.
 
@@ -1460,7 +1460,7 @@ class DataFrame:
 
         This is a convenience method that sorts the DataFrame by the given
         expressions in ascending order with nulls last. For more control over
-        sort direction and null ordering, use :py:meth:`sort` instead.
+        sort direction and null ordering, use [`sort`][sort] instead.
 
         Args:
             exprs: Expressions or column names to sort by.
@@ -1485,7 +1485,7 @@ class DataFrame:
         with_header: bool = False,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:
-        """Execute the :py:class:`DataFrame`  and write the results to a CSV file.
+        """Execute the `DataFrame`  and write the results to a CSV file.
 
         Args:
             path: Path of the CSV file to write.
@@ -1531,7 +1531,7 @@ class DataFrame:
         compression_level: int | None = None,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:
-        """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
+        """Execute the `DataFrame` and write the results to a Parquet file.
 
         Available compression types are:
 
@@ -1586,7 +1586,7 @@ class DataFrame:
         options: ParquetWriterOptions,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:
-        """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
+        """Execute the `DataFrame` and write the results to a Parquet file.
 
         Allows advanced writer options to be set with `ParquetWriterOptions`.
 
@@ -1645,7 +1645,7 @@ class DataFrame:
         path: str | pathlib.Path,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:
-        """Execute the :py:class:`DataFrame` and write the results to a JSON file.
+        """Execute the `DataFrame` and write the results to a JSON file.
 
         Args:
             path: Path of the JSON file to write.
@@ -1659,7 +1659,7 @@ class DataFrame:
     def write_table(
         self, table_name: str, write_options: DataFrameWriteOptions | None = None
     ) -> None:
-        """Execute the :py:class:`DataFrame` and write the results to a table.
+        """Execute the `DataFrame` and write the results to a table.
 
         The table must be registered with the session to perform this operation.
         Not all table providers support writing operations. See the individual
@@ -1671,7 +1671,7 @@ class DataFrame:
         self.df.write_table(table_name, raw_write_options)
 
     def to_arrow_table(self) -> pa.Table:
-        """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.
+        """Execute the `DataFrame` and convert it into an Arrow Table.
 
         Returns:
             Arrow Table.
@@ -1696,7 +1696,7 @@ class DataFrame:
         return [RecordBatchStream(rbs) for rbs in streams]
 
     def to_pandas(self) -> pd.DataFrame:
-        """Execute the :py:class:`DataFrame` and convert it into a Pandas DataFrame.
+        """Execute the `DataFrame` and convert it into a Pandas DataFrame.
 
         Returns:
             Pandas DataFrame.
@@ -1704,7 +1704,7 @@ class DataFrame:
         return self.df.to_pandas()
 
     def to_pylist(self) -> list[dict[str, Any]]:
-        """Execute the :py:class:`DataFrame` and convert it into a list of dictionaries.
+        """Execute the `DataFrame` and convert it into a list of dictionaries.
 
         Returns:
             List of dictionaries.
@@ -1712,7 +1712,7 @@ class DataFrame:
         return self.df.to_pylist()
 
     def to_pydict(self) -> dict[str, list[Any]]:
-        """Execute the :py:class:`DataFrame` and convert it into a dictionary of lists.
+        """Execute the `DataFrame` and convert it into a dictionary of lists.
 
         Returns:
             Dictionary of lists.
@@ -1720,7 +1720,7 @@ class DataFrame:
         return self.df.to_pydict()
 
     def to_polars(self) -> pl.DataFrame:
-        """Execute the :py:class:`DataFrame` and convert it into a Polars DataFrame.
+        """Execute the `DataFrame` and convert it into a Polars DataFrame.
 
         Returns:
             Polars DataFrame.
@@ -1728,7 +1728,7 @@ class DataFrame:
         return self.df.to_polars()
 
     def count(self) -> int:
-        """Return the total number of rows in this :py:class:`DataFrame`.
+        """Return the total number of rows in this `DataFrame`.
 
         Note that this method will actually run a plan to calculate the
         count, which may be slow for large or complicated DataFrames.
@@ -1790,7 +1790,7 @@ class DataFrame:
         supported through this interface.
 
         Args:
-            requested_schema: Either a :py:class:`pyarrow.Schema` or an Arrow C
+            requested_schema: Either a [`Schema`][pyarrow.Schema] or an Arrow C
                 Schema capsule (``PyCapsule``) produced by
                 ``schema._export_to_c_capsule()``. The DataFrame will attempt to
                 align its output with the fields and order specified by this schema.

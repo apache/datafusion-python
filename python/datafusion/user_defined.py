@@ -128,7 +128,7 @@ class PhysicalExtensionCodecExportable(Protocol):
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
-    Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
+    Scalar UDFs operate on a row by row basis. See also `AggregateUDF` for
     operating on a group of rows.
     """
 
@@ -142,7 +142,7 @@ class ScalarUDF:
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
 
-        See helper method :py:func:`udf` for argument details.
+        See helper method [`udf`][datafusion.user_defined.udf] for argument details.
         """
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
@@ -157,9 +157,9 @@ class ScalarUDF:
     def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
         """Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udf` to surface a function looked
+        Used by [`udf`][SessionContext.udf] to surface a function looked
         up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        [`__init__`][__init__].
         """
         wrapper = cls.__new__(cls)
         wrapper._udf = internal
@@ -355,7 +355,7 @@ class ScalarUDF:
 
 
 class Accumulator(metaclass=ABCMeta):
-    """Defines how an :py:class:`AggregateUDF` accumulates values."""
+    """Defines how an `AggregateUDF` accumulates values."""
 
     @abstractmethod
     def state(self) -> list[pa.Scalar]:
@@ -402,7 +402,7 @@ class AggregateUDF:
     """Class for performing scalar user-defined functions (UDF).
 
     Aggregate UDFs operate on a group of rows and return a single value. See
-    also :py:class:`ScalarUDF` for operating on a row by row basis.
+    also `ScalarUDF` for operating on a row by row basis.
     """
 
     @overload
@@ -438,7 +438,7 @@ class AggregateUDF:
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
 
-        See :py:func:`udaf` for a convenience function and argument
+        See `udaf` for a convenience function and argument
         descriptions.
         """
         if hasattr(accumulator, "__datafusion_aggregate_udf__"):
@@ -469,9 +469,9 @@ class AggregateUDF:
     def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
         """Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udaf` to surface a function looked
+        Used by [`udaf`][SessionContext.udaf] to surface a function looked
         up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        [`__init__`][__init__].
         """
         wrapper = cls.__new__(cls)
         wrapper._udaf = internal
@@ -541,10 +541,10 @@ class AggregateUDF:
             - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
               When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
 
-        If your :py:class:`Accumulator` can be instantiated with no arguments, you
+        If your `Accumulator` can be instantiated with no arguments, you
         can simply pass its type as ``accum``. If you need to pass additional
         arguments to its constructor, you can define a lambda or a factory method.
-        During runtime the :py:class:`Accumulator` will be constructed for every
+        During runtime the `Accumulator` will be constructed for every
         instance in which this UDAF is used.
 
         Examples:
@@ -617,7 +617,7 @@ class AggregateUDF:
             input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
-            volatility: See :py:class:`Volatility` for allowed values.
+            volatility: See [`Volatility`][Volatility] for allowed values.
             name: A descriptive name for the function.
 
         Returns:
@@ -762,13 +762,13 @@ class WindowEvaluator:
 
         This function is called once per input *partition* for window functions that
         *do not use* values from the window frame, such as
-        :py:func:`~datafusion.functions.row_number`,
-        :py:func:`~datafusion.functions.rank`,
-        :py:func:`~datafusion.functions.dense_rank`,
-        :py:func:`~datafusion.functions.percent_rank`,
-        :py:func:`~datafusion.functions.cume_dist`,
-        :py:func:`~datafusion.functions.lead`,
-        and :py:func:`~datafusion.functions.lag`.
+        [`row_number`][datafusion.functions.row_number],
+        [`rank`][datafusion.functions.rank],
+        [`dense_rank`][datafusion.functions.dense_rank],
+        [`percent_rank`][datafusion.functions.percent_rank],
+        [`cume_dist`][datafusion.functions.cume_dist],
+        [`lead`][datafusion.functions.lead],
+        and [`lag`][datafusion.functions.lag].
 
         It produces the result of all rows in a single pass. It
         expects to receive the entire partition as the ``value`` and
@@ -874,7 +874,7 @@ class WindowUDF:
     """Class for performing window user-defined functions (UDF).
 
     Window UDFs operate on a partition of rows. See
-    also :py:class:`ScalarUDF` for operating on a row by row basis.
+    also `ScalarUDF` for operating on a row by row basis.
     """
 
     def __init__(
@@ -887,7 +887,7 @@ class WindowUDF:
     ) -> None:
         """Instantiate a user-defined window function (UDWF).
 
-        See :py:func:`udwf` for a convenience function and argument
+        See `udwf` for a convenience function and argument
         descriptions.
         """
         if hasattr(func, "__datafusion_window_udf__"):
@@ -901,9 +901,9 @@ class WindowUDF:
     def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
         """Wrap an already-constructed internal ``WindowUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udwf` to surface a function looked
+        Used by [`udwf`][SessionContext.udwf] to surface a function looked
         up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        [`__init__`][__init__].
         """
         wrapper = cls.__new__(cls)
         wrapper._udwf = internal
@@ -1009,7 +1009,7 @@ class WindowUDF:
                 the online documentation for more information.
             input_types: The data types of the arguments.
             return_type: The data type of the return value.
-            volatility: See :py:class:`Volatility` for allowed values.
+            volatility: See [`Volatility`][Volatility] for allowed values.
             name: A descriptive name for the function.
 
         Returns:
@@ -1155,7 +1155,7 @@ class TableFunction:
         Configuration changes do **not** propagate; the wrapper holds
         its own clone of the session config.
 
-        See :py:func:`udtf` for a convenience function and argument
+        See `udtf` for a convenience function and argument
         descriptions.
         """
         if with_session and hasattr(func, "__datafusion_table_function__"):

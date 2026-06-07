@@ -1,0 +1,167 @@
+site_name: Apache DataFusion in Python
+site_description: Python bindings for Apache DataFusion query engine
+site_url: https://datafusion.apache.org/python/
+repo_url: https://github.com/apache/datafusion-python
+repo_name: apache/datafusion-python
+copyright: Copyright 2019-2026, Apache Software Foundation
+
+docs_dir: docs/source
+site_dir: docs/build/html
+
+theme:
+  name: material
+  custom_dir: docs/source/_overrides
+  logo: _static/images/original.svg
+  favicon: _static/favicon.svg
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/apache/datafusion-python
+    - icon: fontawesome/brands/rust
+      link: https://docs.rs/datafusion/latest/datafusion/
+      name: Rust API docs (docs.rs)
+
+extra_css:
+  - _static/theme_overrides.css
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: true
+      allow_errors: false
+      include_source: false
+      ignore_h1_titles: true
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [python]
+          inventories:
+            - https://docs.python.org/3/objects.inv
+            - https://arrow.apache.org/docs/objects.inv
+          options:
+            docstring_style: google
+            show_source: false
+            members_order: source
+            inherited_members: true
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            docstring_section_style: spacy
+            filters: ["!^_"]
+  - redirects:
+      redirect_maps: {}
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+watch:
+  - python/datafusion
+
+nav:
+  - Home: index.ipynb
+  - User Guide:
+      - user-guide/index.md
+      - Introduction: user-guide/introduction.ipynb
+      - Basics: user-guide/basics.ipynb
+      - Data Sources: user-guide/data-sources.ipynb
+      - DataFrame:
+          - user-guide/dataframe/index.md
+          - Rendering: user-guide/dataframe/rendering.md
+          - Execution Metrics: user-guide/dataframe/execution-metrics.md
+      - Common Operations:
+          - user-guide/common-operations/index.md
+          - Views: user-guide/common-operations/views.md
+          - Basic Info: user-guide/common-operations/basic-info.ipynb
+          - Select and Filter: user-guide/common-operations/select-and-filter.ipynb
+          - Expressions: user-guide/common-operations/expressions.ipynb
+          - Joins: user-guide/common-operations/joins.ipynb
+          - Functions: user-guide/common-operations/functions.ipynb
+          - Aggregations: user-guide/common-operations/aggregations.ipynb
+          - Windows: user-guide/common-operations/windows.ipynb
+          - UDF and UDAF: user-guide/common-operations/udf-and-udfa.ipynb
+      - I/O:
+          - user-guide/io/index.md
+          - Arrow: user-guide/io/arrow.ipynb
+          - Avro: user-guide/io/avro.md
+          - CSV: user-guide/io/csv.md
+          - JSON: user-guide/io/json.md
+          - Parquet: user-guide/io/parquet.md
+          - Table Provider: user-guide/io/table_provider.md
+      - Configuration: user-guide/configuration.md
+      - Distributing Work: user-guide/distributing-work.md
+      - SQL: user-guide/sql.ipynb
+      - Upgrade Guides: user-guide/upgrade-guides.md
+      - AI Coding Assistants: user-guide/ai-coding-assistants.md
+  - Contributor Guide:
+      - contributor-guide/index.md
+      - Introduction: contributor-guide/introduction.md
+      - FFI: contributor-guide/ffi.md
+  - API Reference:
+      - reference/index.md
+      - SessionContext: reference/context.md
+      - DataFrame: reference/dataframe.md
+      - Expr: reference/expr.md
+      - Functions: reference/functions.md
+      - User-Defined Functions: reference/user_defined.md
+      - Catalog: reference/catalog.md
+      - I/O: reference/io.md
+      - IPC: reference/ipc.md
+      - Object Store: reference/object_store.md
+      - Options: reference/options.md
+      - Plan: reference/plan.md
+      - RecordBatch: reference/record_batch.md
+      - Substrait: reference/substrait.md
+      - Unparser: reference/unparser.md
+      - Common: reference/common.md
+  - Links: links.md

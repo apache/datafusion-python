@@ -15,24 +15,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-#
-# Minimal makefile for Sphinx documentation
-#
+# Thin wrapper. The mkdocs.yml lives at the repo root; run `mkdocs build`
+# from one directory up.
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
-BUILDDIR      = build
+MKDOCS ?= mkdocs
 
-# Put it first so that "make" without argument is like "make help".
+.PHONY: help html serve clean
+
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "Targets:"
+	@echo "  html   - build site to docs/build/html"
+	@echo "  serve  - serve site at http://localhost:8000"
+	@echo "  clean  - remove docs/build/"
 
-.PHONY: help Makefile
+html:
+	cd .. && DISABLE_MKDOCS_2_WARNING=true $(MKDOCS) build --strict
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) --fail-on-warning
+serve:
+	cd .. && DISABLE_MKDOCS_2_WARNING=true $(MKDOCS) serve
+
+clean:
+	rm -rf build/

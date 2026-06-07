@@ -1,0 +1,3 @@
+# IPC
+
+::: datafusion.ipc

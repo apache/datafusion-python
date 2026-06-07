@@ -17,11 +17,10 @@
   under the License.
 -->
 
-(io_csv)=
 
 # CSV
 
-Reading a csv is very straightforward with {py:func}`~datafusion.context.SessionContext.read_csv`
+Reading a csv is very straightforward with [`read_csv`][datafusion.context.SessionContext.read_csv]
 
 ```python
 from datafusion import SessionContext
@@ -30,7 +29,7 @@ ctx = SessionContext()
 df = ctx.read_csv("file.csv")
 ```
 
-An alternative is to use {py:func}`~datafusion.context.SessionContext.register_csv`
+An alternative is to use [`register_csv`][datafusion.context.SessionContext.register_csv]
 
 ```python
 ctx.register_csv("file", "file.csv")
@@ -38,7 +37,7 @@ df = ctx.table("file")
 ```
 
 If you require additional control over how to read the CSV file, you can use
-{py:class}`~datafusion.options.CsvReadOptions` to set a variety of options.
+[`CsvReadOptions`][datafusion.options.CsvReadOptions] to set a variety of options.
 
 ```python
 from datafusion import CsvReadOptions

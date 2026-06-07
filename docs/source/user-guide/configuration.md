@@ -17,12 +17,11 @@
   under the License.
 -->
 
-(configuration)=
 
 # Configuration
 
-Let's look at how we can configure DataFusion. When creating a {py:class}`~datafusion.context.SessionContext`, you can pass in
-a {py:class}`~datafusion.context.SessionConfig` and {py:class}`~datafusion.context.RuntimeEnvBuilder` object. These two cover a wide range of options.
+Let's look at how we can configure DataFusion. When creating a [`SessionContext`][datafusion.context.SessionContext], you can pass in
+a [`SessionConfig`][datafusion.context.SessionConfig] and [`RuntimeEnvBuilder`][datafusion.context.RuntimeEnvBuilder] object. These two cover a wide range of options.
 
 ```python
 from datafusion import RuntimeEnvBuilder, SessionConfig, SessionContext
@@ -99,7 +98,7 @@ result = df.collect()
 ### Benchmark Example
 
 The repository includes a benchmark script that demonstrates how to maximize CPU usage
-with DataFusion. The {code}`benchmarks/max_cpu_usage.py` script shows a practical example
+with DataFusion. The `benchmarks/max_cpu_usage.py` script shows a practical example
 of configuring DataFusion for optimal parallelism.
 
 You can run the benchmark script to see the impact of different configuration settings:
@@ -133,9 +132,9 @@ CPU utilization and query performance.
 
 The script demonstrates several key optimization techniques:
 
-1. **Higher target partition count**: Uses {code}`with_target_partitions()` to set the number of concurrent partitions
+1. **Higher target partition count**: Uses `with_target_partitions()` to set the number of concurrent partitions
 2. **Automatic repartitioning**: Enables repartitioning for joins, aggregations, and window functions
-3. **Manual repartitioning**: Uses {code}`repartition()` to ensure all partitions are utilized
+3. **Manual repartitioning**: Uses `repartition()` to ensure all partitions are utilized
 4. **CPU-intensive operations**: Performs aggregations that can benefit from parallelization
 
 The benchmark creates synthetic data and measures the time taken to perform a sum aggregation
@@ -181,5 +180,5 @@ To optimize DataFusion for your specific use case, it is strongly recommended to
 This approach will provide more accurate insights into how DataFusion configuration options
 will impact your particular applications and infrastructure.
 
-For more information about available {py:class}`~datafusion.context.SessionConfig` options, see the [rust DataFusion Configuration guide](https://arrow.apache.org/datafusion/user-guide/configs.html),
-and about {code}`RuntimeEnvBuilder` options in the rust [online API documentation](https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html).
+For more information about available [`SessionConfig`][datafusion.context.SessionConfig] options, see the [rust DataFusion Configuration guide](https://arrow.apache.org/datafusion/user-guide/configs.html),
+and about `RuntimeEnvBuilder` options in the rust [online API documentation](https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html).

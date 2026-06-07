@@ -21,7 +21,7 @@
 
 DataFusion supports splitting work across processes by shipping
 serialized expressions to workers: the driver builds an
-{py:class}`~datafusion.Expr`, each worker evaluates it against its
+[`Expr`][datafusion.Expr], each worker evaluates it against its
 own slice of data. This pattern suits embarrassingly-parallel
 workloads where the driver decides partitioning up front.
 
@@ -38,7 +38,7 @@ DataFusion expressions support distribution directly: pass one to a
 worker process and Python's standard
 [pickle](https://docs.python.org/3/library/pickle.html) machinery
 serializes it transparently — the same machinery
-{py:meth}`multiprocessing.pool.Pool.map`, Ray's `@ray.remote`, and
+[`map`][multiprocessing.pool.Pool.map], Ray's `@ray.remote`, and
 similar libraries already use to ship function arguments. Python UDFs
 — scalar, aggregate, and window — travel inside the serialized
 expression; the receiver does not need to pre-register them.
@@ -82,15 +82,15 @@ with mp_ctx.Pool(processes=4) as pool:
 print(results)  # [[2, 4, 6], [20, 40, 60]]
 ```
 
-:::{note}
-When saved to a `.py` file and executed with the `spawn` or
-`forkserver` start method, wrap the driver block in
-`if __name__ == "__main__":` so worker processes can re-import
-the module without re-running it. This is a standard Python
-{py:mod}`multiprocessing` requirement, not DataFusion-specific —
-see [Safe importing of main module](https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods)
-in the Python docs.
-:::
+!!! note
+
+    When saved to a `.py` file and executed with the `spawn` or
+    `forkserver` start method, wrap the driver block in
+    `if __name__ == "__main__":` so worker processes can re-import
+    the module without re-running it. This is a standard Python
+    [`multiprocessing`][multiprocessing] requirement, not DataFusion-specific —
+    see [Safe importing of main module](https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods)
+    in the Python docs.
 
 ### What travels with the expression
 
@@ -102,13 +102,13 @@ in the Python docs.
   captured in closures travel inside the serialized expression and are
   reconstructed on the worker automatically. Applies equally to:
 
-  - **scalar UDFs** ({py:func}`datafusion.udf`)
-  - **aggregate UDFs** ({py:func}`datafusion.udaf`)
-  - **window UDFs** ({py:func}`datafusion.udwf`)
+  - **scalar UDFs** ([`udf`][datafusion.udf])
+  - **aggregate UDFs** ([`udaf`][datafusion.udaf])
+  - **window UDFs** ([`udwf`][datafusion.udwf])
 
 - **UDFs imported via the FFI capsule protocol** — travel **by name
   only**. The worker must already have a matching registration on its
-  {py:class}`SessionContext`. Without that registration, evaluation
+  [`SessionContext`][datafusion.context.SessionContext]. Without that registration, evaluation
   raises an error.
 
 ### Portability requirements for inline Python UDFs
@@ -135,7 +135,7 @@ requirements on the worker environment:
 
 When an expression references an FFI capsule UDF (or any UDF the
 worker must resolve from its registered functions), set up the
-worker's {py:class}`SessionContext` once per process and install it
+worker's [`SessionContext`][datafusion.context.SessionContext] once per process and install it
 as the *worker context*:
 
 ```python
@@ -157,7 +157,7 @@ with mp.get_context("forkserver").Pool(
 
 Inside a worker, expressions arriving from the driver resolve their
 by-name references against the installed worker context. If no worker
-context is installed, the global {py:class}`SessionContext` is used —
+context is installed, the global [`SessionContext`][datafusion.context.SessionContext] is used —
 fine for expressions that only reference built-ins and Python UDFs,
 but FFI-capsule-backed registrations must be installed on the global
 context to resolve.
@@ -165,11 +165,11 @@ context to resolve.
 ### Python 3.14 default change
 
 Python 3.14 changed the Linux default start method for
-{py:mod}`multiprocessing` from `fork` to `forkserver` (macOS has
+[`multiprocessing`][multiprocessing] from `fork` to `forkserver` (macOS has
 defaulted to `spawn` since Python 3.8; Windows has always used
 `spawn`). With `fork`, any state set in the parent was visible in
 workers via copy-on-write; with `forkserver` and `spawn` it is
-not. The {py:func}`~datafusion.ipc.set_worker_ctx` pattern works on
+not. The [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] pattern works on
 every start method — prefer it over relying on inherited state.
 
 ### Practical considerations
@@ -179,7 +179,7 @@ every start method — prefer it over relying on inherited state.
   expression carrying a Python UDF is hundreds of bytes (the callable
   and its signature). When the same UDF is shipped many times,
   registering an equivalent FFI-capsule UDF on each worker via
-  {py:func}`~datafusion.ipc.set_worker_ctx` and referring to it by
+  [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] and referring to it by
   name cuts the per-trip overhead.
 - **Closure capture.** When a Python UDF closes over surrounding
   state — local variables, module-level objects, file paths — that
@@ -191,8 +191,7 @@ every start method — prefer it over relying on inherited state.
 ### Disabling Python UDF inlining
 
 For a stricter wire format, call
-{py:meth}`SessionContext.with_python_udf_inlining(enabled=False)
-<datafusion.SessionContext.with_python_udf_inlining>` on the session
+[`SessionContext.with_python_udf_inlining(enabled=False)`][datafusion.SessionContext.with_python_udf_inlining] on the session
 producing or consuming the bytes. With inlining disabled, Python
 UDFs travel by name only — the same way FFI-capsule UDFs do — and
 the receiver must have a matching registration.
@@ -204,7 +203,7 @@ Two use cases:
   or another Rust binary disable inlining and rely on the receiver
   having compatible UDF registrations.
 - **Untrusted-source decode.** With inlining disabled,
-  {py:meth}`Expr.from_bytes` never calls `cloudpickle.loads` on
+  [`from_bytes`][datafusion.expr.Expr.from_bytes] never calls `cloudpickle.loads` on
   the incoming bytes — an inline payload from a misbehaving sender
   raises a clear error instead of executing arbitrary Python code.
 
@@ -212,8 +211,8 @@ Mismatched configurations raise a descriptive error: an inline blob
 fed to a strict receiver fails fast rather than silently dropping
 into `cloudpickle.loads`.
 
-To make the toggle apply through {py:func}`pickle.dumps` (which
-calls {py:meth}`Expr.to_bytes` with no context), install the strict
+To make the toggle apply through [`dumps`][pickle.dumps] (which
+calls [`to_bytes`][datafusion.expr.Expr.to_bytes] with no context), install the strict
 session as the driver's *sender context*:
 
 ```python
@@ -226,73 +225,45 @@ set_sender_ctx(SessionContext().with_python_udf_inlining(enabled=False))
 ```
 
 Pair with a matching strict worker context
-({py:func}`~datafusion.ipc.set_worker_ctx`) so the `pickle.loads`
+([`set_worker_ctx`][datafusion.ipc.set_worker_ctx]) so the `pickle.loads`
 side also refuses inline payloads. Explicit
-{py:meth}`Expr.to_bytes(ctx) <Expr.to_bytes>` and
-{py:meth}`Expr.from_bytes(blob, ctx=ctx) <Expr.from_bytes>` calls
+[`Expr.to_bytes(ctx)`][Expr.to_bytes] and
+[`Expr.from_bytes(blob, ctx=ctx)`][Expr.from_bytes] calls
 honor the supplied `ctx` directly and ignore the sender / worker
 contexts.
 
-The toggle only narrows the {py:meth}`Expr.from_bytes` surface;
-{py:func}`pickle.loads` on untrusted bytes remains unsafe regardless
+The toggle only narrows the [`from_bytes`][datafusion.expr.Expr.from_bytes] surface;
+[`loads`][pickle.loads] on untrusted bytes remains unsafe regardless
 of this setting. See the [Security] section below for the full
 threat model.
 
 ### Security
 
-:::{warning}
-Reconstructing an expression containing a Python UDF executes
-arbitrary Python code on the receiver — pickle is doing the work
-under the hood and pickle is unsafe on untrusted input (see the
-[pickle module security warning](https://docs.python.org/3/library/pickle.html#module-pickle)
-in the Python standard library docs). Only accept expressions
-from trusted sources. For untrusted-source workflows, disable
-Python UDF inlining (see above), restrict senders to built-in
-functions and pre-registered Rust-side UDFs, and avoid
-{py:func}`pickle.loads` on externally supplied bytes entirely.
-:::
+!!! warning
+
+    Reconstructing an expression containing a Python UDF executes
+    arbitrary Python code on the receiver — pickle is doing the work
+    under the hood and pickle is unsafe on untrusted input (see the
+    [pickle module security warning](https://docs.python.org/3/library/pickle.html#module-pickle)
+    in the Python standard library docs). Only accept expressions
+    from trusted sources. For untrusted-source workflows, disable
+    Python UDF inlining (see above), restrict senders to built-in
+    functions and pre-registered Rust-side UDFs, and avoid
+    [`loads`][pickle.loads] on externally supplied bytes entirely.
 
 ### Reference: session context slots
 
-There is only one type — {py:class}`SessionContext`. It can occupy
+There is only one type — [`SessionContext`][datafusion.context.SessionContext]. It can occupy
 up to four *slots* in a running program:
 
-```{eval-rst}
-.. list-table::
-   :header-rows: 1
-   :widths: 12 18 40 30
+| Slot | Lifetime | Purpose | Set how |
+|------|----------|---------|---------|
+| User-held | Local variable / attribute | Build and run queries | `ctx = SessionContext(...)` |
+| Global | Process singleton (lazy-init) | Backs module-level [`read_parquet`][datafusion.io.read_parquet], [`read_csv`][datafusion.io.read_csv], [`read_json`][datafusion.io.read_json], [`read_avro`][datafusion.io.read_avro]; final fallback for [`Expr.from_bytes`][datafusion.expr.Expr.from_bytes] | Implicit; access via [`SessionContext.global_ctx`][datafusion.context.SessionContext.global_ctx] |
+| Sender | Thread-local on the driver | Codec settings for outbound `pickle.dumps` / [`Expr.to_bytes`][datafusion.expr.Expr.to_bytes] without `ctx` | [`set_sender_ctx`][datafusion.ipc.set_sender_ctx] |
+| Worker | Thread-local on the worker | Function registry for inbound `pickle.loads` / [`Expr.from_bytes`][datafusion.expr.Expr.from_bytes] without `ctx` | [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] |
 
-   * - Slot
-     - Lifetime
-     - Purpose
-     - Set how
-   * - User-held
-     - Local variable / attribute
-     - Build and run queries
-     - ``ctx = SessionContext(...)``
-   * - Global
-     - Process singleton (lazy-init)
-     - Backs module-level
-       :py:func:`~datafusion.io.read_parquet`,
-       :py:func:`~datafusion.io.read_csv`,
-       :py:func:`~datafusion.io.read_json`,
-       :py:func:`~datafusion.io.read_avro`; final fallback for
-       :py:meth:`Expr.from_bytes`
-     - Implicit; access via
-       :py:meth:`SessionContext.global_ctx`
-   * - Sender
-     - Thread-local on the driver
-     - Codec settings for outbound :py:func:`pickle.dumps` /
-       :py:meth:`Expr.to_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_sender_ctx`
-   * - Worker
-     - Thread-local on the worker
-     - Function registry for inbound :py:func:`pickle.loads` /
-       :py:meth:`Expr.from_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_worker_ctx`
-```
-
-The same {py:class}`SessionContext` object may occupy more than one
+The same [`SessionContext`][datafusion.context.SessionContext] object may occupy more than one
 slot simultaneously — installing it into a slot is a reference, not
 a copy. A non-distributed program only ever uses the user-held slot;
 the global slot is invisible unless you call top-level `read_*`
@@ -300,7 +271,7 @@ helpers.
 
 Resolution order on the worker side is *explicit argument →
 worker context → global context.* Explicit `ctx=` on
-{py:meth}`Expr.from_bytes` always wins; the sender slot is ignored
+[`from_bytes`][datafusion.expr.Expr.from_bytes] always wins; the sender slot is ignored
 on decode and the worker slot is ignored on encode.
 
 Sharp edges:
@@ -348,7 +319,7 @@ section will fill in once the integration is usable.
 
 ## See also
 
-- {py:mod}`datafusion.ipc` — worker context API.
+- [`ipc`][datafusion.ipc] — worker context API.
 - `examples/multiprocessing_pickle_expr.py` — runnable
   `multiprocessing.Pool` example that ships a different parametric
   expression to each worker and collects results back.

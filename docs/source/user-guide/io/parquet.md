@@ -17,11 +17,10 @@
   under the License.
 -->
 
-(io_parquet)=
 
 # Parquet
 
-It is quite simple to read a parquet file using the {py:func}`~datafusion.context.SessionContext.read_parquet` function.
+It is quite simple to read a parquet file using the [`read_parquet`][datafusion.context.SessionContext.read_parquet] function.
 
 ```python
 from datafusion import SessionContext
@@ -30,7 +29,7 @@ ctx = SessionContext()
 df = ctx.read_parquet("file.parquet")
 ```
 
-An alternative is to use {py:func}`~datafusion.context.SessionContext.register_parquet`
+An alternative is to use [`register_parquet`][datafusion.context.SessionContext.register_parquet]
 
 ```python
 ctx.register_parquet("file", "file.parquet")

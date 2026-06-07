@@ -17,7 +17,6 @@
   under the License.
 -->
 
-(execution_metrics)=
 
 # Execution Metrics
 
@@ -38,67 +37,67 @@ Typical metrics include:
 
 Metrics are collected *per-partition*: DataFusion may execute each operator
 in parallel across several partitions. The convenience properties on
-{py:class}`~datafusion.MetricsSet` (e.g. `output_rows`, `elapsed_compute`)
+[`MetricsSet`][datafusion.MetricsSet] (e.g. `output_rows`, `elapsed_compute`)
 automatically sum the named metric across **all** partitions, giving a single
 aggregate value for the operator as a whole. You can also access the raw
-per-partition {py:class}`~datafusion.Metric` objects via
-{py:meth}`~datafusion.MetricsSet.metrics`.
+per-partition [`Metric`][datafusion.Metric] objects via
+[`metrics`][datafusion.MetricsSet.metrics].
 
 ## When Are Metrics Available?
 
 Some operators (for example `DataSourceExec`) eagerly create a
-{py:class}`~datafusion.MetricsSet` when the physical plan is built, so
-{py:meth}`~datafusion.ExecutionPlan.metrics` may return a set even before any
+[`MetricsSet`][datafusion.MetricsSet] when the physical plan is built, so
+[`metrics`][datafusion.ExecutionPlan.metrics] may return a set even before any
 rows have been processed. However, metric **values** such as `output_rows`
 are only meaningful **after** the DataFrame has been executed via one of the
 terminal operations:
 
-- {py:meth}`~datafusion.DataFrame.collect`
-- {py:meth}`~datafusion.DataFrame.collect_partitioned`
-- {py:meth}`~datafusion.DataFrame.execute_stream`
+- [`collect`][datafusion.DataFrame.collect]
+- [`collect_partitioned`][datafusion.DataFrame.collect_partitioned]
+- [`execute_stream`][datafusion.DataFrame.execute_stream]
   (metrics are available once the stream has been fully consumed)
-- {py:meth}`~datafusion.DataFrame.execute_stream_partitioned`
+- [`execute_stream_partitioned`][datafusion.DataFrame.execute_stream_partitioned]
   (metrics are available once all partition streams have been fully consumed)
 
 Before execution, metric values will be `0` or `None`.
 
-:::{note}
-**display() does not populate metrics.**
-When a DataFrame is displayed in a notebook (e.g. via `display(df)` or
-automatic `repr` output), DataFusion runs a *limited* internal execution
-to fetch preview rows. This internal execution does **not** cache the
-physical plan used, so {py:meth}`~datafusion.ExecutionPlan.collect_metrics`
-will not reflect the display execution. To access metrics you must call
-one of the terminal operations listed above.
-:::
+!!! note
 
-If you call {py:meth}`~datafusion.DataFrame.collect` (or another terminal
+    **display() does not populate metrics.**
+    When a DataFrame is displayed in a notebook (e.g. via `display(df)` or
+    automatic `repr` output), DataFusion runs a *limited* internal execution
+    to fetch preview rows. This internal execution does **not** cache the
+    physical plan used, so [`collect_metrics`][datafusion.ExecutionPlan.collect_metrics]
+    will not reflect the display execution. To access metrics you must call
+    one of the terminal operations listed above.
+
+If you call [`collect`][datafusion.DataFrame.collect] (or another terminal
 operation) multiple times on the same DataFrame, each call creates a fresh
-physical plan. Metrics from {py:meth}`~datafusion.DataFrame.execution_plan`
+physical plan. Metrics from [`execution_plan`][datafusion.DataFrame.execution_plan]
 always reflect the **most recent** execution.
 
 ## Reading the Physical Plan Tree
 
-{py:meth}`~datafusion.DataFrame.execution_plan` returns the root
-{py:class}`~datafusion.ExecutionPlan` node of the physical plan tree. The tree
+[`execution_plan`][datafusion.DataFrame.execution_plan] returns the root
+[`ExecutionPlan`][datafusion.ExecutionPlan] node of the physical plan tree. The tree
 mirrors the operator pipeline: the root is typically a projection or
 coalescing node; its children are filters, aggregates, scans, etc.
 
 The `operator_name` string returned by
-{py:meth}`~datafusion.ExecutionPlan.collect_metrics` is the *display* name of
+[`collect_metrics`][datafusion.ExecutionPlan.collect_metrics] is the *display* name of
 the node, for example `"FilterExec: column1@0 > 1"`. This is the same string
 you would see when calling `plan.display()`.
 
 ## Aggregated vs Per-Partition Metrics
 
 DataFusion executes each operator across one or more **partitions** in
-parallel. The {py:class}`~datafusion.MetricsSet` convenience properties
+parallel. The [`MetricsSet`][datafusion.MetricsSet] convenience properties
 (`output_rows`, `elapsed_compute`, etc.) automatically **sum** the named
 metric across all partitions, giving a single aggregate value.
 
 To inspect individual partitions — for example to detect data skew where one
 partition processes far more rows than others — iterate over the raw
-{py:class}`~datafusion.Metric` objects:
+[`Metric`][datafusion.Metric] objects:
 
 ```python
 for metric in metrics_set.metrics():
@@ -112,41 +111,24 @@ apply globally (not tied to a specific partition).
 ## Available Metrics
 
 The following metrics are directly accessible as properties on
-{py:class}`~datafusion.MetricsSet`:
+[`MetricsSet`][datafusion.MetricsSet]:
 
-```{eval-rst}
-.. list-table::
-   :header-rows: 1
-   :widths: 25 75
-
-   * - Property
-     - Description
-   * - ``output_rows``
-     - Number of rows emitted by the operator (summed across partitions).
-   * - ``elapsed_compute``
-     - Wall-clock CPU time **in nanoseconds** spent inside the operator's
-       compute loop, excluding I/O wait.  Useful for identifying which
-       operators are most expensive (summed across partitions).
-   * - ``spill_count``
-     - Number of spill-to-disk events triggered by memory pressure.  This is
-       a unitless count of events, not a measure of data volume (summed across
-       partitions).
-   * - ``spilled_bytes``
-     - Total bytes written to disk during spill events (summed across
-       partitions).
-   * - ``spilled_rows``
-     - Total rows written to disk during spill events (summed across
-       partitions).
-```
+| Property | Description |
+|----------|-------------|
+| `output_rows` | Number of rows emitted by the operator (summed across partitions). |
+| `elapsed_compute` | Wall-clock CPU time **in nanoseconds** spent inside the operator's compute loop, excluding I/O wait. Useful for identifying which operators are most expensive (summed across partitions). |
+| `spill_count` | Number of spill-to-disk events triggered by memory pressure. This is a unitless count of events, not a measure of data volume (summed across partitions). |
+| `spilled_bytes` | Total bytes written to disk during spill events (summed across partitions). |
+| `spilled_rows` | Total rows written to disk during spill events (summed across partitions). |
 
 Any metric not listed above can be accessed via
-{py:meth}`~datafusion.MetricsSet.sum_by_name`, or by iterating over the raw
-{py:class}`~datafusion.Metric` objects returned by
-{py:meth}`~datafusion.MetricsSet.metrics`.
+[`sum_by_name`][datafusion.MetricsSet.sum_by_name], or by iterating over the raw
+[`Metric`][datafusion.Metric] objects returned by
+[`metrics`][datafusion.MetricsSet.metrics].
 
 ## Labels
 
-A {py:class}`~datafusion.Metric` may carry *labels*: key/value pairs that
+A [`Metric`][datafusion.Metric] may carry *labels*: key/value pairs that
 provide additional context. Labels are operator-specific; most metrics have
 an empty label dict.
 
@@ -161,10 +143,10 @@ for metric in metrics_set.metrics():
 # output_rows  {'output_type': 'intermediate'}
 ```
 
-When summing by name (via {py:attr}`~datafusion.MetricsSet.output_rows` or
-{py:meth}`~datafusion.MetricsSet.sum_by_name`), **all** metrics with that
+When summing by name (via [`output_rows`][datafusion.MetricsSet.output_rows] or
+[`sum_by_name`][datafusion.MetricsSet.sum_by_name]), **all** metrics with that
 name are summed regardless of labels. To filter by label, iterate over the
-raw {py:class}`~datafusion.Metric` objects directly.
+raw [`Metric`][datafusion.Metric] objects directly.
 
 ## End-to-End Example
 
@@ -201,10 +183,10 @@ for operator_name, ms in plan.collect_metrics():
 
 ## API Reference
 
-- {py:class}`datafusion.ExecutionPlan` — physical plan node
-- {py:meth}`datafusion.ExecutionPlan.collect_metrics` — walk the tree and
+- [`ExecutionPlan`][datafusion.ExecutionPlan] — physical plan node
+- [`collect_metrics`][datafusion.ExecutionPlan.collect_metrics] — walk the tree and
   return `(operator_name, MetricsSet)` pairs
-- {py:meth}`datafusion.ExecutionPlan.metrics` — return the
-  {py:class}`~datafusion.MetricsSet` for a single node
-- {py:class}`datafusion.MetricsSet` — aggregated metrics for one operator
-- {py:class}`datafusion.Metric` — a single per-partition metric value
+- [`metrics`][datafusion.ExecutionPlan.metrics] — return the
+  [`MetricsSet`][datafusion.MetricsSet] for a single node
+- [`MetricsSet`][datafusion.MetricsSet] — aggregated metrics for one operator
+- [`Metric`][datafusion.Metric] — a single per-partition metric value

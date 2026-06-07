@@ -17,12 +17,11 @@
   under the License.
 -->
 
-(io_avro)=
 
 # Avro
 
 [Avro](https://avro.apache.org/) is a serialization format for record data. Reading an avro file is very straightforward
-with {py:func}`~datafusion.context.SessionContext.read_avro`
+with [`read_avro`][datafusion.context.SessionContext.read_avro]
 
 ```python
 from datafusion import SessionContext

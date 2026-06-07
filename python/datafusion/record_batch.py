@@ -18,7 +18,7 @@
 """This module provides the classes for handling record batches.
 
 These are typically the result of dataframe
-:py:func:`datafusion.dataframe.execute_stream` operations.
+[`execute_stream`][datafusion.dataframe.execute_stream] operations.
 """
 
 from __future__ import annotations
@@ -33,17 +33,17 @@ if TYPE_CHECKING:
 
 
 class RecordBatch:
-    """This class is essentially a wrapper for :py:class:`pa.RecordBatch`."""
+    """This class is essentially a wrapper for [`RecordBatch`][pa.RecordBatch]."""
 
     def __init__(self, record_batch: df_internal.RecordBatch) -> None:
         """This constructor is generally not called by the end user.
 
-        See the :py:class:`RecordBatchStream` iterator for generating this class.
+        See the `RecordBatchStream` iterator for generating this class.
         """
         self.record_batch = record_batch
 
     def to_pyarrow(self) -> pa.RecordBatch:
-        """Convert to :py:class:`pa.RecordBatch`."""
+        """Convert to [`RecordBatch`][pa.RecordBatch]."""
         return self.record_batch.to_pyarrow()
 
     def __arrow_c_array__(
@@ -71,7 +71,7 @@ class RecordBatchStream:
     """This class represents a stream of record batches.
 
     These are typically the result of a
-    :py:func:`~datafusion.dataframe.DataFrame.execute_stream` operation.
+    [`execute_stream`][datafusion.dataframe.DataFrame.execute_stream] operation.
     """
 
     def __init__(self, record_batch_stream: df_internal.RecordBatchStream) -> None:
@@ -79,16 +79,16 @@ class RecordBatchStream:
         self.rbs = record_batch_stream
 
     def next(self) -> RecordBatch:
-        """See :py:func:`__next__` for the iterator function."""
+        """See [`__next__`][__next__] for the iterator function."""
         return next(self)
 
     async def __anext__(self) -> RecordBatch:
-        """Return the next :py:class:`RecordBatch` in the stream asynchronously."""
+        """Return the next `RecordBatch` in the stream asynchronously."""
         next_batch = await self.rbs.__anext__()
         return RecordBatch(next_batch)
 
     def __next__(self) -> RecordBatch:
-        """Return the next :py:class:`RecordBatch` in the stream."""
+        """Return the next `RecordBatch` in the stream."""
         next_batch = next(self.rbs)
         return RecordBatch(next_batch)
 

@@ -17,7 +17,6 @@
   under the License.
 -->
 
-(ffi)=
 
 # Python Extensions
 
@@ -29,9 +28,9 @@ when doing these integrations and the approach our project uses.
 ## The Primary Issue
 
 Suppose you wish to use DataFusion and you have a custom data source that can produce tables that
-can then be queried against, similar to how you can register a {ref}`CSV <io_csv>` or
-{ref}`Parquet <io_parquet>` file. In DataFusion terminology, you likely want to implement a
-{ref}`Custom Table Provider <io_custom_table_provider>`. In an effort to make your data source
+can then be queried against, similar to how you can register a [CSV](io_csv) or
+[Parquet](io_parquet) file. In DataFusion terminology, you likely want to implement a
+[Custom Table Provider](io_custom_table_provider). In an effort to make your data source
 as performant as possible and to utilize the features of DataFusion, you may decide to write
 your source in Rust and then expose it through [PyO3](https://pyo3.rs) as a Python library.
 
@@ -80,7 +79,7 @@ of code. Also, the DataFusion Python project uses the existing definitions from
 [Apache Arrow CStream Interface](https://arrow.apache.org/docs/format/CStreamInterface.html)
 to support importing **and** exporting tables. Any Python package that supports reading
 the Arrow C Stream interface can work with DataFusion Python out of the box! You can read
-more about working with Arrow sources in the {ref}`Data Sources <user_guide_data_sources>`
+more about working with Arrow sources in the [Data Sources](user_guide_data_sources)
 page.
 
 To learn more about the Foreign Function Interface in Rust, the
@@ -136,7 +135,6 @@ let my_provider = MyTableProvider::default();
 let ffi_provider = FFI_TableProvider::new(Arc::new(my_provider), false, None);
 ```
 
-(ffi_pyclass_mutability)=
 
 ## PyO3 class mutability guidelines
 

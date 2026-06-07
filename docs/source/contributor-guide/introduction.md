@@ -29,7 +29,7 @@ In addition to submitting new PRs, we have a healthy tradition of community memb
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.
 
 Before opening a pull request that touches PyO3 bindings, please review the
-{ref}`PyO3 class mutability guidelines <ffi_pyclass_mutability>` so you can flag missing
+[PyO3 class mutability guidelines](ffi_pyclass_mutability) so you can flag missing
 `#[pyclass(frozen)]` annotations during development and review.
 
 ## How to develop
@@ -72,9 +72,9 @@ python -m pytest
 
 arrow-datafusion-python takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.
 
-Our pre-commit hooks can be installed by running {code}`pre-commit install`, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.
+Our pre-commit hooks can be installed by running `pre-commit install`, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.
 
-The pre-commit hooks can also be run adhoc without installing them by simply running {code}`pre-commit run --all-files`
+The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`
 
 ## Guidelines for Separating Python and Rust Code
 
@@ -82,9 +82,9 @@ Version 40 of `datafusion-python` introduced `python` wrappers around the `pyo3`
 
 Mostly, the `python` code is limited to pure wrappers with type hints and good docstrings, but there are a few reasons for when the code does more:
 
-1. Trivial aliases like {py:func}`~datafusion.functions.array_append` and {py:func}`~datafusion.functions.list_append`.
+1. Trivial aliases like [`array_append`][datafusion.functions.array_append] and [`list_append`][datafusion.functions.list_append].
 2. Simple type conversion, like from a `path` to a `string` of the path or from `number` to `lit(number)`.
-3. The additional code makes an API **much** more pythonic, like we do for {py:func}`~datafusion.functions.named_struct` (see [source code](https://github.com/apache/datafusion-python/blob/a0913c728f5f323c1eb4913e614c9d996083e274/python/datafusion/functions.py#L1040-L1046)).
+3. The additional code makes an API **much** more pythonic, like we do for [`named_struct`][datafusion.functions.named_struct] (see [source code](https://github.com/apache/datafusion-python/blob/a0913c728f5f323c1eb4913e614c9d996083e274/python/datafusion/functions.py#L1040-L1046)).
 
 ## Update Dependencies
 

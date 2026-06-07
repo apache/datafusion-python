@@ -523,7 +523,7 @@ jobs:
           enable-cache: true
 
       # Download the Linux wheel built in the previous job.
-      # Docs only need the abi3 wheel — interpreter doesn't matter for sphinx.
+      # Docs only need the abi3 wheel — interpreter doesn't matter for mkdocs.
       - name: Download pre-built Linux wheel
         uses: actions/download-artifact@v8
         with:
@@ -549,12 +549,19 @@ jobs:
           fi
 
       - name: Build docs
+        env:
+          DISABLE_MKDOCS_2_WARNING: "true"
         run: |
           set -x
-          cd docs
+          # Stage notebook data files at docs_dir root so notebooks can
+          # resolve relative paths like "pokemon.csv" during execution.
+          cd docs/source
           curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
           curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
-          uv run --no-project make html
+          cd ../..
+          # Verify every datafusion.__all__ entry is documented.
+          uv run --no-project python dev/check_api_coverage.py
+          uv run --no-project mkdocs build
 
       - name: Copy & push the generated HTML
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')

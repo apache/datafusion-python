@@ -18,7 +18,7 @@
 """DataFusion: an in-process query engine built on Apache Arrow.
 
 DataFusion is not a database -- it has no server and no external dependencies.
-You create a :py:class:`SessionContext`, point it at data sources (Parquet, CSV,
+You create a `SessionContext`, point it at data sources (Parquet, CSV,
 JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
 using either SQL or the DataFrame API.
 
@@ -27,10 +27,10 @@ Core abstractions
 - **SessionContext** -- entry point for loading data, running SQL, and creating
   DataFrames.
 - **DataFrame** -- lazy query builder. Every method returns a new DataFrame;
-  call :py:meth:`~datafusion.dataframe.DataFrame.collect` or a ``to_*``
+  call [`collect`][datafusion.dataframe.DataFrame.collect] or a ``to_*``
   method to execute.
 - **Expr** -- expression tree node for column references, literals, and function
-  calls. Build with :py:func:`col` and :py:func:`lit`.
+  calls. Build with [`col`][datafusion.col.col] and [`lit`][datafusion.lit].
 - **functions** -- 290+ built-in scalar, aggregate, and window functions.
 
 Quick start

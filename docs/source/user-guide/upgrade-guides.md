@@ -23,7 +23,7 @@
 
 The `Config` class has been removed. It was a standalone wrapper around
 `ConfigOptions` that could not be connected to a `SessionContext`, making it
-effectively unusable. Use {py:class}`~datafusion.context.SessionConfig` instead,
+effectively unusable. Use [`SessionConfig`][datafusion.context.SessionConfig] instead,
 which is passed directly to `SessionContext`.
 
 Before:
@@ -45,8 +45,8 @@ config = SessionConfig().set("datafusion.execution.batch_size", "4096")
 ctx = SessionContext(config)
 ```
 
-The aggregate functions {py:func}`~datafusion.functions.sum` and
-{py:func}`~datafusion.functions.avg` now accept a `distinct` argument, matching
+The aggregate functions [`sum`][datafusion.functions.sum] and
+[`avg`][datafusion.functions.avg] now accept a `distinct` argument, matching
 the other aggregate functions. `distinct` is inserted *before* `filter` in the
 argument list, so any code that passed `filter` positionally must be updated to
 pass it as a keyword argument. The types are distinct so a type checker should flag this.
@@ -87,7 +87,7 @@ let codec = unsafe { data.as_ref() };
 
 ## DataFusion 52.0.0
 
-This version includes a major update to the {ref}`ffi` due to upgrades
+This version includes a major update to the [ffi](ffi) due to upgrades
 to the [Foreign Function Interface](https://doc.rust-lang.org/nomicon/ffi.html).
 Users who contribute their own `CatalogProvider`, `SchemaProvider`,
 `TableProvider` or `TableFunction` via FFI must now provide access to a

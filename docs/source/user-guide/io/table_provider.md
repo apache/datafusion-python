@@ -17,7 +17,6 @@
   under the License.
 -->
 
-(io_custom_table_provider)=
 
 # Custom Table Provider
 
@@ -48,7 +47,7 @@ impl MyTableProvider {
 ```
 
 Once you have this library available, you can construct a
-{py:class}`~datafusion.Table` in Python and register it with the
+[`Table`][datafusion.Table] in Python and register it with the
 `SessionContext`.
 
 ```python

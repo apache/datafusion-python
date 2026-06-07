@@ -17,12 +17,11 @@
   under the License.
 -->
 
-(io_json)=
 
 # JSON
 
 [JSON](https://www.json.org/json-en.html) (JavaScript Object Notation) is a lightweight data-interchange format.
-When it comes to reading a JSON file, using {py:func}`~datafusion.context.SessionContext.read_json` is a simple and easy
+When it comes to reading a JSON file, using [`read_json`][datafusion.context.SessionContext.read_json] is a simple and easy
 
 ```python
 from datafusion import SessionContext

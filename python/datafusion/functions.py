@@ -14,15 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""Scalar, aggregate, and window functions for :py:class:`~datafusion.expr.Expr`.
+"""Scalar, aggregate, and window functions for [`Expr`][datafusion.expr.Expr].
 
-Each function returns an :py:class:`~datafusion.expr.Expr` that can be combined
+Each function returns an [`Expr`][datafusion.expr.Expr] that can be combined
 with other expressions and passed to
-:py:class:`~datafusion.dataframe.DataFrame` methods such as
-:py:meth:`~datafusion.dataframe.DataFrame.select`,
-:py:meth:`~datafusion.dataframe.DataFrame.filter`,
-:py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
-:py:meth:`~datafusion.dataframe.DataFrame.window`. The module is conventionally
+[`DataFrame`][datafusion.dataframe.DataFrame] methods such as
+[`select`][datafusion.dataframe.DataFrame.select],
+[`filter`][datafusion.dataframe.DataFrame.filter],
+[`aggregate`][datafusion.dataframe.DataFrame.aggregate], and
+[`window`][datafusion.dataframe.DataFrame.window]. The module is conventionally
 imported as ``F`` so calls read like ``F.sum(col("price"))``.
 
 Examples:
@@ -449,7 +449,7 @@ def array_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for :py:func:`array_to_string`.
+        This is an alias for [`array_to_string`][array_to_string].
     """
     return array_to_string(expr, delimiter)
 
@@ -458,7 +458,7 @@ def list_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for :py:func:`array_to_string`.
+        This is an alias for [`array_to_string`][array_to_string].
     """
     return array_to_string(expr, delimiter)
 
@@ -467,7 +467,7 @@ def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for :py:func:`array_to_string`.
+        This is an alias for [`array_to_string`][array_to_string].
     """
     return array_to_string(expr, delimiter)
 
@@ -475,9 +475,9 @@ def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
 def lambda_var(name: str) -> Expr:
     """Create an unresolved reference to a lambda parameter by ``name``.
 
-    Use this inside the body passed to :py:func:`lambda_` to refer to one of the
+    Use this inside the body passed to [`lambda_`][lambda_] to refer to one of the
     lambda's parameters. The owning higher-order function (such as
-    :py:func:`array_transform`) binds the variable to a concrete element type
+    [`array_transform`][array_transform]) binds the variable to a concrete element type
     during query planning.
 
     Examples:
@@ -490,7 +490,7 @@ def lambda_var(name: str) -> Expr:
         [2, 4, 6]
 
     See Also:
-        :py:func:`lambda_`, :py:func:`array_transform`, :py:func:`array_any_match`.
+        `lambda_`, `array_transform`, [`array_any_match`][array_any_match].
     """
     return Expr(f.lambda_var(name))
 
@@ -500,13 +500,13 @@ def lambda_(params: list[str], body: Expr) -> Expr:
 
     This is the explicit form of building a lambda. Most callers can instead
     pass a Python callable directly to a higher-order function such as
-    :py:func:`array_transform`, which builds the lambda automatically. Reach for
+    `array_transform`, which builds the lambda automatically. Reach for
     ``lambda_`` when you want explicit control over the parameter names.
 
     Args:
         params: Ordered lambda parameter names.
         body: Body expression that references the parameters via
-            :py:func:`lambda_var`.
+            [`lambda_var`][lambda_var].
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -518,7 +518,7 @@ def lambda_(params: list[str], body: Expr) -> Expr:
         [2, 4, 6]
 
     See Also:
-        :py:func:`lambda_var`, :py:func:`array_transform`, :py:func:`array_any_match`.
+        `lambda_var`, `array_transform`, [`array_any_match`][array_any_match].
     """
     return Expr(f.lambda_(params, body.expr))
 
@@ -526,9 +526,9 @@ def lambda_(params: list[str], body: Expr) -> Expr:
 def _to_lambda(fn: Expr | Callable[..., Any]) -> Expr:
     """Coerce ``fn`` to a lambda ``Expr``.
 
-    Accepts either an ``Expr`` produced by :py:func:`lambda_` (returned
+    Accepts either an ``Expr`` produced by [`lambda_`][lambda_] (returned
     unchanged) or a Python callable. A callable is introspected for its
-    parameter names; those names become :py:func:`lambda_var` references passed
+    parameter names; those names become [`lambda_var`][lambda_var] references passed
     positionally into the callable, and its return value (coerced to an
     ``Expr``) becomes the lambda body.
     """
@@ -550,7 +550,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
 
     ``transform`` may be a Python callable, which is converted to a lambda
     automatically (its parameter names become the lambda parameters), or an
-    explicit lambda built with :py:func:`lambda_`.
+    explicit lambda built with [`lambda_`][lambda_].
 
     Examples:
         Using a Python callable:
@@ -562,7 +562,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("d")[0].as_py()
         [2, 4, 6]
 
-        Using an explicit lambda built with :py:func:`lambda_`:
+        Using an explicit lambda built with [`lambda_`][lambda_]:
 
         >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
         >>> df.select(
@@ -571,7 +571,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
         [2, 4, 6]
 
     See Also:
-        :py:func:`array_any_match`, :py:func:`lambda_`.
+        [`array_any_match`][array_any_match], [`lambda_`][lambda_].
     """
     return Expr(f.array_transform(array.expr, _to_lambda(transform).expr))
 
@@ -580,7 +580,7 @@ def list_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
     """Transform each element of a list with a lambda.
 
     See Also:
-        This is an alias for :py:func:`array_transform`.
+        This is an alias for [`array_transform`][array_transform].
     """
     return array_transform(array, transform)
 
@@ -589,7 +589,7 @@ def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Return ``True`` if any element of ``array`` satisfies ``predicate``.
 
     ``predicate`` may be a Python callable, converted to a lambda
-    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    automatically, or an explicit lambda built with [`lambda_`][lambda_]. It must
     return a boolean expression.
 
     Examples:
@@ -602,7 +602,7 @@ def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("m")[0].as_py()
         True
 
-        Using an explicit lambda built with :py:func:`lambda_`:
+        Using an explicit lambda built with [`lambda_`][lambda_]:
 
         >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
         >>> df.select(
@@ -611,7 +611,7 @@ def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         True
 
     See Also:
-        :py:func:`array_transform`, :py:func:`lambda_`.
+        [`array_transform`][array_transform], [`lambda_`][lambda_].
     """
     return Expr(f.array_any_match(array.expr, _to_lambda(predicate).expr))
 
@@ -620,7 +620,7 @@ def any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Return ``True`` if any element of an array satisfies a predicate.
 
     See Also:
-        This is an alias for :py:func:`array_any_match`.
+        This is an alias for [`array_any_match`][array_any_match].
     """
     return array_any_match(array, predicate)
 
@@ -629,7 +629,7 @@ def list_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Return ``True`` if any element of a list satisfies a predicate.
 
     See Also:
-        This is an alias for :py:func:`array_any_match`.
+        This is an alias for [`array_any_match`][array_any_match].
     """
     return array_any_match(array, predicate)
 
@@ -638,7 +638,7 @@ def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Keep the elements of ``array`` for which ``predicate`` is ``True``.
 
     ``predicate`` may be a Python callable, converted to a lambda
-    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    automatically, or an explicit lambda built with [`lambda_`][lambda_]. It must
     return a boolean expression. The result is a new array containing only the
     matching elements.
 
@@ -652,7 +652,7 @@ def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("f")[0].as_py()
         [3, 4, 5]
 
-        Using an explicit lambda built with :py:func:`lambda_`:
+        Using an explicit lambda built with [`lambda_`][lambda_]:
 
         >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
         >>> df.select(
@@ -661,7 +661,7 @@ def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         [3, 4, 5]
 
     See Also:
-        :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
+        `array_transform`, [`array_any_match`][array_any_match], [`lambda_`][lambda_].
     """
     return Expr(f.array_filter(array.expr, _to_lambda(predicate).expr))
 
@@ -670,7 +670,7 @@ def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Keep the elements of a list for which a predicate is ``True``.
 
     See Also:
-        This is an alias for :py:func:`array_filter`.
+        This is an alias for [`array_filter`][array_filter].
     """
     return array_filter(array, predicate)
 
@@ -864,8 +864,8 @@ def count_star(filter: Expr | None = None) -> Expr:
 def case(expr: Expr) -> CaseBuilder:
     """Create a case expression.
 
-    Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
-    expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+    Create a [`CaseBuilder`][datafusion.expr.CaseBuilder] to match cases for the
+    expression ``expr``. See [`CaseBuilder`][datafusion.expr.CaseBuilder] for
     detailed usage.
 
     Examples:
@@ -883,8 +883,8 @@ def case(expr: Expr) -> CaseBuilder:
 def when(when: Expr, then: Expr) -> CaseBuilder:
     """Create a case expression that has no base expression.
 
-    Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
-    expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+    Create a [`CaseBuilder`][datafusion.expr.CaseBuilder] to match cases for the
+    expression ``expr``. See [`CaseBuilder`][datafusion.expr.CaseBuilder] for
     detailed usage.
 
     Examples:
@@ -1315,7 +1315,7 @@ def ifnull(x: Expr, y: Expr) -> Expr:
         y: Fallback expression to return when ``x`` is NULL.
 
     See Also:
-        This is an alias for :py:func:`nvl`.
+        This is an alias for [`nvl`][nvl].
     """
     return nvl(x, y)
 
@@ -1340,7 +1340,7 @@ def instr(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
-        This is an alias for :py:func:`strpos`.
+        This is an alias for [`strpos`][strpos].
     """
     return strpos(string, substring)
 
@@ -1669,7 +1669,7 @@ def position(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
-        This is an alias for :py:func:`strpos`.
+        This is an alias for [`strpos`][strpos].
     """
     return strpos(string, substring)
 
@@ -1694,7 +1694,7 @@ def pow(base: Expr, exponent: Expr | int | float) -> Expr:  # noqa: PYI041
     """Returns ``base`` raised to the power of ``exponent``.
 
     See Also:
-        This is an alias of :py:func:`power`.
+        This is an alias of [`power`][power].
     """
     return power(base, exponent)
 
@@ -2329,7 +2329,7 @@ def current_timestamp() -> Expr:
     """Returns the current timestamp in nanoseconds.
 
     See Also:
-        This is an alias for :py:func:`now`.
+        This is an alias for [`now`][now].
     """
     return now()
 
@@ -2361,7 +2361,7 @@ def date_format(arg: Expr, formatter: Expr | str) -> Expr:
     """Returns a string representation of a date, time, timestamp or duration.
 
     See Also:
-        This is an alias for :py:func:`to_char`.
+        This is an alias for [`to_char`][to_char].
     """
     return to_char(arg, formatter)
 
@@ -2446,7 +2446,7 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
 def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in milliseconds.
 
-    See :py:func:`to_timestamp` for a description on how to use formatters.
+    See [`to_timestamp`][to_timestamp] for a description on how to use formatters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2465,7 +2465,7 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
 def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in microseconds.
 
-    See :py:func:`to_timestamp` for a description on how to use formatters.
+    See [`to_timestamp`][to_timestamp] for a description on how to use formatters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2484,7 +2484,7 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
 def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
-    See :py:func:`to_timestamp` for a description on how to use formatters.
+    See [`to_timestamp`][to_timestamp] for a description on how to use formatters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2503,7 +2503,7 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
 def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
     """Converts a string and optional formats to a ``Timestamp`` in seconds.
 
-    See :py:func:`to_timestamp` for a description on how to use formatters.
+    See [`to_timestamp`][to_timestamp] for a description on how to use formatters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2573,7 +2573,7 @@ def datepart(part: Expr | str, date: Expr) -> Expr:
     """Return a specified part of a date.
 
     See Also:
-        This is an alias for :py:func:`date_part`.
+        This is an alias for [`date_part`][date_part].
     """
     return date_part(part, date)
 
@@ -2603,7 +2603,7 @@ def extract(part: Expr | str, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     See Also:
-        This is an alias for :py:func:`date_part`.
+        This is an alias for [`date_part`][date_part].
     """
     return date_part(part, date)
 
@@ -2634,7 +2634,7 @@ def datetrunc(part: Expr | str, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     See Also:
-        This is an alias for :py:func:`date_trunc`.
+        This is an alias for [`date_trunc`][date_trunc].
     """
     return date_trunc(part, date)
 
@@ -2776,7 +2776,7 @@ def make_list(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     See Also:
-        This is an alias for :py:func:`make_array`.
+        This is an alias for [`make_array`][make_array].
     """
     return make_array(*args)
 
@@ -2785,7 +2785,7 @@ def array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     See Also:
-        This is an alias for :py:func:`make_array`.
+        This is an alias for [`make_array`][make_array].
     """
     return make_array(*args)
 
@@ -2899,8 +2899,7 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
     """Casts an expression to a specified data type.
 
     The ``data_type`` can be a string, a ``pyarrow.DataType``, or an
-    ``Expr``. For simple types, :py:meth:`Expr.cast()
-    <datafusion.expr.Expr.cast>` is more concise
+    ``Expr``. For simple types, `Expr.cast()` is more concise
     (e.g., ``col("a").cast(pa.float64())``). Use ``arrow_cast`` when
     you want to specify the target type as a string using DataFusion's
     type syntax, which can be more readable for complex types like
@@ -2970,13 +2969,13 @@ def get_field(expr: Expr, *names: Expr | str) -> Expr:
     of nested struct/map fields in a single ``get_field`` call. For a single
     static-string name, ``expr["field"]`` is a convenient shorthand; use
     ``get_field`` when the field name is a dynamic
-    :py:class:`~datafusion.expr.Expr` or when traversing multiple levels at
+    [`Expr`][datafusion.expr.Expr] or when traversing multiple levels at
     once.
 
     Args:
         expr: The struct or map expression to read from.
         *names: One or more field names (``str``) or expressions
-            (:py:class:`~datafusion.expr.Expr`).
+            ([`Expr`][datafusion.expr.Expr]).
 
     Examples:
         Single-level lookup:
@@ -3086,7 +3085,7 @@ def row(*args: Expr) -> Expr:
     """Returns a struct with the given arguments.
 
     See Also:
-        This is an alias for :py:func:`struct`.
+        This is an alias for [`struct`][struct].
     """
     return struct(*args)
 
@@ -3125,7 +3124,7 @@ def array_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for :py:func:`array_append`.
+        This is an alias for [`array_append`][array_append].
     """
     return array_append(array, element)
 
@@ -3134,7 +3133,7 @@ def list_append(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for :py:func:`array_append`.
+        This is an alias for [`array_append`][array_append].
     """
     return array_append(array, element)
 
@@ -3143,7 +3142,7 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for :py:func:`array_append`.
+        This is an alias for [`array_append`][array_append].
     """
     return array_append(array, element)
 
@@ -3167,7 +3166,7 @@ def array_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     See Also:
-        This is an alias for :py:func:`array_concat`.
+        This is an alias for [`array_concat`][array_concat].
     """
     return array_concat(*args)
 
@@ -3208,7 +3207,7 @@ def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     See Also:
-        This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+        This is an alias for [`array_concat`][array_concat], [`array_cat`][array_cat].
     """
     return array_concat(*args)
 
@@ -3217,7 +3216,7 @@ def list_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     See Also:
-        This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+        This is an alias for [`array_concat`][array_concat], [`array_cat`][array_cat].
     """
     return array_concat(*args)
 
@@ -3226,7 +3225,7 @@ def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
     See Also:
-        This is an alias for :py:func:`array_distinct`.
+        This is an alias for [`array_distinct`][array_distinct].
     """
     return array_distinct(array)
 
@@ -3235,7 +3234,7 @@ def list_dims(array: Expr) -> Expr:
     """Returns an array of the array's dimensions.
 
     See Also:
-        This is an alias for :py:func:`array_dims`.
+        This is an alias for [`array_dims`][array_dims].
     """
     return array_dims(array)
 
@@ -3272,7 +3271,7 @@ def list_empty(array: Expr) -> Expr:
     """Returns a boolean indicating whether the array is empty.
 
     See Also:
-        This is an alias for :py:func:`array_empty`.
+        This is an alias for [`array_empty`][array_empty].
     """
     return array_empty(array)
 
@@ -3281,7 +3280,7 @@ def array_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for :py:func:`array_element`.
+        This is an alias for [`array_element`][array_element].
     """
     return array_element(array, n)
 
@@ -3290,7 +3289,7 @@ def list_element(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for :py:func:`array_element`.
+        This is an alias for [`array_element`][array_element].
     """
     return array_element(array, n)
 
@@ -3299,7 +3298,7 @@ def list_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for :py:func:`array_element`.
+        This is an alias for [`array_element`][array_element].
     """
     return array_element(array, n)
 
@@ -3321,7 +3320,7 @@ def list_length(array: Expr) -> Expr:
     """Returns the length of the array.
 
     See Also:
-        This is an alias for :py:func:`array_length`.
+        This is an alias for [`array_length`][array_length].
     """
     return array_length(array)
 
@@ -3378,7 +3377,7 @@ def array_contains(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for :py:func:`array_has`.
+        This is an alias for [`array_has`][array_has].
     """
     return array_has(array, element)
 
@@ -3387,7 +3386,7 @@ def list_has(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for :py:func:`array_has`.
+        This is an alias for [`array_has`][array_has].
     """
     return array_has(array, element)
 
@@ -3396,7 +3395,7 @@ def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
     """Determines if there is complete overlap ``second_array`` in ``first_array``.
 
     See Also:
-        This is an alias for :py:func:`array_has_all`.
+        This is an alias for [`array_has_all`][array_has_all].
     """
     return array_has_all(first_array, second_array)
 
@@ -3405,7 +3404,7 @@ def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
     """Determine if there is an overlap between ``first_array`` and ``second_array``.
 
     See Also:
-        This is an alias for :py:func:`array_has_any`.
+        This is an alias for [`array_has_any`][array_has_any].
     """
     return array_has_any(first_array, second_array)
 
@@ -3414,7 +3413,7 @@ def arrays_overlap(first_array: Expr, second_array: Expr) -> Expr:
     """Returns true if any element appears in both arrays.
 
     See Also:
-        This is an alias for :py:func:`array_has_any`.
+        This is an alias for [`array_has_any`][array_has_any].
     """
     return array_has_any(first_array, second_array)
 
@@ -3423,7 +3422,7 @@ def list_overlap(first_array: Expr, second_array: Expr) -> Expr:
     """Returns true if any element appears in both arrays.
 
     See Also:
-        This is an alias for :py:func:`array_has_any`.
+        This is an alias for [`array_has_any`][array_has_any].
     """
     return array_has_any(first_array, second_array)
 
@@ -3432,7 +3431,7 @@ def list_contains(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for :py:func:`array_has`.
+        This is an alias for [`array_has`][array_has].
     """
     return array_has(array, element)
 
@@ -3467,7 +3466,7 @@ def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for :py:func:`array_position`.
+        This is an alias for [`array_position`][array_position].
     """
     return array_position(array, element, index)
 
@@ -3476,7 +3475,7 @@ def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for :py:func:`array_position`.
+        This is an alias for [`array_position`][array_position].
     """
     return array_position(array, element, index)
 
@@ -3485,7 +3484,7 @@ def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for :py:func:`array_position`.
+        This is an alias for [`array_position`][array_position].
     """
     return array_position(array, element, index)
 
@@ -3508,7 +3507,7 @@ def list_positions(array: Expr, element: Expr) -> Expr:
     """Searches for an element in the array and returns all occurrences.
 
     See Also:
-        This is an alias for :py:func:`array_positions`.
+        This is an alias for [`array_positions`][array_positions].
     """
     return array_positions(array, element)
 
@@ -3530,7 +3529,7 @@ def list_ndims(array: Expr) -> Expr:
     """Returns the number of dimensions of the array.
 
     See Also:
-        This is an alias for :py:func:`array_ndims`.
+        This is an alias for [`array_ndims`][array_ndims].
     """
     return array_ndims(array)
 
@@ -3553,7 +3552,7 @@ def array_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for :py:func:`array_prepend`.
+        This is an alias for [`array_prepend`][array_prepend].
     """
     return array_prepend(element, array)
 
@@ -3562,7 +3561,7 @@ def list_prepend(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for :py:func:`array_prepend`.
+        This is an alias for [`array_prepend`][array_prepend].
     """
     return array_prepend(element, array)
 
@@ -3571,7 +3570,7 @@ def list_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for :py:func:`array_prepend`.
+        This is an alias for [`array_prepend`][array_prepend].
     """
     return array_prepend(element, array)
 
@@ -3608,7 +3607,7 @@ def list_pop_back(array: Expr) -> Expr:
     """Returns the array without the last element.
 
     See Also:
-        This is an alias for :py:func:`array_pop_back`.
+        This is an alias for [`array_pop_back`][array_pop_back].
     """
     return array_pop_back(array)
 
@@ -3617,7 +3616,7 @@ def list_pop_front(array: Expr) -> Expr:
     """Returns the array without the first element.
 
     See Also:
-        This is an alias for :py:func:`array_pop_front`.
+        This is an alias for [`array_pop_front`][array_pop_front].
     """
     return array_pop_front(array)
 
@@ -3640,7 +3639,7 @@ def list_remove(array: Expr, element: Expr) -> Expr:
     """Removes the first element from the array equal to the given value.
 
     See Also:
-        This is an alias for :py:func:`array_remove`.
+        This is an alias for [`array_remove`][array_remove].
     """
     return array_remove(array, element)
 
@@ -3666,7 +3665,7 @@ def list_remove_n(array: Expr, element: Expr, max: Expr | int) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
     See Also:
-        This is an alias for :py:func:`array_remove_n`.
+        This is an alias for [`array_remove_n`][array_remove_n].
     """
     return array_remove_n(array, element, max)
 
@@ -3691,7 +3690,7 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
     """Removes all elements from the array equal to the given value.
 
     See Also:
-        This is an alias for :py:func:`array_remove_all`.
+        This is an alias for [`array_remove_all`][array_remove_all].
     """
     return array_remove_all(array, element)
 
@@ -3715,7 +3714,7 @@ def list_repeat(element: Expr, count: Expr | int) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
     See Also:
-        This is an alias for :py:func:`array_repeat`.
+        This is an alias for [`array_repeat`][array_repeat].
     """
     return array_repeat(element, count)
 
@@ -3739,7 +3738,7 @@ def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces the first occurrence of ``from_val`` with ``to_val``.
 
     See Also:
-        This is an alias for :py:func:`array_replace`.
+        This is an alias for [`array_replace`][array_replace].
     """
     return array_replace(array, from_val, to_val)
 
@@ -3771,7 +3770,7 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr | int) -
     specified element.
 
     See Also:
-        This is an alias for :py:func:`array_replace_n`.
+        This is an alias for [`array_replace_n`][array_replace_n].
     """
     return array_replace_n(array, from_val, to_val, max)
 
@@ -3795,7 +3794,7 @@ def list_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces all occurrences of ``from_val`` with ``to_val``.
 
     See Also:
-        This is an alias for :py:func:`array_replace_all`.
+        This is an alias for [`array_replace_all`][array_replace_all].
     """
     return array_replace_all(array, from_val, to_val)
 
@@ -3841,7 +3840,7 @@ def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -
     """Sorts the array.
 
     See Also:
-        This is an alias for :py:func:`array_sort`.
+        This is an alias for [`array_sort`][array_sort].
     """
     return array_sort(array, descending=descending, null_first=null_first)
 
@@ -3890,7 +3889,7 @@ def list_slice(
     """Returns a slice of the array.
 
     See Also:
-        This is an alias for :py:func:`array_slice`.
+        This is an alias for [`array_slice`][array_slice].
     """
     return array_slice(array, begin, end, stride)
 
@@ -3918,7 +3917,7 @@ def list_intersect(array1: Expr, array2: Expr) -> Expr:
     """Returns an the intersection of ``array1`` and ``array2``.
 
     See Also:
-        This is an alias for :py:func:`array_intersect`.
+        This is an alias for [`array_intersect`][array_intersect].
     """
     return array_intersect(array1, array2)
 
@@ -3950,7 +3949,7 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
     Duplicate rows will not be returned.
 
     See Also:
-        This is an alias for :py:func:`array_union`.
+        This is an alias for [`array_union`][array_union].
     """
     return array_union(array1, array2)
 
@@ -3973,7 +3972,7 @@ def list_except(array1: Expr, array2: Expr) -> Expr:
     """Returns the elements that appear in ``array1`` but not in the ``array2``.
 
     See Also:
-        This is an alias for :py:func:`array_except`.
+        This is an alias for [`array_except`][array_except].
     """
     return array_except(array1, array2)
 
@@ -4003,7 +4002,7 @@ def list_resize(array: Expr, size: Expr | int, value: Expr) -> Expr:
     filled with the given ``value``.
 
     See Also:
-        This is an alias for :py:func:`array_resize`.
+        This is an alias for [`array_resize`][array_resize].
     """
     return array_resize(array, size, value)
 
@@ -4026,7 +4025,7 @@ def list_any_value(array: Expr) -> Expr:
     """Returns the first non-null element in the array.
 
     See Also:
-        This is an alias for :py:func:`array_any_value`.
+        This is an alias for [`array_any_value`][array_any_value].
     """
     return array_any_value(array)
 
@@ -4051,7 +4050,7 @@ def list_distance(array1: Expr, array2: Expr) -> Expr:
     """Returns the Euclidean distance between two numeric arrays.
 
     See Also:
-        This is an alias for :py:func:`array_distance`.
+        This is an alias for [`array_distance`][array_distance].
     """
     return array_distance(array1, array2)
 
@@ -4074,7 +4073,7 @@ def list_max(array: Expr) -> Expr:
     """Returns the maximum value in the array.
 
     See Also:
-        This is an alias for :py:func:`array_max`.
+        This is an alias for [`array_max`][array_max].
     """
     return array_max(array)
 
@@ -4097,7 +4096,7 @@ def list_min(array: Expr) -> Expr:
     """Returns the minimum value in the array.
 
     See Also:
-        This is an alias for :py:func:`array_min`.
+        This is an alias for [`array_min`][array_min].
     """
     return array_min(array)
 
@@ -4120,7 +4119,7 @@ def list_reverse(array: Expr) -> Expr:
     """Reverses the order of elements in the array.
 
     See Also:
-        This is an alias for :py:func:`array_reverse`.
+        This is an alias for [`array_reverse`][array_reverse].
     """
     return array_reverse(array)
 
@@ -4144,7 +4143,7 @@ def list_zip(*arrays: Expr) -> Expr:
     """Combines multiple arrays into a single array of structs.
 
     See Also:
-        This is an alias for :py:func:`arrays_zip`.
+        This is an alias for [`arrays_zip`][arrays_zip].
     """
     return arrays_zip(*arrays)
 
@@ -4190,7 +4189,7 @@ def string_to_list(
     """Splits a string based on a delimiter and returns an array of parts.
 
     See Also:
-        This is an alias for :py:func:`string_to_array`.
+        This is an alias for [`string_to_array`][string_to_array].
     """
     return string_to_array(string, delimiter, null_string)
 
@@ -4198,7 +4197,7 @@ def string_to_list(
 def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
-    Unlike :py:func:`range`, this includes the upper bound.
+    Unlike [`range`][range], this includes the upper bound.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -4226,10 +4225,10 @@ def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
 def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
-    Unlike :py:func:`range`, this includes the upper bound.
+    Unlike [`range`][range], this includes the upper bound.
 
     See Also:
-        This is an alias for :py:func:`gen_series`.
+        This is an alias for [`gen_series`][gen_series].
     """
     return gen_series(start, stop, step)
 
@@ -4264,7 +4263,7 @@ def empty(array: Expr) -> Expr:
     """Returns true if the array is empty.
 
     See Also:
-        This is an alias for :py:func:`array_empty`.
+        This is an alias for [`array_empty`][array_empty].
     """
     return array_empty(array)
 
@@ -4283,7 +4282,7 @@ def make_map(*args: Any) -> Expr:
     - ``make_map(k1, v1, k2, v2, ...)`` — from alternating keys and their
       associated values.
 
-    Keys and values that are not already :py:class:`~datafusion.expr.Expr`
+    Keys and values that are not already [`Expr`][datafusion.expr.Expr]
     are automatically converted to literal expressions.
 
     Examples:
@@ -4416,7 +4415,7 @@ def element_at(map: Expr, key: Expr) -> Expr:
     Returns ``[None]`` if the key is absent.
 
     See Also:
-        This is an alias for :py:func:`map_extract`.
+        This is an alias for [`map_extract`][map_extract].
     """
     return map_extract(map, key)
 
@@ -4428,9 +4427,9 @@ def approx_distinct(
 ) -> Expr:
     """Returns the approximate number of distinct values.
 
-    This aggregate function is similar to :py:func:`count` with distinct set, but it
+    This aggregate function is similar to [`count`][count] with distinct set, but it
     will approximate the number of distinct entries. It may return significantly faster
-    than :py:func:`count` for some DataFrames.
+    than [`count`][count] for some DataFrames.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
@@ -4465,7 +4464,7 @@ def approx_distinct(
 def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the approximate median value.
 
-    This aggregate function is similar to :py:func:`median`, but it will only
+    This aggregate function is similar to [`median`][median], but it will only
     approximate the median. It may return significantly faster for some DataFrames.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -4561,7 +4560,7 @@ def approx_percentile_cont_with_weight(
 ) -> Expr:
     """Returns the value of the weighted approximate percentile.
 
-    This aggregate function is similar to :py:func:`approx_percentile_cont` except that
+    This aggregate function is similar to `approx_percentile_cont` except that
     it uses the associated associated weights.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -4613,7 +4612,7 @@ def percentile_cont(
 ) -> Expr:
     """Computes the exact percentile of input values using continuous interpolation.
 
-    Unlike :py:func:`approx_percentile_cont`, this function computes the exact
+    Unlike `approx_percentile_cont`, this function computes the exact
     percentile value rather than an approximation.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -4655,7 +4654,7 @@ def quantile_cont(
     """Computes the exact percentile of input values using continuous interpolation.
 
     See Also:
-        This is an alias for :py:func:`percentile_cont`.
+        This is an alias for [`percentile_cont`][percentile_cont].
     """
     return percentile_cont(sort_expression, percentile, filter)
 
@@ -4669,7 +4668,7 @@ def array_agg(
     """Aggregate values into an array.
 
     Currently ``distinct`` and ``order_by`` cannot be used together. As a work around,
-    consider :py:func:`array_sort` after aggregation.
+    consider [`array_sort`][array_sort] after aggregation.
     [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -4731,9 +4730,9 @@ def grouping(
     aggregate spans all values of that column).
 
     This function is meaningful with
-    :py:meth:`GroupingSet.rollup <datafusion.expr.GroupingSet.rollup>`,
-    :py:meth:`GroupingSet.cube <datafusion.expr.GroupingSet.cube>`, or
-    :py:meth:`GroupingSet.grouping_sets <datafusion.expr.GroupingSet.grouping_sets>`,
+    [`GroupingSet.rollup`][datafusion.expr.GroupingSet.rollup],
+    [`GroupingSet.cube`][datafusion.expr.GroupingSet.cube], or
+    [`GroupingSet.grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
     where different rows are grouped by different subsets of columns. In a
     default aggregation without grouping sets every column is always part
     of the key, so ``grouping()`` always returns 0.
@@ -4745,7 +4744,7 @@ def grouping(
         ``.alias()`` cannot be applied directly to a ``grouping()``
         expression. Doing so will raise an error at execution time. To
         rename the column, use
-        :py:meth:`~datafusion.dataframe.DataFrame.with_column_renamed`
+        [`with_column_renamed`][datafusion.dataframe.DataFrame.with_column_renamed]
         on the result DataFrame instead.
 
     Args:
@@ -4754,7 +4753,7 @@ def grouping(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-        With :py:meth:`~datafusion.expr.GroupingSet.rollup`, the result
+        With [`rollup`][datafusion.expr.GroupingSet.rollup], the result
         includes both per-group rows (``grouping(a) = 0``) and a
         grand-total row where ``a`` is aggregated across
         (``grouping(a) = 1``):
@@ -4771,7 +4770,7 @@ def grouping(
         [30, 30, 60]
 
     See Also:
-        :py:class:`~datafusion.expr.GroupingSet`
+        [`GroupingSet`][datafusion.expr.GroupingSet]
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))
@@ -4987,7 +4986,7 @@ def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
     See Also:
-        This is an alias for :py:func:`covar_samp`.
+        This is an alias for [`covar_samp`][covar_samp].
     """
     return covar_samp(value_y, value_x, filter)
 
@@ -5028,7 +5027,7 @@ def mean(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     See Also:
-        This is an alias for :py:func:`avg`.
+        This is an alias for [`avg`][avg].
     """
     return avg(expression, filter)
 
@@ -5222,7 +5221,7 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     See Also:
-        This is an alias for :py:func:`stddev`.
+        This is an alias for [`stddev`][stddev].
     """
     return stddev(arg, filter=filter)
 
@@ -5231,7 +5230,7 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
-        This is an alias for :py:func:`var_samp`.
+        This is an alias for [`var_samp`][var_samp].
     """
     return var_samp(expression, filter)
 
@@ -5272,7 +5271,7 @@ def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
     See Also:
-        This is an alias for :py:func:`var_pop`.
+        This is an alias for [`var_pop`][var_pop].
     """
     return var_pop(expression, filter)
 
@@ -5313,7 +5312,7 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
-        This is an alias for :py:func:`var_samp`.
+        This is an alias for [`var_samp`][var_samp].
     """
     return var_samp(expression, filter)
 
@@ -6063,7 +6062,7 @@ def lead(
     return the 3rd following value in column ``b``. At the end of the partition, where
     no further values can be returned it will return the default value of 5.
 
-    Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
+    Here is an example of both the ``lead`` and [`lag`][datafusion.functions.lag]
     functions on a simple DataFrame::
 
         +--------+------+-----+
@@ -6139,7 +6138,7 @@ def lag(
     will return the 3rd previous value in column ``b``. At the beginning of the
     partition, where no values can be returned it will return the default value of 5.
 
-    Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
+    Here is an example of both the ``lag`` and [`lead`][datafusion.functions.lead]
     functions on a simple DataFrame::
 
         +--------+------+-----+
@@ -6322,7 +6321,7 @@ def dense_rank(
 ) -> Expr:
     """Create a dense_rank window function.
 
-    This window function is similar to :py:func:`rank` except that the returned values
+    This window function is similar to [`rank`][rank] except that the returned values
     will be consecutive. Here is an example of a dataframe with a window ordered by
     descending ``points`` and the associated dense rank::
 
@@ -6378,7 +6377,7 @@ def percent_rank(
 ) -> Expr:
     """Create a percent_rank window function.
 
-    This window function is similar to :py:func:`rank` except that the returned values
+    This window function is similar to [`rank`][rank] except that the returned values
     are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated percent
     rank::
@@ -6436,7 +6435,7 @@ def cume_dist(
 ) -> Expr:
     """Create a cumulative distribution window function.
 
-    This window function is similar to :py:func:`rank` except that the returned values
+    This window function is similar to [`rank`][rank] except that the returned values
     are the ratio of the row number to the total number of rows. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated
     cumulative distribution::

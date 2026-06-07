@@ -15,21 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-""":py:class:`Expr` — the logical expression type used to build DataFusion queries.
+"""`Expr` — the logical expression type used to build DataFusion queries.
 
-An :py:class:`Expr` represents a computation over columns or literals: a
+An [`Expr`][datafusion.expr.Expr] represents a computation over columns or literals: a
 column reference (``col("a")``), a literal (``lit(5)``), an operator
 combination (``col("a") + lit(1)``), or the output of a function from
-:py:mod:`datafusion.functions`. Expressions are passed to
-:py:class:`~datafusion.dataframe.DataFrame` methods such as
-:py:meth:`~datafusion.dataframe.DataFrame.select`,
-:py:meth:`~datafusion.dataframe.DataFrame.filter`,
-:py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
-:py:meth:`~datafusion.dataframe.DataFrame.sort`.
+[`functions`][datafusion.functions]. Expressions are passed to
+[`DataFrame`][datafusion.dataframe.DataFrame] methods such as
+[`select`][datafusion.dataframe.DataFrame.select],
+[`filter`][datafusion.dataframe.DataFrame.filter],
+[`aggregate`][datafusion.dataframe.DataFrame.aggregate], and
+[`sort`][datafusion.dataframe.DataFrame.sort].
 
 Convenience constructors are re-exported at the package level:
-:py:func:`datafusion.col` / :py:func:`datafusion.column` for column references
-and :py:func:`datafusion.lit` / :py:func:`datafusion.literal` for scalar
+[`col`][datafusion.col] / [`column`][datafusion.column] for column references
+and [`lit`][datafusion.lit] / [`literal`][datafusion.literal] for scalar
 literals.
 
 Examples:
@@ -691,11 +691,11 @@ class Expr:  # noqa: PLW1641
         If ``key`` is a string, returns the subfield of the struct.
         If ``key`` is an integer, retrieves the element in the array. Note that the
         element index begins at ``0``, unlike
-        :py:func:`~datafusion.functions.array_element` which begins at ``1``.
+        [`array_element`][datafusion.functions.array_element] which begins at ``1``.
         If ``key`` is a slice, returns an array that contains a slice of the
         original array. Similar to integer indexing, this follows Python convention
         where the index begins at ``0`` unlike
-        :py:func:`~datafusion.functions.array_slice` which begins at ``1``.
+        [`array_slice`][datafusion.functions.array_slice] which begins at ``1``.
         """
         if isinstance(key, int):
             return Expr(
@@ -848,7 +848,7 @@ class Expr:  # noqa: PLW1641
         return Expr(self.expr.alias(name, metadata))
 
     def sort(self, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
-        """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
+        """Creates a sort `Expr` from an existing `Expr`.
 
         Args:
             ascending: If true, sort in ascending order.
@@ -959,7 +959,7 @@ class Expr:  # noqa: PLW1641
     def order_by(self, *exprs: Expr | SortExpr) -> ExprFuncBuilder:
         """Set the ordering for a window or aggregate function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -968,7 +968,7 @@ class Expr:  # noqa: PLW1641
     def filter(self, filter: Expr) -> ExprFuncBuilder:
         """Filter an aggregate function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -977,7 +977,7 @@ class Expr:  # noqa: PLW1641
     def distinct(self) -> ExprFuncBuilder:
         """Only evaluate distinct values for an aggregate function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -986,7 +986,7 @@ class Expr:  # noqa: PLW1641
     def null_treatment(self, null_treatment: NullTreatment) -> ExprFuncBuilder:
         """Set the treatment for ``null`` values for a window or aggregate function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -995,7 +995,7 @@ class Expr:  # noqa: PLW1641
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set the partitioning for a window function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -1004,7 +1004,7 @@ class Expr:  # noqa: PLW1641
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
         """Set the frame fora  window function.
 
-        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        This function will create an `ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
@@ -1125,7 +1125,7 @@ class Expr:  # noqa: PLW1641
     def list_distinct(self) -> Expr:
         """Returns distinct values from the array after removing duplicates.
 
-        This is an alias for :py:func:`array_distinct`.
+        This is an alias for [`array_distinct`][array_distinct].
         """
         from . import functions as F
 
@@ -1308,7 +1308,7 @@ class Expr:  # noqa: PLW1641
     def list_dims(self) -> Expr:
         """Returns an array of the array's dimensions.
 
-        This is an alias for :py:func:`array_dims`.
+        This is an alias for [`array_dims`][array_dims].
         """
         from . import functions as F
 
@@ -1347,7 +1347,7 @@ class Expr:  # noqa: PLW1641
     def list_length(self) -> Expr:
         """Returns the length of the array.
 
-        This is an alias for :py:func:`array_length`.
+        This is an alias for [`array_length`][array_length].
         """
         from . import functions as F
 
@@ -1404,7 +1404,7 @@ class Expr:  # noqa: PLW1641
     def list_ndims(self) -> Expr:
         """Returns the number of dimensions of the array.
 
-        This is an alias for :py:func:`array_ndims`.
+        This is an alias for [`array_ndims`][array_ndims].
         """
         from . import functions as F
 
@@ -1429,7 +1429,7 @@ class Expr:  # noqa: PLW1641
         return F.sinh(self)
 
     def empty(self) -> Expr:
-        """This is an alias for :py:func:`array_empty`."""
+        """This is an alias for [`array_empty`][array_empty]."""
         from . import functions as F
 
         return F.empty(self)
@@ -1571,7 +1571,7 @@ class WindowFrame:
 class WindowFrameBound:
     """Defines a single window frame bound.
 
-    :py:class:`WindowFrame` typically requires a start and end bound.
+    `WindowFrame` typically requires a start and end bound.
     """
 
     def __init__(self, frame_bound: expr_internal.WindowFrameBound) -> None:
@@ -1620,7 +1620,7 @@ class CaseBuilder:
         """Constructs a case builder.
 
         This is not typically called by the end user directly. See
-        :py:func:`datafusion.functions.case` instead.
+        [`case`][datafusion.functions.case] instead.
         """
         self.case_builder = case_builder
 
@@ -1671,12 +1671,12 @@ class GroupingSet:
     """Factory for creating grouping set expressions.
 
     Grouping sets control how
-    :py:meth:`~datafusion.dataframe.DataFrame.aggregate` groups rows.
+    [`aggregate`][datafusion.dataframe.DataFrame.aggregate] groups rows.
     Instead of a single ``GROUP BY``, they produce multiple grouping
     levels in one pass — subtotals, cross-tabulations, or arbitrary
     column subsets.
 
-    Use :py:func:`~datafusion.functions.grouping` in the aggregate list
+    Use [`grouping`][datafusion.functions.grouping] in the aggregate list
     to tell which columns are aggregated across in each result row.
     """
 
@@ -1707,8 +1707,8 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            :py:meth:`cube`, :py:meth:`grouping_sets`,
-            :py:func:`~datafusion.functions.grouping`
+            [`cube`][cube], [`grouping_sets`][grouping_sets],
+            [`grouping`][datafusion.functions.grouping]
         """
         args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.rollup(*args))
@@ -1729,7 +1729,7 @@ class GroupingSet:
 
         Examples:
             With a single column, ``cube`` behaves identically to
-            :py:meth:`rollup`:
+            [`rollup`][rollup]:
 
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1743,8 +1743,8 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            :py:meth:`rollup`, :py:meth:`grouping_sets`,
-            :py:func:`~datafusion.functions.grouping`
+            [`rollup`][rollup], [`grouping_sets`][grouping_sets],
+            [`grouping`][datafusion.functions.grouping]
         """
         args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.cube(*args))
@@ -1786,8 +1786,8 @@ class GroupingSet:
             [3, 3, 4, 2]
 
         See Also:
-            :py:meth:`rollup`, :py:meth:`cube`,
-            :py:func:`~datafusion.functions.grouping`
+            [`rollup`][rollup], [`cube`][cube],
+            [`grouping`][datafusion.functions.grouping]
         """
         raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]
         return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))

@@ -17,49 +17,39 @@
  * under the License.
  */
 
-
-/* Customizing with theme CSS variables */
+/* Apache DataFusion accent color: rgb(215, 70, 51) == #D74633.
+ *
+ * Header bar is white in light mode / black in dark mode (Material palette
+ * primary: white|black). Red is applied only to links, code, and accents
+ * to match the pydata-sphinx-theme look used by datafusion-comet.
+ */
 
 :root {
-  --pst-color-link-hover: 215, 70, 51;
-  --pst-color-headerlink: 215, 70, 51;
-  /* Softer blue from bootstrap's default info color */
-  --pst-color-info: 23, 162, 184;
+  --md-accent-fg-color: #D74633;
+  --md-accent-fg-color--transparent: rgba(215, 70, 51, 0.1);
+  --md-typeset-a-color: #D74633;
 }
 
-code {
-  color: rgb(215, 70, 51);
+[data-md-color-scheme="slate"] {
+  --md-accent-fg-color: #FF8A75;
+  --md-typeset-a-color: #FF8A75;
 }
 
-html[data-theme="dark"] code {
-  color: rgb(255, 138, 117);
+/* Inline code styled with accent color */
+.md-typeset code {
+  color: #D74633;
 }
 
-.footer {
+[data-md-color-scheme="slate"] .md-typeset code {
+  color: #FF8A75;
+}
+
+/* Center the footer copyright/trademark block */
+.md-copyright {
   text-align: center;
 }
 
-
-/* Bootstrap "table-striped" applied globally so individual tables in
-   user-guide pages don't need ":class: table-striped" added one by one. */
-
-.table tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-html[data-theme="dark"] .table tbody tr:nth-of-type(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-
-/* Fix table text wrapping in RTD theme,
- * see https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
- */
-
-@media screen {
-    table.docutils td {
-        /* !important prevents the common CSS stylesheets from overriding
-          this as on RTD they are loaded after this stylesheet */
-        white-space: normal !important;
-    }
+.md-copyright__trademark {
+  margin-top: 0.4em;
+  opacity: 0.7;
 }

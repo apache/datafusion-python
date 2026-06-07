@@ -1,4 +1,7 @@
 pokemon.csv
 yellow_trip_data.parquet
 yellow_tripdata_2021-01.parquet
-
+source/pokemon.csv
+source/yellow_trip_data.parquet
+source/yellow_tripdata_2021-01.parquet
+build/

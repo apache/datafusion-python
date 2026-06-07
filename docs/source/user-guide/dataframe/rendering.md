@@ -216,12 +216,12 @@ These parameters help balance comprehensive data display against performance con
 
 ## Additional Resources
 
-- {doc}`../dataframe/index` - Complete guide to using DataFrames
-- {doc}`../io/index` - I/O Guide for reading data from various sources
-- {doc}`../data-sources` - Comprehensive data sources guide
-- {ref}`io_csv` - CSV file reading
-- {ref}`io_parquet` - Parquet file reading
-- {ref}`io_json` - JSON file reading
-- {ref}`io_avro` - Avro file reading
-- {ref}`io_custom_table_provider` - Custom table providers
+- [../dataframe/index](../dataframe/index.md) - Complete guide to using DataFrames
+- [../io/index](../io/index.md) - I/O Guide for reading data from various sources
+- [../data-sources](../data-sources.ipynb) - Comprehensive data sources guide
+- [io_csv](io_csv) - CSV file reading
+- [io_parquet](io_parquet) - Parquet file reading
+- [io_json](io_json) - JSON file reading
+- [io_avro](io_avro) - Avro file reading
+- [io_custom_table_provider](io_custom_table_provider) - Custom table providers
 - [API Reference](https://arrow.apache.org/datafusion-python/api/index.html) - Full API reference
