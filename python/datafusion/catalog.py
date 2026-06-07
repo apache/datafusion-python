@@ -220,7 +220,7 @@ class Table:
     @staticmethod
     @deprecated("Use Table() constructor instead.")
     def from_dataset(dataset: pa.dataset.Dataset) -> Table:
-        """Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`."""
+        """Turn a `dataset` ``Dataset`` into a [`Table`][datafusion.catalog.Table]."""
         return Table(dataset)
 
     @property
@@ -239,7 +239,7 @@ class TableProviderFactory(ABC):
 
     @abstractmethod
     def create(self, cmd: CreateExternalTable) -> Table:
-        """Create a table using the :class:`CreateExternalTable`."""
+        """Create a table using the [`CreateExternalTable`][CreateExternalTable]."""
         ...
 
 

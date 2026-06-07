@@ -112,12 +112,15 @@ markdown_extensions:
 watch:
   - python/datafusion
 
+hooks:
+  - docs/hooks.py
+
 nav:
   - Home: index.ipynb
   - User Guide:
       - user-guide/index.md
       - Introduction: user-guide/introduction.ipynb
-      - Concepts: user-guide/basics.ipynb
+      - Concepts: user-guide/concepts.ipynb
       - Data Sources: user-guide/data-sources.ipynb
       - DataFrame:
           - user-guide/dataframe/index.md

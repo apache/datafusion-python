@@ -343,7 +343,7 @@ class DataFrameHtmlFormatter:
         """Get the maximum number of rows (deprecated name).
 
         .. deprecated::
-            Use :attr:`max_rows` instead. This property is provided for
+            Use [`max_rows`][max_rows] instead. This property is provided for
             backward compatibility.
 
         Returns:
@@ -356,7 +356,7 @@ class DataFrameHtmlFormatter:
         """Set the maximum number of rows using deprecated name.
 
         .. deprecated::
-            Use :attr:`max_rows` setter instead. This property is provided for
+            Use [`max_rows`][max_rows] setter instead. This property is provided for
             backward compatibility.
 
         Args:

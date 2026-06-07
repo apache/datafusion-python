@@ -21,18 +21,18 @@
 
 ## Overview
 
-The `DataFrame` class is the core abstraction in DataFusion that represents tabular data and operations
+The [`DataFrame`][datafusion.dataframe.DataFrame] class is the core abstraction in DataFusion that represents tabular data and operations
 on that data. DataFrames provide a flexible API for transforming data through various operations such as
 filtering, projection, aggregation, joining, and more.
 
 A DataFrame represents a logical plan that is lazily evaluated. The actual execution occurs only when
-terminal operations like `collect()`, `show()`, or `to_pandas()` are called.
+terminal operations like [`collect()`][datafusion.dataframe.DataFrame.collect], [`show()`][datafusion.dataframe.DataFrame.show], or [`to_pandas()`][datafusion.dataframe.DataFrame.to_pandas] are called.
 
 ## Creating DataFrames
 
 DataFrames can be created in several ways:
 
-- From SQL queries via a `SessionContext`:
+- From SQL queries via a [`SessionContext`][datafusion.context.SessionContext]:
 
   ```python
   from datafusion import SessionContext
@@ -50,16 +50,16 @@ DataFrames can be created in several ways:
 - From various data sources:
 
   ```python
-  # From CSV files (see :ref:`io_csv` for detailed options)
+  # From CSV files (see [io_csv](/python/user-guide/io/csv/) for detailed options)
   df = ctx.read_csv("path/to/data.csv")
 
-  # From Parquet files (see :ref:`io_parquet` for detailed options)
+  # From Parquet files (see [io_parquet](/python/user-guide/io/parquet/) for detailed options)
   df = ctx.read_parquet("path/to/data.parquet")
 
-  # From JSON files (see :ref:`io_json` for detailed options)
+  # From JSON files (see [io_json](/python/user-guide/io/json/) for detailed options)
   df = ctx.read_json("path/to/data.json")
 
-  # From Avro files (see :ref:`io_avro` for detailed options)
+  # From Avro files (see [io_avro](/python/user-guide/io/avro/) for detailed options)
   df = ctx.read_avro("path/to/data.avro")
 
   # From Pandas DataFrame
@@ -127,18 +127,18 @@ df = df.drop("temporary_column")
 
 ## Column Names as Function Arguments
 
-Some `DataFrame` methods accept column names when an argument refers to an
+Some [`DataFrame`][datafusion.dataframe.DataFrame] methods accept column names when an argument refers to an
 existing column. These include:
 
-- [`select`][datafusion.DataFrame.select]
-- [`sort`][datafusion.DataFrame.sort]
-- [`drop`][datafusion.DataFrame.drop]
-- [`join`][datafusion.DataFrame.join] (`on` argument)
-- [`aggregate`][datafusion.DataFrame.aggregate] (grouping columns)
+- [`select`][datafusion.dataframe.DataFrame.select]
+- [`sort`][datafusion.dataframe.DataFrame.sort]
+- [`drop`][datafusion.dataframe.DataFrame.drop]
+- [`join`][datafusion.dataframe.DataFrame.join] (`on` argument)
+- [`aggregate`][datafusion.dataframe.DataFrame.aggregate] (grouping columns)
 
 See the full function documentation for details on any specific function.
 
-Note that [`join_on`][datafusion.DataFrame.join_on] expects `col()`/`column()` expressions rather than plain strings.
+Note that [`join_on`][datafusion.dataframe.DataFrame.join_on] expects [`col()`][datafusion.col.col]/[`column()`][datafusion.col.column] expressions rather than plain strings.
 
 For such methods, you can pass column names directly:
 
@@ -149,7 +149,7 @@ df.sort('id')
 df.aggregate('id', [f.count(col('value'))])
 ```
 
-The same operation can also be written with explicit column expressions, using either `col()` or `column()`:
+The same operation can also be written with explicit column expressions, using either [`col()`][datafusion.col.col] or [`column()`][datafusion.col.column]:
 
 ```python
 from datafusion import col, column, functions as f
@@ -158,21 +158,21 @@ df.sort(col('id'))
 df.aggregate(column('id'), [f.count(col('value'))])
 ```
 
-Note that `column()` is an alias of `col()`, so you can use either name; the example above shows both in action.
+Note that [`column()`][datafusion.col.column] is an alias of [`col()`][datafusion.col.col], so you can use either name; the example above shows both in action.
 
 Whenever an argument represents an expression—such as in
-[`filter`][datafusion.DataFrame.filter] or
-[`with_column`][datafusion.DataFrame.with_column]—use `col()` to reference
-columns. The comparison and arithmetic operators on `Expr` will automatically
-convert any non-`Expr` value into a literal expression, so writing
+[`filter`][datafusion.dataframe.DataFrame.filter] or
+[`with_column`][datafusion.dataframe.DataFrame.with_column]—use [`col()`][datafusion.col.col] to reference
+columns. The comparison and arithmetic operators on [`Expr`][datafusion.expr.Expr] will automatically
+convert any non-[`Expr`][datafusion.expr.Expr] value into a literal expression, so writing
 
 ```python
 from datafusion import col
 df.filter(col("age") > 21)
 ```
 
-is equivalent to using `lit(21)` explicitly. Use `lit()` (also available
-as `literal()`) when you need to construct a literal expression directly.
+is equivalent to using `lit(21)` explicitly. Use [`lit()`][datafusion.lit] (also available
+as [`literal()`][datafusion.literal]) when you need to construct a literal expression directly.
 
 ## Terminal Operations
 
@@ -224,7 +224,7 @@ for batch in reader:
     ...  # process each batch as it is produced
 ```
 
-DataFrames are also iterable, yielding {class}`datafusion.RecordBatch`
+DataFrames are also iterable, yielding [`RecordBatch`][datafusion.RecordBatch]
 objects lazily so you can loop over results directly without importing
 PyArrow:
 
@@ -233,7 +233,7 @@ for batch in df:
     ...  # each batch is a ``datafusion.RecordBatch``
 ```
 
-Each batch exposes `to_pyarrow()`, allowing conversion to a PyArrow
+Each batch exposes [`to_pyarrow()`][datafusion.record_batch.RecordBatch.to_pyarrow], allowing conversion to a PyArrow
 table. `pa.table(df)` collects the entire DataFrame eagerly into a
 PyArrow table:
 
@@ -250,8 +250,8 @@ async for batch in df:
     ...  # process each batch as it is produced
 ```
 
-To work with the stream directly, use `execute_stream()`, which returns a
-{class}`~datafusion.RecordBatchStream`.
+To work with the stream directly, use [`execute_stream()`][datafusion.dataframe.DataFrame.execute_stream], which returns a
+[`RecordBatchStream`][datafusion.RecordBatchStream].
 
 ```python
 stream = df.execute_stream()
@@ -262,8 +262,8 @@ for batch in stream:
 ### Execute as Stream
 
 For finer control over streaming execution, use
-[`execute_stream`][datafusion.DataFrame.execute_stream] to obtain a
-[`RecordBatchStream`][datafusion.RecordBatchStream]:
+[`execute_stream`][datafusion.dataframe.DataFrame.execute_stream] to obtain a
+[`RecordBatchStream`][datafusion.record_batch.RecordBatchStream]:
 
 ```python
 stream = df.execute_stream()
@@ -278,8 +278,8 @@ for batch in stream:
     `pa.RecordBatchReader.from_stream(df)`.
 
 When partition boundaries are important,
-[`execute_stream_partitioned`][datafusion.DataFrame.execute_stream_partitioned]
-returns an iterable of [`RecordBatchStream`][datafusion.RecordBatchStream] objects, one per
+[`execute_stream_partitioned`][datafusion.dataframe.DataFrame.execute_stream_partitioned]
+returns an iterable of [`RecordBatchStream`][datafusion.record_batch.RecordBatchStream] objects, one per
 partition:
 
 ```python
@@ -316,7 +316,7 @@ rendering, formatting options, and advanced styling, see [rendering](rendering.m
 
 : The main DataFrame class for building and executing queries.
 
-  See: [`DataFrame`][datafusion.DataFrame]
+  See: [`DataFrame`][datafusion.dataframe.DataFrame]
 
 **SessionContext**
 
@@ -324,16 +324,16 @@ rendering, formatting options, and advanced styling, see [rendering](rendering.m
 
   Key methods for DataFrame creation:
 
-  - [`read_csv`][datafusion.SessionContext.read_csv] - Read CSV files
-  - [`read_parquet`][datafusion.SessionContext.read_parquet] - Read Parquet files
-  - [`read_json`][datafusion.SessionContext.read_json] - Read JSON files
-  - [`read_avro`][datafusion.SessionContext.read_avro] - Read Avro files
-  - [`table`][datafusion.SessionContext.table] - Access registered tables
-  - [`sql`][datafusion.SessionContext.sql] - Execute SQL queries
-  - [`from_pandas`][datafusion.SessionContext.from_pandas] - Create from Pandas DataFrame
-  - [`from_arrow`][datafusion.SessionContext.from_arrow] - Create from Arrow data
+  - [`read_csv`][datafusion.context.SessionContext.read_csv] - Read CSV files
+  - [`read_parquet`][datafusion.context.SessionContext.read_parquet] - Read Parquet files
+  - [`read_json`][datafusion.context.SessionContext.read_json] - Read JSON files
+  - [`read_avro`][datafusion.context.SessionContext.read_avro] - Read Avro files
+  - [`table`][datafusion.context.SessionContext.table] - Access registered tables
+  - [`sql`][datafusion.context.SessionContext.sql] - Execute SQL queries
+  - [`from_pandas`][datafusion.context.SessionContext.from_pandas] - Create from Pandas DataFrame
+  - [`from_arrow`][datafusion.context.SessionContext.from_arrow] - Create from Arrow data
 
-  See: [`SessionContext`][datafusion.SessionContext]
+  See: [`SessionContext`][datafusion.context.SessionContext]
 
 ## Expression Classes
 
@@ -341,7 +341,7 @@ rendering, formatting options, and advanced styling, see [rendering](rendering.m
 
 : Represents expressions that can be used in DataFrame operations.
 
-  See: [`Expr`][datafusion.Expr]
+  See: [`Expr`][datafusion.expr.Expr]
 
 **Functions for creating expressions:**
 
@@ -358,7 +358,7 @@ For a complete list of available functions, see the [`functions`][datafusion.fun
 
 ## Execution Metrics
 
-After executing a DataFrame (via `collect()`, `execute_stream()`, etc.),
+After executing a DataFrame (via [`collect()`][datafusion.dataframe.DataFrame.collect], [`execute_stream()`][datafusion.dataframe.DataFrame.execute_stream], etc.),
 DataFusion populates per-operator runtime statistics such as row counts and
 compute time. See [execution-metrics](execution-metrics.md) for a full explanation and
 worked example.

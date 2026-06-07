@@ -48,25 +48,30 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 ROLE_PATTERNS = [
-    # Sphinx RST roles: :py:class:`~mod.Name` or :py:class:`Name <mod.Name>`
+    # Sphinx RST roles: :py:class:`~mod.Name`, :class:`~mod.Name`, plus
+    # the `Name <mod.Name>` long form. Both `py:` and bare role names.
     (
-        re.compile(r":py:(?:class|func|meth|mod|attr|obj|data):`~?([\w.]+)`"),
+        re.compile(
+            r":(?:py:)?(?:class|func|meth|mod|attr|obj|data|exc):`~?\.?([\w.]+)`"
+        ),
         lambda m: f"[`{m.group(1).split('.')[-1]}`][{m.group(1)}]",
     ),
     (
         re.compile(
-            r":py:(?:class|func|meth|mod|attr|obj|data):`([^<`]+)\s*<([\w.]+)>`"
+            r":(?:py:)?(?:class|func|meth|mod|attr|obj|data|exc):`([^<`]+)\s*<\.?([\w.]+)>`"
         ),
         lambda m: f"[`{m.group(1).strip()}`][{m.group(2)}]",
     ),
-    # MyST roles: {py:class}`~mod.Name`
+    # MyST roles: {py:class}`~mod.Name` and the bare {class}`~mod.Name` aliases.
     (
-        re.compile(r"\{py:(?:class|func|meth|mod|attr|obj|data)\}`~?([\w.]+)`"),
+        re.compile(
+            r"\{(?:py:)?(?:class|func|meth|mod|attr|obj|data|exc)\}`~?\.?([\w.]+)`"
+        ),
         lambda m: f"[`{m.group(1).split('.')[-1]}`][{m.group(1)}]",
     ),
     (
         re.compile(
-            r"\{py:(?:class|func|meth|mod|attr|obj|data)\}`([^<`]+)\s*<([\w.]+)>`"
+            r"\{(?:py:)?(?:class|func|meth|mod|attr|obj|data|exc)\}`([^<`]+)\s*<\.?([\w.]+)>`"
         ),
         lambda m: f"[`{m.group(1).strip()}`][{m.group(2)}]",
     ),

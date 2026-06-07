@@ -113,7 +113,7 @@ class LogicalPlan:  # noqa: PLW1641
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
-        """Deprecated alias for :meth:`from_bytes`."""
+        """Deprecated alias for [`from_bytes`][datafusion.expr.Expr.from_bytes]."""
         warnings.warn(
             "LogicalPlan.from_proto is deprecated; use from_bytes instead",
             DeprecationWarning,
@@ -122,7 +122,7 @@ class LogicalPlan:  # noqa: PLW1641
         return LogicalPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Deprecated alias for :meth:`to_bytes`."""
+        """Deprecated alias for [`to_bytes`][datafusion.expr.Expr.to_bytes]."""
         warnings.warn(
             "LogicalPlan.to_proto is deprecated; use to_bytes instead",
             DeprecationWarning,
@@ -191,7 +191,7 @@ class ExecutionPlan:
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
-        """Deprecated alias for :meth:`from_bytes`."""
+        """Deprecated alias for [`from_bytes`][datafusion.expr.Expr.from_bytes]."""
         warnings.warn(
             "ExecutionPlan.from_proto is deprecated; use from_bytes instead",
             DeprecationWarning,
@@ -200,7 +200,7 @@ class ExecutionPlan:
         return ExecutionPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Deprecated alias for :meth:`to_bytes`."""
+        """Deprecated alias for [`to_bytes`][datafusion.expr.Expr.to_bytes]."""
         warnings.warn(
             "ExecutionPlan.to_proto is deprecated; use to_bytes instead",
             DeprecationWarning,
@@ -227,8 +227,8 @@ class ExecutionPlan:
         DataFusion executes a query as a pipeline of operators — for example a
         data source scan, followed by a filter, followed by a projection. After
         the DataFrame has been executed (via
-        [`collect`][datafusion.DataFrame.collect],
-        [`execute_stream`][datafusion.DataFrame.execute_stream], etc.), each operator
+        [`collect`][datafusion.dataframe.DataFrame.collect],
+        `execute_stream`, etc.), each operator
         records statistics such as how many rows it produced and how much CPU
         time it consumed.
 

@@ -47,7 +47,7 @@ impl MyTableProvider {
 ```
 
 Once you have this library available, you can construct a
-[`Table`][datafusion.Table] in Python and register it with the
+[`Table`][datafusion.catalog.Table] in Python and register it with the
 `SessionContext`.
 
 ```python

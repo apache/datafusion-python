@@ -157,7 +157,7 @@ class ScalarUDF:
     def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
         """Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-        Used by [`udf`][SessionContext.udf] to surface a function looked
+        Used by `udf` to surface a function looked
         up from the session's function registry without re-running
         [`__init__`][__init__].
         """
@@ -469,7 +469,7 @@ class AggregateUDF:
     def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
         """Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-        Used by [`udaf`][SessionContext.udaf] to surface a function looked
+        Used by `udaf` to surface a function looked
         up from the session's function registry without re-running
         [`__init__`][__init__].
         """
@@ -901,7 +901,7 @@ class WindowUDF:
     def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
         """Wrap an already-constructed internal ``WindowUDF`` handle.
 
-        Used by [`udwf`][SessionContext.udwf] to surface a function looked
+        Used by `udwf` to surface a function looked
         up from the session's function registry without re-running
         [`__init__`][__init__].
         """
@@ -1107,7 +1107,7 @@ def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]
 
     The Rust call site forwards a ``datafusion._internal.SessionContext``,
     but UDTF authors expect to interact with the public
-    :class:`datafusion.SessionContext` wrapper. This closure wraps the
+    [`SessionContext`][datafusion.SessionContext] wrapper. This closure wraps the
     internal object once per call before delegating to ``func``.
     """
 
@@ -1138,7 +1138,7 @@ class TableFunction:
         """Instantiate a user-defined table function (UDTF).
 
         Set ``with_session=True`` to have the calling
-        :class:`SessionContext` passed as a ``session`` keyword argument
+        `SessionContext` passed as a ``session`` keyword argument
         on each invocation. Use it inside the callback to look up
         registered tables, UDFs, or session configuration. When
         ``with_session`` is ``False`` (the default), ``func`` is invoked
@@ -1147,11 +1147,11 @@ class TableFunction:
         ``with_session=True`` is only supported for pure-Python callables.
         Passing it together with an FFI-exported table function (one
         exposing ``__datafusion_table_function__``) raises
-        :class:`TypeError`.
+        [`TypeError`][TypeError].
 
         Registry mutations performed through the injected session (such
         as registering tables or UDFs) propagate to the caller's
-        :class:`SessionContext` because the registries are shared.
+        `SessionContext` because the registries are shared.
         Configuration changes do **not** propagate; the wrapper holds
         its own clone of the session config.
 
@@ -1194,7 +1194,7 @@ class TableFunction:
         """Create a new User-Defined Table Function (UDTF).
 
         Pass ``with_session=True`` to have the calling
-        :class:`SessionContext` injected as a ``session`` keyword
+        `SessionContext` injected as a ``session`` keyword
         argument on each invocation.
         """
         if args and callable(args[0]):

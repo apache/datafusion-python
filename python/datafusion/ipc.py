@@ -17,12 +17,12 @@
 
 """Driver- and worker-side setup for distributing DataFusion expressions.
 
-When a :class:`Expr` is shipped to a worker process (e.g. through
-:func:`multiprocessing.Pool` or a Ray actor), the worker reconstructs the
-expression against a :class:`SessionContext`. If the expression references
+When a [`Expr`][datafusion.expr.Expr] is shipped to a worker process (e.g. through
+[`Pool`][multiprocessing.Pool] or a Ray actor), the worker reconstructs the
+expression against a `SessionContext`. If the expression references
 UDFs imported via the FFI capsule protocol — or any UDF the worker would
 otherwise resolve from its registered functions rather than from inside
-the shipped expression — install a configured :class:`SessionContext`
+the shipped expression — install a configured `SessionContext`
 once per worker:
 
 .. code-block:: python
@@ -42,21 +42,21 @@ on the worker.
 .. note:: Serialization model
 
    Expressions containing Python UDFs (scalar, aggregate, window) are
-   serialized using :mod:`cloudpickle`. The callable itself travels
+   serialized using [`cloudpickle`][cloudpickle]. The callable itself travels
    **by value** (bytecode and closure cells inlined), but any names the
    callable resolves via ``import`` are captured **by reference** and
    must be importable on the receiving worker.
 
    The serialized payload is stamped with the sender's Python
    ``(major, minor)`` version. Loading on a different minor version
-   raises :class:`ValueError` with an actionable message — cloudpickle
+   raises [`ValueError`][ValueError] with an actionable message — cloudpickle
    payloads are not portable across Python minor versions. See
-   :meth:`datafusion.Expr.to_bytes` for examples of what travels by
+   [`to_bytes`][datafusion.Expr.to_bytes] for examples of what travels by
    value vs. by reference.
 
-On the driver side, call :func:`set_sender_ctx` to control how
-:func:`pickle.dumps` encodes expressions — for example, to apply
-:meth:`SessionContext.with_python_udf_inlining` to every pickled
+On the driver side, call [`set_sender_ctx`][set_sender_ctx] to control how
+[`dumps`][pickle.dumps] encodes expressions — for example, to apply
+`with_python_udf_inlining` to every pickled
 expression on this thread:
 
 >>> import pickle
@@ -77,11 +77,11 @@ encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
 ``ctx``.
 
 The thread-local sender context holds a strong reference to the
-installed :class:`SessionContext` until :func:`clear_sender_ctx` is
+installed `SessionContext` until [`clear_sender_ctx`][clear_sender_ctx] is
 called or the thread exits. Long-running driver threads that install a sender
 context once and never clear it will retain that session for the
-lifetime of the thread; pair :func:`set_sender_ctx` with
-:func:`clear_sender_ctx` (e.g. in a ``try``/``finally``) when the
+lifetime of the thread; pair [`set_sender_ctx`][set_sender_ctx] with
+[`clear_sender_ctx`][clear_sender_ctx] (e.g. in a ``try``/``finally``) when the
 sender context is only needed for a bounded scope.
 """
 
@@ -108,7 +108,7 @@ _local = threading.local()
 
 
 def set_worker_ctx(ctx: SessionContext) -> None:
-    """Install this worker's :class:`SessionContext` for shipped expressions.
+    """Install this worker's `SessionContext` for shipped expressions.
 
     Call once per worker — typically from a ``multiprocessing.Pool``
     initializer or a Ray actor ``__init__``. Idempotent: overwrites any
@@ -127,10 +127,10 @@ def set_worker_ctx(ctx: SessionContext) -> None:
 
 
 def clear_worker_ctx() -> None:
-    """Remove this worker's installed :class:`SessionContext`.
+    """Remove this worker's installed `SessionContext`.
 
     After clearing, expressions reconstructed in this worker fall back to
-    the global :class:`SessionContext` — adequate for built-ins and Python
+    the global `SessionContext` — adequate for built-ins and Python
     UDFs (scalar, aggregate, window), but anything imported via the FFI
     capsule protocol must be registered on the global context to resolve.
 
@@ -147,7 +147,7 @@ def clear_worker_ctx() -> None:
 
 
 def get_worker_ctx() -> SessionContext | None:
-    """Return this worker's installed :class:`SessionContext`, or ``None``.
+    """Return this worker's installed `SessionContext`, or ``None``.
 
     Examples:
         >>> from datafusion.ipc import get_worker_ctx, clear_worker_ctx
@@ -159,18 +159,18 @@ def get_worker_ctx() -> SessionContext | None:
 
 
 def set_sender_ctx(ctx: SessionContext) -> None:
-    """Install this driver's :class:`SessionContext` for outbound pickles.
+    """Install this driver's `SessionContext` for outbound pickles.
 
-    Controls how :func:`pickle.dumps` encodes :class:`Expr` instances on
+    Controls how `dumps` encodes [`Expr`][datafusion.expr.Expr] instances on
     this thread. The most useful application is propagating a session
     configured with
-    :meth:`SessionContext.with_python_udf_inlining` so the toggle takes
+    `with_python_udf_inlining` so the toggle takes
     effect through pickle (which otherwise calls
-    :meth:`Expr.to_bytes` with no context and uses the default codec).
+    `to_bytes` with no context and uses the default codec).
 
     Idempotent: overwrites any previous value. Stored in a thread-local
     slot, so worker threads on the driver may install their own contexts.
-    Does not affect :meth:`Expr.to_bytes` calls that pass an explicit
+    Does not affect `to_bytes` calls that pass an explicit
     ``ctx`` — those continue to use the supplied context.
 
     Examples:
@@ -185,7 +185,7 @@ def set_sender_ctx(ctx: SessionContext) -> None:
 
 
 def clear_sender_ctx() -> None:
-    """Remove this driver's installed sender :class:`SessionContext`.
+    """Remove this driver's installed sender `SessionContext`.
 
     After clearing, pickled expressions fall back to the default codec
     (Python UDF inlining on).
@@ -205,7 +205,7 @@ def clear_sender_ctx() -> None:
 
 
 def get_sender_ctx() -> SessionContext | None:
-    """Return this driver's installed sender :class:`SessionContext`, or ``None``.
+    """Return this driver's installed sender `SessionContext`, or ``None``.
 
     Examples:
         >>> from datafusion.ipc import get_sender_ctx, clear_sender_ctx
@@ -222,7 +222,7 @@ def _resolve_ctx(
     """Resolve a context for Expr reconstruction.
 
     Priority: explicit argument > worker context > global context.
-    Falling back to the global :class:`SessionContext` (instead of a
+    Falling back to the global `SessionContext` (instead of a
     freshly constructed one) preserves any registrations the user has
     installed on it.
 

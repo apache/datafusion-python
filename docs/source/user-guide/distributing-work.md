@@ -21,7 +21,7 @@
 
 DataFusion supports splitting work across processes by shipping
 serialized expressions to workers: the driver builds an
-[`Expr`][datafusion.Expr], each worker evaluates it against its
+[`Expr`][datafusion.expr.Expr], each worker evaluates it against its
 own slice of data. This pattern suits embarrassingly-parallel
 workloads where the driver decides partitioning up front.
 
@@ -102,9 +102,9 @@ print(results)  # [[2, 4, 6], [20, 40, 60]]
   captured in closures travel inside the serialized expression and are
   reconstructed on the worker automatically. Applies equally to:
 
-  - **scalar UDFs** ([`udf`][datafusion.udf])
-  - **aggregate UDFs** ([`udaf`][datafusion.udaf])
-  - **window UDFs** ([`udwf`][datafusion.udwf])
+  - **scalar UDFs** ([`udf`][datafusion.user_defined.udf])
+  - **aggregate UDFs** ([`udaf`][datafusion.user_defined.udaf])
+  - **window UDFs** ([`udwf`][datafusion.user_defined.udwf])
 
 - **UDFs imported via the FFI capsule protocol** — travel **by name
   only**. The worker must already have a matching registration on its
@@ -186,12 +186,12 @@ every start method — prefer it over relying on inherited state.
   state is captured at serialization time. Surprises are possible if
   the captured state is large, mutable, or not portable to the
   worker's environment. See [Portability requirements for inline
-  Python UDFs][portability requirements for inline python udfs] for the Python-version and imported-module rules.
+  Python UDFs](#portability-requirements-for-inline-python-udfs) for the Python-version and imported-module rules.
 
 ### Disabling Python UDF inlining
 
 For a stricter wire format, call
-[`SessionContext.with_python_udf_inlining(enabled=False)`][datafusion.SessionContext.with_python_udf_inlining] on the session
+[`SessionContext.with_python_udf_inlining(enabled=False)`][datafusion.context.SessionContext.with_python_udf_inlining] on the session
 producing or consuming the bytes. With inlining disabled, Python
 UDFs travel by name only — the same way FFI-capsule UDFs do — and
 the receiver must have a matching registration.
@@ -227,8 +227,8 @@ set_sender_ctx(SessionContext().with_python_udf_inlining(enabled=False))
 Pair with a matching strict worker context
 ([`set_worker_ctx`][datafusion.ipc.set_worker_ctx]) so the `pickle.loads`
 side also refuses inline payloads. Explicit
-[`Expr.to_bytes(ctx)`][Expr.to_bytes] and
-[`Expr.from_bytes(blob, ctx=ctx)`][Expr.from_bytes] calls
+[`Expr.to_bytes(ctx)`][datafusion.expr.Expr.to_bytes] and
+[`Expr.from_bytes(blob, ctx=ctx)`][datafusion.expr.Expr.from_bytes] calls
 honor the supplied `ctx` directly and ignore the sender / worker
 contexts.
 

@@ -19,11 +19,11 @@
 A `DataFrame` is a logical plan over one or more data sources.
 Methods that reshape the plan ([`select`][datafusion.dataframe.DataFrame.select],
 `filter`, `aggregate`,
-[`sort`][DataFrame.sort], [`join`][DataFrame.join],
+`sort`, [`join`][datafusion.dataframe.DataFrame.join],
 `limit`, the set-operation methods, ...) return a new
 `DataFrame` and do no work until a terminal method such as
-[`collect`][datafusion.dataframe.DataFrame.collect], [`to_pydict`][DataFrame.to_pydict],
-[`show`][DataFrame.show], or one of the ``write_*`` methods is called.
+`collect`, [`to_pydict`][datafusion.dataframe.DataFrame.to_pydict],
+`show`, or one of the ``write_*`` methods is called.
 
 DataFrames are produced from a
 [`SessionContext`][datafusion.context.SessionContext], typically via
@@ -38,7 +38,7 @@ Examples:
     >>> df.filter(col("a") > 1).select("b").to_pydict()
     {'b': [20, 30]}
 
-See :ref:`user_guide_concepts` in the online documentation for a high-level
+See user_guide_concepts in the online documentation for a high-level
 overview of the execution model.
 """
 
@@ -92,7 +92,7 @@ from enum import Enum
 class ExplainFormat(Enum):
     """Output format for explain plans.
 
-    Controls how the query plan is rendered in [`explain`][DataFrame.explain].
+    Controls how the query plan is rendered in `explain`.
     """
 
     INDENT = "indent"
@@ -348,9 +348,9 @@ class DataFrame:
     """Two dimensional table representation of data.
 
     DataFrame objects are iterable; iterating over a DataFrame yields
-    :class:`datafusion.RecordBatch` instances lazily.
+    [`RecordBatch`][datafusion.RecordBatch] instances lazily.
 
-    See :ref:`user_guide_concepts` in the online documentation for more information.
+    See user_guide_concepts in the online documentation for more information.
     """
 
     def __init__(self, df: DataFrameInternal) -> None:
@@ -362,7 +362,7 @@ class DataFrame:
         self.df = df
 
     def into_view(self, temporary: bool = False) -> Table:
-        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
+        """Convert ``DataFrame`` into a [`Table`][datafusion.Table].
 
         Examples:
             >>> from datafusion import SessionContext
@@ -644,8 +644,8 @@ class DataFrame:
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
         out. If more than one predicate is provided, these predicates will be
         combined as a logical AND. Each ``predicate`` can be an
-        :class:`~datafusion.expr.Expr` created using helper functions such as
-        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression string
+        [`Expr`][datafusion.expr.Expr] created using helper functions such as
+        [`col`][datafusion.col] or [`lit`][datafusion.lit], or a SQL expression string
         that will be parsed against the DataFrame schema. If more complex logic is
         required, see the logical operations in [`functions`][datafusion.functions].
 
@@ -696,8 +696,8 @@ class DataFrame:
     def with_column(self, name: str, expr: Expr | str) -> DataFrame:
         """Add an additional column to the DataFrame.
 
-        The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
-        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
+        The ``expr`` must be an [`Expr`][datafusion.expr.Expr] constructed with
+        [`col`][datafusion.col] or [`lit`][datafusion.lit], or a SQL expression
         string that will be parsed against the DataFrame schema.
 
         Examples:
@@ -724,8 +724,8 @@ class DataFrame:
 
         By passing expressions, iterables of expressions, string SQL expressions,
         or named expressions.
-        All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit`, or SQL expression strings.
+        All expressions must be [`Expr`][datafusion.expr.Expr] objects created via
+        [`col`][datafusion.col] or [`lit`][datafusion.lit], or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -812,7 +812,7 @@ class DataFrame:
         [`cube`][datafusion.expr.GroupingSet.cube], or
         [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets])
         as the ``group_by`` argument.  See the
-        :ref:`aggregation` user guide for detailed examples.
+        aggregation user guide for detailed examples.
 
         Args:
             group_by: Sequence of expressions or column names to group
@@ -883,7 +883,7 @@ class DataFrame:
             >>> df.sort("a").to_pydict()
             {'a': [1, 2, 3], 'b': [20, 30, 10]}
 
-            Sort descending using [`sort`][Expr.sort]:
+            Sort descending using [`sort`][datafusion.expr.Expr.sort]:
 
             >>> df.sort(col("a").sort(ascending=False)).to_pydict()
             {'a': [3, 2, 1], 'b': [10, 30, 20]}
@@ -1064,7 +1064,7 @@ class DataFrame:
         conjunction.
 
         When non-key columns share the same name in both DataFrames, use
-        [`col`][DataFrame.col] on each DataFrame **before** the join to
+        `col` on each DataFrame **before** the join to
         obtain fully qualified column references that can disambiguate them.
         See [`join_on`][join_on] for an example.
 
@@ -1158,11 +1158,11 @@ class DataFrame:
     ) -> DataFrame:
         """Join two `DataFrame` using the specified expressions.
 
-        Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
-        built with :func:`datafusion.col`. On expressions are used to support
+        Join predicates must be [`Expr`][datafusion.expr.Expr] objects, typically
+        built with [`col`][datafusion.col]. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
-        Use [`col`][DataFrame.col] on each DataFrame **before** the join to
+        Use `col` on each DataFrame **before** the join to
         obtain fully qualified column references. These qualified references
         can then be used in the join predicate and to disambiguate columns
         with the same name when selecting from the result.
@@ -1216,7 +1216,7 @@ class DataFrame:
             verbose: If ``True``, more details will be included.
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
-                [`INDENT`][ExplainFormat.INDENT].
+                [`INDENT`][datafusion.dataframe.ExplainFormat.INDENT].
 
         Examples:
             Show the plan in tree format:

@@ -8,6 +8,14 @@
 
 ::: datafusion.expr.WindowFrame
 
+## CaseBuilder
+
+::: datafusion.expr.CaseBuilder
+
+## GroupingSet
+
+::: datafusion.expr.GroupingSet
+
 ## col
 
 ::: datafusion.col.col

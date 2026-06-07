@@ -178,7 +178,7 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
   "TRY",
   "UP",
 ]
-"docs/*" = ["D"]
+"docs/*" = ["D", "INP001"]
 # Notebook content cells originate from prose-driven user-guide pages
 # where bare `print()` calls, magic comparison values, and per-cell
 # re-imports are part of the explanation rather than production code.
