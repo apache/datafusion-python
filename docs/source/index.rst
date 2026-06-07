@@ -52,47 +52,11 @@ Example
     df.show()
 
 
-.. _toc.links:
 .. toctree::
    :hidden:
    :maxdepth: 1
-   :caption: LINKS
 
-   Github and Issue Tracker <https://github.com/apache/datafusion-python>
-   Rust's API Docs <https://docs.rs/datafusion/latest/datafusion/>
-   Code of conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>
-   Examples <https://github.com/apache/datafusion-python/tree/main/examples>
-
-.. _toc.guide:
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   :caption: USER GUIDE
-
-   user-guide/introduction
-   user-guide/basics
-   user-guide/data-sources
-   user-guide/dataframe/index
-   user-guide/common-operations/index
-   user-guide/io/index
-   user-guide/configuration
-   user-guide/distributing-work
-   user-guide/sql
-   user-guide/upgrade-guides
-   user-guide/ai-coding-assistants
-
-
-.. _toc.contributor_guide:
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   :caption: CONTRIBUTOR GUIDE
-
-   contributor-guide/introduction
-   contributor-guide/ffi
-
-.. _toc.api:
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   :caption: API
+   user-guide/index
+   contributor-guide/index
+   API Reference <autoapi/index>
+   links

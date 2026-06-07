@@ -9,6 +9,18 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "accessible-pygments"
+version = "0.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bc/c1/bbac6a50d02774f91572938964c582fff4270eee73ab822a4aeea4d8b11b/accessible_pygments-0.0.5.tar.gz", hash = "sha256:40918d3e6a2b619ad424cb91e556bd3bd8865443d9f22f1dcdf79e33c8046872", size = 1377899, upload-time = "2024-05-10T11:23:10.216Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8d/3f/95338030883d8c8b91223b4e21744b04d11b161a3ef117295d8241f50ab4/accessible_pygments-0.0.5-py3-none-any.whl", hash = "sha256:88ae3211e68a1d0b011504b2ffc1691feafce124b845bd072ab6f9f66f34d4b7", size = 1395903, upload-time = "2024-05-10T11:23:08.421Z" },
+]
+
+[[package]]
 name = "alabaster"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -357,6 +369,8 @@ docs = [
     { name = "setuptools" },
     { name = "sphinx" },
     { name = "sphinx-autoapi" },
+    { name = "sphinx-reredirects", version = "0.1.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx-reredirects", version = "1.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 release = [
     { name = "pygithub" },
@@ -393,10 +407,11 @@ docs = [
     { name = "myst-parser", specifier = ">=3.0.1" },
     { name = "pandas", specifier = ">=2.0.3" },
     { name = "pickleshare", specifier = ">=0.7.5" },
-    { name = "pydata-sphinx-theme", specifier = "==0.8.0" },
+    { name = "pydata-sphinx-theme", specifier = ">=0.16,<0.17" },
     { name = "setuptools", specifier = ">=75.3.0" },
     { name = "sphinx", specifier = ">=7.1.2" },
     { name = "sphinx-autoapi", specifier = ">=3.4.0" },
+    { name = "sphinx-reredirects", specifier = ">=0.1.5" },
 ]
 release = [{ name = "pygithub", specifier = "==2.5.0" }]
 
@@ -1142,16 +1157,20 @@ wheels = [
 
 [[package]]
 name = "pydata-sphinx-theme"
-version = "0.8.0"
+version = "0.16.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "accessible-pygments" },
+    { name = "babel" },
     { name = "beautifulsoup4" },
     { name = "docutils" },
+    { name = "pygments" },
     { name = "sphinx" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/d6/3921de802cf1ee771f0e76c9068b52498aeb8eeec6b830ff931c81c7ecf3/pydata_sphinx_theme-0.8.0.tar.gz", hash = "sha256:9f72015d9c572ea92e3007ab221a8325767c426783b6b9941813e65fa988dc90", size = 1123746, upload-time = "2022-01-15T19:25:25.712Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/20/bb50f9de3a6de69e6abd6b087b52fa2418a0418b19597601605f855ad044/pydata_sphinx_theme-0.16.1.tar.gz", hash = "sha256:a08b7f0b7f70387219dc659bff0893a7554d5eb39b59d3b8ef37b8401b7642d7", size = 2412693, upload-time = "2024-12-17T10:53:39.537Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/26/0694318d46c7d90ab602ae27b24431e939f1600f9a4c69d1e727ec57289f/pydata_sphinx_theme-0.8.0-py3-none-any.whl", hash = "sha256:fbcbb833a07d3ad8dd997dd40dc94da18d98b41c68123ab0182b58fe92271204", size = 3284997, upload-time = "2022-01-15T19:25:23.807Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/0d/8ba33fa83a7dcde13eb3c1c2a0c1cc29950a048bfed6d9b0d8b6bd710b4c/pydata_sphinx_theme-0.16.1-py3-none-any.whl", hash = "sha256:225331e8ac4b32682c18fcac5a57a6f717c4e632cea5dd0e247b55155faeccde", size = 6723264, upload-time = "2024-12-17T10:53:35.645Z" },
 ]
 
 [[package]]
@@ -1457,6 +1476,38 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4a/eb/cc243583bb1d518ca3b10998c203d919a8ed90affd4831f2b61ad09043d2/sphinx_autoapi-3.4.0.tar.gz", hash = "sha256:e6d5371f9411bbb9fca358c00a9e57aef3ac94cbfc5df4bab285946462f69e0c", size = 29292, upload-time = "2024-11-30T01:09:40.956Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/d6/f2acdc2567337fd5f5dc091a4e58d8a0fb14927b9779fc1e5ecee96d9824/sphinx_autoapi-3.4.0-py3-none-any.whl", hash = "sha256:4027fef2875a22c5f2a57107c71641d82f6166bf55beb407a47aaf3ef14e7b92", size = 34095, upload-time = "2024-11-30T01:09:17.272Z" },
+]
+
+[[package]]
+name = "sphinx-reredirects"
+version = "0.1.6"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.11'",
+]
+dependencies = [
+    { name = "sphinx", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/16/6b/bcca2785de4071f604a722444d4d7ba8a9d40de3c14ad52fce93e6d92694/sphinx_reredirects-0.1.6.tar.gz", hash = "sha256:c491cba545f67be9697508727818d8626626366245ae64456fe29f37e9bbea64", size = 7080, upload-time = "2025-03-22T10:52:30.271Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ac/6f/0b3625be30a1a50f9e4c2cb2ec147b08f15ed0e9f8444efcf274b751300b/sphinx_reredirects-0.1.6-py3-none-any.whl", hash = "sha256:efd50c766fbc5bf40cd5148e10c00f2c00d143027de5c5e48beece93cc40eeea", size = 5675, upload-time = "2025-03-22T10:52:29.113Z" },
+]
+
+[[package]]
+name = "sphinx-reredirects"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version >= '3.12' and python_full_version < '3.14'",
+    "python_full_version == '3.11.*'",
+]
+dependencies = [
+    { name = "sphinx", marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1b/8d/0e39fe2740d7d71417edf9a6424aa80ca2c27c17fc21282cdc39f90d5a40/sphinx_reredirects-1.1.0.tar.gz", hash = "sha256:fb9b195335ab14b43f8273287d0c7eeb637ba6c56c66581c11b47202f6718b29", size = 614624, upload-time = "2025-12-22T08:28:02.792Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/81/b5dd07067f3daac6d23687ec737b2d593740671ebcd145830c8f92d381c5/sphinx_reredirects-1.1.0-py3-none-any.whl", hash = "sha256:4b5692273c72cd2d4d917f4c6f87d5919e4d6114a752d4be033f7f5f6310efd9", size = 6351, upload-time = "2025-12-22T08:27:59.724Z" },
 ]
 
 [[package]]

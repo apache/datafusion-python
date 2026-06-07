@@ -35,8 +35,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "Apache Arrow DataFusion"
-copyright = "2019-2024, Apache Software Foundation"
+project = "Apache DataFusion in Python"
+copyright = "2019-2026, Apache Software Foundation"
 author = "Apache Software Foundation"
 
 
@@ -115,13 +115,40 @@ def setup(sphinx) -> None:
 #
 html_theme = "pydata_sphinx_theme"
 
-html_theme_options = {"use_edit_page_button": False, "show_toc_level": 2}
+html_theme_options = {
+    "use_edit_page_button": False,
+    "show_toc_level": 2,
+    "logo": {
+        "image_light": "_static/images/original.svg",
+        "image_dark": "_static/images/original.svg",
+        "alt_text": "Apache DataFusion in Python",
+    },
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/apache/datafusion-python",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "Rust API docs (docs.rs)",
+            "url": "https://docs.rs/datafusion/latest/datafusion/",
+            "icon": "fa-brands fa-rust",
+        },
+    ],
+    "secondary_sidebar_items": [],
+    "collapse_navigation": True,
+    "show_nav_level": 2,
+}
 
 html_context = {
     "github_user": "apache",
-    "github_repo": "arrow-datafusion-python",
+    "github_repo": "datafusion-python",
     "github_version": "main",
     "doc_path": "docs/source",
+    "default_mode": "auto",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -129,16 +156,16 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+html_favicon = "_static/favicon.svg"
+
 # Copy agent-facing files (llms.txt) verbatim to the site root so they
 # resolve at conventional URLs like `https://.../python/llms.txt`.
 html_extra_path = ["llms.txt"]
 
-html_logo = "_static/images/2x_bgwhite_original.png"
-
 html_css_files = ["theme_overrides.css"]
 
 html_sidebars = {
-    "**": ["docs-sidebar.html"],
+    "**": ["sidebar-globaltoc.html"],
 }
 
 # tell myst_parser to auto-generate anchor links for headers h1, h2, h3
