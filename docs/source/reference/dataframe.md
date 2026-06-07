@@ -28,6 +28,10 @@
 
 ::: datafusion.dataframe.ExplainFormat
 
-## configure_formatter
+## DataFrame Formatter
 
-::: datafusion.dataframe_formatter.configure_formatter
+See [DataFrame Formatter](formatter.md) for the full formatter API
+([`configure_formatter`][datafusion.dataframe_formatter.configure_formatter],
+[`DataFrameHtmlFormatter`][datafusion.dataframe_formatter.DataFrameHtmlFormatter],
+[`CellFormatter`][datafusion.dataframe_formatter.CellFormatter],
+[`StyleProvider`][datafusion.dataframe_formatter.StyleProvider], etc.).

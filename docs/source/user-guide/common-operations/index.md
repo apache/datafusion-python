@@ -21,16 +21,20 @@
 
 The contents of this section are designed to guide a new user through how to use DataFusion.
 
-```{toctree}
-:maxdepth: 2
+## Contents
 
-views
-basic-info
-select-and-filter
-expressions
-joins
-functions
-aggregations
-windows
-udf-and-udfa
-```
+- [Basic Info](basic-info.ipynb) — inspecting schema, row counts, and
+  summary statistics.
+- [Views](views.md) — saving and reusing query fragments as views.
+- [Select and Filter](select-and-filter.ipynb) — projecting columns and
+  applying predicates.
+- [Expressions](expressions.ipynb) — `col`, `lit`, boolean operators,
+  array indexing, and chaining.
+- [Joins](joins.ipynb) — inner / outer / semi / anti joins.
+- [Functions](functions.ipynb) — scalar functions across math, string,
+  date/time, and array families.
+- [Aggregations](aggregations.ipynb) — `group_by`, rollup, cube,
+  grouping sets.
+- [Windows](windows.ipynb) — partitioned and ranking window functions.
+- [UDFs and UDAFs](udf-and-udfa.ipynb) — scalar, aggregate, window, and
+  table user-defined functions.

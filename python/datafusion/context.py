@@ -748,7 +748,7 @@ class SessionContext:
         """Create and return a dataframe using the provided partitions.
 
         Args:
-            partitions: [`RecordBatch`][pa.RecordBatch] partitions to register.
+            partitions: [`RecordBatch`][pyarrow.RecordBatch] partitions to register.
             name: Resultant dataframe name.
             schema: Schema for the partitions.
 
@@ -930,7 +930,7 @@ class SessionContext:
         self.ctx.register_udtf(func._udtf)
 
     def register_batch(self, name: str, batch: pa.RecordBatch) -> None:
-        """Register a single [`RecordBatch`][pa.RecordBatch] as a table.
+        """Register a single [`RecordBatch`][pyarrow.RecordBatch] as a table.
 
         Args:
             name: Name of the resultant table.
@@ -995,7 +995,7 @@ class SessionContext:
         """Return a `DataFrame` reading the given batches.
 
         All batches must share the same schema. Any iterable of
-        [`RecordBatch`][pa.RecordBatch] is accepted (list, tuple, generator);
+        [`RecordBatch`][pyarrow.RecordBatch] is accepted (list, tuple, generator);
         it is materialized into a list before being handed to the
         underlying Rust binding. Unlike `register_record_batches`,
         this does not register the batches as a named table; it returns
@@ -1279,7 +1279,7 @@ class SessionContext:
         )
 
     def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
-        """Register a [`Dataset`][pa.dataset.Dataset] as a table.
+        """Register a [`Dataset`][pyarrow.dataset.Dataset] as a table.
 
         Args:
             name: Name of the table to register.

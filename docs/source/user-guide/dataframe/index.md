@@ -77,7 +77,7 @@ DataFrames can be created in several ways:
   ```
 
 For detailed information about reading from different data sources, see the [I/O Guide](../io/index.md).
-For custom data sources, see [io_custom_table_provider](io_custom_table_provider).
+For custom data sources, see [io_custom_table_provider](../../io/table_provider/).
 
 ## Common DataFrame Operations
 
@@ -345,7 +345,7 @@ rendering, formatting options, and advanced styling, see [rendering](rendering.m
 
 **Functions for creating expressions:**
 
-- [`column`][datafusion.column] - Reference a column by name
+- [`column`][datafusion.col.column] - Reference a column by name
 - [`literal`][datafusion.literal] - Create a literal value expression
 
 ## Built-in Functions
@@ -363,9 +363,8 @@ DataFusion populates per-operator runtime statistics such as row counts and
 compute time. See [execution-metrics](execution-metrics.md) for a full explanation and
 worked example.
 
-```{toctree}
-:maxdepth: 1
+## Further reading
 
-rendering
-execution-metrics
-```
+- [Rendering](rendering.md) — Jupyter HTML repr customization.
+- [Execution Metrics](execution-metrics.md) — per-operator row counts,
+  compute time, spill events.

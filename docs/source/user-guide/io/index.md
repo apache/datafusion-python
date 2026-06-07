@@ -19,13 +19,27 @@
 
 # IO
 
-```{toctree}
-:maxdepth: 2
+DataFusion can read and write a range of file formats and stream data in
+through Arrow-compatible Python objects.
 
-arrow
-avro
-csv
-json
-parquet
-table_provider
-```
+## File formats
+
+| Format | Reader | Notes |
+|---|---|---|
+| [Apache Arrow](arrow.ipynb) | [`SessionContext.read_arrow`][datafusion.context.SessionContext.read_arrow] | Single Arrow IPC file. |
+| [Avro](avro.md) | [`SessionContext.read_avro`][datafusion.context.SessionContext.read_avro] | Schema-on-read; requires the Avro feature in the wheel. |
+| [CSV](csv.md) | [`SessionContext.read_csv`][datafusion.context.SessionContext.read_csv] | Header inference, custom delimiters, gzip/bz2 compression. |
+| [JSON](json.md) | [`SessionContext.read_json`][datafusion.context.SessionContext.read_json] | Newline-delimited JSON; one record per line. |
+| [Parquet](parquet.md) | [`SessionContext.read_parquet`][datafusion.context.SessionContext.read_parquet] | Predicate / projection push-down, partitioned datasets. |
+
+## Custom sources
+
+- [Table Provider](table_provider.md) — register an arbitrary data source
+  (Delta Lake, Iceberg, your own Rust crate, etc.) by implementing the
+  table-provider FFI interface.
+
+## See also
+
+- [Data Sources](../data-sources.ipynb) — concept overview, including
+  in-memory DataFrame creation from `pyarrow` / `pandas` / `polars` and
+  object-store integration.

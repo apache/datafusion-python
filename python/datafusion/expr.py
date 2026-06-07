@@ -28,7 +28,7 @@ combination (``col("a") + lit(1)``), or the output of a function from
 [`sort`][datafusion.dataframe.DataFrame.sort].
 
 Convenience constructors are re-exported at the package level:
-[`col`][datafusion.col] / [`column`][datafusion.column] for column references
+[`col`][datafusion.col.col] / [`column`][datafusion.col.column] for column references
 and [`lit`][datafusion.lit] / [`literal`][datafusion.literal] for scalar
 literals.
 
@@ -262,7 +262,7 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     """Return the internal expression from ``Expr`` or raise ``TypeError``.
 
     This helper rejects plain strings and other non-`Expr` values so
-    higher level APIs consistently require explicit [`col`][datafusion.col] or
+    higher level APIs consistently require explicit [`col`][datafusion.col.col] or
     [`lit`][datafusion.lit] expressions.
 
     See Also:

@@ -22,18 +22,27 @@
 The user guide walks through installing DataFusion in Python, building queries
 with the DataFrame API or SQL, reading and writing data, and tuning execution.
 
-```{toctree}
-:maxdepth: 2
+## Contents
 
-introduction
-basics
-data-sources
-dataframe/index
-common-operations/index
-io/index
-configuration
-distributing-work
-sql
-upgrade-guides
-ai-coding-assistants
-```
+- [Introduction](introduction.ipynb) — what DataFusion in Python is and
+  when to reach for it.
+- [Concepts](concepts.ipynb) — `SessionContext`, `DataFrame`, and
+  `Expr` at a glance.
+- [Data Sources](data-sources.ipynb) — reading Parquet / CSV / JSON /
+  Avro, in-memory DataFrames, object stores, Delta Lake, Iceberg,
+  custom table providers, and catalogs.
+- [DataFrame](dataframe/index.md) — building queries with the DataFrame
+  API, rendering, and execution metrics.
+- [Common Operations](common-operations/index.md) — select, filter,
+  joins, aggregations, windows, expressions, UDFs/UDAFs.
+- [I/O](io/index.md) — per-format reading and writing details.
+- [Configuration](configuration.md) — `SessionConfig` /
+  `RuntimeEnvBuilder` tuning options.
+- [Distributing Work](distributing-work.md) — shipping expressions to
+  worker processes via pickle / cloudpickle, FFI-capsule UDFs, and
+  the sender/worker context model.
+- [SQL](sql.ipynb) — registering tables and running SQL queries.
+- [Upgrade Guides](upgrade-guides.md) — notes on cross-version
+  migrations.
+- [AI Coding Assistants](ai-coding-assistants.md) — agent-facing
+  reference material and skill files.

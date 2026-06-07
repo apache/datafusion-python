@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 class RecordBatch:
-    """This class is essentially a wrapper for [`RecordBatch`][pa.RecordBatch]."""
+    """This class is essentially a wrapper for [`RecordBatch`][pyarrow.RecordBatch]."""
 
     def __init__(self, record_batch: df_internal.RecordBatch) -> None:
         """This constructor is generally not called by the end user.
@@ -43,7 +43,7 @@ class RecordBatch:
         self.record_batch = record_batch
 
     def to_pyarrow(self) -> pa.RecordBatch:
-        """Convert to [`RecordBatch`][pa.RecordBatch]."""
+        """Convert to [`RecordBatch`][pyarrow.RecordBatch]."""
         return self.record_batch.to_pyarrow()
 
     def __arrow_c_array__(

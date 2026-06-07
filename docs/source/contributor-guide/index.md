@@ -21,9 +21,10 @@
 
 Guides for contributors to the DataFusion in Python project.
 
-```{toctree}
-:maxdepth: 2
+## Contents
 
-introduction
-ffi
-```
+- [Introduction](introduction.md) — workflow, code layout, how to run
+  the test suite, how PRs are reviewed.
+- [FFI](ffi.md) — exposing Rust-backed extensions through the Foreign
+  Function Interface so they appear as first-class DataFusion symbols
+  in Python.

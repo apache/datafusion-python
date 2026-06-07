@@ -645,7 +645,7 @@ class DataFrame:
         out. If more than one predicate is provided, these predicates will be
         combined as a logical AND. Each ``predicate`` can be an
         [`Expr`][datafusion.expr.Expr] created using helper functions such as
-        [`col`][datafusion.col] or [`lit`][datafusion.lit], or a SQL expression string
+        `col` or [`lit`][datafusion.lit], or a SQL expression string
         that will be parsed against the DataFrame schema. If more complex logic is
         required, see the logical operations in [`functions`][datafusion.functions].
 
@@ -697,7 +697,7 @@ class DataFrame:
         """Add an additional column to the DataFrame.
 
         The ``expr`` must be an [`Expr`][datafusion.expr.Expr] constructed with
-        [`col`][datafusion.col] or [`lit`][datafusion.lit], or a SQL expression
+        [`col`][datafusion.col.col] or [`lit`][datafusion.lit], or a SQL expression
         string that will be parsed against the DataFrame schema.
 
         Examples:
@@ -725,7 +725,7 @@ class DataFrame:
         By passing expressions, iterables of expressions, string SQL expressions,
         or named expressions.
         All expressions must be [`Expr`][datafusion.expr.Expr] objects created via
-        [`col`][datafusion.col] or [`lit`][datafusion.lit], or SQL expression strings.
+        `col` or [`lit`][datafusion.lit], or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -1159,7 +1159,7 @@ class DataFrame:
         """Join two `DataFrame` using the specified expressions.
 
         Join predicates must be [`Expr`][datafusion.expr.Expr] objects, typically
-        built with [`col`][datafusion.col]. On expressions are used to support
+        built with [`col`][datafusion.col.col]. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
         Use `col` on each DataFrame **before** the join to

@@ -19,7 +19,7 @@
 
 # Registering Views
 
-You can use the context's `register_view` method to register a DataFrame as a view
+You can use the context's [`register_view`][datafusion.context.SessionContext.register_view] method to register a DataFrame as a view
 
 ```python
 from datafusion import SessionContext, col, literal

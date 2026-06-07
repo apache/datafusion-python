@@ -72,6 +72,7 @@ plugins:
           inventories:
             - https://docs.python.org/3/objects.inv
             - https://arrow.apache.org/docs/objects.inv
+            - https://docs.pola.rs/api/python/stable/objects.inv
           options:
             docstring_style: google
             show_source: false
@@ -128,8 +129,8 @@ nav:
           - Execution Metrics: user-guide/dataframe/execution-metrics.md
       - Common Operations:
           - user-guide/common-operations/index.md
-          - Views: user-guide/common-operations/views.md
           - Basic Info: user-guide/common-operations/basic-info.ipynb
+          - Views: user-guide/common-operations/views.md
           - Select and Filter: user-guide/common-operations/select-and-filter.ipynb
           - Expressions: user-guide/common-operations/expressions.ipynb
           - Joins: user-guide/common-operations/joins.ipynb
@@ -158,6 +159,7 @@ nav:
       - reference/index.md
       - SessionContext: reference/context.md
       - DataFrame: reference/dataframe.md
+      - DataFrame Formatter: reference/formatter.md
       - Expr: reference/expr.md
       - Functions: reference/functions.md
       - User-Defined Functions: reference/user_defined.md

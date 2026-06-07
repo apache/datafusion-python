@@ -21,11 +21,7 @@
 
 External resources for the DataFusion in Python project.
 
-```{toctree}
-:maxdepth: 1
-
-GitHub and Issue Tracker <https://github.com/apache/datafusion-python>
-Rust API Docs <https://docs.rs/datafusion/latest/datafusion/>
-Code of Conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>
-Examples <https://github.com/apache/datafusion-python/tree/main/examples>
-```
+- [GitHub and Issue Tracker](https://github.com/apache/datafusion-python)
+- [Rust API Docs](https://docs.rs/datafusion/latest/datafusion/)
+- [Code of Conduct](https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md)
+- [Examples](https://github.com/apache/datafusion-python/tree/main/examples)

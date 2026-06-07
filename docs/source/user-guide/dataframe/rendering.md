@@ -20,9 +20,10 @@
 # DataFrame Rendering
 
 DataFusion provides configurable rendering for DataFrames in both plain text and HTML
-formats. The `datafusion.dataframe_formatter` module controls how DataFrames are
+formats. The [`datafusion.dataframe_formatter`](../../reference/formatter.md) module controls how DataFrames are
 displayed in Jupyter notebooks (via `_repr_html_`), in the terminal (via `__repr__`),
 and anywhere else a string or HTML representation is needed.
+
 
 ## Basic Rendering
 
@@ -70,7 +71,7 @@ The formatter settings affect all DataFrames displayed after configuration.
 ## Custom Style Providers
 
 For HTML styling, you can create a custom style provider that implements the
-`StyleProvider` protocol:
+[`StyleProvider`][datafusion.dataframe_formatter.StyleProvider] protocol:
 
 ```python
 from datafusion.dataframe_formatter import configure_formatter
@@ -157,7 +158,7 @@ When `use_shared_styles=True`:
 
 ## Working with the Formatter Directly
 
-You can use `get_formatter()` and `set_formatter()` for direct access to the global
+You can use [`get_formatter()`][datafusion.dataframe_formatter.get_formatter] and [`set_formatter()`][datafusion.dataframe_formatter.set_formatter] for direct access to the global
 formatter instance:
 
 ```python
@@ -208,20 +209,9 @@ These parameters help balance comprehensive data display against performance con
 
 ## Best Practices
 
-1. **Global Configuration**: Use `configure_formatter()` at the beginning of your notebook to set up consistent formatting for all DataFrames.
+1. **Global Configuration**: Use [`configure_formatter()`][datafusion.dataframe_formatter.configure_formatter] at the beginning of your notebook to set up consistent formatting for all DataFrames.
 2. **Memory Management**: Set appropriate `max_memory_bytes` limits to prevent performance issues with large datasets.
 3. **Shared Styles**: Keep `use_shared_styles=True` (default) for better performance in notebooks with multiple DataFrames.
-4. **Reset When Needed**: Call `reset_formatter()` when you want to start fresh with default settings.
+4. **Reset When Needed**: Call [`reset_formatter()`][datafusion.dataframe_formatter.reset_formatter] when you want to start fresh with default settings.
 5. **Cell Expansion**: Use `enable_cell_expansion=True` when cells might contain longer content that users may want to see in full.
 
-## Additional Resources
-
-- [../dataframe/index](../dataframe/index.md) - Complete guide to using DataFrames
-- [../io/index](../io/index.md) - I/O Guide for reading data from various sources
-- [../data-sources](../data-sources.ipynb) - Comprehensive data sources guide
-- [io_csv](io_csv) - CSV file reading
-- [io_parquet](io_parquet) - Parquet file reading
-- [io_json](io_json) - JSON file reading
-- [io_avro](io_avro) - Avro file reading
-- [io_custom_table_provider](io_custom_table_provider) - Custom table providers
-- [API Reference](https://arrow.apache.org/datafusion-python/api/index.html) - Full API reference
