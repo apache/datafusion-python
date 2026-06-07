@@ -1,968 +1,491 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../../">
+
+<html lang="en" data-content_root="../../../" data-theme="auto">
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>datafusion.dataframe_formatter &#8212; Apache Arrow DataFusion  documentation</title>
-    
-    <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+    <title>datafusion.dataframe_formatter &#8212; Apache DataFusion in Python  documentation</title>
   
-    
-    <link rel="stylesheet"
-      href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
   
-    
-      
   
-    
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
-    
-    <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
   
-    <script src="../../../_static/documentation_options.js?v=8a448e45"></script>
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/dataframe_formatter/index';</script>
+    <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="datafusion.expr" href="../expr/index.html" />
     <link rel="prev" title="datafusion.dataframe" href="../dataframe/index.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <div class="container-fluid" id="banner"></div>
-
-    
-
-
-    <div class="container-xl">
-      <div class="row">
-          
-            
-            <!-- Only show if we have sidebars configured, else just a small margin  -->
-            <div class="col-12 col-md-3 bd-sidebar">
-              <div class="sidebar-start-items">
-<a class="navbar-brand" href="../../../index.html">
-  <img src="../../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
-</a>
-
-<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
+  </dialog>
 
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  <div class="bd-toc-item active">
-    
-    <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  LINKS
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python">
-   Github and Issue Tracker
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
-   Rust's API Docs
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
-   Code of conduct
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
-   Examples
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  USER GUIDE
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/basics.html">
-   Concepts
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/data-sources.html">
-   Data Sources
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../user-guide/dataframe/index.html">
-   DataFrames
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
-     DataFrame Rendering
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/dataframe/execution-metrics.html">
-     Execution Metrics
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../user-guide/common-operations/index.html">
-   Common Operations
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/views.html">
-     Registering Views
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">
-     Basic Operations
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">
-     Column Selections
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/expressions.html">
-     Expressions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/joins.html">
-     Joins
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/functions.html">
-     Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">
-     Aggregation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/windows.html">
-     Window Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">
-     User-Defined Functions
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../user-guide/io/index.html">
-   IO
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/arrow.html">
-     Arrow
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
-     Avro
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
-     CSV
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/json.html">
-     JSON
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
-     Parquet
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/table_provider.html">
-     Custom Table Provider
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/configuration.html">
-   Configuration
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/distributing-work.html">
-   Distributing work
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/sql.html">
-   SQL
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/upgrade-guides.html">
-   Upgrade Guides
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">
-   Using AI Coding Assistants
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  CONTRIBUTOR GUIDE
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../contributor-guide/introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../contributor-guide/ffi.html">
-   Python Extensions
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  API
- </span>
-</p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="../../index.html">
-   API Reference
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-  <label for="toctree-checkbox-4">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2 current active has-children">
-    <a class="reference internal" href="../index.html">
-     datafusion
-    </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul class="current">
-     <li class="toctree-l3">
-      <a class="reference internal" href="../catalog/index.html">
-       datafusion.catalog
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../context/index.html">
-       datafusion.context
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../dataframe/index.html">
-       datafusion.dataframe
-      </a>
-     </li>
-     <li class="toctree-l3 current active">
-      <a class="current reference internal" href="#">
-       datafusion.dataframe_formatter
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../expr/index.html">
-       datafusion.expr
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../functions/index.html">
-       datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-      <label for="toctree-checkbox-6">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../io/index.html">
-       datafusion.io
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../ipc/index.html">
-       datafusion.ipc
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../object_store/index.html">
-       datafusion.object_store
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../options/index.html">
-       datafusion.options
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../plan/index.html">
-       datafusion.plan
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../record_batch/index.html">
-       datafusion.record_batch
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../substrait/index.html">
-       datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../unparser/index.html">
-       datafusion.unparser
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../user_defined/index.html">
-       datafusion.user_defined
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
-</ul>
-
-    
-  </div>
-</nav>
-              </div>
-              <div class="sidebar-end-items">
-              </div>
-            </div>
-            
-          
-
-          
-          <div class="d-none d-xl-block col-xl-2 bd-toc">
-            
-              
-              <div class="toc-item">
-                
-<div class="tocsection onthispage pt-5 pb-3">
-    <i class="fas fa-list"></i> On this page
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<nav id="bd-toc-nav">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#classes">
-   Classes
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#functions">
-   Functions
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-contents">
-   Module Contents
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
   </a>
-  <ul class="visible nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.CellFormatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CellFormatter
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.CellFormatter.__call__">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         CellFormatter.__call__()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       DataFrameHtmlFormatter
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_expandable_cell">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_expandable_cell()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_footer">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_html_footer()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_header">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_html_header()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_regular_cell">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_regular_cell()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_body">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_table_body()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_container_start">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_table_container_start()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_header">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._build_table_header()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._format_cell_value">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._format_cell_value()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_cell_value">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._get_cell_value()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_default_css">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._get_default_css()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_javascript">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._get_javascript()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.format_html()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.format_str()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.register_formatter()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.set_custom_cell_builder()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.set_custom_header_builder()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._custom_cell_builder
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._custom_header_builder
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._max_rows
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._type_formatters
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.custom_css">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.custom_css
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.enable_cell_expansion
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_cell_length">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.max_cell_length
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_height">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.max_height
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_memory_bytes">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.max_memory_bytes
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.max_rows
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.max_width
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.min_rows
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.repr_rows
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.show_truncation_message
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.style_provider">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.style_provider
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.use_shared_styles">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.use_shared_styles
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DefaultStyleProvider">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       DefaultStyleProvider
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_cell_style">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DefaultStyleProvider.get_cell_style()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_header_style">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DefaultStyleProvider.get_header_style()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.FormatterManager">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       FormatterManager
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.FormatterManager.get_formatter">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         FormatterManager.get_formatter()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.FormatterManager.set_formatter">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         FormatterManager.set_formatter()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.FormatterManager._default_formatter">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         FormatterManager._default_formatter
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.StyleProvider">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       StyleProvider
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.StyleProvider.get_cell_style">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         StyleProvider.get_cell_style()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.StyleProvider.get_header_style">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         StyleProvider.get_header_style()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._refresh_formatter_reference">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       _refresh_formatter_reference()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._validate_bool">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       _validate_bool()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._validate_formatter_parameters">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       _validate_formatter_parameters()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter._validate_positive_int">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       _validate_positive_int()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.configure_formatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       configure_formatter()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.get_formatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       get_formatter()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.reset_formatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       reset_formatter()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.set_formatter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       set_formatter()
-      </span>
-     </code>
-    </a>
-   </li>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
   </ul>
- </li>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
 </ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/functions.html">Functions</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">datafusion</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">datafusion</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">datafusion.dataframe_formatter</span></li>
+  </ul>
 </nav>
-              </div>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
               
-              <div class="toc-item">
+              
+              
                 
-              </div>
-              
-            
-          </div>
-          
-
-          
-          
-            
-          
-          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
-              
-              <div>
-                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="module-datafusion.dataframe_formatter">
-<span id="datafusion-dataframe-formatter"></span><h1>datafusion.dataframe_formatter<a class="headerlink" href="#module-datafusion.dataframe_formatter" title="Link to this heading">¶</a></h1>
+<span id="datafusion-dataframe-formatter"></span><h1>datafusion.dataframe_formatter<a class="headerlink" href="#module-datafusion.dataframe_formatter" title="Link to this heading">#</a></h1>
 <p>HTML formatting utilities for DataFusion DataFrames.</p>
 <section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
-<table class="autosummary longtable table autosummary">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CellFormatter</span></code></a></p></td>
 <td><p>Protocol for cell value formatters.</p></td>
@@ -981,10 +504,11 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
-<table class="autosummary longtable table autosummary">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter._refresh_formatter_reference" title="datafusion.dataframe_formatter._refresh_formatter_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_refresh_formatter_reference</span></code></a>(→ None)</p></td>
 <td><p>Refresh formatter reference in any modules using it.</p></td>
@@ -1012,17 +536,18 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.CellFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">CellFormatter</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.CellFormatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">CellFormatter</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.CellFormatter" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol for cell value formatters.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.CellFormatter.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.CellFormatter.__call__" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.CellFormatter.__call__" title="Link to this definition">#</a></dt>
 <dd><p>Format a cell value to string representation.</p>
 </dd></dl>
 
@@ -1030,7 +555,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.StyleProvider" title="datafusion.dataframe_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.StyleProvider" title="datafusion.dataframe_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="Link to this definition">#</a></dt>
 <dd><p>Configurable HTML formatter for DataFusion DataFrames.</p>
 <p>This class handles the HTML rendering of DataFrames for display in
 Jupyter notebooks and other rich display contexts.</p>
@@ -1093,49 +618,49 @@ protocol.</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_expandable_cell">
-<span class="sig-name descname"><span class="pre">_build_expandable_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatted_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_expandable_cell" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_expandable_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatted_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_expandable_cell" title="Link to this definition">#</a></dt>
 <dd><p>Build an expandable cell for long content.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_footer">
-<span class="sig-name descname"><span class="pre">_build_html_footer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_footer" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_html_footer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_footer" title="Link to this definition">#</a></dt>
 <dd><p>Build the HTML footer with JavaScript and messages.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_header">
-<span class="sig-name descname"><span class="pre">_build_html_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_header" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_html_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_html_header" title="Link to this definition">#</a></dt>
 <dd><p>Build the HTML header with CSS styles.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_regular_cell">
-<span class="sig-name descname"><span class="pre">_build_regular_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatted_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_regular_cell" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_regular_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatted_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_regular_cell" title="Link to this definition">#</a></dt>
 <dd><p>Build a regular table cell.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_body">
-<span class="sig-name descname"><span class="pre">_build_table_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_body" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_table_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_body" title="Link to this definition">#</a></dt>
 <dd><p>Build the HTML table body with data rows.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_container_start">
-<span class="sig-name descname"><span class="pre">_build_table_container_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_container_start" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_table_container_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_container_start" title="Link to this definition">#</a></dt>
 <dd><p>Build the opening tags for the table container.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_header">
-<span class="sig-name descname"><span class="pre">_build_table_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_header" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_build_table_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._build_table_header" title="Link to this definition">#</a></dt>
 <dd><p>Build the HTML table header with column names.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._format_cell_value">
-<span class="sig-name descname"><span class="pre">_format_cell_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._format_cell_value" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_format_cell_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._format_cell_value" title="Link to this definition">#</a></dt>
 <dd><p>Format a cell value for display.</p>
 <p>Uses registered type formatters if available.</p>
 <dl class="field-list simple">
@@ -1150,7 +675,7 @@ protocol.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_cell_value">
-<span class="sig-name descname"><span class="pre">_get_cell_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_cell_value" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_get_cell_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_cell_value" title="Link to this definition">#</a></dt>
 <dd><p>Extract a cell value from a column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1167,19 +692,19 @@ protocol.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_default_css">
-<span class="sig-name descname"><span class="pre">_get_default_css</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_default_css" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_get_default_css</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_default_css" title="Link to this definition">#</a></dt>
 <dd><p>Get default CSS styles for the HTML table.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_javascript">
-<span class="sig-name descname"><span class="pre">_get_javascript</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_javascript" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_get_javascript</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_javascript" title="Link to this definition">#</a></dt>
 <dd><p>Get JavaScript code for interactive elements.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html">
-<span class="sig-name descname"><span class="pre">format_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">format_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html" title="Link to this definition">#</a></dt>
 <dd><p>Format record batches as HTML.</p>
 <p>This method is used by DataFrame’s _repr_html_ implementation and can be
 called directly when custom HTML rendering is needed.</p>
@@ -1203,7 +728,7 @@ called directly when custom HTML rendering is needed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str">
-<span class="sig-name descname"><span class="pre">format_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">format_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str" title="Link to this definition">#</a></dt>
 <dd><p>Format record batches as a string.</p>
 <p>This method is used by DataFrame’s __repr__ implementation and can be
 called directly when string rendering is needed.</p>
@@ -1227,7 +752,7 @@ called directly when string rendering is needed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter">
-<span class="sig-name descname"><span class="pre">register_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><span class="pre">CellFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><span class="pre">CellFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Register a custom formatter for a specific data type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1242,7 +767,7 @@ a formatted string</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder">
-<span class="sig-name descname"><span class="pre">set_custom_cell_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_custom_cell_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_cell_builder" title="Link to this definition">#</a></dt>
 <dd><p>Set a custom cell builder function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1253,7 +778,7 @@ a formatted string</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder">
-<span class="sig-name descname"><span class="pre">set_custom_header_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_custom_header_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.set_custom_header_builder" title="Link to this definition">#</a></dt>
 <dd><p>Set a custom header builder function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1264,52 +789,52 @@ a formatted string</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder">
-<span class="sig-name descname"><span class="pre">_custom_cell_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_custom_cell_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder">
-<span class="sig-name descname"><span class="pre">_custom_header_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_custom_header_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows">
-<span class="sig-name descname"><span class="pre">_max_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_max_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters">
-<span class="sig-name descname"><span class="pre">_type_formatters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><span class="pre">CellFormatter</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_type_formatters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><span class="pre">CellFormatter</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.custom_css">
-<span class="sig-name descname"><span class="pre">custom_css</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.custom_css" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">custom_css</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.custom_css" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion">
-<span class="sig-name descname"><span class="pre">enable_cell_expansion</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">enable_cell_expansion</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_cell_length">
-<span class="sig-name descname"><span class="pre">max_cell_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_cell_length" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_cell_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_cell_length" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_height">
-<span class="sig-name descname"><span class="pre">max_height</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">300</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_height" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_height</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">300</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_height" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_memory_bytes">
-<span class="sig-name descname"><span class="pre">max_memory_bytes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2097152</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_memory_bytes" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_memory_bytes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2097152</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_memory_bytes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows" title="Link to this definition">#</a></dt>
 <dd><p>Get the maximum number of rows to display.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1320,17 +845,17 @@ a formatted string</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width">
-<span class="sig-name descname"><span class="pre">max_width</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_width</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_width" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows">
-<span class="sig-name descname"><span class="pre">min_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">min_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">repr_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">repr_rows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.repr_rows" title="Link to this definition">#</a></dt>
 <dd><p>Get the maximum number of rows (deprecated name).</p>
 <div class="deprecated">
 <p><span class="versionmodified deprecated">Deprecated since version Use: </span><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_rows</span></code></a> instead. This property is provided for
@@ -1345,28 +870,28 @@ backward compatibility.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message">
-<span class="sig-name descname"><span class="pre">show_truncation_message</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">show_truncation_message</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.style_provider">
-<span class="sig-name descname"><span class="pre">style_provider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.style_provider" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">style_provider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.style_provider" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.use_shared_styles">
-<span class="sig-name descname"><span class="pre">use_shared_styles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.use_shared_styles" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">use_shared_styles</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.use_shared_styles" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DefaultStyleProvider">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DefaultStyleProvider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">DefaultStyleProvider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider" title="Link to this definition">#</a></dt>
 <dd><p>Default implementation of StyleProvider.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DefaultStyleProvider.get_cell_style">
-<span class="sig-name descname"><span class="pre">get_cell_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_cell_style" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_cell_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_cell_style" title="Link to this definition">#</a></dt>
 <dd><p>Get the CSS style for table cells.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1377,7 +902,7 @@ backward compatibility.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DefaultStyleProvider.get_header_style">
-<span class="sig-name descname"><span class="pre">get_header_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_header_style" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_header_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DefaultStyleProvider.get_header_style" title="Link to this definition">#</a></dt>
 <dd><p>Get the CSS style for header cells.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1390,11 +915,11 @@ backward compatibility.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.FormatterManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">FormatterManager</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">FormatterManager</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager" title="Link to this definition">#</a></dt>
 <dd><p>Manager class for the global DataFrame HTML formatter instance.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.FormatterManager.get_formatter">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager.get_formatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager.get_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Get the current global DataFrame HTML formatter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1405,7 +930,7 @@ backward compatibility.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.FormatterManager.set_formatter">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager.set_formatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager.set_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Set the global DataFrame HTML formatter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1416,25 +941,25 @@ backward compatibility.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.FormatterManager._default_formatter">
-<span class="sig-name descname"><span class="pre">_default_formatter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></em><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager._default_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_default_formatter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></em><a class="headerlink" href="#datafusion.dataframe_formatter.FormatterManager._default_formatter" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.StyleProvider">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">StyleProvider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">StyleProvider</span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol for HTML style providers.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.StyleProvider.get_cell_style">
-<span class="sig-name descname"><span class="pre">get_cell_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider.get_cell_style" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_cell_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider.get_cell_style" title="Link to this definition">#</a></dt>
 <dd><p>Get the CSS style for table cells.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.StyleProvider.get_header_style">
-<span class="sig-name descname"><span class="pre">get_header_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider.get_header_style" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_header_style</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.StyleProvider.get_header_style" title="Link to this definition">#</a></dt>
 <dd><p>Get the CSS style for header cells.</p>
 </dd></dl>
 
@@ -1442,7 +967,7 @@ backward compatibility.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter._refresh_formatter_reference">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_refresh_formatter_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._refresh_formatter_reference" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_refresh_formatter_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._refresh_formatter_reference" title="Link to this definition">#</a></dt>
 <dd><p>Refresh formatter reference in any modules using it.</p>
 <p>This helps ensure that changes to the formatter are reflected in existing
 DataFrames that might be caching the formatter reference.</p>
@@ -1450,7 +975,7 @@ DataFrames that might be caching the formatter reference.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter._validate_bool">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_bool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_bool" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_bool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_bool" title="Link to this definition">#</a></dt>
 <dd><p>Validate that a parameter is a boolean.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1467,7 +992,7 @@ DataFrames that might be caching the formatter reference.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter._validate_formatter_parameters">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_formatter_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_formatter_parameters" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_formatter_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_formatter_parameters" title="Link to this definition">#</a></dt>
 <dd><p>Validate all formatter parameters and return resolved max_rows value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1501,7 +1026,7 @@ DataFrames that might be caching the formatter reference.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter._validate_positive_int">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_positive_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_positive_int" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_positive_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter._validate_positive_int" title="Link to this definition">#</a></dt>
 <dd><p>Validate that a parameter is a positive integer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1518,7 +1043,7 @@ DataFrames that might be caching the formatter reference.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.configure_formatter">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">configure_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.configure_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">configure_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.configure_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Configure the global DataFrame HTML formatter.</p>
 <p>This function creates a new formatter with the provided configuration
 and sets it as the global formatter for all DataFrames.</p>
@@ -1545,7 +1070,7 @@ max_width, max_height, enable_cell_expansion, etc.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.get_formatter">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">get_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.get_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">get_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.get_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Get the current global DataFrame HTML formatter.</p>
 <p>This function is used by the DataFrame._repr_html_ implementation to access
 the shared formatter instance. It can also be used directly when custom
@@ -1565,7 +1090,7 @@ HTML rendering is needed.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.reset_formatter">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">reset_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.reset_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">reset_formatter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.reset_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Reset the global DataFrame HTML formatter to default settings.</p>
 <p>This function creates a new formatter with default configuration
 and sets it as the global formatter for all DataFrames.</p>
@@ -1578,7 +1103,7 @@ and sets it as the global formatter for all DataFrames.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.set_formatter">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">set_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.set_formatter" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">set_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter" title="datafusion.dataframe_formatter.DataFrameHtmlFormatter"><span class="pre">DataFrameHtmlFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.set_formatter" title="Link to this definition">#</a></dt>
 <dd><p>Set the global DataFrame HTML formatter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1597,50 +1122,57 @@ and sets it as the global formatter for all DataFrames.</p>
 </section>
 
 
-              </div>
+                </article>
               
               
-              <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../dataframe/index.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.dataframe</p>
-        </div>
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../dataframe/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">datafusion.dataframe</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="../expr/index.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="../expr/index.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">datafusion.expr</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
+                </footer>
               
-          </main>
-          
-
-      </div>
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
+  </div>
   
-    <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
 <!-- Based on pydata_sphinx_theme/footer.html -->
 <footer class="footer mt-5 mt-md-0">
   <div class="container">
-    
-    <div class="footer-item">
-      <p class="copyright">
-    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
-</p>
-    </div>
-    
-    <div class="footer-item">
-      <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
-</p>
-    </div>
     
     <div class="footer-item">
       <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>

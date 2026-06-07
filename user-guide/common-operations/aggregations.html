@@ -1,524 +1,487 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../">
+
+<html lang="en" data-content_root="../../" data-theme="auto">
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Aggregation &#8212; Apache Arrow DataFusion  documentation</title>
-    
-    <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+    <title>Aggregation &#8212; Apache DataFusion in Python  documentation</title>
   
-    
-    <link rel="stylesheet"
-      href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
   
-    
-      
   
-    
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
-    
-    <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
   
-    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/aggregations';</script>
+    <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Window Functions" href="windows.html" />
     <link rel="prev" title="Functions" href="functions.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <div class="container-fluid" id="banner"></div>
-
-    
-
-
-    <div class="container-xl">
-      <div class="row">
-          
-            
-            <!-- Only show if we have sidebars configured, else just a small margin  -->
-            <div class="col-12 col-md-3 bd-sidebar">
-              <div class="sidebar-start-items">
-<a class="navbar-brand" href="../../index.html">
-  <img src="../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
-</a>
-
-<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
+  </dialog>
 
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  <div class="bd-toc-item active">
-    
-    <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  LINKS
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python">
-   Github and Issue Tracker
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
-   Rust's API Docs
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
-   Code of conduct
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
-   Examples
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  USER GUIDE
- </span>
-</p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../basics.html">
-   Concepts
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../data-sources.html">
-   Data Sources
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../dataframe/index.html">
-   DataFrames
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../dataframe/rendering.html">
-     DataFrame Rendering
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../dataframe/execution-metrics.html">
-     Execution Metrics
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="index.html">
-   Common Operations
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2">
-    <a class="reference internal" href="views.html">
-     Registering Views
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="basic-info.html">
-     Basic Operations
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="select-and-filter.html">
-     Column Selections
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="expressions.html">
-     Expressions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="joins.html">
-     Joins
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="functions.html">
-     Functions
-    </a>
-   </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     Aggregation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="windows.html">
-     Window Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="udf-and-udfa.html">
-     User-Defined Functions
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../io/index.html">
-   IO
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/arrow.html">
-     Arrow
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/avro.html">
-     Avro
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/csv.html">
-     CSV
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/json.html">
-     JSON
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/parquet.html">
-     Parquet
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../io/table_provider.html">
-     Custom Table Provider
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../configuration.html">
-   Configuration
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../distributing-work.html">
-   Distributing work
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../sql.html">
-   SQL
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../upgrade-guides.html">
-   Upgrade Guides
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../ai-coding-assistants.html">
-   Using AI Coding Assistants
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  CONTRIBUTOR GUIDE
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/ffi.html">
-   Python Extensions
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  API
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../autoapi/index.html">
-   API Reference
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-  <label for="toctree-checkbox-4">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../autoapi/datafusion/index.html">
-     datafusion
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/catalog/index.html">
-       datafusion.catalog
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/context/index.html">
-       datafusion.context
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">
-       datafusion.dataframe
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">
-       datafusion.dataframe_formatter
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/expr/index.html">
-       datafusion.expr
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
-       datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-      <label for="toctree-checkbox-6">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/io/index.html">
-       datafusion.io
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/ipc/index.html">
-       datafusion.ipc
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
-       datafusion.object_store
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/options/index.html">
-       datafusion.options
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/plan/index.html">
-       datafusion.plan
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/record_batch/index.html">
-       datafusion.record_batch
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/substrait/index.html">
-       datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/unparser/index.html">
-       datafusion.unparser
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html">
-       datafusion.user_defined
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
-</ul>
-
-    
-  </div>
-</nav>
-              </div>
-              <div class="sidebar-end-items">
-              </div>
-            </div>
-            
-          
-
-          
-          <div class="d-none d-xl-block col-xl-2 bd-toc">
-            
-              
-              <div class="toc-item">
-                
-<div class="tocsection onthispage pt-5 pb-3">
-    <i class="fas fa-list"></i> On this page
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-<nav id="bd-toc-nav">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#setting-parameters">
-   Setting Parameters
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
   </a>
-  <ul class="visible nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#ordering">
-     Ordering
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#distinct">
-     Distinct
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#null-treatment">
-     Null Treatment
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#filter">
-     Filter
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#comparing-subsets-within-a-group">
-     Comparing subsets within a group
-    </a>
-   </li>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../links.html">
+    Links
+  </a>
+</li>
+
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#grouping-sets">
-   Grouping Sets
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
   </a>
-  <ul class="visible nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#rollup">
-     Rollup
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#cube">
-     Cube
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#explicit-grouping-sets">
-     Explicit Grouping Sets
-    </a>
-   </li>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../links.html">
+    Links
+  </a>
+</li>
+
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#aggregate-functions">
-   Aggregate Functions
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#user-defined-aggregate-functions">
-   User-Defined Aggregate Functions
-  </a>
- </li>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe/execution-metrics.html">Execution Metrics</a></li>
 </ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Common Operations</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="functions.html">Functions</a></li>
 
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi.html">Python Extensions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/datafusion/index.html">datafusion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Common Operations</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Aggregation</span></li>
+  </ul>
 </nav>
-              </div>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
               
-              <div class="toc-item">
+              
+              
                 
-              </div>
-              
-            
-          </div>
-          
-
-          
-          
-            
-          
-          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
-              
-              <div>
-                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="aggregation">
-<span id="id1"></span><h1>Aggregation<a class="headerlink" href="#aggregation" title="Link to this heading">¶</a></h1>
+<span id="id1"></span><h1>Aggregation<a class="headerlink" href="#aggregation" title="Link to this heading">#</a></h1>
 <p>An aggregate or aggregation is a function where the values of multiple rows are processed together
 to form a single summary value. For performing an aggregation, DataFusion provides the
 <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">aggregate()</span></code></a></p>
@@ -612,7 +575,7 @@ For grouping the <code class="code docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <section id="setting-parameters">
-<h2>Setting Parameters<a class="headerlink" href="#setting-parameters" title="Link to this heading">¶</a></h2>
+<h2>Setting Parameters<a class="headerlink" href="#setting-parameters" title="Link to this heading">#</a></h2>
 <p>Each of the built in aggregate functions provides arguments for the parameters that affect their
 operation. These can also be overridden using the builder approach to setting any of the following
 parameters. When you use the builder, you must call <code class="docutils literal notranslate"><span class="pre">build()</span></code> to finish. For example, these two
@@ -623,7 +586,7 @@ expressions are equivalent.</p>
 </pre></div>
 </div>
 <section id="ordering">
-<h3>Ordering<a class="headerlink" href="#ordering" title="Link to this heading">¶</a></h3>
+<h3>Ordering<a class="headerlink" href="#ordering" title="Link to this heading">#</a></h3>
 <p>You can control the order in which rows are processed by window functions by providing
 a list of <code class="docutils literal notranslate"><span class="pre">order_by</span></code> functions for the <code class="docutils literal notranslate"><span class="pre">order_by</span></code> parameter. In the following example, we
 sort the Pokemon by their attack in increasing order and take the first value, which gives us the
@@ -657,7 +620,7 @@ Pokemon with the smallest attack value in each <code class="docutils literal not
 </div>
 </section>
 <section id="distinct">
-<h3>Distinct<a class="headerlink" href="#distinct" title="Link to this heading">¶</a></h3>
+<h3>Distinct<a class="headerlink" href="#distinct" title="Link to this heading">#</a></h3>
 <p>When you set the parameter <code class="docutils literal notranslate"><span class="pre">distinct</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>, then unique values will only be evaluated one
 time each. Suppose we want to create an array of all of the <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> for each <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> of our
 Pokemon set. Since there will be many entries of <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> we only one each distinct value.</p>
@@ -667,15 +630,15 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                      <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Water</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">]</span>                                       <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">]</span>                                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="p">[]</span>                                               <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
@@ -691,13 +654,13 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+--------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+--------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">]</span>                                       <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ground</span> <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
@@ -710,13 +673,13 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Water</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">]</span>                                       <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span>                                                <span class="o">|</span>
@@ -727,7 +690,7 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <p>Which approach you take should depend on your use case.</p>
 </section>
 <section id="null-treatment">
-<h3>Null Treatment<a class="headerlink" href="#null-treatment" title="Link to this heading">¶</a></h3>
+<h3>Null Treatment<a class="headerlink" href="#null-treatment" title="Link to this heading">#</a></h3>
 <p>This option allows you to either respect or ignore null values.</p>
 <p>One common usage for handling nulls is the case where you want to find the first value within a
 partition. By setting the null treatment to ignore nulls, we can find the first non-null value
@@ -787,7 +750,7 @@ in our partition.</p>
 </div>
 </section>
 <section id="filter">
-<h3>Filter<a class="headerlink" href="#filter" title="Link to this heading">¶</a></h3>
+<h3>Filter<a class="headerlink" href="#filter" title="Link to this heading">#</a></h3>
 <p>Using the filter option is useful for filtering results to include in the aggregate function. It can
 be seen in the example above on how this can be useful to only filter rows evaluated by the
 aggregate function without filtering rows from the entire DataFrame.</p>
@@ -818,7 +781,7 @@ aggregate function without filtering rows from the entire DataFrame.</p>
 </div>
 </section>
 <section id="comparing-subsets-within-a-group">
-<h3>Comparing subsets within a group<a class="headerlink" href="#comparing-subsets-within-a-group" title="Link to this heading">¶</a></h3>
+<h3>Comparing subsets within a group<a class="headerlink" href="#comparing-subsets-within-a-group" title="Link to this heading">#</a></h3>
 <p>Sometimes you need to compare the full membership of a group against a
 subset that meets some condition — for example, “which groups have at least
 one failure, but not every member failed?”. The <code class="docutils literal notranslate"><span class="pre">filter</span></code> argument on an
@@ -875,7 +838,7 @@ order 4 because both of its suppliers failed.</p>
 </section>
 </section>
 <section id="grouping-sets">
-<h2>Grouping Sets<a class="headerlink" href="#grouping-sets" title="Link to this heading">¶</a></h2>
+<h2>Grouping Sets<a class="headerlink" href="#grouping-sets" title="Link to this heading">#</a></h2>
 <p>The default style of aggregation produces one row per group. Sometimes you want a single query to
 produce rows at multiple levels of detail — for example, totals per type <em>and</em> an overall grand
 total, or subtotals for every combination of two columns plus the individual column totals. Writing
@@ -893,7 +856,7 @@ particular level will be <code class="docutils literal notranslate"><span class=
 distinguish a real <code class="docutils literal notranslate"><span class="pre">null</span></code> in the data from one that means “this column was aggregated across.”
 It returns <code class="docutils literal notranslate"><span class="pre">0</span></code> when the column is a grouping key for that row, and <code class="docutils literal notranslate"><span class="pre">1</span></code> when it is not.</p>
 <section id="rollup">
-<h3>Rollup<a class="headerlink" href="#rollup" title="Link to this heading">¶</a></h3>
+<h3>Rollup<a class="headerlink" href="#rollup" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rollup()</span></code></a> creates a hierarchy. <code class="docutils literal notranslate"><span class="pre">rollup(a,</span> <span class="pre">b)</span></code> produces
 grouping sets <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b)</span></code>, <code class="docutils literal notranslate"><span class="pre">(a)</span></code>, and <code class="docutils literal notranslate"><span class="pre">()</span></code> — like nested subtotals in a report. This is useful
 when your columns have a natural hierarchy, such as region → city or type → subtype.</p>
@@ -1013,7 +976,7 @@ use <code class="docutils literal notranslate"><span class="pre">.alias()</span>
 </div>
 </section>
 <section id="cube">
-<h3>Cube<a class="headerlink" href="#cube" title="Link to this heading">¶</a></h3>
+<h3>Cube<a class="headerlink" href="#cube" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cube()</span></code></a> produces every possible subset. <code class="docutils literal notranslate"><span class="pre">cube(a,</span> <span class="pre">b)</span></code>
 produces grouping sets <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b)</span></code>, <code class="docutils literal notranslate"><span class="pre">(a)</span></code>, <code class="docutils literal notranslate"><span class="pre">(b)</span></code>, and <code class="docutils literal notranslate"><span class="pre">()</span></code> — one more than <code class="docutils literal notranslate"><span class="pre">rollup</span></code> because
 it also includes <code class="docutils literal notranslate"><span class="pre">(b)</span></code> alone. This is useful when neither column is “above” the other in a
@@ -1052,7 +1015,7 @@ by <code class="docutils literal notranslate"><span class="pre">Type</span> <spa
 <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> has a value — those are the per-<code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> subtotals that <code class="docutils literal notranslate"><span class="pre">rollup</span></code> does not include.</p>
 </section>
 <section id="explicit-grouping-sets">
-<h3>Explicit Grouping Sets<a class="headerlink" href="#explicit-grouping-sets" title="Link to this heading">¶</a></h3>
+<h3>Explicit Grouping Sets<a class="headerlink" href="#explicit-grouping-sets" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">grouping_sets()</span></code></a> lets you list exactly which grouping levels
 you need when <code class="docutils literal notranslate"><span class="pre">rollup</span></code> or <code class="docutils literal notranslate"><span class="pre">cube</span></code> would produce too many or too few. Each argument is a list of
 columns forming one grouping set.</p>
@@ -1132,7 +1095,7 @@ Where <code class="docutils literal notranslate"><span class="pre">grouping(Type
 </section>
 </section>
 <section id="aggregate-functions">
-<h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h2>
+<h2>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">#</a></h2>
 <p>The available aggregate functions are:</p>
 <ol class="arabic simple">
 <li><dl class="simple">
@@ -1236,7 +1199,7 @@ Where <code class="docutils literal notranslate"><span class="pre">grouping(Type
 </ol>
 </section>
 <section id="user-defined-aggregate-functions">
-<h2>User-Defined Aggregate Functions<a class="headerlink" href="#user-defined-aggregate-functions" title="Link to this heading">¶</a></h2>
+<h2>User-Defined Aggregate Functions<a class="headerlink" href="#user-defined-aggregate-functions" title="Link to this heading">#</a></h2>
 <p>You can ship custom aggregations to the engine by subclassing
 <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> and registering it via
 <a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a>. See <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> for
@@ -1256,50 +1219,57 @@ and must be importable on the receiving worker. See
 </section>
 
 
-              </div>
+                </article>
               
               
-              <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="functions.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Functions</p>
-        </div>
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="functions.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Functions</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="windows.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="windows.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Window Functions</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
+                </footer>
               
-          </main>
-          
-
-      </div>
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
+  </div>
   
-    <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
 <!-- Based on pydata_sphinx_theme/footer.html -->
 <footer class="footer mt-5 mt-md-0">
   <div class="container">
-    
-    <div class="footer-item">
-      <p class="copyright">
-    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
-</p>
-    </div>
-    
-    <div class="footer-item">
-      <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
-</p>
-    </div>
     
     <div class="footer-item">
       <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
