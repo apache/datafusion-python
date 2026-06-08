@@ -1,28 +1,3 @@
-```python exec="1" session="sql"
-import os
-import pathlib
-
-import datafusion  # noqa: F401
-from datafusion import (  # noqa: F401
-    SessionContext,
-    col,
-    column,
-    lit,
-    literal,
-)
-from datafusion import functions as f  # noqa: F401
-from datafusion.dataframe_formatter import configure_formatter
-
-# mkdocs runs from the repo root; the demo data lives at docs/source/.
-for candidate in ("docs/source", ".."):
-    p = pathlib.Path(candidate)
-    if (p / "pokemon.csv").exists():
-        os.chdir(p)
-        break
-
-configure_formatter(max_rows=10, show_truncation_message=False)
-```
-
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -59,7 +34,7 @@ ctx.register_csv("pokemon", "pokemon.csv")
 df = ctx.sql('SELECT "Attack"+"Defense", "Attack"-"Defense" FROM pokemon')
 
 # collect and convert to pandas DataFrame
-df.to_pandas()
+print(df.to_pandas())
 ```
 
 
@@ -78,7 +53,7 @@ def show_attacks(ctx: SessionContext, threshold: int) -> None:
     ).show(num=5)
 
 
-show_attacks(ctx, 75)
+print(show_attacks(ctx, 75))
 ```
 
 
@@ -125,7 +100,7 @@ def show_column(
 
 
 df = ctx.table("pokemon")
-show_column(ctx, '"Defense"', df, 75)
+print(show_column(ctx, '"Defense"', df, 75))
 ```
 
 
@@ -154,5 +129,5 @@ def param_attacks(ctx: SessionContext, threshold: int) -> None:
     ).show(num=5)
 
 
-param_attacks(ctx, 75)
+print(param_attacks(ctx, 75))
 ```

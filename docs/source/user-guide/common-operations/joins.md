@@ -1,28 +1,3 @@
-```python exec="1" session="joins"
-import os
-import pathlib
-
-import datafusion  # noqa: F401
-from datafusion import (  # noqa: F401
-    SessionContext,
-    col,
-    column,
-    lit,
-    literal,
-)
-from datafusion import functions as f  # noqa: F401
-from datafusion.dataframe_formatter import configure_formatter
-
-# mkdocs runs from the repo root; the demo data lives at docs/source/.
-for candidate in ("docs/source", ".."):
-    p = pathlib.Path(candidate)
-    if (p / "pokemon.csv").exists():
-        os.chdir(p)
-        break
-
-configure_formatter(max_rows=10, show_truncation_message=False)
-```
-
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -81,7 +56,7 @@ When using an inner join, only rows containing the common values between the two
 will be included in the resulting DataFrame.
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, left_on="customer_id", right_on="id", how="inner")
+print(left.join(right, left_on="customer_id", right_on="id", how="inner"))
 ```
 
 
@@ -95,7 +70,7 @@ matching rows from the right DataFrame. If there's no match in the right DataFra
 values for the corresponding columns.
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, left_on="customer_id", right_on="id", how="left")
+print(left.join(right, left_on="customer_id", right_on="id", how="left"))
 ```
 
 
@@ -105,7 +80,7 @@ A full join merges rows from two tables based on a related column, returning all
 is no match. Unmatched rows will have null values.
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, left_on="customer_id", right_on="id", how="full")
+print(left.join(right, left_on="customer_id", right_on="id", how="full"))
 ```
 
 
@@ -115,7 +90,7 @@ A left semi join retrieves matching rows from the left table while
 omitting duplicates with multiple matches in the right table.
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, left_on="customer_id", right_on="id", how="semi")
+print(left.join(right, left_on="customer_id", right_on="id", how="semi"))
 ```
 
 
@@ -126,7 +101,7 @@ based on a the specified matching columns. It excludes rows from the left table 
 the right table.
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, left_on="customer_id", right_on="id", how="anti")
+print(left.join(right, left_on="customer_id", right_on="id", how="anti"))
 ```
 
 
@@ -154,14 +129,14 @@ right = ctx.from_pylist(
     ]
 )
 
-left.join(right, "id", how="inner")
+print(left.join(right, "id", how="inner"))
 ```
 
 
 In contrast to the above example, if we wish to get both columns:
 
 ```python exec="1" source="material-block" result="text" session="joins"
-left.join(right, "id", how="inner", coalesce_duplicate_keys=False)
+print(left.join(right, "id", how="inner", coalesce_duplicate_keys=False))
 ```
 
 
@@ -192,5 +167,5 @@ right = ctx.from_pydict(
 
 joined = left.join_on(right, left.col("id") == right.col("id"), how="inner")
 
-joined.select(left.col("id"), left.col("val"), right.col("val"))
+print(joined.select(left.col("id"), left.col("val"), right.col("val")))
 ```

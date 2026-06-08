@@ -1,28 +1,3 @@
-```python exec="1" session="select-and-filter"
-import os
-import pathlib
-
-import datafusion  # noqa: F401
-from datafusion import (  # noqa: F401
-    SessionContext,
-    col,
-    column,
-    lit,
-    literal,
-)
-from datafusion import functions as f  # noqa: F401
-from datafusion.dataframe_formatter import configure_formatter
-
-# mkdocs runs from the repo root; the demo data lives at docs/source/.
-for candidate in ("docs/source", ".."):
-    p = pathlib.Path(candidate)
-    if (p / "pokemon.csv").exists():
-        os.chdir(p)
-        break
-
-configure_formatter(max_rows=10, show_truncation_message=False)
-```
-
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -53,7 +28,7 @@ which you can download [here](https://d37ci6vzurychx.cloudfront.net/trip-data/ye
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
 ctx = SessionContext()
 df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
-df.select("trip_distance", "passenger_count")
+print(df.select("trip_distance", "passenger_count"))
 ```
 
 
@@ -61,7 +36,7 @@ For mathematical or logical operations use [`col`][datafusion.col.col] to select
 operations using [`alias`][datafusion.expr.Expr.alias]
 
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
-df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls"))
+print(df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls")))
 ```
 
 
@@ -77,7 +52,7 @@ column selection use [`select`][datafusion.dataframe.DataFrame.select] without d
 For selecting columns with capital letters use `'"VendorID"'`
 
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
-df.select(col('"VendorID"'))
+print(df.select(col('"VendorID"')))
 ```
 
 
@@ -86,5 +61,5 @@ To combine it with literal values use the [`lit`][datafusion.lit]
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
 large_trip_distance = col("trip_distance") > lit(5.0)
 low_passenger_count = col("passenger_count") < lit(4)
-df.select((large_trip_distance & low_passenger_count).alias("lonely_trips"))
+print(df.select((large_trip_distance & low_passenger_count).alias("lonely_trips")))
 ```

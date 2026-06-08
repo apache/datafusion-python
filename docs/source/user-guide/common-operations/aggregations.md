@@ -1,28 +1,3 @@
-```python exec="1" session="aggregations"
-import os
-import pathlib
-
-import datafusion  # noqa: F401
-from datafusion import (  # noqa: F401
-    SessionContext,
-    col,
-    column,
-    lit,
-    literal,
-)
-from datafusion import functions as f  # noqa: F401
-from datafusion.dataframe_formatter import configure_formatter
-
-# mkdocs runs from the repo root; the demo data lives at docs/source/.
-for candidate in ("docs/source", ".."):
-    p = pathlib.Path(candidate)
-    if (p / "pokemon.csv").exists():
-        os.chdir(p)
-        break
-
-configure_formatter(max_rows=10, show_truncation_message=False)
-```
-
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -58,14 +33,14 @@ col_type_2 = col('"Type 2"')
 col_speed = col('"Speed"')
 col_attack = col('"Attack"')
 
-df.aggregate(
+print(df.aggregate(
     [col_type_1],
     [
         f.approx_distinct(col_speed).alias("Count"),
         f.approx_median(col_speed).alias("Median Speed"),
         f.approx_percentile_cont(col_speed, 0.9).alias("90% Speed"),
     ],
-)
+))
 ```
 
 
@@ -73,28 +48,28 @@ When `group_by` is `None` or an empty list, the aggregation is done over the who
 [`DataFrame`][datafusion.dataframe.DataFrame]. For grouping the `group_by` list must contain at least one column.
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [col_type_1],
     [
         f.max(col_speed).alias("Max Speed"),
         f.avg(col_speed).alias("Avg Speed"),
         f.min(col_speed).alias("Min Speed"),
     ],
-)
+))
 ```
 
 
 More than one column can be used for grouping
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [col_type_1, col_type_2],
     [
         f.max(col_speed).alias("Max Speed"),
         f.avg(col_speed).alias("Avg Speed"),
         f.min(col_speed).alias("Min Speed"),
     ],
-)
+))
 ```
 
 
@@ -119,14 +94,14 @@ sort the Pokemon by their attack in increasing order and take the first value, w
 Pokemon with the smallest attack value in each `Type 1`.
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [col('"Type 1"')],
     [
         f.first_value(
             col('"Name"'), order_by=[col('"Attack"').sort(ascending=True)]
         ).alias("Smallest Attack")
     ],
-)
+))
 ```
 
 
@@ -137,9 +112,9 @@ time each. Suppose we want to create an array of all of the `Type 2` for each `T
 Pokemon set. Since there will be many entries of `Type 2` we only one each distinct value.
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")]
-)
+))
 ```
 
 
@@ -153,14 +128,14 @@ df.filter(col_type_2.is_not_null()).aggregate(
     [col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")]
 )
 
-df.aggregate(
+print(df.aggregate(
     [col_type_1],
     [
         f.array_agg(col_type_2, distinct=True, filter=col_type_2.is_not_null()).alias(
             "Type 2 List"
         )
     ],
-)
+))
 ```
 
 
@@ -188,14 +163,14 @@ df.aggregate(
     ],
 )
 
-df.aggregate(
+print(df.aggregate(
     [col_type_1],
     [
         f.first_value(
             col_type_2, order_by=[col_attack], null_treatment=NullTreatment.IGNORE_NULLS
         ).alias("Lowest Attack Type 2")
     ],
-)
+))
 ```
 
 
@@ -210,13 +185,13 @@ Filter takes a single expression.
 Suppose we want to find the speed values for only Pokemon that have low Attack values.
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [col_type_1],
     [
         f.avg(col_speed).alias("Avg Speed All"),
         f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack"),
     ],
-)
+))
 ```
 
 
@@ -259,10 +234,10 @@ grouped = orders_df.aggregate(
     ],
 )
 
-grouped.filter(
+print(grouped.filter(
     (f.array_length(col("failed_suppliers")) > lit(0))
     & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
-).select(col("order_id"), col("failed_suppliers"))
+).select(col("order_id"), col("failed_suppliers")))
 ```
 
 
@@ -303,14 +278,14 @@ once:
 ```python exec="1" source="material-block" result="text" session="aggregations"
 from datafusion.expr import GroupingSet
 
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.rollup(col_type_1)],
     [
         f.count(col_speed).alias("Count"),
         f.avg(col_speed).alias("Avg Speed"),
         f.max(col_speed).alias("Max Speed"),
     ],
-).sort(col_type_1.sort(ascending=True, nulls_first=True))
+).sort(col_type_1.sort(ascending=True, nulls_first=True)))
 ```
 
 
@@ -322,14 +297,14 @@ for that row and `1` when it is aggregated across.
 Use `.alias()` to give the column a readable name:
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.rollup(col_type_1)],
     [
         f.count(col_speed).alias("Count"),
         f.avg(col_speed).alias("Avg Speed"),
         f.grouping(col_type_1).alias("Is Total"),
     ],
-).sort(col_type_1.sort(ascending=True, nulls_first=True))
+).sort(col_type_1.sort(ascending=True, nulls_first=True)))
 ```
 
 
@@ -340,13 +315,13 @@ With two columns the hierarchy becomes more apparent. `rollup(Type 1, Type 2)` p
 - one grand total row
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.rollup(col_type_1, col_type_2)],
     [f.count(col_speed).alias("Count"), f.avg(col_speed).alias("Avg Speed")],
 ).sort(
     col_type_1.sort(ascending=True, nulls_first=True),
     col_type_2.sort(ascending=True, nulls_first=True),
-)
+))
 ```
 
 
@@ -361,13 +336,13 @@ For our Pokemon data, `cube(Type 1, Type 2)` gives us stats broken down by the t
 by `Type 1` alone, by `Type 2` alone, and a grand total — all in one query:
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.cube(col_type_1, col_type_2)],
     [f.count(col_speed).alias("Count"), f.avg(col_speed).alias("Avg Speed")],
 ).sort(
     col_type_1.sort(ascending=True, nulls_first=True),
     col_type_2.sort(ascending=True, nulls_first=True),
-)
+))
 ```
 
 
@@ -384,13 +359,13 @@ For example, if we want only the per-`Type 1` totals and per-`Type 2` totals —
 full `(Type 1, Type 2)` detail rows or the grand total — we can ask for exactly that:
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
     [f.count(col_speed).alias("Count"), f.avg(col_speed).alias("Avg Speed")],
 ).sort(
     col_type_1.sort(ascending=True, nulls_first=True),
     col_type_2.sort(ascending=True, nulls_first=True),
-)
+))
 ```
 
 
@@ -398,7 +373,7 @@ Each row belongs to exactly one grouping level. The [`grouping`][datafusion.func
 function tells you which level each row comes from:
 
 ```python exec="1" source="material-block" result="text" session="aggregations"
-df.aggregate(
+print(df.aggregate(
     [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
     [
         f.count(col_speed).alias("Count"),
@@ -409,7 +384,7 @@ df.aggregate(
 ).sort(
     col_type_1.sort(ascending=True, nulls_first=True),
     col_type_2.sort(ascending=True, nulls_first=True),
-)
+))
 ```
 
 

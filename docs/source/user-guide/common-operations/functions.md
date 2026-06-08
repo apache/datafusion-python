@@ -1,28 +1,3 @@
-```python exec="1" session="functions"
-import os
-import pathlib
-
-import datafusion  # noqa: F401
-from datafusion import (  # noqa: F401
-    SessionContext,
-    col,
-    column,
-    lit,
-    literal,
-)
-from datafusion import functions as f  # noqa: F401
-from datafusion.dataframe_formatter import configure_formatter
-
-# mkdocs runs from the repo root; the demo data lives at docs/source/.
-for candidate in ("docs/source", ".."):
-    p = pathlib.Path(candidate)
-    if (p / "pokemon.csv").exists():
-        os.chdir(p)
-        break
-
-configure_formatter(max_rows=10, show_truncation_message=False)
-```
-
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -63,9 +38,9 @@ DataFusion offers mathematical functions such as [`pow`][datafusion.functions.po
 ```python exec="1" source="material-block" result="text" session="functions"
 from datafusion import str_lit, string_literal
 
-df.select(
+print(df.select(
     f.pow(col('"Attack"'), literal(2)) - f.pow(col('"Defense"'), literal(2))
-).limit(10)
+).limit(10))
 ```
 
 
@@ -74,7 +49,7 @@ df.select(
 There 3 conditional functions in DataFusion [`coalesce`][datafusion.functions.coalesce], [`nullif`][datafusion.functions.nullif] and [`case`][datafusion.functions.case].
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")).limit(10)
+print(df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")).limit(10))
 ```
 
 
@@ -83,24 +58,24 @@ df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")).l
 For selecting the current time use [`now`][datafusion.functions.now]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(f.now())
+print(df.select(f.now()))
 ```
 
 
 Convert to timestamps using [`to_timestamp`][datafusion.functions.to_timestamp]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(f.to_timestamp(col('"Total"')).alias("timestamp"))
+print(df.select(f.to_timestamp(col('"Total"')).alias("timestamp")))
 ```
 
 
 Extracting parts of a date using [`date_part`][datafusion.functions.date_part] (alias [`extract`][datafusion.functions.extract])
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(
+print(df.select(
     f.date_part(literal("month"), f.to_timestamp(col('"Total"'))).alias("month"),
     f.extract(literal("day"), f.to_timestamp(col('"Total"'))).alias("day"),
-)
+))
 ```
 
 
@@ -110,21 +85,21 @@ In the field of data science, working with textual data is a common task. To mak
 DataFusion offers a range of helpful options.
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(
+print(df.select(
     f.char_length(col('"Name"')).alias("len"),
     f.lower(col('"Name"')).alias("lower"),
     f.left(col('"Name"'), literal(4)).alias("code"),
-)
+))
 ```
 
 
 This also includes the functions for regular expressions like [`regexp_replace`][datafusion.functions.regexp_replace] and [`regexp_match`][datafusion.functions.regexp_match]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(
+print(df.select(
     f.regexp_match(col('"Name"'), literal("Char")).alias("dragons"),
     f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers"),
-)
+))
 ```
 
 
@@ -133,10 +108,10 @@ df.select(
 Casting expressions to different data types using [`arrow_cast`][datafusion.functions.arrow_cast]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-df.select(
+print(df.select(
     f.arrow_cast(col('"Total"'), string_literal("Float64")).alias("total_as_float"),
     f.arrow_cast(col('"Total"'), str_lit("Int32")).alias("total_as_int"),
-)
+))
 ```
 
 
@@ -146,11 +121,11 @@ The function [`in_list`][datafusion.functions.in_list] allows to check a column 
 
 ```python exec="1" source="material-block" result="text" session="functions"
 types = [literal("Grass"), literal("Fire"), literal("Water")]
-(
+print((
     df.select(f.in_list(col('"Type 1"'), types, negated=False).alias("basic_types"))
     .limit(20)
     .to_pandas()
-)
+))
 ```
 
 

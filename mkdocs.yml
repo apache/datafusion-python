@@ -105,6 +105,8 @@ markdown_extensions:
 watch:
   - python/datafusion
 
+hooks:
+  - docs/hooks.py
 
 nav:
   - Home: index.md
