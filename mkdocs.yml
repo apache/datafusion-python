@@ -7,6 +7,7 @@ copyright: Copyright 2019-2026, Apache Software Foundation
 
 docs_dir: docs/source
 site_dir: docs/build/html
+strict: true
 
 theme:
   name: material
@@ -71,6 +72,7 @@ plugins:
             members_order: source
             inherited_members: true
             show_root_heading: true
+            show_root_full_path: false
             show_signature_annotations: true
             separate_signature: true
             merge_init_into_class: true
