@@ -51,7 +51,7 @@ def read_parquet(
     schema: pa.Schema | None = None,
     file_sort_order: list[list[Expr]] | None = None,
 ) -> DataFrame:
-    """Read a Parquet source into a [`DataFrame`][datafusion.dataframe.DataFrame].
+    """Read a Parquet source into a :class:`~datafusion.dataframe.DataFrame`.
 
     This function will use the global context. Any functions or tables registered
     with another context may not be accessible when used with a DataFrame created

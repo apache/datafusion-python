@@ -27,10 +27,10 @@ Core abstractions
 - **SessionContext** -- entry point for loading data, running SQL, and creating
   DataFrames.
 - **DataFrame** -- lazy query builder. Every method returns a new DataFrame;
-  call [`collect`][datafusion.dataframe.DataFrame.collect] or a ``to_*``
+  call :meth:`~datafusion.dataframe.DataFrame.collect` or a ``to_*``
   method to execute.
 - **Expr** -- expression tree node for column references, literals, and function
-  calls. Build with [`col`][datafusion.col.col] and [`lit`][datafusion.lit].
+  calls. Build with :func:`~datafusion.col.col` and :func:`~datafusion.lit`.
 - **functions** -- 290+ built-in scalar, aggregate, and window functions.
 
 Examples:

@@ -162,7 +162,7 @@ class ScalarUDF:
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
 
-        See helper method [`udf`][datafusion.user_defined.udf] for argument details.
+        See helper method :func:`~datafusion.user_defined.udf` for argument details.
         """
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
@@ -179,7 +179,7 @@ class ScalarUDF:
 
         Used by `udf` to surface a function looked
         up from the session's function registry without re-running
-        [`__init__`][__init__].
+        :func:`~__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udf = internal
@@ -273,7 +273,7 @@ class ScalarUDF:
         - `return_field` (`pa.Field | pa.DataType`): The field of the return value
           from the function.
         - `volatility` (`Volatility | str`): See
-          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+          :class:`~datafusion.user_defined.Volatility` for allowed values.
         - `name` (`str`, optional): A descriptive name for the function.
 
         **Returns:** a user-defined function that can be used in SQL expressions,
@@ -493,7 +493,7 @@ class AggregateUDF:
 
         Used by `udaf` to surface a function looked
         up from the session's function registry without re-running
-        [`__init__`][__init__].
+        :func:`~__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udaf = internal
@@ -641,7 +641,7 @@ class AggregateUDF:
         - `return_type`: The data type of the return value.
         - `state_type`: The data types of the intermediate accumulation.
         - `volatility`: See
-          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+          :class:`~datafusion.user_defined.Volatility` for allowed values.
         - `name`: A descriptive name for the function.
 
         **Returns:** a user-defined aggregate function, which can be used in either
@@ -785,13 +785,13 @@ class WindowEvaluator:
 
         This function is called once per input *partition* for window functions that
         *do not use* values from the window frame, such as
-        [`row_number`][datafusion.functions.row_number],
-        [`rank`][datafusion.functions.rank],
-        [`dense_rank`][datafusion.functions.dense_rank],
-        [`percent_rank`][datafusion.functions.percent_rank],
-        [`cume_dist`][datafusion.functions.cume_dist],
-        [`lead`][datafusion.functions.lead],
-        and [`lag`][datafusion.functions.lag].
+        :func:`~datafusion.functions.row_number`,
+        :func:`~datafusion.functions.rank`,
+        :func:`~datafusion.functions.dense_rank`,
+        :func:`~datafusion.functions.percent_rank`,
+        :func:`~datafusion.functions.cume_dist`,
+        :func:`~datafusion.functions.lead`,
+        and :func:`~datafusion.functions.lag`.
 
         It produces the result of all rows in a single pass. It
         expects to receive the entire partition as the ``value`` and
@@ -926,7 +926,7 @@ class WindowUDF:
 
         Used by `udwf` to surface a function looked
         up from the session's function registry without re-running
-        [`__init__`][__init__].
+        :func:`~__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udwf = internal
@@ -1034,7 +1034,7 @@ class WindowUDF:
         - `input_types`: The data types of the arguments.
         - `return_type`: The data type of the return value.
         - `volatility`: See
-          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+          :class:`~datafusion.user_defined.Volatility` for allowed values.
         - `name`: A descriptive name for the function.
 
         **Returns:** a user-defined window function that can be used in window
@@ -1132,7 +1132,7 @@ def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]
 
     The Rust call site forwards a ``datafusion._internal.SessionContext``,
     but UDTF authors expect to interact with the public
-    [`SessionContext`][datafusion.SessionContext] wrapper. This closure wraps the
+    :class:`~datafusion.SessionContext` wrapper. This closure wraps the
     internal object once per call before delegating to ``func``.
     """
 
@@ -1172,7 +1172,7 @@ class TableFunction:
         ``with_session=True`` is only supported for pure-Python callables.
         Passing it together with an FFI-exported table function (one
         exposing ``__datafusion_table_function__``) raises
-        [`TypeError`][TypeError].
+        :exc:`~TypeError`.
 
         Registry mutations performed through the injected session (such
         as registering tables or UDFs) propagate to the caller's

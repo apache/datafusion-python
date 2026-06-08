@@ -67,6 +67,8 @@ plugins:
             - https://arrow.apache.org/docs/objects.inv
             - https://docs.pola.rs/api/python/stable/objects.inv
           options:
+            extensions:
+              - docs/griffe_extensions.py:SphinxRefsToAutorefs
             docstring_style: google
             docstring_options:
               warn_unknown_params: false

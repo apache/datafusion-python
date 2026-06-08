@@ -18,7 +18,7 @@
 """This module provides the classes for handling record batches.
 
 These are typically the result of dataframe
-[`execute_stream`][datafusion.dataframe.execute_stream] operations.
+:func:`~datafusion.dataframe.execute_stream` operations.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ __all__ = ["RecordBatch", "RecordBatchStream"]
 
 
 class RecordBatch:
-    """This class is essentially a wrapper for [`RecordBatch`][pyarrow.RecordBatch]."""
+    """This class is essentially a wrapper for :class:`~pyarrow.RecordBatch`."""
 
     def __init__(self, record_batch: df_internal.RecordBatch) -> None:
         """This constructor is generally not called by the end user.
@@ -46,7 +46,7 @@ class RecordBatch:
         self.record_batch = record_batch
 
     def to_pyarrow(self) -> pa.RecordBatch:
-        """Convert to [`RecordBatch`][pyarrow.RecordBatch]."""
+        """Convert to :class:`~pyarrow.RecordBatch`."""
         return self.record_batch.to_pyarrow()
 
     def __arrow_c_array__(
@@ -74,7 +74,7 @@ class RecordBatchStream:
     """This class represents a stream of record batches.
 
     These are typically the result of a
-    [`execute_stream`][datafusion.dataframe.DataFrame.execute_stream] operation.
+    :meth:`~datafusion.dataframe.DataFrame.execute_stream` operation.
     """
 
     def __init__(self, record_batch_stream: df_internal.RecordBatchStream) -> None:
@@ -85,7 +85,7 @@ class RecordBatchStream:
         """Return the next batch.
 
         See
-        [`__next__`][datafusion.record_batch.RecordBatchStream.__next__] for the
+        :meth:`~datafusion.record_batch.RecordBatchStream.__next__` for the
         iterator function.
         """
         return next(self)

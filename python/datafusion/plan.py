@@ -113,7 +113,7 @@ class LogicalPlan:  # noqa: PLW1641
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
-        """Deprecated alias for [`from_bytes`][datafusion.expr.Expr.from_bytes]."""
+        """Deprecated alias for :meth:`~datafusion.expr.Expr.from_bytes`."""
         warnings.warn(
             "LogicalPlan.from_proto is deprecated; use from_bytes instead",
             DeprecationWarning,
@@ -122,7 +122,7 @@ class LogicalPlan:  # noqa: PLW1641
         return LogicalPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Deprecated alias for [`to_bytes`][datafusion.expr.Expr.to_bytes]."""
+        """Deprecated alias for :meth:`~datafusion.expr.Expr.to_bytes`."""
         warnings.warn(
             "LogicalPlan.to_proto is deprecated; use to_bytes instead",
             DeprecationWarning,
@@ -191,7 +191,7 @@ class ExecutionPlan:
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
-        """Deprecated alias for [`from_bytes`][datafusion.expr.Expr.from_bytes]."""
+        """Deprecated alias for :meth:`~datafusion.expr.Expr.from_bytes`."""
         warnings.warn(
             "ExecutionPlan.from_proto is deprecated; use from_bytes instead",
             DeprecationWarning,
@@ -200,7 +200,7 @@ class ExecutionPlan:
         return ExecutionPlan.from_bytes(ctx, data)
 
     def to_proto(self) -> bytes:
-        """Deprecated alias for [`to_bytes`][datafusion.expr.Expr.to_bytes]."""
+        """Deprecated alias for :meth:`~datafusion.expr.Expr.to_bytes`."""
         warnings.warn(
             "ExecutionPlan.to_proto is deprecated; use to_bytes instead",
             DeprecationWarning,
@@ -227,7 +227,7 @@ class ExecutionPlan:
         DataFusion executes a query as a pipeline of operators — for example a
         data source scan, followed by a filter, followed by a projection. After
         the DataFrame has been executed (via
-        [`collect`][datafusion.dataframe.DataFrame.collect],
+        :meth:`~datafusion.dataframe.DataFrame.collect`,
         `execute_stream`, etc.), each operator
         records statistics such as how many rows it produced and how much CPU
         time it consumed.
@@ -235,7 +235,7 @@ class ExecutionPlan:
         Each entry in the returned list corresponds to one operator that
         recorded metrics. The first element of the tuple is the operator's
         description string — the same text shown by
-        [`display_indent`][datafusion.plan.ExecutionPlan.display_indent] — which
+        :meth:`~datafusion.plan.ExecutionPlan.display_indent` — which
         identifies both the operator type and its key parameters, for example
         ``"FilterExec: column1@0 > 1"``
         or ``"DataSourceExec: partitions=1"``.
@@ -264,9 +264,9 @@ class MetricsSet:
     """A set of metrics for a single execution plan operator.
 
     A physical plan operator runs independently across one or more partitions.
-    [`metrics`][datafusion.plan.MetricsSet.metrics] returns the raw per-partition
+    :meth:`~datafusion.plan.MetricsSet.metrics` returns the raw per-partition
     `Metric` objects. The convenience properties (`output_rows`,
-    [`elapsed_compute`][datafusion.plan.MetricsSet.elapsed_compute], etc.)
+    :attr:`~datafusion.plan.MetricsSet.elapsed_compute`, etc.)
     automatically sum the named metric across *all* partitions, giving a single
     aggregate value for the operator as a whole.
     """
@@ -345,7 +345,7 @@ class Metric:
         """The value of this metric.
 
         Returns an ``int`` for counters, gauges, and time-based metrics
-        (nanoseconds), a [`datetime`][datetime.datetime] (UTC) for
+        (nanoseconds), a :class:`~datetime.datetime` (UTC) for
         ``start_timestamp`` / ``end_timestamp`` metrics, or ``None``
         when the value has not been set or is not representable.
         """
@@ -353,7 +353,7 @@ class Metric:
 
     @property
     def value_as_datetime(self) -> datetime.datetime | None:
-        """The value as a UTC [`datetime`][datetime.datetime] for timestamp metrics.
+        """The value as a UTC :class:`~datetime.datetime` for timestamp metrics.
 
         Returns ``None`` for all non-timestamp metrics and for timestamp
         metrics whose value has not been set (e.g. before execution).

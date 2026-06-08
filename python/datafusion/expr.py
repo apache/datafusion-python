@@ -17,19 +17,19 @@
 
 """`Expr` — the logical expression type used to build DataFusion queries.
 
-An [`Expr`][datafusion.expr.Expr] represents a computation over columns or literals: a
+An :class:`~datafusion.expr.Expr` represents a computation over columns or literals: a
 column reference (``col("a")``), a literal (``lit(5)``), an operator
 combination (``col("a") + lit(1)``), or the output of a function from
-[`functions`][datafusion.functions]. Expressions are passed to
-[`DataFrame`][datafusion.dataframe.DataFrame] methods such as
-[`select`][datafusion.dataframe.DataFrame.select],
-[`filter`][datafusion.dataframe.DataFrame.filter],
-[`aggregate`][datafusion.dataframe.DataFrame.aggregate], and
-[`sort`][datafusion.dataframe.DataFrame.sort].
+:mod:`~datafusion.functions`. Expressions are passed to
+:class:`~datafusion.dataframe.DataFrame` methods such as
+:meth:`~datafusion.dataframe.DataFrame.select`,
+:meth:`~datafusion.dataframe.DataFrame.filter`,
+:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+:meth:`~datafusion.dataframe.DataFrame.sort`.
 
 Convenience constructors are re-exported at the package level:
-[`col`][datafusion.col.col] / [`column`][datafusion.col.column] for column references
-and [`lit`][datafusion.lit] / [`literal`][datafusion.literal] for scalar
+:func:`~datafusion.col.col` / :func:`~datafusion.col.column` for column references
+and :func:`~datafusion.lit` / :func:`~datafusion.literal` for scalar
 literals.
 
 Examples:
@@ -262,8 +262,8 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     """Return the internal expression from ``Expr`` or raise ``TypeError``.
 
     This helper rejects plain strings and other non-`Expr` values so
-    higher level APIs consistently require explicit [`col`][datafusion.col.col] or
-    [`lit`][datafusion.lit] expressions.
+    higher level APIs consistently require explicit :func:`~datafusion.col.col` or
+    :func:`~datafusion.lit` expressions.
 
     See Also:
         `coerce_to_expr` — the opposite behavior: *wraps* non-``Expr``
@@ -276,7 +276,7 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
         The internal expression representation.
 
     Raises:
-        TypeError: If ``value`` is not an instance of [`Expr`][datafusion.expr.Expr].
+        TypeError: If ``value`` is not an instance of :class:`~datafusion.expr.Expr`.
     """
     if not isinstance(value, Expr):
         raise TypeError(EXPR_TYPE_ERROR)
@@ -295,7 +295,7 @@ def ensure_expr_list(
         A flat list of raw expressions.
 
     Raises:
-        TypeError: If any item is not an instance of [`Expr`][datafusion.expr.Expr].
+        TypeError: If any item is not an instance of :class:`~datafusion.expr.Expr`.
     """
 
     def _iter(
@@ -316,7 +316,7 @@ def ensure_expr_list(
 def coerce_to_expr(value: Any) -> Expr:
     """Coerce a native Python value to an ``Expr`` literal, passing ``Expr`` through.
 
-    This is the complement of [`ensure_expr`][ensure_expr]: where ``ensure_expr``
+    This is the complement of :func:`~ensure_expr`: where ``ensure_expr``
     *rejects* non-``Expr`` values, ``coerce_to_expr`` *wraps* them via
     `literal` so that functions can accept native Python types
     (``int``, ``float``, ``str``, ``bool``, etc.) alongside ``Expr``.
@@ -355,7 +355,7 @@ def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
         value: Candidate expression or column name.
 
     Returns:
-        The internal [`Expr`][datafusion._internal.expr.Expr] representation.
+        The internal :class:`~datafusion._internal.expr.Expr` representation.
 
     Raises:
         TypeError: If ``value`` is neither an `Expr` nor ``str``.
@@ -443,12 +443,12 @@ class Expr:  # noqa: PLW1641
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Serialize this expression to bytes for shipping to another process.
 
-        Use this — or [`dumps`][pickle.dumps] — to send an expression to a
+        Use this — or :func:`~pickle.dumps` — to send an expression to a
         worker process for distributed evaluation.
 
         When ``ctx`` is supplied, encoding routes through that session's
         installed logical extension codec (set via
-        [`with_logical_extension_codec`][datafusion.context.SessionContext.with_logical_extension_codec]),
+        :meth:`~datafusion.context.SessionContext.with_logical_extension_codec`),
         so settings like `with_python_udf_inlining` take effect.
         When ``ctx`` is ``None``, the default codec is used (Python UDF
         inlining on, no user-installed extension codec).
@@ -464,8 +464,8 @@ class Expr:  # noqa: PLW1641
         .. warning:: Security
             Bytes returned here may embed a cloudpickled Python
             callable (when the expression carries a Python UDF).
-            Reconstructing them via [`from_bytes`][datafusion.expr.Expr.from_bytes] or
-            [`loads`][pickle.loads] executes arbitrary Python on the
+            Reconstructing them via :meth:`~datafusion.expr.Expr.from_bytes` or
+            :func:`~pickle.loads` executes arbitrary Python on the
             receiver. Only accept payloads from trusted sources.
 
         .. warning:: Portability
@@ -473,7 +473,7 @@ class Expr:  # noqa: PLW1641
             stable across Python minor versions**. A payload produced
             on Python 3.11 will fail to load on Python 3.12. The
             wire format stamps the sender's ``(major, minor)``;
-            `from_bytes` raises a [`ValueError`][ValueError] naming
+            `from_bytes` raises a :exc:`~ValueError` naming
             both versions on mismatch.
 
             cloudpickle captures the UDF callable **by value** —
@@ -527,13 +527,13 @@ class Expr:  # noqa: PLW1641
     def from_bytes(cls, buf: bytes, ctx: SessionContext | None = None) -> Expr:
         """Reconstruct an expression from serialized bytes.
 
-        Accepts output of `to_bytes` or [`dumps`][pickle.dumps].
+        Accepts output of `to_bytes` or :func:`~pickle.dumps`.
         ``ctx`` is the `SessionContext` used to resolve any
         function references that travel by name (e.g. FFI UDFs, or
         Python UDFs sent with inlining disabled via
         `with_python_udf_inlining`). When
         ``ctx`` is ``None`` the worker context installed via
-        [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] is consulted; if no worker
+        :func:`~datafusion.ipc.set_worker_ctx` is consulted; if no worker
         context is installed, the global `SessionContext` is used
         (sufficient for built-ins and Python UDFs, plus any UDFs
         registered on the global context).
@@ -548,7 +548,7 @@ class Expr:  # noqa: PLW1641
             cloudpickle payloads are **not portable across Python
             minor versions**. The wire format stamps the sender's
             ``(major, minor)``; if it does not match the current
-            interpreter, this method raises [`ValueError`][ValueError]
+            interpreter, this method raises :exc:`~ValueError`
             naming both versions. Modules the UDF imports must also
             be importable on the receiver — see `to_bytes` for
             by-value vs. by-reference details.
@@ -568,17 +568,17 @@ class Expr:  # noqa: PLW1641
         """Pickle protocol hook.
 
         Lets expressions be shipped to worker processes via
-        [`dumps`][pickle.dumps] / [`loads`][pickle.loads]. Built-in functions
+        :func:`~pickle.dumps` / :func:`~pickle.loads`. Built-in functions
         and Python UDFs (scalar, aggregate, window) travel inside the
         pickle bytes; only FFI-capsule UDFs require pre-registration on
         the worker. The worker's `SessionContext` for resolving
         those references is looked up via
-        [`set_worker_ctx`][datafusion.ipc.set_worker_ctx], falling back to the
+        :func:`~datafusion.ipc.set_worker_ctx`, falling back to the
         global `SessionContext` if none has been installed on
         the worker.
 
         .. warning:: Security
-            [`loads`][pickle.loads] on the returned tuple executes
+            :func:`~pickle.loads` on the returned tuple executes
             arbitrary Python on the receiver, including any
             cloudpickled UDF callable embedded in the payload. Only
             unpickle expressions from trusted sources.
@@ -597,17 +597,17 @@ class Expr:  # noqa: PLW1641
             'a * Int64(2)'
 
         The encoding side honors a driver-side sender context installed
-        via [`set_sender_ctx`][datafusion.ipc.set_sender_ctx] — that is how
+        via :func:`~datafusion.ipc.set_sender_ctx` — that is how
         `with_python_udf_inlining` propagates
         through ``pickle.dumps``. The sender context is read by
-        ``__reduce__``, so [`copy`][copy.copy] and [`deepcopy`][copy.deepcopy]
+        ``__reduce__``, so :func:`~copy.copy` and :func:`~copy.deepcopy`
         — which also go through ``__reduce__`` — pick it up too.
         """
         return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
 
     @classmethod
     def _reconstruct(cls, proto_bytes: bytes) -> Expr:
-        """Internal entry point used by [`__reduce__`][__reduce__] on unpickle.
+        """Internal entry point used by :func:`~__reduce__` on unpickle.
 
         Examples:
             >>> from datafusion import Expr, col, lit
@@ -692,11 +692,11 @@ class Expr:  # noqa: PLW1641
         If ``key`` is a string, returns the subfield of the struct.
         If ``key`` is an integer, retrieves the element in the array. Note that the
         element index begins at ``0``, unlike
-        [`array_element`][datafusion.functions.array_element] which begins at ``1``.
+        :func:`~datafusion.functions.array_element` which begins at ``1``.
         If ``key`` is a slice, returns an array that contains a slice of the
         original array. Similar to integer indexing, this follows Python convention
         where the index begins at ``0`` unlike
-        [`array_slice`][datafusion.functions.array_slice] which begins at ``1``.
+        :func:`~datafusion.functions.array_slice` which begins at ``1``.
         """
         if isinstance(key, int):
             return Expr(
@@ -1126,7 +1126,7 @@ class Expr:  # noqa: PLW1641
     def list_distinct(self) -> Expr:
         """Returns distinct values from the array after removing duplicates.
 
-        This is an alias for [`array_distinct`][datafusion.functions.array_distinct].
+        This is an alias for :func:`~datafusion.functions.array_distinct`.
         """
         from . import functions as F
 
@@ -1309,7 +1309,7 @@ class Expr:  # noqa: PLW1641
     def list_dims(self) -> Expr:
         """Returns an array of the array's dimensions.
 
-        This is an alias for [`array_dims`][datafusion.functions.array_dims].
+        This is an alias for :func:`~datafusion.functions.array_dims`.
         """
         from . import functions as F
 
@@ -1348,7 +1348,7 @@ class Expr:  # noqa: PLW1641
     def list_length(self) -> Expr:
         """Returns the length of the array.
 
-        This is an alias for [`array_length`][datafusion.functions.array_length].
+        This is an alias for :func:`~datafusion.functions.array_length`.
         """
         from . import functions as F
 
@@ -1405,7 +1405,7 @@ class Expr:  # noqa: PLW1641
     def list_ndims(self) -> Expr:
         """Returns the number of dimensions of the array.
 
-        This is an alias for [`array_ndims`][datafusion.functions.array_ndims].
+        This is an alias for :func:`~datafusion.functions.array_ndims`.
         """
         from . import functions as F
 
@@ -1430,7 +1430,7 @@ class Expr:  # noqa: PLW1641
         return F.sinh(self)
 
     def empty(self) -> Expr:
-        """This is an alias for [`array_empty`][datafusion.functions.array_empty]."""
+        """This is an alias for :func:`~datafusion.functions.array_empty`."""
         from . import functions as F
 
         return F.empty(self)
@@ -1621,7 +1621,7 @@ class CaseBuilder:
         """Constructs a case builder.
 
         This is not typically called by the end user directly. See
-        [`case`][datafusion.functions.case] instead.
+        :func:`~datafusion.functions.case` instead.
         """
         self.case_builder = case_builder
 
@@ -1672,12 +1672,12 @@ class GroupingSet:
     """Factory for creating grouping set expressions.
 
     Grouping sets control how
-    [`aggregate`][datafusion.dataframe.DataFrame.aggregate] groups rows.
+    :meth:`~datafusion.dataframe.DataFrame.aggregate` groups rows.
     Instead of a single ``GROUP BY``, they produce multiple grouping
     levels in one pass — subtotals, cross-tabulations, or arbitrary
     column subsets.
 
-    Use [`grouping`][datafusion.functions.grouping] in the aggregate list
+    Use :func:`~datafusion.functions.grouping` in the aggregate list
     to tell which columns are aggregated across in each result row.
     """
 
@@ -1708,9 +1708,9 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            [`cube`][datafusion.expr.GroupingSet.cube],
-            [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
-            [`grouping`][datafusion.functions.grouping]
+            :meth:`~datafusion.expr.GroupingSet.cube`,
+            :meth:`~datafusion.expr.GroupingSet.grouping_sets`,
+            :func:`~datafusion.functions.grouping`
         """
         args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.rollup(*args))
@@ -1731,7 +1731,7 @@ class GroupingSet:
 
         Examples:
             With a single column, ``cube`` behaves identically to
-            [`rollup`][datafusion.expr.GroupingSet.rollup]:
+            :meth:`~datafusion.expr.GroupingSet.rollup`:
 
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1745,9 +1745,9 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            [`rollup`][datafusion.expr.GroupingSet.rollup],
-            [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
-            [`grouping`][datafusion.functions.grouping]
+            :meth:`~datafusion.expr.GroupingSet.rollup`,
+            :meth:`~datafusion.expr.GroupingSet.grouping_sets`,
+            :func:`~datafusion.functions.grouping`
         """
         args = [_to_raw_expr(e) for e in exprs]
         return Expr(expr_internal.GroupingSet.cube(*args))
@@ -1789,9 +1789,9 @@ class GroupingSet:
             [3, 3, 4, 2]
 
         See Also:
-            [`rollup`][datafusion.expr.GroupingSet.rollup],
-            [`cube`][datafusion.expr.GroupingSet.cube],
-            [`grouping`][datafusion.functions.grouping]
+            :meth:`~datafusion.expr.GroupingSet.rollup`,
+            :meth:`~datafusion.expr.GroupingSet.cube`,
+            :func:`~datafusion.functions.grouping`
         """
         raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]
         return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))

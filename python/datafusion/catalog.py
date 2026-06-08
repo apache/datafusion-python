@@ -220,7 +220,7 @@ class Table:
     @staticmethod
     @deprecated("Use Table() constructor instead.")
     def from_dataset(dataset: pa.dataset.Dataset) -> Table:
-        """Turn a `dataset` ``Dataset`` into a [`Table`][datafusion.catalog.Table]."""
+        """Turn a `dataset` ``Dataset`` into a :class:`~datafusion.catalog.Table`."""
         return Table(dataset)
 
     @property

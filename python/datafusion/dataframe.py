@@ -14,23 +14,23 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""[`DataFrame`][datafusion.dataframe.DataFrame] — lazy, chainable query representation.
+""":class:`~datafusion.dataframe.DataFrame` — lazy, chainable query representation.
 
 A `DataFrame` is a logical plan over one or more data sources.
-Methods that reshape the plan ([`select`][datafusion.dataframe.DataFrame.select],
+Methods that reshape the plan (:meth:`~datafusion.dataframe.DataFrame.select`,
 `filter`, `aggregate`,
-`sort`, [`join`][datafusion.dataframe.DataFrame.join],
+`sort`, :meth:`~datafusion.dataframe.DataFrame.join`,
 `limit`, the set-operation methods, ...) return a new
 `DataFrame` and do no work until a terminal method such as
-`collect`, [`to_pydict`][datafusion.dataframe.DataFrame.to_pydict],
+`collect`, :meth:`~datafusion.dataframe.DataFrame.to_pydict`,
 `show`, or one of the ``write_*`` methods is called.
 
 DataFrames are produced from a
-[`SessionContext`][datafusion.context.SessionContext], typically via
-[`sql`][datafusion.context.SessionContext.sql],
-[`read_csv`][datafusion.context.SessionContext.read_csv],
-[`read_parquet`][datafusion.context.SessionContext.read_parquet], or
-[`from_pydict`][datafusion.context.SessionContext.from_pydict].
+:class:`~datafusion.context.SessionContext`, typically via
+:meth:`~datafusion.context.SessionContext.sql`,
+:meth:`~datafusion.context.SessionContext.read_csv`,
+:meth:`~datafusion.context.SessionContext.read_parquet`, or
+:meth:`~datafusion.context.SessionContext.from_pydict`.
 
 Examples:
     >>> ctx = dfn.SessionContext()
@@ -358,7 +358,7 @@ class DataFrame:
     """Two dimensional table representation of data.
 
     DataFrame objects are iterable; iterating over a DataFrame yields
-    [`RecordBatch`][datafusion.RecordBatch] instances lazily.
+    :class:`~datafusion.RecordBatch` instances lazily.
 
     See user_guide_concepts in the online documentation for more information.
     """
@@ -366,13 +366,13 @@ class DataFrame:
     def __init__(self, df: DataFrameInternal) -> None:
         """This constructor is not to be used by the end user.
 
-        See [`SessionContext`][datafusion.context.SessionContext] for methods to
-        create a [`DataFrame`][datafusion.dataframe.DataFrame].
+        See :class:`~datafusion.context.SessionContext` for methods to
+        create a :class:`~datafusion.dataframe.DataFrame`.
         """
         self.df = df
 
     def into_view(self, temporary: bool = False) -> Table:
-        """Convert ``DataFrame`` into a [`Table`][datafusion.Table].
+        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -438,7 +438,7 @@ class DataFrame:
         return DataFrame(self.df.describe())
 
     def schema(self) -> pa.Schema:
-        """Return the [`Schema`][pyarrow.Schema] of this DataFrame.
+        """Return the :class:`~pyarrow.Schema` of this DataFrame.
 
         The output schema contains information on the name, data type, and
         nullability for each column.
@@ -452,7 +452,7 @@ class DataFrame:
         """Return a fully qualified column expression for ``name``.
 
         Resolves an unqualified column name against this DataFrame's schema
-        and returns an [`Expr`][datafusion.expr.Expr] whose underlying column reference
+        and returns an :class:`~datafusion.expr.Expr` whose underlying column reference
         includes the table qualifier. This is especially useful after joins,
         where the same column name may appear in multiple relations.
 
@@ -487,17 +487,17 @@ class DataFrame:
         return self.find_qualified_columns(name)[0]
 
     def col(self, name: str) -> Expr:
-        """Alias for [`column`][datafusion.col.column].
+        """Alias for :func:`~datafusion.col.column`.
 
         See Also:
-            [`column`][datafusion.col.column]
+            :func:`~datafusion.col.column`
         """
         return self.column(name)
 
     def find_qualified_columns(self, *names: str) -> list[Expr]:
         """Return fully qualified column expressions for the given names.
 
-        This is a batch version of [`column`][datafusion.col.column] — it resolves each
+        This is a batch version of :func:`~datafusion.col.column` — it resolves each
         unqualified name against the DataFrame's schema and returns a list
         of qualified column expressions.
 
@@ -534,7 +534,7 @@ class DataFrame:
         return self.df.select_exprs(*args)
 
     def alias(self, alias: str) -> DataFrame:
-        """Assign a table alias to this [`DataFrame`][datafusion.dataframe.DataFrame].
+        """Assign a table alias to this :class:`~datafusion.dataframe.DataFrame`.
 
         Replaces the qualifiers of the output columns with ``alias``. Useful for
         self-joins and any situation that needs an unambiguous table-style
@@ -562,11 +562,11 @@ class DataFrame:
     def select(self, *exprs: Expr | str) -> DataFrame:
         """Project arbitrary expressions into a new `DataFrame`.
 
-        String arguments are treated as column names; [`Expr`][datafusion.expr.Expr]
+        String arguments are treated as column names; :class:`~datafusion.expr.Expr`
         arguments can reshape, rename, or compute new columns.
 
         Args:
-            exprs: Either column names or [`Expr`][datafusion.expr.Expr] to select.
+            exprs: Either column names or :class:`~datafusion.expr.Expr` to select.
 
         Returns:
             DataFrame after projection. It has one column for each expression.
@@ -654,10 +654,10 @@ class DataFrame:
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
         out. If more than one predicate is provided, these predicates will be
         combined as a logical AND. Each ``predicate`` can be an
-        [`Expr`][datafusion.expr.Expr] created using helper functions such as
-        `col` or [`lit`][datafusion.lit], or a SQL expression string
+        :class:`~datafusion.expr.Expr` created using helper functions such as
+        `col` or :func:`~datafusion.lit`, or a SQL expression string
         that will be parsed against the DataFrame schema. If more complex logic is
-        required, see the logical operations in [`functions`][datafusion.functions].
+        required, see the logical operations in :mod:`~datafusion.functions`.
 
         Examples:
             >>> ctx = dfn.SessionContext()
@@ -706,8 +706,8 @@ class DataFrame:
     def with_column(self, name: str, expr: Expr | str) -> DataFrame:
         """Add an additional column to the DataFrame.
 
-        The ``expr`` must be an [`Expr`][datafusion.expr.Expr] constructed with
-        [`col`][datafusion.col.col] or [`lit`][datafusion.lit], or a SQL expression
+        The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
+        :func:`~datafusion.col.col` or :func:`~datafusion.lit`, or a SQL expression
         string that will be parsed against the DataFrame schema.
 
         Examples:
@@ -734,8 +734,8 @@ class DataFrame:
 
         By passing expressions, iterables of expressions, string SQL expressions,
         or named expressions.
-        All expressions must be [`Expr`][datafusion.expr.Expr] objects created via
-        `col` or [`lit`][datafusion.lit], or SQL expression strings.
+        All expressions must be :class:`~datafusion.expr.Expr` objects created via
+        `col` or :func:`~datafusion.lit`, or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -816,18 +816,18 @@ class DataFrame:
         By default each unique combination of the ``group_by`` columns
         produces one row. To get multiple levels of subtotals in a
         single pass, pass a
-        [`GroupingSet`][datafusion.expr.GroupingSet] expression
+        :class:`~datafusion.expr.GroupingSet` expression
         (created via
-        [`rollup`][datafusion.expr.GroupingSet.rollup],
-        [`cube`][datafusion.expr.GroupingSet.cube], or
-        [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets])
+        :meth:`~datafusion.expr.GroupingSet.rollup`,
+        :meth:`~datafusion.expr.GroupingSet.cube`, or
+        :meth:`~datafusion.expr.GroupingSet.grouping_sets`)
         as the ``group_by`` argument.  See the
         aggregation user guide for detailed examples.
 
         Args:
             group_by: Sequence of expressions or column names to group
                 by, or ``None`` for aggregation over the whole DataFrame.
-                A [`GroupingSet`][datafusion.expr.GroupingSet] expression may
+                A :class:`~datafusion.expr.GroupingSet` expression may
                 be included to produce multiple grouping levels (rollup,
                 cube, or explicit grouping sets).
             aggs: Sequence of expressions to aggregate.
@@ -877,7 +877,7 @@ class DataFrame:
 
         Note that any expression can be turned into a sort expression by
         calling its ``sort`` method. For ascending-only sorts, the shorter
-        [`sort_by`][datafusion.dataframe.DataFrame.sort_by] is usually more convenient.
+        :meth:`~datafusion.dataframe.DataFrame.sort_by` is usually more convenient.
 
         Args:
             exprs: Sort expressions or column names, applied in order.
@@ -893,7 +893,7 @@ class DataFrame:
             >>> df.sort("a").to_pydict()
             {'a': [1, 2, 3], 'b': [20, 30, 10]}
 
-            Sort descending using [`sort`][datafusion.expr.Expr.sort]:
+            Sort descending using :meth:`~datafusion.expr.Expr.sort`:
 
             >>> df.sort(col("a").sort(ascending=False)).to_pydict()
             {'a': [3, 2, 1], 'b': [10, 30, 20]}
@@ -918,8 +918,8 @@ class DataFrame:
 
         Results are returned in unspecified order unless the DataFrame is
         explicitly sorted first via
-        [`sort`][datafusion.dataframe.DataFrame.sort] or
-        [`sort_by`][datafusion.dataframe.DataFrame.sort_by].
+        :meth:`~datafusion.dataframe.DataFrame.sort` or
+        :meth:`~datafusion.dataframe.DataFrame.sort_by`.
 
         Args:
             count: Number of rows to limit the DataFrame to.
@@ -976,7 +976,7 @@ class DataFrame:
         computation.
 
         Returns:
-            List of [`RecordBatch`][pyarrow.RecordBatch] collected from the DataFrame.
+            List of :class:`~pyarrow.RecordBatch` collected from the DataFrame.
         """
         return self.df.collect()
 
@@ -1078,7 +1078,7 @@ class DataFrame:
         When non-key columns share the same name in both DataFrames, use
         `col` on each DataFrame **before** the join to
         obtain fully qualified column references that can disambiguate them.
-        See [`join_on`][datafusion.dataframe.DataFrame.join_on] for an example.
+        See :meth:`~datafusion.dataframe.DataFrame.join_on` for an example.
 
         Args:
             right: Other DataFrame to join with.
@@ -1170,8 +1170,8 @@ class DataFrame:
     ) -> DataFrame:
         """Join two `DataFrame` using the specified expressions.
 
-        Join predicates must be [`Expr`][datafusion.expr.Expr] objects, typically
-        built with [`col`][datafusion.col.col]. On expressions are used to support
+        Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
+        built with :func:`~datafusion.col.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
         Use `col` on each DataFrame **before** the join to
@@ -1190,7 +1190,7 @@ class DataFrame:
             ... ).sort(col("x")).to_pydict()
             {'a': [1, 2], 'x': ['a', 'b'], 'b': [1, 2], 'y': ['c', 'd']}
 
-            Use [`col`][datafusion.col.col] to disambiguate shared column names:
+            Use :func:`~datafusion.col.col` to disambiguate shared column names:
 
             >>> left = ctx.from_pydict({"id": [1, 2], "val": [10, 20]})
             >>> right = ctx.from_pydict({"id": [1, 2], "val": [30, 40]})
@@ -1228,7 +1228,7 @@ class DataFrame:
             verbose: If ``True``, more details will be included.
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
-                [`INDENT`][datafusion.dataframe.ExplainFormat.INDENT].
+                :attr:`~datafusion.dataframe.ExplainFormat.INDENT`.
 
         Examples:
             Show the plan in tree format:
@@ -1299,7 +1299,7 @@ class DataFrame:
         return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
-        """Calculate the union of two [`DataFrame`][datafusion.dataframe.DataFrame].
+        """Calculate the union of two :class:`~datafusion.dataframe.DataFrame`.
 
         The two `DataFrame` must have exactly the same schema.
 
@@ -1333,7 +1333,7 @@ class DataFrame:
         """Calculate the distinct union of two `DataFrame`.
 
         See Also:
-            [`union`][datafusion.dataframe.DataFrame.union]
+            :meth:`~datafusion.dataframe.DataFrame.union`
         """
         return self.union(other, distinct=True)
 
@@ -1400,7 +1400,7 @@ class DataFrame:
     def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Union two `DataFrame` matching columns by name.
 
-        Unlike [`union`][datafusion.dataframe.DataFrame.union] which matches
+        Unlike :meth:`~datafusion.dataframe.DataFrame.union` which matches
         columns by position, this method matches columns by their names,
         allowing DataFrames with different
         column orders to be combined.
@@ -1474,7 +1474,7 @@ class DataFrame:
         This is a convenience method that sorts the DataFrame by the given
         expressions in ascending order with nulls last. For more control over
         sort direction and null ordering, use
-        [`sort`][datafusion.dataframe.DataFrame.sort] instead.
+        :meth:`~datafusion.dataframe.DataFrame.sort` instead.
 
         Args:
             exprs: Expressions or column names to sort by.
@@ -1804,7 +1804,7 @@ class DataFrame:
         supported through this interface.
 
         Args:
-            requested_schema: Either a [`Schema`][pyarrow.Schema] or an Arrow C
+            requested_schema: Either a :class:`~pyarrow.Schema` or an Arrow C
                 Schema capsule (``PyCapsule``) produced by
                 ``schema._export_to_c_capsule()``. The DataFrame will attempt to
                 align its output with the fields and order specified by this schema.

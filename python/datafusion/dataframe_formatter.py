@@ -357,7 +357,7 @@ class DataFrameHtmlFormatter:
 
         .. deprecated::
             Use
-            [`max_rows`][datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows]
+            :attr:`~datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows`
             instead. This property is provided for backward compatibility.
 
         Returns:
@@ -371,7 +371,7 @@ class DataFrameHtmlFormatter:
 
         .. deprecated::
             Use the
-            [`max_rows`][datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows]
+            :attr:`~datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows`
             setter instead. This property is provided for backward compatibility.
 
         Args:

@@ -49,8 +49,8 @@ class Plan:
         """Create a substrait plan.
 
         The user should not have to call this constructor directly. Rather, it
-        should be created via [`Serde`][datafusion.substrait.Serde] or
-        [`Producer`][datafusion.substrait.Producer] classes in this module.
+        should be created via :class:`~datafusion.substrait.Serde` or
+        :class:`~datafusion.substrait.Producer` classes in this module.
         """
         self.plan_internal = plan
 

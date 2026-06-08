@@ -14,15 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""Scalar, aggregate, and window functions for [`Expr`][datafusion.expr.Expr].
+"""Scalar, aggregate, and window functions for :class:`~datafusion.expr.Expr`.
 
-Each function returns an [`Expr`][datafusion.expr.Expr] that can be combined
+Each function returns an :class:`~datafusion.expr.Expr` that can be combined
 with other expressions and passed to
-[`DataFrame`][datafusion.dataframe.DataFrame] methods such as
-[`select`][datafusion.dataframe.DataFrame.select],
-[`filter`][datafusion.dataframe.DataFrame.filter],
-[`aggregate`][datafusion.dataframe.DataFrame.aggregate], and
-[`window`][datafusion.dataframe.DataFrame.window]. The module is conventionally
+:class:`~datafusion.dataframe.DataFrame` methods such as
+:meth:`~datafusion.dataframe.DataFrame.select`,
+:meth:`~datafusion.dataframe.DataFrame.filter`,
+:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+:meth:`~datafusion.dataframe.DataFrame.window`. The module is conventionally
 imported as ``F`` so calls read like ``F.sum(col("price"))``.
 
 Examples:
@@ -449,7 +449,7 @@ def array_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for [`array_to_string`][datafusion.functions.array_to_string].
+        This is an alias for :func:`~datafusion.functions.array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -458,7 +458,7 @@ def list_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for [`array_to_string`][datafusion.functions.array_to_string].
+        This is an alias for :func:`~datafusion.functions.array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -467,7 +467,7 @@ def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
-        This is an alias for [`array_to_string`][datafusion.functions.array_to_string].
+        This is an alias for :func:`~datafusion.functions.array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -506,7 +506,7 @@ def lambda_(params: list[str], body: Expr) -> Expr:
     Args:
         params: Ordered lambda parameter names.
         body: Body expression that references the parameters via
-            [`lambda_var`][datafusion.functions.lambda_var].
+            :func:`~datafusion.functions.lambda_var`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -550,7 +550,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
 
     ``transform`` may be a Python callable, which is converted to a lambda
     automatically (its parameter names become the lambda parameters), or an
-    explicit lambda built with [`lambda_`][datafusion.functions.lambda_].
+    explicit lambda built with :func:`~datafusion.functions.lambda_`.
 
     Examples:
         Using a Python callable:
@@ -562,7 +562,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("d")[0].as_py()
         [2, 4, 6]
 
-        Using an explicit lambda built with [`lambda_`][datafusion.functions.lambda_]:
+        Using an explicit lambda built with :func:`~datafusion.functions.lambda_`:
 
         >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
         >>> df.select(
@@ -571,7 +571,7 @@ def array_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
         [2, 4, 6]
 
     See Also:
-        `array_any_match`, [`lambda_`][datafusion.functions.lambda_].
+        `array_any_match`, :func:`~datafusion.functions.lambda_`.
     """
     return Expr(f.array_transform(array.expr, _to_lambda(transform).expr))
 
@@ -580,7 +580,7 @@ def list_transform(array: Expr, transform: Expr | Callable[..., Any]) -> Expr:
     """Transform each element of a list with a lambda.
 
     See Also:
-        This is an alias for [`array_transform`][datafusion.functions.array_transform].
+        This is an alias for :func:`~datafusion.functions.array_transform`.
     """
     return array_transform(array, transform)
 
@@ -602,7 +602,7 @@ def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("m")[0].as_py()
         True
 
-        Using an explicit lambda built with [`lambda_`][datafusion.functions.lambda_]:
+        Using an explicit lambda built with :func:`~datafusion.functions.lambda_`:
 
         >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
         >>> df.select(
@@ -611,7 +611,7 @@ def array_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         True
 
     See Also:
-        `array_transform`, [`lambda_`][datafusion.functions.lambda_].
+        `array_transform`, :func:`~datafusion.functions.lambda_`.
     """
     return Expr(f.array_any_match(array.expr, _to_lambda(predicate).expr))
 
@@ -620,7 +620,7 @@ def any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Return ``True`` if any element of an array satisfies a predicate.
 
     See Also:
-        This is an alias for [`array_any_match`][datafusion.functions.array_any_match].
+        This is an alias for :func:`~datafusion.functions.array_any_match`.
     """
     return array_any_match(array, predicate)
 
@@ -629,7 +629,7 @@ def list_any_match(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Return ``True`` if any element of a list satisfies a predicate.
 
     See Also:
-        This is an alias for [`array_any_match`][datafusion.functions.array_any_match].
+        This is an alias for :func:`~datafusion.functions.array_any_match`.
     """
     return array_any_match(array, predicate)
 
@@ -652,7 +652,7 @@ def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         ... ).collect_column("f")[0].as_py()
         [3, 4, 5]
 
-        Using an explicit lambda built with [`lambda_`][datafusion.functions.lambda_]:
+        Using an explicit lambda built with :func:`~datafusion.functions.lambda_`:
 
         >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
         >>> df.select(
@@ -661,7 +661,7 @@ def array_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         [3, 4, 5]
 
     See Also:
-        `array_transform`, `array_any_match`, [`lambda_`][datafusion.functions.lambda_].
+        `array_transform`, `array_any_match`, :func:`~datafusion.functions.lambda_`.
     """
     return Expr(f.array_filter(array.expr, _to_lambda(predicate).expr))
 
@@ -670,7 +670,7 @@ def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     """Keep the elements of a list for which a predicate is ``True``.
 
     See Also:
-        This is an alias for [`array_filter`][datafusion.functions.array_filter].
+        This is an alias for :func:`~datafusion.functions.array_filter`.
     """
     return array_filter(array, predicate)
 
@@ -864,8 +864,8 @@ def count_star(filter: Expr | None = None) -> Expr:
 def case(expr: Expr) -> CaseBuilder:
     """Create a case expression.
 
-    Create a [`CaseBuilder`][datafusion.expr.CaseBuilder] to match cases for the
-    expression ``expr``. See [`CaseBuilder`][datafusion.expr.CaseBuilder] for
+    Create a :class:`~datafusion.expr.CaseBuilder` to match cases for the
+    expression ``expr``. See :class:`~datafusion.expr.CaseBuilder` for
     detailed usage.
 
     Examples:
@@ -883,8 +883,8 @@ def case(expr: Expr) -> CaseBuilder:
 def when(when: Expr, then: Expr) -> CaseBuilder:
     """Create a case expression that has no base expression.
 
-    Create a [`CaseBuilder`][datafusion.expr.CaseBuilder] to match cases for the
-    expression ``expr``. See [`CaseBuilder`][datafusion.expr.CaseBuilder] for
+    Create a :class:`~datafusion.expr.CaseBuilder` to match cases for the
+    expression ``expr``. See :class:`~datafusion.expr.CaseBuilder` for
     detailed usage.
 
     Examples:
@@ -1315,7 +1315,7 @@ def ifnull(x: Expr, y: Expr) -> Expr:
         y: Fallback expression to return when ``x`` is NULL.
 
     See Also:
-        This is an alias for [`nvl`][datafusion.functions.nvl].
+        This is an alias for :func:`~datafusion.functions.nvl`.
     """
     return nvl(x, y)
 
@@ -1340,7 +1340,7 @@ def instr(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
-        This is an alias for [`strpos`][datafusion.functions.strpos].
+        This is an alias for :func:`~datafusion.functions.strpos`.
     """
     return strpos(string, substring)
 
@@ -1669,7 +1669,7 @@ def position(string: Expr, substring: Expr | str) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
     See Also:
-        This is an alias for [`strpos`][datafusion.functions.strpos].
+        This is an alias for :func:`~datafusion.functions.strpos`.
     """
     return strpos(string, substring)
 
@@ -1694,7 +1694,7 @@ def pow(base: Expr, exponent: Expr | int | float) -> Expr:  # noqa: PYI041
     """Returns ``base`` raised to the power of ``exponent``.
 
     See Also:
-        This is an alias of [`power`][datafusion.functions.power].
+        This is an alias of :func:`~datafusion.functions.power`.
     """
     return power(base, exponent)
 
@@ -2329,7 +2329,7 @@ def current_timestamp() -> Expr:
     """Returns the current timestamp in nanoseconds.
 
     See Also:
-        This is an alias for [`now`][datafusion.functions.now].
+        This is an alias for :func:`~datafusion.functions.now`.
     """
     return now()
 
@@ -2361,7 +2361,7 @@ def date_format(arg: Expr, formatter: Expr | str) -> Expr:
     """Returns a string representation of a date, time, timestamp or duration.
 
     See Also:
-        This is an alias for [`to_char`][datafusion.functions.to_char].
+        This is an alias for :func:`~datafusion.functions.to_char`.
     """
     return to_char(arg, formatter)
 
@@ -2573,7 +2573,7 @@ def datepart(part: Expr | str, date: Expr) -> Expr:
     """Return a specified part of a date.
 
     See Also:
-        This is an alias for [`date_part`][datafusion.functions.date_part].
+        This is an alias for :func:`~datafusion.functions.date_part`.
     """
     return date_part(part, date)
 
@@ -2603,7 +2603,7 @@ def extract(part: Expr | str, date: Expr) -> Expr:
     """Extracts a subfield from the date.
 
     See Also:
-        This is an alias for [`date_part`][datafusion.functions.date_part].
+        This is an alias for :func:`~datafusion.functions.date_part`.
     """
     return date_part(part, date)
 
@@ -2634,7 +2634,7 @@ def datetrunc(part: Expr | str, date: Expr) -> Expr:
     """Truncates the date to a specified level of precision.
 
     See Also:
-        This is an alias for [`date_trunc`][datafusion.functions.date_trunc].
+        This is an alias for :func:`~datafusion.functions.date_trunc`.
     """
     return date_trunc(part, date)
 
@@ -2776,7 +2776,7 @@ def make_list(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     See Also:
-        This is an alias for [`make_array`][datafusion.functions.make_array].
+        This is an alias for :func:`~datafusion.functions.make_array`.
     """
     return make_array(*args)
 
@@ -2785,7 +2785,7 @@ def array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions.
 
     See Also:
-        This is an alias for [`make_array`][datafusion.functions.make_array].
+        This is an alias for :func:`~datafusion.functions.make_array`.
     """
     return make_array(*args)
 
@@ -2969,13 +2969,13 @@ def get_field(expr: Expr, *names: Expr | str) -> Expr:
     of nested struct/map fields in a single ``get_field`` call. For a single
     static-string name, ``expr["field"]`` is a convenient shorthand; use
     ``get_field`` when the field name is a dynamic
-    [`Expr`][datafusion.expr.Expr] or when traversing multiple levels at
+    :class:`~datafusion.expr.Expr` or when traversing multiple levels at
     once.
 
     Args:
         expr: The struct or map expression to read from.
         *names: One or more field names (``str``) or expressions
-            ([`Expr`][datafusion.expr.Expr]).
+            (:class:`~datafusion.expr.Expr`).
 
     Examples:
         Single-level lookup:
@@ -3085,7 +3085,7 @@ def row(*args: Expr) -> Expr:
     """Returns a struct with the given arguments.
 
     See Also:
-        This is an alias for [`struct`][datafusion.functions.struct].
+        This is an alias for :func:`~datafusion.functions.struct`.
     """
     return struct(*args)
 
@@ -3124,7 +3124,7 @@ def array_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for [`array_append`][datafusion.functions.array_append].
+        This is an alias for :func:`~datafusion.functions.array_append`.
     """
     return array_append(array, element)
 
@@ -3133,7 +3133,7 @@ def list_append(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for [`array_append`][datafusion.functions.array_append].
+        This is an alias for :func:`~datafusion.functions.array_append`.
     """
     return array_append(array, element)
 
@@ -3142,7 +3142,7 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
     See Also:
-        This is an alias for [`array_append`][datafusion.functions.array_append].
+        This is an alias for :func:`~datafusion.functions.array_append`.
     """
     return array_append(array, element)
 
@@ -3166,7 +3166,7 @@ def array_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
     See Also:
-        This is an alias for [`array_concat`][datafusion.functions.array_concat].
+        This is an alias for :func:`~datafusion.functions.array_concat`.
     """
     return array_concat(*args)
 
@@ -3225,7 +3225,7 @@ def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
     See Also:
-        This is an alias for [`array_distinct`][datafusion.functions.array_distinct].
+        This is an alias for :func:`~datafusion.functions.array_distinct`.
     """
     return array_distinct(array)
 
@@ -3234,7 +3234,7 @@ def list_dims(array: Expr) -> Expr:
     """Returns an array of the array's dimensions.
 
     See Also:
-        This is an alias for [`array_dims`][datafusion.functions.array_dims].
+        This is an alias for :func:`~datafusion.functions.array_dims`.
     """
     return array_dims(array)
 
@@ -3271,7 +3271,7 @@ def list_empty(array: Expr) -> Expr:
     """Returns a boolean indicating whether the array is empty.
 
     See Also:
-        This is an alias for [`array_empty`][datafusion.functions.array_empty].
+        This is an alias for :func:`~datafusion.functions.array_empty`.
     """
     return array_empty(array)
 
@@ -3280,7 +3280,7 @@ def array_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for [`array_element`][datafusion.functions.array_element].
+        This is an alias for :func:`~datafusion.functions.array_element`.
     """
     return array_element(array, n)
 
@@ -3289,7 +3289,7 @@ def list_element(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for [`array_element`][datafusion.functions.array_element].
+        This is an alias for :func:`~datafusion.functions.array_element`.
     """
     return array_element(array, n)
 
@@ -3298,7 +3298,7 @@ def list_extract(array: Expr, n: Expr | int) -> Expr:
     """Extracts the element with the index n from the array.
 
     See Also:
-        This is an alias for [`array_element`][datafusion.functions.array_element].
+        This is an alias for :func:`~datafusion.functions.array_element`.
     """
     return array_element(array, n)
 
@@ -3320,7 +3320,7 @@ def list_length(array: Expr) -> Expr:
     """Returns the length of the array.
 
     See Also:
-        This is an alias for [`array_length`][datafusion.functions.array_length].
+        This is an alias for :func:`~datafusion.functions.array_length`.
     """
     return array_length(array)
 
@@ -3377,7 +3377,7 @@ def array_contains(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for [`array_has`][datafusion.functions.array_has].
+        This is an alias for :func:`~datafusion.functions.array_has`.
     """
     return array_has(array, element)
 
@@ -3386,7 +3386,7 @@ def list_has(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for [`array_has`][datafusion.functions.array_has].
+        This is an alias for :func:`~datafusion.functions.array_has`.
     """
     return array_has(array, element)
 
@@ -3395,7 +3395,7 @@ def list_has_all(first_array: Expr, second_array: Expr) -> Expr:
     """Determines if there is complete overlap ``second_array`` in ``first_array``.
 
     See Also:
-        This is an alias for [`array_has_all`][datafusion.functions.array_has_all].
+        This is an alias for :func:`~datafusion.functions.array_has_all`.
     """
     return array_has_all(first_array, second_array)
 
@@ -3404,7 +3404,7 @@ def list_has_any(first_array: Expr, second_array: Expr) -> Expr:
     """Determine if there is an overlap between ``first_array`` and ``second_array``.
 
     See Also:
-        This is an alias for [`array_has_any`][datafusion.functions.array_has_any].
+        This is an alias for :func:`~datafusion.functions.array_has_any`.
     """
     return array_has_any(first_array, second_array)
 
@@ -3413,7 +3413,7 @@ def arrays_overlap(first_array: Expr, second_array: Expr) -> Expr:
     """Returns true if any element appears in both arrays.
 
     See Also:
-        This is an alias for [`array_has_any`][datafusion.functions.array_has_any].
+        This is an alias for :func:`~datafusion.functions.array_has_any`.
     """
     return array_has_any(first_array, second_array)
 
@@ -3422,7 +3422,7 @@ def list_overlap(first_array: Expr, second_array: Expr) -> Expr:
     """Returns true if any element appears in both arrays.
 
     See Also:
-        This is an alias for [`array_has_any`][datafusion.functions.array_has_any].
+        This is an alias for :func:`~datafusion.functions.array_has_any`.
     """
     return array_has_any(first_array, second_array)
 
@@ -3431,7 +3431,7 @@ def list_contains(array: Expr, element: Expr) -> Expr:
     """Returns true if the element appears in the array, otherwise false.
 
     See Also:
-        This is an alias for [`array_has`][datafusion.functions.array_has].
+        This is an alias for :func:`~datafusion.functions.array_has`.
     """
     return array_has(array, element)
 
@@ -3466,7 +3466,7 @@ def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for [`array_position`][datafusion.functions.array_position].
+        This is an alias for :func:`~datafusion.functions.array_position`.
     """
     return array_position(array, element, index)
 
@@ -3475,7 +3475,7 @@ def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for [`array_position`][datafusion.functions.array_position].
+        This is an alias for :func:`~datafusion.functions.array_position`.
     """
     return array_position(array, element, index)
 
@@ -3484,7 +3484,7 @@ def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
     """Return the position of the first occurrence of ``element`` in ``array``.
 
     See Also:
-        This is an alias for [`array_position`][datafusion.functions.array_position].
+        This is an alias for :func:`~datafusion.functions.array_position`.
     """
     return array_position(array, element, index)
 
@@ -3507,7 +3507,7 @@ def list_positions(array: Expr, element: Expr) -> Expr:
     """Searches for an element in the array and returns all occurrences.
 
     See Also:
-        This is an alias for [`array_positions`][datafusion.functions.array_positions].
+        This is an alias for :func:`~datafusion.functions.array_positions`.
     """
     return array_positions(array, element)
 
@@ -3529,7 +3529,7 @@ def list_ndims(array: Expr) -> Expr:
     """Returns the number of dimensions of the array.
 
     See Also:
-        This is an alias for [`array_ndims`][datafusion.functions.array_ndims].
+        This is an alias for :func:`~datafusion.functions.array_ndims`.
     """
     return array_ndims(array)
 
@@ -3552,7 +3552,7 @@ def array_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for [`array_prepend`][datafusion.functions.array_prepend].
+        This is an alias for :func:`~datafusion.functions.array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -3561,7 +3561,7 @@ def list_prepend(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for [`array_prepend`][datafusion.functions.array_prepend].
+        This is an alias for :func:`~datafusion.functions.array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -3570,7 +3570,7 @@ def list_push_front(element: Expr, array: Expr) -> Expr:
     """Prepends an element to the beginning of an array.
 
     See Also:
-        This is an alias for [`array_prepend`][datafusion.functions.array_prepend].
+        This is an alias for :func:`~datafusion.functions.array_prepend`.
     """
     return array_prepend(element, array)
 
@@ -3607,7 +3607,7 @@ def list_pop_back(array: Expr) -> Expr:
     """Returns the array without the last element.
 
     See Also:
-        This is an alias for [`array_pop_back`][datafusion.functions.array_pop_back].
+        This is an alias for :func:`~datafusion.functions.array_pop_back`.
     """
     return array_pop_back(array)
 
@@ -3616,7 +3616,7 @@ def list_pop_front(array: Expr) -> Expr:
     """Returns the array without the first element.
 
     See Also:
-        This is an alias for [`array_pop_front`][datafusion.functions.array_pop_front].
+        This is an alias for :func:`~datafusion.functions.array_pop_front`.
     """
     return array_pop_front(array)
 
@@ -3639,7 +3639,7 @@ def list_remove(array: Expr, element: Expr) -> Expr:
     """Removes the first element from the array equal to the given value.
 
     See Also:
-        This is an alias for [`array_remove`][datafusion.functions.array_remove].
+        This is an alias for :func:`~datafusion.functions.array_remove`.
     """
     return array_remove(array, element)
 
@@ -3665,7 +3665,7 @@ def list_remove_n(array: Expr, element: Expr, max: Expr | int) -> Expr:
     """Removes the first ``max`` elements from the array equal to the given value.
 
     See Also:
-        This is an alias for [`array_remove_n`][datafusion.functions.array_remove_n].
+        This is an alias for :func:`~datafusion.functions.array_remove_n`.
     """
     return array_remove_n(array, element, max)
 
@@ -3714,7 +3714,7 @@ def list_repeat(element: Expr, count: Expr | int) -> Expr:
     """Returns an array containing ``element`` ``count`` times.
 
     See Also:
-        This is an alias for [`array_repeat`][datafusion.functions.array_repeat].
+        This is an alias for :func:`~datafusion.functions.array_repeat`.
     """
     return array_repeat(element, count)
 
@@ -3738,7 +3738,7 @@ def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     """Replaces the first occurrence of ``from_val`` with ``to_val``.
 
     See Also:
-        This is an alias for [`array_replace`][datafusion.functions.array_replace].
+        This is an alias for :func:`~datafusion.functions.array_replace`.
     """
     return array_replace(array, from_val, to_val)
 
@@ -3770,7 +3770,7 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr | int) -
     specified element.
 
     See Also:
-        This is an alias for [`array_replace_n`][datafusion.functions.array_replace_n].
+        This is an alias for :func:`~datafusion.functions.array_replace_n`.
     """
     return array_replace_n(array, from_val, to_val, max)
 
@@ -3840,7 +3840,7 @@ def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -
     """Sorts the array.
 
     See Also:
-        This is an alias for [`array_sort`][datafusion.functions.array_sort].
+        This is an alias for :func:`~datafusion.functions.array_sort`.
     """
     return array_sort(array, descending=descending, null_first=null_first)
 
@@ -3889,7 +3889,7 @@ def list_slice(
     """Returns a slice of the array.
 
     See Also:
-        This is an alias for [`array_slice`][datafusion.functions.array_slice].
+        This is an alias for :func:`~datafusion.functions.array_slice`.
     """
     return array_slice(array, begin, end, stride)
 
@@ -3917,7 +3917,7 @@ def list_intersect(array1: Expr, array2: Expr) -> Expr:
     """Returns an the intersection of ``array1`` and ``array2``.
 
     See Also:
-        This is an alias for [`array_intersect`][datafusion.functions.array_intersect].
+        This is an alias for :func:`~datafusion.functions.array_intersect`.
     """
     return array_intersect(array1, array2)
 
@@ -3949,7 +3949,7 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
     Duplicate rows will not be returned.
 
     See Also:
-        This is an alias for [`array_union`][datafusion.functions.array_union].
+        This is an alias for :func:`~datafusion.functions.array_union`.
     """
     return array_union(array1, array2)
 
@@ -3972,7 +3972,7 @@ def list_except(array1: Expr, array2: Expr) -> Expr:
     """Returns the elements that appear in ``array1`` but not in the ``array2``.
 
     See Also:
-        This is an alias for [`array_except`][datafusion.functions.array_except].
+        This is an alias for :func:`~datafusion.functions.array_except`.
     """
     return array_except(array1, array2)
 
@@ -4002,7 +4002,7 @@ def list_resize(array: Expr, size: Expr | int, value: Expr) -> Expr:
     filled with the given ``value``.
 
     See Also:
-        This is an alias for [`array_resize`][datafusion.functions.array_resize].
+        This is an alias for :func:`~datafusion.functions.array_resize`.
     """
     return array_resize(array, size, value)
 
@@ -4025,7 +4025,7 @@ def list_any_value(array: Expr) -> Expr:
     """Returns the first non-null element in the array.
 
     See Also:
-        This is an alias for [`array_any_value`][datafusion.functions.array_any_value].
+        This is an alias for :func:`~datafusion.functions.array_any_value`.
     """
     return array_any_value(array)
 
@@ -4050,7 +4050,7 @@ def list_distance(array1: Expr, array2: Expr) -> Expr:
     """Returns the Euclidean distance between two numeric arrays.
 
     See Also:
-        This is an alias for [`array_distance`][datafusion.functions.array_distance].
+        This is an alias for :func:`~datafusion.functions.array_distance`.
     """
     return array_distance(array1, array2)
 
@@ -4073,7 +4073,7 @@ def list_max(array: Expr) -> Expr:
     """Returns the maximum value in the array.
 
     See Also:
-        This is an alias for [`array_max`][datafusion.functions.array_max].
+        This is an alias for :func:`~datafusion.functions.array_max`.
     """
     return array_max(array)
 
@@ -4096,7 +4096,7 @@ def list_min(array: Expr) -> Expr:
     """Returns the minimum value in the array.
 
     See Also:
-        This is an alias for [`array_min`][datafusion.functions.array_min].
+        This is an alias for :func:`~datafusion.functions.array_min`.
     """
     return array_min(array)
 
@@ -4119,7 +4119,7 @@ def list_reverse(array: Expr) -> Expr:
     """Reverses the order of elements in the array.
 
     See Also:
-        This is an alias for [`array_reverse`][datafusion.functions.array_reverse].
+        This is an alias for :func:`~datafusion.functions.array_reverse`.
     """
     return array_reverse(array)
 
@@ -4143,7 +4143,7 @@ def list_zip(*arrays: Expr) -> Expr:
     """Combines multiple arrays into a single array of structs.
 
     See Also:
-        This is an alias for [`arrays_zip`][datafusion.functions.arrays_zip].
+        This is an alias for :func:`~datafusion.functions.arrays_zip`.
     """
     return arrays_zip(*arrays)
 
@@ -4189,7 +4189,7 @@ def string_to_list(
     """Splits a string based on a delimiter and returns an array of parts.
 
     See Also:
-        This is an alias for [`string_to_array`][datafusion.functions.string_to_array].
+        This is an alias for :func:`~datafusion.functions.string_to_array`.
     """
     return string_to_array(string, delimiter, null_string)
 
@@ -4197,7 +4197,7 @@ def string_to_list(
 def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
-    Unlike [`range`][datafusion.functions.range], this includes the upper bound.
+    Unlike :func:`~datafusion.functions.range`, this includes the upper bound.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -4225,10 +4225,10 @@ def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
 def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
     """Creates a list of values in the range between start and stop.
 
-    Unlike [`range`][datafusion.functions.range], this includes the upper bound.
+    Unlike :func:`~datafusion.functions.range`, this includes the upper bound.
 
     See Also:
-        This is an alias for [`gen_series`][datafusion.functions.gen_series].
+        This is an alias for :func:`~datafusion.functions.gen_series`.
     """
     return gen_series(start, stop, step)
 
@@ -4263,7 +4263,7 @@ def empty(array: Expr) -> Expr:
     """Returns true if the array is empty.
 
     See Also:
-        This is an alias for [`array_empty`][datafusion.functions.array_empty].
+        This is an alias for :func:`~datafusion.functions.array_empty`.
     """
     return array_empty(array)
 
@@ -4282,7 +4282,7 @@ def make_map(*args: Any) -> Expr:
     - ``make_map(k1, v1, k2, v2, ...)`` — from alternating keys and their
       associated values.
 
-    Keys and values that are not already [`Expr`][datafusion.expr.Expr]
+    Keys and values that are not already :class:`~datafusion.expr.Expr`
     are automatically converted to literal expressions.
 
     Examples:
@@ -4415,7 +4415,7 @@ def element_at(map: Expr, key: Expr) -> Expr:
     Returns ``[None]`` if the key is absent.
 
     See Also:
-        This is an alias for [`map_extract`][datafusion.functions.map_extract].
+        This is an alias for :func:`~datafusion.functions.map_extract`.
     """
     return map_extract(map, key)
 
@@ -4429,7 +4429,7 @@ def approx_distinct(
 
     This aggregate function is similar to `count` with distinct set, but it
     will approximate the number of distinct entries. It may return significantly faster
-    than [`count`][datafusion.functions.count] for some DataFrames.
+    than :func:`~datafusion.functions.count` for some DataFrames.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
@@ -4654,7 +4654,7 @@ def quantile_cont(
     """Computes the exact percentile of input values using continuous interpolation.
 
     See Also:
-        This is an alias for [`percentile_cont`][datafusion.functions.percentile_cont].
+        This is an alias for :func:`~datafusion.functions.percentile_cont`.
     """
     return percentile_cont(sort_expression, percentile, filter)
 
@@ -4668,7 +4668,7 @@ def array_agg(
     """Aggregate values into an array.
 
     Currently ``distinct`` and ``order_by`` cannot be used together. As a work around,
-    consider [`array_sort`][datafusion.functions.array_sort] after aggregation.
+    consider :func:`~datafusion.functions.array_sort` after aggregation.
     [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -4730,9 +4730,9 @@ def grouping(
     aggregate spans all values of that column).
 
     This function is meaningful with
-    [`GroupingSet.rollup`][datafusion.expr.GroupingSet.rollup],
-    [`GroupingSet.cube`][datafusion.expr.GroupingSet.cube], or
-    [`GroupingSet.grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
+    :meth:`~datafusion.expr.GroupingSet.rollup`,
+    :meth:`~datafusion.expr.GroupingSet.cube`, or
+    :meth:`~datafusion.expr.GroupingSet.grouping_sets`,
     where different rows are grouped by different subsets of columns. In a
     default aggregation without grouping sets every column is always part
     of the key, so ``grouping()`` always returns 0.
@@ -4743,7 +4743,7 @@ def grouping(
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
-        With [`rollup`][datafusion.expr.GroupingSet.rollup], the result
+        With :meth:`~datafusion.expr.GroupingSet.rollup`, the result
         includes both per-group rows (``grouping(a) = 0``) and a
         grand-total row where ``a`` is aggregated across
         (``grouping(a) = 1``):
@@ -4760,7 +4760,7 @@ def grouping(
         [30, 30, 60]
 
     See Also:
-        [`GroupingSet`][datafusion.expr.GroupingSet]
+        :class:`~datafusion.expr.GroupingSet`
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))
@@ -4976,7 +4976,7 @@ def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
     See Also:
-        This is an alias for [`covar_samp`][datafusion.functions.covar_samp].
+        This is an alias for :func:`~datafusion.functions.covar_samp`.
     """
     return covar_samp(value_y, value_x, filter)
 
@@ -5017,7 +5017,7 @@ def mean(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     See Also:
-        This is an alias for [`avg`][datafusion.functions.avg].
+        This is an alias for :func:`~datafusion.functions.avg`.
     """
     return avg(expression, filter)
 
@@ -5211,7 +5211,7 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     See Also:
-        This is an alias for [`stddev`][datafusion.functions.stddev].
+        This is an alias for :func:`~datafusion.functions.stddev`.
     """
     return stddev(arg, filter=filter)
 
@@ -5220,7 +5220,7 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
-        This is an alias for [`var_samp`][datafusion.functions.var_samp].
+        This is an alias for :func:`~datafusion.functions.var_samp`.
     """
     return var_samp(expression, filter)
 
@@ -5261,7 +5261,7 @@ def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
     See Also:
-        This is an alias for [`var_pop`][datafusion.functions.var_pop].
+        This is an alias for :func:`~datafusion.functions.var_pop`.
     """
     return var_pop(expression, filter)
 
@@ -5302,7 +5302,7 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
-        This is an alias for [`var_samp`][datafusion.functions.var_samp].
+        This is an alias for :func:`~datafusion.functions.var_samp`.
     """
     return var_samp(expression, filter)
 
@@ -6052,7 +6052,7 @@ def lead(
     return the 3rd following value in column ``b``. At the end of the partition, where
     no further values can be returned it will return the default value of 5.
 
-    Here is an example of both the ``lead`` and [`lag`][datafusion.functions.lag]
+    Here is an example of both the ``lead`` and :func:`~datafusion.functions.lag`
     functions on a simple DataFrame::
 
         +--------+------+-----+
@@ -6128,7 +6128,7 @@ def lag(
     will return the 3rd previous value in column ``b``. At the beginning of the
     partition, where no values can be returned it will return the default value of 5.
 
-    Here is an example of both the ``lag`` and [`lead`][datafusion.functions.lead]
+    Here is an example of both the ``lag`` and :func:`~datafusion.functions.lead`
     functions on a simple DataFrame::
 
         +--------+------+-----+

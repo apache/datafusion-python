@@ -20,17 +20,17 @@
 A `SessionContext` holds registered tables, catalogs, and
 configuration for the current session. It is the first object most programs
 create: from it you register data, run SQL strings
-([`sql`][datafusion.context.SessionContext.sql]), read files
-([`read_csv`][datafusion.context.SessionContext.read_csv],
-[`read_parquet`][datafusion.context.SessionContext.read_parquet], ...), and construct
-[`DataFrame`][datafusion.dataframe.DataFrame] objects in memory
-([`from_pydict`][datafusion.context.SessionContext.from_pydict],
-[`from_arrow`][datafusion.context.SessionContext.from_arrow]).
+(:meth:`~datafusion.context.SessionContext.sql`), read files
+(:meth:`~datafusion.context.SessionContext.read_csv`,
+:meth:`~datafusion.context.SessionContext.read_parquet`, ...), and construct
+:class:`~datafusion.dataframe.DataFrame` objects in memory
+(:meth:`~datafusion.context.SessionContext.from_pydict`,
+:meth:`~datafusion.context.SessionContext.from_arrow`).
 
 Session behavior (memory limits, batch size, configured optimizer passes,
-...) is controlled by [`SessionConfig`][datafusion.context.SessionConfig] and
+...) is controlled by :class:`~datafusion.context.SessionConfig` and
 `RuntimeEnvBuilder`; SQL dialect limits are controlled by
-[`SQLOptions`][datafusion.context.SQLOptions].
+:class:`~datafusion.context.SQLOptions`.
 
 Examples:
     >>> ctx = dfn.SessionContext()
@@ -609,7 +609,7 @@ class SessionContext:
 
         Args:
             schema: The data source schema.
-            store: The [object store][datafusion.object_store] to register.
+            store: The :mod:`~datafusion.object_store` to register.
             host: URL for the host.
         """
         self.ctx.register_object_store(schema, store, host)
@@ -634,8 +634,8 @@ class SessionContext:
     ) -> None:
         """Register multiple files as a single table.
 
-        Registers a [`Table`][datafusion.catalog.Table] that can assemble multiple
-        files from locations in an [object store][datafusion.object_store]
+        Registers a :class:`~datafusion.catalog.Table` that can assemble multiple
+        files from locations in an :mod:`~datafusion.object_store`
         instance.
 
         Args:
@@ -667,7 +667,7 @@ class SessionContext:
         param_values: dict[str, Any] | None = None,
         **named_params: Any,
     ) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from SQL query text.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
         See the online documentation for a description of how to perform
         parameterized substitution via either the ``param_values`` option
@@ -676,7 +676,7 @@ class SessionContext:
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
         ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
         default implementation.See
-        [`sql_with_options`][datafusion.context.SessionContext.sql_with_options].
+        :meth:`~datafusion.context.SessionContext.sql_with_options`.
 
         Args:
             query: SQL query text.
@@ -732,7 +732,7 @@ class SessionContext:
         param_values: dict[str, Any] | None = None,
         **named_params: Any,
     ) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from SQL query text.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
         This function will first validate that the query is allowed by the
         provided options.
@@ -760,7 +760,7 @@ class SessionContext:
         """Create and return a dataframe using the provided partitions.
 
         Args:
-            partitions: [`RecordBatch`][pyarrow.RecordBatch] partitions to register.
+            partitions: :class:`~pyarrow.RecordBatch` partitions to register.
             name: Resultant dataframe name.
             schema: Schema for the partitions.
 
@@ -770,7 +770,7 @@ class SessionContext:
         return DataFrame(self.ctx.create_dataframe(partitions, name, schema))
 
     def create_dataframe_from_logical_plan(self, plan: LogicalPlan) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from an existing plan.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from an existing plan.
 
         Args:
             plan: Logical plan.
@@ -783,7 +783,7 @@ class SessionContext:
     def from_pylist(
         self, data: list[dict[str, Any]], name: str | None = None
     ) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from a list.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from a list.
 
         Args:
             data: List of dictionaries.
@@ -797,7 +797,7 @@ class SessionContext:
     def from_pydict(
         self, data: dict[str, list[Any]], name: str | None = None
     ) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from a dictionary.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from a dictionary.
 
         Args:
             data: Dictionary of lists.
@@ -813,7 +813,7 @@ class SessionContext:
         data: ArrowStreamExportable | ArrowArrayExportable,
         name: str | None = None,
     ) -> DataFrame:
-        """Create a [`DataFrame`][datafusion.dataframe.DataFrame] from an Arrow source.
+        """Create a :class:`~datafusion.dataframe.DataFrame` from an Arrow source.
 
         The Arrow data source can be any object that implements either
         ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
@@ -857,7 +857,7 @@ class SessionContext:
     # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
     # is the discussion on how we arrived at adding register_view
     def register_view(self, name: str, df: DataFrame) -> None:
-        """Register a [`DataFrame`][datafusion.dataframe.DataFrame] as a view.
+        """Register a :class:`~datafusion.dataframe.DataFrame` as a view.
 
         Args:
             name (str): The name to register the view under.
@@ -871,7 +871,7 @@ class SessionContext:
         name: str,
         table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
-        """Register a [`Table`][datafusion.catalog.Table] with this context.
+        """Register a :class:`~datafusion.catalog.Table` with this context.
 
         The registered table can be referenced from SQL statements executed against
         this context.
@@ -934,7 +934,7 @@ class SessionContext:
         """Register a table provider.
 
         Deprecated: use
-        [`register_table`][datafusion.context.SessionContext.register_table]
+        :meth:`~datafusion.context.SessionContext.register_table`
         instead.
         """
         self.register_table(name, provider)
@@ -944,7 +944,7 @@ class SessionContext:
         self.ctx.register_udtf(func._udtf)
 
     def register_batch(self, name: str, batch: pa.RecordBatch) -> None:
-        """Register a single [`RecordBatch`][pyarrow.RecordBatch] as a table.
+        """Register a single :class:`~pyarrow.RecordBatch` as a table.
 
         Args:
             name: Name of the resultant table.
@@ -990,11 +990,11 @@ class SessionContext:
         """Return a `DataFrame` reading a single batch.
 
         Convenience wrapper around
-        [`read_batches`][datafusion.context.SessionContext.read_batches] for the
+        :meth:`~datafusion.context.SessionContext.read_batches` for the
         single-batch case. Unlike
-        [`register_batch`][datafusion.context.SessionContext.register_batch], this
+        :meth:`~datafusion.context.SessionContext.register_batch`, this
         does not register the batch as a named table; it returns an anonymous
-        [`DataFrame`][datafusion.dataframe.DataFrame] directly.
+        :class:`~datafusion.dataframe.DataFrame` directly.
 
         Args:
             batch: Record batch to wrap as a DataFrame.
@@ -1011,11 +1011,11 @@ class SessionContext:
         """Return a `DataFrame` reading the given batches.
 
         All batches must share the same schema. Any iterable of
-        [`RecordBatch`][pyarrow.RecordBatch] is accepted (list, tuple, generator);
+        :class:`~pyarrow.RecordBatch` is accepted (list, tuple, generator);
         it is materialized into a list before being handed to the
         underlying Rust binding. Unlike `register_record_batches`,
         this does not register the batches as a named table; it returns
-        an anonymous [`DataFrame`][datafusion.dataframe.DataFrame] directly.
+        an anonymous :class:`~datafusion.dataframe.DataFrame` directly.
 
         Args:
             batches: Record batches to wrap as a DataFrame.
@@ -1295,7 +1295,7 @@ class SessionContext:
         )
 
     def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
-        """Register a [`Dataset`][pyarrow.dataset.Dataset] as a table.
+        """Register a :class:`~pyarrow.dataset.Dataset` as a table.
 
         Args:
             name: Name of the table to register.
@@ -1343,7 +1343,7 @@ class SessionContext:
         """Look up a registered scalar UDF by name.
 
         Returns the same ``ScalarUDF`` wrapper that
-        [`register_udf`][datafusion.context.SessionContext.register_udf] accepts,
+        :meth:`~datafusion.context.SessionContext.register_udf` accepts,
         so it can be invoked as an expression in the DataFrame API
         or re-registered into a different `SessionContext`.
         Built-in scalar functions from the session's function registry are
@@ -1390,7 +1390,7 @@ class SessionContext:
         """Look up a registered aggregate UDF by name.
 
         Returns the same ``AggregateUDF`` wrapper that
-        [`register_udaf`][datafusion.context.SessionContext.register_udaf] accepts.
+        :meth:`~datafusion.context.SessionContext.register_udaf` accepts.
         Built-in aggregate functions such as ``sum`` or ``avg`` are
         also discoverable through this lookup. See `udf` for a worked
         late-binding example; the pattern is identical for aggregates.
@@ -1403,7 +1403,7 @@ class SessionContext:
 
         Examples:
             Look up a built-in aggregate by name and use it in
-            [`aggregate`][datafusion.dataframe.DataFrame.aggregate]:
+            :meth:`~datafusion.dataframe.DataFrame.aggregate`:
 
             >>> ctx = dfn.SessionContext()
             >>> sum_fn = ctx.udaf("sum")
@@ -1421,7 +1421,7 @@ class SessionContext:
         """Look up a registered window UDF by name.
 
         Returns the same ``WindowUDF`` wrapper that
-        [`register_udwf`][datafusion.context.SessionContext.register_udwf] accepts.
+        :meth:`~datafusion.context.SessionContext.register_udwf` accepts.
         Built-in window functions such as ``row_number`` or ``rank``
         are also discoverable through this lookup. See `udf` for a
         worked late-binding example; the pattern is identical for window
@@ -1494,7 +1494,7 @@ class SessionContext:
         return self.ctx.table_exist(name)
 
     def empty_table(self) -> DataFrame:
-        """Create an empty [`DataFrame`][datafusion.dataframe.DataFrame]."""
+        """Create an empty :class:`~datafusion.dataframe.DataFrame`."""
         return DataFrame(self.ctx.empty_table())
 
     def session_id(self) -> str:
@@ -1643,7 +1643,7 @@ class SessionContext:
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__`` — a
-                [`PhysicalOptimizerRuleExportable`][datafusion.context.PhysicalOptimizerRuleExportable].
+                :class:`~datafusion.context.PhysicalOptimizerRuleExportable`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -1655,7 +1655,7 @@ class SessionContext:
         self.ctx.add_physical_optimizer_rule(rule)
 
     def table_provider(self, name: str) -> Table:
-        """Return the [`Table`][datafusion.catalog.Table] for the given table name.
+        """Return the :class:`~datafusion.catalog.Table` for the given table name.
 
         Args:
             name: Name of the table.
@@ -1801,7 +1801,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> DataFrame:
-        """Read a Parquet source into a [`Dataframe`][datafusion.dataframe.DataFrame].
+        """Read a Parquet source into a :class:`~datafusion.dataframe.DataFrame`.
 
         Args:
             path: Path to the Parquet file.
@@ -1941,14 +1941,14 @@ class SessionContext:
 
         See Also:
             This is an alias for
-            [`empty_table`][datafusion.context.SessionContext.empty_table].
+            :meth:`~datafusion.context.SessionContext.empty_table`.
         """
         return self.empty_table()
 
     def read_table(
         self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
     ) -> DataFrame:
-        """Creates a [`DataFrame`][datafusion.dataframe.DataFrame] from a table."""
+        """Creates a :class:`~datafusion.dataframe.DataFrame` from a table."""
         return DataFrame(self.ctx.read_table(table))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
@@ -1963,7 +1963,7 @@ class SessionContext:
 
         Each ``SortKey`` can be a column name string, an ``Expr``, or a
         ``SortExpr`` and will be converted using
-        [`sort_list_to_raw_sort_list`][datafusion.expr.sort_list_to_raw_sort_list].
+        :func:`~datafusion.expr.sort_list_to_raw_sort_list`.
         """
         # Convert each ``SortKey`` in the provided sort order to the low-level
         # representation expected by the Rust bindings.
@@ -2073,17 +2073,17 @@ class SessionContext:
           to rebuild Python UDFs rather than call ``cloudpickle.loads``
           on untrusted input.
 
-        The setting affects [`to_bytes`][datafusion.expr.Expr.to_bytes] and
+        The setting affects :meth:`~datafusion.expr.Expr.to_bytes` and
         `from_bytes` whenever this session is passed as the
-        ``ctx`` argument. [`dumps`][pickle.dumps] and [`loads`][pickle.loads]
+        ``ctx`` argument. :func:`~pickle.dumps` and :func:`~pickle.loads`
         do not pass a context, so to apply the setting through pickle,
         register this session with
-        [`set_sender_ctx`][datafusion.ipc.set_sender_ctx] on the sender and
-        [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] on the receiver.
+        :func:`~datafusion.ipc.set_sender_ctx` on the sender and
+        :func:`~datafusion.ipc.set_worker_ctx` on the receiver.
 
         .. warning:: Security
             This setting narrows only `from_bytes`. Calling
-            [`loads`][pickle.loads] on untrusted bytes remains unsafe
+            :func:`~pickle.loads` on untrusted bytes remains unsafe
             regardless of the toggle.
 
         Returns a new `SessionContext` with the toggle applied;
