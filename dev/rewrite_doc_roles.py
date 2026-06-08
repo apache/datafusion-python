@@ -75,8 +75,11 @@ ROLE_PATTERNS = [
         ),
         lambda m: f"[`{m.group(1).strip()}`][{m.group(2)}]",
     ),
-    # {code}`text` -> `text`
-    (re.compile(r"\{code\}`([^`]+)`"), lambda m: f"`{m.group(1)}`"),
+    # {code}`text`, {file}`path`, {samp}`text`, {kbd}`keys` -> `text`
+    (
+        re.compile(r"\{(?:code|file|samp|kbd)\}`([^`]+)`"),
+        lambda m: f"`{m.group(1)}`",
+    ),
     # {doc}`Label <path>` -> [Label](path.md)
     (
         re.compile(r"\{doc\}`([^<`]+)\s*<([^>]+)>`"),

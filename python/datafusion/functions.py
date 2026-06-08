@@ -4737,16 +4737,6 @@ def grouping(
     default aggregation without grouping sets every column is always part
     of the key, so ``grouping()`` always returns 0.
 
-    .. warning::
-
-        Due to an upstream DataFusion limitation
-        (`#21411 <https://github.com/apache/datafusion/issues/21411>`_),
-        ``.alias()`` cannot be applied directly to a ``grouping()``
-        expression. Doing so will raise an error at execution time. To
-        rename the column, use
-        [`with_column_renamed`][datafusion.dataframe.DataFrame.with_column_renamed]
-        on the result DataFrame instead.
-
     Args:
         expression: The column to check grouping status for
         distinct: If True, compute on distinct values only

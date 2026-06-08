@@ -27,8 +27,8 @@ workloads where the driver decides partitioning up front.
 
 Query-level distribution — where the runtime partitions a single
 logical or physical plan across worker nodes — is in progress
-upstream via [datafusion-distributed](https://github.com/apache/datafusion-distributed) and [Apache
-Ballista](https://github.com/apache/datafusion-ballista). Both
+upstream via [datafusion-distributed](https://github.com/datafusion-contrib/datafusion-distributed) and [Apache
+Ballista](https://datafusion.apache.org/ballista/). Both
 have short sections at the end of this page; integration details
 will land as those projects become usable from datafusion-python.
 
@@ -259,7 +259,7 @@ up to four *slots* in a running program:
 | Slot | Lifetime | Purpose | Set how |
 |------|----------|---------|---------|
 | User-held | Local variable / attribute | Build and run queries | `ctx = SessionContext(...)` |
-| Global | Process singleton (lazy-init) | Backs module-level [`read_parquet`][datafusion.io.read_parquet], [`read_csv`][datafusion.io.read_csv], [`read_json`][datafusion.io.read_json], [`read_avro`][datafusion.io.read_avro]; final fallback for [`Expr.from_bytes`][datafusion.expr.Expr.from_bytes] | Implicit; access via [`SessionContext.global_ctx`][datafusion.context.SessionContext.global_ctx] |
+| Global | Process singleton (lazy-init) | Backs module-level [`read_parquet`][datafusion.io.read_parquet], [`read_csv`][datafusion.io.read_csv], [`read_json`][datafusion.io.read_json], [`read_avro`][datafusion.io.read_avro]; final fallback for [`Expr.from_bytes`][datafusion.expr.Expr.from_bytes] | Implicit; access via [`global_ctx`][datafusion.context.SessionContext.global_ctx] |
 | Sender | Thread-local on the driver | Codec settings for outbound `pickle.dumps` / [`Expr.to_bytes`][datafusion.expr.Expr.to_bytes] without `ctx` | [`set_sender_ctx`][datafusion.ipc.set_sender_ctx] |
 | Worker | Thread-local on the worker | Function registry for inbound `pickle.loads` / [`Expr.from_bytes`][datafusion.expr.Expr.from_bytes] without `ctx` | [`set_worker_ctx`][datafusion.ipc.set_worker_ctx] |
 
@@ -297,7 +297,7 @@ Sharp edges:
 
 🚧 *Work in progress upstream — not yet usable from datafusion-python.*
 
-[datafusion-distributed](https://github.com/apache/datafusion-distributed)
+[datafusion-distributed](https://github.com/datafusion-contrib/datafusion-distributed)
 splits a single physical plan into stages and runs each stage on a
 different worker node. The driver writes a SQL or DataFrame query
 once; the runtime handles partitioning, shuffles, and reassembly.
@@ -311,7 +311,7 @@ require automatic plan partitioning.
 
 🚧 *Work in progress upstream — not yet usable from datafusion-python.*
 
-[Apache Ballista](https://github.com/apache/datafusion-ballista)
+[Apache Ballista](https://datafusion.apache.org/ballista/)
 provides distributed query execution on top of DataFusion with a
 scheduler / executor model better suited to long-lived cluster
 deployments. A datafusion-python integration is on the roadmap; this
@@ -320,7 +320,6 @@ section will fill in once the integration is usable.
 ## See also
 
 - [`ipc`][datafusion.ipc] — worker context API.
-- `examples/multiprocessing_pickle_expr.py` — runnable
-  `multiprocessing.Pool` example that ships a different parametric
-  expression to each worker and collects results back.
-- `examples/ray_pickle_expr.py` — runnable Ray actor example.
+- [`examples/`](https://github.com/apache/datafusion-python/tree/main/examples) —
+  runnable scripts for `multiprocessing.Pool` and Ray actor patterns,
+  plus other end-to-end demos.

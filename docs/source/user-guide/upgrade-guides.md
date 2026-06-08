@@ -21,6 +21,8 @@
 
 ## DataFusion 54.0.0
 
+### `Config` removed in favor of `SessionConfig`
+
 The `Config` class has been removed. It was a standalone wrapper around
 `ConfigOptions` that could not be connected to a `SessionContext`, making it
 effectively unusable. Use [`SessionConfig`][datafusion.context.SessionConfig] instead,
@@ -44,6 +46,8 @@ from datafusion import SessionConfig, SessionContext
 config = SessionConfig().set("datafusion.execution.batch_size", "4096")
 ctx = SessionContext(config)
 ```
+
+### `distinct` argument added to `sum` and `avg`
 
 The aggregate functions [`sum`][datafusion.functions.sum] and
 [`avg`][datafusion.functions.avg] now accept a `distinct` argument, matching

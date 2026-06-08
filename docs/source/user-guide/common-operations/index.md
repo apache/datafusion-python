@@ -36,5 +36,6 @@ The contents of this section are designed to guide a new user through how to use
 - [Aggregations](aggregations.ipynb) — `group_by`, rollup, cube,
   grouping sets.
 - [Windows](windows.ipynb) — partitioned and ranking window functions.
-- [UDFs and UDAFs](udf-and-udfa.ipynb) — scalar, aggregate, window, and
-  table user-defined functions.
+- [User-Defined Functions](udf-and-udfa.ipynb) — scalar (UDF),
+  aggregate (UDAF), window (UDWF), and table (UDTF) user-defined
+  functions.

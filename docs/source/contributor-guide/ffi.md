@@ -74,12 +74,12 @@ code that does **not** require the `datafusion-python` crate as a dependency, ex
 code in Python via PyO3, and have it interact with the DataFusion Python package.
 
 Early adopters of this approach include [delta-rs](https://delta-io.github.io/delta-rs/)
-who has adapted their Table Provider for use in `` `datafusion-python` `` with only a few lines
+who has adapted their Table Provider for use in `datafusion-python` with only a few lines
 of code. Also, the DataFusion Python project uses the existing definitions from
 [Apache Arrow CStream Interface](https://arrow.apache.org/docs/format/CStreamInterface.html)
 to support importing **and** exporting tables. Any Python package that supports reading
 the Arrow C Stream interface can work with DataFusion Python out of the box! You can read
-more about working with Arrow sources in the [Data Sources](user_guide_data_sources)
+more about working with Arrow sources in the [Data Sources](../user-guide/data-sources.ipynb)
 page.
 
 To learn more about the Foreign Function Interface in Rust, the
@@ -118,22 +118,34 @@ The bulk of the code necessary to perform our FFI operations is in the upstream
 documentation in the [datafusion-ffi] crate.
 
 Our FFI implementation is narrowly focused at sharing data and functions with Rust backed
-libraries. This allows us to use the [abi_stable crate](https://crates.io/crates/abi_stable).
-This is an excellent crate that allows for easy conversion between Rust native types
-and FFI-safe alternatives. For example, if you needed to pass a `Vec<String>` via FFI,
-you can simply convert it to a `RVec<RString>` in an intuitive manner. It also supports
-features like `RResult` and `ROption` that do not have an obvious translation to a
+libraries. Starting in DataFusion 54.0.0 we use the
+[stabby crate](https://crates.io/crates/stabby) (previously the
+[abi_stable crate](https://crates.io/crates/abi_stable)). `stabby` provides
+FFI-safe equivalents of common Rust types with a thinner runtime cost
+and stricter ABI stability guarantees. For example, passing a
+`Vec<String>` across the FFI boundary is done via stabby's `Vec` /
+`String` wrappers, and the crate also supplies FFI-safe analogues of
+`Result` and `Option` that do not have an obvious translation to a
 C equivalent.
 
 The [datafusion-ffi] crate has been designed to make it easy to convert from DataFusion
 traits into their FFI counterparts. For example, if you have defined a custom
-[TableProvider](https://docs.rs/datafusion/45.0.0/datafusion/catalog/trait.TableProvider.html)
-and you want to create a sharable FFI counterpart, you could write:
+[TableProvider](https://docs.rs/datafusion/latest/datafusion/catalog/trait.TableProvider.html)
+and you want to expose it through a PyCapsule, you can pull the logical
+codec out of the calling session and hand both to `FFI_TableProvider`:
 
 ```rust
+use datafusion_ffi::table_provider::FFI_TableProvider;
+use datafusion_python_util::ffi_logical_codec_from_pycapsule;
+
 let my_provider = MyTableProvider::default();
-let ffi_provider = FFI_TableProvider::new(Arc::new(my_provider), false, None);
+let codec = ffi_logical_codec_from_pycapsule(session)?;
+let ffi_provider =
+    FFI_TableProvider::new_with_ffi_codec(Arc::new(my_provider), false, None, codec);
 ```
+
+See [`examples/datafusion-ffi-example/src/table_provider.rs`](https://github.com/apache/datafusion-python/blob/main/examples/datafusion-ffi-example/src/table_provider.rs)
+for a complete runnable example.
 
 
 ## PyO3 class mutability guidelines
@@ -144,7 +156,7 @@ interior-mutable state. In practice this means that any `#[pyclass]` containing 
 unless there is a compelling reason not to.
 
 The execution context illustrates the preferred pattern. `PySessionContext` in
-{file}`src/context.rs` stays frozen even though it shares mutable state internally via
+`src/context.rs` stays frozen even though it shares mutable state internally via
 `SessionContext`. This ensures PyO3 tracks borrows correctly while Python-facing APIs
 clone the inner `SessionContext` or return new wrappers instead of mutating the
 existing instance in place:
@@ -160,7 +172,7 @@ pub struct PySessionContext {
 Occasionally a type must remain mutable—for example when PyO3 attribute setters need to
 update fields directly. In these rare cases add an inline justification so reviewers and
 future contributors understand why `frozen` is unsafe to enable. `DataTypeMap` in
-{file}`src/common/data_type.rs` includes such a comment because PyO3 still needs to track
+`src/common/data_type.rs` includes such a comment because PyO3 still needs to track
 field updates:
 
 ```rust
@@ -181,22 +193,23 @@ When reviewers encounter a mutable `#[pyclass]` without a comment, they should r
 an explanation or ask that `frozen` be added. Keeping these wrappers frozen by default
 helps avoid subtle bugs stemming from PyO3's interior mutability tracking.
 
-If you were interfacing with a library that provided the above `FFI_TableProvider` and
-you needed to turn it back into an `TableProvider`, you can turn it into a
-`ForeignTableProvider` with implements the `TableProvider` trait.
+If you are interfacing with a library that provided the above `FFI_TableProvider` and
+need a usable `TableProvider`, the `.into()` conversion now yields an
+`Arc<dyn TableProvider>` directly:
 
 ```rust
-let foreign_provider: ForeignTableProvider = ffi_provider.into();
+let provider: Arc<dyn TableProvider> = ffi_provider.into();
 ```
 
+(Older revisions of `datafusion-ffi` produced a `ForeignTableProvider` wrapper as an
+intermediate; that step is no longer needed.)
+
 If you review the code in [datafusion-ffi] you will find that each of the traits we share
-across the boundary has two portions, one with a `FFI_` prefix and one with a `Foreign`
-prefix. This is used to distinguish which side of the FFI boundary that struct is
-designed to be used on. The structures with the `FFI_` prefix are to be used on the
-**provider** of the structure. In the example we're showing, this means the code that has
-written the underlying `TableProvider` implementation to access your custom data source.
-The structures with the `Foreign` prefix are to be used by the receiver. In this case,
-it is the `datafusion-python` library.
+across the boundary has a struct prefixed with `FFI_`. This is the struct that lives on
+the **provider** side of the FFI boundary — the code that has written the underlying
+`TableProvider` implementation to access your custom data source. The receiver
+(`datafusion-python`, in our case) consumes the `FFI_` struct through the FFI trait
+implementations supplied by `datafusion-ffi`.
 
 In order to share these FFI structures, we need to wrap them in some kind of Python object
 that can be used to interface from one package to another. As described in the above
@@ -204,19 +217,20 @@ section on our inspiration from Arrow, we use `PyCapsule`. We can create a `PyCa
 for our provider thusly:
 
 ```rust
-let name = CString::new("datafusion_table_provider")?;
-let my_capsule = PyCapsule::new_bound(py, provider, Some(name))?;
+let name = cr"datafusion_table_provider".into();
+let my_capsule = PyCapsule::new(py, provider, Some(name))?;
 ```
 
-On the receiving side, turn this pycapsule object into the `FFI_TableProvider`, which
-can then be turned into a `ForeignTableProvider` the associated code is:
+On the receiving side, turn this pycapsule object into the `FFI_TableProvider`, then
+convert directly to an `Arc<dyn TableProvider>`:
 
 ```rust
 let capsule = capsule.cast::<PyCapsule>()?;
 let data: NonNull<FFI_TableProvider> = capsule
-    .pointer_checked(Some(name))?
+    .pointer_checked(Some(c"datafusion_table_provider"))?
     .cast();
-let codec = unsafe { data.as_ref() };
+let ffi_provider = unsafe { data.as_ref() };
+let provider: Arc<dyn TableProvider> = ffi_provider.into();
 ```
 
 By convention the `datafusion-python` library expects a Python object that has a

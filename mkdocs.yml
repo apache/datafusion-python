@@ -137,7 +137,7 @@ nav:
           - Functions: user-guide/common-operations/functions.ipynb
           - Aggregations: user-guide/common-operations/aggregations.ipynb
           - Windows: user-guide/common-operations/windows.ipynb
-          - UDF and UDAF: user-guide/common-operations/udf-and-udfa.ipynb
+          - User-Defined Functions: user-guide/common-operations/udf-and-udfa.ipynb
       - I/O:
           - user-guide/io/index.md
           - Arrow: user-guide/io/arrow.ipynb

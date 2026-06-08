@@ -29,7 +29,7 @@ In addition to submitting new PRs, we have a healthy tradition of community memb
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.
 
 Before opening a pull request that touches PyO3 bindings, please review the
-[PyO3 class mutability guidelines](ffi_pyclass_mutability) so you can flag missing
+[PyO3 class mutability guidelines](ffi.md#pyo3-class-mutability-guidelines) so you can flag missing
 `#[pyclass(frozen)]` annotations during development and review.
 
 ## How to develop
@@ -64,7 +64,7 @@ Whenever rust code changes (your changes or via `git pull`):
 
 ```shell
 # make sure you activate the venv using "source .venv/bin/activate" first
-maturin develop -uv
+maturin develop --uv
 python -m pytest
 ```
 
