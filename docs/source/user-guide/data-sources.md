@@ -24,8 +24,8 @@ DataFusion provides a wide variety of ways to get data into a DataFrame to perfo
 
 ## Local file
 
-DataFusion has the ability to read from a variety of popular file formats, such as [Parquet](../io/parquet/),
-[CSV](../io/csv/), [JSON](../io/json/), and [AVRO](../io/avro/).
+DataFusion has the ability to read from a variety of popular file formats, such as [Parquet](io/parquet.md),
+[CSV](io/csv.md), [JSON](io/json.md), and [AVRO](io/avro.md).
 
 ```python exec="1" source="material-block" result="text" session="data-sources"
 ctx = SessionContext()
@@ -208,7 +208,7 @@ Features that are available in PyIceberg but not yet in Iceberg Rust will not be
 ## Custom Table Provider
 
 You can implement a custom Data Provider in Rust and expose it to DataFusion through the
-the interface as describe in the [Custom Table Provider](../io/table_provider/)
+the interface as describe in the [Custom Table Provider](io/table_provider.md)
 section. This is an advanced topic, but a
 [user example](https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example)
 is provided in the DataFusion repository.

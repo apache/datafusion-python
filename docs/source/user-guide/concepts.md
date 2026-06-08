@@ -76,7 +76,7 @@ For more details on working with DataFrames, including visualization options and
 
 ## Expressions
 
-The third statement uses [Expressions](../common-operations/expressions/) to build up a query definition. You can find
+The third statement uses [Expressions](common-operations/expressions.md) to build up a query definition. You can find
 explanations for what the functions below do in the user documentation for
 [`col`][datafusion.col.col], [`lit`][datafusion.lit], [`round`][datafusion.functions.round],
 and [`alias`][datafusion.expr.Expr.alias].

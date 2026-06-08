@@ -115,7 +115,7 @@ object. Those objects will be cast into a
 [PyArrow Scalar Value](https://arrow.apache.org/docs/python/generated/pyarrow.Scalar.html).
 
 Using `param_values` will rely on the SQL dialect you have configured
-for your session. This can be set using the [configuration options](../configuration/)
+for your session. This can be set using the [configuration options](configuration.md)
 of your [`SessionContext`][datafusion.context.SessionContext]. Similar to how
 [prepared statements](https://datafusion.apache.org/user-guide/sql/prepared_statements.html)
 work, these parameters are limited to places where you would pass in a

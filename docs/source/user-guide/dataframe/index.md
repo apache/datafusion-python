@@ -77,7 +77,7 @@ DataFrames can be created in several ways:
   ```
 
 For detailed information about reading from different data sources, see the [I/O Guide](../io/index.md).
-For custom data sources, see [io_custom_table_provider](../../io/table_provider/).
+For custom data sources, see [io_custom_table_provider](../../user-guide/io/table_provider.md).
 
 ## Common DataFrame Operations
 

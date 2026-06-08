@@ -91,7 +91,7 @@ let codec = unsafe { data.as_ref() };
 
 ## DataFusion 52.0.0
 
-This version includes a major update to the [ffi](ffi) due to upgrades
+This version includes a major update to the [ffi](../contributor-guide/ffi.md) due to upgrades
 to the [Foreign Function Interface](https://doc.rust-lang.org/nomicon/ffi.html).
 Users who contribute their own `CatalogProvider`, `SchemaProvider`,
 `TableProvider` or `TableFunction` via FFI must now provide access to a

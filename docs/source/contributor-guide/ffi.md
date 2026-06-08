@@ -28,9 +28,9 @@ when doing these integrations and the approach our project uses.
 ## The Primary Issue
 
 Suppose you wish to use DataFusion and you have a custom data source that can produce tables that
-can then be queried against, similar to how you can register a [CSV](../../user-guide/io/csv/) or
-[Parquet](../../user-guide/io/parquet/) file. In DataFusion terminology, you likely want to implement a
-[Custom Table Provider](../../user-guide/io/table_provider/). In an effort to make your data source
+can then be queried against, similar to how you can register a [CSV](../user-guide/io/csv.md) or
+[Parquet](../user-guide/io/parquet.md) file. In DataFusion terminology, you likely want to implement a
+[Custom Table Provider](../user-guide/io/table_provider.md). In an effort to make your data source
 as performant as possible and to utilize the features of DataFusion, you may decide to write
 your source in Rust and then expose it through [PyO3](https://pyo3.rs) as a Python library.
 

@@ -65,7 +65,7 @@ print(df.select(
 ### Partitions
 
 A window function can take a list of `partition_by` columns similar to an
-[Aggregation Function](../aggregations/). This will cause the window values to be evaluated
+[Aggregation Function](aggregations.md). This will cause the window values to be evaluated
 independently for each of the partitions. In the example above, we found the rank of each
 Pokemon per `Type 1` partitions. We can see the first couple of each partition if we do
 the following:
@@ -166,7 +166,7 @@ print(df.filter(col('"Type 1"') == lit("Bug")).select(
 
 ## Aggregate Functions
 
-You can use any [Aggregation Function](../aggregations/) as a window function. Here
+You can use any [Aggregation Function](aggregations.md) as a window function. Here
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its `"Type 1"` using the [`avg`][datafusion.functions.avg] function.
 
@@ -202,7 +202,7 @@ The possible window functions are:
      - [`lag`][datafusion.functions.lag]
      - [`lead`][datafusion.functions.lead]
 3. Aggregate Functions
-   : - All [Aggregation Functions](../aggregations/) can be used as window functions.
+   : - All [Aggregation Functions](aggregations.md) can be used as window functions.
 
 ## User-Defined Window Functions
 
