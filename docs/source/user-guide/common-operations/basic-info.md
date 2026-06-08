@@ -40,7 +40,7 @@ print(df)
 Use [`limit`][datafusion.dataframe.DataFrame.limit] to view the top rows of the frame:
 
 ```python exec="1" source="material-block" result="text" session="basic-info"
-print(df.limit(2))
+df.limit(2).show()
 ```
 
 
@@ -62,5 +62,5 @@ print(df.to_pandas())
 [`describe`][datafusion.dataframe.DataFrame.describe] shows a quick statistic summary of your data:
 
 ```python exec="1" source="material-block" result="text" session="basic-info"
-print(df.describe())
+df.describe().show()
 ```

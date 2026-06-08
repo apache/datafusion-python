@@ -28,7 +28,7 @@ which you can download [here](https://d37ci6vzurychx.cloudfront.net/trip-data/ye
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
 ctx = SessionContext()
 df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
-print(df.select("trip_distance", "passenger_count"))
+df.select("trip_distance", "passenger_count").show()
 ```
 
 
@@ -36,7 +36,7 @@ For mathematical or logical operations use [`col`][datafusion.col.col] to select
 operations using [`alias`][datafusion.expr.Expr.alias]
 
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
-print(df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls")))
+df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls")).show()
 ```
 
 
@@ -52,7 +52,7 @@ column selection use [`select`][datafusion.dataframe.DataFrame.select] without d
 For selecting columns with capital letters use `'"VendorID"'`
 
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
-print(df.select(col('"VendorID"')))
+df.select(col('"VendorID"')).show()
 ```
 
 
@@ -61,5 +61,5 @@ To combine it with literal values use the [`lit`][datafusion.lit]
 ```python exec="1" source="material-block" result="text" session="select-and-filter"
 large_trip_distance = col("trip_distance") > lit(5.0)
 low_passenger_count = col("passenger_count") < lit(4)
-print(df.select((large_trip_distance & low_passenger_count).alias("lonely_trips")))
+df.select((large_trip_distance & low_passenger_count).alias("lonely_trips")).show()
 ```

@@ -28,7 +28,7 @@ The window functions are available in the [`functions`][datafusion.functions] mo
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
-```python exec="1" source="material-block" result="text" session="windows"
+```python exec="1" source="material-block" session="windows"
 ctx = SessionContext()
 df = ctx.read_csv("pokemon.csv")
 ```
@@ -38,7 +38,7 @@ Here is an example that shows how you can compare each pokemon's speed to the sp
 previous row in the DataFrame.
 
 ```python exec="1" source="material-block" result="text" session="windows"
-print(df.select(col('"Name"'), col('"Speed"'), f.lag(col('"Speed"')).alias("Previous Speed")))
+df.select(col('"Name"'), col('"Speed"'), f.lag(col('"Speed"')).alias("Previous Speed")).show()
 ```
 
 
@@ -50,7 +50,7 @@ You can control the order in which rows are processed by window functions by pro
 a list of `order_by` functions for the `order_by` parameter.
 
 ```python exec="1" source="material-block" result="text" session="windows"
-print(df.select(
+df.select(
     col('"Name"'),
     col('"Attack"'),
     col('"Type 1"'),
@@ -58,7 +58,7 @@ print(df.select(
         partition_by=[col('"Type 1"')],
         order_by=[col('"Attack"').sort(ascending=True)],
     ).alias("rank"),
-).sort(col('"Type 1"'), col('"Attack"')))
+).sort(col('"Type 1"'), col('"Attack"')).show()
 ```
 
 
@@ -71,7 +71,7 @@ Pokemon per `Type 1` partitions. We can see the first couple of each partition i
 the following:
 
 ```python exec="1" source="material-block" result="text" session="windows"
-print(df.select(
+df.select(
     col('"Name"'),
     col('"Attack"'),
     col('"Type 1"'),
@@ -79,7 +79,7 @@ print(df.select(
         partition_by=[col('"Type 1"')],
         order_by=[col('"Attack"').sort(ascending=True)],
     ).alias("rank"),
-).filter(col("rank") < lit(3)).sort(col('"Type 1"'), col("rank")))
+).filter(col("rank") < lit(3)).sort(col('"Type 1"'), col("rank")).show()
 ```
 
 
@@ -112,13 +112,13 @@ two preceding rows.
 ```python exec="1" source="material-block" result="text" session="windows"
 from datafusion.expr import Window, WindowFrame
 
-print(df.select(
+df.select(
     col('"Name"'),
     col('"Speed"'),
     f.avg(col('"Speed"'))
     .over(Window(window_frame=WindowFrame("rows", 2, 0), order_by=[col('"Speed"')]))
     .alias("Previous Speed"),
-))
+).show()
 ```
 
 
@@ -139,7 +139,7 @@ it's `Type 2` column that are null.
 ```python exec="1" source="material-block" result="text" session="windows"
 from datafusion.common import NullTreatment
 
-print(df.filter(col('"Type 1"') == lit("Bug")).select(
+df.filter(col('"Type 1"') == lit("Bug")).select(
     '"Name"',
     '"Type 2"',
     f.last_value(col('"Type 2"'))
@@ -160,7 +160,7 @@ print(df.filter(col('"Type 1"') == lit("Bug")).select(
         )
     )
     .alias("last_with_null"),
-))
+).show()
 ```
 
 
@@ -171,7 +171,7 @@ is an example that shows how to compare each pokemons’s attack power with the 
 power in its `"Type 1"` using the [`avg`][datafusion.functions.avg] function.
 
 ```python exec="1" source="material-block" result="text" session="windows"
-print(df.select(
+df.select(
     col('"Name"'),
     col('"Attack"'),
     col('"Type 1"'),
@@ -183,7 +183,7 @@ print(df.select(
         )
     )
     .alias("Average Attack"),
-))
+).show()
 ```
 
 

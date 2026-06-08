@@ -131,7 +131,7 @@ ways: first with a native expression, then with a UDF that computes the
 same result. The filter itself is simple on purpose so we can compare
 the plans side by side.
 
-```python exec="1" source="material-block" result="text" session="udf-and-udfa"
+```python exec="1" source="material-block" session="udf-and-udfa"
 import os
 import tempfile
 

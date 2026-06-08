@@ -30,7 +30,7 @@ DataFusion supports the following join variants via the method [`join`][datafusi
 
 For the examples in this section we'll use the following two DataFrames
 
-```python exec="1" source="material-block" result="text" session="joins"
+```python exec="1" source="material-block" session="joins"
 ctx = SessionContext()
 
 left = ctx.from_pydict(

@@ -52,6 +52,13 @@
   display: none !important;
 }
 
+/* markdown-exec emits an empty `<div class="result">` for executable
+ * code blocks that produce no stdout. Hide them so pages don't show
+ * distracting empty boxes after assignment-only examples. */
+.result:empty {
+  display: none;
+}
+
 /* Notebook code output (e.g. `df.show()` ASCII tables) often exceeds
  * the content width. Force a non-wrapping pre with horizontal scroll
  * so wide tables stay legible instead of wrapping mid-row.

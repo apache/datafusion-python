@@ -24,7 +24,7 @@ In here we will cover some of the more popular use cases. If you want to view al
 
 We'll use the pokemon dataset in the following examples.
 
-```python exec="1" source="material-block" result="text" session="functions"
+```python exec="1" source="material-block" session="functions"
 ctx = SessionContext()
 ctx.register_csv("pokemon", "pokemon.csv")
 df = ctx.table("pokemon")
@@ -38,9 +38,9 @@ DataFusion offers mathematical functions such as [`pow`][datafusion.functions.po
 ```python exec="1" source="material-block" result="text" session="functions"
 from datafusion import str_lit, string_literal
 
-print(df.select(
+df.select(
     f.pow(col('"Attack"'), literal(2)) - f.pow(col('"Defense"'), literal(2))
-).limit(10))
+).limit(10).show()
 ```
 
 
@@ -49,7 +49,7 @@ print(df.select(
 There 3 conditional functions in DataFusion [`coalesce`][datafusion.functions.coalesce], [`nullif`][datafusion.functions.nullif] and [`case`][datafusion.functions.case].
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")).limit(10))
+df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")).limit(10).show()
 ```
 
 
@@ -58,24 +58,24 @@ print(df.select(f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_typ
 For selecting the current time use [`now`][datafusion.functions.now]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(f.now()))
+df.select(f.now()).show()
 ```
 
 
 Convert to timestamps using [`to_timestamp`][datafusion.functions.to_timestamp]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(f.to_timestamp(col('"Total"')).alias("timestamp")))
+df.select(f.to_timestamp(col('"Total"')).alias("timestamp")).show()
 ```
 
 
 Extracting parts of a date using [`date_part`][datafusion.functions.date_part] (alias [`extract`][datafusion.functions.extract])
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(
+df.select(
     f.date_part(literal("month"), f.to_timestamp(col('"Total"'))).alias("month"),
     f.extract(literal("day"), f.to_timestamp(col('"Total"'))).alias("day"),
-))
+).show()
 ```
 
 
@@ -85,21 +85,21 @@ In the field of data science, working with textual data is a common task. To mak
 DataFusion offers a range of helpful options.
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(
+df.select(
     f.char_length(col('"Name"')).alias("len"),
     f.lower(col('"Name"')).alias("lower"),
     f.left(col('"Name"'), literal(4)).alias("code"),
-))
+).show()
 ```
 
 
 This also includes the functions for regular expressions like [`regexp_replace`][datafusion.functions.regexp_replace] and [`regexp_match`][datafusion.functions.regexp_match]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(
+df.select(
     f.regexp_match(col('"Name"'), literal("Char")).alias("dragons"),
     f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers"),
-))
+).show()
 ```
 
 
@@ -108,10 +108,10 @@ print(df.select(
 Casting expressions to different data types using [`arrow_cast`][datafusion.functions.arrow_cast]
 
 ```python exec="1" source="material-block" result="text" session="functions"
-print(df.select(
+df.select(
     f.arrow_cast(col('"Total"'), string_literal("Float64")).alias("total_as_float"),
     f.arrow_cast(col('"Total"'), str_lit("Int32")).alias("total_as_int"),
-))
+).show()
 ```
 
 
