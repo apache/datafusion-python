@@ -18,7 +18,7 @@
 """Driver- and worker-side setup for distributing DataFusion expressions.
 
 When a [`Expr`][datafusion.expr.Expr] is shipped to a worker process (e.g. through
-[`Pool`][multiprocessing.Pool] or a Ray actor), the worker reconstructs the
+`Pool` or a Ray actor), the worker reconstructs the
 expression against a `SessionContext`. If the expression references
 UDFs imported via the FFI capsule protocol — or any UDF the worker would
 otherwise resolve from its registered functions rather than from inside
@@ -42,7 +42,7 @@ on the worker.
 .. note:: Serialization model
 
    Expressions containing Python UDFs (scalar, aggregate, window) are
-   serialized using [`cloudpickle`][cloudpickle]. The callable itself travels
+   serialized using `cloudpickle`. The callable itself travels
    **by value** (bytecode and closure cells inlined), but any names the
    callable resolves via ``import`` are captured **by reference** and
    must be importable on the receiving worker.
@@ -51,10 +51,11 @@ on the worker.
    ``(major, minor)`` version. Loading on a different minor version
    raises [`ValueError`][ValueError] with an actionable message — cloudpickle
    payloads are not portable across Python minor versions. See
-   [`to_bytes`][datafusion.Expr.to_bytes] for examples of what travels by
+   [`to_bytes`][datafusion.expr.Expr.to_bytes] for examples of what travels by
    value vs. by reference.
 
-On the driver side, call [`set_sender_ctx`][set_sender_ctx] to control how
+On the driver side, call
+[`set_sender_ctx`][datafusion.ipc.set_sender_ctx] to control how
 [`dumps`][pickle.dumps] encodes expressions — for example, to apply
 `with_python_udf_inlining` to every pickled
 expression on this thread:
@@ -77,12 +78,13 @@ encoding; explicit ``expr.to_bytes(ctx)`` calls still use the supplied
 ``ctx``.
 
 The thread-local sender context holds a strong reference to the
-installed `SessionContext` until [`clear_sender_ctx`][clear_sender_ctx] is
-called or the thread exits. Long-running driver threads that install a sender
-context once and never clear it will retain that session for the
-lifetime of the thread; pair [`set_sender_ctx`][set_sender_ctx] with
-[`clear_sender_ctx`][clear_sender_ctx] (e.g. in a ``try``/``finally``) when the
-sender context is only needed for a bounded scope.
+installed `SessionContext` until
+[`clear_sender_ctx`][datafusion.ipc.clear_sender_ctx] is called or the thread
+exits. Long-running driver threads that install a sender context once and never
+clear it will retain that session for the lifetime of the thread; pair
+[`set_sender_ctx`][datafusion.ipc.set_sender_ctx] with
+[`clear_sender_ctx`][datafusion.ipc.clear_sender_ctx] (e.g. in a
+``try``/``finally``) when the sender context is only needed for a bounded scope.
 """
 
 from __future__ import annotations

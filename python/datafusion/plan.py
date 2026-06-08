@@ -235,8 +235,9 @@ class ExecutionPlan:
         Each entry in the returned list corresponds to one operator that
         recorded metrics. The first element of the tuple is the operator's
         description string — the same text shown by
-        [`display_indent`][display_indent] — which identifies both the operator type
-        and its key parameters, for example ``"FilterExec: column1@0 > 1"``
+        [`display_indent`][datafusion.plan.ExecutionPlan.display_indent] — which
+        identifies both the operator type and its key parameters, for example
+        ``"FilterExec: column1@0 > 1"``
         or ``"DataSourceExec: partitions=1"``.
 
         Returns:
@@ -263,10 +264,11 @@ class MetricsSet:
     """A set of metrics for a single execution plan operator.
 
     A physical plan operator runs independently across one or more partitions.
-    [`metrics`][metrics] returns the raw per-partition `Metric` objects.
-    The convenience properties (`output_rows`, [`elapsed_compute`][elapsed_compute],
-    etc.) automatically sum the named metric across *all* partitions, giving a
-    single aggregate value for the operator as a whole.
+    [`metrics`][datafusion.plan.MetricsSet.metrics] returns the raw per-partition
+    `Metric` objects. The convenience properties (`output_rows`,
+    [`elapsed_compute`][datafusion.plan.MetricsSet.elapsed_compute], etc.)
+    automatically sum the named metric across *all* partitions, giving a single
+    aggregate value for the operator as a whole.
     """
 
     def __init__(self, raw: df_internal.MetricsSet) -> None:

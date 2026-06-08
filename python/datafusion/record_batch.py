@@ -32,6 +32,9 @@ if TYPE_CHECKING:
     import datafusion._internal as df_internal
 
 
+__all__ = ["RecordBatch", "RecordBatchStream"]
+
+
 class RecordBatch:
     """This class is essentially a wrapper for [`RecordBatch`][pyarrow.RecordBatch]."""
 
@@ -79,7 +82,12 @@ class RecordBatchStream:
         self.rbs = record_batch_stream
 
     def next(self) -> RecordBatch:
-        """See [`__next__`][__next__] for the iterator function."""
+        """Return the next batch.
+
+        See
+        [`__next__`][datafusion.record_batch.RecordBatchStream.__next__] for the
+        iterator function.
+        """
         return next(self)
 
     async def __anext__(self) -> RecordBatch:

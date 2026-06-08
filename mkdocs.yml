@@ -68,6 +68,10 @@ plugins:
             - https://docs.pola.rs/api/python/stable/objects.inv
           options:
             docstring_style: google
+            docstring_options:
+              warn_unknown_params: false
+              returns_named_value: false
+              returns_multiple_items: false
             show_source: false
             members_order: source
             inherited_members: true

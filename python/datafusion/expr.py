@@ -1126,7 +1126,7 @@ class Expr:  # noqa: PLW1641
     def list_distinct(self) -> Expr:
         """Returns distinct values from the array after removing duplicates.
 
-        This is an alias for [`array_distinct`][array_distinct].
+        This is an alias for [`array_distinct`][datafusion.functions.array_distinct].
         """
         from . import functions as F
 
@@ -1309,7 +1309,7 @@ class Expr:  # noqa: PLW1641
     def list_dims(self) -> Expr:
         """Returns an array of the array's dimensions.
 
-        This is an alias for [`array_dims`][array_dims].
+        This is an alias for [`array_dims`][datafusion.functions.array_dims].
         """
         from . import functions as F
 
@@ -1348,7 +1348,7 @@ class Expr:  # noqa: PLW1641
     def list_length(self) -> Expr:
         """Returns the length of the array.
 
-        This is an alias for [`array_length`][array_length].
+        This is an alias for [`array_length`][datafusion.functions.array_length].
         """
         from . import functions as F
 
@@ -1405,7 +1405,7 @@ class Expr:  # noqa: PLW1641
     def list_ndims(self) -> Expr:
         """Returns the number of dimensions of the array.
 
-        This is an alias for [`array_ndims`][array_ndims].
+        This is an alias for [`array_ndims`][datafusion.functions.array_ndims].
         """
         from . import functions as F
 
@@ -1430,7 +1430,7 @@ class Expr:  # noqa: PLW1641
         return F.sinh(self)
 
     def empty(self) -> Expr:
-        """This is an alias for [`array_empty`][array_empty]."""
+        """This is an alias for [`array_empty`][datafusion.functions.array_empty]."""
         from . import functions as F
 
         return F.empty(self)
@@ -1708,7 +1708,8 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            [`cube`][cube], [`grouping_sets`][grouping_sets],
+            [`cube`][datafusion.expr.GroupingSet.cube],
+            [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
             [`grouping`][datafusion.functions.grouping]
         """
         args = [_to_raw_expr(e) for e in exprs]
@@ -1730,7 +1731,7 @@ class GroupingSet:
 
         Examples:
             With a single column, ``cube`` behaves identically to
-            [`rollup`][rollup]:
+            [`rollup`][datafusion.expr.GroupingSet.rollup]:
 
             >>> from datafusion.expr import GroupingSet
             >>> ctx = dfn.SessionContext()
@@ -1744,7 +1745,8 @@ class GroupingSet:
             [30, 30, 60]
 
         See Also:
-            [`rollup`][rollup], [`grouping_sets`][grouping_sets],
+            [`rollup`][datafusion.expr.GroupingSet.rollup],
+            [`grouping_sets`][datafusion.expr.GroupingSet.grouping_sets],
             [`grouping`][datafusion.functions.grouping]
         """
         args = [_to_raw_expr(e) for e in exprs]
@@ -1787,7 +1789,8 @@ class GroupingSet:
             [3, 3, 4, 2]
 
         See Also:
-            [`rollup`][rollup], [`cube`][cube],
+            [`rollup`][datafusion.expr.GroupingSet.rollup],
+            [`cube`][datafusion.expr.GroupingSet.cube],
             [`grouping`][datafusion.functions.grouping]
         """
         raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]

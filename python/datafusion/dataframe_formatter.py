@@ -32,6 +32,19 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
+__all__ = [
+    "CellFormatter",
+    "DataFrameHtmlFormatter",
+    "DefaultStyleProvider",
+    "FormatterManager",
+    "StyleProvider",
+    "configure_formatter",
+    "get_formatter",
+    "reset_formatter",
+    "set_formatter",
+]
+
+
 def _validate_positive_int(value: Any, param_name: str) -> None:
     """Validate that a parameter is a positive integer.
 
@@ -218,12 +231,12 @@ class DataFrameHtmlFormatter:
         max_rows: Maximum number of rows to display in repr output
         repr_rows: Deprecated alias for max_rows
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
-          values
+            values
         custom_css: Additional CSS to include in the HTML output
         show_truncation_message: Whether to display a message when data is truncated
         style_provider: Custom provider for cell and header styles
         use_shared_styles: Whether to load styles and scripts only once per notebook
-          session
+            session
     """
 
     def __init__(
@@ -343,8 +356,9 @@ class DataFrameHtmlFormatter:
         """Get the maximum number of rows (deprecated name).
 
         .. deprecated::
-            Use [`max_rows`][max_rows] instead. This property is provided for
-            backward compatibility.
+            Use
+            [`max_rows`][datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows]
+            instead. This property is provided for backward compatibility.
 
         Returns:
             The maximum number of rows to display
@@ -356,8 +370,9 @@ class DataFrameHtmlFormatter:
         """Set the maximum number of rows using deprecated name.
 
         .. deprecated::
-            Use [`max_rows`][max_rows] setter instead. This property is provided for
-            backward compatibility.
+            Use the
+            [`max_rows`][datafusion.dataframe_formatter.DataFrameHtmlFormatter.max_rows]
+            setter instead. This property is provided for backward compatibility.
 
         Args:
             value: The maximum number of rows

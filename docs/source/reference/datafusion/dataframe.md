@@ -16,6 +16,8 @@
 
 ::: datafusion.dataframe.ExplainFormat
 
+::: datafusion.dataframe.Compression
+
 ## DataFrame Formatter
 
 See [DataFrame Formatter](dataframe_formatter.md) for the full formatter API

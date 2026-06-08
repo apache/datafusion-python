@@ -239,7 +239,7 @@ class TableProviderFactory(ABC):
 
     @abstractmethod
     def create(self, cmd: CreateExternalTable) -> Table:
-        """Create a table using the [`CreateExternalTable`][CreateExternalTable]."""
+        """Create a table using the `CreateExternalTable`."""
         ...
 
 

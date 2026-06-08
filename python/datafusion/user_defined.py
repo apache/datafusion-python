@@ -37,6 +37,26 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
 
+__all__ = [
+    "Accumulator",
+    "AggregateUDF",
+    "AggregateUDFExportable",
+    "LogicalExtensionCodecExportable",
+    "PhysicalExtensionCodecExportable",
+    "ScalarUDF",
+    "ScalarUDFExportable",
+    "TableFunction",
+    "Volatility",
+    "WindowEvaluator",
+    "WindowUDF",
+    "WindowUDFExportable",
+    "udaf",
+    "udf",
+    "udtf",
+    "udwf",
+]
+
+
 class Volatility(Enum):
     """Defines how stable or volatile a function is.
 
@@ -225,7 +245,7 @@ class ScalarUDF:
     def udf(func: ScalarUDFExportable) -> ScalarUDF: ...
 
     @staticmethod
-    def udf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udf(*args: Any, **kwargs: Any):
         """Create a new User-Defined Function (UDF).
 
         This class can be used both as either a function or a decorator.
@@ -240,22 +260,24 @@ class ScalarUDF:
         When you do so, it will be assumed that the nullability of the inputs and
         output are True and that they have no metadata.
 
-        Args:
-            func (Callable, optional): Only needed when calling as a function.
-                Skip this argument when using `udf` as a decorator. If you have a Rust
-                backed ScalarUDF within a PyCapsule, you can pass this parameter
-                and ignore the rest. They will be determined directly from the
-                underlying function. See the online documentation for more information.
-            input_fields (list[pa.Field | pa.DataType]): The data types or Fields
-                of the arguments to ``func``. This list must be of the same length
-                as the number of arguments.
-            return_field (_R): The field of the return value from the function.
-            volatility (Volatility | str): See `Volatility` for allowed values.
-            name (Optional[str]): A descriptive name for the function.
+        **Parameters:**
 
-        Returns:
-            A user-defined function that can be used in SQL expressions,
-            data aggregation, or window function calls.
+        - `func` (`Callable`, optional): Only needed when calling as a function.
+          Skip this argument when using ``udf`` as a decorator. If you have a Rust
+          backed ScalarUDF within a PyCapsule, you can pass this parameter
+          and ignore the rest. They will be determined directly from the
+          underlying function. See the online documentation for more information.
+        - `input_fields` (`list[pa.Field | pa.DataType]`): The data types or Fields
+          of the arguments to ``func``. This list must be of the same length
+          as the number of arguments.
+        - `return_field` (`pa.Field | pa.DataType`): The field of the return value
+          from the function.
+        - `volatility` (`Volatility | str`): See
+          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+        - `name` (`str`, optional): A descriptive name for the function.
+
+        **Returns:** a user-defined function that can be used in SQL expressions,
+        data aggregation, or window function calls.
 
         Examples:
             Using ``udf`` as a function:
@@ -530,7 +552,7 @@ class AggregateUDF:
     def udaf(accum: _PyCapsule) -> AggregateUDF: ...
 
     @staticmethod
-    def udaf(*args: Any, **kwargs: Any):  # noqa: D417, C901
+    def udaf(*args: Any, **kwargs: Any):  # noqa: C901
         """Create a new User-Defined Aggregate Function (UDAF).
 
         This class allows you to define an aggregate function that can be used in
@@ -607,22 +629,23 @@ class AggregateUDF:
             ...     "total")[0].as_py()
             16.0
 
-        Args:
-            accum: The accumulator python function. Only needed when calling as a
-                function. Skip this argument when using ``udaf`` as a decorator.
-                If you have a Rust backed AggregateUDF within a PyCapsule, you can
-                pass this parameter and ignore the rest. They will be determined
-                directly from the underlying function. See the online documentation
-                for more information.
-            input_types: The data types of the arguments to ``accum``.
-            return_type: The data type of the return value.
-            state_type: The data types of the intermediate accumulation.
-            volatility: See [`Volatility`][Volatility] for allowed values.
-            name: A descriptive name for the function.
+        **Parameters:**
 
-        Returns:
-            A user-defined aggregate function, which can be used in either data
-            aggregation or window function calls.
+        - `accum`: The accumulator python function. Only needed when calling as a
+          function. Skip this argument when using ``udaf`` as a decorator.
+          If you have a Rust backed AggregateUDF within a PyCapsule, you can
+          pass this parameter and ignore the rest. They will be determined
+          directly from the underlying function. See the online documentation
+          for more information.
+        - `input_types`: The data types of the arguments to ``accum``.
+        - `return_type`: The data type of the return value.
+        - `state_type`: The data types of the intermediate accumulation.
+        - `volatility`: See
+          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+        - `name`: A descriptive name for the function.
+
+        **Returns:** a user-defined aggregate function, which can be used in either
+        data aggregation or window function calls.
         """  # noqa: E501 W505
 
         def _function(
@@ -748,7 +771,7 @@ class WindowEvaluator:
         etc)
 
         Args:
-            idx:: Current index
+            idx: Current index
             num_rows: Number of rows.
         """
         return (idx, idx + 1)
@@ -952,7 +975,7 @@ class WindowUDF:
     ) -> WindowUDF: ...
 
     @staticmethod
-    def udwf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udwf(*args: Any, **kwargs: Any):
         """Create a new User-Defined Window Function (UDWF).
 
         This class can be used both as either a function or a decorator.
@@ -1001,19 +1024,21 @@ class WindowUDF:
             >>> df.select(biased_numbers(col("a")).alias("result")).to_pydict()
             {'result': [10, 11, 12]}
 
-        Args:
-            func: Only needed when calling as a function. Skip this argument when
-                using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
-                within a PyCapsule, you can pass this parameter and ignore the rest.
-                They will be determined directly from the underlying function. See
-                the online documentation for more information.
-            input_types: The data types of the arguments.
-            return_type: The data type of the return value.
-            volatility: See [`Volatility`][Volatility] for allowed values.
-            name: A descriptive name for the function.
+        **Parameters:**
 
-        Returns:
-            A user-defined window function that can be used in window function calls.
+        - `func`: Only needed when calling as a function. Skip this argument when
+          using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
+          within a PyCapsule, you can pass this parameter and ignore the rest.
+          They will be determined directly from the underlying function. See
+          the online documentation for more information.
+        - `input_types`: The data types of the arguments.
+        - `return_type`: The data type of the return value.
+        - `volatility`: See
+          [`Volatility`][datafusion.user_defined.Volatility] for allowed values.
+        - `name`: A descriptive name for the function.
+
+        **Returns:** a user-defined window function that can be used in window
+        function calls.
         """
         if hasattr(args[0], "__datafusion_window_udf__"):
             return WindowUDF.from_pycapsule(args[0])

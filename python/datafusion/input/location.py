@@ -23,6 +23,8 @@ from typing import Any
 from datafusion.common import DataTypeMap, SqlTable
 from datafusion.input.base import BaseInputSource
 
+__all__ = ["LocationInputPlugin"]
+
 
 class LocationInputPlugin(BaseInputSource):
     """Input Plugin for everything.

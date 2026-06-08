@@ -208,7 +208,7 @@ The possible window functions are:
 
 You can ship custom window functions to the engine by subclassing
 [`WindowEvaluator`][datafusion.user_defined.WindowEvaluator] and registering it
-via [`udwf`][datafusion.user_defined.udwf]. See [`user_defined`](../../reference/user_defined.md)
+via [`udwf`][datafusion.user_defined.udwf]. See [`user_defined`](../../reference/datafusion/user_defined.md)
 for the evaluator interface and worked examples.
 
 <div class="admonition note">

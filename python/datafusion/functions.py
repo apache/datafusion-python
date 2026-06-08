@@ -3225,7 +3225,7 @@ def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
     See Also:
-        This is an alias for [`array_distinct`][array_distinct].
+        This is an alias for [`array_distinct`][datafusion.functions.array_distinct].
     """
     return array_distinct(array)
 
@@ -3234,7 +3234,7 @@ def list_dims(array: Expr) -> Expr:
     """Returns an array of the array's dimensions.
 
     See Also:
-        This is an alias for [`array_dims`][array_dims].
+        This is an alias for [`array_dims`][datafusion.functions.array_dims].
     """
     return array_dims(array)
 
@@ -3271,7 +3271,7 @@ def list_empty(array: Expr) -> Expr:
     """Returns a boolean indicating whether the array is empty.
 
     See Also:
-        This is an alias for [`array_empty`][array_empty].
+        This is an alias for [`array_empty`][datafusion.functions.array_empty].
     """
     return array_empty(array)
 
@@ -3320,7 +3320,7 @@ def list_length(array: Expr) -> Expr:
     """Returns the length of the array.
 
     See Also:
-        This is an alias for [`array_length`][array_length].
+        This is an alias for [`array_length`][datafusion.functions.array_length].
     """
     return array_length(array)
 
@@ -3529,7 +3529,7 @@ def list_ndims(array: Expr) -> Expr:
     """Returns the number of dimensions of the array.
 
     See Also:
-        This is an alias for [`array_ndims`][array_ndims].
+        This is an alias for [`array_ndims`][datafusion.functions.array_ndims].
     """
     return array_ndims(array)
 
@@ -3607,7 +3607,7 @@ def list_pop_back(array: Expr) -> Expr:
     """Returns the array without the last element.
 
     See Also:
-        This is an alias for [`array_pop_back`][array_pop_back].
+        This is an alias for [`array_pop_back`][datafusion.functions.array_pop_back].
     """
     return array_pop_back(array)
 
@@ -3616,7 +3616,7 @@ def list_pop_front(array: Expr) -> Expr:
     """Returns the array without the first element.
 
     See Also:
-        This is an alias for [`array_pop_front`][array_pop_front].
+        This is an alias for [`array_pop_front`][datafusion.functions.array_pop_front].
     """
     return array_pop_front(array)
 
@@ -4263,7 +4263,7 @@ def empty(array: Expr) -> Expr:
     """Returns true if the array is empty.
 
     See Also:
-        This is an alias for [`array_empty`][array_empty].
+        This is an alias for [`array_empty`][datafusion.functions.array_empty].
     """
     return array_empty(array)
 

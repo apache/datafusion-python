@@ -25,6 +25,8 @@ from typing import Any
 
 from datafusion.common import SqlTable
 
+__all__ = ["BaseInputSource"]
+
 
 class BaseInputSource(ABC):
     """Base Input Source class.

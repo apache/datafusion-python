@@ -102,6 +102,18 @@ if TYPE_CHECKING:
     )
 
 
+__all__ = [
+    "ArrowArrayExportable",
+    "ArrowStreamExportable",
+    "PhysicalOptimizerRuleExportable",
+    "RuntimeEnvBuilder",
+    "SQLOptions",
+    "SessionConfig",
+    "SessionContext",
+    "TableProviderExportable",
+]
+
+
 class ArrowStreamExportable(Protocol):
     """Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.
 
@@ -340,7 +352,7 @@ class SessionConfig:
 
         Args:
             extension: A custom configuration extension object. These are
-            shared from another DataFusion extension library.
+                shared from another DataFusion extension library.
 
         Returns:
             A new `SessionConfig` object with the updated setting.
@@ -597,7 +609,7 @@ class SessionContext:
 
         Args:
             schema: The data source schema.
-            store: The [`ObjectStore`][datafusion.object_store.ObjectStore] to register.
+            store: The [object store][datafusion.object_store] to register.
             host: URL for the host.
         """
         self.ctx.register_object_store(schema, store, host)
@@ -623,7 +635,7 @@ class SessionContext:
         """Register multiple files as a single table.
 
         Registers a [`Table`][datafusion.catalog.Table] that can assemble multiple
-        files from locations in an [`ObjectStore`][datafusion.object_store.ObjectStore]
+        files from locations in an [object store][datafusion.object_store]
         instance.
 
         Args:
@@ -921,7 +933,9 @@ class SessionContext:
     ) -> None:
         """Register a table provider.
 
-        Deprecated: use [`register_table`][register_table] instead.
+        Deprecated: use
+        [`register_table`][datafusion.context.SessionContext.register_table]
+        instead.
         """
         self.register_table(name, provider)
 
@@ -975,9 +989,11 @@ class SessionContext:
     def read_batch(self, batch: pa.RecordBatch) -> DataFrame:
         """Return a `DataFrame` reading a single batch.
 
-        Convenience wrapper around [`read_batches`][read_batches] for the single-batch
-        case. Unlike [`register_batch`][register_batch], this does not register the
-        batch as a named table; it returns an anonymous
+        Convenience wrapper around
+        [`read_batches`][datafusion.context.SessionContext.read_batches] for the
+        single-batch case. Unlike
+        [`register_batch`][datafusion.context.SessionContext.register_batch], this
+        does not register the batch as a named table; it returns an anonymous
         [`DataFrame`][datafusion.dataframe.DataFrame] directly.
 
         Args:
@@ -1326,8 +1342,9 @@ class SessionContext:
     def udf(self, name: str) -> ScalarUDF:
         """Look up a registered scalar UDF by name.
 
-        Returns the same ``ScalarUDF`` wrapper that [`register_udf`][register_udf]
-        accepts, so it can be invoked as an expression in the DataFrame API
+        Returns the same ``ScalarUDF`` wrapper that
+        [`register_udf`][datafusion.context.SessionContext.register_udf] accepts,
+        so it can be invoked as an expression in the DataFrame API
         or re-registered into a different `SessionContext`.
         Built-in scalar functions from the session's function registry are
         also looked up.
@@ -1372,8 +1389,9 @@ class SessionContext:
     def udaf(self, name: str) -> AggregateUDF:
         """Look up a registered aggregate UDF by name.
 
-        Returns the same ``AggregateUDF`` wrapper that [`register_udaf`][register_udaf]
-        accepts. Built-in aggregate functions such as ``sum`` or ``avg`` are
+        Returns the same ``AggregateUDF`` wrapper that
+        [`register_udaf`][datafusion.context.SessionContext.register_udaf] accepts.
+        Built-in aggregate functions such as ``sum`` or ``avg`` are
         also discoverable through this lookup. See `udf` for a worked
         late-binding example; the pattern is identical for aggregates.
 
@@ -1402,8 +1420,9 @@ class SessionContext:
     def udwf(self, name: str) -> WindowUDF:
         """Look up a registered window UDF by name.
 
-        Returns the same ``WindowUDF`` wrapper that [`register_udwf`][register_udwf]
-        accepts. Built-in window functions such as ``row_number`` or ``rank``
+        Returns the same ``WindowUDF`` wrapper that
+        [`register_udwf`][datafusion.context.SessionContext.register_udwf] accepts.
+        Built-in window functions such as ``row_number`` or ``rank``
         are also discoverable through this lookup. See `udf` for a
         worked late-binding example; the pattern is identical for window
         functions.
@@ -1618,13 +1637,13 @@ class SessionContext:
 
         The rule is imported via its ``__datafusion_physical_optimizer_rule__``
         PyCapsule, typically produced by a separate compiled extension. The
-        underlying [`SessionState`][SessionState] is rebuilt from its current state
+        underlying `SessionState` is rebuilt from its current state
         with the new rule appended, so previously registered tables, UDFs,
         and catalogs are preserved.
 
         Args:
-            rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                a [`PhysicalOptimizerRuleExportable`][PhysicalOptimizerRuleExportable].
+            rule: Object exposing ``__datafusion_physical_optimizer_rule__`` — a
+                [`PhysicalOptimizerRuleExportable`][datafusion.context.PhysicalOptimizerRuleExportable].
 
         Examples:
             >>> from datafusion import SessionContext
@@ -1782,7 +1801,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> DataFrame:
-        """Read a Parquet source into a [`Dataframe`][datafusion.dataframe.Dataframe].
+        """Read a Parquet source into a [`Dataframe`][datafusion.dataframe.DataFrame].
 
         Args:
             path: Path to the Parquet file.
@@ -1921,7 +1940,8 @@ class SessionContext:
         """Create an empty `DataFrame` with no columns or rows.
 
         See Also:
-            This is an alias for [`empty_table`][empty_table].
+            This is an alias for
+            [`empty_table`][datafusion.context.SessionContext.empty_table].
         """
         return self.empty_table()
 

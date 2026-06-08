@@ -1,5 +1,7 @@
 # User-Defined Functions
 
+::: datafusion.user_defined.Volatility
+
 ::: datafusion.user_defined.ScalarUDF
 
 ::: datafusion.user_defined.AggregateUDF
@@ -19,3 +21,13 @@
 ::: datafusion.user_defined.udwf
 
 ::: datafusion.user_defined.udtf
+
+::: datafusion.user_defined.ScalarUDFExportable
+
+::: datafusion.user_defined.AggregateUDFExportable
+
+::: datafusion.user_defined.WindowUDFExportable
+
+::: datafusion.user_defined.LogicalExtensionCodecExportable
+
+::: datafusion.user_defined.PhysicalExtensionCodecExportable

@@ -453,8 +453,8 @@ The available aggregate functions are:
 
 You can ship custom aggregations to the engine by subclassing
 [`Accumulator`][datafusion.user_defined.Accumulator] and registering it via
-[`udaf`][datafusion.user_defined.udaf]. See [`user_defined`][datafusion.user_defined] for
-the accumulator interface and worked examples.
+[`udaf`][datafusion.user_defined.udaf]. See [`user_defined`](../../reference/datafusion/user_defined.md)
+for the accumulator interface and worked examples.
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>

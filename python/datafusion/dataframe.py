@@ -88,6 +88,16 @@ if TYPE_CHECKING:
 
 from enum import Enum
 
+__all__ = [
+    "Compression",
+    "DataFrame",
+    "DataFrameWriteOptions",
+    "ExplainFormat",
+    "InsertOp",
+    "ParquetColumnOptions",
+    "ParquetWriterOptions",
+]
+
 
 class ExplainFormat(Enum):
     """Output format for explain plans.
@@ -867,7 +877,7 @@ class DataFrame:
 
         Note that any expression can be turned into a sort expression by
         calling its ``sort`` method. For ascending-only sorts, the shorter
-        [`sort_by`][sort_by] is usually more convenient.
+        [`sort_by`][datafusion.dataframe.DataFrame.sort_by] is usually more convenient.
 
         Args:
             exprs: Sort expressions or column names, applied in order.
@@ -907,7 +917,9 @@ class DataFrame:
         """Return a new `DataFrame` with a limited number of rows.
 
         Results are returned in unspecified order unless the DataFrame is
-        explicitly sorted first via [`sort`][sort] or [`sort_by`][sort_by].
+        explicitly sorted first via
+        [`sort`][datafusion.dataframe.DataFrame.sort] or
+        [`sort_by`][datafusion.dataframe.DataFrame.sort_by].
 
         Args:
             count: Number of rows to limit the DataFrame to.
@@ -1066,7 +1078,7 @@ class DataFrame:
         When non-key columns share the same name in both DataFrames, use
         `col` on each DataFrame **before** the join to
         obtain fully qualified column references that can disambiguate them.
-        See [`join_on`][join_on] for an example.
+        See [`join_on`][datafusion.dataframe.DataFrame.join_on] for an example.
 
         Args:
             right: Other DataFrame to join with.
@@ -1321,7 +1333,7 @@ class DataFrame:
         """Calculate the distinct union of two `DataFrame`.
 
         See Also:
-            [`union`][union]
+            [`union`][datafusion.dataframe.DataFrame.union]
         """
         return self.union(other, distinct=True)
 
@@ -1388,8 +1400,9 @@ class DataFrame:
     def union_by_name(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Union two `DataFrame` matching columns by name.
 
-        Unlike [`union`][union] which matches columns by position, this method
-        matches columns by their names, allowing DataFrames with different
+        Unlike [`union`][datafusion.dataframe.DataFrame.union] which matches
+        columns by position, this method matches columns by their names,
+        allowing DataFrames with different
         column orders to be combined.
 
         Args:
@@ -1460,7 +1473,8 @@ class DataFrame:
 
         This is a convenience method that sorts the DataFrame by the given
         expressions in ascending order with nulls last. For more control over
-        sort direction and null ordering, use [`sort`][sort] instead.
+        sort direction and null ordering, use
+        [`sort`][datafusion.dataframe.DataFrame.sort] instead.
 
         Args:
             exprs: Expressions or column names to sort by.
