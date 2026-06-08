@@ -24,11 +24,11 @@ with the DataFrame API or SQL, reading and writing data, and tuning execution.
 
 ## Contents
 
-- [Introduction](introduction.ipynb) — what DataFusion in Python is and
+- [Introduction](introduction.md) — what DataFusion in Python is and
   when to reach for it.
-- [Concepts](concepts.ipynb) — `SessionContext`, `DataFrame`, and
+- [Concepts](concepts.md) — `SessionContext`, `DataFrame`, and
   `Expr` at a glance.
-- [Data Sources](data-sources.ipynb) — reading Parquet / CSV / JSON /
+- [Data Sources](data-sources.md) — reading Parquet / CSV / JSON /
   Avro, in-memory DataFrames, object stores, Delta Lake, Iceberg,
   custom table providers, and catalogs.
 - [DataFrame](dataframe/index.md) — building queries with the DataFrame
@@ -41,7 +41,7 @@ with the DataFrame API or SQL, reading and writing data, and tuning execution.
 - [Distributing Work](distributing-work.md) — shipping expressions to
   worker processes via pickle / cloudpickle, FFI-capsule UDFs, and
   the sender/worker context model.
-- [SQL](sql.ipynb) — registering tables and running SQL queries.
+- [SQL](sql.md) — registering tables and running SQL queries.
 - [Upgrade Guides](upgrade-guides.md) — notes on cross-version
   migrations.
 - [AI Coding Assistants](ai-coding-assistants.md) — agent-facing

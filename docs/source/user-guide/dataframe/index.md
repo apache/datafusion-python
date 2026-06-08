@@ -302,7 +302,7 @@ streams = list(df.execute_stream_partitioned())
 await asyncio.gather(*(consume(s) for s in streams))
 ```
 
-See [../io/arrow](../io/arrow.ipynb) for additional details on the Arrow interface.
+See [../io/arrow](../io/arrow.md) for additional details on the Arrow interface.
 
 ## HTML Rendering
 

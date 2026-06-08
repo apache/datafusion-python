@@ -26,7 +26,7 @@ through Arrow-compatible Python objects.
 
 | Format | Reader | Notes |
 |---|---|---|
-| [Apache Arrow](arrow.ipynb) | [`SessionContext.read_arrow`][datafusion.context.SessionContext.read_arrow] | Single Arrow IPC file. |
+| [Apache Arrow](arrow.md) | [`SessionContext.read_arrow`][datafusion.context.SessionContext.read_arrow] | Single Arrow IPC file. |
 | [Avro](avro.md) | [`SessionContext.read_avro`][datafusion.context.SessionContext.read_avro] | Schema-on-read; requires the Avro feature in the wheel. |
 | [CSV](csv.md) | [`SessionContext.read_csv`][datafusion.context.SessionContext.read_csv] | Header inference, custom delimiters, gzip/bz2 compression. |
 | [JSON](json.md) | [`SessionContext.read_json`][datafusion.context.SessionContext.read_json] | Newline-delimited JSON; one record per line. |
@@ -40,6 +40,6 @@ through Arrow-compatible Python objects.
 
 ## See also
 
-- [Data Sources](../data-sources.ipynb) — concept overview, including
+- [Data Sources](../data-sources.md) — concept overview, including
   in-memory DataFrame creation from `pyarrow` / `pandas` / `polars` and
   object-store integration.

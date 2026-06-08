@@ -79,7 +79,7 @@ of code. Also, the DataFusion Python project uses the existing definitions from
 [Apache Arrow CStream Interface](https://arrow.apache.org/docs/format/CStreamInterface.html)
 to support importing **and** exporting tables. Any Python package that supports reading
 the Arrow C Stream interface can work with DataFusion Python out of the box! You can read
-more about working with Arrow sources in the [Data Sources](../user-guide/data-sources.ipynb)
+more about working with Arrow sources in the [Data Sources](../user-guide/data-sources.md)
 page.
 
 To learn more about the Foreign Function Interface in Rust, the

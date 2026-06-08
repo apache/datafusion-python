@@ -1,0 +1,305 @@
+```python exec="1" session="data-sources"
+import os
+import pathlib
+
+import datafusion  # noqa: F401
+from datafusion import (  # noqa: F401
+    SessionContext,
+    col,
+    column,
+    lit,
+    literal,
+)
+from datafusion import functions as f  # noqa: F401
+from datafusion.dataframe_formatter import configure_formatter
+
+# mkdocs runs from the repo root; the demo data lives at docs/source/.
+for candidate in ("docs/source", ".."):
+    p = pathlib.Path(candidate)
+    if (p / "pokemon.csv").exists():
+        os.chdir(p)
+        break
+
+configure_formatter(max_rows=10, show_truncation_message=False)
+```
+
+<!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+
+# Data Sources
+
+DataFusion provides a wide variety of ways to get data into a DataFrame to perform operations.
+
+## Local file
+
+DataFusion has the ability to read from a variety of popular file formats, such as [Parquet](../io/parquet/),
+[CSV](../io/csv/), [JSON](../io/json/), and [AVRO](../io/avro/).
+
+```python exec="1" source="material-block" result="text" session="data-sources"
+ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
+df.show()
+```
+
+
+## Create in-memory
+
+Sometimes it can be convenient to create a small DataFrame from a Python list or dictionary object.
+To do this in DataFusion, you can use one of the three functions
+[`from_pydict`][datafusion.context.SessionContext.from_pydict],
+[`from_pylist`][datafusion.context.SessionContext.from_pylist], or
+[`create_dataframe`][datafusion.context.SessionContext.create_dataframe].
+
+As their names suggest, [`from_pydict`][datafusion.context.SessionContext.from_pydict] and [`from_pylist`][datafusion.context.SessionContext.from_pylist] will create DataFrames from Python
+dictionary and list objects, respectively. [`create_dataframe`][datafusion.context.SessionContext.create_dataframe] assumes you will pass in a list
+of list of [PyArrow Record Batches](https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html).
+
+The following three examples all will create identical DataFrames:
+
+```python exec="1" source="material-block" result="text" session="data-sources"
+import pyarrow as pa
+
+ctx.from_pylist(
+    [
+        {"a": 1, "b": 10.0, "c": "alpha"},
+        {"a": 2, "b": 20.0, "c": "beta"},
+        {"a": 3, "b": 30.0, "c": "gamma"},
+    ]
+).show()
+
+ctx.from_pydict(
+    {
+        "a": [1, 2, 3],
+        "b": [10.0, 20.0, 30.0],
+        "c": ["alpha", "beta", "gamma"],
+    }
+).show()
+
+batch = pa.RecordBatch.from_arrays(
+    [
+        pa.array([1, 2, 3]),
+        pa.array([10.0, 20.0, 30.0]),
+        pa.array(["alpha", "beta", "gamma"]),
+    ],
+    names=["a", "b", "c"],
+)
+
+ctx.create_dataframe([[batch]]).show()
+```
+
+
+## Object Store
+
+DataFusion has support for multiple storage options in addition to local files.
+The example below requires an appropriate S3 account with access credentials.
+
+Supported Object Stores are
+
+- [`AmazonS3`][datafusion.object_store.AmazonS3]
+- [`GoogleCloud`][datafusion.object_store.GoogleCloud]
+- [`Http`][datafusion.object_store.Http]
+- [`LocalFileSystem`][datafusion.object_store.LocalFileSystem]
+- [`MicrosoftAzure`][datafusion.object_store.MicrosoftAzure]
+
+```python
+from datafusion.object_store import AmazonS3
+
+region = "us-east-1"
+bucket_name = "yellow-trips"
+
+s3 = AmazonS3(
+    bucket_name=bucket_name,
+    region=region,
+    access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+)
+
+path = f"s3://{bucket_name}/"
+ctx.register_object_store("s3://", s3, None)
+
+ctx.register_parquet("trips", path)
+
+ctx.table("trips").show()
+```
+
+## Other DataFrame Libraries
+
+DataFusion can import DataFrames directly from other libraries, such as
+[Polars](https://pola.rs/) and [Pandas](https://pandas.pydata.org/).
+Since DataFusion version 42.0.0, any DataFrame library that supports the Arrow FFI PyCapsule
+interface can be imported to DataFusion using the
+[`from_arrow`][datafusion.context.SessionContext.from_arrow] function. Older versions of Polars may
+not support the arrow interface. In those cases, you can still import via the
+[`from_polars`][datafusion.context.SessionContext.from_polars] function.
+
+```python
+import pandas as pd
+
+data = { "a": [1, 2, 3], "b": [10.0, 20.0, 30.0], "c": ["alpha", "beta", "gamma"] }
+pandas_df = pd.DataFrame(data)
+
+datafusion_df = ctx.from_arrow(pandas_df)
+datafusion_df.show()
+```
+
+```python
+import polars as pl
+polars_df = pl.DataFrame(data)
+
+datafusion_df = ctx.from_arrow(polars_df)
+datafusion_df.show()
+```
+
+## Delta Lake
+
+DataFusion 43.0.0 and later support the ability to register table providers from sources such
+as Delta Lake. This will require a recent version of
+[deltalake](https://delta-io.github.io/delta-rs/) to provide the required interfaces.
+
+```python
+from deltalake import DeltaTable
+
+delta_table = DeltaTable("path_to_table")
+ctx.register_table("my_delta_table", delta_table)
+df = ctx.table("my_delta_table")
+df.show()
+```
+
+On older versions of [`deltalake`](https://delta-io.github.io/delta-rs/) (prior to 0.22) you can use the
+[Arrow DataSet](https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html)
+interface to import to DataFusion, but this does not support features such as filter push down
+which can lead to a significant performance difference.
+
+```python
+from deltalake import DeltaTable
+
+delta_table = DeltaTable("path_to_table")
+ctx.register_dataset("my_delta_table", delta_table.to_pyarrow_dataset())
+df = ctx.table("my_delta_table")
+df.show()
+```
+
+## Apache Iceberg
+
+DataFusion 45.0.0 and later support the ability to register Apache Iceberg tables as table providers through the Custom Table Provider interface.
+
+This requires either the [pyiceberg](https://pypi.org/project/pyiceberg/) library (>=0.10.0) or the [pyiceberg-core](https://pypi.org/project/pyiceberg-core/) library (>=0.5.0).
+
+- The `pyiceberg-core` library exposes Iceberg Rust's implementation of the Custom Table Provider interface as python bindings.
+- The `pyiceberg` library utilizes the `pyiceberg-core` python bindings under the hood and provides a native way for Python users to interact with the DataFusion.
+
+```python
+from datafusion import SessionContext
+from pyiceberg.catalog import load_catalog
+import pyarrow as pa
+
+# Load catalog and create/load a table
+catalog = load_catalog("catalog", type="in-memory")
+catalog.create_namespace_if_not_exists("default")
+
+# Create some sample data
+data = pa.table({"x": [1, 2, 3], "y": [4, 5, 6]})
+iceberg_table = catalog.create_table("default.test", schema=data.schema)
+iceberg_table.append(data)
+
+# Register the table with DataFusion
+ctx = SessionContext()
+ctx.register_table_provider("test", iceberg_table)
+
+# Query the table using DataFusion
+ctx.table("test").show()
+```
+
+Note that the Datafusion integration rely on features from the [Iceberg Rust](https://github.com/apache/iceberg-rust/) implementation instead of the [PyIceberg](https://github.com/apache/iceberg-python/) implementation.
+Features that are available in PyIceberg but not yet in Iceberg Rust will not be available when using DataFusion.
+
+## Custom Table Provider
+
+You can implement a custom Data Provider in Rust and expose it to DataFusion through the
+the interface as describe in the [Custom Table Provider](../io/table_provider/)
+section. This is an advanced topic, but a
+[user example](https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example)
+is provided in the DataFusion repository.
+
+# Catalog
+
+A common technique for organizing tables is using a three level hierarchical approach. DataFusion
+supports this form of organizing using the [`Catalog`][datafusion.catalog.Catalog],
+[`Schema`][datafusion.catalog.Schema], and [`Table`][datafusion.catalog.Table]. By default,
+a [`SessionContext`][datafusion.context.SessionContext] comes with a single Catalog and a single Schema
+with the names `datafusion` and `public`, respectively.
+
+The default implementation uses an in-memory approach to the catalog and schema. We have support
+for adding additional in-memory catalogs and schemas. You can access tables registered in a schema
+either through the Dataframe API or via sql commands. This can be done like in the following
+example:
+
+```python
+import pyarrow as pa
+from datafusion.catalog import Catalog, Schema
+from datafusion import SessionContext
+
+ctx = SessionContext()
+
+my_catalog = Catalog.memory_catalog()
+my_schema  = Schema.memory_schema()
+my_catalog.register_schema('my_schema_name', my_schema)
+ctx.register_catalog_provider('my_catalog_name', my_catalog)
+
+# Create an in-memory table
+table = pa.table({
+    'name': ['Bulbasaur', 'Charmander', 'Squirtle'],
+    'type': ['Grass',    'Fire',       'Water'],
+    'hp':   [45,          39,           44],
+})
+df = ctx.create_dataframe([table.to_batches()], name='pokemon')
+
+my_schema.register_table('pokemon', df)
+
+ctx.sql('SELECT * FROM my_catalog_name.my_schema_name.pokemon').show()
+```
+
+## User Defined Catalog and Schema
+
+If the in-memory catalogs are insufficient for your uses, there are two approaches you can take
+to implementing a custom catalog and/or schema. In the below discussion, we describe how to
+implement these for a Catalog, but the approach to implementing for a Schema is nearly
+identical.
+
+DataFusion supports Catalogs written in either Rust or Python. If you write a Catalog in Rust,
+you will need to export it as a Python library via PyO3. There is a complete example of a
+catalog implemented this way in the
+[examples folder](https://github.com/apache/datafusion-python/tree/main/examples/)
+of our repository. Writing catalog providers in Rust provides typically can lead to significant
+performance improvements over the Python based approach.
+
+To implement a Catalog in Python, you will need to inherit from the abstract base class
+[`CatalogProvider`][datafusion.catalog.CatalogProvider]. There are examples in the
+[unit tests](https://github.com/apache/datafusion-python/tree/main/python/tests) of
+implementing a basic Catalog in Python where we simply keep a dictionary of the
+registered Schemas.
+
+One important note for developers is that when we have a Catalog defined in Python, we have
+two different ways of accessing this Catalog. First, we register the catalog with a Rust
+wrapper. This allows for any rust based code to call the Python functions as necessary.
+Second, if the user access the Catalog via the Python API, we identify this and return back
+the original Python object that implements the Catalog. This is an important distinction
+for developers because we do *not* return a Python wrapper around the Rust wrapper of the
+original Python object.

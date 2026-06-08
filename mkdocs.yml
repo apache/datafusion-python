@@ -55,15 +55,7 @@ extra_css:
 
 plugins:
   - search
-  - mkdocs-jupyter:
-      execute: true
-      allow_errors: false
-      include_source: false
-      ignore_h1_titles: true
-      remove_tag_config:
-        remove_cell_tags: ["remove-cell"]
-        remove_input_tags: ["remove-input"]
-        remove_all_outputs_tags: ["remove-output"]
+  - markdown-exec
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -113,34 +105,32 @@ markdown_extensions:
 watch:
   - python/datafusion
 
-hooks:
-  - docs/hooks.py
 
 nav:
-  - Home: index.ipynb
+  - Home: index.md
   - User Guide:
       - user-guide/index.md
-      - Introduction: user-guide/introduction.ipynb
-      - Concepts: user-guide/concepts.ipynb
-      - Data Sources: user-guide/data-sources.ipynb
+      - Introduction: user-guide/introduction.md
+      - Concepts: user-guide/concepts.md
+      - Data Sources: user-guide/data-sources.md
       - DataFrame:
           - user-guide/dataframe/index.md
           - Rendering: user-guide/dataframe/rendering.md
           - Execution Metrics: user-guide/dataframe/execution-metrics.md
       - Common Operations:
           - user-guide/common-operations/index.md
-          - Basic Info: user-guide/common-operations/basic-info.ipynb
+          - Basic Info: user-guide/common-operations/basic-info.md
           - Views: user-guide/common-operations/views.md
-          - Select and Filter: user-guide/common-operations/select-and-filter.ipynb
-          - Expressions: user-guide/common-operations/expressions.ipynb
-          - Joins: user-guide/common-operations/joins.ipynb
-          - Functions: user-guide/common-operations/functions.ipynb
-          - Aggregations: user-guide/common-operations/aggregations.ipynb
-          - Windows: user-guide/common-operations/windows.ipynb
-          - User-Defined Functions: user-guide/common-operations/udf-and-udfa.ipynb
+          - Select and Filter: user-guide/common-operations/select-and-filter.md
+          - Expressions: user-guide/common-operations/expressions.md
+          - Joins: user-guide/common-operations/joins.md
+          - Functions: user-guide/common-operations/functions.md
+          - Aggregations: user-guide/common-operations/aggregations.md
+          - Windows: user-guide/common-operations/windows.md
+          - User-Defined Functions: user-guide/common-operations/udf-and-udfa.md
       - I/O:
           - user-guide/io/index.md
-          - Arrow: user-guide/io/arrow.ipynb
+          - Arrow: user-guide/io/arrow.md
           - Avro: user-guide/io/avro.md
           - CSV: user-guide/io/csv.md
           - JSON: user-guide/io/json.md
@@ -148,7 +138,7 @@ nav:
           - Table Provider: user-guide/io/table_provider.md
       - Configuration: user-guide/configuration.md
       - Distributing Work: user-guide/distributing-work.md
-      - SQL: user-guide/sql.ipynb
+      - SQL: user-guide/sql.md
       - Upgrade Guides: user-guide/upgrade-guides.md
       - AI Coding Assistants: user-guide/ai-coding-assistants.md
   - Contributor Guide:

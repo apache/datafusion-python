@@ -23,19 +23,19 @@ The contents of this section are designed to guide a new user through how to use
 
 ## Contents
 
-- [Basic Info](basic-info.ipynb) — inspecting schema, row counts, and
+- [Basic Info](basic-info.md) — inspecting schema, row counts, and
   summary statistics.
 - [Views](views.md) — saving and reusing query fragments as views.
-- [Select and Filter](select-and-filter.ipynb) — projecting columns and
+- [Select and Filter](select-and-filter.md) — projecting columns and
   applying predicates.
-- [Expressions](expressions.ipynb) — `col`, `lit`, boolean operators,
+- [Expressions](expressions.md) — `col`, `lit`, boolean operators,
   array indexing, and chaining.
-- [Joins](joins.ipynb) — inner / outer / semi / anti joins.
-- [Functions](functions.ipynb) — scalar functions across math, string,
+- [Joins](joins.md) — inner / outer / semi / anti joins.
+- [Functions](functions.md) — scalar functions across math, string,
   date/time, and array families.
-- [Aggregations](aggregations.ipynb) — `group_by`, rollup, cube,
+- [Aggregations](aggregations.md) — `group_by`, rollup, cube,
   grouping sets.
-- [Windows](windows.ipynb) — partitioned and ranking window functions.
-- [User-Defined Functions](udf-and-udfa.ipynb) — scalar (UDF),
+- [Windows](windows.md) — partitioned and ranking window functions.
+- [User-Defined Functions](udf-and-udfa.md) — scalar (UDF),
   aggregate (UDAF), window (UDWF), and table (UDTF) user-defined
   functions.

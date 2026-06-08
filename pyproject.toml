@@ -226,12 +226,10 @@ dev = [
 # from sdist under free-threaded interpreters (PyO3 < 3.14 support).
 release = ["pygithub==2.5.0"]
 docs = [
-  "ipython>=8.12.3",
+  "markdown-exec[ansi]>=1.10",
   "mkdocs>=1.6,<2",
-  "mkdocs-jupyter>=0.25",
   "mkdocs-material>=9.5,<10",
   "mkdocs-redirects>=1.2",
   "mkdocstrings[python]>=0.27",
   "pandas>=2.0.3",
-  "pickleshare>=0.7.5",
 ]
