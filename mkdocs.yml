@@ -151,20 +151,23 @@ nav:
       - FFI: contributor-guide/ffi.md
   - API Reference:
       - reference/index.md
-      - SessionContext: reference/context.md
-      - DataFrame: reference/dataframe.md
-      - DataFrame Formatter: reference/formatter.md
-      - Expr: reference/expr.md
-      - Functions: reference/functions.md
-      - User-Defined Functions: reference/user_defined.md
-      - Catalog: reference/catalog.md
-      - I/O: reference/io.md
-      - IPC: reference/ipc.md
-      - Object Store: reference/object_store.md
-      - Options: reference/options.md
-      - Plan: reference/plan.md
-      - RecordBatch: reference/record_batch.md
-      - Substrait: reference/substrait.md
-      - Unparser: reference/unparser.md
-      - Common: reference/common.md
+      - datafusion:
+          - reference/datafusion/index.md
+          - catalog: reference/datafusion/catalog.md
+          - common: reference/datafusion/common.md
+          - context: reference/datafusion/context.md
+          - dataframe: reference/datafusion/dataframe.md
+          - dataframe_formatter: reference/datafusion/dataframe_formatter.md
+          - expr: reference/datafusion/expr.md
+          - functions: reference/datafusion/functions.md
+          - input: reference/datafusion/input.md
+          - io: reference/datafusion/io.md
+          - ipc: reference/datafusion/ipc.md
+          - object_store: reference/datafusion/object_store.md
+          - options: reference/datafusion/options.md
+          - plan: reference/datafusion/plan.md
+          - record_batch: reference/datafusion/record_batch.md
+          - substrait: reference/datafusion/substrait.md
+          - unparser: reference/datafusion/unparser.md
+          - user_defined: reference/datafusion/user_defined.md
   - Links: links.md

@@ -33,20 +33,18 @@ Core abstractions
   calls. Build with [`col`][datafusion.col.col] and [`lit`][datafusion.lit].
 - **functions** -- 290+ built-in scalar, aggregate, and window functions.
 
-Quick start
------------
-
->>> from datafusion import SessionContext, col
->>> from datafusion import functions as F
->>> ctx = SessionContext()
->>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
->>> result = (
-...     df.filter(col("a") > 1)
-...       .with_column("total", col("a") + col("b"))
-...       .aggregate([], [F.sum(col("total")).alias("grand_total")])
-... )
->>> result.to_pydict()
-{'grand_total': [16]}
+Examples:
+    >>> from datafusion import SessionContext, col
+    >>> from datafusion import functions as F
+    >>> ctx = SessionContext()
+    >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+    >>> result = (
+    ...     df.filter(col("a") > 1)
+    ...       .with_column("total", col("a") + col("b"))
+    ...       .aggregate([], [F.sum(col("total")).alias("grand_total")])
+    ... )
+    >>> result.to_pydict()
+    {'grand_total': [16]}
 
 User guide and full documentation: https://datafusion.apache.org/python
 

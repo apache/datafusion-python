@@ -20,7 +20,7 @@
 # DataFrame Rendering
 
 DataFusion provides configurable rendering for DataFrames in both plain text and HTML
-formats. The [`datafusion.dataframe_formatter`](../../reference/formatter.md) module controls how DataFrames are
+formats. The [`datafusion.dataframe_formatter`](../../reference/datafusion/dataframe_formatter.md) module controls how DataFrames are
 displayed in Jupyter notebooks (via `_repr_html_`), in the terminal (via `__repr__`),
 and anywhere else a string or HTML representation is needed.
 

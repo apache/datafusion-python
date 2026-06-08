@@ -17,8 +17,12 @@
   under the License.
 -->
 
-# API Reference
+# input
 
-The Python API of DataFusion is exported from the [`datafusion`](datafusion/index.md)
-package. See the package landing page for an overview and a list of submodules,
-or jump directly to any module from the navigation sidebar.
+::: datafusion.input
+    options:
+      members: false
+
+::: datafusion.input.base
+
+::: datafusion.input.location

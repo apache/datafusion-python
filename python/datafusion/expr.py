@@ -447,8 +447,9 @@ class Expr:  # noqa: PLW1641
         worker process for distributed evaluation.
 
         When ``ctx`` is supplied, encoding routes through that session's
-        installed [`LogicalExtensionCodec`][LogicalExtensionCodec] (so settings like
-        `with_python_udf_inlining` take effect).
+        installed logical extension codec (set via
+        [`with_logical_extension_codec`][datafusion.context.SessionContext.with_logical_extension_codec]),
+        so settings like `with_python_udf_inlining` take effect.
         When ``ctx`` is ``None``, the default codec is used (Python UDF
         inlining on, no user-installed extension codec).
 
