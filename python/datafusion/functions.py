@@ -67,7 +67,7 @@ def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
         f"Passing Expr for {function_name}() argument {arg_name!r} is deprecated; "
         "pass a Python literal instead.",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=4,
     )
 
 
