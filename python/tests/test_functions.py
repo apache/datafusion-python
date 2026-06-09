@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
+import warnings
 from datetime import date, datetime, time, timezone
 
 import numpy as np
@@ -1086,10 +1087,10 @@ def test_hash_functions(df):
 
 def test_temporal_functions(df):
     df = df.select(
-        f.date_part(literal("month"), column("d")),
-        f.datepart(literal("year"), column("d")),
-        f.date_trunc(literal("month"), column("d")),
-        f.datetrunc(literal("day"), column("d")),
+        f.date_part("month", column("d")),
+        f.datepart("year", column("d")),
+        f.date_trunc("month", column("d")),
+        f.datetrunc("day", column("d")),
         f.date_bin(
             literal("15 minutes").cast(pa.string()),
             column("d"),
@@ -1100,7 +1101,7 @@ def test_temporal_functions(df):
         f.to_timestamp_seconds(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_millis(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_micros(literal("2023-09-07 05:06:14.523952")),
-        f.extract(literal("day"), column("d")),
+        f.extract("day", column("d")),
         f.to_timestamp(
             literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
         ),
@@ -2160,15 +2161,50 @@ class TestPythonicNativeTypes:
         ctx = SessionContext()
         df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
         df = df.select(f.to_timestamp(column("a")).alias("a"))
-        result = df.select(f.date_part("year", column("a")).alias("y")).collect()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            result = df.select(f.date_part("year", column("a")).alias("y")).collect()
         assert result[0].column(0)[0].as_py() == 2021
+
+    @pytest.mark.parametrize(
+        ("func", "name"),
+        [
+            pytest.param(f.date_part, "date_part", id="date_part"),
+            pytest.param(f.datepart, "datepart", id="datepart"),
+            pytest.param(f.extract, "extract", id="extract"),
+        ],
+    )
+    def test_date_part_expr_part_warns_deprecated(self, func, name):
+        with pytest.warns(
+            DeprecationWarning,
+            match=rf"Passing Expr for {name}\(\) argument 'part' is deprecated",
+        ):
+            expr = func(literal("year"), column("a"))
+        assert expr is not None
 
     def test_date_trunc_native_str(self):
         ctx = SessionContext()
         df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
         df = df.select(f.to_timestamp(column("a")).alias("a"))
-        result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
         assert str(result[0].column(0)[0].as_py()) == "2021-07-01 00:00:00"
+
+    @pytest.mark.parametrize(
+        ("func", "name"),
+        [
+            pytest.param(f.date_trunc, "date_trunc", id="date_trunc"),
+            pytest.param(f.datetrunc, "datetrunc", id="datetrunc"),
+        ],
+    )
+    def test_date_trunc_expr_part_warns_deprecated(self, func, name):
+        with pytest.warns(
+            DeprecationWarning,
+            match=rf"Passing Expr for {name}\(\) argument 'part' is deprecated",
+        ):
+            expr = func(literal("month"), column("a"))
+        assert expr is not None
 
     def test_left_native_int(self):
         ctx = SessionContext()
