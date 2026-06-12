@@ -186,7 +186,7 @@ every start method — prefer it over relying on inherited state.
   state is captured at serialization time. Surprises are possible if
   the captured state is large, mutable, or not portable to the
   worker's environment. See [Portability requirements for inline
-  Python UDFs][portability requirements for inline python udfs] for the Python-version and imported-module rules.
+  Python UDFs](#portability-requirements-for-inline-python-udfs) for the Python-version and imported-module rules.
 
 ### Disabling Python UDF inlining
 
@@ -235,7 +235,7 @@ contexts.
 
 The toggle only narrows the {py:meth}`Expr.from_bytes` surface;
 {py:func}`pickle.loads` on untrusted bytes remains unsafe regardless
-of this setting. See the [Security] section below for the full
+of this setting. See the [Security](#security) section below for the full
 threat model.
 
 ### Security
