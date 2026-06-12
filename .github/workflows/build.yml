@@ -69,7 +69,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -159,7 +159,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -238,7 +238,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -307,7 +307,7 @@ jobs:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -389,7 +389,7 @@ jobs:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
 
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
@@ -518,7 +518,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
 
