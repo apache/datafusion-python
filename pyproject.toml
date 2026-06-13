@@ -216,7 +216,10 @@ release = ["pygithub==2.5.0"]
 docs = [
   "ipython>=8.12.3",
   "jinja2>=3.1.5",
-  "myst-parser>=3.0.1",
+  # myst-nb supersedes myst-parser: MyST markdown parsing plus executable
+  # `{code-cell}` notebook directives. Pulls myst-parser, ipykernel, and the
+  # jupyter execution stack transitively.
+  "myst-nb>=1.1",
   "pandas>=2.0.3",
   "pickleshare>=0.7.5",
   "pydata-sphinx-theme>=0.16,<0.17",

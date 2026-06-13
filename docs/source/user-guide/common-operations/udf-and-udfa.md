@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -34,27 +43,25 @@ output. DataFusion scalar UDFs operate on an entire batch of records at a time, 
 evaluation of those records should be on a row by row basis. In the following example, we compute
 if the input array contains null values.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+import pyarrow
+import datafusion
+from datafusion import udf, col
 
-    import pyarrow
-    import datafusion
-    from datafusion import udf, col
+def is_null(array: pyarrow.Array) -> pyarrow.Array:
+    return array.is_null()
 
-    def is_null(array: pyarrow.Array) -> pyarrow.Array:
-        return array.is_null()
+is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
 
-    is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
+ctx = datafusion.SessionContext()
 
-    ctx = datafusion.SessionContext()
+batch = pyarrow.RecordBatch.from_arrays(
+    [pyarrow.array([1, None, 3]), pyarrow.array([4, 5, 6])],
+    names=["a", "b"],
+)
+df = ctx.create_dataframe([[batch]], name="batch_array")
 
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, None, 3]), pyarrow.array([4, 5, 6])],
-        names=["a", "b"],
-    )
-    df = ctx.create_dataframe([[batch]], name="batch_array")
-
-    df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
+df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
 ```
 
 In the previous example, we used the fact that pyarrow provides a variety of built in array
@@ -71,27 +78,25 @@ python object can be one of the slowest operations in DataFusion, so it should b
 The following example performs the same operation as before with `is_null` but demonstrates
 converting to Python objects to do the evaluation.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+import pyarrow
+import datafusion
+from datafusion import udf, col
 
-    import pyarrow
-    import datafusion
-    from datafusion import udf, col
+def is_null(array: pyarrow.Array) -> pyarrow.Array:
+    return pyarrow.array([value.as_py() is None for value in array])
 
-    def is_null(array: pyarrow.Array) -> pyarrow.Array:
-        return pyarrow.array([value.as_py() is None for value in array])
+is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
 
-    is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
+ctx = datafusion.SessionContext()
 
-    ctx = datafusion.SessionContext()
+batch = pyarrow.RecordBatch.from_arrays(
+    [pyarrow.array([1, None, 3]), pyarrow.array([4, 5, 6])],
+    names=["a", "b"],
+)
+df = ctx.create_dataframe([[batch]], name="batch_array")
 
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, None, 3]), pyarrow.array([4, 5, 6])],
-        names=["a", "b"],
-    )
-    df = ctx.create_dataframe([[batch]], name="batch_array")
-
-    df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
+df.select(col("a"), is_null_arr(col("a")).alias("is_null")).show()
 ```
 
 In this example we passed the PyArrow `DataType` when we defined the function
@@ -130,39 +135,35 @@ ways: first with a native expression, then with a UDF that computes the
 same result. The filter itself is simple on purpose so we can compare
 the plans side by side.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+import tempfile, os
+import pyarrow as pa
+import pyarrow.parquet as pq
+from datafusion import SessionContext, col, lit, udf
 
-    import tempfile, os
-    import pyarrow as pa
-    import pyarrow.parquet as pq
-    from datafusion import SessionContext, col, lit, udf
+tmpdir = tempfile.mkdtemp()
+parquet_path = os.path.join(tmpdir, "items.parquet")
+pq.write_table(
+    pa.table({
+        "id":    list(range(100)),
+        "brand": ["A", "B", "C", "D"] * 25,
+        "qty":   [i * 10 for i in range(100)],
+    }),
+    parquet_path,
+)
 
-    tmpdir = tempfile.mkdtemp()
-    parquet_path = os.path.join(tmpdir, "items.parquet")
-    pq.write_table(
-        pa.table({
-            "id":    list(range(100)),
-            "brand": ["A", "B", "C", "D"] * 25,
-            "qty":   [i * 10 for i in range(100)],
-        }),
-        parquet_path,
-    )
-
-    ctx = SessionContext()
-    items = ctx.read_parquet(parquet_path)
+ctx = SessionContext()
+items = ctx.read_parquet(parquet_path)
 ```
 
 **Native-expression predicate.** The filter is a plain boolean tree
 over column references and literals, so the optimizer can analyze it:
 
-```{eval-rst}
-.. ipython:: python
-
-    native_filtered = items.filter(
-        (col("brand") == lit("A")) & (col("qty") >= lit(150))
-    )
-    print(native_filtered.execution_plan().display_indent())
+```{code-cell} ipython3
+native_filtered = items.filter(
+    (col("brand") == lit("A")) & (col("qty") >= lit(150))
+)
+print(native_filtered.execution_plan().display_indent())
 ```
 
 Notice the `DataSourceExec` line. It carries three annotations the
@@ -179,20 +180,18 @@ optimizer computed from the predicate:
 
 **UDF predicate.** Now wrap the same logic in a Python UDF:
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+def brand_qty_filter(brand_arr: pa.Array, qty_arr: pa.Array) -> pa.Array:
+    return pa.array([
+        b.as_py() == "A" and q.as_py() >= 150
+        for b, q in zip(brand_arr, qty_arr)
+    ])
 
-    def brand_qty_filter(brand_arr: pa.Array, qty_arr: pa.Array) -> pa.Array:
-        return pa.array([
-            b.as_py() == "A" and q.as_py() >= 150
-            for b, q in zip(brand_arr, qty_arr)
-        ])
-
-    pred_udf = udf(
-        brand_qty_filter, [pa.string(), pa.int64()], pa.bool_(), "stable",
-    )
-    udf_filtered = items.filter(pred_udf(col("brand"), col("qty")))
-    print(udf_filtered.execution_plan().display_indent())
+pred_udf = udf(
+    brand_qty_filter, [pa.string(), pa.int64()], pa.bool_(), "stable",
+)
+udf_filtered = items.filter(pred_udf(col("brand"), col("qty")))
+print(udf_filtered.execution_plan().display_indent())
 ```
 
 The `DataSourceExec` now carries only `predicate=brand_qty_filter(...)`.
@@ -329,31 +328,12 @@ There are three methods of evaluation of UDWFs.
 
 Which methods you implement are based upon which of these options are set.
 
-```{eval-rst}
-.. list-table::
-   :header-rows: 1
-
-   * - ``uses_window_frame``
-     - ``supports_bounded_execution``
-     - ``include_rank``
-     - function_to_implement
-   * - False (default)
-     - False (default)
-     - False (default)
-     - ``evaluate_all``
-   * - False
-     - True
-     - False
-     - ``evaluate``
-   * - False
-     - True
-     - False
-     - ``evaluate_all_with_rank``
-   * - True
-     - True/False
-     - True/False
-     - ``evaluate``
-```
+| `uses_window_frame` | `supports_bounded_execution` | `include_rank` | function_to_implement |
+| --- | --- | --- | --- |
+| False (default) | False (default) | False (default) | `evaluate_all` |
+| False | True | False | `evaluate` |
+| False | True | False | `evaluate_all_with_rank` |
+| True | True/False | True/False | `evaluate` |
 
 ### UDWF options
 

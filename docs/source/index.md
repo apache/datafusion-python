@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -39,16 +48,14 @@ pip install datafusion
 
 ## Example
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
 
-    from datafusion import SessionContext
+ctx = SessionContext()
 
-    ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
 
-    df = ctx.read_csv("pokemon.csv")
-
-    df.show()
+df.show()
 
 ```
 

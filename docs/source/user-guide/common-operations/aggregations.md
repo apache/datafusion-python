@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -25,46 +34,40 @@ An aggregate or aggregation is a function where the values of multiple rows are 
 to form a single summary value. For performing an aggregation, DataFusion provides the
 {py:func}`~datafusion.dataframe.DataFrame.aggregate`
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col, lit, functions as f
 
-    from datafusion import SessionContext, col, lit, functions as f
+ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
 
-    ctx = SessionContext()
-    df = ctx.read_csv("pokemon.csv")
+col_type_1 = col('"Type 1"')
+col_type_2 = col('"Type 2"')
+col_speed = col('"Speed"')
+col_attack = col('"Attack"')
 
-    col_type_1 = col('"Type 1"')
-    col_type_2 = col('"Type 2"')
-    col_speed = col('"Speed"')
-    col_attack = col('"Attack"')
-
-    df.aggregate([col_type_1], [
-        f.approx_distinct(col_speed).alias("Count"),
-        f.approx_median(col_speed).alias("Median Speed"),
-        f.approx_percentile_cont(col_speed, 0.9).alias("90% Speed")])
+df.aggregate([col_type_1], [
+    f.approx_distinct(col_speed).alias("Count"),
+    f.approx_median(col_speed).alias("Median Speed"),
+    f.approx_percentile_cont(col_speed, 0.9).alias("90% Speed")])
 ```
 
 When {code}`group_by` is {code}`None` or an empty list, the aggregation is done over the whole
 {class}`.DataFrame`. For grouping the {code}`group_by` list must contain at least one column.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate([col_type_1], [
-        f.max(col_speed).alias("Max Speed"),
-        f.avg(col_speed).alias("Avg Speed"),
-        f.min(col_speed).alias("Min Speed")])
+```{code-cell} ipython3
+df.aggregate([col_type_1], [
+    f.max(col_speed).alias("Max Speed"),
+    f.avg(col_speed).alias("Avg Speed"),
+    f.min(col_speed).alias("Min Speed")])
 ```
 
 More than one column can be used for grouping
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate([col_type_1, col_type_2], [
-        f.max(col_speed).alias("Max Speed"),
-        f.avg(col_speed).alias("Avg Speed"),
-        f.min(col_speed).alias("Min Speed")])
+```{code-cell} ipython3
+df.aggregate([col_type_1, col_type_2], [
+    f.max(col_speed).alias("Max Speed"),
+    f.avg(col_speed).alias("Avg Speed"),
+    f.min(col_speed).alias("Min Speed")])
 
 
 ```
@@ -76,11 +79,9 @@ operation. These can also be overridden using the builder approach to setting an
 parameters. When you use the builder, you must call `build()` to finish. For example, these two
 expressions are equivalent.
 
-```{eval-rst}
-.. ipython:: python
-
-    first_1 = f.first_value(col("a"), order_by=[col("a")])
-    first_2 = f.first_value(col("a")).order_by(col("a")).build()
+```{code-cell} ipython3
+first_1 = f.first_value(col("a"), order_by=[col("a")])
+first_2 = f.first_value(col("a")).order_by(col("a")).build()
 ```
 
 ### Ordering
@@ -90,16 +91,14 @@ a list of `order_by` functions for the `order_by` parameter. In the following ex
 sort the Pokemon by their attack in increasing order and take the first value, which gives us the
 Pokemon with the smallest attack value in each `Type 1`.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate(
-        [col('"Type 1"')],
-        [f.first_value(
-            col('"Name"'),
-            order_by=[col('"Attack"').sort(ascending=True)]
-            ).alias("Smallest Attack")
-        ])
+```{code-cell} ipython3
+df.aggregate(
+    [col('"Type 1"')],
+    [f.first_value(
+        col('"Name"'),
+        order_by=[col('"Attack"').sort(ascending=True)]
+        ).alias("Smallest Attack")
+    ])
 ```
 
 ### Distinct
@@ -108,10 +107,8 @@ When you set the parameter `distinct` to `True`, then unique values will only be
 time each. Suppose we want to create an array of all of the `Type 2` for each `Type 1` of our
 Pokemon set. Since there will be many entries of `Type 2` we only one each distinct value.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")])
+```{code-cell} ipython3
+df.aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")])
 ```
 
 In the output of the above we can see that there are some `Type 1` for which the `Type 2` entry
@@ -119,12 +116,10 @@ is `null`. In reality, we probably want to filter those out. We can do this in t
 we can filter DataFrame rows that have no `Type 2`. If we do this, we might have some `Type 1`
 entries entirely removed. The second is we can use the `filter` argument described below.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+df.filter(col_type_2.is_not_null()).aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")])
 
-    df.filter(col_type_2.is_not_null()).aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True).alias("Type 2 List")])
-
-    df.aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True, filter=col_type_2.is_not_null()).alias("Type 2 List")])
+df.aggregate([col_type_1], [f.array_agg(col_type_2, distinct=True, filter=col_type_2.is_not_null()).alias("Type 2 List")])
 ```
 
 Which approach you take should depend on your use case.
@@ -137,24 +132,22 @@ One common usage for handling nulls is the case where you want to find the first
 partition. By setting the null treatment to ignore nulls, we can find the first non-null value
 in our partition.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion.common import NullTreatment
 
-    from datafusion.common import NullTreatment
+df.aggregate([col_type_1], [
+    f.first_value(
+        col_type_2,
+        order_by=[col_attack],
+        null_treatment=NullTreatment.RESPECT_NULLS
+    ).alias("Lowest Attack Type 2")])
 
-    df.aggregate([col_type_1], [
-        f.first_value(
-            col_type_2,
-            order_by=[col_attack],
-            null_treatment=NullTreatment.RESPECT_NULLS
-        ).alias("Lowest Attack Type 2")])
-
-    df.aggregate([col_type_1], [
-        f.first_value(
-            col_type_2,
-            order_by=[col_attack],
-            null_treatment=NullTreatment.IGNORE_NULLS
-        ).alias("Lowest Attack Type 2")])
+df.aggregate([col_type_1], [
+    f.first_value(
+        col_type_2,
+        order_by=[col_attack],
+        null_treatment=NullTreatment.IGNORE_NULLS
+    ).alias("Lowest Attack Type 2")])
 ```
 
 ### Filter
@@ -167,12 +160,10 @@ Filter takes a single expression.
 
 Suppose we want to find the speed values for only Pokemon that have low Attack values.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate([col_type_1], [
-        f.avg(col_speed).alias("Avg Speed All"),
-        f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
+```{code-cell} ipython3
+df.aggregate([col_type_1], [
+    f.avg(col_speed).alias("Avg Speed All"),
+    f.avg(col_speed, filter=col_attack < lit(50)).alias("Avg Speed Low Attack")])
 
 ```
 
@@ -194,33 +185,31 @@ a flag for whether that supplier met the commit date. We want to identify
 *partially failed* orders — orders where at least one supplier failed but
 not every supplier failed:
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+orders_df = ctx.from_pydict(
+    {
+        "order_id": [1, 1, 1, 2, 2, 3, 4, 4],
+        "supplier_id": [100, 101, 102, 200, 201, 300, 400, 401],
+        "failed":      [False, True, False, False, False, True, True, True],
+    },
+)
 
-    orders_df = ctx.from_pydict(
-        {
-            "order_id": [1, 1, 1, 2, 2, 3, 4, 4],
-            "supplier_id": [100, 101, 102, 200, 201, 300, 400, 401],
-            "failed":      [False, True, False, False, False, True, True, True],
-        },
-    )
+grouped = orders_df.aggregate(
+    [col("order_id")],
+    [
+        f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
+        f.array_agg(
+            col("supplier_id"),
+            filter=col("failed"),
+            distinct=True,
+        ).alias("failed_suppliers"),
+    ],
+)
 
-    grouped = orders_df.aggregate(
-        [col("order_id")],
-        [
-            f.array_agg(col("supplier_id"), distinct=True).alias("all_suppliers"),
-            f.array_agg(
-                col("supplier_id"),
-                filter=col("failed"),
-                distinct=True,
-            ).alias("failed_suppliers"),
-        ],
-    )
-
-    grouped.filter(
-        (f.array_length(col("failed_suppliers")) > lit(0))
-        & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
-    ).select(col("order_id"), col("failed_suppliers"))
+grouped.filter(
+    (f.array_length(col("failed_suppliers")) > lit(0))
+    & (f.array_length(col("failed_suppliers")) < f.array_length(col("all_suppliers")))
+).select(col("order_id"), col("failed_suppliers"))
 ```
 
 Order 1 is partial (one of three suppliers failed). Order 2 is excluded
@@ -257,17 +246,15 @@ Suppose we want to summarize Pokemon stats by `Type 1` with subtotals and a gran
 the default aggregation style we would need two separate queries. With `rollup` we get it all at
 once:
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion.expr import GroupingSet
 
-    from datafusion.expr import GroupingSet
-
-    df.aggregate(
-        [GroupingSet.rollup(col_type_1)],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed"),
-         f.max(col_speed).alias("Max Speed")]
-    ).sort(col_type_1.sort(ascending=True, nulls_first=True))
+df.aggregate(
+    [GroupingSet.rollup(col_type_1)],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed"),
+     f.max(col_speed).alias("Max Speed")]
+).sort(col_type_1.sort(ascending=True, nulls_first=True))
 ```
 
 The first row — where `Type 1` is `null` — is the grand total across all types. But how do you
@@ -288,19 +275,17 @@ use `.alias()` directly and the workaround below will no longer be necessary.
 The raw column name generated by `grouping()` contains internal identifiers, so we use
 {py:meth}`~datafusion.dataframe.DataFrame.with_column_renamed` to clean it up:
 
-```{eval-rst}
-.. ipython:: python
-
-    result = df.aggregate(
-        [GroupingSet.rollup(col_type_1)],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed"),
-         f.grouping(col_type_1)]
-    )
-    for field in result.schema():
-        if field.name.startswith("grouping("):
-            result = result.with_column_renamed(field.name, "Is Total")
-    result.sort(col_type_1.sort(ascending=True, nulls_first=True))
+```{code-cell} ipython3
+result = df.aggregate(
+    [GroupingSet.rollup(col_type_1)],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed"),
+     f.grouping(col_type_1)]
+)
+for field in result.schema():
+    if field.name.startswith("grouping("):
+        result = result.with_column_renamed(field.name, "Is Total")
+result.sort(col_type_1.sort(ascending=True, nulls_first=True))
 ```
 
 With two columns the hierarchy becomes more apparent. `rollup(Type 1, Type 2)` produces:
@@ -309,17 +294,15 @@ With two columns the hierarchy becomes more apparent. `rollup(Type 1, Type 2)` p
 - one row per `Type 1` — subtotals
 - one grand total row
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate(
-        [GroupingSet.rollup(col_type_1, col_type_2)],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed")]
-    ).sort(
-        col_type_1.sort(ascending=True, nulls_first=True),
-        col_type_2.sort(ascending=True, nulls_first=True)
-    )
+```{code-cell} ipython3
+df.aggregate(
+    [GroupingSet.rollup(col_type_1, col_type_2)],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed")]
+).sort(
+    col_type_1.sort(ascending=True, nulls_first=True),
+    col_type_2.sort(ascending=True, nulls_first=True)
+)
 ```
 
 ### Cube
@@ -332,17 +315,15 @@ hierarchy and you want all cross-tabulations.
 For our Pokemon data, `cube(Type 1, Type 2)` gives us stats broken down by the type pair,
 by `Type 1` alone, by `Type 2` alone, and a grand total — all in one query:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate(
-        [GroupingSet.cube(col_type_1, col_type_2)],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed")]
-    ).sort(
-        col_type_1.sort(ascending=True, nulls_first=True),
-        col_type_2.sort(ascending=True, nulls_first=True)
-    )
+```{code-cell} ipython3
+df.aggregate(
+    [GroupingSet.cube(col_type_1, col_type_2)],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed")]
+).sort(
+    col_type_1.sort(ascending=True, nulls_first=True),
+    col_type_2.sort(ascending=True, nulls_first=True)
+)
 ```
 
 Compared to the `rollup` example above, notice the extra rows where `Type 1` is `null` but
@@ -357,40 +338,36 @@ columns forming one grouping set.
 For example, if we want only the per-`Type 1` totals and per-`Type 2` totals — but *not* the
 full `(Type 1, Type 2)` detail rows or the grand total — we can ask for exactly that:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.aggregate(
-        [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed")]
-    ).sort(
-        col_type_1.sort(ascending=True, nulls_first=True),
-        col_type_2.sort(ascending=True, nulls_first=True)
-    )
+```{code-cell} ipython3
+df.aggregate(
+    [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed")]
+).sort(
+    col_type_1.sort(ascending=True, nulls_first=True),
+    col_type_2.sort(ascending=True, nulls_first=True)
+)
 ```
 
 Each row belongs to exactly one grouping level. The {py:func}`~datafusion.functions.grouping`
 function tells you which level each row comes from:
 
-```{eval-rst}
-.. ipython:: python
-
-    result = df.aggregate(
-        [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
-        [f.count(col_speed).alias("Count"),
-         f.avg(col_speed).alias("Avg Speed"),
-         f.grouping(col_type_1),
-         f.grouping(col_type_2)]
-    )
-    for field in result.schema():
-        if field.name.startswith("grouping("):
-            clean = field.name.split(".")[-1].rstrip(")")
-            result = result.with_column_renamed(field.name, f"grouping({clean})")
-    result.sort(
-        col_type_1.sort(ascending=True, nulls_first=True),
-        col_type_2.sort(ascending=True, nulls_first=True)
-    )
+```{code-cell} ipython3
+result = df.aggregate(
+    [GroupingSet.grouping_sets([col_type_1], [col_type_2])],
+    [f.count(col_speed).alias("Count"),
+     f.avg(col_speed).alias("Avg Speed"),
+     f.grouping(col_type_1),
+     f.grouping(col_type_2)]
+)
+for field in result.schema():
+    if field.name.startswith("grouping("):
+        clean = field.name.split(".")[-1].rstrip(")")
+        result = result.with_column_renamed(field.name, f"grouping({clean})")
+result.sort(
+    col_type_1.sort(ascending=True, nulls_first=True),
+    col_type_2.sort(ascending=True, nulls_first=True)
+)
 ```
 
 Where `grouping(Type 1)` is `0` the row is a per-`Type 1` total (and `Type 2` is `null`).

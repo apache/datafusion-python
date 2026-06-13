@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -41,10 +50,10 @@ The type of the object passed to the {py:func}`~datafusion.lit` function will be
 In the following example we create expressions for the column named `color` and the literal scalar string `red`.
 The resultant variable `red_units` is itself also an expression.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import col, lit
 
-    red_units = col("color") == lit("red")
+red_units = col("color") == lit("red")
 ```
 
 ## Boolean
@@ -53,12 +62,10 @@ When combining expressions that evaluate to a boolean value, you can combine the
 It is important to note that in order to combine these expressions, you *must* use bitwise operators. See the following
 examples for the and, or, and not operations.
 
-```{eval-rst}
-.. ipython:: python
-
-    red_or_green_units = (col("color") == lit("red")) | (col("color") == lit("green"))
-    heavy_red_units = (col("color") == lit("red")) & (col("weight") > lit(42))
-    not_red_units = ~(col("color") == lit("red"))
+```{code-cell} ipython3
+red_or_green_units = (col("color") == lit("red")) | (col("color") == lit("green"))
+heavy_red_units = (col("color") == lit("red")) & (col("weight") > lit(42))
+not_red_units = ~(col("color") == lit("red"))
 ```
 
 ## Arrays
@@ -69,14 +76,12 @@ using bracket indexing. This is similar to calling the function
 similar to Python arrays and `array_element` is 1 based indexing to be compatible with other SQL
 approaches.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col
 
-    from datafusion import SessionContext, col
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
-    df.select(col("a")[0].alias("a0"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+df.select(col("a")[0].alias("a0"))
 ```
 
 :::{warning}
@@ -87,24 +92,20 @@ Indexing an element of an array via `[]` starts at index 0 whereas
 Starting in DataFusion 49.0.0 you can also create slices of array elements using
 slice syntax from Python.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.select(col("a")[1:3].alias("second_two_elements"))
+```{code-cell} ipython3
+df.select(col("a")[1:3].alias("second_two_elements"))
 ```
 
 To check if an array is empty, you can use the function {py:func}`datafusion.functions.array_empty` or `datafusion.functions.empty`.
 This function returns a boolean indicating whether the array is empty.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col
+from datafusion.functions import array_empty
 
-    from datafusion import SessionContext, col
-    from datafusion.functions import array_empty
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[], [1, 2, 3]]})
-    df.select(array_empty(col("a")).alias("is_empty"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[], [1, 2, 3]]})
+df.select(array_empty(col("a")).alias("is_empty"))
 ```
 
 In this example, the `is_empty` column will contain `True` for the first row and `False` for the second row.
@@ -112,15 +113,13 @@ In this example, the `is_empty` column will contain `True` for the first row and
 To get the total number of elements in an array, you can use the function {py:func}`datafusion.functions.cardinality`.
 This function returns an integer indicating the total number of elements in the array.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col
+from datafusion.functions import cardinality
 
-    from datafusion import SessionContext, col
-    from datafusion.functions import cardinality
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
-    df.select(cardinality(col("a")).alias("num_elements"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+df.select(cardinality(col("a")).alias("num_elements"))
 ```
 
 In this example, the `num_elements` column will contain `3` for both rows.
@@ -128,15 +127,13 @@ In this example, the `num_elements` column will contain `3` for both rows.
 To concatenate two arrays, you can use the function {py:func}`datafusion.functions.array_cat` or {py:func}`datafusion.functions.array_concat`.
 These functions return a new array that is the concatenation of the input arrays.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col
+from datafusion.functions import array_cat, array_concat
 
-    from datafusion import SessionContext, col
-    from datafusion.functions import array_cat, array_concat
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[4, 5, 6]]})
-    df.select(array_cat(col("a"), col("b")).alias("concatenated_array"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[4, 5, 6]]})
+df.select(array_cat(col("a"), col("b")).alias("concatenated_array"))
 ```
 
 In this example, the `concatenated_array` column will contain `[1, 2, 3, 4, 5, 6]`.
@@ -144,15 +141,13 @@ In this example, the `concatenated_array` column will contain `[1, 2, 3, 4, 5, 6
 To repeat the elements of an array a specified number of times, you can use the function {py:func}`datafusion.functions.array_repeat`.
 This function returns a new array with the elements repeated.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col, literal
+from datafusion.functions import array_repeat
 
-    from datafusion import SessionContext, col, literal
-    from datafusion.functions import array_repeat
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    df.select(array_repeat(col("a"), literal(2)).alias("repeated_array"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[1, 2, 3]]})
+df.select(array_repeat(col("a"), literal(2)).alias("repeated_array"))
 ```
 
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
@@ -170,17 +165,15 @@ argument are sometimes called *higher-order* functions.)
 The simplest way to supply a lambda is a Python `lambda`. Its parameter names
 become the lambda parameters, and its return value becomes the body.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col
+from datafusion import functions as f
 
-    from datafusion import SessionContext, col
-    from datafusion import functions as f
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
-    df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
-    df.select(f.array_filter(col("a"), lambda v: v > 2).alias("big_only"))
-    df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
+ctx = SessionContext()
+df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
+df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
+df.select(f.array_filter(col("a"), lambda v: v > 2).alias("big_only"))
+df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
 ```
 
 If you need explicit control over parameter names, build the lambda with
@@ -188,13 +181,11 @@ If you need explicit control over parameter names, build the lambda with
 {py:func}`~datafusion.functions.lambda_var`. The following is equivalent to the
 `array_transform` call above.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import lit
 
-    from datafusion import lit
-
-    double_fn = f.lambda_(["v"], f.lambda_var("v") * lit(2))
-    df.select(f.array_transform(col("a"), double_fn).alias("doubled"))
+double_fn = f.lambda_(["v"], f.lambda_var("v") * lit(2))
+df.select(f.array_transform(col("a"), double_fn).alias("doubled"))
 ```
 
 :::{note}
@@ -222,28 +213,26 @@ they scale:
    {py:func}`~datafusion.functions.make_array`, which returns the 1-based
    index of the value in a constructed array, or null if it is not present.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col, lit
+from datafusion import functions as f
 
-    from datafusion import SessionContext, col, lit
-    from datafusion import functions as f
+ctx = SessionContext()
+df = ctx.from_pydict({"shipmode": ["MAIL", "SHIP", "AIR", "TRUCK", "RAIL"]})
 
-    ctx = SessionContext()
-    df = ctx.from_pydict({"shipmode": ["MAIL", "SHIP", "AIR", "TRUCK", "RAIL"]})
+# Option 1: compound boolean. Fine for two values; awkward past three.
+df.filter((col("shipmode") == lit("MAIL")) | (col("shipmode") == lit("SHIP")))
 
-    # Option 1: compound boolean. Fine for two values; awkward past three.
-    df.filter((col("shipmode") == lit("MAIL")) | (col("shipmode") == lit("SHIP")))
+# Option 2: in_list. Preferred for readability as the set grows.
+df.filter(f.in_list(col("shipmode"), [lit("MAIL"), lit("SHIP")]))
 
-    # Option 2: in_list. Preferred for readability as the set grows.
-    df.filter(f.in_list(col("shipmode"), [lit("MAIL"), lit("SHIP")]))
-
-    # Option 3: array_position / make_array. Useful when you already have the
-    # set as an array column and want "is in that array" semantics.
-    df.filter(
-        ~f.array_position(
-            f.make_array(lit("MAIL"), lit("SHIP")), col("shipmode")
-        ).is_null()
-    )
+# Option 3: array_position / make_array. Useful when you already have the
+# set as an array column and want "is in that array" semantics.
+df.filter(
+    ~f.array_position(
+        f.make_array(lit("MAIL"), lit("SHIP")), col("shipmode")
+    ).is_null()
+)
 ```
 
 Use `in_list` as the default. It is explicit, readable, and matches the
@@ -260,41 +249,37 @@ searched form.
 
 **Switched CASE** (one expression compared against several literal values):
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+df = ctx.from_pydict(
+    {"priority": ["1-URGENT", "2-HIGH", "3-MEDIUM", "5-LOW"]},
+)
 
-    df = ctx.from_pydict(
-        {"priority": ["1-URGENT", "2-HIGH", "3-MEDIUM", "5-LOW"]},
-    )
-
-    df.select(
-        col("priority"),
-        f.case(col("priority"))
-         .when(lit("1-URGENT"), lit(1))
-         .when(lit("2-HIGH"), lit(1))
-         .otherwise(lit(0))
-         .alias("is_high_priority"),
-    )
+df.select(
+    col("priority"),
+    f.case(col("priority"))
+     .when(lit("1-URGENT"), lit(1))
+     .when(lit("2-HIGH"), lit(1))
+     .otherwise(lit(0))
+     .alias("is_high_priority"),
+)
 ```
 
 **Searched CASE** (an independent boolean predicate per branch). Use this
 form whenever a branch tests more than simple equality — for example,
 checking whether a joined column is `NULL` to gate a computed value:
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+df = ctx.from_pydict(
+    {"volume": [10.0, 20.0, 30.0], "supplier_id": [1, None, 2]},
+)
 
-    df = ctx.from_pydict(
-        {"volume": [10.0, 20.0, 30.0], "supplier_id": [1, None, 2]},
-    )
-
-    df.select(
-        col("volume"),
-        col("supplier_id"),
-        f.when(col("supplier_id").is_not_null(), col("volume"))
-         .otherwise(lit(0.0))
-         .alias("attributed_volume"),
-    )
+df.select(
+    col("volume"),
+    col("supplier_id"),
+    f.when(col("supplier_id").is_not_null(), col("volume"))
+     .otherwise(lit(0.0))
+     .alias("attributed_volume"),
+)
 ```
 
 This searched-CASE pattern is idiomatic for "attribute the measure to the
@@ -310,13 +295,11 @@ simpler than the full `case` builder.
 Columns that contain struct elements can be accessed using the bracket notation as if they were
 Python dictionary style objects. This expects a string key as the parameter passed.
 
-```{eval-rst}
-.. ipython:: python
-
-    ctx = SessionContext()
-    data = {"a": [{"size": 15, "color": "green"}, {"size": 10, "color": "blue"}]}
-    df = ctx.from_pydict(data)
-    df.select(col("a")["size"].alias("a_size"))
+```{code-cell} ipython3
+ctx = SessionContext()
+data = {"a": [{"size": 15, "color": "green"}, {"size": 10, "color": "blue"}]}
+df = ctx.from_pydict(data)
+df.select(col("a")["size"].alias("a_size"))
 
 ```
 
@@ -328,30 +311,28 @@ as it input a single expression and returns an expression in which the name of t
 
 The following example shows a series of expressions that are built up from functions operating on expressions.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
+from datafusion import column, lit
+from datafusion import functions as f
+import random
 
-    from datafusion import SessionContext
-    from datafusion import column, lit
-    from datafusion import functions as f
-    import random
+ctx = SessionContext()
+df = ctx.from_pydict(
+    {
+        "name": ["Albert", "Becca", "Carlos", "Dante"],
+        "age": [42, 67, 27, 71],
+        "years_in_position": [13, 21, 10, 54],
+    },
+    name="employees"
+)
 
-    ctx = SessionContext()
-    df = ctx.from_pydict(
-        {
-            "name": ["Albert", "Becca", "Carlos", "Dante"],
-            "age": [42, 67, 27, 71],
-            "years_in_position": [13, 21, 10, 54],
-        },
-        name="employees"
-    )
+age_col = col("age")
+renamed_age = age_col.alias("age_in_years")
+start_age = age_col - col("years_in_position")
+started_young = start_age < lit(18)
+can_retire = age_col > lit(65)
+long_timer = started_young & can_retire
 
-    age_col = col("age")
-    renamed_age = age_col.alias("age_in_years")
-    start_age = age_col - col("years_in_position")
-    started_young = start_age < lit(18)
-    can_retire = age_col > lit(65)
-    long_timer = started_young & can_retire
-
-    df.filter(long_timer).select(col("name"), renamed_age, col("years_in_position"))
+df.filter(long_timer).select(col("name"), renamed_age, col("years_in_position"))
 ```

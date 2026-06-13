@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -25,22 +34,20 @@ In this section, we will cover a basic example to introduce a few key concepts. 
 2021 Yellow Taxi Trip Records ([download](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet)),
 from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext, col, lit, functions as f
 
-    from datafusion import SessionContext, col, lit, functions as f
+ctx = SessionContext()
 
-    ctx = SessionContext()
+df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
 
-    df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
+df = df.select(
+    "trip_distance",
+    col("total_amount").alias("total"),
+    (f.round(lit(100.0) * col("tip_amount") / col("total_amount"), lit(1))).alias("tip_percent"),
+)
 
-    df = df.select(
-        "trip_distance",
-        col("total_amount").alias("total"),
-        (f.round(lit(100.0) * col("tip_amount") / col("total_amount"), lit(1))).alias("tip_percent"),
-    )
-
-    df.show()
+df.show()
 ```
 
 ## Session Context

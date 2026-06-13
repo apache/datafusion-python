@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -42,18 +51,16 @@ and returns a `StructArray`. Common pyarrow sources you can use are:
 - [Record Batch Reader](https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatchReader.html)
 - [Table](https://arrow.apache.org/docs/python/generated/pyarrow.Table.html)
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
+import pyarrow as pa
 
-    from datafusion import SessionContext
-    import pyarrow as pa
+data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+table = pa.Table.from_pydict(data)
 
-    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
-    table = pa.Table.from_pydict(data)
-
-    ctx = SessionContext()
-    df = ctx.from_arrow(table)
-    df
+ctx = SessionContext()
+df = ctx.from_arrow(table)
+df
 ```
 
 ## Exporting from DataFusion
@@ -66,11 +73,9 @@ batches are yielded incrementally rather than materialized all at once in memory
 Consumers can process the stream as it arrives. The stream executes lazily,
 letting downstream readers pull batches on demand.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import col, lit
 
-    from datafusion import col, lit
-
-    df = df.select((col("a") * lit(1.5)).alias("c"), lit("df").alias("d"))
-    pa.table(df)
+df = df.select((col("a") * lit(1.5)).alias("c"), lit("df").alias("d"))
+pa.table(df)
 ```

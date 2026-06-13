@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -29,28 +38,24 @@ The window functions are available in the {py:mod}`~datafusion.functions` module
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
+from datafusion import col, lit
+from datafusion import functions as f
 
-    from datafusion import SessionContext
-    from datafusion import col, lit
-    from datafusion import functions as f
-
-    ctx = SessionContext()
-    df = ctx.read_csv("pokemon.csv")
+ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
 ```
 
 Here is an example that shows how you can compare each pokemon's speed to the speed of the
 previous row in the DataFrame.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.select(
-        col('"Name"'),
-        col('"Speed"'),
-        f.lag(col('"Speed"')).alias("Previous Speed")
-    )
+```{code-cell} ipython3
+df.select(
+    col('"Name"'),
+    col('"Speed"'),
+    f.lag(col('"Speed"')).alias("Previous Speed")
+)
 ```
 
 ## Setting Parameters
@@ -60,18 +65,16 @@ previous row in the DataFrame.
 You can control the order in which rows are processed by window functions by providing
 a list of `order_by` functions for the `order_by` parameter.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.select(
-        col('"Name"'),
-        col('"Attack"'),
-        col('"Type 1"'),
-        f.rank(
-            partition_by=[col('"Type 1"')],
-            order_by=[col('"Attack"').sort(ascending=True)],
-        ).alias("rank"),
-    ).sort(col('"Type 1"'), col('"Attack"'))
+```{code-cell} ipython3
+df.select(
+    col('"Name"'),
+    col('"Attack"'),
+    col('"Type 1"'),
+    f.rank(
+        partition_by=[col('"Type 1"')],
+        order_by=[col('"Attack"').sort(ascending=True)],
+    ).alias("rank"),
+).sort(col('"Type 1"'), col('"Attack"'))
 ```
 
 ### Partitions
@@ -82,18 +85,16 @@ independently for each of the partitions. In the example above, we found the ran
 Pokemon per `Type 1` partitions. We can see the first couple of each partition if we do
 the following:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.select(
-        col('"Name"'),
-        col('"Attack"'),
-        col('"Type 1"'),
-        f.rank(
-            partition_by=[col('"Type 1"')],
-            order_by=[col('"Attack"').sort(ascending=True)],
-        ).alias("rank"),
-    ).filter(col("rank") < lit(3)).sort(col('"Type 1"'), col("rank"))
+```{code-cell} ipython3
+df.select(
+    col('"Name"'),
+    col('"Attack"'),
+    col('"Type 1"'),
+    f.rank(
+        partition_by=[col('"Type 1"')],
+        order_by=[col('"Attack"').sort(ascending=True)],
+    ).alias("rank"),
+).filter(col("rank") < lit(3)).sort(col('"Type 1"'), col("rank"))
 ```
 
 ### Window Frame
@@ -122,18 +123,16 @@ The unit types available are:
 In this example we perform a "rolling average" of the speed of the current Pokemon and the
 two preceding rows.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion.expr import Window, WindowFrame
 
-    from datafusion.expr import Window, WindowFrame
-
-    df.select(
-        col('"Name"'),
-        col('"Speed"'),
-        f.avg(col('"Speed"'))
-        .over(Window(window_frame=WindowFrame("rows", 2, 0), order_by=[col('"Speed"')]))
-        .alias("Previous Speed"),
-    )
+df.select(
+    col('"Name"'),
+    col('"Speed"'),
+    f.avg(col('"Speed"'))
+    .over(Window(window_frame=WindowFrame("rows", 2, 0), order_by=[col('"Speed"')]))
+    .alias("Previous Speed"),
+)
 ```
 
 ### Null Treatment
@@ -150,33 +149,31 @@ the window frame so that we only process up to the current row.
 In this example, we filter down to one specific type of Pokemon that does have some entries in
 it's `Type 2` column that are null.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion.common import NullTreatment
 
-    from datafusion.common import NullTreatment
-
-    df.filter(col('"Type 1"') == lit("Bug")).select(
-        '"Name"',
-        '"Type 2"',
-        f.last_value(col('"Type 2"'))
-        .over(
-            Window(
-                window_frame=WindowFrame("rows", None, 0),
-                order_by=[col('"Speed"')],
-                null_treatment=NullTreatment.IGNORE_NULLS,
-            )
+df.filter(col('"Type 1"') == lit("Bug")).select(
+    '"Name"',
+    '"Type 2"',
+    f.last_value(col('"Type 2"'))
+    .over(
+        Window(
+            window_frame=WindowFrame("rows", None, 0),
+            order_by=[col('"Speed"')],
+            null_treatment=NullTreatment.IGNORE_NULLS,
         )
-        .alias("last_wo_null"),
-        f.last_value(col('"Type 2"'))
-        .over(
-            Window(
-                window_frame=WindowFrame("rows", None, 0),
-                order_by=[col('"Speed"')],
-                null_treatment=NullTreatment.RESPECT_NULLS,
-            )
-        )
-        .alias("last_with_null"),
     )
+    .alias("last_wo_null"),
+    f.last_value(col('"Type 2"'))
+    .over(
+        Window(
+            window_frame=WindowFrame("rows", None, 0),
+            order_by=[col('"Speed"')],
+            null_treatment=NullTreatment.RESPECT_NULLS,
+        )
+    )
+    .alias("last_with_null"),
+)
 ```
 
 ## Aggregate Functions
@@ -185,21 +182,18 @@ You can use any {ref}`Aggregation Function<aggregation>` as a window function. H
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its `"Type 1"` using the {py:func}`datafusion.functions.avg` function.
 
-```{eval-rst}
-.. ipython:: python
-    :okwarning:
-
-    df.select(
-        col('"Name"'),
-        col('"Attack"'),
-        col('"Type 1"'),
-        f.avg(col('"Attack"')).over(
-            Window(
-                window_frame=WindowFrame("rows", None, None),
-                partition_by=[col('"Type 1"')],
-            )
-        ).alias("Average Attack"),
-    )
+```{code-cell} ipython3
+df.select(
+    col('"Name"'),
+    col('"Attack"'),
+    col('"Type 1"'),
+    f.avg(col('"Attack"')).over(
+        Window(
+            window_frame=WindowFrame("rows", None, None),
+            partition_by=[col('"Type 1"')],
+        )
+    ).alias("Average Attack"),
+)
 ```
 
 ## Available Functions

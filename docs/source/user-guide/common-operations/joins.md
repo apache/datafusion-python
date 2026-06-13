@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -30,25 +39,23 @@ DataFusion supports the following join variants via the method {py:func}`~datafu
 
 For the examples in this section we'll use the following two DataFrames
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
 
-    from datafusion import SessionContext
+ctx = SessionContext()
 
-    ctx = SessionContext()
+left = ctx.from_pydict(
+    {
+        "customer_id": [1, 2, 3],
+        "customer": ["Alice", "Bob", "Charlie"],
+    }
+)
 
-    left = ctx.from_pydict(
-        {
-            "customer_id": [1, 2, 3],
-            "customer": ["Alice", "Bob", "Charlie"],
-        }
-    )
-
-    right = ctx.from_pylist([
-        {"id": 1, "name": "CityCabs"},
-        {"id": 2, "name": "MetroRide"},
-        {"id": 5, "name": "UrbanGo"},
-    ])
+right = ctx.from_pylist([
+    {"id": 1, "name": "CityCabs"},
+    {"id": 2, "name": "MetroRide"},
+    {"id": 5, "name": "UrbanGo"},
+])
 ```
 
 ## Inner Join
@@ -56,10 +63,8 @@ For the examples in this section we'll use the following two DataFrames
 When using an inner join, only rows containing the common values between the two join columns present in both DataFrames
 will be included in the resulting DataFrame.
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, left_on="customer_id", right_on="id", how="inner")
+```{code-cell} ipython3
+left.join(right, left_on="customer_id", right_on="id", how="inner")
 ```
 
 The parameter `join_keys` specifies the columns from the left DataFrame and right DataFrame that contains the values
@@ -71,10 +76,8 @@ A left join combines rows from two DataFrames using the key columns. It returns 
 matching rows from the right DataFrame. If there's no match in the right DataFrame, it returns null
 values for the corresponding columns.
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, left_on="customer_id", right_on="id", how="left")
+```{code-cell} ipython3
+left.join(right, left_on="customer_id", right_on="id", how="left")
 ```
 
 ## Full Join
@@ -82,10 +85,8 @@ values for the corresponding columns.
 A full join merges rows from two tables based on a related column, returning all rows from both tables, even if there
 is no match. Unmatched rows will have null values.
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, left_on="customer_id", right_on="id", how="full")
+```{code-cell} ipython3
+left.join(right, left_on="customer_id", right_on="id", how="full")
 ```
 
 ## Left Semi Join
@@ -93,10 +94,8 @@ is no match. Unmatched rows will have null values.
 A left semi join retrieves matching rows from the left table while
 omitting duplicates with multiple matches in the right table.
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, left_on="customer_id", right_on="id", how="semi")
+```{code-cell} ipython3
+left.join(right, left_on="customer_id", right_on="id", how="semi")
 ```
 
 ## Left Anti Join
@@ -105,10 +104,8 @@ A left anti join shows all rows from the left table without any matching rows in
 based on a the specified matching columns. It excludes rows from the left table that have at least one matching row in
 the right table.
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, left_on="customer_id", right_on="id", how="anti")
+```{code-cell} ipython3
+left.join(right, left_on="customer_id", right_on="id", how="anti")
 ```
 
 ## Duplicate Keys
@@ -119,31 +116,27 @@ default. This reduces problems with ambiguous column selection after joins.
 You can disable this feature by setting the parameter `coalesce_duplicate_keys`
 to `False`.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+left = ctx.from_pydict(
+    {
+        "id": [1, 2, 3],
+        "customer": ["Alice", "Bob", "Charlie"],
+    }
+)
 
-    left = ctx.from_pydict(
-        {
-            "id": [1, 2, 3],
-            "customer": ["Alice", "Bob", "Charlie"],
-        }
-    )
+right = ctx.from_pylist([
+    {"id": 1, "name": "CityCabs"},
+    {"id": 2, "name": "MetroRide"},
+    {"id": 5, "name": "UrbanGo"},
+])
 
-    right = ctx.from_pylist([
-        {"id": 1, "name": "CityCabs"},
-        {"id": 2, "name": "MetroRide"},
-        {"id": 5, "name": "UrbanGo"},
-    ])
-
-    left.join(right, "id", how="inner")
+left.join(right, "id", how="inner")
 ```
 
 In contrast to the above example, if we wish to get both columns:
 
-```{eval-rst}
-.. ipython:: python
-
-    left.join(right, "id", how="inner", coalesce_duplicate_keys=False)
+```{code-cell} ipython3
+left.join(right, "id", how="inner", coalesce_duplicate_keys=False)
 ```
 
 ## Disambiguating Columns with `DataFrame.col()`
@@ -156,26 +149,24 @@ used in the join predicate and when selecting from the result.
 This is especially useful with {py:meth}`~datafusion.dataframe.DataFrame.join_on`,
 which accepts expression-based predicates.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+left = ctx.from_pydict(
+    {
+        "id": [1, 2, 3],
+        "val": [10, 20, 30],
+    }
+)
 
-    left = ctx.from_pydict(
-        {
-            "id": [1, 2, 3],
-            "val": [10, 20, 30],
-        }
-    )
+right = ctx.from_pydict(
+    {
+        "id": [1, 2, 3],
+        "val": [40, 50, 60],
+    }
+)
 
-    right = ctx.from_pydict(
-        {
-            "id": [1, 2, 3],
-            "val": [40, 50, 60],
-        }
-    )
+joined = left.join_on(
+    right, left.col("id") == right.col("id"), how="inner"
+)
 
-    joined = left.join_on(
-        right, left.col("id") == right.col("id"), how="inner"
-    )
-
-    joined.select(left.col("id"), left.col("val"), right.col("val"))
+joined.select(left.col("id"), left.col("val"), right.col("val"))
 ```

@@ -48,19 +48,32 @@ author = "Apache Software Foundation"
 extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-    "myst_parser",
-    "IPython.sphinxext.ipython_directive",
+    # myst_nb is a superset of myst_parser: it provides the MyST markdown
+    # parser plus executable `{code-cell}` notebook directives. Do NOT also
+    # list "myst_parser" — myst_nb activates it internally and listing both
+    # raises an extension conflict.
+    "myst_nb",
     "autoapi.extension",
 ]
 
 # NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
 # under autoapi/ and Sphinx needs the suffix to parse it. The human-
-# authored docs are all MyST .md now; the .rst entry is only for the
-# autoapi build artifacts.
+# authored docs are all MyST .md now. ".md" is routed through myst-nb so
+# pages carrying jupytext/kernelspec front matter execute their
+# `{code-cell}` blocks; pages without that front matter render as plain
+# MyST markdown. The ".rst" entry is only for the autoapi build artifacts.
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "markdown",
+    ".md": "myst-nb",
 }
+
+# Execute notebook code cells at build time and fail the build if any cell
+# raises — this replaces the old IPython sphinx directive, whose executed
+# examples are now `{code-cell}` blocks. "force" re-executes every build so
+# stale cached output can never ship.
+nb_execution_mode = "force"
+nb_execution_timeout = 120
+nb_execution_raise_on_error = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -34,11 +43,9 @@ pip install datafusion
 
 You can verify the installation by running:
 
-```{eval-rst}
-.. ipython:: python
-
-    import datafusion
-    datafusion.__version__
+```{code-cell} ipython3
+import datafusion
+datafusion.__version__
 ```
 
 In this documentation we will also show some examples for how DataFusion integrates
@@ -57,16 +64,14 @@ can download
 With that file in place you can use the following python example to view the DataFrame in
 DataFusion.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
 
-    from datafusion import SessionContext
+ctx = SessionContext()
 
-    ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
 
-    df = ctx.read_csv("pokemon.csv")
-
-    df.show()
+df.show()
 ```
 
 If you are working in a Jupyter notebook, you can also use the following to give you a table

@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -25,24 +34,20 @@ DataFusion can work with several file types, to start simple we can use a subset
 [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page),
 which you can download [here](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet).
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
 
-    from datafusion import SessionContext
-
-    ctx = SessionContext()
-    df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
-    df.select("trip_distance", "passenger_count")
+ctx = SessionContext()
+df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
+df.select("trip_distance", "passenger_count")
 ```
 
 For mathematical or logical operations use {py:func}`~datafusion.col` to select columns, and give meaningful names to the resulting
 operations using {py:func}`~datafusion.expr.Expr.alias`
 
-```{eval-rst}
-.. ipython:: python
-
-    from datafusion import col, lit
-    df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls"))
+```{code-cell} ipython3
+from datafusion import col, lit
+df.select((col("tip_amount") + col("tolls_amount")).alias("tips_plus_tolls"))
 ```
 
 :::{warning}
@@ -53,19 +58,15 @@ column selection use {py:func}`~datafusion.dataframe.DataFrame.select` without d
 
 For selecting columns with capital letters use `'"VendorID"'`
 
-```{eval-rst}
-.. ipython:: python
-
-    df.select(col('"VendorID"'))
+```{code-cell} ipython3
+df.select(col('"VendorID"'))
 
 ```
 
 To combine it with literal values use the {py:func}`~datafusion.lit`
 
-```{eval-rst}
-.. ipython:: python
-
-    large_trip_distance = col("trip_distance") > lit(5.0)
-    low_passenger_count = col("passenger_count") < lit(4)
-    df.select((large_trip_distance & low_passenger_count).alias("lonely_trips"))
+```{code-cell} ipython3
+large_trip_distance = col("trip_distance") > lit(5.0)
+low_passenger_count = col("passenger_count") < lit(4)
+df.select((large_trip_distance & low_passenger_count).alias("lonely_trips"))
 ```

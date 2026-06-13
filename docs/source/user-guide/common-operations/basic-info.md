@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -21,51 +30,41 @@
 
 In this section, you will learn how to display essential details of DataFrames using specific functions.
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+from datafusion import SessionContext
+import random
 
-    from datafusion import SessionContext
-    import random
-
-    ctx = SessionContext()
-    df = ctx.from_pydict({
-        "nrs": [1, 2, 3, 4, 5],
-        "names": ["python", "ruby", "java", "haskell", "go"],
-        "random": random.sample(range(1000), 5),
-        "groups": ["A", "A", "B", "C", "B"],
-    })
-    df
+ctx = SessionContext()
+df = ctx.from_pydict({
+    "nrs": [1, 2, 3, 4, 5],
+    "names": ["python", "ruby", "java", "haskell", "go"],
+    "random": random.sample(range(1000), 5),
+    "groups": ["A", "A", "B", "C", "B"],
+})
+df
 ```
 
 Use {py:func}`~datafusion.dataframe.DataFrame.limit` to view the top rows of the frame:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.limit(2)
+```{code-cell} ipython3
+df.limit(2)
 ```
 
 Display the columns of the DataFrame using {py:func}`~datafusion.dataframe.DataFrame.schema`:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.schema()
+```{code-cell} ipython3
+df.schema()
 ```
 
 The method {py:func}`~datafusion.dataframe.DataFrame.to_pandas` uses pyarrow to convert to pandas DataFrame, by collecting the batches,
 passing them to an Arrow table, and then converting them to a pandas DataFrame.
 
-```{eval-rst}
-.. ipython:: python
-
-    df.to_pandas()
+```{code-cell} ipython3
+df.to_pandas()
 ```
 
 {py:func}`~datafusion.dataframe.DataFrame.describe` shows a quick statistic summary of your data:
 
-```{eval-rst}
-.. ipython:: python
-
-    df.describe()
+```{code-cell} ipython3
+df.describe()
 ```

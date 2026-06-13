@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -21,23 +30,21 @@
 
 DataFusion also offers a SQL API, read the full reference [here](https://arrow.apache.org/datafusion/user-guide/sql/index.html)
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+import datafusion
+from datafusion import DataFrame, SessionContext
 
-    import datafusion
-    from datafusion import DataFrame, SessionContext
+# create a context
+ctx = datafusion.SessionContext()
 
-    # create a context
-    ctx = datafusion.SessionContext()
+# register a CSV
+ctx.register_csv("pokemon", "pokemon.csv")
 
-    # register a CSV
-    ctx.register_csv("pokemon", "pokemon.csv")
+# create a new statement via SQL
+df = ctx.sql('SELECT "Attack"+"Defense", "Attack"-"Defense" FROM pokemon')
 
-    # create a new statement via SQL
-    df = ctx.sql('SELECT "Attack"+"Defense", "Attack"-"Defense" FROM pokemon')
-
-    # collect and convert to pandas DataFrame
-    df.to_pandas()
+# collect and convert to pandas DataFrame
+df.to_pandas()
 ```
 
 ## Parameterized queries
@@ -48,14 +55,12 @@ in a SQL query. These are similar in concept to
 but allow passing named parameters into a SQL query. Consider this simple
 example.
 
-```{eval-rst}
-.. ipython:: python
-
-    def show_attacks(ctx: SessionContext, threshold: int) -> None:
-        ctx.sql(
-            'SELECT "Name", "Attack" FROM pokemon WHERE "Attack" > $val', val=threshold
-        ).show(num=5)
-    show_attacks(ctx, 75)
+```{code-cell} ipython3
+def show_attacks(ctx: SessionContext, threshold: int) -> None:
+    ctx.sql(
+        'SELECT "Name", "Attack" FROM pokemon WHERE "Attack" > $val', val=threshold
+    ).show(num=5)
+show_attacks(ctx, 75)
 ```
 
 When passing parameters like the example above we convert the Python objects
@@ -85,20 +90,18 @@ or you may get unintended consequences.
 The following example shows passing in both a {py:class}`~datafusion.dataframe.DataFrame`
 object as well as a Python object to be used in parameterized replacement.
 
-```{eval-rst}
-.. ipython:: python
-
-    def show_column(
-        ctx: SessionContext, column: str, df: DataFrame, threshold: int
-    ) -> None:
-        ctx.sql(
-            'SELECT "Name", $col FROM $df WHERE $col > $val',
-            col=column,
-            df=df,
-            val=threshold,
-        ).show(num=5)
-    df = ctx.table("pokemon")
-    show_column(ctx, '"Defense"', df, 75)
+```{code-cell} ipython3
+def show_column(
+    ctx: SessionContext, column: str, df: DataFrame, threshold: int
+) -> None:
+    ctx.sql(
+        'SELECT "Name", $col FROM $df WHERE $col > $val',
+        col=column,
+        df=df,
+        val=threshold,
+    ).show(num=5)
+df = ctx.table("pokemon")
+show_column(ctx, '"Defense"', df, 75)
 ```
 
 The approach implemented for conversion of variables into a SQL query
@@ -118,13 +121,11 @@ of your {py:class}`~datafusion.context.SessionContext`. Similar to how
 work, these parameters are limited to places where you would pass in a
 scalar value, such as a comparison.
 
-```{eval-rst}
-.. ipython:: python
-
-    def param_attacks(ctx: SessionContext, threshold: int) -> None:
-        ctx.sql(
-            'SELECT "Name", "Attack" FROM pokemon WHERE "Attack" > $val',
-            param_values={"val": threshold},
-        ).show(num=5)
-    param_attacks(ctx, 75)
+```{code-cell} ipython3
+def param_attacks(ctx: SessionContext, threshold: int) -> None:
+    ctx.sql(
+        'SELECT "Name", "Attack" FROM pokemon WHERE "Attack" > $val',
+        param_values={"val": threshold},
+    ).show(num=5)
+param_attacks(ctx, 75)
 ```

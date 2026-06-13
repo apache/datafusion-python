@@ -1,3 +1,12 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+kernelspec:
+  name: python3
+  display_name: Python 3
+---
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -28,13 +37,11 @@ DataFusion provides a wide variety of ways to get data into a DataFrame to perfo
 DataFusion has the ability to read from a variety of popular file formats, such as {ref}`Parquet <io_parquet>`,
 {ref}`CSV <io_csv>`, {ref}`JSON <io_json>`, and {ref}`AVRO <io_avro>`.
 
-```{eval-rst}
-.. ipython:: python
-
-    from datafusion import SessionContext
-    ctx = SessionContext()
-    df = ctx.read_csv("pokemon.csv")
-    df.show()
+```{code-cell} ipython3
+from datafusion import SessionContext
+ctx = SessionContext()
+df = ctx.read_csv("pokemon.csv")
+df.show()
 ```
 
 ## Create in-memory
@@ -51,33 +58,31 @@ of list of [PyArrow Record Batches](https://arrow.apache.org/docs/python/generat
 
 The following three examples all will create identical DataFrames:
 
-```{eval-rst}
-.. ipython:: python
+```{code-cell} ipython3
+import pyarrow as pa
 
-    import pyarrow as pa
+ctx.from_pylist([
+    { "a": 1, "b": 10.0, "c": "alpha" },
+    { "a": 2, "b": 20.0, "c": "beta" },
+    { "a": 3, "b": 30.0, "c": "gamma" },
+]).show()
 
-    ctx.from_pylist([
-        { "a": 1, "b": 10.0, "c": "alpha" },
-        { "a": 2, "b": 20.0, "c": "beta" },
-        { "a": 3, "b": 30.0, "c": "gamma" },
-    ]).show()
+ctx.from_pydict({
+    "a": [1, 2, 3],
+    "b": [10.0, 20.0, 30.0],
+    "c": ["alpha", "beta", "gamma"],
+}).show()
 
-    ctx.from_pydict({
-        "a": [1, 2, 3],
-        "b": [10.0, 20.0, 30.0],
-        "c": ["alpha", "beta", "gamma"],
-    }).show()
+batch = pa.RecordBatch.from_arrays(
+    [
+        pa.array([1, 2, 3]),
+        pa.array([10.0, 20.0, 30.0]),
+        pa.array(["alpha", "beta", "gamma"]),
+    ],
+    names=["a", "b", "c"],
+)
 
-    batch = pa.RecordBatch.from_arrays(
-        [
-            pa.array([1, 2, 3]),
-            pa.array([10.0, 20.0, 30.0]),
-            pa.array(["alpha", "beta", "gamma"]),
-        ],
-        names=["a", "b", "c"],
-    )
-
-    ctx.create_dataframe([[batch]]).show()
+ctx.create_dataframe([[batch]]).show()
 
 ```
 

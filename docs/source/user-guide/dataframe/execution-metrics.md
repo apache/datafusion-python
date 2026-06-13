@@ -114,30 +114,13 @@ apply globally (not tied to a specific partition).
 The following metrics are directly accessible as properties on
 {py:class}`~datafusion.MetricsSet`:
 
-```{eval-rst}
-.. list-table::
-   :header-rows: 1
-   :widths: 25 75
-
-   * - Property
-     - Description
-   * - ``output_rows``
-     - Number of rows emitted by the operator (summed across partitions).
-   * - ``elapsed_compute``
-     - Wall-clock CPU time **in nanoseconds** spent inside the operator's
-       compute loop, excluding I/O wait.  Useful for identifying which
-       operators are most expensive (summed across partitions).
-   * - ``spill_count``
-     - Number of spill-to-disk events triggered by memory pressure.  This is
-       a unitless count of events, not a measure of data volume (summed across
-       partitions).
-   * - ``spilled_bytes``
-     - Total bytes written to disk during spill events (summed across
-       partitions).
-   * - ``spilled_rows``
-     - Total rows written to disk during spill events (summed across
-       partitions).
-```
+| Property | Description |
+| --- | --- |
+| `output_rows` | Number of rows emitted by the operator (summed across partitions). |
+| `elapsed_compute` | Wall-clock CPU time **in nanoseconds** spent inside the operator's compute loop, excluding I/O wait.  Useful for identifying which operators are most expensive (summed across partitions). |
+| `spill_count` | Number of spill-to-disk events triggered by memory pressure.  This is a unitless count of events, not a measure of data volume (summed across partitions). |
+| `spilled_bytes` | Total bytes written to disk during spill events (summed across partitions). |
+| `spilled_rows` | Total rows written to disk during spill events (summed across partitions). |
 
 Any metric not listed above can be accessed via
 {py:meth}`~datafusion.MetricsSet.sum_by_name`, or by iterating over the raw

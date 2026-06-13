@@ -111,6 +111,8 @@ in the Python docs.
   {py:class}`SessionContext`. Without that registration, evaluation
   raises an error.
 
+(distributed_udf_portability)=
+
 ### Portability requirements for inline Python UDFs
 
 Inline Python UDFs ride on [cloudpickle](https://github.com/cloudpipe/cloudpickle), which imposes two
@@ -185,8 +187,7 @@ every start method — prefer it over relying on inherited state.
   state — local variables, module-level objects, file paths — that
   state is captured at serialization time. Surprises are possible if
   the captured state is large, mutable, or not portable to the
-  worker's environment. See [Portability requirements for inline
-  Python UDFs](#portability-requirements-for-inline-python-udfs) for the Python-version and imported-module rules.
+  worker's environment. See {ref}`Portability requirements for inline Python UDFs <distributed_udf_portability>` for the Python-version and imported-module rules.
 
 ### Disabling Python UDF inlining
 
@@ -235,8 +236,10 @@ contexts.
 
 The toggle only narrows the {py:meth}`Expr.from_bytes` surface;
 {py:func}`pickle.loads` on untrusted bytes remains unsafe regardless
-of this setting. See the [Security](#security) section below for the full
+of this setting. See the {ref}`Security <distributed_expr_security>` section below for the full
 threat model.
+
+(distributed_expr_security)=
 
 ### Security
 
@@ -257,40 +260,12 @@ functions and pre-registered Rust-side UDFs, and avoid
 There is only one type — {py:class}`SessionContext`. It can occupy
 up to four *slots* in a running program:
 
-```{eval-rst}
-.. list-table::
-   :header-rows: 1
-   :widths: 12 18 40 30
-
-   * - Slot
-     - Lifetime
-     - Purpose
-     - Set how
-   * - User-held
-     - Local variable / attribute
-     - Build and run queries
-     - ``ctx = SessionContext(...)``
-   * - Global
-     - Process singleton (lazy-init)
-     - Backs module-level
-       :py:func:`~datafusion.io.read_parquet`,
-       :py:func:`~datafusion.io.read_csv`,
-       :py:func:`~datafusion.io.read_json`,
-       :py:func:`~datafusion.io.read_avro`; final fallback for
-       :py:meth:`Expr.from_bytes`
-     - Implicit; access via
-       :py:meth:`SessionContext.global_ctx`
-   * - Sender
-     - Thread-local on the driver
-     - Codec settings for outbound :py:func:`pickle.dumps` /
-       :py:meth:`Expr.to_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_sender_ctx`
-   * - Worker
-     - Thread-local on the worker
-     - Function registry for inbound :py:func:`pickle.loads` /
-       :py:meth:`Expr.from_bytes` without ``ctx``
-     - :py:func:`~datafusion.ipc.set_worker_ctx`
-```
+| Slot | Lifetime | Purpose | Set how |
+| --- | --- | --- | --- |
+| User-held | Local variable / attribute | Build and run queries | `ctx = SessionContext(...)` |
+| Global | Process singleton (lazy-init) | Backs module-level {py:func}`~datafusion.io.read_parquet`, {py:func}`~datafusion.io.read_csv`, {py:func}`~datafusion.io.read_json`, {py:func}`~datafusion.io.read_avro`; final fallback for {py:meth}`Expr.from_bytes` | Implicit; access via {py:meth}`SessionContext.global_ctx` |
+| Sender | Thread-local on the driver | Codec settings for outbound {py:func}`pickle.dumps` / {py:meth}`Expr.to_bytes` without `ctx` | {py:func}`~datafusion.ipc.set_sender_ctx` |
+| Worker | Thread-local on the worker | Function registry for inbound {py:func}`pickle.loads` / {py:meth}`Expr.from_bytes` without `ctx` | {py:func}`~datafusion.ipc.set_worker_ctx` |
 
 The same {py:class}`SessionContext` object may occupy more than one
 slot simultaneously — installing it into a slot is a reference, not
