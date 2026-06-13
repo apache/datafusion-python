@@ -75,6 +75,13 @@ nb_execution_mode = "force"
 nb_execution_timeout = 120
 nb_execution_raise_on_error = True
 
+# Prefer the plain-text repr of a cell's last expression over its rich
+# `_repr_html_`. A DataFrame's HTML repr is a self-contained widget (inline
+# styles + an injected <script>) built for Jupyter; in the docs theme it
+# renders at the wrong width. The text repr is the readable table the old
+# IPython directive showed and is stable across datafusion versions.
+nb_mime_priority_overrides = [("html", "text/plain", 0)]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
