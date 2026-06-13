@@ -65,26 +65,46 @@ html[data-theme="dark"] .table tbody tr:nth-of-type(odd) {
 }
 
 
-/* Collapsible right-hand "On this page" TOC
- * (see _templates/page-toc-collapsible.html). */
+/* Hideable right-hand "On this page" sidebar.
+ * toc-toggle.js adds the button and toggles `pst-secondary-hidden` on <body>;
+ * hiding the sidebar lets the flex article container reclaim the width. */
 
-details.pst-page-toc-collapsible > summary {
+body.pst-secondary-hidden .bd-sidebar-secondary {
+  display: none;
+}
+
+/* Let the article use the freed space rather than just re-centering. */
+body.pst-secondary-hidden .bd-article-container {
+  max-width: none;
+}
+
+/* Floating toggle button, pinned to the top-right under the navbar. */
+#pst-secondary-toggle {
+  position: fixed;
+  top: 4.5rem;
+  right: 0.75rem;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--pst-color-border, #ccc);
+  border-radius: 0.25rem;
+  background-color: var(--pst-color-surface, #fff);
+  color: var(--pst-color-text-base, #333);
   cursor: pointer;
-  list-style: none;       /* hide the default disclosure triangle ... */
 }
 
-details.pst-page-toc-collapsible > summary::-webkit-details-marker {
-  display: none;          /* ... including the WebKit/Safari variant */
+#pst-secondary-toggle:hover {
+  color: rgb(var(--pst-color-link-hover));
 }
 
-/* Draw our own chevron so the toggle reads as expandable, and rotate it
- * when the section is open. */
-details.pst-page-toc-collapsible > summary::after {
-  content: "\203A";       /* › */
-  float: right;
-  transition: transform 0.2s ease;
-}
-
-details.pst-page-toc-collapsible[open] > summary::after {
-  transform: rotate(90deg);
+/* The toggle is only meaningful where the sidebar is shown (wide screens);
+ * below the theme's lg breakpoint the sidebar is already collapsed away. */
+@media (max-width: 959.98px) {
+  #pst-secondary-toggle {
+    display: none;
+  }
 }

@@ -162,10 +162,10 @@ html_theme_options = {
             "icon": "fa-brands fa-rust",
         },
     ],
-    # Right-hand "On this page" TOC, wrapped in a collapsible <details>
-    # (see _templates/page-toc-collapsible.html). Helpful on the longer guide
-    # pages; the reader can fold it away.
-    "secondary_sidebar_items": ["page-toc-collapsible"],
+    # Right-hand "On this page" TOC. A toggle button (added by
+    # _static/toc-toggle.js) lets the reader hide the whole sidebar and give
+    # the article full width.
+    "secondary_sidebar_items": ["page-toc"],
     "collapse_navigation": True,
     "show_nav_level": 2,
 }
@@ -190,6 +190,10 @@ html_favicon = "_static/favicon.svg"
 html_extra_path = ["llms.txt"]
 
 html_css_files = ["theme_overrides.css"]
+
+# Adds a button that hides the right-hand "On this page" sidebar so the
+# article can use the full width (see _static/toc-toggle.js).
+html_js_files = ["toc-toggle.js"]
 
 html_sidebars = {
     "**": ["sidebar-globaltoc.html"],
