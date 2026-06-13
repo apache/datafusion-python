@@ -39,6 +39,7 @@ for categorized catalogs of aggregate and window functions.
 from __future__ import annotations
 
 import inspect
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
@@ -59,6 +60,16 @@ from datafusion.expr import (
     sort_list_to_raw_sort_list,
     sort_or_default,
 )
+
+
+def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
+    warnings.warn(
+        f"Passing Expr for {function_name}() argument {arg_name!r} is deprecated; "
+        "pass a Python literal instead.",
+        DeprecationWarning,
+        stacklevel=4,
+    )
+
 
 __all__ = [
     "abs",
@@ -2575,7 +2586,7 @@ def datepart(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_part`.
     """
-    return date_part(part, date)
+    return _date_part(part, date, "datepart")
 
 
 def date_part(part: Expr | str, date: Expr) -> Expr:
@@ -2595,6 +2606,12 @@ def date_part(part: Expr | str, date: Expr) -> Expr:
         >>> result.collect_column("y")[0].as_py()
         2021
     """
+    return _date_part(part, date, "date_part")
+
+
+def _date_part(part: Expr | str, date: Expr, function_name: str) -> Expr:
+    if isinstance(part, Expr):
+        _warn_expr_for_literal_arg(function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_part(part.expr, date.expr))
 
@@ -2605,7 +2622,7 @@ def extract(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_part`.
     """
-    return date_part(part, date)
+    return _date_part(part, date, "extract")
 
 
 def date_trunc(part: Expr | str, date: Expr) -> Expr:
@@ -2626,6 +2643,12 @@ def date_trunc(part: Expr | str, date: Expr) -> Expr:
         >>> str(result.collect_column("t")[0].as_py())
         '2021-07-01 00:00:00'
     """
+    return _date_trunc(part, date, "date_trunc")
+
+
+def _date_trunc(part: Expr | str, date: Expr, function_name: str) -> Expr:
+    if isinstance(part, Expr):
+        _warn_expr_for_literal_arg(function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_trunc(part.expr, date.expr))
 
@@ -2636,7 +2659,7 @@ def datetrunc(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_trunc`.
     """
-    return date_trunc(part, date)
+    return _date_trunc(part, date, "datetrunc")
 
 
 def date_bin(stride: Expr, source: Expr, origin: Expr) -> Expr:
