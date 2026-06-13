@@ -162,7 +162,10 @@ html_theme_options = {
             "icon": "fa-brands fa-rust",
         },
     ],
-    "secondary_sidebar_items": [],
+    # Right-hand "On this page" TOC, wrapped in a collapsible <details>
+    # (see _templates/page-toc-collapsible.html). Helpful on the longer guide
+    # pages; the reader can fold it away.
+    "secondary_sidebar_items": ["page-toc-collapsible"],
     "collapse_navigation": True,
     "show_nav_level": 2,
 }

@@ -63,3 +63,28 @@ html[data-theme="dark"] .table tbody tr:nth-of-type(odd) {
         white-space: normal !important;
     }
 }
+
+
+/* Collapsible right-hand "On this page" TOC
+ * (see _templates/page-toc-collapsible.html). */
+
+details.pst-page-toc-collapsible > summary {
+  cursor: pointer;
+  list-style: none;       /* hide the default disclosure triangle ... */
+}
+
+details.pst-page-toc-collapsible > summary::-webkit-details-marker {
+  display: none;          /* ... including the WebKit/Safari variant */
+}
+
+/* Draw our own chevron so the toggle reads as expandable, and rotate it
+ * when the section is open. */
+details.pst-page-toc-collapsible > summary::after {
+  content: "\203A";       /* › */
+  float: right;
+  transition: transform 0.2s ease;
+}
+
+details.pst-page-toc-collapsible[open] > summary::after {
+  transform: rotate(90deg);
+}
