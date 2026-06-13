@@ -192,6 +192,16 @@ skip = [
 count = true
 ignore-words-list = ["IST", "ans"]
 
+[tool.uv]
+# Keep typing-extensions on a single version across all supported Pythons.
+# Adding the docs `myst-nb` stack pulled a newer typing-extensions only on
+# Python < 3.11, splitting it into two locked versions. Our own
+# `typing-extensions; python_full_version < '3.13'` dependency then spanned
+# that split, which uv records as an under-specified lock entry that older
+# uv versions (such as the one in CI) refuse to parse. Pinning to one
+# version removes the fork.
+constraint-dependencies = ["typing-extensions>=4.15.0"]
+
 [dependency-groups]
 dev = [
   "arro3-core==0.6.5",
