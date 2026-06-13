@@ -144,7 +144,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "logo": {
         "image_light": "_static/images/original.svg",
-        "image_dark": "_static/images/original.svg",
+        "image_dark": "_static/images/original_dark.svg",
         "alt_text": "Apache DataFusion in Python",
     },
     "navbar_start": ["navbar-logo"],
