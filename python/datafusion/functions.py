@@ -87,6 +87,7 @@ __all__ = [
     "array_any_value",
     "array_append",
     "array_cat",
+    "array_compact",
     "array_concat",
     "array_contains",
     "array_dims",
@@ -107,6 +108,7 @@ __all__ = [
     "array_max",
     "array_min",
     "array_ndims",
+    "array_normalize",
     "array_pop_back",
     "array_pop_front",
     "array_position",
@@ -162,6 +164,7 @@ __all__ = [
     "corr",
     "cos",
     "cosh",
+    "cosine_distance",
     "cot",
     "count",
     "count_star",
@@ -182,6 +185,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "dot_product",
     "element_at",
     "empty",
     "encode",
@@ -203,6 +207,7 @@ __all__ = [
     "ifnull",
     "in_list",
     "initcap",
+    "inner_product",
     "instr",
     "isnan",
     "iszero",
@@ -220,6 +225,7 @@ __all__ = [
     "list_any_value",
     "list_append",
     "list_cat",
+    "list_compact",
     "list_concat",
     "list_contains",
     "list_dims",
@@ -240,6 +246,7 @@ __all__ = [
     "list_max",
     "list_min",
     "list_ndims",
+    "list_normalize",
     "list_overlap",
     "list_pop_back",
     "list_pop_front",
@@ -3227,6 +3234,164 @@ def array_distinct(array: Expr) -> Expr:
     return Expr(f.array_distinct(array.expr))
 
 
+def array_compact(array: Expr) -> Expr:
+    """Removes NULL values from the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, None, 2, None, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_compact(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [1, 2, 3]
+    """
+    return Expr(f.array_compact(array.expr))
+
+
+def array_normalize(array: Expr) -> Expr:
+    """Scales a numeric array so it has Euclidean length 1.
+
+    Treats the array as a vector and divides every element by the vector's
+    Euclidean (L2) norm — the square root of the sum of the squared
+    elements. The returned array points in the same direction as the input
+    but has a magnitude of 1, which makes it suitable for cosine-similarity
+    comparisons and other operations that expect unit vectors.
+
+    For the input ``[3.0, 4.0]`` the L2 norm is ``sqrt(3**2 + 4**2) = 5``,
+    so each element is divided by 5 to produce ``[0.6, 0.8]``.
+
+    Normalizing the zero vector is undefined (it would divide by zero), so
+    the function returns NULL for an all-zero input. NULL is also returned
+    if any element of the input array is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[3.0, 4.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [0.6, 0.8]
+
+        The zero vector has no direction to preserve, so the result is NULL:
+
+        >>> df_zero = ctx.from_pydict({"a": [[0.0, 0.0]]})
+        >>> result = df_zero.select(
+        ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
+    """
+    return Expr(f.array_normalize(array.expr))
+
+
+def cosine_distance(array1: Expr, array2: Expr) -> Expr:
+    """Measures how much two numeric arrays differ in direction.
+
+    Treats each input as a vector and compares the angle between them,
+    ignoring their magnitudes. The result is ``1 - cosine_similarity``,
+    where cosine similarity is the dot product of the two vectors divided
+    by the product of their Euclidean (L2) norms.
+
+    The returned value ranges from 0 to 2:
+
+    * ``0`` — vectors point in the same direction (any positive scaling
+      of one yields the other).
+    * ``1`` — vectors are orthogonal (no shared direction).
+    * ``2`` — vectors point in exactly opposite directions.
+
+    This is the standard distance metric for comparing embedding vectors
+    (text, image, audio) where direction carries the meaning and overall
+    magnitude does not.
+
+    Both arrays must have the same length; otherwise execution fails. If
+    either input is the zero vector the cosine is undefined and the
+    function returns NULL.
+
+    Examples:
+        Identical vectors have distance ``0``:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[1.0, 2.0, 3.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.cosine_distance(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        0.0
+
+        Orthogonal vectors have distance ``1``:
+
+        >>> df_orth = ctx.from_pydict(
+        ...     {"a": [[1.0, 0.0]], "b": [[0.0, 1.0]]}
+        ... )
+        >>> result = df_orth.select(
+        ...     dfn.functions.cosine_distance(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        1.0
+    """
+    return Expr(f.cosine_distance(array1.expr, array2.expr))
+
+
+def inner_product(array1: Expr, array2: Expr) -> Expr:
+    """Returns the inner (dot) product of two numeric arrays.
+
+    Treats each input as a vector and returns the sum of the element-wise
+    products: ``sum(array1[i] * array2[i])``. For ``[1, 2, 3]`` and
+    ``[4, 5, 6]`` the result is ``1*4 + 2*5 + 3*6 = 32``.
+
+    Also available as :py:func:`dot_product` (and as ``dot_product`` in
+    raw SQL).
+
+    Both arrays must have the same length; otherwise execution fails. NULL
+    is returned when either input array is NULL or when any element of
+    either array is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.inner_product(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        32.0
+
+        NULL elements propagate to NULL output:
+
+        >>> df_null = ctx.from_pydict(
+        ...     {"a": [[1.0, None, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+        ... )
+        >>> result = df_null.select(
+        ...     dfn.functions.inner_product(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
+    """
+    return Expr(f.inner_product(array1.expr, array2.expr))
+
+
+def dot_product(array1: Expr, array2: Expr) -> Expr:
+    """Returns the inner (dot) product of two numeric arrays.
+
+    See Also:
+        This is an alias for :py:func:`inner_product`.
+    """
+    return inner_product(array1, array2)
+
+
 def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
@@ -3252,6 +3417,24 @@ def list_distinct(array: Expr) -> Expr:
         This is an alias for :py:func:`array_distinct`.
     """
     return array_distinct(array)
+
+
+def list_compact(array: Expr) -> Expr:
+    """Removes NULL values from the array.
+
+    See Also:
+        This is an alias for :py:func:`array_compact`.
+    """
+    return array_compact(array)
+
+
+def list_normalize(array: Expr) -> Expr:
+    """Scales a numeric array so it has Euclidean length 1.
+
+    See Also:
+        This is an alias for :py:func:`array_normalize`.
+    """
+    return array_normalize(array)
 
 
 def list_dims(array: Expr) -> Expr:
