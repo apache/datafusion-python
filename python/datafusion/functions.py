@@ -133,7 +133,9 @@ __all__ = [
     "arrays_overlap",
     "arrays_zip",
     "arrow_cast",
+    "arrow_field",
     "arrow_metadata",
+    "arrow_try_cast",
     "arrow_typeof",
     "ascii",
     "asin",
@@ -151,6 +153,7 @@ __all__ = [
     "btrim",
     "cardinality",
     "case",
+    "cast_to_type",
     "cbrt",
     "ceil",
     "char_length",
@@ -375,6 +378,7 @@ __all__ = [
     "translate",
     "trim",
     "trunc",
+    "try_cast_to_type",
     "union_extract",
     "union_tag",
     "upper",
@@ -386,6 +390,7 @@ __all__ = [
     "var_sample",
     "version",
     "when",
+    "with_metadata",
 ]
 
 
@@ -2960,6 +2965,110 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
+def arrow_try_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
+    """Casts an expression to a specified data type, returning NULL on failure.
+
+    Like :py:func:`arrow_cast` but produces NULL instead of erroring when the
+    cast cannot be performed. The ``data_type`` may be a string in DataFusion
+    type syntax (for example ``"Float64"``), a ``pyarrow.DataType``, or an
+    ``Expr`` of string type.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["oops"]})
+        >>> result = df.select(
+        ...     dfn.functions.arrow_try_cast(dfn.col("a"), "Float64").alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+
+        >>> result = df.select(
+        ...     dfn.functions.arrow_try_cast(
+        ...         dfn.col("a"), data_type=pa.float64()
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+    """
+    if isinstance(data_type, pa.DataType):
+        return expr.try_cast(data_type)
+    if isinstance(data_type, str):
+        data_type = Expr.string_literal(data_type)
+    return Expr(f.arrow_try_cast(expr.expr, data_type.expr))
+
+
+def arrow_field(expr: Expr) -> Expr:
+    """Returns the Arrow field information of an expression as a struct.
+
+    The returned struct contains the field's name, data type, nullability,
+    and metadata.
+
+    Examples:
+        >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+        >>> schema = pa.schema([field])
+        >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.create_dataframe([[batch]])
+        >>> result = df.select(
+        ...     dfn.functions.arrow_field(dfn.col("val")).alias("f")
+        ... )
+        >>> out = result.collect_column("f")[0].as_py()
+        >>> out["name"], out["data_type"], out["nullable"], out["metadata"]
+        ('val', 'Int64', True, [('k', 'v')])
+    """
+    return Expr(f.arrow_field(expr.expr))
+
+
+def cast_to_type(value: Expr, type_ref: Expr) -> Expr:
+    """Casts ``value`` to the data type of ``type_ref``.
+
+    Only the *type* of ``type_ref`` is used; its value is ignored. This is
+    useful when the target type comes from another column or expression
+    rather than being known up-front. Casts that fail produce an error; use
+    :py:func:`try_cast_to_type` for the NULL-on-failure variant.
+
+    If the target type is known statically, prefer :py:func:`arrow_cast`
+    (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
+    pass a type string or ``pyarrow.DataType`` directly.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1], "b": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.cast_to_type(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py()
+        1.0
+    """
+    return Expr(f.cast_to_type(value.expr, type_ref.expr))
+
+
+def try_cast_to_type(value: Expr, type_ref: Expr) -> Expr:
+    """Casts ``value`` to the data type of ``type_ref``, NULL on failure.
+
+    Like :py:func:`cast_to_type`, but casts that fail produce NULL instead
+    of erroring. Only the *type* of ``type_ref`` is used; its value is
+    ignored.
+
+    If the target type is known statically, prefer :py:func:`arrow_try_cast`
+    and pass a type string or ``pyarrow.DataType`` directly.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["oops"], "b": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.try_cast_to_type(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+    """
+    return Expr(f.try_cast_to_type(value.expr, type_ref.expr))
+
+
 def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     """Returns the metadata of the input expression.
 
@@ -2991,6 +3100,41 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     if isinstance(key, str):
         key = Expr.string_literal(key)
     return Expr(f.arrow_metadata(expr.expr, key.expr))
+
+
+def with_metadata(expr: Expr, metadata: dict[str, str]) -> Expr:
+    """Attaches Arrow field metadata (key/value pairs) to the input expression.
+
+    This is the inverse of :py:func:`arrow_metadata`. Existing metadata on the
+    input field is preserved; new keys overwrite on collision. Keys must be
+    non-empty strings; empty values are allowed.
+
+    An empty ``metadata`` dict is a no-op and returns the input expression
+    unchanged. Empty keys raise :py:class:`ValueError`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.with_metadata(
+        ...         dfn.col("a"), {"unit": "ms"}
+        ...     ).alias("a")
+        ... )
+        >>> result.select(
+        ...     dfn.functions.arrow_metadata(dfn.col("a"), "unit").alias("u")
+        ... ).collect_column("u")[0].as_py()
+        'ms'
+    """
+    if not metadata:
+        return expr
+    args = [expr.expr]
+    for k, v in metadata.items():
+        if not k:
+            msg = "with_metadata keys must be non-empty strings"
+            raise ValueError(msg)
+        args.append(Expr.string_literal(k).expr)
+        args.append(Expr.string_literal(v).expr)
+    return Expr(f.with_metadata(*args))
 
 
 def get_field(expr: Expr, *names: Expr | str) -> Expr:
