@@ -83,8 +83,8 @@ Extracting parts of a date using {py:func}`~datafusion.functions.date_part` (ali
 
 ```{code-cell} ipython3
 df.select(
-   f.date_part(literal("month"), f.to_timestamp(col('"Total"'))).alias("month"),
-   f.extract(literal("day"), f.to_timestamp(col('"Total"'))).alias("day")
+   f.date_part("month", f.to_timestamp(col('"Total"'))).alias("month"),
+   f.extract("day", f.to_timestamp(col('"Total"'))).alias("day")
 )
 ```
 
