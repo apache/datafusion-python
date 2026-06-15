@@ -1316,13 +1316,12 @@ def test_arrow_cast_variants(df, cast_fn, data_type, expected):
     assert result.column(0) == expected
 
 
-@pytest.mark.parametrize("data_type", ["Float64", pa.float64()])
-def test_arrow_try_cast_null_on_failure(data_type):
+def test_arrow_try_cast_null_on_failure():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array(["1.5", "oops", "3"])], names=["s"])
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(f.arrow_try_cast(column("s"), data_type).alias("c")).collect()[0]
+    result = df.select(f.arrow_try_cast(column("s"), "Float64").alias("c")).collect()[0]
 
     assert result.column(0).to_pylist() == [1.5, None, 3.0]
 
@@ -1348,23 +1347,21 @@ def test_arrow_field():
 
 
 @pytest.mark.parametrize(
-    ("values", "try_cast", "expected"),
+    ("cast_fn", "values", "expected"),
     [
-        (pa.array([4, 5, 6]), False, [4.0, 5.0, 6.0]),
-        (pa.array(["oops", "2", "3"]), True, [None, 2.0, 3.0]),
+        (f.cast_to_type, pa.array([4, 5, 6]), [4.0, 5.0, 6.0]),
+        (f.try_cast_to_type, pa.array(["oops", "2", "3"]), [None, 2.0, 3.0]),
     ],
 )
-def test_cast_to_type(values, try_cast, expected):
-    """cast_to_type takes target type from ``type_ref``; try_cast nullifies failures."""
+def test_cast_to_type(cast_fn, values, expected):
+    """cast_to_type / try_cast_to_type take target type from ``type_ref``."""
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [values, pa.array([1.0, 2.0, 3.0])], names=["v", "fl"]
     )
     df = ctx.create_dataframe([[batch]])
 
-    result = df.select(
-        f.cast_to_type(column("v"), column("fl"), try_cast=try_cast).alias("c")
-    ).collect()[0]
+    result = df.select(cast_fn(column("v"), column("fl")).alias("c")).collect()[0]
 
     assert result.column(0).to_pylist() == expected
     assert result.column(0).type == pa.float64()

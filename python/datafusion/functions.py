@@ -360,6 +360,7 @@ __all__ = [
     "translate",
     "trim",
     "trunc",
+    "try_cast_to_type",
     "union_extract",
     "union_tag",
     "upper",
@@ -2988,13 +2989,13 @@ def arrow_field(expr: Expr) -> Expr:
     return Expr(f.arrow_field(expr.expr))
 
 
-def cast_to_type(value: Expr, type_ref: Expr, *, try_cast: bool = False) -> Expr:
+def cast_to_type(value: Expr, type_ref: Expr) -> Expr:
     """Casts ``value`` to the data type of ``type_ref``.
 
     Only the *type* of ``type_ref`` is used; its value is ignored. This is
     useful when the target type comes from another column or expression
-    rather than being known up-front. When ``try_cast=True``, casts that
-    fail produce NULL instead of erroring.
+    rather than being known up-front. Casts that fail produce an error; use
+    :py:func:`try_cast_to_type` for the NULL-on-failure variant.
 
     If the target type is known statically, prefer :py:func:`arrow_cast`
     (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
@@ -3010,17 +3011,32 @@ def cast_to_type(value: Expr, type_ref: Expr, *, try_cast: bool = False) -> Expr
         ... )
         >>> result.collect_column("c")[0].as_py()
         1.0
+    """
+    return Expr(f.cast_to_type(value.expr, type_ref.expr))
 
+
+def try_cast_to_type(value: Expr, type_ref: Expr) -> Expr:
+    """Casts ``value`` to the data type of ``type_ref``, NULL on failure.
+
+    Like :py:func:`cast_to_type`, but casts that fail produce NULL instead
+    of erroring. Only the *type* of ``type_ref`` is used; its value is
+    ignored.
+
+    If the target type is known statically, prefer :py:func:`arrow_try_cast`
+    and pass a type string or ``pyarrow.DataType`` directly.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["oops"], "b": [1.0]})
         >>> result = df.select(
-        ...     dfn.functions.cast_to_type(
-        ...         dfn.col("a"), dfn.col("b"), try_cast=True
+        ...     dfn.functions.try_cast_to_type(
+        ...         dfn.col("a"), dfn.col("b")
         ...     ).alias("c")
         ... )
         >>> result.collect_column("c")[0].as_py() is None
         True
     """
-    return Expr(f.cast_to_type(value.expr, type_ref.expr, try_cast=try_cast))
+    return Expr(f.try_cast_to_type(value.expr, type_ref.expr))
 
 
 def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:

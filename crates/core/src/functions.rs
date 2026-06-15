@@ -609,15 +609,8 @@ expr_fn!(arrow_typeof, arg_1);
 expr_fn!(arrow_cast, arg_1 datatype);
 expr_fn!(arrow_try_cast, arg_1 datatype);
 expr_fn!(arrow_field, arg_1);
-#[pyfunction]
-#[pyo3(signature = (arg_1, reference, *, try_cast = false))]
-fn cast_to_type(arg_1: PyExpr, reference: PyExpr, try_cast: bool) -> PyExpr {
-    if try_cast {
-        functions::expr_fn::try_cast_to_type(arg_1.into(), reference.into()).into()
-    } else {
-        functions::expr_fn::cast_to_type(arg_1.into(), reference.into()).into()
-    }
-}
+expr_fn!(cast_to_type, arg_1 reference);
+expr_fn!(try_cast_to_type, arg_1 reference);
 expr_fn_vec!(arrow_metadata);
 expr_fn_vec!(with_metadata);
 expr_fn!(union_tag, arg1);
@@ -977,6 +970,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(arrow_try_cast))?;
     m.add_wrapped(wrap_pyfunction!(arrow_field))?;
     m.add_wrapped(wrap_pyfunction!(cast_to_type))?;
+    m.add_wrapped(wrap_pyfunction!(try_cast_to_type))?;
     m.add_wrapped(wrap_pyfunction!(arrow_metadata))?;
     m.add_wrapped(wrap_pyfunction!(with_metadata))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
