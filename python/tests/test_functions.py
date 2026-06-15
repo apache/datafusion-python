@@ -720,31 +720,22 @@ def test_array_function_obj_tests(stmt, py_expr):
 @pytest.mark.parametrize(
     ("alias_fn", "primary_fn", "data"),
     [
-        (f.list_compact, f.array_compact, [[1.0, None, 2.0, None, 3.0]]),
-        (f.list_normalize, f.array_normalize, [[3.0, 4.0]]),
+        (f.list_compact, f.array_compact, {"a": [[1.0, None, 2.0, None, 3.0]]}),
+        (f.list_normalize, f.array_normalize, {"a": [[3.0, 4.0]]}),
+        (
+            f.dot_product,
+            f.inner_product,
+            {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]},
+        ),
     ],
 )
 def test_array_function_aliases(alias_fn, primary_fn, data):
-    """list_* helpers should be exact aliases for their array_* counterparts."""
+    """Alias helpers should be exact aliases for their primary counterparts."""
     ctx = SessionContext()
-    df = ctx.from_pydict({"a": data})
-    alias_result = df.select(alias_fn(column("a")).alias("r")).collect()
-    primary_result = df.select(primary_fn(column("a")).alias("r")).collect()
-    assert (
-        alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
-    )
-
-
-def test_dot_product_alias_matches_inner_product():
-    """dot_product should be an exact alias for inner_product."""
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]})
-    alias_result = df.select(
-        f.dot_product(column("a"), column("b")).alias("r")
-    ).collect()
-    primary_result = df.select(
-        f.inner_product(column("a"), column("b")).alias("r")
-    ).collect()
+    df = ctx.from_pydict(data)
+    cols = [column(name) for name in data]
+    alias_result = df.select(alias_fn(*cols).alias("r")).collect()
+    primary_result = df.select(primary_fn(*cols).alias("r")).collect()
     assert (
         alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
     )
