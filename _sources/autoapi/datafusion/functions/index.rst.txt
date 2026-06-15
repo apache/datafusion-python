@@ -103,7 +103,9 @@ Functions
    datafusion.functions.arrays_overlap
    datafusion.functions.arrays_zip
    datafusion.functions.arrow_cast
+   datafusion.functions.arrow_field
    datafusion.functions.arrow_metadata
+   datafusion.functions.arrow_try_cast
    datafusion.functions.arrow_typeof
    datafusion.functions.ascii
    datafusion.functions.asin
@@ -121,6 +123,7 @@ Functions
    datafusion.functions.btrim
    datafusion.functions.cardinality
    datafusion.functions.case
+   datafusion.functions.cast_to_type
    datafusion.functions.cbrt
    datafusion.functions.ceil
    datafusion.functions.char_length
@@ -344,6 +347,7 @@ Functions
    datafusion.functions.translate
    datafusion.functions.trim
    datafusion.functions.trunc
+   datafusion.functions.try_cast_to_type
    datafusion.functions.union_extract
    datafusion.functions.union_tag
    datafusion.functions.upper
@@ -355,6 +359,7 @@ Functions
    datafusion.functions.var_sample
    datafusion.functions.version
    datafusion.functions.when
+   datafusion.functions.with_metadata
 
 
 Module Contents
@@ -1440,6 +1445,28 @@ Module Contents
    1.0
 
 
+.. py:function:: arrow_field(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Arrow field information of an expression as a struct.
+
+   The returned struct contains the field's name, data type, nullability,
+   and metadata.
+
+   .. rubric:: Examples
+
+   >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+   >>> schema = pa.schema([field])
+   >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.create_dataframe([[batch]])
+   >>> result = df.select(
+   ...     dfn.functions.arrow_field(dfn.col("val")).alias("f")
+   ... )
+   >>> out = result.collect_column("f")[0].as_py()
+   >>> out["name"], out["data_type"], out["nullable"], out["metadata"]
+   ('val', 'Int64', True, [('k', 'v')])
+
+
 .. py:function:: arrow_metadata(expr: datafusion.expr.Expr, key: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Returns the metadata of the input expression.
@@ -1467,6 +1494,34 @@ Module Contents
    ... )
    >>> result.collect_column("meta_val")[0].as_py()
    'v'
+
+
+.. py:function:: arrow_try_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr | str | pyarrow.DataType) -> datafusion.expr.Expr
+
+   Casts an expression to a specified data type, returning NULL on failure.
+
+   Like :py:func:`arrow_cast` but produces NULL instead of erroring when the
+   cast cannot be performed. The ``data_type`` may be a string in DataFusion
+   type syntax (for example ``"Float64"``), a ``pyarrow.DataType``, or an
+   ``Expr`` of string type.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["oops"]})
+   >>> result = df.select(
+   ...     dfn.functions.arrow_try_cast(dfn.col("a"), "Float64").alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
+
+   >>> result = df.select(
+   ...     dfn.functions.arrow_try_cast(
+   ...         dfn.col("a"), data_type=pa.float64()
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
 
 
 .. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1836,6 +1891,32 @@ Module Contents
    ...     dfn.lit("one")).otherwise(dfn.lit("other")).alias("c"))
    >>> result.collect_column("c")[0].as_py()
    'one'
+
+
+.. py:function:: cast_to_type(value: datafusion.expr.Expr, type_ref: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Casts ``value`` to the data type of ``type_ref``.
+
+   Only the *type* of ``type_ref`` is used; its value is ignored. This is
+   useful when the target type comes from another column or expression
+   rather than being known up-front. Casts that fail produce an error; use
+   :py:func:`try_cast_to_type` for the NULL-on-failure variant.
+
+   If the target type is known statically, prefer :py:func:`arrow_cast`
+   (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
+   pass a type string or ``pyarrow.DataType`` directly.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1], "b": [1.0]})
+   >>> result = df.select(
+   ...     dfn.functions.cast_to_type(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py()
+   1.0
 
 
 .. py:function:: cbrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -5776,6 +5857,30 @@ Module Contents
    1.56
 
 
+.. py:function:: try_cast_to_type(value: datafusion.expr.Expr, type_ref: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Casts ``value`` to the data type of ``type_ref``, NULL on failure.
+
+   Like :py:func:`cast_to_type`, but casts that fail produce NULL instead
+   of erroring. Only the *type* of ``type_ref`` is used; its value is
+   ignored.
+
+   If the target type is known statically, prefer :py:func:`arrow_try_cast`
+   and pass a type string or ``pyarrow.DataType`` directly.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["oops"], "b": [1.0]})
+   >>> result = df.select(
+   ...     dfn.functions.try_cast_to_type(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
+
+
 .. py:function:: union_extract(union_expr: datafusion.expr.Expr, field_name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Extracts a value from a union type by field name.
@@ -5962,6 +6067,32 @@ Module Contents
    ...     dfn.lit("big")).otherwise(dfn.lit("small")).alias("c"))
    >>> result.collect_column("c")[2].as_py()
    'big'
+
+
+.. py:function:: with_metadata(expr: datafusion.expr.Expr, metadata: dict[str, str]) -> datafusion.expr.Expr
+
+   Attaches Arrow field metadata (key/value pairs) to the input expression.
+
+   This is the inverse of :py:func:`arrow_metadata`. Existing metadata on the
+   input field is preserved; new keys overwrite on collision. Keys must be
+   non-empty strings; empty values are allowed.
+
+   An empty ``metadata`` dict is a no-op and returns the input expression
+   unchanged. Empty keys raise :py:class:`ValueError`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.with_metadata(
+   ...         dfn.col("a"), {"unit": "ms"}
+   ...     ).alias("a")
+   ... )
+   >>> result.select(
+   ...     dfn.functions.arrow_metadata(dfn.col("a"), "unit").alias("u")
+   ... ).collect_column("u")[0].as_py()
+   'ms'
 
 
 .. py:data:: today

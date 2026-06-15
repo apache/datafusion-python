@@ -1807,6 +1807,22 @@ the receiver.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.try_cast">
+<span class="sig-name descname"><span class="pre">try_cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.try_cast" title="Link to this definition">#</a></dt>
+<dd><p>Cast to a new data type, returning NULL on failure.</p>
+<p>Like <a class="reference internal" href="#datafusion.expr.Expr.cast" title="datafusion.expr.Expr.cast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cast()</span></code></a> but produces NULL instead of erroring when the
+cast cannot be performed for a given row.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;oops&quot;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">try_cast</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">())</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.types">
 <span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion.common.DataTypeMap</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.types" title="Link to this definition">#</a></dt>
 <dd><p>Return the <code class="docutils literal notranslate"><span class="pre">DataTypeMap</span></code>.</p>

@@ -1756,6 +1756,23 @@ Package Contents
 
 
 
+   .. py:method:: try_cast(to: pyarrow.DataType[Any] | type) -> Expr
+
+      Cast to a new data type, returning NULL on failure.
+
+      Like :py:meth:`cast` but produces NULL instead of erroring when the
+      cast cannot be performed for a given row.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": ["oops"]})
+      >>> result = df.select(col("a").try_cast(pa.float64()).alias("c"))
+      >>> result.collect_column("c")[0].as_py() is None
+      True
+
+
+
    .. py:method:: types() -> datafusion.common.DataTypeMap
 
       Return the ``DataTypeMap``.
