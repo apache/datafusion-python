@@ -552,9 +552,10 @@ jobs:
         run: |
           set -x
           cd docs
-          curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
-          curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
-          uv run --no-project make html
+          # build.sh downloads the example data, registers the Jupyter kernel
+          # myst-nb needs, symlinks the data next to each executed page, and
+          # runs sphinx. Using it here keeps CI identical to a local build.
+          uv run --no-project bash ./build.sh
 
       - name: Copy & push the generated HTML
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
