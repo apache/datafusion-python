@@ -31,8 +31,9 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/windows';</script>
+    <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -480,50 +486,75 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="window-functions">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="window-functions">
 <span id="id1"></span><h1>Window Functions<a class="headerlink" href="#window-functions" title="Link to this heading">#</a></h1>
 <p>In this section you will learn about window functions. A window function utilizes values from one or
 multiple rows to produce a result for each individual row, unlike an aggregate function that
 provides a single value for multiple rows.</p>
 <p>The window functions are available in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>Here is an example that shows how you can compare each pokemon’s speed to the speed of the
 previous row in the DataFrame.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">lag</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------------------------+-------+----------------+</span>
-<span class="o">|</span> <span class="n">Name</span>                      <span class="o">|</span> <span class="n">Speed</span> <span class="o">|</span> <span class="n">Previous</span> <span class="n">Speed</span> <span class="o">|</span>
-<span class="o">+---------------------------+-------+----------------+</span>
-<span class="o">|</span> <span class="n">Bulbasaur</span>                 <span class="o">|</span> <span class="mi">45</span>    <span class="o">|</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ivysaur</span>                   <span class="o">|</span> <span class="mi">60</span>    <span class="o">|</span> <span class="mi">45</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">Venusaur</span>                  <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">60</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">VenusaurMega</span> <span class="n">Venusaur</span>     <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">80</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">Charmander</span>                <span class="o">|</span> <span class="mi">65</span>    <span class="o">|</span> <span class="mi">80</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">Charmeleon</span>                <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">65</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">Charizard</span>                 <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">80</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">X</span> <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">100</span>            <span class="o">|</span>
-<span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">Y</span> <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">100</span>            <span class="o">|</span>
-<span class="o">|</span> <span class="n">Squirtle</span>                  <span class="o">|</span> <span class="mi">43</span>    <span class="o">|</span> <span class="mi">100</span>            <span class="o">|</span>
-<span class="o">+---------------------------+-------+----------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">lag</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---------------------------+-------+----------------+
+| Name                      | Speed | Previous Speed |
++---------------------------+-------+----------------+
+| Bulbasaur                 | 45    |                |
+| Ivysaur                   | 60    | 45             |
+| Venusaur                  | 80    | 60             |
+| VenusaurMega Venusaur     | 80    | 80             |
+| Charmander                | 65    | 80             |
+| Charmeleon                | 80    | 65             |
+| Charizard                 | 100   | 80             |
+| CharizardMega Charizard X | 100   | 100            |
+| CharizardMega Charizard Y | 100   | 100            |
+| Squirtle                  | 43    | 100            |
++---------------------------+-------+----------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 <section id="setting-parameters">
 <h2>Setting Parameters<a class="headerlink" href="#setting-parameters" title="Link to this heading">#</a></h2>
@@ -531,34 +562,40 @@ previous row in the DataFrame.</p>
 <h3>Ordering<a class="headerlink" href="#ordering" title="Link to this heading">#</a></h3>
 <p>You can control the order in which rows are processed by window functions by providing
 a list of <code class="docutils literal notranslate"><span class="pre">order_by</span></code> functions for the <code class="docutils literal notranslate"><span class="pre">order_by</span></code> parameter.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------+--------+--------+------+</span>
-<span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
-<span class="o">+------------+--------+--------+------+</span>
-<span class="o">|</span> <span class="n">Metapod</span>    <span class="o">|</span> <span class="mi">20</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Kakuna</span>     <span class="o">|</span> <span class="mi">25</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Caterpie</span>   <span class="o">|</span> <span class="mi">30</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Weedle</span>     <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">4</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Butterfree</span> <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">5</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Venonat</span>    <span class="o">|</span> <span class="mi">55</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">6</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Venomoth</span>   <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">7</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Paras</span>      <span class="o">|</span> <span class="mi">70</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">8</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Beedrill</span>   <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">9</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Parasect</span>   <span class="o">|</span> <span class="mi">95</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mi">10</span>   <span class="o">|</span>
-<span class="o">+------------+--------+--------+------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
+        <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
+        <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++------------+--------+--------+------+
+| Name       | Attack | Type 1 | rank |
++------------+--------+--------+------+
+| Metapod    | 20     | Bug    | 1    |
+| Kakuna     | 25     | Bug    | 2    |
+| Caterpie   | 30     | Bug    | 3    |
+| Weedle     | 35     | Bug    | 4    |
+| Butterfree | 45     | Bug    | 5    |
+| Venonat    | 55     | Bug    | 6    |
+| Venomoth   | 65     | Bug    | 7    |
+| Paras      | 70     | Bug    | 8    |
+| Beedrill   | 90     | Bug    | 9    |
+| Parasect   | 95     | Bug    | 10   |
++------------+--------+--------+------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="partitions">
@@ -568,34 +605,40 @@ a list of <code class="docutils literal notranslate"><span class="pre">order_by<
 independently for each of the partitions. In the example above, we found the rank of each
 Pokemon per <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> partitions. We can see the first couple of each partition if we do
 the following:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">))</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-----------+--------+----------+------+</span>
-<span class="o">|</span> <span class="n">Name</span>      <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
-<span class="o">+-----------+--------+----------+------+</span>
-<span class="o">|</span> <span class="n">Metapod</span>   <span class="o">|</span> <span class="mi">20</span>     <span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Kakuna</span>    <span class="o">|</span> <span class="mi">25</span>     <span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dratini</span>   <span class="o">|</span> <span class="mi">64</span>     <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dragonair</span> <span class="o">|</span> <span class="mi">84</span>     <span class="o">|</span> <span class="n">Dragon</span>   <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Voltorb</span>   <span class="o">|</span> <span class="mi">30</span>     <span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Magnemite</span> <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Clefairy</span>  <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Clefable</span>  <span class="o">|</span> <span class="mi">70</span>     <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Mankey</span>    <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Machop</span>    <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="n">Fighting</span> <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">+-----------+--------+----------+------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
+        <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
+        <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">))</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-----------+--------+----------+------+
+| Name      | Attack | Type 1   | rank |
++-----------+--------+----------+------+
+| Metapod   | 20     | Bug      | 1    |
+| Kakuna    | 25     | Bug      | 2    |
+| Dratini   | 64     | Dragon   | 1    |
+| Dragonair | 84     | Dragon   | 2    |
+| Voltorb   | 30     | Electric | 1    |
+| Magnemite | 35     | Electric | 2    |
+| Clefairy  | 45     | Fairy    | 1    |
+| Clefable  | 70     | Fairy    | 2    |
+| Mankey    | 80     | Fighting | 1    |
+| Machop    | 80     | Fighting | 1    |
++-----------+--------+----------+------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="window-frame">
@@ -622,34 +665,40 @@ parameter.</p></li>
 </ul>
 <p>In this example we perform a “rolling average” of the speed of the current Pokemon and the
 two preceding rows.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">WindowFrame</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">WindowFrame</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)]))</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------+-------+--------------------+</span>
-<span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Speed</span> <span class="o">|</span> <span class="n">Previous</span> <span class="n">Speed</span>     <span class="o">|</span>
-<span class="o">+------------+-------+--------------------+</span>
-<span class="o">|</span> <span class="n">Slowpoke</span>   <span class="o">|</span> <span class="mi">15</span>    <span class="o">|</span> <span class="mf">15.0</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Jigglypuff</span> <span class="o">|</span> <span class="mi">20</span>    <span class="o">|</span> <span class="mf">17.5</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Geodude</span>    <span class="o">|</span> <span class="mi">20</span>    <span class="o">|</span> <span class="mf">18.333333333333332</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Paras</span>      <span class="o">|</span> <span class="mi">25</span>    <span class="o">|</span> <span class="mf">21.666666666666668</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grimer</span>     <span class="o">|</span> <span class="mi">25</span>    <span class="o">|</span> <span class="mf">23.333333333333332</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rhyhorn</span>    <span class="o">|</span> <span class="mi">25</span>    <span class="o">|</span> <span class="mf">25.0</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Snorlax</span>    <span class="o">|</span> <span class="mi">30</span>    <span class="o">|</span> <span class="mf">26.666666666666668</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Metapod</span>    <span class="o">|</span> <span class="mi">30</span>    <span class="o">|</span> <span class="mf">28.333333333333332</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Oddish</span>     <span class="o">|</span> <span class="mi">30</span>    <span class="o">|</span> <span class="mf">30.0</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Parasect</span>   <span class="o">|</span> <span class="mi">30</span>    <span class="o">|</span> <span class="mf">30.0</span>               <span class="o">|</span>
-<span class="o">+------------+-------+--------------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)]))</span>
+    <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++------------+-------+--------------------+
+| Name       | Speed | Previous Speed     |
++------------+-------+--------------------+
+| Slowpoke   | 15    | 15.0               |
+| Jigglypuff | 20    | 17.5               |
+| Geodude    | 20    | 18.333333333333332 |
+| Paras      | 25    | 21.666666666666668 |
+| Grimer     | 25    | 23.333333333333332 |
+| Rhyhorn    | 25    | 25.0               |
+| Snorlax    | 30    | 26.666666666666668 |
+| Metapod    | 30    | 28.333333333333332 |
+| Oddish     | 30    | 30.0               |
+| Parasect   | 30    | 30.0               |
++------------+-------+--------------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="null-treatment">
@@ -663,49 +712,55 @@ nulls will fill in with the value of the most recent non-null row. To do this, w
 the window frame so that we only process up to the current row.</p>
 <p>In this example, we filter down to one specific type of Pokemon that does have some entries in
 it’s <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> column that are null.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullTreatment</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullTreatment</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">IGNORE_NULLS</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_wo_null&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">RESPECT_NULLS</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_with_null&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------+--------+--------------+----------------+</span>
-<span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="o">|</span> <span class="n">last_wo_null</span> <span class="o">|</span> <span class="n">last_with_null</span> <span class="o">|</span>
-<span class="o">+------------+--------+--------------+----------------+</span>
-<span class="o">|</span> <span class="n">Paras</span>      <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Grass</span>        <span class="o">|</span> <span class="n">Grass</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Metapod</span>    <span class="o">|</span>        <span class="o">|</span> <span class="n">Grass</span>        <span class="o">|</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Parasect</span>   <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Grass</span>        <span class="o">|</span> <span class="n">Grass</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Kakuna</span>     <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span> <span class="n">Poison</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Caterpie</span>   <span class="o">|</span>        <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Venonat</span>    <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span> <span class="n">Poison</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Weedle</span>     <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span> <span class="n">Poison</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Butterfree</span> <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="n">Flying</span>       <span class="o">|</span> <span class="n">Flying</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Beedrill</span>   <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span> <span class="n">Poison</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Pinsir</span>     <span class="o">|</span>        <span class="o">|</span> <span class="n">Poison</span>       <span class="o">|</span>                <span class="o">|</span>
-<span class="o">+------------+--------+--------------+----------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">,</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">over</span><span class="p">(</span>
+        <span class="n">Window</span><span class="p">(</span>
+            <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
+            <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">IGNORE_NULLS</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_wo_null&quot;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">over</span><span class="p">(</span>
+        <span class="n">Window</span><span class="p">(</span>
+            <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
+            <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">RESPECT_NULLS</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_with_null&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++------------+--------+--------------+----------------+
+| Name       | Type 2 | last_wo_null | last_with_null |
++------------+--------+--------------+----------------+
+| Paras      | Grass  | Grass        | Grass          |
+| Metapod    |        | Grass        |                |
+| Parasect   | Grass  | Grass        | Grass          |
+| Kakuna     | Poison | Poison       | Poison         |
+| Caterpie   |        | Poison       |                |
+| Venonat    | Poison | Poison       | Poison         |
+| Weedle     | Poison | Poison       | Poison         |
+| Butterfree | Flying | Flying       | Flying         |
+| Beedrill   | Poison | Poison       | Poison         |
+| Pinsir     |        | Poison       |                |
++------------+--------+--------------+----------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
@@ -714,43 +769,49 @@ it’s <code class="docutils literal notranslate"><span class="pre">Type</span> 
 <p>You can use any <a class="reference internal" href="aggregations.html#aggregation"><span class="std std-ref">Aggregation Function</span></a> as a window function. Here
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its <code class="docutils literal notranslate"><span class="pre">&quot;Type</span> <span class="pre">1&quot;</span></code> using the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.avg" title="datafusion.functions.avg"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.avg()</span></code></a> function.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>             <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Average Attack&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------------+--------+--------+----------------+</span>
-<span class="o">|</span> <span class="n">Name</span>              <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Average</span> <span class="n">Attack</span> <span class="o">|</span>
-<span class="o">+-------------------+--------+--------+----------------+</span>
-<span class="o">|</span> <span class="n">Dragonite</span>         <span class="o">|</span> <span class="mi">134</span>    <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="mf">94.0</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dratini</span>           <span class="o">|</span> <span class="mi">64</span>     <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="mf">94.0</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dragonair</span>         <span class="o">|</span> <span class="mi">84</span>     <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="mf">94.0</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Gastly</span>            <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="mf">53.75</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Haunter</span>           <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="mf">53.75</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Gengar</span>            <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="mf">53.75</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">GengarMega</span> <span class="n">Gengar</span> <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="n">Ghost</span>  <span class="o">|</span> <span class="mf">53.75</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Jynx</span>              <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="mf">67.5</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Articuno</span>          <span class="o">|</span> <span class="mi">85</span>     <span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="mf">67.5</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Kabuto</span>            <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="n">Rock</span>   <span class="o">|</span> <span class="mf">87.5</span>           <span class="o">|</span>
-<span class="o">+-------------------+--------+--------+----------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+        <span class="n">Window</span><span class="p">(</span>
+            <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
+        <span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Average Attack&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------------+--------+--------+----------------+
+| Name              | Attack | Type 1 | Average Attack |
++-------------------+--------+--------+----------------+
+| Dragonite         | 134    | Dragon | 94.0           |
+| Dratini           | 64     | Dragon | 94.0           |
+| Dragonair         | 84     | Dragon | 94.0           |
+| Gastly            | 35     | Ghost  | 53.75          |
+| Haunter           | 50     | Ghost  | 53.75          |
+| Gengar            | 65     | Ghost  | 53.75          |
+| GengarMega Gengar | 65     | Ghost  | 53.75          |
+| Jynx              | 50     | Ice    | 67.5           |
+| Articuno          | 85     | Ice    | 67.5           |
+| Kabuto            | 80     | Rock   | 87.5           |
++-------------------+--------+--------+----------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="available-functions">
 <h2>Available Functions<a class="headerlink" href="#available-functions" title="Link to this heading">#</a></h2>
 <p>The possible window functions are:</p>
 <ol class="arabic simple">
-<li><dl class="simple">
+<li><dl class="simple myst">
 <dt>Rank Functions</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.rank" title="datafusion.functions.rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.rank()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.dense_rank" title="datafusion.functions.dense_rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.dense_rank()</span></code></a></p></li>
@@ -760,7 +821,7 @@ power in its <code class="docutils literal notranslate"><span class="pre">&quot;
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
+<li><dl class="simple myst">
 <dt>Analytical Functions</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.cume_dist" title="datafusion.functions.cume_dist"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.cume_dist()</span></code></a></p></li>
 <li><p><a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.percent_rank" title="datafusion.functions.percent_rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.percent_rank()</span></code></a></p></li>
@@ -770,7 +831,7 @@ power in its <code class="docutils literal notranslate"><span class="pre">&quot;
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
+<li><dl class="simple myst">
 <dt>Aggregate Functions</dt><dd><ul class="simple">
 <li><p>All <a class="reference internal" href="aggregations.html#aggregation"><span class="std std-ref">Aggregation Functions</span></a> can be used as window functions.</p></li>
 </ul>
@@ -833,6 +894,33 @@ must be importable on the receiving worker. See
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-parameters">Setting Parameters</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering">Ordering</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#partitions">Partitions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#window-frame">Window Frame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#null-treatment">Null Treatment</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregate-functions">Aggregate Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-functions">Available Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-defined-window-functions">User-Defined Window Functions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

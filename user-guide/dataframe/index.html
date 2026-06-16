@@ -31,8 +31,9 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/dataframe/index';</script>
+    <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -477,7 +483,25 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="dataframes">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="dataframes">
 <h1>DataFrames<a class="headerlink" href="#dataframes" title="Link to this heading">#</a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
@@ -743,7 +767,7 @@ rendering, formatting options, and advanced styling, see <a class="reference int
 </section>
 <section id="core-classes">
 <h2>Core Classes<a class="headerlink" href="#core-classes" title="Link to this heading">#</a></h2>
-<dl>
+<dl class="simple myst">
 <dt><strong>DataFrame</strong></dt><dd><p>The main DataFrame class for building and executing queries.</p>
 <p>See: <code class="xref py py-class docutils literal notranslate"><span class="pre">datafusion.DataFrame</span></code></p>
 </dd>
@@ -765,7 +789,7 @@ rendering, formatting options, and advanced styling, see <a class="reference int
 </section>
 <section id="expression-classes">
 <h2>Expression Classes<a class="headerlink" href="#expression-classes" title="Link to this heading">#</a></h2>
-<dl>
+<dl class="simple myst">
 <dt><strong>Expr</strong></dt><dd><p>Represents expressions that can be used in DataFrame operations.</p>
 <p>See: <a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">datafusion.Expr</span></code></a></p>
 </dd>
@@ -833,6 +857,38 @@ worked example.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-dataframes">Creating DataFrames</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-dataframe-operations">Common DataFrame Operations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#column-names-as-function-arguments">Column Names as Function Arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal-operations">Terminal Operations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zero-copy-streaming-to-arrow-based-python-libraries">Zero-copy streaming to Arrow-based Python libraries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyarrow">PyArrow</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-as-stream">Execute as Stream</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#html-rendering">HTML Rendering</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-classes">Core Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expression-classes">Expression Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#built-in-functions">Built-in Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution-metrics">Execution Metrics</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

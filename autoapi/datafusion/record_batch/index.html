@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/record_batch/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -548,7 +554,7 @@ selection or reordering are applied.</p>
 <p>This constructor is typically not called by the end user.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__aiter__">
-<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__aiter__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__aiter__" title="Link to this definition">#</a></dt>
 <dd><p>Return an asynchronous iterator over record batches.</p>
 </dd></dl>
 
@@ -560,7 +566,7 @@ selection or reordering are applied.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatchStream.__iter__">
-<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__iter__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatchStream.__iter__" title="Link to this definition">#</a></dt>
 <dd><p>Return an iterator over record batches.</p>
 </dd></dl>
 
@@ -620,6 +626,42 @@ selection or reordering are applied.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch"><code class="docutils literal notranslate"><span class="pre">RecordBatch</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch.__arrow_c_array__"><code class="docutils literal notranslate"><span class="pre">RecordBatch.__arrow_c_array__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch.to_pyarrow"><code class="docutils literal notranslate"><span class="pre">RecordBatch.to_pyarrow()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatch.record_batch"><code class="docutils literal notranslate"><span class="pre">RecordBatch.record_batch</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.__aiter__"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.__aiter__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.__anext__"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.__anext__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.__iter__"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.__iter__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.__next__"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.__next__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.next"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.next()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.record_batch.RecordBatchStream.rbs"><code class="docutils literal notranslate"><span class="pre">RecordBatchStream.rbs</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

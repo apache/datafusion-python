@@ -31,8 +31,9 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/data-sources';</script>
+    <script src="../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -477,46 +483,69 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="data-sources">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="data-sources">
 <span id="user-guide-data-sources"></span><h1>Data Sources<a class="headerlink" href="#data-sources" title="Link to this heading">#</a></h1>
 <p>DataFusion provides a wide variety of ways to get data into a DataFrame to perform operations.</p>
 <section id="local-file">
 <h2>Local file<a class="headerlink" href="#local-file" title="Link to this heading">#</a></h2>
 <p>DataFusion has the ability to read from a variety of popular file formats, such as <a class="reference internal" href="io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a>,
 <a class="reference internal" href="io/csv.html#io-csv"><span class="std std-ref">CSV</span></a>, <a class="reference internal" href="io/json.html#io-json"><span class="std std-ref">JSON</span></a>, and <a class="reference internal" href="io/avro.html#io-avro"><span class="std std-ref">AVRO</span></a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+</span>
-<span class="o">|</span> <span class="c1">#  | Name                      | Type 1 | Type 2 | Total | HP | Attack | Defense | Sp. Atk | Sp. Def | Speed | Generation | Legendary |</span>
-<span class="o">+----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">Bulbasaur</span>                 <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">318</span>   <span class="o">|</span> <span class="mi">45</span> <span class="o">|</span> <span class="mi">49</span>     <span class="o">|</span> <span class="mi">49</span>      <span class="o">|</span> <span class="mi">65</span>      <span class="o">|</span> <span class="mi">65</span>      <span class="o">|</span> <span class="mi">45</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">Ivysaur</span>                   <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">405</span>   <span class="o">|</span> <span class="mi">60</span> <span class="o">|</span> <span class="mi">62</span>     <span class="o">|</span> <span class="mi">63</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">60</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>  <span class="o">|</span> <span class="n">Venusaur</span>                  <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">525</span>   <span class="o">|</span> <span class="mi">80</span> <span class="o">|</span> <span class="mi">82</span>     <span class="o">|</span> <span class="mi">83</span>      <span class="o">|</span> <span class="mi">100</span>     <span class="o">|</span> <span class="mi">100</span>     <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>  <span class="o">|</span> <span class="n">VenusaurMega</span> <span class="n">Venusaur</span>     <span class="o">|</span> <span class="n">Grass</span>  <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">625</span>   <span class="o">|</span> <span class="mi">80</span> <span class="o">|</span> <span class="mi">100</span>    <span class="o">|</span> <span class="mi">123</span>     <span class="o">|</span> <span class="mi">122</span>     <span class="o">|</span> <span class="mi">120</span>     <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">4</span>  <span class="o">|</span> <span class="n">Charmander</span>                <span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span>        <span class="o">|</span> <span class="mi">309</span>   <span class="o">|</span> <span class="mi">39</span> <span class="o">|</span> <span class="mi">52</span>     <span class="o">|</span> <span class="mi">43</span>      <span class="o">|</span> <span class="mi">60</span>      <span class="o">|</span> <span class="mi">50</span>      <span class="o">|</span> <span class="mi">65</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">5</span>  <span class="o">|</span> <span class="n">Charmeleon</span>                <span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span>        <span class="o">|</span> <span class="mi">405</span>   <span class="o">|</span> <span class="mi">58</span> <span class="o">|</span> <span class="mi">64</span>     <span class="o">|</span> <span class="mi">58</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">65</span>      <span class="o">|</span> <span class="mi">80</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">6</span>  <span class="o">|</span> <span class="n">Charizard</span>                 <span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="mi">534</span>   <span class="o">|</span> <span class="mi">78</span> <span class="o">|</span> <span class="mi">84</span>     <span class="o">|</span> <span class="mi">78</span>      <span class="o">|</span> <span class="mi">109</span>     <span class="o">|</span> <span class="mi">85</span>      <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">6</span>  <span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">X</span> <span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="n">Dragon</span> <span class="o">|</span> <span class="mi">634</span>   <span class="o">|</span> <span class="mi">78</span> <span class="o">|</span> <span class="mi">130</span>    <span class="o">|</span> <span class="mi">111</span>     <span class="o">|</span> <span class="mi">130</span>     <span class="o">|</span> <span class="mi">85</span>      <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">6</span>  <span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">Y</span> <span class="o">|</span> <span class="n">Fire</span>   <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="mi">634</span>   <span class="o">|</span> <span class="mi">78</span> <span class="o">|</span> <span class="mi">104</span>    <span class="o">|</span> <span class="mi">78</span>      <span class="o">|</span> <span class="mi">159</span>     <span class="o">|</span> <span class="mi">115</span>     <span class="o">|</span> <span class="mi">100</span>   <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">7</span>  <span class="o">|</span> <span class="n">Squirtle</span>                  <span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span>        <span class="o">|</span> <span class="mi">314</span>   <span class="o">|</span> <span class="mi">44</span> <span class="o">|</span> <span class="mi">48</span>     <span class="o">|</span> <span class="mi">65</span>      <span class="o">|</span> <span class="mi">50</span>      <span class="o">|</span> <span class="mi">64</span>      <span class="o">|</span> <span class="mi">43</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">8</span>  <span class="o">|</span> <span class="n">Wartortle</span>                 <span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span>        <span class="o">|</span> <span class="mi">405</span>   <span class="o">|</span> <span class="mi">59</span> <span class="o">|</span> <span class="mi">63</span>     <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">65</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">58</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">9</span>  <span class="o">|</span> <span class="n">Blastoise</span>                 <span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span>        <span class="o">|</span> <span class="mi">530</span>   <span class="o">|</span> <span class="mi">79</span> <span class="o">|</span> <span class="mi">83</span>     <span class="o">|</span> <span class="mi">100</span>     <span class="o">|</span> <span class="mi">85</span>      <span class="o">|</span> <span class="mi">105</span>     <span class="o">|</span> <span class="mi">78</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">9</span>  <span class="o">|</span> <span class="n">BlastoiseMega</span> <span class="n">Blastoise</span>   <span class="o">|</span> <span class="n">Water</span>  <span class="o">|</span>        <span class="o">|</span> <span class="mi">630</span>   <span class="o">|</span> <span class="mi">79</span> <span class="o">|</span> <span class="mi">103</span>    <span class="o">|</span> <span class="mi">120</span>     <span class="o">|</span> <span class="mi">135</span>     <span class="o">|</span> <span class="mi">115</span>     <span class="o">|</span> <span class="mi">78</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">10</span> <span class="o">|</span> <span class="n">Caterpie</span>                  <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span>        <span class="o">|</span> <span class="mi">195</span>   <span class="o">|</span> <span class="mi">45</span> <span class="o">|</span> <span class="mi">30</span>     <span class="o">|</span> <span class="mi">35</span>      <span class="o">|</span> <span class="mi">20</span>      <span class="o">|</span> <span class="mi">20</span>      <span class="o">|</span> <span class="mi">45</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">11</span> <span class="o">|</span> <span class="n">Metapod</span>                   <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span>        <span class="o">|</span> <span class="mi">205</span>   <span class="o">|</span> <span class="mi">50</span> <span class="o">|</span> <span class="mi">20</span>     <span class="o">|</span> <span class="mi">55</span>      <span class="o">|</span> <span class="mi">25</span>      <span class="o">|</span> <span class="mi">25</span>      <span class="o">|</span> <span class="mi">30</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">12</span> <span class="o">|</span> <span class="n">Butterfree</span>                <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="n">Flying</span> <span class="o">|</span> <span class="mi">395</span>   <span class="o">|</span> <span class="mi">60</span> <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="mi">50</span>      <span class="o">|</span> <span class="mi">90</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">70</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">13</span> <span class="o">|</span> <span class="n">Weedle</span>                    <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">195</span>   <span class="o">|</span> <span class="mi">40</span> <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="mi">30</span>      <span class="o">|</span> <span class="mi">20</span>      <span class="o">|</span> <span class="mi">20</span>      <span class="o">|</span> <span class="mi">50</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">14</span> <span class="o">|</span> <span class="n">Kakuna</span>                    <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">205</span>   <span class="o">|</span> <span class="mi">45</span> <span class="o">|</span> <span class="mi">25</span>     <span class="o">|</span> <span class="mi">50</span>      <span class="o">|</span> <span class="mi">25</span>      <span class="o">|</span> <span class="mi">25</span>      <span class="o">|</span> <span class="mi">35</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">15</span> <span class="o">|</span> <span class="n">Beedrill</span>                  <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">395</span>   <span class="o">|</span> <span class="mi">65</span> <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="mi">40</span>      <span class="o">|</span> <span class="mi">45</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">75</span>    <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="mi">15</span> <span class="o">|</span> <span class="n">BeedrillMega</span> <span class="n">Beedrill</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="n">Poison</span> <span class="o">|</span> <span class="mi">495</span>   <span class="o">|</span> <span class="mi">65</span> <span class="o">|</span> <span class="mi">150</span>    <span class="o">|</span> <span class="mi">40</span>      <span class="o">|</span> <span class="mi">15</span>      <span class="o">|</span> <span class="mi">80</span>      <span class="o">|</span> <span class="mi">145</span>   <span class="o">|</span> <span class="mi">1</span>          <span class="o">|</span> <span class="n">false</span>     <span class="o">|</span>
-<span class="o">+----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+
+| #  | Name                      | Type 1 | Type 2 | Total | HP | Attack | Defense | Sp. Atk | Sp. Def | Speed | Generation | Legendary |
++----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+
+| 1  | Bulbasaur                 | Grass  | Poison | 318   | 45 | 49     | 49      | 65      | 65      | 45    | 1          | false     |
+| 2  | Ivysaur                   | Grass  | Poison | 405   | 60 | 62     | 63      | 80      | 80      | 60    | 1          | false     |
+| 3  | Venusaur                  | Grass  | Poison | 525   | 80 | 82     | 83      | 100     | 100     | 80    | 1          | false     |
+| 3  | VenusaurMega Venusaur     | Grass  | Poison | 625   | 80 | 100    | 123     | 122     | 120     | 80    | 1          | false     |
+| 4  | Charmander                | Fire   |        | 309   | 39 | 52     | 43      | 60      | 50      | 65    | 1          | false     |
+| 5  | Charmeleon                | Fire   |        | 405   | 58 | 64     | 58      | 80      | 65      | 80    | 1          | false     |
+| 6  | Charizard                 | Fire   | Flying | 534   | 78 | 84     | 78      | 109     | 85      | 100   | 1          | false     |
+| 6  | CharizardMega Charizard X | Fire   | Dragon | 634   | 78 | 130    | 111     | 130     | 85      | 100   | 1          | false     |
+| 6  | CharizardMega Charizard Y | Fire   | Flying | 634   | 78 | 104    | 78      | 159     | 115     | 100   | 1          | false     |
+| 7  | Squirtle                  | Water  |        | 314   | 44 | 48     | 65      | 50      | 64      | 43    | 1          | false     |
+| 8  | Wartortle                 | Water  |        | 405   | 59 | 63     | 80      | 65      | 80      | 58    | 1          | false     |
+| 9  | Blastoise                 | Water  |        | 530   | 79 | 83     | 100     | 85      | 105     | 78    | 1          | false     |
+| 9  | BlastoiseMega Blastoise   | Water  |        | 630   | 79 | 103    | 120     | 135     | 115     | 78    | 1          | false     |
+| 10 | Caterpie                  | Bug    |        | 195   | 45 | 30     | 35      | 20      | 20      | 45    | 1          | false     |
+| 11 | Metapod                   | Bug    |        | 205   | 50 | 20     | 55      | 25      | 25      | 30    | 1          | false     |
+| 12 | Butterfree                | Bug    | Flying | 395   | 60 | 45     | 50      | 90      | 80      | 70    | 1          | false     |
+| 13 | Weedle                    | Bug    | Poison | 195   | 40 | 35     | 30      | 20      | 20      | 50    | 1          | false     |
+| 14 | Kakuna                    | Bug    | Poison | 205   | 45 | 25     | 50      | 25      | 25      | 35    | 1          | false     |
+| 15 | Beedrill                  | Bug    | Poison | 395   | 65 | 90     | 40      | 45      | 80      | 75    | 1          | false     |
+| 15 | BeedrillMega Beedrill     | Bug    | Poison | 495   | 65 | 150    | 40      | 15      | 80      | 145   | 1          | false     |
++----+---------------------------+--------+--------+-------+----+--------+---------+---------+---------+-------+------------+-----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="create-in-memory">
@@ -530,58 +559,63 @@ To do this in DataFusion, you can use one of the three functions
 dictionary and list objects, respectively. <code class="docutils literal notranslate"><span class="pre">create_dataframe</span></code> assumes you will pass in a list
 of list of <a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html">PyArrow Record Batches</a>.</p>
 <p>The following three examples all will create identical DataFrames:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;alpha&quot;</span> <span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;beta&quot;</span> <span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;gamma&quot;</span> <span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">])</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">b</span>    <span class="o">|</span> <span class="n">c</span>     <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="mf">10.0</span> <span class="o">|</span> <span class="n">alpha</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span> <span class="o">|</span> <span class="mf">20.0</span> <span class="o">|</span> <span class="n">beta</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mf">30.0</span> <span class="o">|</span> <span class="n">gamma</span> <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
+    <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;alpha&quot;</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;beta&quot;</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;gamma&quot;</span> <span class="p">},</span>
+<span class="p">])</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">})</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">b</span>    <span class="o">|</span> <span class="n">c</span>     <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="mf">10.0</span> <span class="o">|</span> <span class="n">alpha</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span> <span class="o">|</span> <span class="mf">20.0</span> <span class="o">|</span> <span class="n">beta</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mf">30.0</span> <span class="o">|</span> <span class="n">gamma</span> <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span>
+    <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span>
+    <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">],</span>
+<span class="p">})</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">[</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">]),</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">]),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
+<span class="n">batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">]),</span>
+        <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">]),</span>
+    <span class="p">],</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]])</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">b</span>    <span class="o">|</span> <span class="n">c</span>     <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
-<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="mf">10.0</span> <span class="o">|</span> <span class="n">alpha</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span> <span class="o">|</span> <span class="mf">20.0</span> <span class="o">|</span> <span class="n">beta</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mf">30.0</span> <span class="o">|</span> <span class="n">gamma</span> <span class="o">|</span>
-<span class="o">+---+------+-------+</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]])</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---+------+-------+
+| a | b    | c     |
++---+------+-------+
+| 1 | 10.0 | alpha |
+| 2 | 20.0 | beta  |
+| 3 | 30.0 | gamma |
++---+------+-------+
+DataFrame()
++---+------+-------+
+| a | b    | c     |
++---+------+-------+
+| 1 | 10.0 | alpha |
+| 2 | 20.0 | beta  |
+| 3 | 30.0 | gamma |
++---+------+-------+
+DataFrame()
++---+------+-------+
+| a | b    | c     |
++---+------+-------+
+| 1 | 10.0 | alpha |
+| 2 | 20.0 | beta  |
+| 3 | 30.0 | gamma |
++---+------+-------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="object-store">
@@ -806,6 +840,38 @@ original Python object.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Data Sources</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-file">Local file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-in-memory">Create in-memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-store">Object Store</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-dataframe-libraries">Other DataFrame Libraries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#delta-lake">Delta Lake</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apache-iceberg">Apache Iceberg</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-table-provider">Custom Table Provider</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#catalog">Catalog</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-defined-catalog-and-schema">User Defined Catalog and Schema</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
               
             
           </div>

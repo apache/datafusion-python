@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/dataframe/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -2375,6 +2381,159 @@ here.</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression"><code class="docutils literal notranslate"><span class="pre">Compression</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.from_str"><code class="docutils literal notranslate"><span class="pre">Compression.from_str()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.get_default_level"><code class="docutils literal notranslate"><span class="pre">Compression.get_default_level()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.BROTLI"><code class="docutils literal notranslate"><span class="pre">Compression.BROTLI</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.GZIP"><code class="docutils literal notranslate"><span class="pre">Compression.GZIP</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ4"><code class="docutils literal notranslate"><span class="pre">Compression.LZ4</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ4_RAW"><code class="docutils literal notranslate"><span class="pre">Compression.LZ4_RAW</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.SNAPPY"><code class="docutils literal notranslate"><span class="pre">Compression.SNAPPY</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.UNCOMPRESSED"><code class="docutils literal notranslate"><span class="pre">Compression.UNCOMPRESSED</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.Compression.ZSTD"><code class="docutils literal notranslate"><span class="pre">Compression.ZSTD</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame"><code class="docutils literal notranslate"><span class="pre">DataFrame</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.__aiter__"><code class="docutils literal notranslate"><span class="pre">DataFrame.__aiter__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.__arrow_c_stream__"><code class="docutils literal notranslate"><span class="pre">DataFrame.__arrow_c_stream__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.__getitem__"><code class="docutils literal notranslate"><span class="pre">DataFrame.__getitem__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.__iter__"><code class="docutils literal notranslate"><span class="pre">DataFrame.__iter__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.__repr__"><code class="docutils literal notranslate"><span class="pre">DataFrame.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame._repr_html_"><code class="docutils literal notranslate"><span class="pre">DataFrame._repr_html_()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.aggregate"><code class="docutils literal notranslate"><span class="pre">DataFrame.aggregate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.alias"><code class="docutils literal notranslate"><span class="pre">DataFrame.alias()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.cache"><code class="docutils literal notranslate"><span class="pre">DataFrame.cache()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.cast"><code class="docutils literal notranslate"><span class="pre">DataFrame.cast()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.col"><code class="docutils literal notranslate"><span class="pre">DataFrame.col()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.collect"><code class="docutils literal notranslate"><span class="pre">DataFrame.collect()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.collect_column"><code class="docutils literal notranslate"><span class="pre">DataFrame.collect_column()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.collect_partitioned"><code class="docutils literal notranslate"><span class="pre">DataFrame.collect_partitioned()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.column"><code class="docutils literal notranslate"><span class="pre">DataFrame.column()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.count"><code class="docutils literal notranslate"><span class="pre">DataFrame.count()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.default_str_repr"><code class="docutils literal notranslate"><span class="pre">DataFrame.default_str_repr()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.describe"><code class="docutils literal notranslate"><span class="pre">DataFrame.describe()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.distinct"><code class="docutils literal notranslate"><span class="pre">DataFrame.distinct()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.distinct_on"><code class="docutils literal notranslate"><span class="pre">DataFrame.distinct_on()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.drop"><code class="docutils literal notranslate"><span class="pre">DataFrame.drop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.except_all"><code class="docutils literal notranslate"><span class="pre">DataFrame.except_all()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.execute_stream"><code class="docutils literal notranslate"><span class="pre">DataFrame.execute_stream()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.execute_stream_partitioned"><code class="docutils literal notranslate"><span class="pre">DataFrame.execute_stream_partitioned()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.execution_plan"><code class="docutils literal notranslate"><span class="pre">DataFrame.execution_plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.explain"><code class="docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.fill_null"><code class="docutils literal notranslate"><span class="pre">DataFrame.fill_null()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.filter"><code class="docutils literal notranslate"><span class="pre">DataFrame.filter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.find_qualified_columns"><code class="docutils literal notranslate"><span class="pre">DataFrame.find_qualified_columns()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.head"><code class="docutils literal notranslate"><span class="pre">DataFrame.head()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.intersect"><code class="docutils literal notranslate"><span class="pre">DataFrame.intersect()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.into_view"><code class="docutils literal notranslate"><span class="pre">DataFrame.into_view()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.join"><code class="docutils literal notranslate"><span class="pre">DataFrame.join()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.join_on"><code class="docutils literal notranslate"><span class="pre">DataFrame.join_on()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.limit"><code class="docutils literal notranslate"><span class="pre">DataFrame.limit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.logical_plan"><code class="docutils literal notranslate"><span class="pre">DataFrame.logical_plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.optimized_logical_plan"><code class="docutils literal notranslate"><span class="pre">DataFrame.optimized_logical_plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.parse_sql_expr"><code class="docutils literal notranslate"><span class="pre">DataFrame.parse_sql_expr()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.repartition"><code class="docutils literal notranslate"><span class="pre">DataFrame.repartition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.repartition_by_hash"><code class="docutils literal notranslate"><span class="pre">DataFrame.repartition_by_hash()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.schema"><code class="docutils literal notranslate"><span class="pre">DataFrame.schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.select"><code class="docutils literal notranslate"><span class="pre">DataFrame.select()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.select_exprs"><code class="docutils literal notranslate"><span class="pre">DataFrame.select_exprs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.show"><code class="docutils literal notranslate"><span class="pre">DataFrame.show()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.sort"><code class="docutils literal notranslate"><span class="pre">DataFrame.sort()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.sort_by"><code class="docutils literal notranslate"><span class="pre">DataFrame.sort_by()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.tail"><code class="docutils literal notranslate"><span class="pre">DataFrame.tail()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.to_arrow_table"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_arrow_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.to_pandas"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_pandas()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.to_polars"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_polars()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.to_pydict"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_pydict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.to_pylist"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_pylist()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.transform"><code class="docutils literal notranslate"><span class="pre">DataFrame.transform()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union"><code class="docutils literal notranslate"><span class="pre">DataFrame.union()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union_by_name"><code class="docutils literal notranslate"><span class="pre">DataFrame.union_by_name()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union_distinct"><code class="docutils literal notranslate"><span class="pre">DataFrame.union_distinct()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.unnest_columns"><code class="docutils literal notranslate"><span class="pre">DataFrame.unnest_columns()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.window"><code class="docutils literal notranslate"><span class="pre">DataFrame.window()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.with_column"><code class="docutils literal notranslate"><span class="pre">DataFrame.with_column()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.with_column_renamed"><code class="docutils literal notranslate"><span class="pre">DataFrame.with_column_renamed()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.with_columns"><code class="docutils literal notranslate"><span class="pre">DataFrame.with_columns()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_csv"><code class="docutils literal notranslate"><span class="pre">DataFrame.write_csv()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_json"><code class="docutils literal notranslate"><span class="pre">DataFrame.write_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_parquet"><code class="docutils literal notranslate"><span class="pre">DataFrame.write_parquet()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_parquet_with_options"><code class="docutils literal notranslate"><span class="pre">DataFrame.write_parquet_with_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_table"><code class="docutils literal notranslate"><span class="pre">DataFrame.write_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.df"><code class="docutils literal notranslate"><span class="pre">DataFrame.df</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrameWriteOptions"><code class="docutils literal notranslate"><span class="pre">DataFrameWriteOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrameWriteOptions._raw_write_options"><code class="docutils literal notranslate"><span class="pre">DataFrameWriteOptions._raw_write_options</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat"><code class="docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.GRAPHVIZ"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.GRAPHVIZ</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.INDENT"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.INDENT</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.PGJSON"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.PGJSON</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.TREE"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.TREE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp"><code class="docutils literal notranslate"><span class="pre">InsertOp</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.APPEND"><code class="docutils literal notranslate"><span class="pre">InsertOp.APPEND</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.OVERWRITE"><code class="docutils literal notranslate"><span class="pre">InsertOp.OVERWRITE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.REPLACE"><code class="docutils literal notranslate"><span class="pre">InsertOp.REPLACE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.bloom_filter_enabled"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.bloom_filter_enabled</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.bloom_filter_fpp"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.bloom_filter_fpp</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.bloom_filter_ndv"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.bloom_filter_ndv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.compression"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.compression</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.dictionary_enabled"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.dictionary_enabled</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.encoding"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.encoding</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetColumnOptions.statistics_enabled"><code class="docutils literal notranslate"><span class="pre">ParquetColumnOptions.statistics_enabled</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.allow_single_file_parallelism"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.allow_single_file_parallelism</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.bloom_filter_fpp"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.bloom_filter_fpp</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.bloom_filter_ndv"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.bloom_filter_ndv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.bloom_filter_on_write"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.bloom_filter_on_write</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.column_index_truncate_length"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.column_index_truncate_length</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.column_specific_options"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.column_specific_options</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.created_by"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.created_by</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.data_page_row_count_limit"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.data_page_row_count_limit</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.data_pagesize_limit"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.data_pagesize_limit</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.dictionary_enabled"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.dictionary_enabled</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.dictionary_page_size_limit"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.dictionary_page_size_limit</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.encoding"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.encoding</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.max_row_group_size"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.max_row_group_size</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.maximum_buffered_record_batches_per_stream"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.maximum_buffered_record_batches_per_stream</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.maximum_parallel_row_group_writers"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.maximum_parallel_row_group_writers</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.skip_arrow_metadata"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.skip_arrow_metadata</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.statistics_enabled"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.statistics_enabled</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.statistics_truncate_length"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.statistics_truncate_length</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.write_batch_size"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.write_batch_size</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ParquetWriterOptions.writer_version"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.writer_version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

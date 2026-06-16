@@ -31,8 +31,9 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/distributing-work';</script>
+    <script src="../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -477,7 +483,25 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="distributing-work">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="distributing-work">
 <h1>Distributing work<a class="headerlink" href="#distributing-work" title="Link to this heading">#</a></h1>
 <p>DataFusion supports splitting work across processes by shipping
 serialized expressions to workers: the driver builds an
@@ -568,7 +592,7 @@ raises an error.</p></li>
 </ul>
 </section>
 <section id="portability-requirements-for-inline-python-udfs">
-<h3>Portability requirements for inline Python UDFs<a class="headerlink" href="#portability-requirements-for-inline-python-udfs" title="Link to this heading">#</a></h3>
+<span id="distributed-udf-portability"></span><h3>Portability requirements for inline Python UDFs<a class="headerlink" href="#portability-requirements-for-inline-python-udfs" title="Link to this heading">#</a></h3>
 <p>Inline Python UDFs ride on <a class="reference external" href="https://github.com/cloudpipe/cloudpickle">cloudpickle</a>, which imposes two
 requirements on the worker environment:</p>
 <ul class="simple">
@@ -641,8 +665,7 @@ name cuts the per-trip overhead.</p></li>
 state — local variables, module-level objects, file paths — that
 state is captured at serialization time. Surprises are possible if
 the captured state is large, mutable, or not portable to the
-worker’s environment. See <a class="reference internal" href="#portability-requirements-for-inline-python-udfs">Portability requirements for inline
-Python UDFs</a> for the Python-version and imported-module rules.</p></li>
+worker’s environment. See <a class="reference internal" href="#distributed-udf-portability"><span class="std std-ref">Portability requirements for inline Python UDFs</span></a> for the Python-version and imported-module rules.</p></li>
 </ul>
 </section>
 <section id="disabling-python-udf-inlining">
@@ -686,11 +709,11 @@ honor the supplied <code class="docutils literal notranslate"><span class="pre">
 contexts.</p>
 <p>The toggle only narrows the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code> surface;
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> on untrusted bytes remains unsafe regardless
-of this setting. See the <a class="reference internal" href="#security">Security</a> section below for the full
+of this setting. See the <a class="reference internal" href="#distributed-expr-security"><span class="std std-ref">Security</span></a> section below for the full
 threat model.</p>
 </section>
 <section id="security">
-<h3>Security<a class="headerlink" href="#security" title="Link to this heading">#</a></h3>
+<span id="distributed-expr-security"></span><h3>Security<a class="headerlink" href="#security" title="Link to this heading">#</a></h3>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Reconstructing an expression containing a Python UDF executes
@@ -709,12 +732,6 @@ functions and pre-registered Rust-side UDFs, and avoid
 <p>There is only one type — <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>. It can occupy
 up to four <em>slots</em> in a running program:</p>
 <div class="pst-scrollable-table-container"><table class="table">
-<colgroup>
-<col style="width: 12.0%" />
-<col style="width: 18.0%" />
-<col style="width: 40.0%" />
-<col style="width: 30.0%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Slot</p></th>
 <th class="head"><p>Lifetime</p></th>
@@ -730,25 +747,17 @@ up to four <em>slots</em> in a running program:</p>
 </tr>
 <tr class="row-odd"><td><p>Global</p></td>
 <td><p>Process singleton (lazy-init)</p></td>
-<td><p>Backs module-level
-<a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_parquet" title="datafusion.io.read_parquet"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_parquet()</span></code></a>,
-<a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_csv" title="datafusion.io.read_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_csv()</span></code></a>,
-<a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_json" title="datafusion.io.read_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_json()</span></code></a>,
-<a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_avro" title="datafusion.io.read_avro"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_avro()</span></code></a>; final fallback for
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code></p></td>
-<td><p>Implicit; access via
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.global_ctx()</span></code></p></td>
+<td><p>Backs module-level <a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_parquet" title="datafusion.io.read_parquet"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_parquet()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_csv" title="datafusion.io.read_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_csv()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_json" title="datafusion.io.read_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_json()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/io/index.html#datafusion.io.read_avro" title="datafusion.io.read_avro"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_avro()</span></code></a>; final fallback for <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code></p></td>
+<td><p>Implicit; access via <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.global_ctx()</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Sender</p></td>
 <td><p>Thread-local on the driver</p></td>
-<td><p>Codec settings for outbound <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> /
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> without <code class="docutils literal notranslate"><span class="pre">ctx</span></code></p></td>
+<td><p>Codec settings for outbound <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> / <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> without <code class="docutils literal notranslate"><span class="pre">ctx</span></code></p></td>
 <td><p><a class="reference internal" href="../autoapi/datafusion/ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Worker</p></td>
 <td><p>Thread-local on the worker</p></td>
-<td><p>Function registry for inbound <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> /
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code> without <code class="docutils literal notranslate"><span class="pre">ctx</span></code></p></td>
+<td><p>Function registry for inbound <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> / <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code> without <code class="docutils literal notranslate"><span class="pre">ctx</span></code></p></td>
 <td><p><a class="reference internal" href="../autoapi/datafusion/ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_worker_ctx()</span></code></a></p></td>
 </tr>
 </tbody>
@@ -851,6 +860,38 @@ expression to each worker and collects results back.</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expression-level-distribution">Expression-level distribution</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-worker-pool-example">Basic worker-pool example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-travels-with-the-expression">What travels with the expression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#portability-requirements-for-inline-python-udfs">Portability requirements for inline Python UDFs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#registering-shared-udfs-on-workers">Registering shared UDFs on workers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-3-14-default-change">Python 3.14 default change</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-considerations">Practical considerations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#disabling-python-udf-inlining">Disabling Python UDF inlining</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#security">Security</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-session-context-slots">Reference: session context slots</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#query-level-distribution-via-datafusion-distributed">Query-level distribution via datafusion-distributed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#query-level-distribution-via-apache-ballista">Query-level distribution via Apache Ballista</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See also</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

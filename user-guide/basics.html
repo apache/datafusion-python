@@ -31,8 +31,9 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/basics';</script>
+    <script src="../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -477,51 +483,76 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="concepts">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="concepts">
 <span id="user-guide-concepts"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">#</a></h1>
 <p>In this section, we will cover a basic example to introduce a few key concepts. We will use the
 2021 Yellow Taxi Trip Records (<a class="reference external" href="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet">download</a>),
 from the <a class="reference external" href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">TLC Trip Record Data</a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;yellow_tripdata_2021-01.parquet&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;yellow_tripdata_2021-01.parquet&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;tip_amount&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tip_percent&quot;</span><span class="p">),</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;tip_amount&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tip_percent&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------------+-------+-------------+</span>
-<span class="o">|</span> <span class="n">trip_distance</span> <span class="o">|</span> <span class="n">total</span> <span class="o">|</span> <span class="n">tip_percent</span> <span class="o">|</span>
-<span class="o">+---------------+-------+-------------+</span>
-<span class="o">|</span> <span class="mf">2.1</span>           <span class="o">|</span> <span class="mf">11.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">0.2</span>           <span class="o">|</span> <span class="mf">4.3</span>   <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">14.7</span>          <span class="o">|</span> <span class="mf">51.95</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">10.6</span>          <span class="o">|</span> <span class="mf">36.35</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">4.94</span>          <span class="o">|</span> <span class="mf">24.36</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.6</span>           <span class="o">|</span> <span class="mf">14.15</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">4.1</span>           <span class="o">|</span> <span class="mf">17.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">5.7</span>           <span class="o">|</span> <span class="mf">21.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">9.1</span>           <span class="o">|</span> <span class="mf">28.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">2.7</span>           <span class="o">|</span> <span class="mf">18.95</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">6.11</span>          <span class="o">|</span> <span class="mf">24.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.21</span>          <span class="o">|</span> <span class="mf">10.79</span> <span class="o">|</span> <span class="mf">23.1</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">7.4</span>           <span class="o">|</span> <span class="mf">33.92</span> <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.7</span>           <span class="o">|</span> <span class="mf">14.16</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">0.81</span>          <span class="o">|</span> <span class="mf">8.3</span>   <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.01</span>          <span class="o">|</span> <span class="mf">10.3</span>  <span class="o">|</span> <span class="mf">9.7</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="mf">0.73</span>          <span class="o">|</span> <span class="mf">12.09</span> <span class="o">|</span> <span class="mf">23.1</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.17</span>          <span class="o">|</span> <span class="mf">12.36</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">0.78</span>          <span class="o">|</span> <span class="mf">9.96</span>  <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">1.66</span>          <span class="o">|</span> <span class="mf">12.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
-<span class="o">+---------------+-------+-------------+</span>
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---------------+-------+-------------+
+| trip_distance | total | tip_percent |
++---------------+-------+-------------+
+| 2.1           | 11.8  | 0.0         |
+| 0.2           | 4.3   | 0.0         |
+| 14.7          | 51.95 | 16.7        |
+| 10.6          | 36.35 | 16.6        |
+| 4.94          | 24.36 | 16.7        |
+| 1.6           | 14.15 | 16.6        |
+| 4.1           | 17.3  | 0.0         |
+| 5.7           | 21.8  | 0.0         |
+| 9.1           | 28.8  | 0.0         |
+| 2.7           | 18.95 | 16.6        |
+| 6.11          | 24.3  | 0.0         |
+| 1.21          | 10.79 | 23.1        |
+| 7.4           | 33.92 | 0.0         |
+| 1.7           | 14.16 | 16.7        |
+| 0.81          | 8.3   | 0.0         |
+| 1.01          | 10.3  | 9.7         |
+| 0.73          | 12.09 | 23.1        |
+| 1.17          | 12.36 | 16.7        |
+| 0.78          | 9.96  | 16.7        |
+| 1.66          | 12.3  | 0.0         |
++---------------+-------+-------------+
+</pre></div>
+</div>
+</div>
 </div>
 <section id="session-context">
 <h2>Session Context<a class="headerlink" href="#session-context" title="Link to this heading">#</a></h2>
@@ -607,6 +638,26 @@ or <a class="reference internal" href="../autoapi/datafusion/dataframe/index.htm
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#session-context">Session Context</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataframe">DataFrame</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expressions">Expressions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

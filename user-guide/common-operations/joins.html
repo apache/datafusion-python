@@ -31,8 +31,9 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/joins';</script>
+    <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -480,7 +486,25 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="joins">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="joins">
 <h1>Joins<a class="headerlink" href="#joins" title="Link to this heading">#</a></h1>
 <p>DataFusion supports the following join variants via the method <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.join" title="datafusion.dataframe.DataFrame.join"><code class="xref py py-func docutils literal notranslate"><span class="pre">join()</span></code></a></p>
 <ul class="simple">
@@ -492,40 +516,49 @@
 <li><p>Left Anti Join</p></li>
 </ul>
 <p>For the examples in this section we’ll use the following two DataFrames</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span>         <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">}</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
+<span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CityCabs&quot;</span><span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MetroRide&quot;</span><span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;UrbanGo&quot;</span><span class="p">},</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">])</span>
-   <span class="o">...</span><span class="p">:</span> 
+<span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CityCabs&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MetroRide&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;UrbanGo&quot;</span><span class="p">},</span>
+<span class="p">])</span>
 </pre></div>
+</div>
+</div>
 </div>
 <section id="inner-join">
 <h2>Inner Join<a class="headerlink" href="#inner-join" title="Link to this heading">#</a></h2>
 <p>When using an inner join, only rows containing the common values between the two join columns present in both DataFrames
 will be included in the resulting DataFrame.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="n">customer_id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>           <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>           <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------+----------+----+-----------+
+| customer_id | customer | id | name      |
++-------------+----------+----+-----------+
+| 1           | Alice    | 1  | CityCabs  |
+| 2           | Bob      | 2  | MetroRide |
++-------------+----------+----+-----------+
+</pre></div>
+</div>
+</div>
 </div>
 <p>The parameter <code class="docutils literal notranslate"><span class="pre">join_keys</span></code> specifies the columns from the left DataFrame and right DataFrame that contains the values
 that should match.</p>
@@ -535,51 +568,72 @@ that should match.</p>
 <p>A left join combines rows from two DataFrames using the key columns. It returns all rows from the left DataFrame and
 matching rows from the right DataFrame. If there’s no match in the right DataFrame, it returns null
 values for the corresponding columns.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="n">customer_id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>           <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>           <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>           <span class="o">|</span> <span class="n">Charlie</span>  <span class="o">|</span>    <span class="o">|</span>           <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------+----------+----+-----------+
+| customer_id | customer | id | name      |
++-------------+----------+----+-----------+
+| 1           | Alice    | 1  | CityCabs  |
+| 2           | Bob      | 2  | MetroRide |
+| 3           | Charlie  |    |           |
++-------------+----------+----+-----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="full-join">
 <h2>Full Join<a class="headerlink" href="#full-join" title="Link to this heading">#</a></h2>
 <p>A full join merges rows from two tables based on a related column, returning all rows from both tables, even if there
 is no match. Unmatched rows will have null values.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="n">customer_id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>           <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>           <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
-<span class="o">|</span>             <span class="o">|</span>          <span class="o">|</span> <span class="mi">5</span>  <span class="o">|</span> <span class="n">UrbanGo</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>           <span class="o">|</span> <span class="n">Charlie</span>  <span class="o">|</span>    <span class="o">|</span>           <span class="o">|</span>
-<span class="o">+-------------+----------+----+-----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------+----------+----+-----------+
+| customer_id | customer | id | name      |
++-------------+----------+----+-----------+
+| 1           | Alice    | 1  | CityCabs  |
+| 2           | Bob      | 2  | MetroRide |
+|             |          | 5  | UrbanGo   |
+| 3           | Charlie  |    |           |
++-------------+----------+----+-----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="left-semi-join">
 <h2>Left Semi Join<a class="headerlink" href="#left-semi-join" title="Link to this heading">#</a></h2>
 <p>A left semi join retrieves matching rows from the left table while
 omitting duplicates with multiple matches in the right table.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;semi&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------+----------+</span>
-<span class="o">|</span> <span class="n">customer_id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span>
-<span class="o">+-------------+----------+</span>
-<span class="o">|</span> <span class="mi">1</span>           <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>           <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span>
-<span class="o">+-------------+----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;semi&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------+----------+
+| customer_id | customer |
++-------------+----------+
+| 1           | Alice    |
+| 2           | Bob      |
++-------------+----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="left-anti-join">
@@ -587,15 +641,22 @@ omitting duplicates with multiple matches in the right table.</p>
 <p>A left anti join shows all rows from the left table without any matching rows in the right table,
 based on a the specified matching columns. It excludes rows from the left table that have at least one matching row in
 the right table.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;anti&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------+----------+</span>
-<span class="o">|</span> <span class="n">customer_id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span>
-<span class="o">+-------------+----------+</span>
-<span class="o">|</span> <span class="mi">3</span>           <span class="o">|</span> <span class="n">Charlie</span>  <span class="o">|</span>
-<span class="o">+-------------+----------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;anti&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------+----------+
+| customer_id | customer |
++-------------+----------+
+| 3           | Charlie  |
++-------------+----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="duplicate-keys">
@@ -605,43 +666,55 @@ version 51.0.0, <code class="docutils literal notranslate"><span class="pre">dat
 default. This reduces problems with ambiguous column selection after joins.
 You can disable this feature by setting the parameter <code class="docutils literal notranslate"><span class="pre">coalesce_duplicate_keys</span></code>
 to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">}</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CityCabs&quot;</span><span class="p">},</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MetroRide&quot;</span><span class="p">},</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;UrbanGo&quot;</span><span class="p">},</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">])</span>
-   <span class="o">....</span><span class="p">:</span> 
+<span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CityCabs&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MetroRide&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;UrbanGo&quot;</span><span class="p">},</span>
+<span class="p">])</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+----+----------+-----------+</span>
-<span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
-<span class="o">+----+----------+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
-<span class="o">+----+----------+-----------+</span>
+<span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In contrast to the above example, if we wish to get both columns:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="n">coalesce_duplicate_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+----+----------+----+-----------+</span>
-<span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">customer</span> <span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">name</span>      <span class="o">|</span>
-<span class="o">+----+----------+----+-----------+</span>
-<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">Alice</span>    <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="n">CityCabs</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">Bob</span>      <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="n">MetroRide</span> <span class="o">|</span>
-<span class="o">+----+----------+----+-----------+</span>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++----+----------+-----------+
+| id | customer | name      |
++----+----------+-----------+
+| 1  | Alice    | CityCabs  |
+| 2  | Bob      | MetroRide |
++----+----------+-----------+
 </pre></div>
+</div>
+</div>
+</div>
+<p>In contrast to the above example, if we wish to get both columns:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="n">coalesce_duplicate_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++----+----------+----+-----------+
+| id | customer | id | name      |
++----+----------+----+-----------+
+| 1  | Alice    | 1  | CityCabs  |
+| 2  | Bob      | 2  | MetroRide |
++----+----------+----+-----------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="disambiguating-columns-with-dataframe-col">
@@ -652,38 +725,42 @@ join to create fully qualified column references. These references can then be
 used in the join predicate and when selecting from the result.</p>
 <p>This is especially useful with <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.join_on" title="datafusion.dataframe.DataFrame.join_on"><code class="xref py py-meth docutils literal notranslate"><span class="pre">join_on()</span></code></a>,
 which accepts expression-based predicates.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">}</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">}</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
+<span class="n">right</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">joined</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">join_on</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
+<span class="n">joined</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">join_on</span><span class="p">(</span>
+    <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">joined</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">),</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">17</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+----+-----+-----+</span>
-<span class="o">|</span> <span class="nb">id</span> <span class="o">|</span> <span class="n">val</span> <span class="o">|</span> <span class="n">val</span> <span class="o">|</span>
-<span class="o">+----+-----+-----+</span>
-<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="mi">10</span>  <span class="o">|</span> <span class="mi">40</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="mi">20</span>  <span class="o">|</span> <span class="mi">50</span>  <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>  <span class="o">|</span> <span class="mi">30</span>  <span class="o">|</span> <span class="mi">60</span>  <span class="o">|</span>
-<span class="o">+----+-----+-----+</span>
+<span class="n">joined</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span> <span class="n">left</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">),</span> <span class="n">right</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">))</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++----+-----+-----+
+| id | val | val |
++----+-----+-----+
+| 1  | 10  | 40  |
+| 2  | 20  | 50  |
+| 3  | 30  | 60  |
++----+-----+-----+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
@@ -722,6 +799,30 @@ which accepts expression-based predicates.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inner-join">Inner Join</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#left-join">Left Join</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full-join">Full Join</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#left-semi-join">Left Semi Join</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#left-anti-join">Left Anti Join</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#duplicate-keys">Duplicate Keys</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#disambiguating-columns-with-dataframe-col">Disambiguating Columns with <code class="docutils literal notranslate"><span class="pre">DataFrame.col()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

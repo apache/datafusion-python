@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/user_defined/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -1519,6 +1525,127 @@ internal object once per call before delegating to <code class="docutils literal
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator"><code class="docutils literal notranslate"><span class="pre">Accumulator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.evaluate"><code class="docutils literal notranslate"><span class="pre">Accumulator.evaluate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.merge"><code class="docutils literal notranslate"><span class="pre">Accumulator.merge()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.state"><code class="docutils literal notranslate"><span class="pre">Accumulator.state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.update"><code class="docutils literal notranslate"><span class="pre">Accumulator.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF"><code class="docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.__call__"><code class="docutils literal notranslate"><span class="pre">AggregateUDF.__call__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.__repr__"><code class="docutils literal notranslate"><span class="pre">AggregateUDF.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF._from_internal"><code class="docutils literal notranslate"><span class="pre">AggregateUDF._from_internal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.from_pycapsule"><code class="docutils literal notranslate"><span class="pre">AggregateUDF.from_pycapsule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.udaf"><code class="docutils literal notranslate"><span class="pre">AggregateUDF.udaf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF._udaf"><code class="docutils literal notranslate"><span class="pre">AggregateUDF._udaf</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.name"><code class="docutils literal notranslate"><span class="pre">AggregateUDF.name</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDFExportable"><code class="docutils literal notranslate"><span class="pre">AggregateUDFExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDFExportable.__datafusion_aggregate_udf__"><code class="docutils literal notranslate"><span class="pre">AggregateUDFExportable.__datafusion_aggregate_udf__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.LogicalExtensionCodecExportable"><code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.PhysicalExtensionCodecExportable"><code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF"><code class="docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.__call__"><code class="docutils literal notranslate"><span class="pre">ScalarUDF.__call__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.__repr__"><code class="docutils literal notranslate"><span class="pre">ScalarUDF.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF._from_internal"><code class="docutils literal notranslate"><span class="pre">ScalarUDF._from_internal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.from_pycapsule"><code class="docutils literal notranslate"><span class="pre">ScalarUDF.from_pycapsule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.udf"><code class="docutils literal notranslate"><span class="pre">ScalarUDF.udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF._udf"><code class="docutils literal notranslate"><span class="pre">ScalarUDF._udf</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.name"><code class="docutils literal notranslate"><span class="pre">ScalarUDF.name</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDFExportable"><code class="docutils literal notranslate"><span class="pre">ScalarUDFExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDFExportable.__datafusion_scalar_udf__"><code class="docutils literal notranslate"><span class="pre">ScalarUDFExportable.__datafusion_scalar_udf__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction"><code class="docutils literal notranslate"><span class="pre">TableFunction</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.__call__"><code class="docutils literal notranslate"><span class="pre">TableFunction.__call__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.__repr__"><code class="docutils literal notranslate"><span class="pre">TableFunction.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._create_table_udf"><code class="docutils literal notranslate"><span class="pre">TableFunction._create_table_udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._create_table_udf_decorator"><code class="docutils literal notranslate"><span class="pre">TableFunction._create_table_udf_decorator()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.udtf"><code class="docutils literal notranslate"><span class="pre">TableFunction.udtf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._udtf"><code class="docutils literal notranslate"><span class="pre">TableFunction._udtf</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Volatility"><code class="docutils literal notranslate"><span class="pre">Volatility</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.__str__"><code class="docutils literal notranslate"><span class="pre">Volatility.__str__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Immutable"><code class="docutils literal notranslate"><span class="pre">Volatility.Immutable</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Stable"><code class="docutils literal notranslate"><span class="pre">Volatility.Stable</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Volatile"><code class="docutils literal notranslate"><span class="pre">Volatility.Volatile</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.evaluate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate_all"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.evaluate_all()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate_all_with_rank"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.evaluate_all_with_rank()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.get_range"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.get_range()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.include_rank"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.include_rank()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.is_causal"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.is_causal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.memoize"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.memoize()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.supports_bounded_execution"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.supports_bounded_execution()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.uses_window_frame"><code class="docutils literal notranslate"><span class="pre">WindowEvaluator.uses_window_frame()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF"><code class="docutils literal notranslate"><span class="pre">WindowUDF</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.__call__"><code class="docutils literal notranslate"><span class="pre">WindowUDF.__call__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.__repr__"><code class="docutils literal notranslate"><span class="pre">WindowUDF.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._create_window_udf"><code class="docutils literal notranslate"><span class="pre">WindowUDF._create_window_udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._create_window_udf_decorator"><code class="docutils literal notranslate"><span class="pre">WindowUDF._create_window_udf_decorator()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._from_internal"><code class="docutils literal notranslate"><span class="pre">WindowUDF._from_internal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._get_default_name"><code class="docutils literal notranslate"><span class="pre">WindowUDF._get_default_name()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._normalize_input_types"><code class="docutils literal notranslate"><span class="pre">WindowUDF._normalize_input_types()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.from_pycapsule"><code class="docutils literal notranslate"><span class="pre">WindowUDF.from_pycapsule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.udwf"><code class="docutils literal notranslate"><span class="pre">WindowUDF.udwf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._udwf"><code class="docutils literal notranslate"><span class="pre">WindowUDF._udwf</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.name"><code class="docutils literal notranslate"><span class="pre">WindowUDF.name</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDFExportable"><code class="docutils literal notranslate"><span class="pre">WindowUDFExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDFExportable.__datafusion_window_udf__"><code class="docutils literal notranslate"><span class="pre">WindowUDFExportable.__datafusion_window_udf__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined._is_pycapsule"><code class="docutils literal notranslate"><span class="pre">_is_pycapsule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined._wrap_session_kwarg_for_udtf"><code class="docutils literal notranslate"><span class="pre">_wrap_session_kwarg_for_udtf()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.data_type_or_field_to_field"><code class="docutils literal notranslate"><span class="pre">data_type_or_field_to_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.data_types_or_fields_to_field_list"><code class="docutils literal notranslate"><span class="pre">data_types_or_fields_to_field_list()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined._R"><code class="docutils literal notranslate"><span class="pre">_R</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.udaf"><code class="docutils literal notranslate"><span class="pre">udaf</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.udf"><code class="docutils literal notranslate"><span class="pre">udf</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.udtf"><code class="docutils literal notranslate"><span class="pre">udtf</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.user_defined.udwf"><code class="docutils literal notranslate"><span class="pre">udwf</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

@@ -31,8 +31,9 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/udf-and-udfa';</script>
+    <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -480,7 +486,25 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="user-defined-functions">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="user-defined-functions">
 <h1>User-Defined Functions<a class="headerlink" href="#user-defined-functions" title="Link to this heading">#</a></h1>
 <p>DataFusion provides powerful expressions and functions, reducing the need for custom Python
 functions. However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs).</p>
@@ -494,38 +518,41 @@ Functions. You can define your own scalar function by calling
 output. DataFusion scalar UDFs operate on an entire batch of records at a time, though the
 evaluation of those records should be on a row by row basis. In the following example, we compute
 if the input array contains null values.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">is_null</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
+<span class="n">is_null_arr</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">is_null</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">is_null</span><span class="p">()</span>
-   <span class="o">...</span><span class="p">:</span> 
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">is_null_arr</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">is_null</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;batch_array&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;batch_array&quot;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">is_null_arr</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---+---------+</span>
-<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">is_null</span> <span class="o">|</span>
-<span class="o">+---+---------+</span>
-<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">false</span>   <span class="o">|</span>
-<span class="o">|</span>   <span class="o">|</span> <span class="n">true</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="n">false</span>   <span class="o">|</span>
-<span class="o">+---+---------+</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">is_null_arr</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---+---------+
+| a | is_null |
++---+---------+
+| 1 | false   |
+|   | true    |
+| 3 | false   |
++---+---------+
+</pre></div>
+</div>
+</div>
 </div>
 <p>In the previous example, we used the fact that pyarrow provides a variety of built in array
 functions such as <code class="docutils literal notranslate"><span class="pre">is_null()</span></code>. There are additional pyarrow
@@ -538,38 +565,41 @@ and construct an array. This operation of converting the built in data type of t
 python object can be one of the slowest operations in DataFusion, so it should be done sparingly.</p>
 <p>The following example performs the same operation as before with <code class="docutils literal notranslate"><span class="pre">is_null</span></code> but demonstrates
 converting to Python objects to do the evaluation.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">array</span><span class="p">])</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
+<span class="n">is_null_arr</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">is_null</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">array</span><span class="p">])</span>
-   <span class="o">....</span><span class="p">:</span> 
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">is_null_arr</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">is_null</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;batch_array&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;batch_array&quot;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">is_null_arr</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---+---------+</span>
-<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">is_null</span> <span class="o">|</span>
-<span class="o">+---+---------+</span>
-<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">false</span>   <span class="o">|</span>
-<span class="o">|</span>   <span class="o">|</span> <span class="n">true</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="n">false</span>   <span class="o">|</span>
-<span class="o">+---+---------+</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">is_null_arr</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_null&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---+---------+
+| a | is_null |
++---+---------+
+| 1 | false   |
+|   | true    |
+| 3 | false   |
++---+---------+
+</pre></div>
+</div>
+</div>
 </div>
 <p>In this example we passed the PyArrow <code class="docutils literal notranslate"><span class="pre">DataType</span></code> when we defined the function
 by calling <code class="docutils literal notranslate"><span class="pre">udf()</span></code>. If you need additional control, such as specifying
@@ -603,78 +633,84 @@ advertises filter support — including custom providers.</p>
 ways: first with a native expression, then with a UDF that computes the
 same result. The filter itself is simple on purpose so we can compare
 the plans side by side.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">udf</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+<span class="n">parquet_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;items.parquet&quot;</span><span class="p">)</span>
+<span class="n">pq</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span>
+    <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">({</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span>    <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span>
+        <span class="s2">&quot;brand&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">25</span><span class="p">,</span>
+        <span class="s2">&quot;qty&quot;</span><span class="p">:</span>   <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="p">}),</span>
+    <span class="n">parquet_path</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">udf</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="n">parquet_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;items.parquet&quot;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="n">pq</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">({</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;id&quot;</span><span class="p">:</span>    <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;brand&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">25</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;qty&quot;</span><span class="p">:</span>   <span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">}),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">parquet_path</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="n">items</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">parquet_path</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">items</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">parquet_path</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p><strong>Native-expression predicate.</strong> The filter is a plain boolean tree
 over column references and literals, so the optimizer can analyze it:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">native_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lit</span><span class="p">(</span><span class="mi">150</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">native_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
-<span class="n">FilterExec</span><span class="p">:</span> <span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="o">=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">150</span>
-  <span class="n">RepartitionExec</span><span class="p">:</span> <span class="n">partitioning</span><span class="o">=</span><span class="n">RoundRobinBatch</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">input_partitions</span><span class="o">=</span><span class="mi">1</span>
-    <span class="n">DataSourceExec</span><span class="p">:</span> <span class="n">file_groups</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="n">group</span><span class="p">:</span> <span class="p">[[</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmpsz56xde2</span><span class="o">/</span><span class="n">items</span><span class="o">.</span><span class="n">parquet</span><span class="p">]]},</span> <span class="n">projection</span><span class="o">=</span><span class="p">[</span><span class="nb">id</span><span class="p">,</span> <span class="n">brand</span><span class="p">,</span> <span class="n">qty</span><span class="p">],</span> <span class="n">file_type</span><span class="o">=</span><span class="n">parquet</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="o">=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">pruning_predicate</span><span class="o">=</span><span class="n">brand_null_count</span><span class="o">@</span><span class="mi">2</span> <span class="o">!=</span> <span class="n">row_count</span><span class="o">@</span><span class="mi">3</span> <span class="n">AND</span> <span class="n">brand_min</span><span class="o">@</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">A</span> <span class="n">AND</span> <span class="n">A</span> <span class="o">&lt;=</span> <span class="n">brand_max</span><span class="o">@</span><span class="mi">1</span> <span class="n">AND</span> <span class="n">qty_null_count</span><span class="o">@</span><span class="mi">5</span> <span class="o">!=</span> <span class="n">row_count</span><span class="o">@</span><span class="mi">3</span> <span class="n">AND</span> <span class="n">qty_max</span><span class="o">@</span><span class="mi">4</span> <span class="o">&gt;=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">required_guarantees</span><span class="o">=</span><span class="p">[</span><span class="n">brand</span> <span class="ow">in</span> <span class="p">(</span><span class="n">A</span><span class="p">)]</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">native_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lit</span><span class="p">(</span><span class="mi">150</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">native_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand@1 = A AND qty@2 &gt;= 150
+  RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
+    DataSourceExec: file_groups={1 group: [[tmp/tmpziu60m3z/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
+</pre></div>
+</div>
+</div>
 </div>
 <p>Notice the <code class="docutils literal notranslate"><span class="pre">DataSourceExec</span></code> line. It carries three annotations the
 optimizer computed from the predicate:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">predicate=brand&#64;1</span> <span class="pre">=</span> <span class="pre">A</span> <span class="pre">AND</span> <span class="pre">qty&#64;2</span> <span class="pre">&gt;=</span> <span class="pre">150</span></code> — the filter is pushed
 into the Parquet scan itself, so the scan only reads matching rows.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pruning_predicate=...</span> <span class="pre">brand_min&#64;0</span> <span class="pre">&lt;=</span> <span class="pre">A</span> <span class="pre">AND</span> <span class="pre">A</span> <span class="pre">&lt;=</span> <span class="pre">brand_max&#64;1</span> <span class="pre">...</span>
-<span class="pre">qty_max&#64;4</span> <span class="pre">&gt;=</span> <span class="pre">150</span></code> — the scan prunes whole row groups by consulting
+<li><p><code class="docutils literal notranslate"><span class="pre">pruning_predicate=...</span> <span class="pre">brand_min&#64;0</span> <span class="pre">&lt;=</span> <span class="pre">A</span> <span class="pre">AND</span> <span class="pre">A</span> <span class="pre">&lt;=</span> <span class="pre">brand_max&#64;1</span> <span class="pre">...</span> <span class="pre">qty_max&#64;4</span> <span class="pre">&gt;=</span> <span class="pre">150</span></code> — the scan prunes whole row groups by consulting
 the Parquet min/max statistics in the footer <em>before</em> reading any
 column data.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">required_guarantees=[brand</span> <span class="pre">in</span> <span class="pre">(A)]</span></code> — the scan uses this when a
 bloom filter or dictionary is available to skip pages.</p></li>
 </ul>
 <p><strong>UDF predicate.</strong> Now wrap the same logic in a Python UDF:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">brand_qty_filter</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="k">return</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">b</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="ow">and</span> <span class="n">q</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">150</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">])</span>
-   <span class="o">....</span><span class="p">:</span> 
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">brand_qty_filter</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="ow">and</span> <span class="n">q</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">150</span>
+        <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">brand_arr</span><span class="p">,</span> <span class="n">qty_arr</span><span class="p">)</span>
+    <span class="p">])</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="n">pred_udf</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">brand_qty_filter</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s2">&quot;stable&quot;</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">32</span><span class="p">]:</span> <span class="n">udf_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pred_udf</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)))</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">33</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">udf_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
-<span class="n">FilterExec</span><span class="p">:</span> <span class="n">brand_qty_filter</span><span class="p">(</span><span class="n">CAST</span><span class="p">(</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="n">AS</span> <span class="n">Utf8</span><span class="p">),</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span><span class="p">)</span>
-  <span class="n">RepartitionExec</span><span class="p">:</span> <span class="n">partitioning</span><span class="o">=</span><span class="n">RoundRobinBatch</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">input_partitions</span><span class="o">=</span><span class="mi">1</span>
-    <span class="n">DataSourceExec</span><span class="p">:</span> <span class="n">file_groups</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="n">group</span><span class="p">:</span> <span class="p">[[</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmpsz56xde2</span><span class="o">/</span><span class="n">items</span><span class="o">.</span><span class="n">parquet</span><span class="p">]]},</span> <span class="n">projection</span><span class="o">=</span><span class="p">[</span><span class="nb">id</span><span class="p">,</span> <span class="n">brand</span><span class="p">,</span> <span class="n">qty</span><span class="p">],</span> <span class="n">file_type</span><span class="o">=</span><span class="n">parquet</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">brand_qty_filter</span><span class="p">(</span><span class="n">CAST</span><span class="p">(</span><span class="n">brand</span><span class="o">@</span><span class="mi">1</span> <span class="n">AS</span> <span class="n">Utf8</span><span class="p">),</span> <span class="n">qty</span><span class="o">@</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">pred_udf</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span>
+    <span class="n">brand_qty_filter</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">string</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s2">&quot;stable&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">udf_filtered</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pred_udf</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;brand&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;qty&quot;</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">udf_filtered</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">display_indent</span><span class="p">())</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
+  RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
+    DataSourceExec: file_groups={1 group: [[tmp/tmpziu60m3z/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
+</pre></div>
+</div>
+</div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">DataSourceExec</span></code> now carries only <code class="docutils literal notranslate"><span class="pre">predicate=brand_qty_filter(...)</span></code>.
 There is no <code class="docutils literal notranslate"><span class="pre">pruning_predicate</span></code> and no <code class="docutils literal notranslate"><span class="pre">required_guarantees</span></code>: the
@@ -888,9 +924,9 @@ information.</p></li>
 <section id="table-functions">
 <h2>Table Functions<a class="headerlink" href="#table-functions" title="Link to this heading">#</a></h2>
 <p>User Defined Table Functions are slightly different than the other functions
-described here. These functions take any number of <cite>Expr</cite> arguments, but only
+described here. These functions take any number of <code class="docutils literal notranslate"><span class="pre">Expr</span></code> arguments, but only
 literal expressions are supported. Table functions must return a Table
-Provider as described in the ref:<cite>_io_custom_table_provider</cite> page.</p>
+Provider as described in the ref:<code class="docutils literal notranslate"><span class="pre">_io_custom_table_provider</span></code> page.</p>
 <p>Once you have a table function, you can register it with the session context
 by using <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udtf" title="datafusion.context.SessionContext.register_udtf"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.context.SessionContext.register_udtf()</span></code></a>.</p>
 <p>There are examples of both rust backed and python based table functions in the
@@ -984,6 +1020,39 @@ holds its own clone of the session config.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scalar-functions">Scalar Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-not-to-use-a-udf">When not to use a UDF</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregate-functions">Aggregate Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#faq">FAQ</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#window-functions">Window Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#udwf-options">UDWF options</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-functions">Table Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-the-calling-session">Accessing the Calling Session</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

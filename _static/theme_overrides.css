@@ -63,3 +63,48 @@ html[data-theme="dark"] .table tbody tr:nth-of-type(odd) {
         white-space: normal !important;
     }
 }
+
+
+/* Hideable right-hand "On this page" sidebar.
+ * toc-toggle.js adds the button and toggles `pst-secondary-hidden` on <body>;
+ * hiding the sidebar lets the flex article container reclaim the width. */
+
+body.pst-secondary-hidden .bd-sidebar-secondary {
+  display: none;
+}
+
+/* Let the article use the freed space rather than just re-centering. */
+body.pst-secondary-hidden .bd-article-container {
+  max-width: none;
+}
+
+/* Floating toggle button, pinned to the top-right under the navbar. */
+#pst-secondary-toggle {
+  position: fixed;
+  top: 4.5rem;
+  right: 0.75rem;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--pst-color-border, #ccc);
+  border-radius: 0.25rem;
+  background-color: var(--pst-color-surface, #fff);
+  color: var(--pst-color-text-base, #333);
+  cursor: pointer;
+}
+
+#pst-secondary-toggle:hover {
+  color: rgb(var(--pst-color-link-hover));
+}
+
+/* The toggle is only meaningful where the sidebar is shown (wide screens);
+ * below the theme's lg breakpoint the sidebar is already collapsed away. */
+@media (max-width: 959.98px) {
+  #pst-secondary-toggle {
+    display: none;
+  }
+}

@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/context/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -2433,6 +2439,161 @@ the original session is unchanged.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowArrayExportable"><code class="docutils literal notranslate"><span class="pre">ArrowArrayExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowArrayExportable.__arrow_c_array__"><code class="docutils literal notranslate"><span class="pre">ArrowArrayExportable.__arrow_c_array__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable"><code class="docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__"><code class="docutils literal notranslate"><span class="pre">ArrowStreamExportable.__arrow_c_stream__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_disabled"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_disk_manager_disabled()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_os"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_disk_manager_os()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_specified"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_disk_manager_specified()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_fair_spill_pool()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_greedy_memory_pool()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_temp_file_path"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_temp_file_path()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_unbounded_memory_pool"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_unbounded_memory_pool()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.config_internal"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.config_internal</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SQLOptions"><code class="docutils literal notranslate"><span class="pre">SQLOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SQLOptions.with_allow_ddl"><code class="docutils literal notranslate"><span class="pre">SQLOptions.with_allow_ddl()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SQLOptions.with_allow_dml"><code class="docutils literal notranslate"><span class="pre">SQLOptions.with_allow_dml()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SQLOptions.with_allow_statements"><code class="docutils literal notranslate"><span class="pre">SQLOptions.with_allow_statements()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SQLOptions.options_internal"><code class="docutils literal notranslate"><span class="pre">SQLOptions.options_internal</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig"><code class="docutils literal notranslate"><span class="pre">SessionConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.set"><code class="docutils literal notranslate"><span class="pre">SessionConfig.set()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_batch_size"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_batch_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_create_default_catalog_and_schema"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_create_default_catalog_and_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_default_catalog_and_schema"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_default_catalog_and_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_extension"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_extension()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_information_schema"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_information_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_parquet_pruning"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_parquet_pruning()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_aggregations"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_aggregations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_file_min_size"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_file_min_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_file_scans"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_file_scans()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_joins"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_joins()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_sorts"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_sorts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_repartition_windows"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_repartition_windows()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.with_target_partitions"><code class="docutils literal notranslate"><span class="pre">SessionConfig.with_target_partitions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionConfig.config_internal"><code class="docutils literal notranslate"><span class="pre">SessionConfig.config_internal</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext"><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_logical_extension_codec__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_physical_extension_codec__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_task_context_provider__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_task_context_provider__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__repr__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext._convert_file_sort_order"><code class="docutils literal notranslate"><span class="pre">SessionContext._convert_file_sort_order()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext._convert_table_partition_cols"><code class="docutils literal notranslate"><span class="pre">SessionContext._convert_table_partition_cols()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.add_physical_optimizer_rule"><code class="docutils literal notranslate"><span class="pre">SessionContext.add_physical_optimizer_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.catalog"><code class="docutils literal notranslate"><span class="pre">SessionContext.catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.catalog_names"><code class="docutils literal notranslate"><span class="pre">SessionContext.catalog_names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.copied_config"><code class="docutils literal notranslate"><span class="pre">SessionContext.copied_config()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.create_dataframe"><code class="docutils literal notranslate"><span class="pre">SessionContext.create_dataframe()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.create_dataframe_from_logical_plan"><code class="docutils literal notranslate"><span class="pre">SessionContext.create_dataframe_from_logical_plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_object_store"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_object_store()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_udaf"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_udaf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_udf"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_udtf"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_udtf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_udwf"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_udwf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.empty_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.empty_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_ident_normalization"><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_ident_normalization()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_url_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_url_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute_logical_plan"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute_logical_plan()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_arrow"><code class="docutils literal notranslate"><span class="pre">SessionContext.from_arrow()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_pandas"><code class="docutils literal notranslate"><span class="pre">SessionContext.from_pandas()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_polars"><code class="docutils literal notranslate"><span class="pre">SessionContext.from_polars()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_pydict"><code class="docutils literal notranslate"><span class="pre">SessionContext.from_pydict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_pylist"><code class="docutils literal notranslate"><span class="pre">SessionContext.from_pylist()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.global_ctx"><code class="docutils literal notranslate"><span class="pre">SessionContext.global_ctx()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.parse_capacity_limit"><code class="docutils literal notranslate"><span class="pre">SessionContext.parse_capacity_limit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.parse_sql_expr"><code class="docutils literal notranslate"><span class="pre">SessionContext.parse_sql_expr()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_arrow"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_arrow()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_avro"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_avro()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_batch"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_batch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_batches"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_batches()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_csv"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_csv()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_empty"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_empty()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_json"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_parquet"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_parquet()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.read_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.read_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.refresh_catalogs"><code class="docutils literal notranslate"><span class="pre">SessionContext.refresh_catalogs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_arrow"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_arrow()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_avro"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_avro()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_batch"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_batch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_catalog_provider"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_catalog_provider()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_catalog_provider_list"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_catalog_provider_list()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_csv"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_csv()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_dataset"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_dataset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_json"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_listing_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_listing_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_object_store"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_object_store()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_parquet"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_parquet()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_record_batches"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_record_batches()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_table_factory"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_table_factory()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_table_provider"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_table_provider()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udaf"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_udaf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udf"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udtf"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_udtf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udwf"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_udwf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_view"><code class="docutils literal notranslate"><span class="pre">SessionContext.register_view()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.remove_optimizer_rule"><code class="docutils literal notranslate"><span class="pre">SessionContext.remove_optimizer_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_id"><code class="docutils literal notranslate"><span class="pre">SessionContext.session_id()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_start_time"><code class="docutils literal notranslate"><span class="pre">SessionContext.session_start_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.sql"><code class="docutils literal notranslate"><span class="pre">SessionContext.sql()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.sql_with_options"><code class="docutils literal notranslate"><span class="pre">SessionContext.sql_with_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.table"><code class="docutils literal notranslate"><span class="pre">SessionContext.table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.table_exist"><code class="docutils literal notranslate"><span class="pre">SessionContext.table_exist()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.table_provider"><code class="docutils literal notranslate"><span class="pre">SessionContext.table_provider()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udaf"><code class="docutils literal notranslate"><span class="pre">SessionContext.udaf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udafs"><code class="docutils literal notranslate"><span class="pre">SessionContext.udafs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udf"><code class="docutils literal notranslate"><span class="pre">SessionContext.udf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udfs"><code class="docutils literal notranslate"><span class="pre">SessionContext.udfs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwf"><code class="docutils literal notranslate"><span class="pre">SessionContext.udwf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwfs"><code class="docutils literal notranslate"><span class="pre">SessionContext.udwfs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_logical_extension_codec"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_physical_extension_codec"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_physical_extension_codec()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_python_udf_inlining"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.ctx"><code class="docutils literal notranslate"><span class="pre">SessionContext.ctx</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.TableProviderExportable"><code class="docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.TableProviderExportable.__datafusion_table_provider__"><code class="docutils literal notranslate"><span class="pre">TableProviderExportable.__datafusion_table_provider__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/options/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -756,6 +762,61 @@ an error.</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.to_inner"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.to_inner()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_comment"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_comment()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_delimiter"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_delimiter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_escape"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_escape()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_file_compression_type"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_file_compression_type()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_file_extension"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_file_extension()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_file_sort_order"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_file_sort_order()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_has_header"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_has_header()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_newlines_in_values"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_newlines_in_values()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_null_regex"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_null_regex()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_quote"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_quote()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_schema"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_schema_infer_max_records"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_schema_infer_max_records()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_table_partition_cols"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_table_partition_cols()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_terminator"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_terminator()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.with_truncated_rows"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.with_truncated_rows()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.comment"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.comment</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.delimiter"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.delimiter</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.escape"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.escape</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.file_compression_type"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.file_compression_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.file_extension"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.file_extension</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.file_sort_order"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.file_sort_order</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.has_header"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.has_header</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.newlines_in_values"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.newlines_in_values</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.null_regex"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.null_regex</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.quote"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.quote</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.schema"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.schema</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.schema_infer_max_records"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.schema_infer_max_records</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.table_partition_cols"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.table_partition_cols</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.terminator"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.terminator</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.options.CsvReadOptions.truncated_rows"><code class="docutils literal notranslate"><span class="pre">CsvReadOptions.truncated_rows</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

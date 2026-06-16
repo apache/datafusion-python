@@ -31,8 +31,9 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/catalog/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -881,6 +887,91 @@ interface (advanced)</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog"><code class="docutils literal notranslate"><span class="pre">Catalog</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.__repr__"><code class="docutils literal notranslate"><span class="pre">Catalog.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.deregister_schema"><code class="docutils literal notranslate"><span class="pre">Catalog.deregister_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.memory_catalog"><code class="docutils literal notranslate"><span class="pre">Catalog.memory_catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.names"><code class="docutils literal notranslate"><span class="pre">Catalog.names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.register_schema"><code class="docutils literal notranslate"><span class="pre">Catalog.register_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.schema"><code class="docutils literal notranslate"><span class="pre">Catalog.schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.schema_names"><code class="docutils literal notranslate"><span class="pre">Catalog.schema_names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Catalog.catalog"><code class="docutils literal notranslate"><span class="pre">Catalog.catalog</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList"><code class="docutils literal notranslate"><span class="pre">CatalogList</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.__repr__"><code class="docutils literal notranslate"><span class="pre">CatalogList.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog"><code class="docutils literal notranslate"><span class="pre">CatalogList.catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog_names"><code class="docutils literal notranslate"><span class="pre">CatalogList.catalog_names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.memory_catalog"><code class="docutils literal notranslate"><span class="pre">CatalogList.memory_catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.names"><code class="docutils literal notranslate"><span class="pre">CatalogList.names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.register_catalog"><code class="docutils literal notranslate"><span class="pre">CatalogList.register_catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogList.catalog_list"><code class="docutils literal notranslate"><span class="pre">CatalogList.catalog_list</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider"><code class="docutils literal notranslate"><span class="pre">CatalogProvider</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.deregister_schema"><code class="docutils literal notranslate"><span class="pre">CatalogProvider.deregister_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.register_schema"><code class="docutils literal notranslate"><span class="pre">CatalogProvider.register_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.schema"><code class="docutils literal notranslate"><span class="pre">CatalogProvider.schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.schema_names"><code class="docutils literal notranslate"><span class="pre">CatalogProvider.schema_names()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList"><code class="docutils literal notranslate"><span class="pre">CatalogProviderList</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.catalog"><code class="docutils literal notranslate"><span class="pre">CatalogProviderList.catalog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.catalog_names"><code class="docutils literal notranslate"><span class="pre">CatalogProviderList.catalog_names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.CatalogProviderList.register_catalog"><code class="docutils literal notranslate"><span class="pre">CatalogProviderList.register_catalog()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema"><code class="docutils literal notranslate"><span class="pre">Schema</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.__repr__"><code class="docutils literal notranslate"><span class="pre">Schema.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.deregister_table"><code class="docutils literal notranslate"><span class="pre">Schema.deregister_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.memory_schema"><code class="docutils literal notranslate"><span class="pre">Schema.memory_schema()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.names"><code class="docutils literal notranslate"><span class="pre">Schema.names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.register_table"><code class="docutils literal notranslate"><span class="pre">Schema.register_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.table"><code class="docutils literal notranslate"><span class="pre">Schema.table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.table_exist"><code class="docutils literal notranslate"><span class="pre">Schema.table_exist()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema.table_names"><code class="docutils literal notranslate"><span class="pre">Schema.table_names()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Schema._raw_schema"><code class="docutils literal notranslate"><span class="pre">Schema._raw_schema</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider"><code class="docutils literal notranslate"><span class="pre">SchemaProvider</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.deregister_table"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.deregister_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.owner_name"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.owner_name()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.register_table"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.register_table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.table()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table_exist"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.table_exist()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table_names"><code class="docutils literal notranslate"><span class="pre">SchemaProvider.table_names()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table"><code class="docutils literal notranslate"><span class="pre">Table</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.__repr__"><code class="docutils literal notranslate"><span class="pre">Table.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.from_dataset"><code class="docutils literal notranslate"><span class="pre">Table.from_dataset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.__slots__"><code class="docutils literal notranslate"><span class="pre">Table.__slots__</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table._inner"><code class="docutils literal notranslate"><span class="pre">Table._inner</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.kind"><code class="docutils literal notranslate"><span class="pre">Table.kind</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.schema"><code class="docutils literal notranslate"><span class="pre">Table.schema</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

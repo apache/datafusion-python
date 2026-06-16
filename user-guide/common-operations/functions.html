@@ -31,8 +31,9 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=e76e448e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -44,6 +45,7 @@
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/functions';</script>
+    <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -118,7 +120,7 @@
     
     
     <img src="../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
-    <img src="../../_static/original.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+    <img src="../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
   
   
 </a></div>
@@ -230,6 +232,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -480,263 +486,337 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="functions">
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="functions">
 <h1>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h1>
 <p>DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
 In here we will cover some of the more popular use cases. If you want to view all the functions go to the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code></a> API Reference.</p>
 <p>We’ll use the pokemon dataset in the following examples.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">register_csv</span><span class="p">(</span><span class="s2">&quot;pokemon&quot;</span><span class="p">,</span> <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;pokemon&quot;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_csv</span><span class="p">(</span><span class="s2">&quot;pokemon&quot;</span><span class="p">,</span> <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;pokemon&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <section id="mathematical">
 <h2>Mathematical<a class="headerlink" href="#mathematical" title="Link to this heading">#</a></h2>
 <p>DataFusion offers mathematical functions such as <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.pow" title="datafusion.functions.pow"><code class="xref py py-func docutils literal notranslate"><span class="pre">pow()</span></code></a> or <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.log" title="datafusion.functions.log"><code class="xref py py-func docutils literal notranslate"><span class="pre">log()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span><span class="p">,</span> <span class="n">string_literal</span><span class="p">,</span> <span class="n">str_lit</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span><span class="p">,</span> <span class="n">string_literal</span><span class="p">,</span> <span class="n">str_lit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Defense&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">power</span><span class="p">(</span><span class="n">pokemon</span><span class="o">.</span><span class="n">Attack</span><span class="p">,</span><span class="n">Int64</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">power</span><span class="p">(</span><span class="n">pokemon</span><span class="o">.</span><span class="n">Defense</span><span class="p">,</span><span class="n">Int64</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">|</span>
-<span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="mf">0.0</span>                                                              <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mf">125.0</span>                                                           <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mf">165.0</span>                                                           <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mf">5129.0</span>                                                          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">855.0</span>                                                            <span class="o">|</span>
-<span class="o">|</span> <span class="mf">732.0</span>                                                            <span class="o">|</span>
-<span class="o">|</span> <span class="mf">972.0</span>                                                            <span class="o">|</span>
-<span class="o">|</span> <span class="mf">4579.0</span>                                                           <span class="o">|</span>
-<span class="o">|</span> <span class="mf">4732.0</span>                                                           <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span><span class="mf">1921.0</span>                                                          <span class="o">|</span>
-<span class="o">+------------------------------------------------------------------+</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Defense&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++------------------------------------------------------------------+
+| power(pokemon.Attack,Int64(2)) - power(pokemon.Defense,Int64(2)) |
++------------------------------------------------------------------+
+| 0.0                                                              |
+| -125.0                                                           |
+| -165.0                                                           |
+| -5129.0                                                          |
+| 855.0                                                            |
+| 732.0                                                            |
+| 972.0                                                            |
+| 4579.0                                                           |
+| 4732.0                                                           |
+| -1921.0                                                          |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="conditional">
 <h2>Conditional<a class="headerlink" href="#conditional" title="Link to this heading">#</a></h2>
 <p>There 3 conditional functions in DataFusion <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.coalesce" title="datafusion.functions.coalesce"><code class="xref py py-func docutils literal notranslate"><span class="pre">coalesce()</span></code></a>, <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.nullif" title="datafusion.functions.nullif"><code class="xref py py-func docutils literal notranslate"><span class="pre">nullif()</span></code></a> and <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.case" title="datafusion.functions.case"><code class="xref py py-func docutils literal notranslate"><span class="pre">case()</span></code></a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">coalesce</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;dominant_type&quot;</span><span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------------+</span>
-<span class="o">|</span> <span class="n">dominant_type</span> <span class="o">|</span>
-<span class="o">+---------------+</span>
-<span class="o">|</span> <span class="n">Grass</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>         <span class="o">|</span>
-<span class="o">+---------------+</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">coalesce</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;dominant_type&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---------------+
+| dominant_type |
++---------------+
+| Grass         |
+| Grass         |
+| Grass         |
+| Grass         |
+| Fire          |
+| Fire          |
+| Fire          |
+| Fire          |
+| Fire          |
+| Water         |
++---------------+
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="temporal">
 <h2>Temporal<a class="headerlink" href="#temporal" title="Link to this heading">#</a></h2>
 <p>For selecting the current time use <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.now" title="datafusion.functions.now"><code class="xref py py-func docutils literal notranslate"><span class="pre">now()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------------------------+</span>
-<span class="o">|</span> <span class="n">now</span><span class="p">()</span>                         <span class="o">|</span>
-<span class="o">+-------------------------------+</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">15</span><span class="n">T20</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mf">52.031798757</span> <span class="o">|</span>
-<span class="o">+-------------------------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------------------------------+
+| now()                         |
++-------------------------------+
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
+| 2026-06-16T22:41:50.854565181 |
++-------------------------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 <p>Convert to timestamps using <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp" title="datafusion.functions.to_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_timestamp()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------------------+</span>
-<span class="o">|</span> <span class="n">timestamp</span>           <span class="o">|</span>
-<span class="o">+---------------------+</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">18</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mi">45</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">45</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">25</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">09</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mi">45</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">54</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">34</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">34</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1970</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">14</span> <span class="o">|</span>
-<span class="o">+---------------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Extracting parts of a date using <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.date_part" title="datafusion.functions.date_part"><code class="xref py py-func docutils literal notranslate"><span class="pre">date_part()</span></code></a> (alias <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.extract" title="datafusion.functions.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">extract()</span></code></a>)</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>    <span class="n">f</span><span class="o">.</span><span class="n">date_part</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>    <span class="n">f</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;day&quot;</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------+-----+</span>
-<span class="o">|</span> <span class="n">month</span> <span class="o">|</span> <span class="n">day</span> <span class="o">|</span>
-<span class="o">+-------+-----+</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="mi">1</span>     <span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span>
-<span class="o">+-------+-----+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---------------------+
+| timestamp           |
++---------------------+
+| 1970-01-01T00:05:18 |
+| 1970-01-01T00:06:45 |
+| 1970-01-01T00:08:45 |
+| 1970-01-01T00:10:25 |
+| 1970-01-01T00:05:09 |
+| 1970-01-01T00:06:45 |
+| 1970-01-01T00:08:54 |
+| 1970-01-01T00:10:34 |
+| 1970-01-01T00:10:34 |
+| 1970-01-01T00:05:14 |
++---------------------+
+Data truncated.
 </pre></div>
+</div>
+</div>
+</div>
+<p>Extracting parts of a date using <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.date_part" title="datafusion.functions.date_part"><code class="xref py py-func docutils literal notranslate"><span class="pre">date_part()</span></code></a> (alias <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.extract" title="datafusion.functions.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">extract()</span></code></a>)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+   <span class="n">f</span><span class="o">.</span><span class="n">date_part</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;month&quot;</span><span class="p">),</span>
+   <span class="n">f</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;day&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-------+-----+
+| month | day |
++-------+-----+
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
+| 1     | 1   |
++-------+-----+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="string">
 <h2>String<a class="headerlink" href="#string" title="Link to this heading">#</a></h2>
 <p>In the field of data science, working with textual data is a common task. To make string manipulation easier,
 DataFusion offers a range of helpful options.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">char_length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;len&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;lower&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-----+---------------------------+------+</span>
-<span class="o">|</span> <span class="nb">len</span> <span class="o">|</span> <span class="n">lower</span>                     <span class="o">|</span> <span class="n">code</span> <span class="o">|</span>
-<span class="o">+-----+---------------------------+------+</span>
-<span class="o">|</span> <span class="mi">9</span>   <span class="o">|</span> <span class="n">bulbasaur</span>                 <span class="o">|</span> <span class="n">Bulb</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">7</span>   <span class="o">|</span> <span class="n">ivysaur</span>                   <span class="o">|</span> <span class="n">Ivys</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">8</span>   <span class="o">|</span> <span class="n">venusaur</span>                  <span class="o">|</span> <span class="n">Venu</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">21</span>  <span class="o">|</span> <span class="n">venusaurmega</span> <span class="n">venusaur</span>     <span class="o">|</span> <span class="n">Venu</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">10</span>  <span class="o">|</span> <span class="n">charmander</span>                <span class="o">|</span> <span class="n">Char</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">10</span>  <span class="o">|</span> <span class="n">charmeleon</span>                <span class="o">|</span> <span class="n">Char</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">9</span>   <span class="o">|</span> <span class="n">charizard</span>                 <span class="o">|</span> <span class="n">Char</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">25</span>  <span class="o">|</span> <span class="n">charizardmega</span> <span class="n">charizard</span> <span class="n">x</span> <span class="o">|</span> <span class="n">Char</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">25</span>  <span class="o">|</span> <span class="n">charizardmega</span> <span class="n">charizard</span> <span class="n">y</span> <span class="o">|</span> <span class="n">Char</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">8</span>   <span class="o">|</span> <span class="n">squirtle</span>                  <span class="o">|</span> <span class="n">Squi</span> <span class="o">|</span>
-<span class="o">+-----+---------------------------+------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">char_length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;len&quot;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;lower&quot;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>This also includes the functions for regular expressions like <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.regexp_replace" title="datafusion.functions.regexp_replace"><code class="xref py py-func docutils literal notranslate"><span class="pre">regexp_replace()</span></code></a> and <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.regexp_match" title="datafusion.functions.regexp_match"><code class="xref py py-func docutils literal notranslate"><span class="pre">regexp_match()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">regexp_match</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Char&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;dragons&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">regexp_replace</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;saur&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;fleur&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;flowers&quot;</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------+---------------------------+</span>
-<span class="o">|</span> <span class="n">dragons</span> <span class="o">|</span> <span class="n">flowers</span>                   <span class="o">|</span>
-<span class="o">+---------+---------------------------+</span>
-<span class="o">|</span>         <span class="o">|</span> <span class="n">Bulbafleur</span>                <span class="o">|</span>
-<span class="o">|</span>         <span class="o">|</span> <span class="n">Ivyfleur</span>                  <span class="o">|</span>
-<span class="o">|</span>         <span class="o">|</span> <span class="n">Venufleur</span>                 <span class="o">|</span>
-<span class="o">|</span>         <span class="o">|</span> <span class="n">VenufleurMega</span> <span class="n">Venusaur</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="n">Char</span><span class="p">]</span>  <span class="o">|</span> <span class="n">Charmander</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="n">Char</span><span class="p">]</span>  <span class="o">|</span> <span class="n">Charmeleon</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="n">Char</span><span class="p">]</span>  <span class="o">|</span> <span class="n">Charizard</span>                 <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="n">Char</span><span class="p">]</span>  <span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">X</span> <span class="o">|</span>
-<span class="o">|</span> <span class="p">[</span><span class="n">Char</span><span class="p">]</span>  <span class="o">|</span> <span class="n">CharizardMega</span> <span class="n">Charizard</span> <span class="n">Y</span> <span class="o">|</span>
-<span class="o">|</span>         <span class="o">|</span> <span class="n">Squirtle</span>                  <span class="o">|</span>
-<span class="o">+---------+---------------------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++-----+---------------------------+------+
+| len | lower                     | code |
++-----+---------------------------+------+
+| 9   | bulbasaur                 | Bulb |
+| 7   | ivysaur                   | Ivys |
+| 8   | venusaur                  | Venu |
+| 21  | venusaurmega venusaur     | Venu |
+| 10  | charmander                | Char |
+| 10  | charmeleon                | Char |
+| 9   | charizard                 | Char |
+| 25  | charizardmega charizard x | Char |
+| 25  | charizardmega charizard y | Char |
+| 8   | squirtle                  | Squi |
++-----+---------------------------+------+
+Data truncated.
 </pre></div>
+</div>
+</div>
+</div>
+<p>This also includes the functions for regular expressions like <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.regexp_replace" title="datafusion.functions.regexp_replace"><code class="xref py py-func docutils literal notranslate"><span class="pre">regexp_replace()</span></code></a> and <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.regexp_match" title="datafusion.functions.regexp_match"><code class="xref py py-func docutils literal notranslate"><span class="pre">regexp_match()</span></code></a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">regexp_match</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Char&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;dragons&quot;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">regexp_replace</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;saur&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;fleur&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;flowers&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++---------+---------------------------+
+| dragons | flowers                   |
++---------+---------------------------+
+|         | Bulbafleur                |
+|         | Ivyfleur                  |
+|         | Venufleur                 |
+|         | VenufleurMega Venusaur    |
+| [Char]  | Charmander                |
+| [Char]  | Charmeleon                |
+| [Char]  | Charizard                 |
+| [Char]  | CharizardMega Charizard X |
+| [Char]  | CharizardMega Charizard Y |
+|         | Squirtle                  |
++---------+---------------------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="casting">
 <h2>Casting<a class="headerlink" href="#casting" title="Link to this heading">#</a></h2>
 <p>Casting expressions to different data types using <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.arrow_cast" title="datafusion.functions.arrow_cast"><code class="xref py py-func docutils literal notranslate"><span class="pre">arrow_cast()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">string_literal</span><span class="p">(</span><span class="s2">&quot;Float64&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_float&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">str_lit</span><span class="p">(</span><span class="s2">&quot;Int32&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_int&quot;</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">14</span><span class="p">]:</span> 
-<span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+----------------+--------------+</span>
-<span class="o">|</span> <span class="n">total_as_float</span> <span class="o">|</span> <span class="n">total_as_int</span> <span class="o">|</span>
-<span class="o">+----------------+--------------+</span>
-<span class="o">|</span> <span class="mf">318.0</span>          <span class="o">|</span> <span class="mi">318</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">405.0</span>          <span class="o">|</span> <span class="mi">405</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">525.0</span>          <span class="o">|</span> <span class="mi">525</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">625.0</span>          <span class="o">|</span> <span class="mi">625</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">309.0</span>          <span class="o">|</span> <span class="mi">309</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">405.0</span>          <span class="o">|</span> <span class="mi">405</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">534.0</span>          <span class="o">|</span> <span class="mi">534</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">634.0</span>          <span class="o">|</span> <span class="mi">634</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">634.0</span>          <span class="o">|</span> <span class="mi">634</span>          <span class="o">|</span>
-<span class="o">|</span> <span class="mf">314.0</span>          <span class="o">|</span> <span class="mi">314</span>          <span class="o">|</span>
-<span class="o">+----------------+--------------+</span>
-<span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">string_literal</span><span class="p">(</span><span class="s2">&quot;Float64&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_float&quot;</span><span class="p">),</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">str_lit</span><span class="p">(</span><span class="s2">&quot;Int32&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_int&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
++----------------+--------------+
+| total_as_float | total_as_int |
++----------------+--------------+
+| 318.0          | 318          |
+| 405.0          | 405          |
+| 525.0          | 525          |
+| 625.0          | 625          |
+| 309.0          | 309          |
+| 405.0          | 405          |
+| 534.0          | 534          |
+| 634.0          | 634          |
+| 634.0          | 634          |
+| 314.0          | 314          |
++----------------+--------------+
+Data truncated.
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="other">
 <h2>Other<a class="headerlink" href="#other" title="Link to this heading">#</a></h2>
 <p>The function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.in_list" title="datafusion.functions.in_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">in_list()</span></code></a> allows to check a column for the presence of multiple values:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Grass&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Fire&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Water&quot;</span><span class="p">)]</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">types</span><span class="p">,</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;basic_types&quot;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>       <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>       <span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span> 
-    <span class="n">basic_types</span>
-<span class="mi">0</span>          <span class="kc">True</span>
-<span class="mi">1</span>          <span class="kc">True</span>
-<span class="mi">2</span>          <span class="kc">True</span>
-<span class="mi">3</span>          <span class="kc">True</span>
-<span class="mi">4</span>          <span class="kc">True</span>
-<span class="mi">5</span>          <span class="kc">True</span>
-<span class="mi">6</span>          <span class="kc">True</span>
-<span class="mi">7</span>          <span class="kc">True</span>
-<span class="mi">8</span>          <span class="kc">True</span>
-<span class="mi">9</span>          <span class="kc">True</span>
-<span class="mi">10</span>         <span class="kc">True</span>
-<span class="mi">11</span>         <span class="kc">True</span>
-<span class="mi">12</span>         <span class="kc">True</span>
-<span class="mi">13</span>        <span class="kc">False</span>
-<span class="mi">14</span>        <span class="kc">False</span>
-<span class="mi">15</span>        <span class="kc">False</span>
-<span class="mi">16</span>        <span class="kc">False</span>
-<span class="mi">17</span>        <span class="kc">False</span>
-<span class="mi">18</span>        <span class="kc">False</span>
-<span class="mi">19</span>        <span class="kc">False</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Grass&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Fire&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Water&quot;</span><span class="p">)]</span>
+<span class="p">(</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">types</span><span class="p">,</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;basic_types&quot;</span><span class="p">))</span>
+      <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+<span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>    basic_types
+0          True
+1          True
+2          True
+3          True
+4          True
+5          True
+6          True
+7          True
+8          True
+9          True
+10         True
+11         True
+12         True
+13        False
+14        False
+15        False
+16        False
+17        False
+18        False
+19        False
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
@@ -791,6 +871,37 @@ DataFusion offers a range of helpful options.</p>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical">Mathematical</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional">Conditional</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal">Temporal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#string">String</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#casting">Casting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other">Other</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-values">Handling Missing Values</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fill-null">fill_null</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
               
             
           </div>
