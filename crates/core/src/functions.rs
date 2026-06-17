@@ -159,6 +159,44 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
     .into()
 }
 
+/// Create a lambda expression from a list of parameter names and a body
+/// expression. The body should reference the parameters via [`lambda_var`].
+/// Exposed to Python as `lambda_` because `lambda` is a reserved keyword.
+#[pyfunction]
+#[pyo3(name = "lambda_")]
+fn py_lambda(params: Vec<String>, body: PyExpr) -> PyExpr {
+    datafusion::logical_expr::lambda(params, body.into()).into()
+}
+
+/// Create an unresolved lambda variable reference by name. The owning
+/// higher-order function resolves it against its lambda parameters during
+/// planning.
+#[pyfunction]
+fn lambda_var(name: String) -> PyExpr {
+    datafusion::logical_expr::lambda_var(name).into()
+}
+
+/// Higher-order function: apply `transform` (a lambda) to each element of
+/// `array`, returning a new array of the results.
+#[pyfunction]
+fn array_transform(array: PyExpr, transform: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_transform(array.into(), transform.into()).into()
+}
+
+/// Higher-order function: return true if any element of `array` satisfies
+/// `predicate` (a lambda returning a boolean).
+#[pyfunction]
+fn array_any_match(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_any_match(array.into(), predicate.into()).into()
+}
+
+/// Higher-order function: keep the elements of `array` for which `predicate`
+/// (a lambda returning a boolean) is true, returning a new filtered array.
+#[pyfunction]
+fn array_filter(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_filter(array.into(), predicate.into()).into()
+}
+
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
@@ -569,7 +607,12 @@ expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
 expr_fn!(arrow_cast, arg_1 datatype);
+expr_fn!(arrow_try_cast, arg_1 datatype);
+expr_fn!(arrow_field, arg_1);
+expr_fn!(cast_to_type, arg_1 reference);
+expr_fn!(try_cast_to_type, arg_1 reference);
 expr_fn_vec!(arrow_metadata);
+expr_fn_vec!(with_metadata);
 expr_fn!(union_tag, arg1);
 expr_fn!(random);
 
@@ -616,6 +659,10 @@ array_fn!(array_replace, array from to);
 array_fn!(array_replace_n, array from to max);
 array_fn!(array_replace_all, array from to);
 array_fn!(array_sort, array desc null_first);
+array_fn!(array_compact, array);
+array_fn!(array_normalize, array);
+array_fn!(cosine_distance, array1 array2);
+array_fn!(inner_product, array1 array2);
 array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
@@ -924,7 +971,12 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(arrow_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_try_cast))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_field))?;
+    m.add_wrapped(wrap_pyfunction!(cast_to_type))?;
+    m.add_wrapped(wrap_pyfunction!(try_cast_to_type))?;
     m.add_wrapped(wrap_pyfunction!(arrow_metadata))?;
+    m.add_wrapped(wrap_pyfunction!(with_metadata))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(asinh))?;
@@ -1082,12 +1134,23 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(encode))?;
     m.add_wrapped(wrap_pyfunction!(decode))?;
 
+    // Lambda / higher-order functions
+    m.add_wrapped(wrap_pyfunction!(py_lambda))?;
+    m.add_wrapped(wrap_pyfunction!(lambda_var))?;
+    m.add_wrapped(wrap_pyfunction!(array_transform))?;
+    m.add_wrapped(wrap_pyfunction!(array_any_match))?;
+    m.add_wrapped(wrap_pyfunction!(array_filter))?;
+
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_distinct))?;
+    m.add_wrapped(wrap_pyfunction!(array_compact))?;
+    m.add_wrapped(wrap_pyfunction!(array_normalize))?;
+    m.add_wrapped(wrap_pyfunction!(cosine_distance))?;
+    m.add_wrapped(wrap_pyfunction!(inner_product))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
     m.add_wrapped(wrap_pyfunction!(array_empty))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;

@@ -907,6 +907,28 @@ class Expr:  # noqa: PLW1641
 
         return Expr(self.expr.cast(to))
 
+    def try_cast(self, to: pa.DataType[Any] | type) -> Expr:
+        """Cast to a new data type, returning NULL on failure.
+
+        Like :py:meth:`cast` but produces NULL instead of erroring when the
+        cast cannot be performed for a given row.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": ["oops"]})
+            >>> result = df.select(col("a").try_cast(pa.float64()).alias("c"))
+            >>> result.collect_column("c")[0].as_py() is None
+            True
+        """
+        if not isinstance(to, pa.DataType):
+            try:
+                to = self._to_pyarrow_types[to]
+            except KeyError as err:
+                error_msg = "Expected instance of pyarrow.DataType or builtins.type"
+                raise TypeError(error_msg) from err
+
+        return Expr(self.expr.try_cast(to))
+
     def between(self, low: Any, high: Any, negated: bool = False) -> Expr:
         """Returns ``True`` if this expression is between a given range.
 

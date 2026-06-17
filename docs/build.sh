@@ -36,6 +36,21 @@ rm -rf build 2> /dev/null
 rm -rf temp 2> /dev/null
 mkdir temp
 cp -rf source/* temp/
+
+# myst-nb executes each page as a notebook from the directory that page
+# lives in, so the example data files must sit alongside every page that
+# loads them by relative name (e.g. `ctx.read_csv("pokemon.csv")`). Symlink
+# them into each directory that has such a page rather than copying the
+# 20 MB parquet repeatedly.
+for d in temp temp/user-guide temp/user-guide/common-operations; do
+    ln -sf "$script_dir/pokemon.csv" "$d/pokemon.csv"
+    ln -sf "$script_dir/yellow_tripdata_2021-01.parquet" "$d/yellow_tripdata_2021-01.parquet"
+done
+
+# myst-nb runs `{code-cell}` blocks against a Jupyter kernel named "python3".
+# Register the active environment's interpreter as that kernel (idempotent).
+python -m ipykernel install --sys-prefix --name python3 --display-name "Python 3"
+
 make SOURCEDIR=`pwd`/temp html
 
 cd "$original_dir" || exit

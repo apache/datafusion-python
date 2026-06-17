@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
+import warnings
 from datetime import date, datetime, time, timezone
 
 import numpy as np
@@ -718,6 +719,39 @@ def test_array_function_obj_tests(stmt, py_expr):
 
 
 @pytest.mark.parametrize(
+    ("alias_fn", "primary_fn", "data"),
+    [
+        (f.list_compact, f.array_compact, {"a": [[1.0, None, 2.0, None, 3.0]]}),
+        (f.list_normalize, f.array_normalize, {"a": [[3.0, 4.0]]}),
+        (
+            f.dot_product,
+            f.inner_product,
+            {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]},
+        ),
+    ],
+)
+def test_array_function_aliases(alias_fn, primary_fn, data):
+    """Alias helpers should be exact aliases for their primary counterparts."""
+    ctx = SessionContext()
+    df = ctx.from_pydict(data)
+    cols = [column(name) for name in data]
+    alias_result = df.select(alias_fn(*cols).alias("r")).collect()
+    primary_result = df.select(primary_fn(*cols).alias("r")).collect()
+    assert (
+        alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
+    )
+
+
+@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product, f.dot_product])
+def test_array_distance_length_mismatch_raises(fn):
+    """Length-mismatched inputs to vector distance fns should raise at execute."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1.0, 2.0]], "b": [[1.0, 2.0, 3.0]]})
+    with pytest.raises(Exception, match="same length"):
+        df.select(fn(column("a"), column("b")).alias("r")).collect()
+
+
+@pytest.mark.parametrize(
     ("args", "expected"),
     [
         pytest.param(
@@ -1086,10 +1120,10 @@ def test_hash_functions(df):
 
 def test_temporal_functions(df):
     df = df.select(
-        f.date_part(literal("month"), column("d")),
-        f.datepart(literal("year"), column("d")),
-        f.date_trunc(literal("month"), column("d")),
-        f.datetrunc(literal("day"), column("d")),
+        f.date_part("month", column("d")),
+        f.datepart("year", column("d")),
+        f.date_trunc("month", column("d")),
+        f.datetrunc("day", column("d")),
         f.date_bin(
             literal("15 minutes").cast(pa.string()),
             column("d"),
@@ -1100,7 +1134,7 @@ def test_temporal_functions(df):
         f.to_timestamp_seconds(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_millis(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_micros(literal("2023-09-07 05:06:14.523952")),
-        f.extract(literal("day"), column("d")),
+        f.extract("day", column("d")),
         f.to_timestamp(
             literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
         ),
@@ -1301,30 +1335,90 @@ def test_make_time(df):
     assert result.column(0)[0].as_py() == time(12, 30)
 
 
-def test_arrow_cast(df):
-    df = df.select(
-        f.arrow_cast(column("b"), "Float64").alias("b_as_float"),
-        f.arrow_cast(column("b"), "Int32").alias("b_as_int"),
+@pytest.mark.parametrize("cast_fn", [f.arrow_cast, f.arrow_try_cast])
+@pytest.mark.parametrize(
+    ("data_type", "expected"),
+    [
+        ("Float64", pa.array([4.0, 5.0, 6.0], type=pa.float64())),
+        ("Int32", pa.array([4, 5, 6], type=pa.int32())),
+        (pa.float64(), pa.array([4.0, 5.0, 6.0], type=pa.float64())),
+        (pa.int32(), pa.array([4, 5, 6], type=pa.int32())),
+        (pa.string(), pa.array(["4", "5", "6"], type=pa.string())),
+    ],
+)
+def test_arrow_cast_variants(df, cast_fn, data_type, expected):
+    """arrow_cast / arrow_try_cast accept str and pyarrow target types."""
+    result = df.select(cast_fn(column("b"), data_type).alias("c")).collect()[0]
+    assert result.column(0) == expected
+
+
+def test_arrow_try_cast_null_on_failure():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array(["1.5", "oops", "3"])], names=["s"])
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.select(f.arrow_try_cast(column("s"), "Float64").alias("c")).collect()[0]
+
+    assert result.column(0).to_pylist() == [1.5, None, 3.0]
+
+
+def test_arrow_field():
+    ctx = SessionContext()
+    field = pa.field("val", pa.int64(), metadata={"k": "v"})
+    schema = pa.schema([field])
+    batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+    df = ctx.create_dataframe([[batch]])
+
+    out = (
+        df.select(f.arrow_field(column("val")).alias("f"))
+        .collect_column("f")[0]
+        .as_py()
     )
-    result = df.collect()
-    assert len(result) == 1
-    result = result[0]
+    assert out == {
+        "name": "val",
+        "data_type": "Int64",
+        "nullable": True,
+        "metadata": [("k", "v")],
+    }
 
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
 
-
-def test_arrow_cast_with_pyarrow_type(df):
-    df = df.select(
-        f.arrow_cast(column("b"), pa.float64()).alias("b_as_float"),
-        f.arrow_cast(column("b"), pa.int32()).alias("b_as_int"),
-        f.arrow_cast(column("b"), pa.string()).alias("b_as_str"),
+@pytest.mark.parametrize(
+    ("cast_fn", "values", "expected"),
+    [
+        (f.cast_to_type, pa.array([4, 5, 6]), [4.0, 5.0, 6.0]),
+        (f.try_cast_to_type, pa.array(["oops", "2", "3"]), [None, 2.0, 3.0]),
+    ],
+)
+def test_cast_to_type(cast_fn, values, expected):
+    """cast_to_type / try_cast_to_type take target type from ``type_ref``."""
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [values, pa.array([1.0, 2.0, 3.0])], names=["v", "fl"]
     )
-    result = df.collect()[0]
+    df = ctx.create_dataframe([[batch]])
 
-    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
-    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
-    assert result.column(2) == pa.array(["4", "5", "6"], type=pa.string())
+    result = df.select(cast_fn(column("v"), column("fl")).alias("c")).collect()[0]
+
+    assert result.column(0).to_pylist() == expected
+    assert result.column(0).type == pa.float64()
+
+
+def test_with_metadata_round_trip(df):
+    df = df.select(f.with_metadata(column("b"), {"unit": "ms"}).alias("b"))
+    result = df.select(f.arrow_metadata(column("b"), "unit").alias("u")).collect_column(
+        "u"
+    )
+    assert result[0].as_py() == "ms"
+
+
+def test_with_metadata_empty_dict_noop(df):
+    out = df.select(f.with_metadata(column("b"), {}).alias("b")).collect()[0]
+    assert out.column(0) == pa.array([4, 5, 6])
+
+
+def test_with_metadata_empty_key_raises():
+    with pytest.raises(ValueError, match="non-empty"):
+        f.with_metadata(column("b"), {"": "v"})
 
 
 def test_case(df):
@@ -2162,15 +2256,50 @@ class TestPythonicNativeTypes:
         ctx = SessionContext()
         df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
         df = df.select(f.to_timestamp(column("a")).alias("a"))
-        result = df.select(f.date_part("year", column("a")).alias("y")).collect()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            result = df.select(f.date_part("year", column("a")).alias("y")).collect()
         assert result[0].column(0)[0].as_py() == 2021
+
+    @pytest.mark.parametrize(
+        ("func", "name"),
+        [
+            pytest.param(f.date_part, "date_part", id="date_part"),
+            pytest.param(f.datepart, "datepart", id="datepart"),
+            pytest.param(f.extract, "extract", id="extract"),
+        ],
+    )
+    def test_date_part_expr_part_warns_deprecated(self, func, name):
+        with pytest.warns(
+            DeprecationWarning,
+            match=rf"Passing Expr for {name}\(\) argument 'part' is deprecated",
+        ):
+            expr = func(literal("year"), column("a"))
+        assert expr is not None
 
     def test_date_trunc_native_str(self):
         ctx = SessionContext()
         df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
         df = df.select(f.to_timestamp(column("a")).alias("a"))
-        result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            result = df.select(f.date_trunc("month", column("a")).alias("t")).collect()
         assert str(result[0].column(0)[0].as_py()) == "2021-07-01 00:00:00"
+
+    @pytest.mark.parametrize(
+        ("func", "name"),
+        [
+            pytest.param(f.date_trunc, "date_trunc", id="date_trunc"),
+            pytest.param(f.datetrunc, "datetrunc", id="datetrunc"),
+        ],
+    )
+    def test_date_trunc_expr_part_warns_deprecated(self, func, name):
+        with pytest.warns(
+            DeprecationWarning,
+            match=rf"Passing Expr for {name}\(\) argument 'part' is deprecated",
+        ):
+            expr = func(literal("month"), column("a"))
+        assert expr is not None
 
     def test_left_native_int(self):
         ctx = SessionContext()
