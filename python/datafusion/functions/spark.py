@@ -37,6 +37,7 @@ import pyarrow as pa
 from datafusion._internal import functions as _functions
 from datafusion.expr import (
     Expr,
+    _to_raw_expr,
     coerce_to_expr,
     sort_list_to_raw_sort_list,
 )
@@ -340,8 +341,11 @@ def bitmap_bucket_number(col: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def bit_get(col: Expr, pos: Expr) -> Expr:
+def bit_get(col: Expr, pos: Expr | str) -> Expr:
     """Spark ``bit_get``: returns the bit (0 or 1) at ``pos``.
+
+    A bare ``str`` ``pos`` is treated as a column name (matching pyspark),
+    not a literal; pass :func:`~datafusion.lit` for a literal position.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -351,7 +355,7 @@ def bit_get(col: Expr, pos: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1
     """
-    return Expr(_f.bit_get(col.expr, pos.expr))
+    return Expr(_f.bit_get(col.expr, _to_raw_expr(pos)))
 
 
 def bit_count(col: Expr) -> Expr:
@@ -757,8 +761,11 @@ def date_trunc(format: Expr | str, timestamp: Expr) -> Expr:
     return Expr(_f.date_trunc(coerce_to_expr(format).expr, timestamp.expr))
 
 
-def time_trunc(unit: Expr, time: Expr) -> Expr:
+def time_trunc(unit: Expr | str, time: Expr) -> Expr:
     """Spark ``time_trunc``: truncate time value to unit ``fmt``.
+
+    A bare ``str`` ``unit`` is treated as a column name (matching pyspark),
+    not a literal; pass :func:`~datafusion.lit` for a literal unit.
 
     Examples:
         >>> import pyarrow as pa
@@ -771,7 +778,7 @@ def time_trunc(unit: Expr, time: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.time(14, 0)
     """
-    return Expr(_f.time_trunc(unit.expr, time.expr))
+    return Expr(_f.time_trunc(_to_raw_expr(unit), time.expr))
 
 
 def trunc(date: Expr, format: Expr | str) -> Expr:
@@ -1054,15 +1061,15 @@ def map_from_entries(col: Expr) -> Expr:
 
 def str_to_map(
     text: Expr,
-    pairDelim: Expr | None = None,  # noqa: N803
-    keyValueDelim: Expr | None = None,  # noqa: N803
+    pairDelim: Expr | str | None = None,  # noqa: N803
+    keyValueDelim: Expr | str | None = None,  # noqa: N803
 ) -> Expr:
     """Spark ``str_to_map``: split text into key/value pairs using delimiters.
 
     Delimiters default to ``","`` and ``":"`` when omitted, matching pyspark.
     Parameter names match ``pyspark.sql.functions.str_to_map``; pyspark types
-    the delimiters as column-or-name, so they stay :class:`Expr` (wrap a
-    literal with :func:`~datafusion.lit`).
+    the delimiters as column-or-name, so a bare ``str`` is treated as a column
+    name. Pass :func:`~datafusion.lit` for a literal delimiter.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1082,9 +1089,13 @@ def str_to_map(
         >>> r.collect_column("v")[0].as_py()
         [('a', '1'), ('b', '2')]
     """
-    pd = pairDelim if pairDelim is not None else Expr.literal(",")
-    kvd = keyValueDelim if keyValueDelim is not None else Expr.literal(":")
-    return Expr(_f.str_to_map(text.expr, pd.expr, kvd.expr))
+    pd = _to_raw_expr(pairDelim) if pairDelim is not None else Expr.literal(",").expr
+    kvd = (
+        _to_raw_expr(keyValueDelim)
+        if keyValueDelim is not None
+        else Expr.literal(":").expr
+    )
+    return Expr(_f.str_to_map(text.expr, pd, kvd))
 
 
 # ---------------------------------------------------------------------------
@@ -1410,11 +1421,13 @@ def elt(*inputs: Expr) -> Expr:
 
 def ilike(
     str: Expr,
-    pattern: Expr,
+    pattern: Expr | str,
     escapeChar: str | None = None,  # noqa: N803
 ) -> Expr:
     """Spark ``ilike``: case-insensitive pattern match.
 
+    A bare ``str`` ``pattern`` is treated as a column name (matching pyspark),
+    not a literal; pass :func:`~datafusion.lit` for a literal pattern.
     ``escapeChar`` is accepted for pyspark parity but is not yet wired through
     the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
 
@@ -1429,7 +1442,7 @@ def ilike(
     if escapeChar is not None:
         msg = "ilike(escapeChar=...) is not yet supported by the Spark UDF binding"
         raise NotImplementedError(msg)
-    return Expr(_f.ilike(str.expr, pattern.expr))
+    return Expr(_f.ilike(str.expr, _to_raw_expr(pattern)))
 
 
 def length(col: Expr) -> Expr:
@@ -1447,11 +1460,13 @@ def length(col: Expr) -> Expr:
 
 def like(
     str: Expr,
-    pattern: Expr,
+    pattern: Expr | str,
     escapeChar: str | None = None,  # noqa: N803
 ) -> Expr:
     """Spark ``like``: case-sensitive pattern match.
 
+    A bare ``str`` ``pattern`` is treated as a column name (matching pyspark),
+    not a literal; pass :func:`~datafusion.lit` for a literal pattern.
     ``escapeChar`` is accepted for pyspark parity but is not yet wired through
     the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
 
@@ -1466,7 +1481,7 @@ def like(
     if escapeChar is not None:
         msg = "like(escapeChar=...) is not yet supported by the Spark UDF binding"
         raise NotImplementedError(msg)
-    return Expr(_f.like(str.expr, pattern.expr))
+    return Expr(_f.like(str.expr, _to_raw_expr(pattern)))
 
 
 def luhn_check(col: Expr) -> Expr:
@@ -1603,14 +1618,16 @@ def make_valid_utf8(str: Expr) -> Expr:
 
 def parse_url(
     url: Expr,
-    partToExtract: Expr,  # noqa: N803
-    key: Expr | None = None,
+    partToExtract: Expr | str,  # noqa: N803
+    key: Expr | str | None = None,
 ) -> Expr:
     """Spark ``parse_url``: extract a part from a URL; errors on invalid URLs.
 
     ``partToExtract`` is one of ``"HOST"``, ``"PATH"``, ``"QUERY"``,
     ``"REF"``, ``"PROTOCOL"``, ``"FILE"``, ``"AUTHORITY"``, ``"USERINFO"``.
-    Pass ``key`` only with ``"QUERY"`` to extract a single parameter.
+    Pass ``key`` only with ``"QUERY"`` to extract a single parameter. Bare
+    ``str`` values for ``partToExtract``/``key`` are treated as column names
+    (matching pyspark); pass :func:`~datafusion.lit` for a literal.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1634,16 +1651,19 @@ def parse_url(
         '1'
     """
     if key is None:
-        return Expr(_f.parse_url(url.expr, partToExtract.expr))
-    return Expr(_f.parse_url(url.expr, partToExtract.expr, key.expr))
+        return Expr(_f.parse_url(url.expr, _to_raw_expr(partToExtract)))
+    return Expr(_f.parse_url(url.expr, _to_raw_expr(partToExtract), _to_raw_expr(key)))
 
 
 def try_parse_url(
     url: Expr,
-    partToExtract: Expr,  # noqa: N803
-    key: Expr | None = None,
+    partToExtract: Expr | str,  # noqa: N803
+    key: Expr | str | None = None,
 ) -> Expr:
     """Spark ``try_parse_url``: like ``parse_url`` but returns NULL on invalid URLs.
+
+    Bare ``str`` values for ``partToExtract``/``key`` are treated as column
+    names (matching pyspark); pass :func:`~datafusion.lit` for a literal.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1657,8 +1677,10 @@ def try_parse_url(
         'example.com'
     """
     if key is None:
-        return Expr(_f.try_parse_url(url.expr, partToExtract.expr))
-    return Expr(_f.try_parse_url(url.expr, partToExtract.expr, key.expr))
+        return Expr(_f.try_parse_url(url.expr, _to_raw_expr(partToExtract)))
+    return Expr(
+        _f.try_parse_url(url.expr, _to_raw_expr(partToExtract), _to_raw_expr(key))
+    )
 
 
 def url_decode(str: Expr) -> Expr:

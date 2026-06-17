@@ -405,6 +405,19 @@ def test_str_to_map_pyspark_param_names(df):
     assert out == [("a", "1"), ("b", "2")]
 
 
+def test_column_or_name_str_is_column_ref():
+    """ColumnOrName args treat a bare str as a column name (matching pyspark)."""
+    ctx = SessionContext()
+    df = ctx.from_pydict({"s": ["hello", "world"], "pat": ["h%", "z%"]})
+    # pattern given as a column name -> per-row pattern from column "pat"
+    out = (
+        df.select(spark.like(col("s"), "pat").alias("v"))
+        .collect_column("v")
+        .to_pylist()
+    )
+    assert out == [True, False]
+
+
 def test_aggregate_positional_compat():
     """Pyspark-style positional calls still work after the rename to ``col``."""
     ctx = SessionContext()
