@@ -31,7 +31,7 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::sort_expr::{PySortExpr, to_sort_expressions};
 use crate::expr::window::PyWindowFrame;
 
-fn add_builder_fns_to_aggregate(
+pub(crate) fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
     distinct: Option<bool>,
     filter: Option<PyExpr>,

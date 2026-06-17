@@ -26,22 +26,17 @@ pub use datafusion_substrait;
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
-#[allow(clippy::borrow_deref_ref)]
 pub mod analyzer;
 pub mod catalog;
 pub mod codec;
 pub mod common;
 
-#[allow(clippy::borrow_deref_ref)]
 pub mod context;
-#[allow(clippy::borrow_deref_ref)]
 pub mod dataframe;
 mod dataset;
 mod dataset_exec;
 pub mod errors;
-#[allow(clippy::borrow_deref_ref)]
 pub mod expr;
-#[allow(clippy::borrow_deref_ref)]
 mod functions;
 pub mod metrics;
 mod options;
@@ -49,6 +44,7 @@ pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod pyarrow_util;
 mod record_batch;
+mod spark_functions;
 pub mod sql;
 pub mod store;
 pub mod table;
@@ -57,9 +53,7 @@ pub mod unparser;
 mod array;
 #[cfg(feature = "substrait")]
 pub mod substrait;
-#[allow(clippy::borrow_deref_ref)]
 mod udaf;
-#[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod udtf;
 mod udwf;
@@ -124,6 +118,10 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;
     functions::init_module(&funcs)?;
+    // Spark-compatible functions live under `functions.spark`.
+    let spark_funcs = PyModule::new(py, "spark")?;
+    spark_functions::init_module(&spark_funcs)?;
+    funcs.add_submodule(&spark_funcs)?;
     m.add_submodule(&funcs)?;
 
     let store = PyModule::new(py, "object_store")?;

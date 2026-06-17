@@ -30,6 +30,7 @@ select-and-filter
 expressions
 joins
 functions
+spark-functions
 aggregations
 windows
 udf-and-udfa

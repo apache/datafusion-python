@@ -29,9 +29,44 @@ You are improving the datafusion-python API to feel more natural to Python users
 
 **Core principle:** A Python user should be able to write `split_part(col("a"), ",", 2)` instead of `split_part(col("a"), lit(","), lit(2))` when the arguments are contextually obvious literals.
 
+## Scope: `functions` vs `functions.spark`
+
+Both `python/datafusion/functions/__init__.py` and
+`python/datafusion/functions/spark.py` are in scope. We want both to feel
+pythonic — accept native Python types where the argument is contextually
+a literal — but `functions.spark` carries an additional constraint:
+**every signature must remain compatible with `pyspark.sql.functions`**.
+
+Compatibility rules for the spark namespace:
+
+- **Parameter names must match pyspark exactly.** Pyspark callers pass by
+  keyword (`spark.shiftleft(col=..., numBits=...)`), so renames break
+  them. Do NOT rename a parameter just because it would be more pythonic
+  in the main namespace.
+- **Positional order must match pyspark exactly.** Reordering breaks
+  positional pyspark calls.
+- **Type unions may widen the input set, never narrow it.** Pyspark
+  accepts `Column` or `str` (column name) for most args; we accept
+  `Expr` already, and widening to `Expr | int` / `Expr | str` for
+  literal-friendly arguments is on-brand because the int/str case is
+  exactly what a pyspark caller would also try. Just verify the widened
+  set is a superset of what pyspark accepts for that arg.
+- **Extra keyword arguments are allowed** as long as they default to
+  `None` and pyspark's positional/keyword form still works (e.g. the
+  spark `avg`/`try_sum`/`collect_list`/`collect_set` retain DataFusion's
+  `distinct`/`filter`/`order_by`/`null_treatment` kwargs).
+
+Practical effect: in `functions.spark`, apply Categories A and (where
+pyspark exposes the same arg as a non-`Expr`) B normally, but cross-check
+each proposed signature against `pyspark.sql.functions` before landing
+it. When pyspark's own type hint is `Column | str` for a "column name"
+arg, prefer leaving the spark wrapper at `Expr` — Category C
+("`Expr | str` meaning column name") is unusual in `functions.py` and
+should remain so in `functions.spark`.
+
 ## How to Identify Candidates
 
-The user may specify a scope via `$ARGUMENTS`. If no scope is given or "all" is specified, audit all functions in `python/datafusion/functions.py`.
+The user may specify a scope via `$ARGUMENTS`. If no scope is given or "all" is specified, audit all functions in `python/datafusion/functions/__init__.py` **and** `python/datafusion/functions/spark.py`. When updating a spark-namespace function, apply the compatibility rules from "Scope" above on top of the standard analysis.
 
 For each function, determine if any parameter can accept native Python types by evaluating **two complementary signals**:
 
@@ -309,7 +344,7 @@ For each function being updated:
 
 ### Step 1: Analyze the Function
 
-1. Read the current Python function signature in `python/datafusion/functions.py`
+1. Read the current Python function signature in `python/datafusion/functions/__init__.py`
 2. Read the Rust binding in `crates/core/src/functions.rs`
 3. Optionally check the upstream DataFusion docs for the function
 4. Determine which category (A, B, or C) applies to each parameter
@@ -346,7 +381,7 @@ dfn.functions.left(dfn.col("a"), 3)
 
 After making changes, run the doctests to verify:
 ```bash
-python -m pytest --doctest-modules python/datafusion/functions.py -v
+python -m pytest --doctest-modules python/datafusion/functions/__init__.py -v
 ```
 
 ## Coercion Helper Pattern
