@@ -412,6 +412,16 @@ The available aggregate functions are:
     \- {py:meth}`datafusion.expr.GroupingSet.rollup`
     \- {py:meth}`datafusion.expr.GroupingSet.cube`
     \- {py:meth}`datafusion.expr.GroupingSet.grouping_sets`
+11. Spark-Compatible Functions
+    : - {py:func}`datafusion.functions.spark.avg`
+      - {py:func}`datafusion.functions.spark.try_sum`
+      - {py:func}`datafusion.functions.spark.collect_list`
+      - {py:func}`datafusion.functions.spark.collect_set`
+
+The functions in the `datafusion.functions.spark` namespace mirror Apache
+Spark semantics, which can differ from the DataFusion built-ins of the same
+name. They live in a separate namespace so you opt in explicitly. See
+{ref}`spark-functions` for the full catalog and the semantic differences.
 
 ## User-Defined Aggregate Functions
 

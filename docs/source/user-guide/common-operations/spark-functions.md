@@ -17,6 +17,8 @@
   under the License.
 -->
 
+(spark-functions)=
+
 # Spark-Compatible Functions
 
 DataFusion ships Spark-compatible versions of a wide set of functions
