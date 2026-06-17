@@ -39,6 +39,7 @@ for categorized catalogs of aggregate and window functions.
 from __future__ import annotations
 
 import inspect
+import warnings
 from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
@@ -61,6 +62,16 @@ from datafusion.expr import (
 )
 from datafusion.functions import spark
 
+
+def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
+    warnings.warn(
+        f"Passing Expr for {function_name}() argument {arg_name!r} is deprecated; "
+        "pass a Python literal instead.",
+        DeprecationWarning,
+        stacklevel=4,
+    )
+
+
 __all__ = [
     "abs",
     "acos",
@@ -77,6 +88,7 @@ __all__ = [
     "array_any_value",
     "array_append",
     "array_cat",
+    "array_compact",
     "array_concat",
     "array_contains",
     "array_dims",
@@ -97,6 +109,7 @@ __all__ = [
     "array_max",
     "array_min",
     "array_ndims",
+    "array_normalize",
     "array_pop_back",
     "array_pop_front",
     "array_position",
@@ -121,7 +134,9 @@ __all__ = [
     "arrays_overlap",
     "arrays_zip",
     "arrow_cast",
+    "arrow_field",
     "arrow_metadata",
+    "arrow_try_cast",
     "arrow_typeof",
     "ascii",
     "asin",
@@ -139,6 +154,7 @@ __all__ = [
     "btrim",
     "cardinality",
     "case",
+    "cast_to_type",
     "cbrt",
     "ceil",
     "char_length",
@@ -152,6 +168,7 @@ __all__ = [
     "corr",
     "cos",
     "cosh",
+    "cosine_distance",
     "cot",
     "count",
     "count_star",
@@ -172,6 +189,7 @@ __all__ = [
     "degrees",
     "dense_rank",
     "digest",
+    "dot_product",
     "element_at",
     "empty",
     "encode",
@@ -193,6 +211,7 @@ __all__ = [
     "ifnull",
     "in_list",
     "initcap",
+    "inner_product",
     "instr",
     "isnan",
     "iszero",
@@ -210,6 +229,7 @@ __all__ = [
     "list_any_value",
     "list_append",
     "list_cat",
+    "list_compact",
     "list_concat",
     "list_contains",
     "list_dims",
@@ -230,6 +250,7 @@ __all__ = [
     "list_max",
     "list_min",
     "list_ndims",
+    "list_normalize",
     "list_overlap",
     "list_pop_back",
     "list_pop_front",
@@ -359,6 +380,7 @@ __all__ = [
     "translate",
     "trim",
     "trunc",
+    "try_cast_to_type",
     "union_extract",
     "union_tag",
     "upper",
@@ -370,6 +392,7 @@ __all__ = [
     "var_sample",
     "version",
     "when",
+    "with_metadata",
 ]
 
 
@@ -2577,7 +2600,7 @@ def datepart(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_part`.
     """
-    return date_part(part, date)
+    return _date_part(part, date, "datepart")
 
 
 def date_part(part: Expr | str, date: Expr) -> Expr:
@@ -2597,6 +2620,12 @@ def date_part(part: Expr | str, date: Expr) -> Expr:
         >>> result.collect_column("y")[0].as_py()
         2021
     """
+    return _date_part(part, date, "date_part")
+
+
+def _date_part(part: Expr | str, date: Expr, function_name: str) -> Expr:
+    if isinstance(part, Expr):
+        _warn_expr_for_literal_arg(function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_part(part.expr, date.expr))
 
@@ -2607,7 +2636,7 @@ def extract(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_part`.
     """
-    return date_part(part, date)
+    return _date_part(part, date, "extract")
 
 
 def date_trunc(part: Expr | str, date: Expr) -> Expr:
@@ -2628,6 +2657,12 @@ def date_trunc(part: Expr | str, date: Expr) -> Expr:
         >>> str(result.collect_column("t")[0].as_py())
         '2021-07-01 00:00:00'
     """
+    return _date_trunc(part, date, "date_trunc")
+
+
+def _date_trunc(part: Expr | str, date: Expr, function_name: str) -> Expr:
+    if isinstance(part, Expr):
+        _warn_expr_for_literal_arg(function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_trunc(part.expr, date.expr))
 
@@ -2638,7 +2673,7 @@ def datetrunc(part: Expr | str, date: Expr) -> Expr:
     See Also:
         This is an alias for :py:func:`date_trunc`.
     """
-    return date_trunc(part, date)
+    return _date_trunc(part, date, "datetrunc")
 
 
 def date_bin(stride: Expr, source: Expr, origin: Expr) -> Expr:
@@ -2932,6 +2967,110 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
     return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
+def arrow_try_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
+    """Casts an expression to a specified data type, returning NULL on failure.
+
+    Like :py:func:`arrow_cast` but produces NULL instead of erroring when the
+    cast cannot be performed. The ``data_type`` may be a string in DataFusion
+    type syntax (for example ``"Float64"``), a ``pyarrow.DataType``, or an
+    ``Expr`` of string type.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["oops"]})
+        >>> result = df.select(
+        ...     dfn.functions.arrow_try_cast(dfn.col("a"), "Float64").alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+
+        >>> result = df.select(
+        ...     dfn.functions.arrow_try_cast(
+        ...         dfn.col("a"), data_type=pa.float64()
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+    """
+    if isinstance(data_type, pa.DataType):
+        return expr.try_cast(data_type)
+    if isinstance(data_type, str):
+        data_type = Expr.string_literal(data_type)
+    return Expr(f.arrow_try_cast(expr.expr, data_type.expr))
+
+
+def arrow_field(expr: Expr) -> Expr:
+    """Returns the Arrow field information of an expression as a struct.
+
+    The returned struct contains the field's name, data type, nullability,
+    and metadata.
+
+    Examples:
+        >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+        >>> schema = pa.schema([field])
+        >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.create_dataframe([[batch]])
+        >>> result = df.select(
+        ...     dfn.functions.arrow_field(dfn.col("val")).alias("f")
+        ... )
+        >>> out = result.collect_column("f")[0].as_py()
+        >>> out["name"], out["data_type"], out["nullable"], out["metadata"]
+        ('val', 'Int64', True, [('k', 'v')])
+    """
+    return Expr(f.arrow_field(expr.expr))
+
+
+def cast_to_type(value: Expr, type_ref: Expr) -> Expr:
+    """Casts ``value`` to the data type of ``type_ref``.
+
+    Only the *type* of ``type_ref`` is used; its value is ignored. This is
+    useful when the target type comes from another column or expression
+    rather than being known up-front. Casts that fail produce an error; use
+    :py:func:`try_cast_to_type` for the NULL-on-failure variant.
+
+    If the target type is known statically, prefer :py:func:`arrow_cast`
+    (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
+    pass a type string or ``pyarrow.DataType`` directly.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1], "b": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.cast_to_type(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py()
+        1.0
+    """
+    return Expr(f.cast_to_type(value.expr, type_ref.expr))
+
+
+def try_cast_to_type(value: Expr, type_ref: Expr) -> Expr:
+    """Casts ``value`` to the data type of ``type_ref``, NULL on failure.
+
+    Like :py:func:`cast_to_type`, but casts that fail produce NULL instead
+    of erroring. Only the *type* of ``type_ref`` is used; its value is
+    ignored.
+
+    If the target type is known statically, prefer :py:func:`arrow_try_cast`
+    and pass a type string or ``pyarrow.DataType`` directly.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["oops"], "b": [1.0]})
+        >>> result = df.select(
+        ...     dfn.functions.try_cast_to_type(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("c")
+        ... )
+        >>> result.collect_column("c")[0].as_py() is None
+        True
+    """
+    return Expr(f.try_cast_to_type(value.expr, type_ref.expr))
+
+
 def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     """Returns the metadata of the input expression.
 
@@ -2963,6 +3102,41 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     if isinstance(key, str):
         key = Expr.string_literal(key)
     return Expr(f.arrow_metadata(expr.expr, key.expr))
+
+
+def with_metadata(expr: Expr, metadata: dict[str, str]) -> Expr:
+    """Attaches Arrow field metadata (key/value pairs) to the input expression.
+
+    This is the inverse of :py:func:`arrow_metadata`. Existing metadata on the
+    input field is preserved; new keys overwrite on collision. Keys must be
+    non-empty strings; empty values are allowed.
+
+    An empty ``metadata`` dict is a no-op and returns the input expression
+    unchanged. Empty keys raise :py:class:`ValueError`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [1]})
+        >>> result = df.select(
+        ...     dfn.functions.with_metadata(
+        ...         dfn.col("a"), {"unit": "ms"}
+        ...     ).alias("a")
+        ... )
+        >>> result.select(
+        ...     dfn.functions.arrow_metadata(dfn.col("a"), "unit").alias("u")
+        ... ).collect_column("u")[0].as_py()
+        'ms'
+    """
+    if not metadata:
+        return expr
+    args = [expr.expr]
+    for k, v in metadata.items():
+        if not k:
+            msg = "with_metadata keys must be non-empty strings"
+            raise ValueError(msg)
+        args.append(Expr.string_literal(k).expr)
+        args.append(Expr.string_literal(v).expr)
+    return Expr(f.with_metadata(*args))
 
 
 def get_field(expr: Expr, *names: Expr | str) -> Expr:
@@ -3206,6 +3380,164 @@ def array_distinct(array: Expr) -> Expr:
     return Expr(f.array_distinct(array.expr))
 
 
+def array_compact(array: Expr) -> Expr:
+    """Removes NULL values from the array.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, None, 2, None, 3]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_compact(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [1, 2, 3]
+    """
+    return Expr(f.array_compact(array.expr))
+
+
+def array_normalize(array: Expr) -> Expr:
+    """Scales a numeric array so it has Euclidean length 1.
+
+    Treats the array as a vector and divides every element by the vector's
+    Euclidean (L2) norm — the square root of the sum of the squared
+    elements. The returned array points in the same direction as the input
+    but has a magnitude of 1, which makes it suitable for cosine-similarity
+    comparisons and other operations that expect unit vectors.
+
+    For the input ``[3.0, 4.0]`` the L2 norm is ``sqrt(3**2 + 4**2) = 5``,
+    so each element is divided by 5 to produce ``[0.6, 0.8]``.
+
+    Normalizing the zero vector is undefined (it would divide by zero), so
+    the function returns NULL for an all-zero input. NULL is also returned
+    if any element of the input array is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[3.0, 4.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [0.6, 0.8]
+
+        The zero vector has no direction to preserve, so the result is NULL:
+
+        >>> df_zero = ctx.from_pydict({"a": [[0.0, 0.0]]})
+        >>> result = df_zero.select(
+        ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
+    """
+    return Expr(f.array_normalize(array.expr))
+
+
+def cosine_distance(array1: Expr, array2: Expr) -> Expr:
+    """Measures how much two numeric arrays differ in direction.
+
+    Treats each input as a vector and compares the angle between them,
+    ignoring their magnitudes. The result is ``1 - cosine_similarity``,
+    where cosine similarity is the dot product of the two vectors divided
+    by the product of their Euclidean (L2) norms.
+
+    The returned value ranges from 0 to 2:
+
+    * ``0`` — vectors point in the same direction (any positive scaling
+      of one yields the other).
+    * ``1`` — vectors are orthogonal (no shared direction).
+    * ``2`` — vectors point in exactly opposite directions.
+
+    This is the standard distance metric for comparing embedding vectors
+    (text, image, audio) where direction carries the meaning and overall
+    magnitude does not.
+
+    Both arrays must have the same length; otherwise execution fails. If
+    either input is the zero vector the cosine is undefined and the
+    function returns NULL.
+
+    Examples:
+        Identical vectors have distance ``0``:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[1.0, 2.0, 3.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.cosine_distance(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        0.0
+
+        Orthogonal vectors have distance ``1``:
+
+        >>> df_orth = ctx.from_pydict(
+        ...     {"a": [[1.0, 0.0]], "b": [[0.0, 1.0]]}
+        ... )
+        >>> result = df_orth.select(
+        ...     dfn.functions.cosine_distance(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        1.0
+    """
+    return Expr(f.cosine_distance(array1.expr, array2.expr))
+
+
+def inner_product(array1: Expr, array2: Expr) -> Expr:
+    """Returns the inner (dot) product of two numeric arrays.
+
+    Treats each input as a vector and returns the sum of the element-wise
+    products: ``sum(array1[i] * array2[i])``. For ``[1, 2, 3]`` and
+    ``[4, 5, 6]`` the result is ``1*4 + 2*5 + 3*6 = 32``.
+
+    Also available as :py:func:`dot_product` (and as ``dot_product`` in
+    raw SQL).
+
+    Both arrays must have the same length; otherwise execution fails. NULL
+    is returned when either input array is NULL or when any element of
+    either array is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.inner_product(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        32.0
+
+        NULL elements propagate to NULL output:
+
+        >>> df_null = ctx.from_pydict(
+        ...     {"a": [[1.0, None, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+        ... )
+        >>> result = df_null.select(
+        ...     dfn.functions.inner_product(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py() is None
+        True
+    """
+    return Expr(f.inner_product(array1.expr, array2.expr))
+
+
+def dot_product(array1: Expr, array2: Expr) -> Expr:
+    """Returns the inner (dot) product of two numeric arrays.
+
+    See Also:
+        This is an alias for :py:func:`inner_product`.
+    """
+    return inner_product(array1, array2)
+
+
 def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
@@ -3231,6 +3563,24 @@ def list_distinct(array: Expr) -> Expr:
         This is an alias for :py:func:`array_distinct`.
     """
     return array_distinct(array)
+
+
+def list_compact(array: Expr) -> Expr:
+    """Removes NULL values from the array.
+
+    See Also:
+        This is an alias for :py:func:`array_compact`.
+    """
+    return array_compact(array)
+
+
+def list_normalize(array: Expr) -> Expr:
+    """Scales a numeric array so it has Euclidean length 1.
+
+    See Also:
+        This is an alias for :py:func:`array_normalize`.
+    """
+    return array_normalize(array)
 
 
 def list_dims(array: Expr) -> Expr:

@@ -133,6 +133,16 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension.
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -631,7 +641,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_listing_table(
             name,
-            str(path),
+            path,
             table_partition_cols,
             file_extension,
             schema,
@@ -1045,7 +1055,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_parquet(
             name,
-            str(path),
+            path,
             table_partition_cols,
             parquet_pruning,
             file_extension,
@@ -1087,8 +1097,6 @@ class SessionContext:
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
         """
-        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
-
         if options is not None and (
             schema is not None
             or not has_header
@@ -1122,7 +1130,7 @@ class SessionContext:
 
         self.ctx.register_csv(
             name,
-            path_arg,
+            path,
             options.to_inner(),
         )
 
@@ -1157,7 +1165,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_json(
             name,
-            str(path),
+            path,
             schema,
             schema_infer_max_records,
             file_extension,
@@ -1188,9 +1196,7 @@ class SessionContext:
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
-        self.ctx.register_avro(
-            name, str(path), schema, file_extension, table_partition_cols
-        )
+        self.ctx.register_avro(name, path, schema, file_extension, table_partition_cols)
 
     def register_arrow(
         self,
@@ -1269,7 +1275,7 @@ class SessionContext:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         self.ctx.register_arrow(
-            name, str(path), schema, file_extension, table_partition_cols
+            name, path, schema, file_extension, table_partition_cols
         )
 
     def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
@@ -1518,6 +1524,45 @@ class SessionContext:
         """
         return self.ctx.enable_ident_normalization()
 
+    def copied_config(self) -> SessionConfig:
+        """Return a copy of the active :py:class:`SessionConfig`.
+
+        Mutating the returned config does not affect this context; use
+        the result when you need a starting point for a new context or
+        want to inspect the current settings independent of further
+        changes here.
+
+        Examples:
+            >>> ctx = SessionContext(SessionConfig().with_batch_size(1024))
+            >>> isinstance(ctx.copied_config(), SessionConfig)
+            True
+        """
+        config = SessionConfig()
+        config.config_internal = self.ctx.copied_config()
+        return config
+
+    @staticmethod
+    def parse_capacity_limit(config_name: str, limit: str) -> int:
+        """Parse a size string into a byte count.
+
+        Accepts strings like ``"100M"``, ``"1.5G"``, or ``"512K"``.
+        ``"0"`` is accepted and returns 0. ``config_name`` is used purely
+        for error messages and identifies which configuration setting the
+        limit belongs to. Use this helper when constructing a
+        :py:class:`RuntimeEnvBuilder` from a human-friendly size string.
+
+        Examples:
+            >>> SessionContext.parse_capacity_limit(
+            ...     "datafusion.runtime.memory_limit", "1M"
+            ... )
+            1048576
+            >>> SessionContext.parse_capacity_limit(
+            ...     "datafusion.runtime.memory_limit", "0"
+            ... )
+            0
+        """
+        return SessionContextInternal.parse_capacity_limit(config_name, limit)
+
     def parse_sql_expr(self, sql: str, schema: DFSchema) -> Expr:
         """Parse a SQL expression string into a logical expression.
 
@@ -1588,6 +1633,30 @@ class SessionContext:
         """
         return self.ctx.remove_optimizer_rule(name)
 
+    def add_physical_optimizer_rule(
+        self, rule: PhysicalOptimizerRuleExportable
+    ) -> None:
+        """Append a user-defined physical optimizer rule to the session.
+
+        The rule is imported via its ``__datafusion_physical_optimizer_rule__``
+        PyCapsule, typically produced by a separate compiled extension. The
+        underlying :class:`SessionState` is rebuilt from its current state
+        with the new rule appended, so previously registered tables, UDFs,
+        and catalogs are preserved.
+
+        Args:
+            rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
+                a :class:`PhysicalOptimizerRuleExportable`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> from my_extension import MyPhysicalOptimizerRule  # doctest: +SKIP
+            >>> rule = MyPhysicalOptimizerRule()  # doctest: +SKIP
+            >>> ctx.add_physical_optimizer_rule(rule)  # doctest: +SKIP
+        """
+        self.ctx.add_physical_optimizer_rule(rule)
+
     def table_provider(self, name: str) -> Table:
         """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
 
@@ -1642,7 +1711,7 @@ class SessionContext:
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
         return DataFrame(
             self.ctx.read_json(
-                str(path),
+                path,
                 schema,
                 schema_infer_max_records,
                 file_extension,
@@ -1685,8 +1754,6 @@ class SessionContext:
         Returns:
             DataFrame representation of the read CSV files
         """
-        path_arg = [str(p) for p in path] if isinstance(path, list) else str(path)
-
         if options is not None and (
             schema is not None
             or not has_header
@@ -1722,7 +1789,7 @@ class SessionContext:
 
         return DataFrame(
             self.ctx.read_csv(
-                path_arg,
+                path,
                 options.to_inner(),
             )
         )
@@ -1765,7 +1832,7 @@ class SessionContext:
         file_sort_order = self._convert_file_sort_order(file_sort_order)
         return DataFrame(
             self.ctx.read_parquet(
-                str(path),
+                path,
                 table_partition_cols,
                 parquet_pruning,
                 file_extension,
@@ -1797,7 +1864,7 @@ class SessionContext:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
-            self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
+            self.ctx.read_avro(path, schema, file_partition_cols, file_extension)
         )
 
     def read_arrow(
@@ -1869,7 +1936,7 @@ class SessionContext:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
         return DataFrame(
-            self.ctx.read_arrow(str(path), schema, file_extension, file_partition_cols)
+            self.ctx.read_arrow(path, schema, file_extension, file_partition_cols)
         )
 
     def read_empty(self) -> DataFrame:

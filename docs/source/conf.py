@@ -35,8 +35,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "Apache Arrow DataFusion"
-copyright = "2019-2024, Apache Software Foundation"
+project = "Apache DataFusion in Python"
+copyright = "2019-2026, Apache Software Foundation"
 author = "Apache Software Foundation"
 
 
@@ -48,15 +48,39 @@ author = "Apache Software Foundation"
 extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
-    "myst_parser",
-    "IPython.sphinxext.ipython_directive",
+    # myst_nb is a superset of myst_parser: it provides the MyST markdown
+    # parser plus executable `{code-cell}` notebook directives. Do NOT also
+    # list "myst_parser" — myst_nb activates it internally and listing both
+    # raises an extension conflict.
+    "myst_nb",
     "autoapi.extension",
 ]
 
+# NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
+# under autoapi/ and Sphinx needs the suffix to parse it. The human-
+# authored docs are all MyST .md now. ".md" is routed through myst-nb so
+# pages carrying jupytext/kernelspec front matter execute their
+# `{code-cell}` blocks; pages without that front matter render as plain
+# MyST markdown. The ".rst" entry is only for the autoapi build artifacts.
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "markdown",
+    ".md": "myst-nb",
 }
+
+# Execute notebook code cells at build time and fail the build if any cell
+# raises — this replaces the old IPython sphinx directive, whose executed
+# examples are now `{code-cell}` blocks. "force" re-executes every build so
+# stale cached output can never ship.
+nb_execution_mode = "force"
+nb_execution_timeout = 120
+nb_execution_raise_on_error = True
+
+# Prefer the plain-text repr of a cell's last expression over its rich
+# `_repr_html_`. A DataFrame's HTML repr is a self-contained widget (inline
+# styles + an injected <script>) built for Jupyter; in the docs theme it
+# renders at the wrong width. The text repr is the readable table the old
+# IPython directive showed and is stable across datafusion versions.
+nb_mime_priority_overrides = [("html", "text/plain", 0)]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -115,13 +139,43 @@ def setup(sphinx) -> None:
 #
 html_theme = "pydata_sphinx_theme"
 
-html_theme_options = {"use_edit_page_button": False, "show_toc_level": 2}
+html_theme_options = {
+    "use_edit_page_button": False,
+    "show_toc_level": 2,
+    "logo": {
+        "image_light": "_static/images/original.svg",
+        "image_dark": "_static/images/original_dark.svg",
+        "alt_text": "Apache DataFusion in Python",
+    },
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/apache/datafusion-python",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "Rust API docs (docs.rs)",
+            "url": "https://docs.rs/datafusion/latest/datafusion/",
+            "icon": "fa-brands fa-rust",
+        },
+    ],
+    # Right-hand "On this page" TOC. A toggle button (added by
+    # _static/toc-toggle.js) lets the reader hide the whole sidebar and give
+    # the article full width.
+    "secondary_sidebar_items": ["page-toc"],
+    "collapse_navigation": True,
+    "show_nav_level": 2,
+}
 
 html_context = {
     "github_user": "apache",
-    "github_repo": "arrow-datafusion-python",
+    "github_repo": "datafusion-python",
     "github_version": "main",
     "doc_path": "docs/source",
+    "default_mode": "auto",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -129,20 +183,28 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+html_favicon = "_static/favicon.svg"
+
 # Copy agent-facing files (llms.txt) verbatim to the site root so they
 # resolve at conventional URLs like `https://.../python/llms.txt`.
 html_extra_path = ["llms.txt"]
 
-html_logo = "_static/images/2x_bgwhite_original.png"
-
 html_css_files = ["theme_overrides.css"]
 
+# Adds a button that hides the right-hand "On this page" sidebar so the
+# article can use the full width (see _static/toc-toggle.js).
+html_js_files = ["toc-toggle.js"]
+
 html_sidebars = {
-    "**": ["docs-sidebar.html"],
+    "**": ["sidebar-globaltoc.html"],
 }
 
 # tell myst_parser to auto-generate anchor links for headers h1, h2, h3
 myst_heading_anchors = 3
 
-# enable nice rendering of checkboxes for the task lists
-myst_enable_extensions = ["tasklist"]
+# MyST extensions:
+# - tasklist: GitHub-style `- [x]` checkboxes
+# - colon_fence: `:::{directive}` blocks (needed by execution-metrics.md
+#   after the RST -> MyST conversion)
+# - deflist: definition lists (used in a couple of converted pages)
+myst_enable_extensions = ["tasklist", "colon_fence", "deflist"]
