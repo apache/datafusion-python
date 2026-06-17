@@ -184,6 +184,7 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
 [tool.codespell]
 skip = [
   "*/tests/test_functions.py",
+  "*/tests/test_spark_functions.py",
   "*/target",
   "./uv.lock",
   "uv.lock",

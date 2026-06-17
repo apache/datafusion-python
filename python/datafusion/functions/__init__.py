@@ -61,6 +61,7 @@ from datafusion.expr import (
     sort_list_to_raw_sort_list,
     sort_or_default,
 )
+from datafusion.functions import spark
 
 
 def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
@@ -347,6 +348,7 @@ __all__ = [
     "signum",
     "sin",
     "sinh",
+    "spark",
     "split_part",
     "sqrt",
     "starts_with",
