@@ -364,6 +364,7 @@
 <li class="toctree-l3"><a class="reference internal" href="joins.html">Joins</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functions.html">Functions</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="spark-functions.html">Spark-Compatible Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aggregations.html">Aggregation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="windows.html">Window Functions</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">User-Defined Functions</a></li>
@@ -397,7 +398,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
@@ -671,7 +675,7 @@ over column references and literals, so the optimizer can analyze it:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand@1 = A AND qty@2 &gt;= 150
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmpziu60m3z/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
+    DataSourceExec: file_groups={1 group: [[tmp/tmpe03924tw/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
 </pre></div>
 </div>
 </div>
@@ -707,7 +711,7 @@ bloom filter or dictionary is available to skip pages.</p></li>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmpziu60m3z/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
+    DataSourceExec: file_groups={1 group: [[tmp/tmpe03924tw/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
 </pre></div>
 </div>
 </div>

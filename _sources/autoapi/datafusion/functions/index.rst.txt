@@ -29,6 +29,15 @@ datafusion.functions
 
 
 
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/datafusion/functions/spark/index
+
+
 Attributes
 ----------
 
@@ -362,8 +371,8 @@ Functions
    datafusion.functions.with_metadata
 
 
-Module Contents
----------------
+Package Contents
+----------------
 
 .. py:function:: abs(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 

@@ -50,7 +50,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Window Functions" href="windows.html" />
-    <link rel="prev" title="Functions" href="functions.html" />
+    <link rel="prev" title="Spark-Compatible Functions" href="spark-functions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -364,6 +364,7 @@
 <li class="toctree-l3"><a class="reference internal" href="joins.html">Joins</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functions.html">Functions</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="spark-functions.html">Spark-Compatible Functions</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">Aggregation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="windows.html">Window Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="udf-and-udfa.html">User-Defined Functions</a></li>
@@ -397,7 +398,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
@@ -682,15 +686,15 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 +----------+--------------------------------------------------+
 | Type 1   | Type 2 List                                      |
 +----------+--------------------------------------------------+
-| Water    | [Poison, Ice, Psychic, , Flying, Fighting, Dark] |
-| Rock     | [Ground, Water, Flying]                          |
+| Water    | [Flying, Psychic, Ice, , Fighting, Poison, Dark] |
+| Rock     | [Flying, Ground, Water]                          |
 | Ghost    | [Poison]                                         |
-| Ice      | [Psychic, Flying]                                |
-| Dragon   | [, Flying]                                       |
-| Grass    | [, Psychic, Poison]                              |
-| Fire     | [Dragon, , Flying]                               |
-| Normal   | [Flying, , Fairy]                                |
-| Poison   | [Flying, , Ground]                               |
+| Ice      | [Flying, Psychic]                                |
+| Dragon   | [Flying, ]                                       |
+| Grass    | [Poison, Psychic, ]                              |
+| Fire     | [Flying, Dragon, ]                               |
+| Normal   | [Flying, Fairy, ]                                |
+| Poison   | [Ground, Flying, ]                               |
 | Fighting | []                                               |
 +----------+--------------------------------------------------+
 Data truncated.
@@ -715,8 +719,8 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 +----------+------------------------------------------------+
 | Type 1   | Type 2 List                                    |
 +----------+------------------------------------------------+
-| Water    | [Flying, Dark, Psychic, Ice, Poison, Fighting] |
-| Rock     | [Flying, Water, Ground]                        |
+| Water    | [Poison, Ice, Psychic, Dark, Flying, Fighting] |
+| Rock     | [Water, Ground, Flying]                        |
 | Ghost    | [Poison]                                       |
 | Ice      | [Psychic, Flying]                              |
 | Dragon   | [Flying]                                       |
@@ -1249,7 +1253,21 @@ Where <code class="docutils literal notranslate"><span class="pre">grouping(Type
 - <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup" title="datafusion.expr.GroupingSet.rollup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.rollup()</span></code></a>
 - <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.cube" title="datafusion.expr.GroupingSet.cube"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.cube()</span></code></a>
 - <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.grouping_sets" title="datafusion.expr.GroupingSet.grouping_sets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.expr.GroupingSet.grouping_sets()</span></code></a></p></li>
+<li><dl class="simple myst">
+<dt>Spark-Compatible Functions</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.avg" title="datafusion.functions.spark.avg"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.avg()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.try_sum" title="datafusion.functions.spark.try_sum"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.try_sum()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.collect_list" title="datafusion.functions.spark.collect_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.collect_list()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.collect_set" title="datafusion.functions.spark.collect_set"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.collect_set()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ol>
+<p>The functions in the <code class="docutils literal notranslate"><span class="pre">datafusion.functions.spark</span></code> namespace mirror Apache
+Spark semantics, which can differ from the DataFusion built-ins of the same
+name. They live in a separate namespace so you opt in explicitly. See
+<a class="reference internal" href="spark-functions.html#spark-functions"><span class="std std-ref">Spark-Compatible Functions</span></a> for the full catalog and the semantic differences.</p>
 </section>
 <section id="user-defined-aggregate-functions">
 <h2>User-Defined Aggregate Functions<a class="headerlink" href="#user-defined-aggregate-functions" title="Link to this heading">#</a></h2>
@@ -1282,12 +1300,12 @@ and must be importable on the receiving worker. See
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="functions.html"
+       href="spark-functions.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Functions</p>
+        <p class="prev-next-title">Spark-Compatible Functions</p>
       </div>
     </a>
     <a class="right-next"

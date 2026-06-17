@@ -631,6 +631,30 @@ Module Contents
 
 
 
+   .. py:method:: enable_spark_functions() -> None
+
+      Register all Spark-compatible functions for SQL access.
+
+      Registers every UDF/UDAF/UDWF from the ``datafusion-spark`` crate,
+      overriding any DataFusion built-ins of the same name with their
+      Spark-semantics version (e.g. ``substring`` becomes 1-indexed,
+      ``concat`` propagates NULL, ``round`` uses HALF_UP rounding).
+
+      For DataFrame use, import the typed wrappers from
+      :py:mod:`datafusion.functions.spark` directly; this method is only
+      needed for SQL queries.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> ctx.enable_spark_functions()
+      >>> ctx.sql(
+      ...     "SELECT sha2('hello', 256) AS h"
+      ... ).collect_column("h")[0].as_py()
+      '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
+
+
+
    .. py:method:: enable_url_table() -> SessionContext
 
       Control if local files can be queried as tables.

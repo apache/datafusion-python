@@ -49,7 +49,7 @@
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.input" href="../input/index.html" />
+    <link rel="next" title="datafusion.functions.spark" href="spark/index.html" />
     <link rel="prev" title="datafusion.expr" href="../expr/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -364,6 +364,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/joins.html">Joins</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/functions.html">Functions</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">Aggregation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/windows.html">Window Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
@@ -397,7 +398,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">datafusion.functions</a></li>
+<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">datafusion.functions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../input/base/index.html">datafusion.input.base</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../input/location/index.html">datafusion.input.location</a></li>
@@ -507,6 +511,14 @@ imported as <code class="docutils literal notranslate"><span class="pre">F</span
 </div>
 <p>See <a class="reference internal" href="../../../user-guide/common-operations/aggregations.html#aggregation"><span class="std std-ref">Aggregation</span></a> and <a class="reference internal" href="../../../user-guide/common-operations/windows.html#window-functions"><span class="std std-ref">Window Functions</span></a> in the online documentation
 for categorized catalogs of aggregate and window functions.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</div>
+</section>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
@@ -1480,8 +1492,8 @@ for categorized catalogs of aggregate and window functions.</p>
 </table>
 </div>
 </section>
-<section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.abs">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.abs" title="Link to this definition">#</a></dt>
@@ -7919,11 +7931,11 @@ unchanged. Empty keys raise <code class="xref py py-class docutils literal notra
       </div>
     </a>
     <a class="right-next"
-       href="../input/index.html"
+       href="spark/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.input</p>
+        <p class="prev-next-title">datafusion.functions.spark</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -7946,9 +7958,10 @@ unchanged. Empty keys raise <code class="xref py py-class docutils literal notra
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.functions.abs"><code class="docutils literal notranslate"><span class="pre">abs()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.functions.acos"><code class="docutils literal notranslate"><span class="pre">acos()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.functions.acosh"><code class="docutils literal notranslate"><span class="pre">acosh()</span></code></a></li>

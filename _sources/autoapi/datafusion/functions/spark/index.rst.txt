@@ -1,0 +1,1571 @@
+datafusion.functions.spark
+==========================
+
+.. py:module:: datafusion.functions.spark
+
+.. autoapi-nested-parse::
+
+   Spark-compatible function bindings.
+
+   These functions mirror the semantics of their Apache Spark counterparts
+   exactly. Some override DataFusion built-ins (``substring`` is 1-indexed,
+   ``concat`` propagates NULL, ``round`` uses HALF_UP rounding, etc.), which is
+   why they live in a separate namespace rather than replacing the defaults.
+
+   For DataFrame use, import this module and call functions directly. For SQL
+   use, call :py:meth:`datafusion.SessionContext.enable_spark_functions` to
+   register the Spark UDFs by name (overriding any built-ins with matching
+   names) before issuing SQL queries.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   datafusion.functions.spark.abs
+   datafusion.functions.spark.add_months
+   datafusion.functions.spark.array
+   datafusion.functions.spark.array_contains
+   datafusion.functions.spark.array_repeat
+   datafusion.functions.spark.ascii
+   datafusion.functions.spark.avg
+   datafusion.functions.spark.base64
+   datafusion.functions.spark.bin
+   datafusion.functions.spark.bit_count
+   datafusion.functions.spark.bit_get
+   datafusion.functions.spark.bitmap_bit_position
+   datafusion.functions.spark.bitmap_bucket_number
+   datafusion.functions.spark.bitmap_count
+   datafusion.functions.spark.bitwise_not
+   datafusion.functions.spark.ceil
+   datafusion.functions.spark.char
+   datafusion.functions.spark.collect_list
+   datafusion.functions.spark.collect_set
+   datafusion.functions.spark.concat
+   datafusion.functions.spark.crc32
+   datafusion.functions.spark.csc
+   datafusion.functions.spark.date_add
+   datafusion.functions.spark.date_diff
+   datafusion.functions.spark.date_part
+   datafusion.functions.spark.date_sub
+   datafusion.functions.spark.date_trunc
+   datafusion.functions.spark.elt
+   datafusion.functions.spark.expm1
+   datafusion.functions.spark.factorial
+   datafusion.functions.spark.floor
+   datafusion.functions.spark.format_string
+   datafusion.functions.spark.from_utc_timestamp
+   datafusion.functions.spark.hex
+   datafusion.functions.spark.hour
+   datafusion.functions.spark.if_
+   datafusion.functions.spark.ilike
+   datafusion.functions.spark.is_valid_utf8
+   datafusion.functions.spark.json_tuple
+   datafusion.functions.spark.last_day
+   datafusion.functions.spark.length
+   datafusion.functions.spark.like
+   datafusion.functions.spark.luhn_check
+   datafusion.functions.spark.make_dt_interval
+   datafusion.functions.spark.make_interval
+   datafusion.functions.spark.make_valid_utf8
+   datafusion.functions.spark.map_from_arrays
+   datafusion.functions.spark.map_from_entries
+   datafusion.functions.spark.minute
+   datafusion.functions.spark.modulus
+   datafusion.functions.spark.negative
+   datafusion.functions.spark.next_day
+   datafusion.functions.spark.parse_url
+   datafusion.functions.spark.pmod
+   datafusion.functions.spark.rint
+   datafusion.functions.spark.round
+   datafusion.functions.spark.sec
+   datafusion.functions.spark.second
+   datafusion.functions.spark.sha1
+   datafusion.functions.spark.sha2
+   datafusion.functions.spark.shiftleft
+   datafusion.functions.spark.shiftright
+   datafusion.functions.spark.shiftrightunsigned
+   datafusion.functions.spark.shuffle
+   datafusion.functions.spark.size
+   datafusion.functions.spark.slice
+   datafusion.functions.spark.soundex
+   datafusion.functions.spark.space
+   datafusion.functions.spark.spark_cast
+   datafusion.functions.spark.str_to_map
+   datafusion.functions.spark.substring
+   datafusion.functions.spark.time_trunc
+   datafusion.functions.spark.to_utc_timestamp
+   datafusion.functions.spark.trunc
+   datafusion.functions.spark.try_parse_url
+   datafusion.functions.spark.try_sum
+   datafusion.functions.spark.try_url_decode
+   datafusion.functions.spark.unbase64
+   datafusion.functions.spark.unhex
+   datafusion.functions.spark.unix_date
+   datafusion.functions.spark.unix_micros
+   datafusion.functions.spark.unix_millis
+   datafusion.functions.spark.unix_seconds
+   datafusion.functions.spark.url_decode
+   datafusion.functions.spark.url_encode
+   datafusion.functions.spark.width_bucket
+   datafusion.functions.spark.xxhash64
+
+
+Module Contents
+---------------
+
+.. py:function:: abs(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``abs``: absolute value.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.abs(dfn.lit(-5)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   5
+
+
+.. py:function:: add_months(start: datafusion.expr.Expr, months: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``add_months``: date + N months.
+
+   ``months`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.add_months(d, 2).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 3, 15)
+
+
+.. py:function:: array(*cols: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``array``: builds an array from the given elements.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.array(
+   ...         dfn.lit(1), dfn.lit(2), dfn.lit(3)
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   [1, 2, 3]
+
+
+.. py:function:: array_contains(col: datafusion.expr.Expr, value: datafusion.expr.Expr | Any) -> datafusion.expr.Expr
+
+   Spark ``array_contains``: true if the array contains the element.
+
+   ``value`` accepts a native Python literal or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.array_contains(
+   ...         dfn.functions.spark.array(dfn.lit(1), dfn.lit(2)), 1
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   True
+
+
+.. py:function:: array_repeat(col: datafusion.expr.Expr, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``array_repeat``: array of ``element`` repeated ``count`` times.
+
+   ``count`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.array_repeat(dfn.lit("a"), 3).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   ['a', 'a', 'a']
+
+
+.. py:function:: ascii(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``ascii``: code point of the first character.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.ascii(dfn.lit("A")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   65
+
+
+.. py:function:: avg(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Spark ``avg``: returns the mean of a numeric column.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+   >>> r = df.aggregate(
+   ...     [], [dfn.functions.spark.avg(dfn.col("a")).alias("v")])
+   >>> r.collect_column("v")[0].as_py()
+   2.0
+
+
+.. py:function:: base64(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``base64``: encode binary as a base64 string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.base64(dfn.lit(b"hi")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'aGk='
+
+
+.. py:function:: bin(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``bin``: binary string representation of a long.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.bin(dfn.lit(7)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   '111'
+
+
+.. py:function:: bit_count(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``bit_count``: number of bits set in the integer's binary form.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.bit_count(dfn.lit(7)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   3
+
+
+.. py:function:: bit_get(col: datafusion.expr.Expr, pos: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``bit_get``: returns the bit (0 or 1) at ``pos``.
+
+   A bare ``str`` ``pos`` is treated as a column name (matching pyspark),
+   not a literal; pass :func:`~datafusion.lit` for a literal position.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.bit_get(dfn.lit(5), dfn.lit(0)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1
+
+
+.. py:function:: bitmap_bit_position(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``bitmap_bit_position``: bit position for a child expression.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.bitmap_bit_position(dfn.lit(15)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   14
+
+
+.. py:function:: bitmap_bucket_number(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``bitmap_bucket_number``: bucket number for a child expression.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.bitmap_bucket_number(dfn.lit(15)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1
+
+
+.. py:function:: bitmap_count(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``bitmap_count``: number of set bits in a bitmap.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.bitmap_count(dfn.lit(b"\xff")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   8
+
+
+.. py:function:: bitwise_not(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``~``: bitwise NOT.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.bitwise_not(dfn.lit(0)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   -1
+
+
+.. py:function:: ceil(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``ceil``: smallest integer ≥ arg.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.ceil(dfn.lit(1.2)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2
+
+
+.. py:function:: char(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``char``: ASCII character for a code point (mod 256).
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.char(dfn.lit(65)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'A'
+
+
+.. py:function:: collect_list(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Spark ``collect_list``: collect values into an array (preserves dups).
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 2]})
+   >>> r = df.aggregate(
+   ...     [], [dfn.functions.spark.collect_list(dfn.col("a")).alias("v")])
+   >>> sorted(r.collect_column("v")[0].as_py())
+   [1, 2, 2]
+
+
+.. py:function:: collect_set(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Spark ``collect_set``: collect distinct values into an array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 2, 3]})
+   >>> r = df.aggregate(
+   ...     [], [dfn.functions.spark.collect_set(dfn.col("a")).alias("v")])
+   >>> sorted(r.collect_column("v")[0].as_py())
+   [1, 2, 3]
+
+
+.. py:function:: concat(*cols: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``concat``: concatenates strings; NULL if any input is NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.concat(dfn.lit("a"), dfn.lit("b")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'ab'
+
+
+.. py:function:: crc32(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``crc32``: cyclic redundancy check value as a bigint.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"s": ["ABC"]})
+   >>> r = df.select(dfn.functions.spark.crc32(dfn.col("s")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2743272264
+
+
+.. py:function:: csc(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``csc``: cosecant.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.csc(dfn.lit(1.5708)).alias("v"))
+   >>> f"{r.collect_column('v')[0].as_py():.4f}"
+   '1.0000'
+
+
+.. py:function:: date_add(start: datafusion.expr.Expr, days: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``date_add``: date + N days.
+
+   ``days`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.date_add(d, 5).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 1, 20)
+
+
+.. py:function:: date_diff(end: datafusion.expr.Expr, start: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``date_diff``: number of days from ``start_date`` to ``end_date``.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> end = dfn.lit(pa.scalar(date(2020, 1, 20), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.date_diff(end, d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   5
+
+
+.. py:function:: date_part(field: datafusion.expr.Expr | str, source: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``date_part``: extract ``field`` from a date/time/timestamp.
+
+   ``field`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(
+   ...     dfn.functions.spark.date_part("year", d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2020
+
+
+.. py:function:: date_sub(start: datafusion.expr.Expr, days: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``date_sub``: date - N days.
+
+   ``days`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.date_sub(d, 5).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 1, 10)
+
+
+.. py:function:: date_trunc(format: datafusion.expr.Expr | str, timestamp: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
+
+   ``format`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(
+   ...     dfn.functions.spark.date_trunc("month", ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.datetime(2020, 1, 1, 0, 0)
+
+
+.. py:function:: elt(*inputs: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``elt``: returns the n-th input (1-indexed).
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.elt(
+   ...         dfn.lit(2), dfn.lit("a"), dfn.lit("b")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   'b'
+
+
+.. py:function:: expm1(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``expm1``: exp(arg) - 1.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.expm1(dfn.lit(0.0)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   0.0
+
+
+.. py:function:: factorial(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``factorial``: n! for n in [0..20], else NULL.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.factorial(
+   ...         dfn.lit(pa.scalar(5, type=pa.int32()))
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   120
+
+
+.. py:function:: floor(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``floor``: largest integer ≤ arg.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.floor(dfn.lit(1.8)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1
+
+
+.. py:function:: format_string(format: str | datafusion.expr.Expr, *cols: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``format_string``: printf-style format string.
+
+   ``format`` is the printf-style template (a plain ``str`` is auto-promoted
+   to a literal expression); remaining args are values to substitute.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.format_string(
+   ...         "%d-%s", dfn.lit(42), dfn.lit("hi")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   '42-hi'
+
+
+.. py:function:: from_utc_timestamp(timestamp: datafusion.expr.Expr, tz: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``from_utc_timestamp``: interpret ``ts`` as UTC, convert to ``tz``.
+
+   ``tz`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(
+   ...     dfn.functions.spark.from_utc_timestamp(ts, "UTC").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.datetime(2020, 1, 15, 14, 30, 45)
+
+
+.. py:function:: hex(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``hex``: hexadecimal representation.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.hex(dfn.lit(255)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'FF'
+
+
+.. py:function:: hour(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``hour``: extract hour component of a timestamp.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.hour(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   14
+
+
+.. py:function:: if_(condition: datafusion.expr.Expr, if_true: datafusion.expr.Expr | Any, if_false: datafusion.expr.Expr | Any) -> datafusion.expr.Expr
+
+   Spark ``if``: returns ``if_true`` when ``condition`` is true, else ``if_false``.
+
+   Exposed as ``if_`` because ``if`` is a Python keyword. ``if_true`` and
+   ``if_false`` accept native Python literals or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.if_(
+   ...         dfn.lit(2) > dfn.lit(1), "big", "small"
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   'big'
+
+
+.. py:function:: ilike(str: datafusion.expr.Expr, pattern: datafusion.expr.Expr | ilike.str, escapeChar: ilike.str | None = None) -> datafusion.expr.Expr
+
+   Spark ``ilike``: case-insensitive pattern match.
+
+   A bare ``str`` ``pattern`` is treated as a column name (matching pyspark),
+   not a literal; pass :func:`~datafusion.lit` for a literal pattern.
+   ``escapeChar`` is accepted for pyspark parity but is not yet wired through
+   the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.ilike(dfn.lit("HELLO"), dfn.lit("h%")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   True
+
+
+.. py:function:: is_valid_utf8(str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``is_valid_utf8``: true if the string is valid UTF-8.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.is_valid_utf8(dfn.lit("hello")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   True
+
+
+.. py:function:: json_tuple(col: datafusion.expr.Expr, *fields: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``json_tuple``: extract top-level fields from a JSON string.
+
+   Each field name accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.json_tuple(
+   ...         dfn.lit('{"a":1,"b":"x"}'), "a", "b"
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   {'c0': '1', 'c1': 'x'}
+
+
+.. py:function:: last_day(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``last_day``: last day of the month containing the date.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.last_day(d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 1, 31)
+
+
+.. py:function:: length(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``length``: character length of a string, or byte length of binary.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.length(dfn.lit("hello")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   5
+
+
+.. py:function:: like(str: datafusion.expr.Expr, pattern: datafusion.expr.Expr | like.str, escapeChar: like.str | None = None) -> datafusion.expr.Expr
+
+   Spark ``like``: case-sensitive pattern match.
+
+   A bare ``str`` ``pattern`` is treated as a column name (matching pyspark),
+   not a literal; pass :func:`~datafusion.lit` for a literal pattern.
+   ``escapeChar`` is accepted for pyspark parity but is not yet wired through
+   the Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.like(dfn.lit("hello"), dfn.lit("h%")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   True
+
+
+.. py:function:: luhn_check(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``luhn_check``: true if the digit string passes the Luhn check.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.luhn_check(
+   ...         dfn.lit("4111111111111111")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   True
+
+
+.. py:function:: make_dt_interval(days: datafusion.expr.Expr | int | None = None, hours: datafusion.expr.Expr | int | None = None, mins: datafusion.expr.Expr | int | None = None, secs: datafusion.expr.Expr | float | None = None) -> datafusion.expr.Expr
+
+   Spark ``make_dt_interval``: day-time interval from components.
+
+   All parts are optional; omitted parts default to zero, matching pyspark.
+   Integer parts accept a native ``int`` and ``secs`` accepts a ``float``,
+   or any part may be an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.make_dt_interval().alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.timedelta(0)
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.make_dt_interval(
+   ...         days=1, hours=2, mins=3, secs=4.5
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   datetime.timedelta(days=1, seconds=7384, microseconds=500000)
+
+
+.. py:function:: make_interval(years: datafusion.expr.Expr | int | None = None, months: datafusion.expr.Expr | int | None = None, weeks: datafusion.expr.Expr | int | None = None, days: datafusion.expr.Expr | int | None = None, hours: datafusion.expr.Expr | int | None = None, mins: datafusion.expr.Expr | int | None = None, secs: datafusion.expr.Expr | float | None = None) -> datafusion.expr.Expr
+
+   Spark ``make_interval``: interval from year/month/week/day/hour/min/sec parts.
+
+   All parts are optional; omitted parts default to zero, matching pyspark.
+   Integer parts accept a native ``int`` and ``secs`` accepts a ``float``,
+   or any part may be an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.make_interval().alias("v"))
+   >>> r.collect_column("v")[0].as_py().months
+   0
+
+   >>> r = df.select(dfn.functions.spark.make_interval(years=1).alias("v"))
+   >>> r.collect_column("v")[0].as_py().months
+   12
+
+
+.. py:function:: make_valid_utf8(str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``make_valid_utf8``: replace invalid UTF-8 bytes with U+FFFD.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.make_valid_utf8(dfn.lit("hello")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'hello'
+
+
+.. py:function:: map_from_arrays(col1: datafusion.expr.Expr, col2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``map_from_arrays``: build a map from parallel key/value arrays.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> keys = dfn.functions.spark.array(dfn.lit("a"), dfn.lit("b"))
+   >>> vals = dfn.functions.spark.array(dfn.lit(1), dfn.lit(2))
+   >>> r = df.select(
+   ...     dfn.functions.spark.map_from_arrays(keys, vals).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   [('a', 1), ('b', 2)]
+
+
+.. py:function:: map_from_entries(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``map_from_entries``: build a map from an array of key/value structs.
+
+   ``col`` must be an array whose elements are two-field structs; the first
+   field becomes the map key and the second the value.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> ctx = dfn.SessionContext()
+   >>> entry_type = pa.list_(
+   ...     pa.struct([("key", pa.string()), ("value", pa.int64())]))
+   >>> entries = pa.array(
+   ...     [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+   ...     type=entry_type)
+   >>> df = ctx.from_arrow(pa.record_batch([entries], names=["e"]))
+   >>> r = df.select(
+   ...     dfn.functions.spark.map_from_entries(dfn.col("e")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   [('a', 1), ('b', 2)]
+
+
+.. py:function:: minute(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``minute``: extract minute component of a timestamp.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.minute(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   30
+
+
+.. py:function:: modulus(dividend: datafusion.expr.Expr | float, divisor: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``mod``: remainder of ``dividend / divisor`` (sign follows dividend).
+
+   ``dividend`` and ``divisor`` accept native numbers or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.modulus(dfn.lit(10), dfn.lit(3)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1
+
+
+.. py:function:: negative(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``negative``: unary minus.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.negative(dfn.lit(3)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   -3
+
+
+.. py:function:: next_day(date: datafusion.expr.Expr, dayOfWeek: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``next_day``: first date after ``start_date`` named ``day_of_week``.
+
+   ``dayOfWeek`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.next_day(d, "Mon").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 1, 20)
+
+
+.. py:function:: parse_url(url: datafusion.expr.Expr, partToExtract: datafusion.expr.Expr | str, key: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
+
+   Spark ``parse_url``: extract a part from a URL; errors on invalid URLs.
+
+   ``partToExtract`` is one of ``"HOST"``, ``"PATH"``, ``"QUERY"``,
+   ``"REF"``, ``"PROTOCOL"``, ``"FILE"``, ``"AUTHORITY"``, ``"USERINFO"``.
+   Pass ``key`` only with ``"QUERY"`` to extract a single parameter. Bare
+   ``str`` values for ``partToExtract``/``key`` are treated as column names
+   (matching pyspark); pass :func:`~datafusion.lit` for a literal.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.parse_url(
+   ...         dfn.lit("http://example.com/path?q=1"), dfn.lit("HOST")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   'example.com'
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.parse_url(
+   ...         dfn.lit("http://example.com/path?q=1"),
+   ...         dfn.lit("QUERY"),
+   ...         key=dfn.lit("q"),
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   '1'
+
+
+.. py:function:: pmod(dividend: datafusion.expr.Expr | float, divisor: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``pmod``: positive remainder of division.
+
+   ``dividend`` and ``divisor`` accept native numbers or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.pmod(dfn.lit(-1), dfn.lit(3)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2
+
+
+.. py:function:: rint(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``rint``: round to nearest mathematical integer (as double).
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.rint(dfn.lit(2.5)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2.0
+
+
+.. py:function:: round(col: datafusion.expr.Expr, scale: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
+
+   Spark ``round``: round to ``scale`` decimal places, HALF_UP rounding.
+
+   ``scale`` defaults to zero when omitted, matching pyspark, and accepts a
+   native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.round(dfn.lit(2.5)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   3.0
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.round(dfn.lit(2.345), scale=2).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2.35
+
+
+.. py:function:: sec(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``sec``: secant.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.sec(dfn.lit(0.0)).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1.0
+
+
+.. py:function:: second(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``second``: extract second component of a timestamp.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.second(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   45
+
+
+.. py:function:: sha1(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``sha1``: SHA-1 hash as a hex string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"s": ["hello"]})
+   >>> r = df.select(dfn.functions.spark.sha1(dfn.col("s")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d'
+
+
+.. py:function:: sha2(col: datafusion.expr.Expr, numBits: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``sha2``: SHA-2 family hash (224, 256, 384, 512). Bit length 0 = 256.
+
+   ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"s": ["hello"]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.sha2(dfn.col("s"), 256).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
+
+
+.. py:function:: shiftleft(col: datafusion.expr.Expr, numBits: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``shiftleft``: ``value`` shifted left by ``shift`` bits.
+
+   ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.shiftleft(dfn.lit(1), 3).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   8
+
+
+.. py:function:: shiftright(col: datafusion.expr.Expr, numBits: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``shiftright``: arithmetic right shift.
+
+   ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.shiftright(dfn.lit(8), 2).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2
+
+
+.. py:function:: shiftrightunsigned(col: datafusion.expr.Expr, numBits: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``shiftrightunsigned``: logical (unsigned) right shift.
+
+   ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.shiftrightunsigned(dfn.lit(8), 2).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   2
+
+
+.. py:function:: shuffle(col: datafusion.expr.Expr, seed: int | None = None) -> datafusion.expr.Expr
+
+   Spark ``shuffle``: returns a random permutation of the input array.
+
+   ``seed`` is accepted for pyspark parity but is not yet wired through the
+   Rust binding; passing a non-``None`` value raises ``NotImplementedError``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.shuffle(
+   ...         dfn.functions.spark.array(dfn.lit(1), dfn.lit(2), dfn.lit(3))
+   ...     ).alias("v")
+   ... )
+   >>> sorted(r.collect_column("v")[0].as_py())
+   [1, 2, 3]
+
+
+.. py:function:: size(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``size``: length of an array or map.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.size(
+   ...         dfn.functions.spark.array(dfn.lit(1), dfn.lit(2), dfn.lit(3))
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   3
+
+
+.. py:function:: slice(x: datafusion.expr.Expr, start: datafusion.expr.Expr | int, length: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``slice``: subset of the array from 1-indexed ``start`` with ``length``.
+
+   Negative ``start`` counts from the end. ``start`` and ``length`` accept
+   native ``int`` values or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.slice(
+   ...         dfn.functions.spark.array(
+   ...             dfn.lit(1), dfn.lit(2), dfn.lit(3), dfn.lit(4)),
+   ...         2, 2,
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   [2, 3]
+
+
+.. py:function:: soundex(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``soundex``: Soundex phonetic code.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.soundex(dfn.lit("Robert")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'R163'
+
+
+.. py:function:: space(col: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``space``: string of n spaces.
+
+   ``col`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.space(3).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   '   '
+
+
+.. py:function:: spark_cast(arg: datafusion.expr.Expr, type_str: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``cast``: cast ``arg`` to the type named by ``type_str``.
+
+   Uses Spark cast semantics (e.g. overflow returns NULL, not error).
+   ``type_str`` accepts a native ``str`` or an :class:`Expr`.
+
+   Currently only supports casting numeric values to ``"timestamp"``.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.spark_cast(
+   ...         dfn.lit(1579098645), "timestamp"
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py().isoformat()
+   '2020-01-15T14:30:45+00:00'
+
+
+.. py:function:: str_to_map(text: datafusion.expr.Expr, pairDelim: datafusion.expr.Expr | str | None = None, keyValueDelim: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
+
+   Spark ``str_to_map``: split text into key/value pairs using delimiters.
+
+   Delimiters default to ``","`` and ``":"`` when omitted, matching pyspark.
+   Parameter names match ``pyspark.sql.functions.str_to_map``; pyspark types
+   the delimiters as column-or-name, so a bare ``str`` is treated as a column
+   name. Pass :func:`~datafusion.lit` for a literal delimiter.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.str_to_map(dfn.lit("a:1,b:2")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   [('a', '1'), ('b', '2')]
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.str_to_map(
+   ...         dfn.lit("a=1;b=2"),
+   ...         pairDelim=dfn.lit(";"),
+   ...         keyValueDelim=dfn.lit("="),
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   [('a', '1'), ('b', '2')]
+
+
+.. py:function:: substring(str: datafusion.expr.Expr, pos: datafusion.expr.Expr | int, len: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``substring``: 1-indexed substring starting at ``pos`` of given ``length``.
+
+   Negative ``pos`` counts from the end. ``pos`` and ``len`` accept native
+   ``int`` values or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.substring(dfn.lit("hello"), 1, 3).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'hel'
+
+
+.. py:function:: time_trunc(unit: datafusion.expr.Expr | str, time: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``time_trunc``: truncate time value to unit ``fmt``.
+
+   A bare ``str`` ``unit`` is treated as a column name (matching pyspark),
+   not a literal; pass :func:`~datafusion.lit` for a literal unit.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import time
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> t = dfn.lit(pa.scalar(time(14, 30, 45), type=pa.time64('us')))
+   >>> r = df.select(
+   ...     dfn.functions.spark.time_trunc(dfn.lit("hour"), t).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.time(14, 0)
+
+
+.. py:function:: to_utc_timestamp(timestamp: datafusion.expr.Expr, tz: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``to_utc_timestamp``: interpret ``ts`` as ``tz``, convert to UTC.
+
+   ``tz`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(
+   ...     dfn.functions.spark.to_utc_timestamp(ts, "UTC").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.datetime(2020, 1, 15, 14, 30, 45)
+
+
+.. py:function:: trunc(date: datafusion.expr.Expr, format: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``trunc``: truncate date to unit ``fmt``.
+
+   ``format`` accepts a native ``str`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.trunc(d, "YEAR").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   datetime.date(2020, 1, 1)
+
+
+.. py:function:: try_parse_url(url: datafusion.expr.Expr, partToExtract: datafusion.expr.Expr | str, key: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
+
+   Spark ``try_parse_url``: like ``parse_url`` but returns NULL on invalid URLs.
+
+   Bare ``str`` values for ``partToExtract``/``key`` are treated as column
+   names (matching pyspark); pass :func:`~datafusion.lit` for a literal.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.try_parse_url(
+   ...         dfn.lit("http://example.com/"), dfn.lit("HOST")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   'example.com'
+
+
+.. py:function:: try_sum(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Spark ``try_sum``: sum that returns NULL on overflow.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+   >>> r = df.aggregate(
+   ...     [], [dfn.functions.spark.try_sum(dfn.col("a")).alias("v")])
+   >>> r.collect_column("v")[0].as_py()
+   6
+
+
+.. py:function:: try_url_decode(str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``try_url_decode``: like ``url_decode``; returns NULL on invalid input.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.try_url_decode(dfn.lit("a%20b")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'a b'
+
+
+.. py:function:: unbase64(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unbase64``: decode a base64 string to binary.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.unbase64(dfn.lit("aGk=")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   b'hi'
+
+
+.. py:function:: unhex(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unhex``: convert hexadecimal string to binary.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.unhex(dfn.lit("FF")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   b'\xff'
+
+
+.. py:function:: unix_date(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unix_date``: days since 1970-01-01 for ``dt``.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
+   >>> r = df.select(dfn.functions.spark.unix_date(d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   18276
+
+
+.. py:function:: unix_micros(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unix_micros``: microseconds since epoch for ``ts``.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.unix_micros(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1579098645000000
+
+
+.. py:function:: unix_millis(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unix_millis``: milliseconds since epoch for ``ts``.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.unix_millis(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1579098645000
+
+
+.. py:function:: unix_seconds(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``unix_seconds``: seconds since epoch for ``ts``.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import datetime
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> ts = dfn.lit(
+   ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
+   ...               type=pa.timestamp('us')))
+   >>> r = df.select(dfn.functions.spark.unix_seconds(ts).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1579098645
+
+
+.. py:function:: url_decode(str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``url_decode``: decode an application/x-www-form-urlencoded string.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.url_decode(dfn.lit("a%20b")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'a b'
+
+
+.. py:function:: url_encode(str: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``url_encode``: encode a string in application/x-www-form-urlencoded.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.url_encode(dfn.lit("a b")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'a+b'
+
+
+.. py:function:: width_bucket(v: datafusion.expr.Expr, min: datafusion.expr.Expr, max: datafusion.expr.Expr, numBucket: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``width_bucket``: bucket number for ``value`` in equi-width histogram.
+
+   ``numBucket`` accepts a native ``int`` or an :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.width_bucket(
+   ...         dfn.lit(5.0), dfn.lit(0.0), dfn.lit(10.0), 5
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   3
+
+
+.. py:function:: xxhash64(*cols: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``xxhash64``: 64-bit xxHash of the arguments.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.xxhash64(dfn.lit("hello")).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   -4367754540140381902
+
+

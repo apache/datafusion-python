@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Avro &#8212; Apache DataFusion in Python  documentation</title>
+    <title>Spark-Compatible Functions &#8212; Apache DataFusion in Python  documentation</title>
   
   
   
@@ -44,13 +44,13 @@
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/io/avro';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/spark-functions';</script>
     <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="CSV" href="csv.html" />
-    <link rel="prev" title="Arrow" href="arrow.html" />
+    <link rel="next" title="Aggregation" href="aggregations.html" />
+    <link rel="prev" title="Functions" href="functions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -233,6 +233,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -352,27 +356,27 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/execution-metrics.html">Execution Metrics</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/views.html">Registering Views</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/basic-info.html">Basic Operations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/select-and-filter.html">Column Selections</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/expressions.html">Expressions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/joins.html">Joins</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/functions.html">Functions</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Common Operations</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="functions.html">Functions</a></li>
 
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/aggregations.html">Aggregation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/windows.html">Window Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="udf-and-udfa.html">User-Defined Functions</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">IO</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="arrow.html">Arrow</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Avro</a></li>
-<li class="toctree-l3"><a class="reference internal" href="csv.html">CSV</a></li>
-<li class="toctree-l3"><a class="reference internal" href="json.html">JSON</a></li>
-<li class="toctree-l3"><a class="reference internal" href="parquet.html">Parquet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="table_provider.html">Custom Table Provider</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/table_provider.html">Custom Table Provider</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../configuration.html">Configuration</a></li>
@@ -467,9 +471,9 @@
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
     
     
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">IO</a></li>
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Common Operations</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Avro</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Spark-Compatible Functions</span></li>
   </ul>
 </nav>
 </div>
@@ -504,16 +508,73 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<section id="avro">
-<span id="io-avro"></span><h1>Avro<a class="headerlink" href="#avro" title="Link to this heading">#</a></h1>
-<p><a class="reference external" href="https://avro.apache.org/">Avro</a> is a serialization format for record data. Reading an avro file is very straightforward
-with <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_avro" title="datafusion.context.SessionContext.read_avro"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_avro()</span></code></a></p>
+<section id="spark-compatible-functions">
+<span id="spark-functions"></span><h1>Spark-Compatible Functions<a class="headerlink" href="#spark-compatible-functions" title="Link to this heading">#</a></h1>
+<p>DataFusion ships Spark-compatible versions of a wide set of functions
+(string, math, datetime, hash, array, aggregate) through the upstream
+<code class="docutils literal notranslate"><span class="pre">datafusion-spark</span></code> crate. <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> exposes these under
+<code class="docutils literal notranslate"><span class="pre">datafusion.functions.spark</span></code> for use from the DataFrame API, and via
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">enable_spark_functions()</span></code> for use from
+SQL.</p>
+<section id="why-a-separate-namespace">
+<h2>Why a Separate Namespace?<a class="headerlink" href="#why-a-separate-namespace" title="Link to this heading">#</a></h2>
+<p>Several Spark functions share names with DataFusion built-ins but differ in
+semantics. The most common divergences:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">concat</span></code> propagates NULL. <code class="docutils literal notranslate"><span class="pre">concat('a',</span> <span class="pre">NULL,</span> <span class="pre">'b')</span></code> returns NULL under
+Spark semantics, whereas the DataFusion default returns <code class="docutils literal notranslate"><span class="pre">'ab'</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">substring</span></code> is 1-indexed and supports negative positions counting from
+the end of the string.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">round</span></code> uses HALF_UP rounding mode (<code class="docutils literal notranslate"><span class="pre">round(2.5,</span> <span class="pre">0)</span> <span class="pre">==</span> <span class="pre">3</span></code>).</p></li>
+<li><p>Numeric functions (<code class="docutils literal notranslate"><span class="pre">floor</span></code>, <code class="docutils literal notranslate"><span class="pre">ceil</span></code>, <code class="docutils literal notranslate"><span class="pre">mod</span></code>) follow Spark’s edge-case
+handling for negative values and decimals.</p></li>
+</ul>
+<p>Enabling Spark functions does not affect the DataFrame API: you choose which
+implementation to call by which module you import from.</p>
+</section>
+<section id="dataframe-api">
+<h2>DataFrame API<a class="headerlink" href="#dataframe-api" title="Link to this heading">#</a></h2>
+<p>Import <code class="docutils literal notranslate"><span class="pre">spark</span></code> and use it like any other functions module. The Spark
+functions can go anywhere you’d put a DataFusion expression — inside
+<code class="docutils literal notranslate"><span class="pre">select</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">with_column</span></code>, <code class="docutils literal notranslate"><span class="pre">aggregate</span></code>, and so on.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">spark</span>
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">]})</span>
+
+<span class="c1"># SHA-256 hash with Spark semantics</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">spark</span><span class="o">.</span><span class="n">sha2</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">256</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># 1-indexed substring</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">spark</span><span class="o">.</span><span class="n">substring</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="sql">
+<h2>SQL<a class="headerlink" href="#sql" title="Link to this heading">#</a></h2>
+<p>To use Spark functions in SQL queries, call
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">enable_spark_functions()</span></code> on the context.
+This registers every Spark UDF/UDAF/UDWF, overriding any DataFusion built-in
+of the same name.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_avro</span><span class="p">(</span><span class="s2">&quot;file.avro&quot;</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">enable_spark_functions</span><span class="p">()</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT sha2(&#39;hello&#39;, 256)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT concat(&#39;a&#39;, NULL, &#39;b&#39;)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>   <span class="c1"># -&gt; NULL, not &#39;ab&#39;</span>
 </pre></div>
 </div>
+<p>The override applies for the lifetime of the session. To call DataFusion’s
+built-in versions afterwards, create a fresh <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+</section>
+<section id="function-reference">
+<h2>Function Reference<a class="headerlink" href="#function-reference" title="Link to this heading">#</a></h2>
+<p>The full, up-to-date list of available Spark functions — with signatures
+and per-function docstrings — lives in the
+<a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html#module-datafusion.functions.spark" title="datafusion.functions.spark"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.functions.spark</span></code></a> API reference.</p>
+</section>
 </section>
 
 
@@ -527,20 +588,20 @@ with <a class="reference internal" href="../../autoapi/datafusion/context/index.
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="arrow.html"
+       href="functions.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Arrow</p>
+        <p class="prev-next-title">Functions</p>
       </div>
     </a>
     <a class="right-next"
-       href="csv.html"
+       href="aggregations.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">CSV</p>
+        <p class="prev-next-title">Aggregation</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -550,6 +611,27 @@ with <a class="reference internal" href="../../autoapi/datafusion/context/index.
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-a-separate-namespace">Why a Separate Namespace?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataframe-api">DataFrame API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sql">SQL</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#function-reference">Function Reference</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

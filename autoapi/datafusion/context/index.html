@@ -364,6 +364,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/joins.html">Joins</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/functions.html">Functions</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">Aggregation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/windows.html">Window Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
@@ -397,7 +398,10 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../input/base/index.html">datafusion.input.base</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../input/location/index.html">datafusion.input.location</a></li>
@@ -1242,6 +1246,28 @@ changes here.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">enable_ident_normalization</span><span class="p">()</span>
 <span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.enable_spark_functions">
+<span class="sig-name descname"><span class="pre">enable_spark_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.enable_spark_functions" title="Link to this definition">#</a></dt>
+<dd><p>Register all Spark-compatible functions for SQL access.</p>
+<p>Registers every UDF/UDAF/UDWF from the <code class="docutils literal notranslate"><span class="pre">datafusion-spark</span></code> crate,
+overriding any DataFusion built-ins of the same name with their
+Spark-semantics version (e.g. <code class="docutils literal notranslate"><span class="pre">substring</span></code> becomes 1-indexed,
+<code class="docutils literal notranslate"><span class="pre">concat</span></code> propagates NULL, <code class="docutils literal notranslate"><span class="pre">round</span></code> uses HALF_UP rounding).</p>
+<p>For DataFrame use, import the typed wrappers from
+<a class="reference internal" href="../functions/spark/index.html#module-datafusion.functions.spark" title="datafusion.functions.spark"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.functions.spark</span></code></a> directly; this method is only
+needed for SQL queries.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">enable_spark_functions</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;SELECT sha2(&#39;hello&#39;, 256) AS h&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">&#39;2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2523,6 +2549,7 @@ the original session is unchanged.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.deregister_udwf"><code class="docutils literal notranslate"><span class="pre">SessionContext.deregister_udwf()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.empty_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.empty_table()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_ident_normalization"><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_ident_normalization()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_spark_functions"><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_spark_functions()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_url_table"><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_url_table()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute_logical_plan"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute_logical_plan()</span></code></a></li>
