@@ -54,6 +54,7 @@ from datafusion.expr import (
     TransactionStart,
     Values,
     coerce_to_expr,
+    coerce_to_expr_list,
     coerce_to_expr_or_none,
     ensure_expr,
     ensure_expr_list,
@@ -1077,6 +1078,39 @@ def test_coerce_to_expr_or_none_passes_expr_through():
     result = coerce_to_expr_or_none(e)
     assert isinstance(result, type(e))
     assert str(result) == str(e)
+
+
+def test_coerce_to_expr_list_empty():
+    assert coerce_to_expr_list([]) == []
+
+
+def test_coerce_to_expr_list_wraps_literals():
+    result = coerce_to_expr_list([1, "x", 3.14, True])
+    expected = [lit(1), lit("x"), lit(3.14), lit(True)]
+    assert [str(r) for r in result] == [str(e) for e in expected]
+
+
+def test_coerce_to_expr_list_passes_exprs_through():
+    e = col("a")
+    result = coerce_to_expr_list([e])
+    assert isinstance(result[0], type(e))
+    assert str(result[0]) == str(e)
+
+
+def test_coerce_to_expr_list_mixed():
+    e = col("a")
+    result = coerce_to_expr_list([e, 42, "hello"])
+    assert [str(r) for r in result] == [str(e), str(lit(42)), str(lit("hello"))]
+
+
+def test_coerce_to_expr_list_accepts_tuple():
+    result = coerce_to_expr_list((1, 2))
+    assert [str(r) for r in result] == [str(lit(1)), str(lit(2))]
+
+
+def test_coerce_to_expr_list_accepts_generator():
+    result = coerce_to_expr_list(x for x in [1, 2, 3])
+    assert [str(r) for r in result] == [str(lit(1)), str(lit(2)), str(lit(3))]
 
 
 @pytest.mark.parametrize(

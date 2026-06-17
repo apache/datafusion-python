@@ -252,6 +252,7 @@ __all__ = [
     "WindowFrame",
     "WindowFrameBound",
     "coerce_to_expr",
+    "coerce_to_expr_list",
     "coerce_to_expr_or_none",
     "ensure_expr",
     "ensure_expr_list",
@@ -346,6 +347,18 @@ def coerce_to_expr_or_none(value: Any | None) -> Expr | None:
     if value is None:
         return None
     return coerce_to_expr(value)
+
+
+def coerce_to_expr_list(values: Iterable[Any]) -> list[Expr]:
+    """Coerce each item in an iterable to ``Expr`` via :func:`coerce_to_expr`.
+
+    Args:
+        values: Iterable of ``Expr`` instances or Python literals to wrap.
+
+    Returns:
+        A list of ``Expr`` instances.
+    """
+    return [coerce_to_expr(value) for value in values]
 
 
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
