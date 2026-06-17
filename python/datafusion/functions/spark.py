@@ -999,17 +999,22 @@ def map_from_arrays(col1: Expr, col2: Expr) -> Expr:
 def map_from_entries(col: Expr) -> Expr:
     """Spark ``map_from_entries``: build a map from an array of key/value structs.
 
+    ``col`` must be an array whose elements are two-field structs; the first
+    field becomes the map key and the second the value.
+
     Examples:
+        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"x": [1]})
+        >>> entry_type = pa.list_(
+        ...     pa.struct([("key", pa.string()), ("value", pa.int64())]))
+        >>> entries = pa.array(
+        ...     [[{"key": "a", "value": 1}, {"key": "b", "value": 2}]],
+        ...     type=entry_type)
+        >>> df = ctx.from_arrow(pa.record_batch([entries], names=["e"]))
         >>> r = df.select(
-        ...     dfn.functions.spark.map_from_arrays(
-        ...         dfn.functions.spark.array(dfn.lit("a")),
-        ...         dfn.functions.spark.array(dfn.lit(1)),
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.map_from_entries(dfn.col("e")).alias("v"))
         >>> r.collect_column("v")[0].as_py()
-        [('a', 1)]
+        [('a', 1), ('b', 2)]
     """
     return Expr(_f.map_from_entries(col.expr))
 
