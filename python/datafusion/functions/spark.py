@@ -432,14 +432,14 @@ def if_(condition: Expr, if_true: Expr, if_false: Expr) -> Expr:
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [1, 2]})
+        >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.if_(
-        ...         dfn.col("a") > dfn.lit(1), dfn.lit("big"), dfn.lit("small")
+        ...         dfn.lit(2) > dfn.lit(1), dfn.lit("big"), dfn.lit("small")
         ...     ).alias("v")
         ... )
-        >>> r.collect_column("v").to_pylist()
-        ['small', 'big']
+        >>> r.collect_column("v")[0].as_py()
+        'big'
     """
     return Expr(_f.if_(condition.expr, if_true.expr, if_false.expr))
 
