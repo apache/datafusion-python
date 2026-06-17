@@ -100,7 +100,7 @@ def test_register_csv(ctx, tmp_path):
 
     with pytest.raises(
         ValueError,
-        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+        match="file_compression_type must be one of: gzip, bz2, xz, zstd",
     ):
         ctx.register_csv("csv4", path, file_compression_type="rar")
 
@@ -288,7 +288,7 @@ def test_register_json(ctx, tmp_path):
 
     with pytest.raises(
         ValueError,
-        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+        match="file_compression_type must be one of: gzip, bz2, xz, zstd",
     ):
         ctx.register_json("json4", gzip_path, file_compression_type="rar")
 
