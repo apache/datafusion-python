@@ -44,6 +44,19 @@ def _val(df, expr):
     return df.select(expr.alias("v")).collect_column("v")[0].as_py()
 
 
+def _ts():
+    import datetime as _d
+
+    naive = _d.datetime(2020, 1, 15, 14, 30, 45)  # noqa: DTZ001
+    return lit(pa.scalar(naive, type=pa.timestamp("us")))
+
+
+def _dt(*args):
+    import datetime as _d
+
+    return _d.datetime(*args)  # noqa: DTZ001
+
+
 # ---------------------------------------------------------------------------
 # Math
 # ---------------------------------------------------------------------------
@@ -292,6 +305,104 @@ def test_format_string_plain_str_format():
     ctx = SessionContext()
     df = ctx.from_pydict({"x": [1]})
     assert _val(df, spark.format_string("%d-%s", lit(42), lit("hi"))) == "42-hi"
+
+
+@pytest.mark.parametrize(
+    ("native_expr", "wrapped_expr", "expected"),
+    [
+        # int literals coerced internally
+        (
+            lambda: spark.array_repeat(lit("a"), 3),
+            lambda: spark.array_repeat(lit("a"), lit(3)),
+            ["a", "a", "a"],
+        ),
+        (
+            lambda: spark.shiftleft(lit(1), 3),
+            lambda: spark.shiftleft(lit(1), lit(3)),
+            8,
+        ),
+        (
+            lambda: spark.sha2(lit("hello"), 256),
+            lambda: spark.sha2(lit("hello"), lit(256)),
+            "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+        ),
+        (
+            lambda: spark.round(lit(2.345), 2),
+            lambda: spark.round(lit(2.345), lit(2)),
+            2.35,
+        ),
+        (
+            lambda: spark.substring(lit("hello"), 1, 3),
+            lambda: spark.substring(lit("hello"), lit(1), lit(3)),
+            "hel",
+        ),
+        (
+            lambda: spark.width_bucket(lit(5.0), lit(0.0), lit(10.0), 5),
+            lambda: spark.width_bucket(lit(5.0), lit(0.0), lit(10.0), lit(5)),
+            3,
+        ),
+        # str literals coerced internally
+        (
+            lambda: spark.date_trunc("month", _ts()),
+            lambda: spark.date_trunc(lit("month"), _ts()),
+            _dt(2020, 1, 1),
+        ),
+        (
+            lambda: spark.spark_cast(lit(1579098645), "timestamp"),
+            lambda: spark.spark_cast(lit(1579098645), lit("timestamp")),
+            None,
+        ),  # compared separately
+        # int32-requiring args coerced to int32 internally
+        (
+            lambda: spark.space(3),
+            lambda: spark.space(lit(pa.scalar(3, type=pa.int32()))),
+            "   ",
+        ),
+        # Any-typed value coerced internally
+        (
+            lambda: spark.array_contains(spark.array(lit(1), lit(2)), 1),
+            lambda: spark.array_contains(spark.array(lit(1), lit(2)), lit(1)),
+            True,
+        ),
+    ],
+)
+def test_native_literal_coercion(df, native_expr, wrapped_expr, expected):
+    """Native Python literals produce the same result as explicit lit() wrapping."""
+    if expected is None:
+        # spark_cast returns a timestamp; just assert native == wrapped.
+        assert _val(df, native_expr()) == _val(df, wrapped_expr())
+        return
+    assert _val(df, native_expr()) == expected
+    assert _val(df, wrapped_expr()) == expected
+
+
+def test_native_literal_int32_datetime(df):
+    """add_months/date_add/date_sub accept native ints (coerced to int32)."""
+    import datetime as dt
+
+    d = lit(pa.scalar(dt.date(2020, 1, 15), type=pa.date32()))
+    assert _val(df, spark.add_months(d, 2)) == dt.date(2020, 3, 15)
+    assert _val(df, spark.date_add(d, 5)) == dt.date(2020, 1, 20)
+    assert _val(df, spark.date_sub(d, 5)) == dt.date(2020, 1, 10)
+    assert _val(df, spark.next_day(d, "Mon")) == dt.date(2020, 1, 20)
+
+
+def test_native_literal_make_interval(df):
+    """make_dt_interval/make_interval accept native int/float parts."""
+    import datetime as dt
+
+    assert _val(
+        df, spark.make_dt_interval(days=1, hours=2, mins=3, secs=4.5)
+    ) == dt.timedelta(days=1, seconds=7384, microseconds=500000)
+    assert _val(df, spark.make_interval(years=1)).months == 12
+
+
+def test_str_to_map_pyspark_param_names(df):
+    """str_to_map uses pyspark parameter names (pairDelim/keyValueDelim)."""
+    out = _val(
+        df, spark.str_to_map(lit("a=1;b=2"), pairDelim=lit(";"), keyValueDelim=lit("="))
+    )
+    assert out == [("a", "1"), ("b", "2")]
 
 
 def test_aggregate_positional_compat():

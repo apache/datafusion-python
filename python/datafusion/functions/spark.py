@@ -35,7 +35,11 @@ from typing import TYPE_CHECKING, Any
 import pyarrow as pa
 
 from datafusion._internal import functions as _functions
-from datafusion.expr import Expr, sort_list_to_raw_sort_list
+from datafusion.expr import (
+    Expr,
+    coerce_to_expr,
+    sort_list_to_raw_sort_list,
+)
 
 if TYPE_CHECKING:
     from datafusion.common import NullTreatment
@@ -49,6 +53,18 @@ _ZERO_I32 = Expr.literal(pa.scalar(0, type=pa.int32()))
 
 def _filter_raw(filter: Expr | None) -> Any:
     return filter.expr if filter is not None else None
+
+
+def _coerce_i32(value: Expr | int | None) -> Expr | None:
+    """Coerce a native ``int`` to an int32 literal, passing ``Expr``/``None`` through.
+
+    Several Spark datetime and interval builders require 32-bit integer
+    inputs, so a bare ``int`` must become an int32 literal rather than the
+    int64 default that :meth:`Expr.literal` would produce.
+    """
+    if value is None or isinstance(value, Expr):
+        return value
+    return Expr.literal(pa.scalar(value, type=pa.int32()))
 
 
 # ---------------------------------------------------------------------------
@@ -173,22 +189,23 @@ def collect_set(
 # ---------------------------------------------------------------------------
 
 
-def array_contains(col: Expr, value: Expr) -> Expr:
+def array_contains(col: Expr, value: Expr | Any) -> Expr:
     """Spark ``array_contains``: true if the array contains the element.
+
+    ``value`` accepts a native Python literal or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.array_contains(
-        ...         dfn.functions.spark.array(dfn.lit(1), dfn.lit(2)),
-        ...         dfn.lit(1),
+        ...         dfn.functions.spark.array(dfn.lit(1), dfn.lit(2)), 1
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         True
     """
-    return Expr(_f.array_contains(col.expr, value.expr))
+    return Expr(_f.array_contains(col.expr, coerce_to_expr(value).expr))
 
 
 def array(*cols: Expr) -> Expr:
@@ -231,24 +248,27 @@ def shuffle(col: Expr, seed: int | None = None) -> Expr:
     return Expr(_f.shuffle(col.expr))
 
 
-def array_repeat(col: Expr, count: Expr) -> Expr:
+def array_repeat(col: Expr, count: Expr | int) -> Expr:
     """Spark ``array_repeat``: array of ``element`` repeated ``count`` times.
+
+    ``count`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
-        ...     dfn.functions.spark.array_repeat(dfn.lit("a"), dfn.lit(3)).alias("v"))
+        ...     dfn.functions.spark.array_repeat(dfn.lit("a"), 3).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         ['a', 'a', 'a']
     """
-    return Expr(_f.array_repeat(col.expr, count.expr))
+    return Expr(_f.array_repeat(col.expr, coerce_to_expr(count).expr))
 
 
-def slice(x: Expr, start: Expr, length: Expr) -> Expr:
+def slice(x: Expr, start: Expr | int, length: Expr | int) -> Expr:
     """Spark ``slice``: subset of the array from 1-indexed ``start`` with ``length``.
 
-    Negative ``start`` counts from the end.
+    Negative ``start`` counts from the end. ``start`` and ``length`` accept
+    native ``int`` values or :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -257,13 +277,15 @@ def slice(x: Expr, start: Expr, length: Expr) -> Expr:
         ...     dfn.functions.spark.slice(
         ...         dfn.functions.spark.array(
         ...             dfn.lit(1), dfn.lit(2), dfn.lit(3), dfn.lit(4)),
-        ...         dfn.lit(2), dfn.lit(2),
+        ...         2, 2,
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         [2, 3]
     """
-    return Expr(_f.slice(x.expr, start.expr, length.expr))
+    return Expr(
+        _f.slice(x.expr, coerce_to_expr(start).expr, coerce_to_expr(length).expr)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -358,49 +380,52 @@ def bitwise_not(col: Expr) -> Expr:
     return Expr(_f.bitwise_not(col.expr))
 
 
-def shiftleft(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
+def shiftleft(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
     """Spark ``shiftleft``: ``value`` shifted left by ``shift`` bits.
+
+    ``numBits`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
-        ...     dfn.functions.spark.shiftleft(dfn.lit(1), dfn.lit(3)).alias("v"))
+        ...     dfn.functions.spark.shiftleft(dfn.lit(1), 3).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         8
     """
-    return Expr(_f.shiftleft(col.expr, numBits.expr))
+    return Expr(_f.shiftleft(col.expr, coerce_to_expr(numBits).expr))
 
 
-def shiftright(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
+def shiftright(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
     """Spark ``shiftright``: arithmetic right shift.
 
+    ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
-        ...     dfn.functions.spark.shiftright(dfn.lit(8), dfn.lit(2)).alias("v"))
+        ...     dfn.functions.spark.shiftright(dfn.lit(8), 2).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.shiftright(col.expr, numBits.expr))
+    return Expr(_f.shiftright(col.expr, coerce_to_expr(numBits).expr))
 
 
-def shiftrightunsigned(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
+def shiftrightunsigned(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
     """Spark ``shiftrightunsigned``: logical (unsigned) right shift.
 
+    ``numBits`` accepts a native ``int`` or an :class:`Expr`.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
-        ...     dfn.functions.spark.shiftrightunsigned(
-        ...         dfn.lit(8), dfn.lit(2)
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.shiftrightunsigned(dfn.lit(8), 2).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.shiftrightunsigned(col.expr, numBits.expr))
+    return Expr(_f.shiftrightunsigned(col.expr, coerce_to_expr(numBits).expr))
 
 
 # ---------------------------------------------------------------------------
@@ -425,29 +450,35 @@ def size(col: Expr) -> Expr:
     return Expr(_f.size(col.expr))
 
 
-def if_(condition: Expr, if_true: Expr, if_false: Expr) -> Expr:
+def if_(condition: Expr, if_true: Expr | Any, if_false: Expr | Any) -> Expr:
     """Spark ``if``: returns ``if_true`` when ``condition`` is true, else ``if_false``.
 
-    Exposed as ``if_`` because ``if`` is a Python keyword.
+    Exposed as ``if_`` because ``if`` is a Python keyword. ``if_true`` and
+    ``if_false`` accept native Python literals or :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.if_(
-        ...         dfn.lit(2) > dfn.lit(1), dfn.lit("big"), dfn.lit("small")
+        ...         dfn.lit(2) > dfn.lit(1), "big", "small"
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         'big'
     """
-    return Expr(_f.if_(condition.expr, if_true.expr, if_false.expr))
+    return Expr(
+        _f.if_(
+            condition.expr, coerce_to_expr(if_true).expr, coerce_to_expr(if_false).expr
+        )
+    )
 
 
-def spark_cast(arg: Expr, type_str: Expr) -> Expr:
+def spark_cast(arg: Expr, type_str: Expr | str) -> Expr:
     """Spark ``cast``: cast ``arg`` to the type named by ``type_str``.
 
     Uses Spark cast semantics (e.g. overflow returns NULL, not error).
+    ``type_str`` accepts a native ``str`` or an :class:`Expr`.
 
     Currently only supports casting numeric values to ``"timestamp"``.
 
@@ -456,13 +487,13 @@ def spark_cast(arg: Expr, type_str: Expr) -> Expr:
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.spark_cast(
-        ...         dfn.lit(1579098645), dfn.lit("timestamp")
+        ...         dfn.lit(1579098645), "timestamp"
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py().isoformat()
         '2020-01-15T14:30:45+00:00'
     """
-    return Expr(_f.spark_cast(arg.expr, type_str.expr))
+    return Expr(_f.spark_cast(arg.expr, coerce_to_expr(type_str).expr))
 
 
 # ---------------------------------------------------------------------------
@@ -470,8 +501,10 @@ def spark_cast(arg: Expr, type_str: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def add_months(start: Expr, months: Expr) -> Expr:
+def add_months(start: Expr, months: Expr | int) -> Expr:
     """Spark ``add_months``: date + N months.
+
+    ``months`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -479,19 +512,17 @@ def add_months(start: Expr, months: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.add_months(
-        ...         d, dfn.lit(pa.scalar(2, type=pa.int32()))
-        ...     ).alias("v")
-        ... )
+        >>> r = df.select(dfn.functions.spark.add_months(d, 2).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 3, 15)
     """
-    return Expr(_f.add_months(start.expr, months.expr))
+    return Expr(_f.add_months(start.expr, _coerce_i32(months).expr))
 
 
-def date_add(start: Expr, days: Expr) -> Expr:
+def date_add(start: Expr, days: Expr | int) -> Expr:
     """Spark ``date_add``: date + N days.
+
+    ``days`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -499,19 +530,17 @@ def date_add(start: Expr, days: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.date_add(
-        ...         d, dfn.lit(pa.scalar(5, type=pa.int32()))
-        ...     ).alias("v")
-        ... )
+        >>> r = df.select(dfn.functions.spark.date_add(d, 5).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 20)
     """
-    return Expr(_f.date_add(start.expr, days.expr))
+    return Expr(_f.date_add(start.expr, _coerce_i32(days).expr))
 
 
-def date_sub(start: Expr, days: Expr) -> Expr:
+def date_sub(start: Expr, days: Expr | int) -> Expr:
     """Spark ``date_sub``: date - N days.
+
+    ``days`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -519,15 +548,11 @@ def date_sub(start: Expr, days: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.date_sub(
-        ...         d, dfn.lit(pa.scalar(5, type=pa.int32()))
-        ...     ).alias("v")
-        ... )
+        >>> r = df.select(dfn.functions.spark.date_sub(d, 5).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 10)
     """
-    return Expr(_f.date_sub(start.expr, days.expr))
+    return Expr(_f.date_sub(start.expr, _coerce_i32(days).expr))
 
 
 def hour(col: Expr) -> Expr:
@@ -601,14 +626,16 @@ def last_day(col: Expr) -> Expr:
 
 
 def make_dt_interval(
-    days: Expr | None = None,
-    hours: Expr | None = None,
-    mins: Expr | None = None,
-    secs: Expr | None = None,
+    days: Expr | int | None = None,
+    hours: Expr | int | None = None,
+    mins: Expr | int | None = None,
+    secs: Expr | float | None = None,
 ) -> Expr:
     """Spark ``make_dt_interval``: day-time interval from components.
 
     All parts are optional; omitted parts default to zero, matching pyspark.
+    Integer parts accept a native ``int`` and ``secs`` accepts a ``float``,
+    or any part may be an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -617,11 +644,9 @@ def make_dt_interval(
         >>> r.collect_column("v")[0].as_py()
         datetime.timedelta(0)
 
-        >>> import pyarrow as pa
-        >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
         >>> r = df.select(
         ...     dfn.functions.spark.make_dt_interval(
-        ...         days=i32(1), hours=i32(2), mins=i32(3), secs=dfn.lit(4.5)
+        ...         days=1, hours=2, mins=3, secs=4.5
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
@@ -629,26 +654,28 @@ def make_dt_interval(
     """
     return Expr(
         _f.make_dt_interval(
-            (days if days is not None else _ZERO_I32).expr,
-            (hours if hours is not None else _ZERO_I32).expr,
-            (mins if mins is not None else _ZERO_I32).expr,
-            (secs if secs is not None else Expr.literal(0.0)).expr,
+            (_coerce_i32(days) if days is not None else _ZERO_I32).expr,
+            (_coerce_i32(hours) if hours is not None else _ZERO_I32).expr,
+            (_coerce_i32(mins) if mins is not None else _ZERO_I32).expr,
+            (coerce_to_expr(secs) if secs is not None else Expr.literal(0.0)).expr,
         )
     )
 
 
 def make_interval(
-    years: Expr | None = None,
-    months: Expr | None = None,
-    weeks: Expr | None = None,
-    days: Expr | None = None,
-    hours: Expr | None = None,
-    mins: Expr | None = None,
-    secs: Expr | None = None,
+    years: Expr | int | None = None,
+    months: Expr | int | None = None,
+    weeks: Expr | int | None = None,
+    days: Expr | int | None = None,
+    hours: Expr | int | None = None,
+    mins: Expr | int | None = None,
+    secs: Expr | float | None = None,
 ) -> Expr:
     """Spark ``make_interval``: interval from year/month/week/day/hour/min/sec parts.
 
     All parts are optional; omitted parts default to zero, matching pyspark.
+    Integer parts accept a native ``int`` and ``secs`` accepts a ``float``,
+    or any part may be an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -657,27 +684,27 @@ def make_interval(
         >>> r.collect_column("v")[0].as_py().months
         0
 
-        >>> import pyarrow as pa
-        >>> i32 = lambda n: dfn.lit(pa.scalar(n, type=pa.int32()))
-        >>> r = df.select(dfn.functions.spark.make_interval(years=i32(1)).alias("v"))
+        >>> r = df.select(dfn.functions.spark.make_interval(years=1).alias("v"))
         >>> r.collect_column("v")[0].as_py().months
         12
     """
     return Expr(
         _f.make_interval(
-            (years if years is not None else _ZERO_I32).expr,
-            (months if months is not None else _ZERO_I32).expr,
-            (weeks if weeks is not None else _ZERO_I32).expr,
-            (days if days is not None else _ZERO_I32).expr,
-            (hours if hours is not None else _ZERO_I32).expr,
-            (mins if mins is not None else _ZERO_I32).expr,
-            (secs if secs is not None else Expr.literal(0.0)).expr,
+            (_coerce_i32(years) if years is not None else _ZERO_I32).expr,
+            (_coerce_i32(months) if months is not None else _ZERO_I32).expr,
+            (_coerce_i32(weeks) if weeks is not None else _ZERO_I32).expr,
+            (_coerce_i32(days) if days is not None else _ZERO_I32).expr,
+            (_coerce_i32(hours) if hours is not None else _ZERO_I32).expr,
+            (_coerce_i32(mins) if mins is not None else _ZERO_I32).expr,
+            (coerce_to_expr(secs) if secs is not None else Expr.literal(0.0)).expr,
         )
     )
 
 
-def next_day(date: Expr, dayOfWeek: Expr) -> Expr:  # noqa: N803
+def next_day(date: Expr, dayOfWeek: Expr | str) -> Expr:  # noqa: N803
     """Spark ``next_day``: first date after ``start_date`` named ``day_of_week``.
+
+    ``dayOfWeek`` accepts a native ``str`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -685,12 +712,11 @@ def next_day(date: Expr, dayOfWeek: Expr) -> Expr:  # noqa: N803
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.next_day(d, dfn.lit("Mon")).alias("v"))
+        >>> r = df.select(dfn.functions.spark.next_day(d, "Mon").alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 20)
     """
-    return Expr(_f.next_day(date.expr, dayOfWeek.expr))
+    return Expr(_f.next_day(date.expr, coerce_to_expr(dayOfWeek).expr))
 
 
 def date_diff(end: Expr, start: Expr) -> Expr:
@@ -710,8 +736,10 @@ def date_diff(end: Expr, start: Expr) -> Expr:
     return Expr(_f.date_diff(end.expr, start.expr))
 
 
-def date_trunc(format: Expr, timestamp: Expr) -> Expr:
+def date_trunc(format: Expr | str, timestamp: Expr) -> Expr:
     """Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
+
+    ``format`` accepts a native ``str`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -722,11 +750,11 @@ def date_trunc(format: Expr, timestamp: Expr) -> Expr:
         ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
         ...               type=pa.timestamp('us')))
         >>> r = df.select(
-        ...     dfn.functions.spark.date_trunc(dfn.lit("month"), ts).alias("v"))
+        ...     dfn.functions.spark.date_trunc("month", ts).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 1, 0, 0)
     """
-    return Expr(_f.date_trunc(format.expr, timestamp.expr))
+    return Expr(_f.date_trunc(coerce_to_expr(format).expr, timestamp.expr))
 
 
 def time_trunc(unit: Expr, time: Expr) -> Expr:
@@ -746,8 +774,10 @@ def time_trunc(unit: Expr, time: Expr) -> Expr:
     return Expr(_f.time_trunc(unit.expr, time.expr))
 
 
-def trunc(date: Expr, format: Expr) -> Expr:
+def trunc(date: Expr, format: Expr | str) -> Expr:
     """Spark ``trunc``: truncate date to unit ``fmt``.
+
+    ``format`` accepts a native ``str`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -755,16 +785,17 @@ def trunc(date: Expr, format: Expr) -> Expr:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
-        >>> r = df.select(
-        ...     dfn.functions.spark.trunc(d, dfn.lit("YEAR")).alias("v"))
+        >>> r = df.select(dfn.functions.spark.trunc(d, "YEAR").alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 1)
     """
-    return Expr(_f.trunc(date.expr, format.expr))
+    return Expr(_f.trunc(date.expr, coerce_to_expr(format).expr))
 
 
-def date_part(field: Expr, source: Expr) -> Expr:
+def date_part(field: Expr | str, source: Expr) -> Expr:
     """Spark ``date_part``: extract ``field`` from a date/time/timestamp.
+
+    ``field`` accepts a native ``str`` or an :class:`Expr`.
 
     Examples:
         >>> import pyarrow as pa
@@ -773,16 +804,18 @@ def date_part(field: Expr, source: Expr) -> Expr:
         >>> df = ctx.from_pydict({"x": [1]})
         >>> d = dfn.lit(pa.scalar(date(2020, 1, 15), type=pa.date32()))
         >>> r = df.select(
-        ...     dfn.functions.spark.date_part(dfn.lit("year"), d).alias("v"))
+        ...     dfn.functions.spark.date_part("year", d).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         2020
     """
-    return Expr(_f.date_part(field.expr, source.expr))
+    return Expr(_f.date_part(coerce_to_expr(field).expr, source.expr))
 
 
-def from_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
+def from_utc_timestamp(timestamp: Expr, tz: Expr | str) -> Expr:
     """Spark ``from_utc_timestamp``: interpret ``ts`` as UTC, convert to ``tz``.
 
+    ``tz`` accepts a native ``str`` or an :class:`Expr`.
+
     Examples:
         >>> import pyarrow as pa
         >>> from datetime import datetime
@@ -792,19 +825,18 @@ def from_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
         ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
         ...               type=pa.timestamp('us')))
         >>> r = df.select(
-        ...     dfn.functions.spark.from_utc_timestamp(
-        ...         ts, dfn.lit("UTC")
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.from_utc_timestamp(ts, "UTC").alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
-    return Expr(_f.from_utc_timestamp(timestamp.expr, tz.expr))
+    return Expr(_f.from_utc_timestamp(timestamp.expr, coerce_to_expr(tz).expr))
 
 
-def to_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
+def to_utc_timestamp(timestamp: Expr, tz: Expr | str) -> Expr:
     """Spark ``to_utc_timestamp``: interpret ``ts`` as ``tz``, convert to UTC.
 
+    ``tz`` accepts a native ``str`` or an :class:`Expr`.
+
     Examples:
         >>> import pyarrow as pa
         >>> from datetime import datetime
@@ -814,14 +846,11 @@ def to_utc_timestamp(timestamp: Expr, tz: Expr) -> Expr:
         ...     pa.scalar(datetime(2020, 1, 15, 14, 30, 45),
         ...               type=pa.timestamp('us')))
         >>> r = df.select(
-        ...     dfn.functions.spark.to_utc_timestamp(
-        ...         ts, dfn.lit("UTC")
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.to_utc_timestamp(ts, "UTC").alias("v"))
         >>> r.collect_column("v")[0].as_py()
         datetime.datetime(2020, 1, 15, 14, 30, 45)
     """
-    return Expr(_f.to_utc_timestamp(timestamp.expr, tz.expr))
+    return Expr(_f.to_utc_timestamp(timestamp.expr, coerce_to_expr(tz).expr))
 
 
 def unix_date(col: Expr) -> Expr:
@@ -925,18 +954,20 @@ def sha1(col: Expr) -> Expr:
     return Expr(_f.sha1(col.expr))
 
 
-def sha2(col: Expr, numBits: Expr) -> Expr:  # noqa: N803
+def sha2(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
     """Spark ``sha2``: SHA-2 family hash (224, 256, 384, 512). Bit length 0 = 256.
+
+    ``numBits`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"s": ["hello"]})
         >>> r = df.select(
-        ...     dfn.functions.spark.sha2(dfn.col("s"), dfn.lit(256)).alias("v"))
+        ...     dfn.functions.spark.sha2(dfn.col("s"), 256).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
     """
-    return Expr(_f.sha2(col.expr, numBits.expr))
+    return Expr(_f.sha2(col.expr, coerce_to_expr(numBits).expr))
 
 
 def xxhash64(*cols: Expr) -> Expr:
@@ -958,21 +989,23 @@ def xxhash64(*cols: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
-def json_tuple(col: Expr, *fields: Expr) -> Expr:
+def json_tuple(col: Expr, *fields: Expr | str) -> Expr:
     """Spark ``json_tuple``: extract top-level fields from a JSON string.
+
+    Each field name accepts a native ``str`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.json_tuple(
-        ...         dfn.lit('{"a":1,"b":"x"}'), dfn.lit("a"), dfn.lit("b")
+        ...         dfn.lit('{"a":1,"b":"x"}'), "a", "b"
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         {'c0': '1', 'c1': 'x'}
     """
-    return Expr(_f.json_tuple(col.expr, *[f.expr for f in fields]))
+    return Expr(_f.json_tuple(col.expr, *[coerce_to_expr(f).expr for f in fields]))
 
 
 # ---------------------------------------------------------------------------
@@ -1021,12 +1054,15 @@ def map_from_entries(col: Expr) -> Expr:
 
 def str_to_map(
     text: Expr,
-    pair_delim: Expr | None = None,
-    key_value_delim: Expr | None = None,
+    pairDelim: Expr | None = None,  # noqa: N803
+    keyValueDelim: Expr | None = None,  # noqa: N803
 ) -> Expr:
     """Spark ``str_to_map``: split text into key/value pairs using delimiters.
 
     Delimiters default to ``","`` and ``":"`` when omitted, matching pyspark.
+    Parameter names match ``pyspark.sql.functions.str_to_map``; pyspark types
+    the delimiters as column-or-name, so they stay :class:`Expr` (wrap a
+    literal with :func:`~datafusion.lit`).
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1039,15 +1075,15 @@ def str_to_map(
         >>> r = df.select(
         ...     dfn.functions.spark.str_to_map(
         ...         dfn.lit("a=1;b=2"),
-        ...         pair_delim=dfn.lit(";"),
-        ...         key_value_delim=dfn.lit("="),
+        ...         pairDelim=dfn.lit(";"),
+        ...         keyValueDelim=dfn.lit("="),
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         [('a', '1'), ('b', '2')]
     """
-    pd = pair_delim if pair_delim is not None else Expr.literal(",")
-    kvd = key_value_delim if key_value_delim is not None else Expr.literal(":")
+    pd = pairDelim if pairDelim is not None else Expr.literal(",")
+    kvd = keyValueDelim if keyValueDelim is not None else Expr.literal(":")
     return Expr(_f.str_to_map(text.expr, pd.expr, kvd.expr))
 
 
@@ -1139,8 +1175,10 @@ def hex(col: Expr) -> Expr:
     return Expr(_f.hex(col.expr))
 
 
-def modulus(dividend: Expr, divisor: Expr) -> Expr:
+def modulus(dividend: Expr | float, divisor: Expr | float) -> Expr:
     """Spark ``mod``: remainder of ``dividend / divisor`` (sign follows dividend).
+
+    ``dividend`` and ``divisor`` accept native numbers or :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1150,11 +1188,13 @@ def modulus(dividend: Expr, divisor: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         1
     """
-    return Expr(_f.modulus(dividend.expr, divisor.expr))
+    return Expr(_f.modulus(coerce_to_expr(dividend).expr, coerce_to_expr(divisor).expr))
 
 
-def pmod(dividend: Expr, divisor: Expr) -> Expr:
+def pmod(dividend: Expr | float, divisor: Expr | float) -> Expr:
     """Spark ``pmod``: positive remainder of division.
+
+    ``dividend`` and ``divisor`` accept native numbers or :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1164,7 +1204,7 @@ def pmod(dividend: Expr, divisor: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         2
     """
-    return Expr(_f.pmod(dividend.expr, divisor.expr))
+    return Expr(_f.pmod(coerce_to_expr(dividend).expr, coerce_to_expr(divisor).expr))
 
 
 def rint(col: Expr) -> Expr:
@@ -1180,10 +1220,11 @@ def rint(col: Expr) -> Expr:
     return Expr(_f.rint(col.expr))
 
 
-def round(col: Expr, scale: Expr | None = None) -> Expr:
+def round(col: Expr, scale: Expr | int | None = None) -> Expr:
     """Spark ``round``: round to ``scale`` decimal places, HALF_UP rounding.
 
-    ``scale`` defaults to zero when omitted, matching pyspark.
+    ``scale`` defaults to zero when omitted, matching pyspark, and accepts a
+    native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1193,14 +1234,11 @@ def round(col: Expr, scale: Expr | None = None) -> Expr:
         3.0
 
         >>> r = df.select(
-        ...     dfn.functions.spark.round(
-        ...         dfn.lit(2.345), scale=dfn.lit(2)
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.round(dfn.lit(2.345), scale=2).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         2.35
     """
-    scale_expr = scale if scale is not None else _ZERO_I32
+    scale_expr = coerce_to_expr(scale) if scale is not None else _ZERO_I32
     return Expr(_f.round(col.expr, scale_expr.expr))
 
 
@@ -1221,22 +1259,26 @@ def width_bucket(
     v: Expr,
     min: Expr,
     max: Expr,
-    numBucket: Expr,  # noqa: N803
+    numBucket: Expr | int,  # noqa: N803
 ) -> Expr:
     """Spark ``width_bucket``: bucket number for ``value`` in equi-width histogram.
+
+    ``numBucket`` accepts a native ``int`` or an :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
         ...     dfn.functions.spark.width_bucket(
-        ...         dfn.lit(5.0), dfn.lit(0.0), dfn.lit(10.0), dfn.lit(5)
+        ...         dfn.lit(5.0), dfn.lit(0.0), dfn.lit(10.0), 5
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()
         3
     """
-    return Expr(_f.width_bucket(v.expr, min.expr, max.expr, numBucket.expr))
+    return Expr(
+        _f.width_bucket(v.expr, min.expr, max.expr, coerce_to_expr(numBucket).expr)
+    )
 
 
 def csc(col: Expr) -> Expr:
@@ -1465,41 +1507,38 @@ def format_string(format: str | Expr, *cols: Expr) -> Expr:
     return Expr(_f.format_string(fmt_expr.expr, *[c.expr for c in cols]))
 
 
-def space(col: Expr) -> Expr:
+def space(col: Expr | int) -> Expr:
     """Spark ``space``: string of n spaces.
 
+    ``col`` accepts a native ``int`` or an :class:`Expr`.
+
     Examples:
-        >>> import pyarrow as pa
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
-        >>> r = df.select(
-        ...     dfn.functions.spark.space(
-        ...         dfn.lit(pa.scalar(3, type=pa.int32()))
-        ...     ).alias("v")
-        ... )
+        >>> r = df.select(dfn.functions.spark.space(3).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         '   '
     """
-    return Expr(_f.space(col.expr))
+    return Expr(_f.space(_coerce_i32(col).expr))
 
 
-def substring(str: Expr, pos: Expr, len: Expr) -> Expr:
+def substring(str: Expr, pos: Expr | int, len: Expr | int) -> Expr:
     """Spark ``substring``: 1-indexed substring starting at ``pos`` of given ``length``.
 
-    Negative ``pos`` counts from the end.
+    Negative ``pos`` counts from the end. ``pos`` and ``len`` accept native
+    ``int`` values or :class:`Expr`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"x": [1]})
         >>> r = df.select(
-        ...     dfn.functions.spark.substring(
-        ...         dfn.lit("hello"), dfn.lit(1), dfn.lit(3)
-        ...     ).alias("v")
-        ... )
+        ...     dfn.functions.spark.substring(dfn.lit("hello"), 1, 3).alias("v"))
         >>> r.collect_column("v")[0].as_py()
         'hel'
     """
-    return Expr(_f.substring(str.expr, pos.expr, len.expr))
+    return Expr(
+        _f.substring(str.expr, coerce_to_expr(pos).expr, coerce_to_expr(len).expr)
+    )
 
 
 def unbase64(col: Expr) -> Expr:
