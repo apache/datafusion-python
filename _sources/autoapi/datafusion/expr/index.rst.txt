@@ -144,7 +144,6 @@ Functions
 .. autoapisummary::
 
    datafusion.expr.coerce_to_expr
-   datafusion.expr.coerce_to_expr_list
    datafusion.expr.coerce_to_expr_or_none
    datafusion.expr.ensure_expr
    datafusion.expr.ensure_expr_list
@@ -1531,15 +1530,6 @@ Module Contents
    :param value: An ``Expr`` instance (returned as-is) or a Python literal to wrap.
 
    :returns: An ``Expr`` representing the value.
-
-
-.. py:function:: coerce_to_expr_list(values: collections.abc.Iterable[Any]) -> list[Expr]
-
-   Coerce each item in an iterable to ``Expr`` via :func:`coerce_to_expr`.
-
-   :param values: Iterable of ``Expr`` instances or Python literals to wrap.
-
-   :returns: A list of ``Expr`` instances.
 
 
 .. py:function:: coerce_to_expr_or_none(value: Any | None) -> Expr | None

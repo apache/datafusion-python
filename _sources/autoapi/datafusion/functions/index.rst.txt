@@ -2427,7 +2427,7 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`now`.
 
 
-.. py:function:: date_bin(stride: datafusion.expr.Expr | str, source: datafusion.expr.Expr | str, origin: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: date_bin(stride: datafusion.expr.Expr, source: datafusion.expr.Expr, origin: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Coerces an arbitrary timestamp to the start of the nearest specified interval.
 
@@ -2437,25 +2437,15 @@ Package Contents
    >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
    >>> result = df.select(
    ...     dfn.functions.date_bin(
-   ...         "15 minutes",
+   ...         dfn.string_literal("15 minutes"),
    ...         dfn.col("timestamp"),
-   ...         "2001-01-01 00:00:00",
+   ...         dfn.string_literal("2001-01-01 00:00:00")
    ...     ).alias("b")
    ... )
    >>> str(result.collect_column("b")[0].as_py())
    '2021-07-15 12:30:00'
    >>> str(result.collect_column("b")[1].as_py())
    '2021-01-01 00:00:00'
-
-   ``source`` may also be a bare literal:
-
-   >>> result = df.select(
-   ...     dfn.functions.date_bin(
-   ...         "15 minutes", "2021-07-15 12:34:56", "2001-01-01 00:00:00"
-   ...     ).alias("b")
-   ... )
-   >>> str(result.collect_column("b")[0].as_py())
-   '2021-07-15 12:30:00'
 
 
 .. py:function:: date_format(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
@@ -3839,7 +3829,7 @@ Package Contents
    [1, 2, 3]
 
 
-.. py:function:: make_date(year: datafusion.expr.Expr | int, month: datafusion.expr.Expr | int, day: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+.. py:function:: make_date(year: datafusion.expr.Expr, month: datafusion.expr.Expr, day: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Make a date from year, month and day component parts.
 
@@ -3851,14 +3841,6 @@ Package Contents
    >>> result = df.select(
    ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
    ...     dfn.col("d")).alias("dt"))
-   >>> result.collect_column("dt")[0].as_py()
-   datetime.date(2024, 1, 15)
-
-   Pass bare ints for any component:
-
-   >>> df = ctx.from_pydict({"y": [2024]})
-   >>> result = df.select(
-   ...     dfn.functions.make_date(dfn.col("y"), 1, 15).alias("dt"))
    >>> result.collect_column("dt")[0].as_py()
    datetime.date(2024, 1, 15)
 
@@ -3915,7 +3897,7 @@ Package Contents
    [('x', 1), ('y', 2)]
 
 
-.. py:function:: make_time(hour: datafusion.expr.Expr | int, minute: datafusion.expr.Expr | int, second: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+.. py:function:: make_time(hour: datafusion.expr.Expr, minute: datafusion.expr.Expr, second: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Make a time from hour, minute and second component parts.
 
@@ -3926,14 +3908,6 @@ Package Contents
    >>> result = df.select(
    ...     dfn.functions.make_time(dfn.col("h"), dfn.col("m"),
    ...     dfn.col("s")).alias("t"))
-   >>> result.collect_column("t")[0].as_py()
-   datetime.time(12, 30)
-
-   Pass bare ints for any component:
-
-   >>> df = ctx.from_pydict({"h": [12]})
-   >>> result = df.select(
-   ...     dfn.functions.make_time(dfn.col("h"), 30, 0).alias("t"))
    >>> result.collect_column("t")[0].as_py()
    datetime.time(12, 30)
 
@@ -5672,7 +5646,7 @@ Package Contents
    '2021/01/01'
 
 
-.. py:function:: to_date(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_date(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a value to a date (YYYY-MM-DD).
 
@@ -5691,14 +5665,6 @@ Package Contents
    >>> df = ctx.from_pydict({"a": ["2021-07-20"]})
    >>> result = df.select(
    ...     dfn.functions.to_date(dfn.col("a")).alias("dt"))
-   >>> str(result.collect_column("dt")[0].as_py())
-   '2021-07-20'
-
-   Pass a format string as a bare ``str``:
-
-   >>> df = ctx.from_pydict({"a": ["20-07-2021"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_date(dfn.col("a"), "%d-%m-%Y").alias("dt"))
    >>> str(result.collect_column("dt")[0].as_py())
    '2021-07-20'
 
@@ -5723,7 +5689,7 @@ Package Contents
    This function handles daylight saving time changes.
 
 
-.. py:function:: to_time(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_time(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a value to a time. Supports strings and timestamps as input.
 
@@ -5743,16 +5709,8 @@ Package Contents
    >>> str(result.collect_column("t")[0].as_py())
    '14:30:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["14h30m00s"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_time(dfn.col("a"), "%Hh%Mm%Ss").alias("t"))
-   >>> str(result.collect_column("t")[0].as_py())
-   '14:30:00'
-
-
-.. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -5772,19 +5730,8 @@ Package Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_timestamp(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("ts")
-   ... )
-   >>> str(result.collect_column("ts")[0].as_py())
-   '2021-01-01 00:00:00'
-
-
-.. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in microseconds.
 
@@ -5802,19 +5749,8 @@ Package Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_timestamp_micros(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("ts")
-   ... )
-   >>> str(result.collect_column("ts")[0].as_py())
-   '2021-01-01 00:00:00'
-
-
-.. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in milliseconds.
 
@@ -5832,19 +5768,8 @@ Package Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_timestamp_millis(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("ts")
-   ... )
-   >>> str(result.collect_column("ts")[0].as_py())
-   '2021-01-01 00:00:00'
-
-
-.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -5862,19 +5787,8 @@ Package Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_timestamp_nanos(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("ts")
-   ... )
-   >>> str(result.collect_column("ts")[0].as_py())
-   '2021-01-01 00:00:00'
-
-
-.. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in seconds.
 
@@ -5892,19 +5806,8 @@ Package Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
-   Pass a format string as a bare ``str``:
 
-   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_timestamp_seconds(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("ts")
-   ... )
-   >>> str(result.collect_column("ts")[0].as_py())
-   '2021-01-01 00:00:00'
-
-
-.. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a Unixtime.
 
@@ -5913,17 +5816,6 @@ Package Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["1970-01-01T00:00:00"]})
    >>> result = df.select(dfn.functions.to_unixtime(dfn.col("a")).alias("u"))
-   >>> result.collect_column("u")[0].as_py()
-   0
-
-   Pass a format string as a bare ``str``:
-
-   >>> df = ctx.from_pydict({"a": ["01/01/1970 00:00:00"]})
-   >>> result = df.select(
-   ...     dfn.functions.to_unixtime(
-   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
-   ...     ).alias("u")
-   ... )
    >>> result.collect_column("u")[0].as_py()
    0
 
