@@ -73,6 +73,13 @@ def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
     )
 
 
+def _warn_if_expr_for_literal_arg(
+    value: Any, function_name: str, arg_name: str
+) -> None:
+    if isinstance(value, Expr):
+        _warn_expr_for_literal_arg(function_name, arg_name)
+
+
 __all__ = [
     "abs",
     "acos",
@@ -437,6 +444,7 @@ def encode(expr: Expr, encoding: Expr | str) -> Expr:
         >>> result.collect_column("enc")[0].as_py()
         'aGVsbG8'
     """
+    _warn_if_expr_for_literal_arg(encoding, "encode", "encoding")
     encoding = coerce_to_expr(encoding)
     return Expr(f.encode(expr.expr, encoding.expr))
 
@@ -452,6 +460,7 @@ def decode(expr: Expr, encoding: Expr | str) -> Expr:
         >>> result.collect_column("dec")[0].as_py()
         b'hello'
     """
+    _warn_if_expr_for_literal_arg(encoding, "decode", "encoding")
     encoding = coerce_to_expr(encoding)
     return Expr(f.decode(expr.expr, encoding.expr))
 
@@ -742,6 +751,7 @@ def digest(value: Expr, method: Expr | str) -> Expr:
         >>> len(result.collect_column("d")[0].as_py()) > 0
         True
     """
+    _warn_if_expr_for_literal_arg(method, "digest", "method")
     method = coerce_to_expr(method)
     return Expr(f.digest(value.expr, method.expr))
 
@@ -3096,6 +3106,7 @@ def arrow_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         1.0
     """
+    _warn_if_expr_for_literal_arg(data_type, "arrow_cast", "data_type")
     if isinstance(data_type, pa.DataType):
         return expr.cast(data_type)
     if isinstance(data_type, str):
@@ -3128,6 +3139,7 @@ def arrow_try_cast(expr: Expr, data_type: Expr | str | pa.DataType) -> Expr:
         >>> result.collect_column("c")[0].as_py() is None
         True
     """
+    _warn_if_expr_for_literal_arg(data_type, "arrow_try_cast", "data_type")
     if isinstance(data_type, pa.DataType):
         return expr.try_cast(data_type)
     if isinstance(data_type, str):
@@ -3235,6 +3247,7 @@ def arrow_metadata(expr: Expr, key: Expr | str | None = None) -> Expr:
     """
     if key is None:
         return Expr(f.arrow_metadata(expr.expr))
+    _warn_if_expr_for_literal_arg(key, "arrow_metadata", "key")
     if isinstance(key, str):
         key = Expr.string_literal(key)
     return Expr(f.arrow_metadata(expr.expr, key.expr))
