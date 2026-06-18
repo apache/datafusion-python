@@ -2399,7 +2399,10 @@ class TestPythonicNativeTypes:
     def test_literal_only_expr_args_warn_deprecated(self, func, arg_name, expr):
         with pytest.warns(
             DeprecationWarning,
-            match=rf"Passing Expr for {func.__name__}\(\) argument '{arg_name}' is deprecated",
+            match=(
+                rf"Passing Expr for {func.__name__}\(\) argument "
+                rf"'{arg_name}' is deprecated"
+            ),
         ):
             result = expr()
         assert result is not None
