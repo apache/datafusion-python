@@ -675,7 +675,7 @@ over column references and literals, so the optimizer can analyze it:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand@1 = A AND qty@2 &gt;= 150
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmpwor3k34a/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
+    DataSourceExec: file_groups={1 group: [[tmp/tmp_ocix8ie/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
 </pre></div>
 </div>
 </div>
@@ -711,7 +711,7 @@ bloom filter or dictionary is available to skip pages.</p></li>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmpwor3k34a/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
+    DataSourceExec: file_groups={1 group: [[tmp/tmp_ocix8ie/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
 </pre></div>
 </div>
 </div>
