@@ -64,20 +64,16 @@ from datafusion.expr import (
 from datafusion.functions import spark
 
 
-def _warn_expr_for_literal_arg(function_name: str, arg_name: str) -> None:
-    warnings.warn(
-        f"Passing Expr for {function_name}() argument {arg_name!r} is deprecated; "
-        "pass a Python literal instead.",
-        DeprecationWarning,
-        stacklevel=4,
-    )
-
-
 def _warn_if_expr_for_literal_arg(
     value: Any, function_name: str, arg_name: str
 ) -> None:
     if isinstance(value, Expr):
-        _warn_expr_for_literal_arg(function_name, arg_name)
+        warnings.warn(
+            f"Passing Expr for {function_name}() argument {arg_name!r} is deprecated; "
+            "pass a Python literal instead.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
 
 
 __all__ = [
@@ -2733,8 +2729,7 @@ def date_part(part: Expr | str, date: Expr) -> Expr:
 
 
 def _date_part(part: Expr | str, date: Expr, function_name: str) -> Expr:
-    if isinstance(part, Expr):
-        _warn_expr_for_literal_arg(function_name, "part")
+    _warn_if_expr_for_literal_arg(part, function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_part(part.expr, date.expr))
 
@@ -2770,8 +2765,7 @@ def date_trunc(part: Expr | str, date: Expr) -> Expr:
 
 
 def _date_trunc(part: Expr | str, date: Expr, function_name: str) -> Expr:
-    if isinstance(part, Expr):
-        _warn_expr_for_literal_arg(function_name, "part")
+    _warn_if_expr_for_literal_arg(part, function_name, "part")
     part = coerce_to_expr(part)
     return Expr(f.date_trunc(part.expr, date.expr))
 

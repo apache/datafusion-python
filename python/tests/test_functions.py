@@ -1014,7 +1014,7 @@ def test_string_functions(df, function, expected_result):
 
 def test_hash_functions(df):
     exprs = [
-        f.digest(column("a"), literal(m))
+        f.digest(column("a"), m)
         for m in (
             "md5",
             "sha224",
@@ -1602,12 +1602,10 @@ def test_regr_funcs_df(func, expected):
 
 def test_binary_string_functions(df):
     df = df.select(
-        f.encode(column("a").cast(pa.string()), literal("base64").cast(pa.string())),
+        f.encode(column("a").cast(pa.string()), "base64"),
         f.decode(
-            f.encode(
-                column("a").cast(pa.string()), literal("base64").cast(pa.string())
-            ),
-            literal("base64").cast(pa.string()),
+            f.encode(column("a").cast(pa.string()), "base64"),
+            "base64",
         ),
     )
     result = df.collect()
