@@ -52,7 +52,7 @@ df = ctx.table("pokemon")
 DataFusion offers mathematical functions such as {py:func}`~datafusion.functions.pow` or {py:func}`~datafusion.functions.log`
 
 ```{code-cell} ipython3
-from datafusion import col, literal, string_literal, str_lit
+from datafusion import col, literal
 from datafusion import functions as f
 
 df.select(
@@ -122,8 +122,8 @@ Casting expressions to different data types using {py:func}`~datafusion.function
 
 ```{code-cell} ipython3
 df.select(
-    f.arrow_cast(col('"Total"'), string_literal("Float64")).alias("total_as_float"),
-    f.arrow_cast(col('"Total"'), str_lit("Int32")).alias("total_as_int")
+    f.arrow_cast(col('"Total"'), "Float64").alias("total_as_float"),
+    f.arrow_cast(col('"Total"'), "Int32").alias("total_as_int")
 )
 ```
 

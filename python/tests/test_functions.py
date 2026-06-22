@@ -1014,7 +1014,7 @@ def test_string_functions(df, function, expected_result):
 
 def test_hash_functions(df):
     exprs = [
-        f.digest(column("a"), literal(m))
+        f.digest(column("a"), m)
         for m in (
             "md5",
             "sha224",
@@ -1602,12 +1602,10 @@ def test_regr_funcs_df(func, expected):
 
 def test_binary_string_functions(df):
     df = df.select(
-        f.encode(column("a").cast(pa.string()), literal("base64").cast(pa.string())),
+        f.encode(column("a").cast(pa.string()), "base64"),
         f.decode(
-            f.encode(
-                column("a").cast(pa.string()), literal("base64").cast(pa.string())
-            ),
-            literal("base64").cast(pa.string()),
+            f.encode(column("a").cast(pa.string()), "base64"),
+            "base64",
         ),
     )
     result = df.collect()
@@ -2354,6 +2352,68 @@ class TestPythonicNativeTypes:
             f.regexp_replace(column("a"), r"\d+", "X", flags="g").alias("r")
         ).collect()
         assert result[0].column(0)[0].as_py() == "aX bX cX"
+
+    @pytest.mark.parametrize(
+        ("func", "arg_name", "expr"),
+        [
+            pytest.param(
+                f.encode,
+                "encoding",
+                lambda: f.encode(column("a"), literal("base64")),
+                id="encode-encoding",
+            ),
+            pytest.param(
+                f.decode,
+                "encoding",
+                lambda: f.decode(column("a"), literal("base64")),
+                id="decode-encoding",
+            ),
+            pytest.param(
+                f.digest,
+                "method",
+                lambda: f.digest(column("a"), literal("sha256")),
+                id="digest-method",
+            ),
+            pytest.param(
+                f.arrow_cast,
+                "data_type",
+                lambda: f.arrow_cast(column("a"), literal("Float64")),
+                id="arrow-cast-data-type",
+            ),
+            pytest.param(
+                f.arrow_try_cast,
+                "data_type",
+                lambda: f.arrow_try_cast(column("a"), literal("Float64")),
+                id="arrow-try-cast-data-type",
+            ),
+            pytest.param(
+                f.arrow_metadata,
+                "key",
+                lambda: f.arrow_metadata(column("a"), literal("k")),
+                id="arrow-metadata-key",
+            ),
+        ],
+    )
+    def test_literal_only_expr_args_warn_deprecated(self, func, arg_name, expr):
+        with pytest.warns(
+            DeprecationWarning,
+            match=(
+                rf"Passing Expr for {func.__name__}\(\) argument "
+                rf"'{arg_name}' is deprecated"
+            ),
+        ):
+            result = expr()
+        assert result is not None
+
+    def test_literal_only_native_args_do_not_warn(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            assert f.encode(column("a"), "base64") is not None
+            assert f.decode(column("a"), "base64") is not None
+            assert f.digest(column("a"), "sha256") is not None
+            assert f.arrow_cast(column("a"), "Float64") is not None
+            assert f.arrow_try_cast(column("a"), pa.float64()) is not None
+            assert f.arrow_metadata(column("a"), "k") is not None
 
     def test_backward_compat_with_lit(self):
         """Verify that existing code using lit() still works."""
