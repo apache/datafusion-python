@@ -1,0 +1,786 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>datafusion.ipc &#8212; Apache DataFusion in Python  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/ipc/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
+    <link rel="icon" href="../../../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="datafusion.object_store" href="../object_store/index.html" />
+    <link rel="prev" title="datafusion.io" href="../io/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/functions.html">Functions</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">datafusion</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/index.html">datafusion.io</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">datafusion</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">datafusion.ipc</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-datafusion.ipc">
+<span id="datafusion-ipc"></span><h1>datafusion.ipc<a class="headerlink" href="#module-datafusion.ipc" title="Link to this heading">#</a></h1>
+<p>Driver- and worker-side setup for distributing DataFusion expressions.</p>
+<p>When a <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> is shipped to a worker process (e.g. through
+<code class="xref py py-func docutils literal notranslate"><span class="pre">multiprocessing.Pool()</span></code> or a Ray actor), the worker reconstructs the
+expression against a <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>. If the expression references
+UDFs imported via the FFI capsule protocol — or any UDF the worker would
+otherwise resolve from its registered functions rather than from inside
+the shipped expression — install a configured <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>
+once per worker:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">init_worker</span><span class="p">():</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">register_udaf</span><span class="p">(</span><span class="n">my_ffi_aggregate</span><span class="p">)</span>
+    <span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Built-in functions and Python UDFs (scalar, aggregate, window) travel
+inside the shipped expression itself and do not need pre-registration
+on the worker.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Serialization model</p>
+<p>Expressions containing Python UDFs (scalar, aggregate, window) are
+serialized using <code class="xref py py-mod docutils literal notranslate"><span class="pre">cloudpickle</span></code>. The callable itself travels
+<strong>by value</strong> (bytecode and closure cells inlined), but any names the
+callable resolves via <code class="docutils literal notranslate"><span class="pre">import</span></code> are captured <strong>by reference</strong> and
+must be importable on the receiving worker.</p>
+<p>The serialized payload is stamped with the sender’s Python
+<code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code> version. Loading on a different minor version
+raises <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> with an actionable message — cloudpickle
+payloads are not portable across Python minor versions. See
+<a class="reference internal" href="../index.html#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.to_bytes()</span></code></a> for examples of what travels by
+value vs. by reference.</p>
+</div>
+<p>On the driver side, call <a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a> to control how
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> encodes expressions — for example, to apply
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> to every pickled
+expression on this thread:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">clear_sender_ctx</span><span class="p">,</span> <span class="n">set_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver_ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_python_udf_inlining</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">driver_ctx</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">blob</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">... </span><span class="k">finally</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Without a sender context the default codec is used (Python UDF
+inlining on). The sender context only affects pickle / <code class="docutils literal notranslate"><span class="pre">to_bytes</span></code>
+encoding; explicit <code class="docutils literal notranslate"><span class="pre">expr.to_bytes(ctx)</span></code> calls still use the supplied
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code>.</p>
+<p>The thread-local sender context holds a strong reference to the
+installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> until <a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">clear_sender_ctx()</span></code></a> is
+called or the thread exits. Long-running driver threads that install a sender
+context once and never clear it will retain that session for the
+lifetime of the thread; pair <a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a> with
+<a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">clear_sender_ctx()</span></code></a> (e.g. in a <code class="docutils literal notranslate"><span class="pre">try</span></code>/<code class="docutils literal notranslate"><span class="pre">finally</span></code>) when the
+sender context is only needed for a bounded scope.</p>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.clear_sender_ctx" title="datafusion.ipc.clear_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_sender_ctx</span></code></a>(→ None)</p></td>
+<td><p>Remove this driver's installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.clear_worker_ctx" title="datafusion.ipc.clear_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_worker_ctx</span></code></a>(→ None)</p></td>
+<td><p>Remove this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.get_sender_ctx" title="datafusion.ipc.get_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sender_ctx</span></code></a>(→ datafusion.context.SessionContext | None)</p></td>
+<td><p>Return this driver's installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.get_worker_ctx" title="datafusion.ipc.get_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_worker_ctx</span></code></a>(→ datafusion.context.SessionContext | None)</p></td>
+<td><p>Return this worker's installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_sender_ctx</span></code></a>(→ None)</p></td>
+<td><p>Install this driver's <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for outbound pickles.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_worker_ctx</span></code></a>(→ None)</p></td>
+<td><p>Install this worker's <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for shipped expressions.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.clear_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">clear_sender_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.clear_sender_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Remove this driver’s installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<p>After clearing, pickled expressions fall back to the default codec
+(Python UDF inlining on).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">set_sender_ctx</span><span class="p">,</span> <span class="n">clear_sender_ctx</span><span class="p">,</span> <span class="n">get_sender_ctx</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.clear_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">clear_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.clear_worker_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Remove this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<p>After clearing, expressions reconstructed in this worker fall back to
+the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> — adequate for built-ins and Python
+UDFs (scalar, aggregate, window), but anything imported via the FFI
+capsule protocol must be registered on the global context to resolve.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span><span class="p">,</span> <span class="n">get_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.get_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">get_sender_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.get_sender_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Return this driver’s installed sender <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sender_ctx</span><span class="p">,</span> <span class="n">clear_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_sender_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.get_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">get_worker_ctx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.get_worker_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Return this worker’s installed <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.set_sender_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">set_sender_ctx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.set_sender_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Install this driver’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for outbound pickles.</p>
+<p>Controls how <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.dumps()</span></code> encodes <code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code> instances on
+this thread. The most useful application is propagating a session
+configured with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> so the toggle takes
+effect through pickle (which otherwise calls
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> with no context and uses the default codec).</p>
+<p>Idempotent: overwrites any previous value. Stored in a thread-local
+slot, so worker threads on the driver may install their own contexts.
+Does not affect <code class="xref py py-meth docutils literal notranslate"><span class="pre">Expr.to_bytes()</span></code> calls that pass an explicit
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> — those continue to use the supplied context.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_sender_ctx</span><span class="p">,</span> <span class="n">get_sender_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_python_udf_inlining</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_sender_ctx</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_sender_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="n">driver</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.ipc.set_worker_ctx">
+<span class="sig-prename descclassname"><span class="pre">datafusion.ipc.</span></span><span class="sig-name descname"><span class="pre">set_worker_ctx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.ipc.set_worker_ctx" title="Link to this definition">#</a></dt>
+<dd><p>Install this worker’s <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> for shipped expressions.</p>
+<p>Call once per worker — typically from a <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code>
+initializer or a Ray actor <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. Idempotent: overwrites any
+previous value. Stored in a thread-local slot, so each thread within a
+worker may install its own context independently.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.ipc</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_worker_ctx</span><span class="p">,</span> <span class="n">get_worker_ctx</span><span class="p">,</span> <span class="n">clear_worker_ctx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_worker_ctx</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_worker_ctx</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clear_worker_ctx</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../io/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">datafusion.io</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../object_store/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">datafusion.object_store</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.clear_sender_ctx"><code class="docutils literal notranslate"><span class="pre">clear_sender_ctx()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.clear_worker_ctx"><code class="docutils literal notranslate"><span class="pre">clear_worker_ctx()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.get_sender_ctx"><code class="docutils literal notranslate"><span class="pre">get_sender_ctx()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.get_worker_ctx"><code class="docutils literal notranslate"><span class="pre">get_worker_ctx()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.set_sender_ctx"><code class="docutils literal notranslate"><span class="pre">set_sender_ctx()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ipc.set_worker_ctx"><code class="docutils literal notranslate"><span class="pre">set_worker_ctx()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

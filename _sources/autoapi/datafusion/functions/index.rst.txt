@@ -5,8 +5,37 @@ datafusion.functions
 
 .. autoapi-nested-parse::
 
-   User functions for operating on :py:class:`~datafusion.expr.Expr`.
+   Scalar, aggregate, and window functions for :py:class:`~datafusion.expr.Expr`.
 
+   Each function returns an :py:class:`~datafusion.expr.Expr` that can be combined
+   with other expressions and passed to
+   :py:class:`~datafusion.dataframe.DataFrame` methods such as
+   :py:meth:`~datafusion.dataframe.DataFrame.select`,
+   :py:meth:`~datafusion.dataframe.DataFrame.filter`,
+   :py:meth:`~datafusion.dataframe.DataFrame.aggregate`, and
+   :py:meth:`~datafusion.dataframe.DataFrame.window`. The module is conventionally
+   imported as ``F`` so calls read like ``F.sum(col("price"))``.
+
+   .. rubric:: Examples
+
+   >>> from datafusion import functions as F
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3, 4]})
+   >>> df.aggregate([], [F.sum(col("a")).alias("total")]).to_pydict()
+   {'total': [10]}
+
+   See :ref:`aggregation` and :ref:`window_functions` in the online documentation
+   for categorized catalogs of aggregate and window functions.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/datafusion/functions/spark/index
 
 
 Attributes
@@ -26,15 +55,18 @@ Functions
    datafusion.functions.acos
    datafusion.functions.acosh
    datafusion.functions.alias
+   datafusion.functions.any_match
    datafusion.functions.approx_distinct
    datafusion.functions.approx_median
    datafusion.functions.approx_percentile_cont
    datafusion.functions.approx_percentile_cont_with_weight
    datafusion.functions.array
    datafusion.functions.array_agg
+   datafusion.functions.array_any_match
    datafusion.functions.array_any_value
    datafusion.functions.array_append
    datafusion.functions.array_cat
+   datafusion.functions.array_compact
    datafusion.functions.array_concat
    datafusion.functions.array_contains
    datafusion.functions.array_dims
@@ -44,6 +76,7 @@ Functions
    datafusion.functions.array_empty
    datafusion.functions.array_except
    datafusion.functions.array_extract
+   datafusion.functions.array_filter
    datafusion.functions.array_has
    datafusion.functions.array_has_all
    datafusion.functions.array_has_any
@@ -54,6 +87,7 @@ Functions
    datafusion.functions.array_max
    datafusion.functions.array_min
    datafusion.functions.array_ndims
+   datafusion.functions.array_normalize
    datafusion.functions.array_pop_back
    datafusion.functions.array_pop_front
    datafusion.functions.array_position
@@ -73,11 +107,14 @@ Functions
    datafusion.functions.array_slice
    datafusion.functions.array_sort
    datafusion.functions.array_to_string
+   datafusion.functions.array_transform
    datafusion.functions.array_union
    datafusion.functions.arrays_overlap
    datafusion.functions.arrays_zip
    datafusion.functions.arrow_cast
+   datafusion.functions.arrow_field
    datafusion.functions.arrow_metadata
+   datafusion.functions.arrow_try_cast
    datafusion.functions.arrow_typeof
    datafusion.functions.ascii
    datafusion.functions.asin
@@ -95,6 +132,7 @@ Functions
    datafusion.functions.btrim
    datafusion.functions.cardinality
    datafusion.functions.case
+   datafusion.functions.cast_to_type
    datafusion.functions.cbrt
    datafusion.functions.ceil
    datafusion.functions.char_length
@@ -108,6 +146,7 @@ Functions
    datafusion.functions.corr
    datafusion.functions.cos
    datafusion.functions.cosh
+   datafusion.functions.cosine_distance
    datafusion.functions.cot
    datafusion.functions.count
    datafusion.functions.count_star
@@ -128,6 +167,7 @@ Functions
    datafusion.functions.degrees
    datafusion.functions.dense_rank
    datafusion.functions.digest
+   datafusion.functions.dot_product
    datafusion.functions.element_at
    datafusion.functions.empty
    datafusion.functions.encode
@@ -149,9 +189,13 @@ Functions
    datafusion.functions.ifnull
    datafusion.functions.in_list
    datafusion.functions.initcap
+   datafusion.functions.inner_product
+   datafusion.functions.instr
    datafusion.functions.isnan
    datafusion.functions.iszero
    datafusion.functions.lag
+   datafusion.functions.lambda_
+   datafusion.functions.lambda_var
    datafusion.functions.last_value
    datafusion.functions.lcm
    datafusion.functions.lead
@@ -159,9 +203,11 @@ Functions
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
+   datafusion.functions.list_any_match
    datafusion.functions.list_any_value
    datafusion.functions.list_append
    datafusion.functions.list_cat
+   datafusion.functions.list_compact
    datafusion.functions.list_concat
    datafusion.functions.list_contains
    datafusion.functions.list_dims
@@ -171,6 +217,7 @@ Functions
    datafusion.functions.list_empty
    datafusion.functions.list_except
    datafusion.functions.list_extract
+   datafusion.functions.list_filter
    datafusion.functions.list_has
    datafusion.functions.list_has_all
    datafusion.functions.list_has_any
@@ -181,6 +228,7 @@ Functions
    datafusion.functions.list_max
    datafusion.functions.list_min
    datafusion.functions.list_ndims
+   datafusion.functions.list_normalize
    datafusion.functions.list_overlap
    datafusion.functions.list_pop_back
    datafusion.functions.list_pop_front
@@ -201,6 +249,7 @@ Functions
    datafusion.functions.list_slice
    datafusion.functions.list_sort
    datafusion.functions.list_to_string
+   datafusion.functions.list_transform
    datafusion.functions.list_union
    datafusion.functions.list_zip
    datafusion.functions.ln
@@ -238,6 +287,7 @@ Functions
    datafusion.functions.percent_rank
    datafusion.functions.percentile_cont
    datafusion.functions.pi
+   datafusion.functions.position
    datafusion.functions.pow
    datafusion.functions.power
    datafusion.functions.quantile_cont
@@ -306,6 +356,7 @@ Functions
    datafusion.functions.translate
    datafusion.functions.trim
    datafusion.functions.trunc
+   datafusion.functions.try_cast_to_type
    datafusion.functions.union_extract
    datafusion.functions.union_tag
    datafusion.functions.upper
@@ -317,10 +368,11 @@ Functions
    datafusion.functions.var_sample
    datafusion.functions.version
    datafusion.functions.when
+   datafusion.functions.with_metadata
 
 
-Module Contents
----------------
+Package Contents
+----------------
 
 .. py:function:: abs(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
@@ -390,6 +442,13 @@ Module Contents
    b: int64
      -- field metadata --
      info: 'test'
+
+
+.. py:function:: any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of an array satisfies a predicate.
+
+   .. seealso:: This is an alias for :py:func:`array_any_match`.
 
 
 .. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -591,6 +650,36 @@ Module Contents
    [2, 3]
 
 
+.. py:function:: array_any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of ``array`` satisfies ``predicate``.
+
+   ``predicate`` may be a Python callable, converted to a lambda
+   automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+   return a boolean expression.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> df.select(
+   ...     F.array_any_match(col("a"), lambda v: v > 2).alias("m")
+   ... ).collect_column("m")[0].as_py()
+   True
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+   >>> df.select(
+   ...     F.array_any_match(col("a"), predicate).alias("m")
+   ... ).collect_column("m")[0].as_py()
+   True
+
+   .. seealso:: :py:func:`array_transform`, :py:func:`lambda_`.
+
+
 .. py:function:: array_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the first non-null element in the array.
@@ -624,6 +713,21 @@ Module Contents
    Concatenates the input arrays.
 
    .. seealso:: This is an alias for :py:func:`array_concat`.
+
+
+.. py:function:: array_compact(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes NULL values from the array.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, None, 2, None, 3]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_compact(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   [1, 2, 3]
 
 
 .. py:function:: array_concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -695,7 +799,7 @@ Module Contents
    [1, 2, 3]
 
 
-.. py:function:: array_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
 
@@ -704,7 +808,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[10, 20, 30]]})
    >>> result = df.select(
-   ...     dfn.functions.array_element(dfn.col("a"), dfn.lit(2)).alias("result"))
+   ...     dfn.functions.array_element(dfn.col("a"), 2).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    20
 
@@ -736,11 +840,42 @@ Module Contents
    [1]
 
 
-.. py:function:: array_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
 
    .. seealso:: This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: array_filter(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Keep the elements of ``array`` for which ``predicate`` is ``True``.
+
+   ``predicate`` may be a Python callable, converted to a lambda
+   automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+   return a boolean expression. The result is a new array containing only the
+   matching elements.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4, 5]]})
+   >>> df.select(
+   ...     F.array_filter(col("a"), lambda v: v > 2).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   [3, 4, 5]
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+   >>> df.select(
+   ...     F.array_filter(col("a"), predicate).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   [3, 4, 5]
+
+   .. seealso:: :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
 
 
 .. py:function:: array_has(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -817,7 +952,7 @@ Module Contents
    [2, 3]
 
 
-.. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -876,6 +1011,43 @@ Module Contents
    >>> result = df.select(dfn.functions.array_ndims(dfn.col("a")).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    1
+
+
+.. py:function:: array_normalize(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Scales a numeric array so it has Euclidean length 1.
+
+   Treats the array as a vector and divides every element by the vector's
+   Euclidean (L2) norm — the square root of the sum of the squared
+   elements. The returned array points in the same direction as the input
+   but has a magnitude of 1, which makes it suitable for cosine-similarity
+   comparisons and other operations that expect unit vectors.
+
+   For the input ``[3.0, 4.0]`` the L2 norm is ``sqrt(3**2 + 4**2) = 5``,
+   so each element is divided by 5 to produce ``[0.6, 0.8]``.
+
+   Normalizing the zero vector is undefined (it would divide by zero), so
+   the function returns NULL for an all-zero input. NULL is also returned
+   if any element of the input array is NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[3.0, 4.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   [0.6, 0.8]
+
+   The zero vector has no direction to preserve, so the result is NULL:
+
+   >>> df_zero = ctx.from_pydict({"a": [[0.0, 0.0]]})
+   >>> result = df_zero.select(
+   ...     dfn.functions.array_normalize(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py() is None
+   True
 
 
 .. py:function:: array_pop_back(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1004,7 +1176,7 @@ Module Contents
    [2]
 
 
-.. py:function:: array_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Removes the first ``max`` elements from the array equal to the given value.
 
@@ -1013,13 +1185,14 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
    >>> result = df.select(
-   ...     dfn.functions.array_remove_n(dfn.col("a"), dfn.lit(1),
-   ...     dfn.lit(2)).alias("result"))
+   ...     dfn.functions.array_remove_n(
+   ...         dfn.col("a"), dfn.lit(1), 2
+   ...     ).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [2, 1]
 
 
-.. py:function:: array_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Returns an array containing ``element`` ``count`` times.
 
@@ -1028,7 +1201,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1]})
    >>> result = df.select(
-   ...     dfn.functions.array_repeat(dfn.lit(3), dfn.lit(3)).alias("result"))
+   ...     dfn.functions.array_repeat(dfn.lit(3), 3).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [3, 3, 3]
 
@@ -1063,7 +1236,7 @@ Module Contents
    [9, 2, 9]
 
 
-.. py:function:: array_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Replace ``n`` occurrences of ``from_val`` with ``to_val``.
 
@@ -1075,13 +1248,14 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[1, 2, 1, 1]]})
    >>> result = df.select(
-   ...     dfn.functions.array_replace_n(dfn.col("a"), dfn.lit(1), dfn.lit(9),
-   ...     dfn.lit(2)).alias("result"))
+   ...     dfn.functions.array_replace_n(
+   ...         dfn.col("a"), dfn.lit(1), dfn.lit(9), 2
+   ...     ).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [9, 2, 9, 1]
 
 
-.. py:function:: array_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr, value: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr | int, value: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array with the specified size filled.
 
@@ -1093,8 +1267,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[1, 2]]})
    >>> result = df.select(
-   ...     dfn.functions.array_resize(dfn.col("a"), dfn.lit(4),
-   ...     dfn.lit(0)).alias("result"))
+   ...     dfn.functions.array_resize(dfn.col("a"), 4, dfn.lit(0)).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [1, 2, 0, 0]
 
@@ -1113,7 +1286,7 @@ Module Contents
    [3, 2, 1]
 
 
-.. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr | int, end: datafusion.expr.Expr | int, stride: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
 
@@ -1122,9 +1295,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
    >>> result = df.select(
-   ...     dfn.functions.array_slice(
-   ...         dfn.col("a"), dfn.lit(2), dfn.lit(3)
-   ...     ).alias("result"))
+   ...     dfn.functions.array_slice(dfn.col("a"), 2, 3).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [2, 3]
 
@@ -1132,8 +1303,7 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.array_slice(
-   ...         dfn.col("a"), dfn.lit(1), dfn.lit(4),
-   ...         stride=dfn.lit(2),
+   ...         dfn.col("a"), 1, 4, stride=2,
    ...     ).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [1, 3]
@@ -1167,7 +1337,7 @@ Module Contents
    [None, 3, 1]
 
 
-.. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -1176,9 +1346,39 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
    >>> result = df.select(
-   ...     dfn.functions.array_to_string(dfn.col("a"), dfn.lit(",")).alias("s"))
+   ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
    >>> result.collect_column("s")[0].as_py()
    '1,2,3'
+
+
+.. py:function:: array_transform(array: datafusion.expr.Expr, transform: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Transform each element of ``array`` with a lambda.
+
+   ``transform`` may be a Python callable, which is converted to a lambda
+   automatically (its parameter names become the lambda parameters), or an
+   explicit lambda built with :py:func:`lambda_`.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> df.select(
+   ...     F.array_transform(col("a"), lambda v: v * 2).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`array_any_match`, :py:func:`lambda_`.
 
 
 .. py:function:: array_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1220,7 +1420,7 @@ Module Contents
    >>> result = df.select(
    ...     dfn.functions.arrays_zip(dfn.col("a"), dfn.col("b")).alias("result"))
    >>> result.collect_column("result")[0].as_py()
-   [{'c0': 1, 'c1': 3}, {'c0': 2, 'c1': 4}]
+   [{'1': 1, '2': 3}, {'1': 2, '2': 4}]
 
 
 .. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr | str | pyarrow.DataType) -> datafusion.expr.Expr
@@ -1254,6 +1454,28 @@ Module Contents
    1.0
 
 
+.. py:function:: arrow_field(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Arrow field information of an expression as a struct.
+
+   The returned struct contains the field's name, data type, nullability,
+   and metadata.
+
+   .. rubric:: Examples
+
+   >>> field = pa.field("val", pa.int64(), metadata={"k": "v"})
+   >>> schema = pa.schema([field])
+   >>> batch = pa.RecordBatch.from_arrays([pa.array([1])], schema=schema)
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.create_dataframe([[batch]])
+   >>> result = df.select(
+   ...     dfn.functions.arrow_field(dfn.col("val")).alias("f")
+   ... )
+   >>> out = result.collect_column("f")[0].as_py()
+   >>> out["name"], out["data_type"], out["nullable"], out["metadata"]
+   ('val', 'Int64', True, [('k', 'v')])
+
+
 .. py:function:: arrow_metadata(expr: datafusion.expr.Expr, key: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Returns the metadata of the input expression.
@@ -1281,6 +1503,34 @@ Module Contents
    ... )
    >>> result.collect_column("meta_val")[0].as_py()
    'v'
+
+
+.. py:function:: arrow_try_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr | str | pyarrow.DataType) -> datafusion.expr.Expr
+
+   Casts an expression to a specified data type, returning NULL on failure.
+
+   Like :py:func:`arrow_cast` but produces NULL instead of erroring when the
+   cast cannot be performed. The ``data_type`` may be a string in DataFusion
+   type syntax (for example ``"Float64"``), a ``pyarrow.DataType``, or an
+   ``Expr`` of string type.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["oops"]})
+   >>> result = df.select(
+   ...     dfn.functions.arrow_try_cast(dfn.col("a"), "Float64").alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
+
+   >>> result = df.select(
+   ...     dfn.functions.arrow_try_cast(
+   ...         dfn.col("a"), data_type=pa.float64()
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
 
 
 .. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1375,16 +1625,17 @@ Module Contents
    0.0
 
 
-.. py:function:: avg(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: avg(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the average value.
 
    This aggregate function expects a numeric expression and will return a float.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
+   :param distinct: If True, duplicate values are removed before averaging.
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -1405,6 +1656,14 @@ Module Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    2.5
+
+   >>> df = ctx.from_pydict({"a": [1.0, 1.0, 2.0, 3.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.avg(
+   ...         dfn.col("a"), distinct=True,
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.0
 
 
 .. py:function:: bit_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1643,6 +1902,32 @@ Module Contents
    'one'
 
 
+.. py:function:: cast_to_type(value: datafusion.expr.Expr, type_ref: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Casts ``value`` to the data type of ``type_ref``.
+
+   Only the *type* of ``type_ref`` is used; its value is ignored. This is
+   useful when the target type comes from another column or expression
+   rather than being known up-front. Casts that fail produce an error; use
+   :py:func:`try_cast_to_type` for the NULL-on-failure variant.
+
+   If the target type is known statically, prefer :py:func:`arrow_cast`
+   (or :py:func:`arrow_try_cast` for the NULL-on-failure variant) and
+   pass a type string or ``pyarrow.DataType`` directly.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1], "b": [1.0]})
+   >>> result = df.select(
+   ...     dfn.functions.cast_to_type(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py()
+   1.0
+
+
 .. py:function:: cbrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the cube root of a number.
@@ -1713,6 +1998,8 @@ Module Contents
 
    Returns the value of the first expr in ``args`` which is not NULL.
 
+   :param \*args: Expressions to evaluate in order.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -1768,7 +2055,7 @@ Module Contents
    'hello-world'
 
 
-.. py:function:: contains(string: datafusion.expr.Expr, search_str: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: contains(string: datafusion.expr.Expr, search_str: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns true if ``search_str`` is found within ``string`` (case-sensitive).
 
@@ -1777,7 +2064,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["the quick brown fox"]})
    >>> result = df.select(
-   ...     dfn.functions.contains(dfn.col("a"), dfn.lit("brown")).alias("c"))
+   ...     dfn.functions.contains(dfn.col("a"), "brown").alias("c"))
    >>> result.collect_column("c")[0].as_py()
    True
 
@@ -1838,6 +2125,60 @@ Module Contents
    >>> df = ctx.from_pydict({"a": [0,-1,1]})
    >>> cosh_df = df.select(dfn.functions.cosh(dfn.col("a")).alias("cosh"))
    >>> cosh_df.collect_column("cosh")[0].as_py()
+   1.0
+
+
+.. py:function:: cosine_distance(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Measures how much two numeric arrays differ in direction.
+
+   Treats each input as a vector and compares the angle between them,
+   ignoring their magnitudes. The result is ``1 - cosine_similarity``,
+   where cosine similarity is the dot product of the two vectors divided
+   by the product of their Euclidean (L2) norms.
+
+   The returned value ranges from 0 to 2:
+
+   * ``0`` — vectors point in the same direction (any positive scaling
+     of one yields the other).
+   * ``1`` — vectors are orthogonal (no shared direction).
+   * ``2`` — vectors point in exactly opposite directions.
+
+   This is the standard distance metric for comparing embedding vectors
+   (text, image, audio) where direction carries the meaning and overall
+   magnitude does not.
+
+   Both arrays must have the same length; otherwise execution fails. If
+   either input is the zero vector the cosine is undefined and the
+   function returns NULL.
+
+   .. rubric:: Examples
+
+   Identical vectors have distance ``0``:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict(
+   ...     {"a": [[1.0, 2.0, 3.0]], "b": [[1.0, 2.0, 3.0]]}
+   ... )
+   >>> result = df.select(
+   ...     dfn.functions.cosine_distance(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   0.0
+
+   Orthogonal vectors have distance ``1``:
+
+   >>> df_orth = ctx.from_pydict(
+   ...     {"a": [[1.0, 0.0]], "b": [[0.0, 1.0]]}
+   ... )
+   >>> result = df_orth.select(
+   ...     dfn.functions.cosine_distance(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
    1.0
 
 
@@ -2086,7 +2427,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`now`.
 
 
-.. py:function:: date_bin(stride: datafusion.expr.Expr, source: datafusion.expr.Expr, origin: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: date_bin(stride: datafusion.expr.Expr | str, source: datafusion.expr.Expr | str, origin: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Coerces an arbitrary timestamp to the start of the nearest specified interval.
 
@@ -2096,9 +2437,9 @@ Module Contents
    >>> df = ctx.from_pydict({"timestamp": ['2021-07-15 12:34:56', '2021-01-01']})
    >>> result = df.select(
    ...     dfn.functions.date_bin(
-   ...         dfn.string_literal("15 minutes"),
+   ...         "15 minutes",
    ...         dfn.col("timestamp"),
-   ...         dfn.string_literal("2001-01-01 00:00:00")
+   ...         "2001-01-01 00:00:00",
    ...     ).alias("b")
    ... )
    >>> str(result.collect_column("b")[0].as_py())
@@ -2106,17 +2447,31 @@ Module Contents
    >>> str(result.collect_column("b")[1].as_py())
    '2021-01-01 00:00:00'
 
+   ``source`` may also be a bare literal:
 
-.. py:function:: date_format(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> result = df.select(
+   ...     dfn.functions.date_bin(
+   ...         "15 minutes", "2021-07-15 12:34:56", "2001-01-01 00:00:00"
+   ...     ).alias("b")
+   ... )
+   >>> str(result.collect_column("b")[0].as_py())
+   '2021-07-15 12:30:00'
+
+
+.. py:function:: date_format(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns a string representation of a date, time, timestamp or duration.
 
    .. seealso:: This is an alias for :py:func:`to_char`.
 
 
-.. py:function:: date_part(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: date_part(part: datafusion.expr.Expr | str, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Extracts a subfield from the date.
+
+   :param part: The part of the date to extract. Must be one of ``"year"``,
+                ``"month"``, ``"day"``, ``"hour"``, ``"minute"``, ``"second"``, etc.
+   :param date: The date expression to extract from.
 
    .. rubric:: Examples
 
@@ -2124,14 +2479,18 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["2021-07-15T00:00:00"]})
    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
    >>> result = df.select(
-   ...     dfn.functions.date_part(dfn.lit("year"), dfn.col("a")).alias("y"))
+   ...     dfn.functions.date_part("year", dfn.col("a")).alias("y"))
    >>> result.collect_column("y")[0].as_py()
    2021
 
 
-.. py:function:: date_trunc(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: date_trunc(part: datafusion.expr.Expr | str, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Truncates the date to a specified level of precision.
+
+   :param part: The precision to truncate to. Must be one of ``"year"``,
+                ``"month"``, ``"day"``, ``"hour"``, ``"minute"``, ``"second"``, etc.
+   :param date: The date expression to truncate.
 
    .. rubric:: Examples
 
@@ -2139,29 +2498,27 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["2021-07-15T12:34:56"]})
    >>> df = df.select(dfn.functions.to_timestamp(dfn.col("a")).alias("a"))
    >>> result = df.select(
-   ...     dfn.functions.date_trunc(
-   ...         dfn.lit("month"), dfn.col("a")
-   ...     ).alias("t")
+   ...     dfn.functions.date_trunc("month", dfn.col("a")).alias("t")
    ... )
    >>> str(result.collect_column("t")[0].as_py())
    '2021-07-01 00:00:00'
 
 
-.. py:function:: datepart(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: datepart(part: datafusion.expr.Expr | str, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Return a specified part of a date.
 
    .. seealso:: This is an alias for :py:func:`date_part`.
 
 
-.. py:function:: datetrunc(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: datetrunc(part: datafusion.expr.Expr | str, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Truncates the date to a specified level of precision.
 
    .. seealso:: This is an alias for :py:func:`date_trunc`.
 
 
-.. py:function:: decode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: decode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
@@ -2170,7 +2527,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["aGVsbG8="]})
    >>> result = df.select(
-   ...     dfn.functions.decode(dfn.col("a"), dfn.lit("base64")).alias("dec"))
+   ...     dfn.functions.decode(dfn.col("a"), "base64").alias("dec"))
    >>> result.collect_column("dec")[0].as_py()
    b'hello'
 
@@ -2233,7 +2590,7 @@ Module Contents
    [1, 1, 1, 2]
 
 
-.. py:function:: digest(value: datafusion.expr.Expr, method: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: digest(value: datafusion.expr.Expr, method: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Computes the binary hash of an expression using the specified algorithm.
 
@@ -2245,9 +2602,16 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
    >>> result = df.select(
-   ...     dfn.functions.digest(dfn.col("a"), dfn.lit("md5")).alias("d"))
+   ...     dfn.functions.digest(dfn.col("a"), "md5").alias("d"))
    >>> len(result.collect_column("d")[0].as_py()) > 0
    True
+
+
+.. py:function:: dot_product(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the inner (dot) product of two numeric arrays.
+
+   .. seealso:: This is an alias for :py:func:`inner_product`.
 
 
 .. py:function:: element_at(map: datafusion.expr.Expr, key: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2266,7 +2630,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_empty`.
 
 
-.. py:function:: encode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: encode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
@@ -2275,12 +2639,12 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
    >>> result = df.select(
-   ...     dfn.functions.encode(dfn.col("a"), dfn.lit("base64")).alias("enc"))
+   ...     dfn.functions.encode(dfn.col("a"), "base64").alias("enc"))
    >>> result.collect_column("enc")[0].as_py()
    'aGVsbG8'
 
 
-.. py:function:: ends_with(arg: datafusion.expr.Expr, suffix: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: ends_with(arg: datafusion.expr.Expr, suffix: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns true if the ``string`` ends with the ``suffix``, false otherwise.
 
@@ -2289,7 +2653,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["abc","b","c"]})
    >>> ends_with_df = df.select(
-   ...     dfn.functions.ends_with(dfn.col("a"), dfn.lit("c")).alias("ends_with"))
+   ...     dfn.functions.ends_with(dfn.col("a"), "c").alias("ends_with"))
    >>> ends_with_df.collect_column("ends_with")[0].as_py()
    True
 
@@ -2307,7 +2671,7 @@ Module Contents
    1.0
 
 
-.. py:function:: extract(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: extract(part: datafusion.expr.Expr | str, date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Extracts a subfield from the date.
 
@@ -2329,7 +2693,7 @@ Module Contents
    6
 
 
-.. py:function:: find_in_set(string: datafusion.expr.Expr, string_list: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: find_in_set(string: datafusion.expr.Expr, string_list: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Find a string in a list of strings.
 
@@ -2343,7 +2707,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["b"]})
    >>> result = df.select(
-   ...     dfn.functions.find_in_set(dfn.col("a"), dfn.lit("a,b,c")).alias("pos"))
+   ...     dfn.functions.find_in_set(dfn.col("a"), "a,b,c").alias("pos"))
    >>> result.collect_column("pos")[0].as_py()
    2
 
@@ -2482,26 +2846,33 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`gen_series`.
 
 
-.. py:function:: get_field(expr: datafusion.expr.Expr, name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: get_field(expr: datafusion.expr.Expr, *names: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
-   Extracts a field from a struct or map by name.
+   Extracts a (possibly nested) field from a struct or map by name.
 
-   When the field name is a static string, the bracket operator
-   ``expr["field"]`` is a convenient shorthand. Use ``get_field``
-   when the field name is a dynamic expression.
+   Pass one name for a single-level lookup, or several names to walk a path
+   of nested struct/map fields in a single ``get_field`` call. For a single
+   static-string name, ``expr["field"]`` is a convenient shorthand; use
+   ``get_field`` when the field name is a dynamic
+   :py:class:`~datafusion.expr.Expr` or when traversing multiple levels at
+   once.
+
+   :param expr: The struct or map expression to read from.
+   :param \*names: One or more field names (``str``) or expressions
+                   (:py:class:`~datafusion.expr.Expr`).
 
    .. rubric:: Examples
+
+   Single-level lookup:
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1], "b": [2]})
    >>> df = df.with_column(
    ...     "s",
-   ...     dfn.functions.named_struct(
-   ...         [("x", dfn.col("a")), ("y", dfn.col("b"))]
-   ...     ),
+   ...     F.named_struct([("x", dfn.col("a")), ("y", dfn.col("b"))]),
    ... )
    >>> result = df.select(
-   ...     dfn.functions.get_field(dfn.col("s"), "x").alias("x_val")
+   ...     F.get_field(dfn.col("s"), "x").alias("x_val")
    ... )
    >>> result.collect_column("x_val")[0].as_py()
    1
@@ -2510,6 +2881,18 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.col("s")["x"].alias("x_val")
+   ... )
+   >>> result.collect_column("x_val")[0].as_py()
+   1
+
+   Multi-level lookup:
+
+   >>> df = df.with_column(
+   ...     "outer",
+   ...     F.named_struct([("inner", dfn.col("s"))]),
+   ... )
+   >>> result = df.select(
+   ...     F.get_field(dfn.col("outer"), "inner", "x").alias("x_val")
    ... )
    >>> result.collect_column("x_val")[0].as_py()
    1
@@ -2589,6 +2972,9 @@ Module Contents
 
    Returns ``x`` if ``x`` is not NULL. Otherwise returns ``y``.
 
+   :param x: Expression to return when it is not NULL.
+   :param y: Fallback expression to return when ``x`` is NULL.
+
    .. seealso:: This is an alias for :py:func:`nvl`.
 
 
@@ -2632,6 +3018,56 @@ Module Contents
    >>> cap_df = df.select(dfn.functions.initcap(dfn.col("a")).alias("cap"))
    >>> cap_df.collect_column("cap")[0].as_py()
    'The Cat'
+
+
+.. py:function:: inner_product(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the inner (dot) product of two numeric arrays.
+
+   Treats each input as a vector and returns the sum of the element-wise
+   products: ``sum(array1[i] * array2[i])``. For ``[1, 2, 3]`` and
+   ``[4, 5, 6]`` the result is ``1*4 + 2*5 + 3*6 = 32``.
+
+   Also available as :py:func:`dot_product` (and as ``dot_product`` in
+   raw SQL).
+
+   Both arrays must have the same length; otherwise execution fails. NULL
+   is returned when either input array is NULL or when any element of
+   either array is NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict(
+   ...     {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+   ... )
+   >>> result = df.select(
+   ...     dfn.functions.inner_product(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   32.0
+
+   NULL elements propagate to NULL output:
+
+   >>> df_null = ctx.from_pydict(
+   ...     {"a": [[1.0, None, 3.0]], "b": [[4.0, 5.0, 6.0]]}
+   ... )
+   >>> result = df_null.select(
+   ...     dfn.functions.inner_product(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py() is None
+   True
+
+
+.. py:function:: instr(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Finds the position from where the ``substring`` matches the ``string``.
+
+   .. seealso:: This is an alias for :py:func:`strpos`.
 
 
 .. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2710,6 +3146,54 @@ Module Contents
    ...     ).alias("lag"))
    >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lag").to_pylist()
    [0, 1, 0]
+
+
+.. py:function:: lambda_(params: list[str], body: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Create a lambda expression from parameter names and a body expression.
+
+   This is the explicit form of building a lambda. Most callers can instead
+   pass a Python callable directly to a higher-order function such as
+   :py:func:`array_transform`, which builds the lambda automatically. Reach for
+   ``lambda_`` when you want explicit control over the parameter names.
+
+   :param params: Ordered lambda parameter names.
+   :param body: Body expression that references the parameters via
+                :py:func:`lambda_var`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`lambda_var`, :py:func:`array_transform`, :py:func:`array_any_match`.
+
+
+.. py:function:: lambda_var(name: str) -> datafusion.expr.Expr
+
+   Create an unresolved reference to a lambda parameter by ``name``.
+
+   Use this inside the body passed to :py:func:`lambda_` to refer to one of the
+   lambda's parameters. The owning higher-order function (such as
+   :py:func:`array_transform`) binds the variable to a concrete element type
+   during query planning.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> double_fn = F.lambda_(["v"], F.lambda_var("v") * lit(2))
+   >>> df.select(
+   ...     F.array_transform(col("a"), double_fn).alias("d")
+   ... ).collect_column("d")[0].as_py()
+   [2, 4, 6]
+
+   .. seealso:: :py:func:`lambda_`, :py:func:`array_transform`, :py:func:`array_any_match`.
 
 
 .. py:function:: last_value(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
@@ -2840,7 +3324,7 @@ Module Contents
    1
 
 
-.. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Returns the first ``n`` characters in the ``string``.
 
@@ -2849,7 +3333,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["the cat"]})
    >>> left_df = df.select(
-   ...     dfn.functions.left(dfn.col("a"), dfn.lit(3)).alias("left"))
+   ...     dfn.functions.left(dfn.col("a"), 3).alias("left"))
    >>> left_df.collect_column("left")[0].as_py()
    'the'
 
@@ -2867,7 +3351,7 @@ Module Contents
    5
 
 
-.. py:function:: levenshtein(string1: datafusion.expr.Expr, string2: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: levenshtein(string1: datafusion.expr.Expr, string2: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns the Levenshtein distance between the two given strings.
 
@@ -2876,9 +3360,16 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["kitten"]})
    >>> result = df.select(
-   ...     dfn.functions.levenshtein(dfn.col("a"), dfn.lit("sitting")).alias("d"))
+   ...     dfn.functions.levenshtein(dfn.col("a"), "sitting").alias("d"))
    >>> result.collect_column("d")[0].as_py()
    3
+
+
+.. py:function:: list_any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return ``True`` if any element of a list satisfies a predicate.
+
+   .. seealso:: This is an alias for :py:func:`array_any_match`.
 
 
 .. py:function:: list_any_value(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2900,6 +3391,13 @@ Module Contents
    Concatenates the input arrays.
 
    .. seealso:: This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+
+
+.. py:function:: list_compact(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes NULL values from the array.
+
+   .. seealso:: This is an alias for :py:func:`array_compact`.
 
 
 .. py:function:: list_concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -2937,7 +3435,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_distinct`.
 
 
-.. py:function:: list_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
 
@@ -2958,11 +3456,18 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_except`.
 
 
-.. py:function:: list_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
 
    .. seealso:: This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: list_filter(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Keep the elements of a list for which a predicate is ``True``.
+
+   .. seealso:: This is an alias for :py:func:`array_filter`.
 
 
 .. py:function:: list_has(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3000,7 +3505,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_intersect`.
 
 
-.. py:function:: list_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -3033,6 +3538,13 @@ Module Contents
    Returns the number of dimensions of the array.
 
    .. seealso:: This is an alias for :py:func:`array_ndims`.
+
+
+.. py:function:: list_normalize(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Scales a numeric array so it has Euclidean length 1.
+
+   .. seealso:: This is an alias for :py:func:`array_normalize`.
 
 
 .. py:function:: list_overlap(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3105,14 +3617,14 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_remove_all`.
 
 
-.. py:function:: list_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Removes the first ``max`` elements from the array equal to the given value.
 
    .. seealso:: This is an alias for :py:func:`array_remove_n`.
 
 
-.. py:function:: list_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Returns an array containing ``element`` ``count`` times.
 
@@ -3133,7 +3645,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_replace_all`.
 
 
-.. py:function:: list_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Replace ``n`` occurrences of ``from_val`` with ``to_val``.
 
@@ -3143,7 +3655,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_replace_n`.
 
 
-.. py:function:: list_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr, value: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr | int, value: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array with the specified size filled.
 
@@ -3160,7 +3672,7 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_reverse`.
 
 
-.. py:function:: list_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: list_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr | int, end: datafusion.expr.Expr | int, stride: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
 
@@ -3174,11 +3686,18 @@ Module Contents
    .. seealso:: This is an alias for :py:func:`array_sort`.
 
 
-.. py:function:: list_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: list_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
    .. seealso:: This is an alias for :py:func:`array_to_string`.
+
+
+.. py:function:: list_transform(array: datafusion.expr.Expr, transform: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Transform each element of a list with a lambda.
+
+   .. seealso:: This is an alias for :py:func:`array_transform`.
 
 
 .. py:function:: list_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3210,7 +3729,7 @@ Module Contents
    0.0
 
 
-.. py:function:: log(base: datafusion.expr.Expr, num: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: log(base: datafusion.expr.Expr | int | float, num: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the logarithm of a number for a particular ``base``.
 
@@ -3219,7 +3738,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [100.0]})
    >>> result = df.select(
-   ...     dfn.functions.log(dfn.lit(10.0), dfn.col("a")).alias("log")
+   ...     dfn.functions.log(10.0, dfn.col("a")).alias("log")
    ... )
    >>> result.collect_column("log")[0].as_py()
    2.0
@@ -3264,7 +3783,7 @@ Module Contents
    'the cat'
 
 
-.. py:function:: lpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: lpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr | int, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Add left padding to a string.
 
@@ -3277,9 +3796,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["the cat", "a hat"]})
    >>> lpad_df = df.select(
-   ...     dfn.functions.lpad(
-   ...         dfn.col("a"), dfn.lit(6)
-   ...     ).alias("lpad"))
+   ...     dfn.functions.lpad(dfn.col("a"), 6).alias("lpad"))
    >>> lpad_df.collect_column("lpad")[0].as_py()
    'the ca'
    >>> lpad_df.collect_column("lpad")[1].as_py()
@@ -3287,7 +3804,7 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.lpad(
-   ...         dfn.col("a"), dfn.lit(10), characters=dfn.lit(".")
+   ...         dfn.col("a"), 10, characters="."
    ...     ).alias("lpad"))
    >>> result.collect_column("lpad")[0].as_py()
    '...the cat'
@@ -3322,7 +3839,7 @@ Module Contents
    [1, 2, 3]
 
 
-.. py:function:: make_date(year: datafusion.expr.Expr, month: datafusion.expr.Expr, day: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: make_date(year: datafusion.expr.Expr | int, month: datafusion.expr.Expr | int, day: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Make a date from year, month and day component parts.
 
@@ -3334,6 +3851,14 @@ Module Contents
    >>> result = df.select(
    ...     dfn.functions.make_date(dfn.col("y"), dfn.col("m"),
    ...     dfn.col("d")).alias("dt"))
+   >>> result.collect_column("dt")[0].as_py()
+   datetime.date(2024, 1, 15)
+
+   Pass bare ints for any component:
+
+   >>> df = ctx.from_pydict({"y": [2024]})
+   >>> result = df.select(
+   ...     dfn.functions.make_date(dfn.col("y"), 1, 15).alias("dt"))
    >>> result.collect_column("dt")[0].as_py()
    datetime.date(2024, 1, 15)
 
@@ -3390,7 +3915,7 @@ Module Contents
    [('x', 1), ('y', 2)]
 
 
-.. py:function:: make_time(hour: datafusion.expr.Expr, minute: datafusion.expr.Expr, second: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: make_time(hour: datafusion.expr.Expr | int, minute: datafusion.expr.Expr | int, second: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Make a time from hour, minute and second component parts.
 
@@ -3401,6 +3926,14 @@ Module Contents
    >>> result = df.select(
    ...     dfn.functions.make_time(dfn.col("h"), dfn.col("m"),
    ...     dfn.col("s")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   datetime.time(12, 30)
+
+   Pass bare ints for any component:
+
+   >>> df = ctx.from_pydict({"h": [12]})
+   >>> result = df.select(
+   ...     dfn.functions.make_time(dfn.col("h"), 30, 0).alias("t"))
    >>> result.collect_column("t")[0].as_py()
    datetime.time(12, 30)
 
@@ -3609,6 +4142,9 @@ Module Contents
 
    Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
 
+   :param x: Expression to return when it is not NaN.
+   :param y: Fallback expression to return when ``x`` is NaN.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -3750,6 +4286,9 @@ Module Contents
 
    Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
 
+   :param x: Expression to return when it is not NULL.
+   :param y: Fallback expression to return when ``x`` is NULL.
+
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
@@ -3766,6 +4305,10 @@ Module Contents
 .. py:function:: nvl2(x: datafusion.expr.Expr, y: datafusion.expr.Expr, z: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns ``y`` if ``x`` is not NULL. Otherwise returns ``z``.
+
+   :param x: Expression to check for NULL.
+   :param y: Expression to return when ``x`` is not NULL.
+   :param z: Expression to return when ``x`` is NULL.
 
    .. rubric:: Examples
 
@@ -3811,7 +4354,7 @@ Module Contents
    False
 
 
-.. py:function:: overlay(string: datafusion.expr.Expr, substring: datafusion.expr.Expr, start: datafusion.expr.Expr, length: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: overlay(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str, start: datafusion.expr.Expr | int, length: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Replace a substring with a new substring.
 
@@ -3823,8 +4366,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["abcdef"]})
    >>> result = df.select(
-   ...     dfn.functions.overlay(dfn.col("a"), dfn.lit("XY"), dfn.lit(3),
-   ...     dfn.lit(2)).alias("o"))
+   ...     dfn.functions.overlay(dfn.col("a"), "XY", 3, 2).alias("o"))
    >>> result.collect_column("o")[0].as_py()
    'abXYef'
 
@@ -3924,14 +4466,21 @@ Module Contents
    True
 
 
-.. py:function:: pow(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: position(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Finds the position from where the ``substring`` matches the ``string``.
+
+   .. seealso:: This is an alias for :py:func:`strpos`.
+
+
+.. py:function:: pow(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr | int | float) -> datafusion.expr.Expr
 
    Returns ``base`` raised to the power of ``exponent``.
 
    .. seealso:: This is an alias of :py:func:`power`.
 
 
-.. py:function:: power(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: power(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr | int | float) -> datafusion.expr.Expr
 
    Returns ``base`` raised to the power of ``exponent``.
 
@@ -3940,7 +4489,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [2.0]})
    >>> result = df.select(
-   ...     dfn.functions.power(dfn.col("a"), dfn.lit(3.0)).alias("pow")
+   ...     dfn.functions.power(dfn.col("a"), 3.0).alias("pow")
    ... )
    >>> result.collect_column("pow")[0].as_py()
    8.0
@@ -4049,7 +4598,7 @@ Module Contents
    [1, 1, 1, 2]
 
 
-.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr | str, start: datafusion.expr.Expr | int | None = None, flags: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Returns the number of matches in a string.
 
@@ -4061,9 +4610,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["abcabc"]})
    >>> result = df.select(
-   ...     dfn.functions.regexp_count(
-   ...         dfn.col("a"), dfn.lit("abc")
-   ...     ).alias("c"))
+   ...     dfn.functions.regexp_count(dfn.col("a"), "abc").alias("c"))
    >>> result.collect_column("c")[0].as_py()
    2
 
@@ -4072,14 +4619,13 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.regexp_count(
-   ...         dfn.col("a"), dfn.lit("ABC"),
-   ...         start=dfn.lit(4), flags=dfn.lit("i"),
+   ...         dfn.col("a"), "ABC", start=4, flags="i",
    ...     ).alias("c"))
    >>> result.collect_column("c")[0].as_py()
    1
 
 
-.. py:function:: regexp_instr(values: datafusion.expr.Expr, regex: datafusion.expr.Expr, start: datafusion.expr.Expr | None = None, n: datafusion.expr.Expr | None = None, flags: datafusion.expr.Expr | None = None, sub_expr: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_instr(values: datafusion.expr.Expr, regex: datafusion.expr.Expr | str, start: datafusion.expr.Expr | int | None = None, n: datafusion.expr.Expr | int | None = None, flags: datafusion.expr.Expr | str | None = None, sub_expr: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Returns the position of a regular expression match in a string.
 
@@ -4095,9 +4641,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
    >>> result = df.select(
-   ...     dfn.functions.regexp_instr(
-   ...         dfn.col("a"), dfn.lit("\\d+")
-   ...     ).alias("pos")
+   ...     dfn.functions.regexp_instr(dfn.col("a"), "\\d+").alias("pos")
    ... )
    >>> result.collect_column("pos")[0].as_py()
    7
@@ -4108,9 +4652,8 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["abc ABC abc"]})
    >>> result = df.select(
    ...     dfn.functions.regexp_instr(
-   ...         dfn.col("a"), dfn.lit("abc"),
-   ...         start=dfn.lit(2), n=dfn.lit(1),
-   ...         flags=dfn.lit("i"),
+   ...         dfn.col("a"), "abc",
+   ...         start=2, n=1, flags="i",
    ...     ).alias("pos")
    ... )
    >>> result.collect_column("pos")[0].as_py()
@@ -4120,15 +4663,14 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.regexp_instr(
-   ...         dfn.col("a"), dfn.lit("(abc)"),
-   ...         sub_expr=dfn.lit(1),
+   ...         dfn.col("a"), "(abc)", sub_expr=1,
    ...     ).alias("pos")
    ... )
    >>> result.collect_column("pos")[0].as_py()
    1
 
 
-.. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr | str, flags: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Find if any regular expression (regex) matches exist.
 
@@ -4140,9 +4682,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello123"]})
    >>> result = df.select(
-   ...     dfn.functions.regexp_like(
-   ...         dfn.col("a"), dfn.lit("\\d+")
-   ...     ).alias("m")
+   ...     dfn.functions.regexp_like(dfn.col("a"), "\\d+").alias("m")
    ... )
    >>> result.collect_column("m")[0].as_py()
    True
@@ -4151,15 +4691,14 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.regexp_like(
-   ...         dfn.col("a"), dfn.lit("HELLO"),
-   ...         flags=dfn.lit("i"),
+   ...         dfn.col("a"), "HELLO", flags="i",
    ...     ).alias("m")
    ... )
    >>> result.collect_column("m")[0].as_py()
    True
 
 
-.. py:function:: regexp_match(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_match(string: datafusion.expr.Expr, regex: datafusion.expr.Expr | str, flags: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Perform regular expression (regex) matching.
 
@@ -4171,9 +4710,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello 42 world"]})
    >>> result = df.select(
-   ...     dfn.functions.regexp_match(
-   ...         dfn.col("a"), dfn.lit("(\\d+)")
-   ...     ).alias("m")
+   ...     dfn.functions.regexp_match(dfn.col("a"), "(\\d+)").alias("m")
    ... )
    >>> result.collect_column("m")[0].as_py()
    ['42']
@@ -4182,15 +4719,14 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.regexp_match(
-   ...         dfn.col("a"), dfn.lit("(HELLO)"),
-   ...         flags=dfn.lit("i"),
+   ...         dfn.col("a"), "(HELLO)", flags="i",
    ...     ).alias("m")
    ... )
    >>> result.collect_column("m")[0].as_py()
    ['hello']
 
 
-.. py:function:: regexp_replace(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, replacement: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: regexp_replace(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr | str, replacement: datafusion.expr.Expr | str, flags: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Replaces substring(s) matching a PCRE-like regular expression.
 
@@ -4206,8 +4742,7 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["hello 42"]})
    >>> result = df.select(
    ...     dfn.functions.regexp_replace(
-   ...         dfn.col("a"), dfn.lit("\\d+"),
-   ...         dfn.lit("XX")
+   ...         dfn.col("a"), "\\d+", "XX"
    ...     ).alias("r")
    ... )
    >>> result.collect_column("r")[0].as_py()
@@ -4218,8 +4753,7 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["a1 b2 c3"]})
    >>> result = df.select(
    ...     dfn.functions.regexp_replace(
-   ...         dfn.col("a"), dfn.lit("\\d+"),
-   ...         dfn.lit("X"), flags=dfn.lit("g"),
+   ...         dfn.col("a"), "\\d+", "X", flags="g",
    ...     ).alias("r")
    ... )
    >>> result.collect_column("r")[0].as_py()
@@ -4534,7 +5068,7 @@ Module Contents
    0.5
 
 
-.. py:function:: repeat(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: repeat(string: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Repeats the ``string`` to ``n`` times.
 
@@ -4543,12 +5077,12 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["ha"]})
    >>> result = df.select(
-   ...     dfn.functions.repeat(dfn.col("a"), dfn.lit(3)).alias("r"))
+   ...     dfn.functions.repeat(dfn.col("a"), 3).alias("r"))
    >>> result.collect_column("r")[0].as_py()
    'hahaha'
 
 
-.. py:function:: replace(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: replace(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr | str, to_val: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``.
 
@@ -4557,8 +5091,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello world"]})
    >>> result = df.select(
-   ...     dfn.functions.replace(dfn.col("a"), dfn.lit("world"),
-   ...     dfn.lit("there")).alias("r"))
+   ...     dfn.functions.replace(dfn.col("a"), "world", "there").alias("r"))
    >>> result.collect_column("r")[0].as_py()
    'hello there'
 
@@ -4576,7 +5109,7 @@ Module Contents
    'olleh'
 
 
-.. py:function:: right(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: right(string: datafusion.expr.Expr, n: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Returns the last ``n`` characters in the ``string``.
 
@@ -4584,24 +5117,24 @@ Module Contents
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
-   >>> result = df.select(dfn.functions.right(dfn.col("a"), dfn.lit(3)).alias("r"))
+   >>> result = df.select(dfn.functions.right(dfn.col("a"), 3).alias("r"))
    >>> result.collect_column("r")[0].as_py()
    'llo'
 
 
-.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Round the argument to the nearest integer.
 
    If the optional ``decimal_places`` is specified, round to the nearest number of
    decimal places. You can specify a negative number of decimal places. For example
-   ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+   ``round(lit(125.2345), -2)`` would yield a value of ``100.0``.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1.567]})
-   >>> result = df.select(dfn.functions.round(dfn.col("a"), dfn.lit(2)).alias("r"))
+   >>> result = df.select(dfn.functions.round(dfn.col("a"), 2).alias("r"))
    >>> result.collect_column("r")[0].as_py()
    1.57
 
@@ -4657,7 +5190,7 @@ Module Contents
    [1, 2, 1, 2]
 
 
-.. py:function:: rpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: rpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr | int, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Add right padding to a string.
 
@@ -4669,7 +5202,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hi"]})
    >>> result = df.select(
-   ...     dfn.functions.rpad(dfn.col("a"), dfn.lit(5), dfn.lit("!")).alias("r"))
+   ...     dfn.functions.rpad(dfn.col("a"), 5, "!").alias("r"))
    >>> result.collect_column("r")[0].as_py()
    'hi!!!'
 
@@ -4786,7 +5319,7 @@ Module Contents
    0.0
 
 
-.. py:function:: split_part(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, index: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: split_part(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, index: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Split a string and return one part.
 
@@ -4798,9 +5331,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["a,b,c"]})
    >>> result = df.select(
-   ...     dfn.functions.split_part(
-   ...         dfn.col("a"), dfn.lit(","), dfn.lit(2)
-   ...     ).alias("s"))
+   ...     dfn.functions.split_part(dfn.col("a"), ",", 2).alias("s"))
    >>> result.collect_column("s")[0].as_py()
    'b'
 
@@ -4818,7 +5349,7 @@ Module Contents
    3.0
 
 
-.. py:function:: starts_with(string: datafusion.expr.Expr, prefix: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: starts_with(string: datafusion.expr.Expr, prefix: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns true if string starts with prefix.
 
@@ -4827,7 +5358,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello_from_datafusion"]})
    >>> result = df.select(
-   ...     dfn.functions.starts_with(dfn.col("a"), dfn.lit("hello")).alias("sw"))
+   ...     dfn.functions.starts_with(dfn.col("a"), "hello").alias("sw"))
    >>> result.collect_column("sw")[0].as_py()
    True
 
@@ -4940,7 +5471,7 @@ Module Contents
    'y,z'
 
 
-.. py:function:: string_to_array(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, null_string: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: string_to_array(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Splits a string based on a delimiter and returns an array of parts.
 
@@ -4951,9 +5482,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello,world"]})
    >>> result = df.select(
-   ...     dfn.functions.string_to_array(
-   ...         dfn.col("a"), dfn.lit(","),
-   ...     ).alias("result"))
+   ...     dfn.functions.string_to_array(dfn.col("a"), ",").alias("result"))
    >>> result.collect_column("result")[0].as_py()
    ['hello', 'world']
 
@@ -4961,20 +5490,20 @@ Module Contents
 
    >>> result = df.select(
    ...     dfn.functions.string_to_array(
-   ...         dfn.col("a"), dfn.lit(","), null_string=dfn.lit("world"),
+   ...         dfn.col("a"), ",", null_string="world",
    ...     ).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    ['hello', None]
 
 
-.. py:function:: string_to_list(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, null_string: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: string_to_list(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Splits a string based on a delimiter and returns an array of parts.
 
    .. seealso:: This is an alias for :py:func:`string_to_array`.
 
 
-.. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Finds the position from where the ``substring`` matches the ``string``.
 
@@ -4983,7 +5512,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
    >>> result = df.select(
-   ...     dfn.functions.strpos(dfn.col("a"), dfn.lit("llo")).alias("pos"))
+   ...     dfn.functions.strpos(dfn.col("a"), "llo").alias("pos"))
    >>> result.collect_column("pos")[0].as_py()
    3
 
@@ -5009,7 +5538,7 @@ Module Contents
    True
 
 
-.. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Substring from the ``position`` to the end.
 
@@ -5018,12 +5547,12 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
    >>> result = df.select(
-   ...     dfn.functions.substr(dfn.col("a"), dfn.lit(3)).alias("s"))
+   ...     dfn.functions.substr(dfn.col("a"), 3).alias("s"))
    >>> result.collect_column("s")[0].as_py()
    'llo'
 
 
-.. py:function:: substr_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: substr_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Returns an indexed substring.
 
@@ -5035,13 +5564,12 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["a.b.c"]})
    >>> result = df.select(
-   ...     dfn.functions.substr_index(dfn.col("a"), dfn.lit("."),
-   ...     dfn.lit(2)).alias("s"))
+   ...     dfn.functions.substr_index(dfn.col("a"), ".", 2).alias("s"))
    >>> result.collect_column("s")[0].as_py()
    'a.b'
 
 
-.. py:function:: substring(string: datafusion.expr.Expr, position: datafusion.expr.Expr, length: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: substring(string: datafusion.expr.Expr, position: datafusion.expr.Expr | int, length: datafusion.expr.Expr | int) -> datafusion.expr.Expr
 
    Substring from the ``position`` with ``length`` characters.
 
@@ -5050,23 +5578,22 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello world"]})
    >>> result = df.select(
-   ...     dfn.functions.substring(
-   ...         dfn.col("a"), dfn.lit(1), dfn.lit(5)
-   ...     ).alias("s"))
+   ...     dfn.functions.substring(dfn.col("a"), 1, 5).alias("s"))
    >>> result.collect_column("s")[0].as_py()
    'hello'
 
 
-.. py:function:: sum(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: sum(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the sum of a set of numbers.
 
    This aggregate function expects a numeric expression.
 
    If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
+   :param distinct: If True, duplicate values are removed before summing.
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -5087,6 +5614,14 @@ Module Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    5
+
+   >>> df = ctx.from_pydict({"a": [1, 1, 2, 3]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.sum(
+   ...         dfn.col("a"), distinct=True,
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   6
 
 
 .. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -5115,7 +5650,7 @@ Module Contents
    0.0
 
 
-.. py:function:: to_char(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: to_char(arg: datafusion.expr.Expr, formatter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Returns a string representation of a date, time, timestamp or duration.
 
@@ -5130,14 +5665,14 @@ Module Contents
    >>> result = df.select(
    ...     dfn.functions.to_char(
    ...         dfn.functions.to_timestamp(dfn.col("a")),
-   ...         dfn.lit("%Y/%m/%d"),
+   ...         "%Y/%m/%d",
    ...     ).alias("formatted")
    ... )
    >>> result.collect_column("formatted")[0].as_py()
    '2021/01/01'
 
 
-.. py:function:: to_date(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: to_date(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a value to a date (YYYY-MM-DD).
 
@@ -5156,6 +5691,14 @@ Module Contents
    >>> df = ctx.from_pydict({"a": ["2021-07-20"]})
    >>> result = df.select(
    ...     dfn.functions.to_date(dfn.col("a")).alias("dt"))
+   >>> str(result.collect_column("dt")[0].as_py())
+   '2021-07-20'
+
+   Pass a format string as a bare ``str``:
+
+   >>> df = ctx.from_pydict({"a": ["20-07-2021"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_date(dfn.col("a"), "%d-%m-%Y").alias("dt"))
    >>> str(result.collect_column("dt")[0].as_py())
    '2021-07-20'
 
@@ -5180,7 +5723,7 @@ Module Contents
    This function handles daylight saving time changes.
 
 
-.. py:function:: to_time(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: to_time(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a value to a time. Supports strings and timestamps as input.
 
@@ -5200,8 +5743,16 @@ Module Contents
    >>> str(result.collect_column("t")[0].as_py())
    '14:30:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["14h30m00s"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_time(dfn.col("a"), "%Hh%Mm%Ss").alias("t"))
+   >>> str(result.collect_column("t")[0].as_py())
+   '14:30:00'
+
+
+.. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -5221,8 +5772,19 @@ Module Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
+
+.. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in microseconds.
 
@@ -5240,8 +5802,19 @@ Module Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_micros(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
+
+.. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in milliseconds.
 
@@ -5259,8 +5832,19 @@ Module Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_millis(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
+
+.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
@@ -5278,8 +5862,19 @@ Module Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_nanos(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
+
+.. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in seconds.
 
@@ -5297,8 +5892,19 @@ Module Contents
    >>> str(result.collect_column("ts")[0].as_py())
    '2021-01-01 00:00:00'
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/2021 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_timestamp_seconds(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("ts")
+   ... )
+   >>> str(result.collect_column("ts")[0].as_py())
+   '2021-01-01 00:00:00'
+
+
+.. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a Unixtime.
 
@@ -5310,8 +5916,19 @@ Module Contents
    >>> result.collect_column("u")[0].as_py()
    0
 
+   Pass a format string as a bare ``str``:
 
-.. py:function:: translate(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+   >>> df = ctx.from_pydict({"a": ["01/01/1970 00:00:00"]})
+   >>> result = df.select(
+   ...     dfn.functions.to_unixtime(
+   ...         dfn.col("a"), "%d/%m/%Y %H:%M:%S"
+   ...     ).alias("u")
+   ... )
+   >>> result.collect_column("u")[0].as_py()
+   0
+
+
+.. py:function:: translate(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr | str, to_val: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Replaces the characters in ``from_val`` with the counterpart in ``to_val``.
 
@@ -5320,8 +5937,7 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["hello"]})
    >>> result = df.select(
-   ...     dfn.functions.translate(dfn.col("a"), dfn.lit("helo"),
-   ...     dfn.lit("HELO")).alias("t"))
+   ...     dfn.functions.translate(dfn.col("a"), "helo", "HELO").alias("t"))
    >>> result.collect_column("t")[0].as_py()
    'HELLO'
 
@@ -5339,7 +5955,7 @@ Module Contents
    'hello'
 
 
-.. py:function:: trunc(num: datafusion.expr.Expr, precision: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: trunc(num: datafusion.expr.Expr, precision: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Truncate the number toward zero with optional precision.
 
@@ -5348,18 +5964,38 @@ Module Contents
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1.567]})
    >>> result = df.select(
-   ...     dfn.functions.trunc(
-   ...         dfn.col("a")
-   ...     ).alias("t"))
+   ...     dfn.functions.trunc(dfn.col("a")).alias("t"))
    >>> result.collect_column("t")[0].as_py()
    1.0
 
    >>> result = df.select(
-   ...     dfn.functions.trunc(
-   ...         dfn.col("a"), precision=dfn.lit(2)
-   ...     ).alias("t"))
+   ...     dfn.functions.trunc(dfn.col("a"), precision=2).alias("t"))
    >>> result.collect_column("t")[0].as_py()
    1.56
+
+
+.. py:function:: try_cast_to_type(value: datafusion.expr.Expr, type_ref: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Casts ``value`` to the data type of ``type_ref``, NULL on failure.
+
+   Like :py:func:`cast_to_type`, but casts that fail produce NULL instead
+   of erroring. Only the *type* of ``type_ref`` is used; its value is
+   ignored.
+
+   If the target type is known statically, prefer :py:func:`arrow_try_cast`
+   and pass a type string or ``pyarrow.DataType`` directly.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["oops"], "b": [1.0]})
+   >>> result = df.select(
+   ...     dfn.functions.try_cast_to_type(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("c")
+   ... )
+   >>> result.collect_column("c")[0].as_py() is None
+   True
 
 
 .. py:function:: union_extract(union_expr: datafusion.expr.Expr, field_name: datafusion.expr.Expr | str) -> datafusion.expr.Expr
@@ -5548,6 +6184,32 @@ Module Contents
    ...     dfn.lit("big")).otherwise(dfn.lit("small")).alias("c"))
    >>> result.collect_column("c")[2].as_py()
    'big'
+
+
+.. py:function:: with_metadata(expr: datafusion.expr.Expr, metadata: dict[str, str]) -> datafusion.expr.Expr
+
+   Attaches Arrow field metadata (key/value pairs) to the input expression.
+
+   This is the inverse of :py:func:`arrow_metadata`. Existing metadata on the
+   input field is preserved; new keys overwrite on collision. Keys must be
+   non-empty strings; empty values are allowed.
+
+   An empty ``metadata`` dict is a no-op and returns the input expression
+   unchanged. Empty keys raise :py:class:`ValueError`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [1]})
+   >>> result = df.select(
+   ...     dfn.functions.with_metadata(
+   ...         dfn.col("a"), {"unit": "ms"}
+   ...     ).alias("a")
+   ... )
+   >>> result.select(
+   ...     dfn.functions.arrow_metadata(dfn.col("a"), "unit").alias("u")
+   ... ).collect_column("u")[0].as_py()
+   'ms'
 
 
 .. py:data:: today

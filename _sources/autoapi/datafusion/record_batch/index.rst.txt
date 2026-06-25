@@ -69,7 +69,7 @@ Module Contents
    This constructor is typically not called by the end user.
 
 
-   .. py:method:: __aiter__() -> typing_extensions.Self
+   .. py:method:: __aiter__() -> Self
 
       Return an asynchronous iterator over record batches.
 
@@ -83,7 +83,7 @@ Module Contents
 
 
 
-   .. py:method:: __iter__() -> typing_extensions.Self
+   .. py:method:: __iter__() -> Self
 
       Return an iterator over record batches.
 

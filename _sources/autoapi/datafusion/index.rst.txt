@@ -5,10 +5,44 @@ datafusion
 
 .. autoapi-nested-parse::
 
-   DataFusion python package.
+   DataFusion: an in-process query engine built on Apache Arrow.
 
-   This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
-   See https://datafusion.apache.org/python for more information.
+   DataFusion is not a database -- it has no server and no external dependencies.
+   You create a :py:class:`SessionContext`, point it at data sources (Parquet, CSV,
+   JSON, Arrow IPC, Pandas, Polars, or raw Python dicts/lists), and run queries
+   using either SQL or the DataFrame API.
+
+   Core abstractions
+   -----------------
+   - **SessionContext** -- entry point for loading data, running SQL, and creating
+     DataFrames.
+   - **DataFrame** -- lazy query builder. Every method returns a new DataFrame;
+     call :py:meth:`~datafusion.dataframe.DataFrame.collect` or a ``to_*``
+     method to execute.
+   - **Expr** -- expression tree node for column references, literals, and function
+     calls. Build with :py:func:`col` and :py:func:`lit`.
+   - **functions** -- 290+ built-in scalar, aggregate, and window functions.
+
+   Quick start
+   -----------
+
+   >>> from datafusion import SessionContext, col
+   >>> from datafusion import functions as F
+   >>> ctx = SessionContext()
+   >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+   >>> result = (
+   ...     df.filter(col("a") > 1)
+   ...       .with_column("total", col("a") + col("b"))
+   ...       .aggregate([], [F.sum(col("total")).alias("grand_total")])
+   ... )
+   >>> result.to_pydict()
+   {'grand_total': [16]}
+
+   User guide and full documentation: https://datafusion.apache.org/python
+
+   AI agent reference (SQL-to-DataFrame mappings, expression-building patterns,
+   common pitfalls), written in a dense, skill-oriented format:
+   https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/SKILL.md
 
 
 
@@ -26,6 +60,7 @@ Submodules
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
+   /autoapi/datafusion/ipc/index
    /autoapi/datafusion/object_store/index
    /autoapi/datafusion/options/index
    /autoapi/datafusion/plan/index
@@ -43,6 +78,10 @@ Attributes
    datafusion.DFSchema
    datafusion.col
    datafusion.column
+   datafusion.udaf
+   datafusion.udf
+   datafusion.udtf
+   datafusion.udwf
 
 
 Classes
@@ -50,6 +89,8 @@ Classes
 
 .. autoapisummary::
 
+   datafusion.Accumulator
+   datafusion.AggregateUDF
    datafusion.Catalog
    datafusion.CsvReadOptions
    datafusion.DataFrameWriteOptions
@@ -58,15 +99,22 @@ Classes
    datafusion.Expr
    datafusion.InsertOp
    datafusion.LogicalPlan
+   datafusion.Metric
+   datafusion.MetricsSet
    datafusion.ParquetColumnOptions
    datafusion.ParquetWriterOptions
    datafusion.RecordBatch
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
    datafusion.SQLOptions
+   datafusion.ScalarUDF
    datafusion.SessionConfig
    datafusion.Table
+   datafusion.TableFunction
+   datafusion.TableProviderFactory
+   datafusion.TableProviderFactoryExportable
    datafusion.WindowFrame
+   datafusion.WindowUDF
 
 
 Functions
@@ -85,6 +133,226 @@ Functions
 
 Package Contents
 ----------------
+
+.. py:class:: Accumulator
+
+   Defines how an :py:class:`AggregateUDF` accumulates values.
+
+
+   .. py:method:: evaluate() -> pyarrow.Scalar
+      :abstractmethod:
+
+
+      Return the resultant value.
+
+      While this function template expects a PyArrow Scalar value return type,
+      you can return any value that can be converted into a Scalar. This
+      includes basic Python data types such as integers and strings. In
+      addition to primitive types, we currently support PyArrow, nanoarrow,
+      and arro3 objects in addition to primitive data types. Other objects
+      that support the Arrow FFI standard will be given a "best attempt" at
+      conversion to scalar objects.
+
+
+
+   .. py:method:: merge(states: list[pyarrow.Array]) -> None
+      :abstractmethod:
+
+
+      Merge a set of states.
+
+
+
+   .. py:method:: state() -> list[pyarrow.Scalar]
+      :abstractmethod:
+
+
+      Return the current state.
+
+      While this function template expects PyArrow Scalar values return type,
+      you can return any value that can be converted into a Scalar. This
+      includes basic Python data types such as integers and strings. In
+      addition to primitive types, we currently support PyArrow, nanoarrow,
+      and arro3 objects in addition to primitive data types. Other objects
+      that support the Arrow FFI standard will be given a "best attempt" at
+      conversion to scalar objects.
+
+
+
+   .. py:method:: update(*values: pyarrow.Array) -> None
+      :abstractmethod:
+
+
+      Evaluate an array of values and update state.
+
+
+
+.. py:class:: AggregateUDF(name: str, accumulator: collections.abc.Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+              AggregateUDF(name: str, accumulator: AggregateUDFExportable, input_types: None = ..., return_type: None = ..., state_type: None = ..., volatility: None = ...)
+
+   Class for performing scalar user-defined functions (UDF).
+
+   Aggregate UDFs operate on a group of rows and return a single value. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user-defined aggregate function (UDAF).
+
+   See :py:func:`udaf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDAF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Aggregate UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.AggregateUDF) -> AggregateUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udaf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
+   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
+      :staticmethod:
+
+
+      Create an Aggregate UDF from AggregateUDF PyCapsule object.
+
+      This function will instantiate a Aggregate UDF that uses a DataFusion
+      AggregateUDF that is exported via the FFI bindings.
+
+
+
+   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
+                  udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+                  udaf(accum: AggregateUDFExportable) -> AggregateUDF
+                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Aggregate Function (UDAF).
+
+      This class allows you to define an aggregate function that can be used in
+      data aggregation or window function calls.
+
+      Usage:
+          - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
+          - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
+            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
+
+      If your :py:class:`Accumulator` can be instantiated with no arguments, you
+      can simply pass its type as ``accum``. If you need to pass additional
+      arguments to its constructor, you can define a lambda or a factory method.
+      During runtime the :py:class:`Accumulator` will be constructed for every
+      instance in which this UDAF is used.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow.compute as pc
+      >>> from datafusion.user_defined import AggregateUDF, Accumulator, udaf
+      >>> class Summarize(Accumulator):
+      ...     def __init__(self, bias: float = 0.0):
+      ...         self._sum = pa.scalar(bias)
+      ...     def state(self):
+      ...         return [self._sum]
+      ...     def update(self, values):
+      ...         self._sum = pa.scalar(
+      ...             self._sum.as_py() + pc.sum(values).as_py())
+      ...     def merge(self, states):
+      ...         self._sum = pa.scalar(
+      ...             self._sum.as_py() + pc.sum(states[0]).as_py())
+      ...     def evaluate(self):
+      ...         return self._sum
+
+      Using ``udaf`` as a function:
+
+      >>> udaf1 = AggregateUDF.udaf(
+      ...     Summarize, pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
+
+      Wrapping ``udaf`` with a function:
+
+      >>> def sum_bias_10() -> Summarize:
+      ...     return Summarize(10.0)
+      >>> udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
+      ...     "immutable")
+
+      Using ``udaf`` with lambda:
+
+      >>> udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
+
+      Using ``udaf`` as a decorator:
+
+      >>> @AggregateUDF.udaf(
+      ...     pa.float64(), pa.float64(),
+      ...     [pa.float64()], "immutable")
+      ... def udaf4():
+      ...     return Summarize(10.0)
+
+      Apply to a dataframe:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [1.0, 2.0, 3.0]})
+      >>> df.aggregate([], [udaf1(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      6.0
+      >>> df.aggregate([], [udaf2(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      16.0
+      >>> df.aggregate([], [udaf3(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      26.0
+      >>> df.aggregate([], [udaf4(col("a")).alias("total")]).collect_column(
+      ...     "total")[0].as_py()
+      16.0
+
+      :param accum: The accumulator python function. Only needed when calling as a
+                    function. Skip this argument when using ``udaf`` as a decorator.
+                    If you have a Rust backed AggregateUDF within a PyCapsule, you can
+                    pass this parameter and ignore the rest. They will be determined
+                    directly from the underlying function. See the online documentation
+                    for more information.
+      :param input_types: The data types of the arguments to ``accum``.
+      :param return_type: The data type of the return value.
+      :param state_type: The data types of the intermediate accumulation.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user-defined aggregate function, which can be used in either data
+                aggregation or window function calls.
+
+
+
+   .. py:attribute:: _udaf
+
+
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDAF.
+
+      For UDAFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
 
 .. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
@@ -395,6 +663,33 @@ Package Contents
 
 
 
+   .. py:method:: collect_metrics() -> list[tuple[str, MetricsSet]]
+
+      Return runtime statistics for each step of the query execution.
+
+      DataFusion executes a query as a pipeline of operators — for example a
+      data source scan, followed by a filter, followed by a projection. After
+      the DataFrame has been executed (via
+      :py:meth:`~datafusion.DataFrame.collect`,
+      :py:meth:`~datafusion.DataFrame.execute_stream`, etc.), each operator
+      records statistics such as how many rows it produced and how much CPU
+      time it consumed.
+
+      Each entry in the returned list corresponds to one operator that
+      recorded metrics. The first element of the tuple is the operator's
+      description string — the same text shown by
+      :py:meth:`display_indent` — which identifies both the operator type
+      and its key parameters, for example ``"FilterExec: column1@0 > 1"``
+      or ``"DataSourceExec: partitions=1"``.
+
+      :returns: A list of ``(description, MetricsSet)`` tuples ordered from the
+                outermost operator (top of the execution tree) down to the
+                data-source leaves. Only operators that recorded at least one
+                metric are included. Returns an empty list if called before the
+                DataFrame has been executed.
+
+
+
    .. py:method:: display() -> str
 
       Print the physical plan.
@@ -407,21 +702,50 @@ Package Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
+      :staticmethod:
+
+
+      Create an ExecutionPlan from serialized protobuf bytes.
+
+      Decoding routes through the session's installed
+      `PhysicalExtensionCodec`. Tables created in memory from record
+      batches are currently not supported.
+
+
+
    .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
       :staticmethod:
 
 
-      Create an ExecutionPlan from protobuf bytes.
+      Deprecated alias for :meth:`from_bytes`.
 
-      Tables created in memory from record batches are currently not supported.
+
+
+   .. py:method:: metrics() -> MetricsSet | None
+
+      Return metrics for this plan node, or None if this plan has no MetricsSet.
+
+      Some operators (e.g. DataSourceExec) eagerly initialize a MetricsSet
+      when the plan is created, so this may return a set even before
+      execution.  Metric *values* (such as ``output_rows``) are only
+      meaningful after the DataFrame has been executed.
+
+
+
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Convert an ExecutionPlan into serialized protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed `PhysicalExtensionCodec`. Tables created in memory
+      from record batches are currently not supported.
 
 
 
    .. py:method:: to_proto() -> bytes
 
-      Convert an ExecutionPlan into protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`to_bytes`.
 
 
 
@@ -588,6 +912,49 @@ Package Contents
 
 
 
+   .. py:method:: __reduce__() -> tuple[collections.abc.Callable[[bytes], Expr], tuple[bytes]]
+
+      Pickle protocol hook.
+
+      Lets expressions be shipped to worker processes via
+      :func:`pickle.dumps` / :func:`pickle.loads`. Built-in functions
+      and Python UDFs (scalar, aggregate, window) travel inside the
+      pickle bytes; only FFI-capsule UDFs require pre-registration on
+      the worker. The worker's :class:`SessionContext` for resolving
+      those references is looked up via
+      :func:`datafusion.ipc.set_worker_ctx`, falling back to the
+      global :class:`SessionContext` if none has been installed on
+      the worker.
+
+      .. warning:: Security
+          :func:`pickle.loads` on the returned tuple executes
+          arbitrary Python on the receiver, including any
+          cloudpickled UDF callable embedded in the payload. Only
+          unpickle expressions from trusted sources.
+
+      .. warning:: Portability
+          Sender and receiver must run the same Python
+          ``(major, minor)`` version; cloudpickle bytecode is not
+          portable across minor versions. See :meth:`to_bytes` for
+          details on what travels by value vs. by reference.
+
+      .. rubric:: Examples
+
+      >>> import pickle
+      >>> from datafusion import col, lit
+      >>> e = col("a") * lit(2)
+      >>> pickle.loads(pickle.dumps(e)).canonical_name()
+      'a * Int64(2)'
+
+      The encoding side honors a driver-side sender context installed
+      via :func:`datafusion.ipc.set_sender_ctx` — that is how
+      :meth:`SessionContext.with_python_udf_inlining` propagates
+      through ``pickle.dumps``. The sender context is read by
+      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+      — which also go through ``__reduce__`` — pick it up too.
+
+
+
    .. py:method:: __repr__() -> str
 
       Generate a string representation of this expression.
@@ -613,6 +980,21 @@ Package Contents
       Division operator.
 
       Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: _reconstruct(proto_bytes: bytes) -> Expr
+      :classmethod:
+
+
+      Internal entry point used by :meth:`__reduce__` on unpickle.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import Expr, col, lit
+      >>> blob = (col("a") + lit(1)).to_bytes()
+      >>> Expr._reconstruct(blob).canonical_name()
+      'a + Int64(1)'
 
 
 
@@ -900,6 +1282,47 @@ Package Contents
    .. py:method:: floor() -> Expr
 
       Returns the nearest integer less than or equal to the argument.
+
+
+
+   .. py:method:: from_bytes(buf: bytes, ctx: datafusion.context.SessionContext | None = None) -> Expr
+      :classmethod:
+
+
+      Reconstruct an expression from serialized bytes.
+
+      Accepts output of :meth:`to_bytes` or :func:`pickle.dumps`.
+      ``ctx`` is the :class:`SessionContext` used to resolve any
+      function references that travel by name (e.g. FFI UDFs, or
+      Python UDFs sent with inlining disabled via
+      :meth:`SessionContext.with_python_udf_inlining`). When
+      ``ctx`` is ``None`` the worker context installed via
+      :func:`datafusion.ipc.set_worker_ctx` is consulted; if no worker
+      context is installed, the global :class:`SessionContext` is used
+      (sufficient for built-ins and Python UDFs, plus any UDFs
+      registered on the global context).
+
+      .. warning:: Security
+          Decoding may invoke ``cloudpickle.loads`` on bytes embedded
+          in the payload, which executes arbitrary Python code. Treat
+          ``buf`` as code, not data — only decode bytes you produced
+          yourself or received from a trusted sender.
+
+      .. warning:: Portability
+          cloudpickle payloads are **not portable across Python
+          minor versions**. The wire format stamps the sender's
+          ``(major, minor)``; if it does not match the current
+          interpreter, this method raises :class:`ValueError`
+          naming both versions. Modules the UDF imports must also
+          be importable on the receiver — see :meth:`to_bytes` for
+          by-value vs. by-reference details.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import Expr, col, lit
+      >>> blob = (col("a") + lit(1)).to_bytes()
+      >>> Expr.from_bytes(blob).canonical_name()
+      'a + Int64(1)'
 
 
 
@@ -1232,6 +1655,89 @@ Package Contents
 
 
 
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Serialize this expression to bytes for shipping to another process.
+
+      Use this — or :func:`pickle.dumps` — to send an expression to a
+      worker process for distributed evaluation.
+
+      When ``ctx`` is supplied, encoding routes through that session's
+      installed :class:`LogicalExtensionCodec` (so settings like
+      :meth:`SessionContext.with_python_udf_inlining` take effect).
+      When ``ctx`` is ``None``, the default codec is used (Python UDF
+      inlining on, no user-installed extension codec).
+
+      Built-in functions travel inside the returned bytes. Python UDFs
+      (scalar, aggregate, window) also inline by default, so the worker
+      does not need to pre-register them; when the encoding session has
+      :meth:`SessionContext.with_python_udf_inlining` set to ``False``,
+      Python UDFs travel by name only and must be registered on the
+      worker. UDFs imported via the FFI capsule protocol always travel
+      by name only and must be registered on the worker.
+
+      .. warning:: Security
+          Bytes returned here may embed a cloudpickled Python
+          callable (when the expression carries a Python UDF).
+          Reconstructing them via :meth:`from_bytes` or
+          :func:`pickle.loads` executes arbitrary Python on the
+          receiver. Only accept payloads from trusted sources.
+
+      .. warning:: Portability
+          cloudpickle serializes Python bytecode, which is **not
+          stable across Python minor versions**. A payload produced
+          on Python 3.11 will fail to load on Python 3.12. The
+          wire format stamps the sender's ``(major, minor)``;
+          :meth:`from_bytes` raises a :class:`ValueError` naming
+          both versions on mismatch.
+
+          cloudpickle captures the UDF callable **by value** —
+          bytecode and closure cells inlined — but names the
+          callable resolves via ``import`` are captured **by
+          reference** (module path only) and must be importable on
+          the receiver.
+
+          **Self-contained — works anywhere:**
+
+          .. code-block:: python
+
+              # Lambda: bytecode captured inline
+              udf(lambda x: x * 2, [pa.int64()], pa.int64(),
+                  volatility="immutable")
+
+              # Locally-defined function: bytecode captured inline
+              def double(x):
+                  return x * 2
+              udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+              # Closure over a local variable: value captured inline
+              factor = 3
+              udf(lambda x: x * factor, [pa.int64()], pa.int64(),
+                  volatility="immutable")
+
+          **Requires matching environment on receiver:**
+
+          .. code-block:: python
+
+              # Top-level import: `foo` must be installed on receiver
+              from foo import double
+              udf(double, [pa.int64()], pa.int64(), volatility="immutable")
+
+              # Bound method of an imported class: same caveat
+              from mylib import Transformer
+              t = Transformer()
+              udf(t.transform, [pa.int64()], pa.int64(),
+                  volatility="immutable")
+
+      .. rubric:: Examples
+
+      >>> from datafusion import col, lit
+      >>> blob = (col("a") + lit(1)).to_bytes()
+      >>> isinstance(blob, bytes)
+      True
+
+
+
    .. py:method:: to_hex() -> Expr
 
       Converts an integer to a hexadecimal string.
@@ -1247,6 +1753,23 @@ Package Contents
    .. py:method:: trim() -> Expr
 
       Removes all characters, spaces by default, from both sides of a string.
+
+
+
+   .. py:method:: try_cast(to: pyarrow.DataType[Any] | type) -> Expr
+
+      Cast to a new data type, returning NULL on failure.
+
+      Like :py:meth:`cast` but produces NULL instead of erroring when the
+      cast cannot be performed for a given row.
+
+      .. rubric:: Examples
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": ["oops"]})
+      >>> result = df.select(col("a").try_cast(pa.float64()).alias("c"))
+      >>> result.collect_column("c")[0].as_py() is None
+      True
 
 
 
@@ -1396,13 +1919,23 @@ Package Contents
 
 
 
+   .. py:method:: from_bytes(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
+      :staticmethod:
+
+
+      Create a LogicalPlan from serialized protobuf bytes.
+
+      Decoding routes through the session's installed
+      `LogicalExtensionCodec`. Tables created in memory from record
+      batches are currently not supported.
+
+
+
    .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
       :staticmethod:
 
 
-      Create a LogicalPlan from protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`from_bytes`.
 
 
 
@@ -1412,11 +1945,22 @@ Package Contents
 
 
 
+   .. py:method:: to_bytes(ctx: datafusion.context.SessionContext | None = None) -> bytes
+
+      Convert a LogicalPlan to serialized protobuf bytes.
+
+      When ``ctx`` is supplied, encoding routes through the session's
+      installed `LogicalExtensionCodec` so user FFI codecs (registered
+      via :py:meth:`SessionContext.with_logical_extension_codec`) see
+      the encode path. With ``ctx=None`` a default codec is used.
+      Tables created in memory from record batches are currently not
+      supported.
+
+
+
    .. py:method:: to_proto() -> bytes
 
-      Convert a LogicalPlan to protobuf bytes.
-
-      Tables created in memory from record batches are currently not supported.
+      Deprecated alias for :meth:`to_bytes`.
 
 
 
@@ -1427,6 +1971,152 @@ Package Contents
 
 
    .. py:attribute:: _raw_plan
+
+
+.. py:class:: Metric(raw: datafusion._internal.Metric)
+
+   A single execution metric with name, value, partition, and labels.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Return a string representation of the metric.
+
+
+
+   .. py:method:: labels() -> dict[str, str]
+
+      Return the labels associated with this metric.
+
+      Labels provide additional context for a metric.  For example::
+
+          metric.labels()
+          # {'output_type': 'final'}
+
+
+
+   .. py:attribute:: _raw
+
+
+   .. py:property:: name
+      :type: str
+
+
+      The name of this metric (e.g. ``output_rows``).
+
+
+   .. py:property:: partition
+      :type: int | None
+
+
+      The 0-based partition index this metric applies to.
+
+      Returns ``None`` for metrics that are not partition-specific (i.e. they
+      apply globally across all partitions of the operator).
+
+
+   .. py:property:: value
+      :type: int | datetime.datetime | None
+
+
+      The value of this metric.
+
+      Returns an ``int`` for counters, gauges, and time-based metrics
+      (nanoseconds), a :py:class:`~datetime.datetime` (UTC) for
+      ``start_timestamp`` / ``end_timestamp`` metrics, or ``None``
+      when the value has not been set or is not representable.
+
+
+   .. py:property:: value_as_datetime
+      :type: datetime.datetime | None
+
+
+      The value as a UTC :py:class:`~datetime.datetime` for timestamp metrics.
+
+      Returns ``None`` for all non-timestamp metrics and for timestamp
+      metrics whose value has not been set (e.g. before execution).
+
+
+.. py:class:: MetricsSet(raw: datafusion._internal.MetricsSet)
+
+   A set of metrics for a single execution plan operator.
+
+   A physical plan operator runs independently across one or more partitions.
+   :py:meth:`metrics` returns the raw per-partition :py:class:`Metric` objects.
+   The convenience properties (:py:attr:`output_rows`, :py:attr:`elapsed_compute`,
+   etc.) automatically sum the named metric across *all* partitions, giving a
+   single aggregate value for the operator as a whole.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Return a string representation of the metrics set.
+
+
+
+   .. py:method:: metrics() -> list[Metric]
+
+      Return all individual metrics in this set.
+
+
+
+   .. py:method:: sum_by_name(name: str) -> int | None
+
+      Sum the named metric across all partitions.
+
+      Useful for accessing any metric not exposed as a first-class property.
+      Returns ``None`` if no metric with the given name was recorded.
+
+      :param name: The metric name, e.g. ``"output_rows"`` or ``"elapsed_compute"``.
+
+
+
+   .. py:attribute:: _raw
+
+
+   .. py:property:: elapsed_compute
+      :type: int | None
+
+
+      Total CPU time (in nanoseconds) spent inside this operator's execute loop.
+
+      Summed across all partitions. Returns ``None`` if no ``elapsed_compute``
+      metric was recorded.
+
+
+   .. py:property:: output_rows
+      :type: int | None
+
+
+      Sum of output_rows across all partitions.
+
+
+   .. py:property:: spill_count
+      :type: int | None
+
+
+      Number of times this operator spilled data to disk due to memory pressure.
+
+      This is a count of spill events, not a byte count. Summed across all
+      partitions. Returns ``None`` if no ``spill_count`` metric was recorded.
+
+
+   .. py:property:: spilled_bytes
+      :type: int | None
+
+
+      Sum of spilled_bytes across all partitions.
+
+
+   .. py:property:: spilled_rows
+      :type: int | None
+
+
+      Sum of spilled_rows across all partitions.
 
 
 .. py:class:: ParquetColumnOptions(encoding: str | None = None, dictionary_enabled: bool | None = None, compression: str | None = None, statistics_enabled: str | None = None, bloom_filter_enabled: bool | None = None, bloom_filter_fpp: float | None = None, bloom_filter_ndv: int | None = None)
@@ -1715,7 +2405,7 @@ Package Contents
    This constructor is typically not called by the end user.
 
 
-   .. py:method:: __aiter__() -> typing_extensions.Self
+   .. py:method:: __aiter__() -> Self
 
       Return an asynchronous iterator over record batches.
 
@@ -1729,7 +2419,7 @@ Package Contents
 
 
 
-   .. py:method:: __iter__() -> typing_extensions.Self
+   .. py:method:: __iter__() -> Self
 
       Return an iterator over record batches.
 
@@ -1914,6 +2604,153 @@ Package Contents
 
 
    .. py:attribute:: options_internal
+
+
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
+
+   Class for performing scalar user-defined functions (UDF).
+
+   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
+   operating on a group of rows.
+
+   Instantiate a scalar user-defined function (UDF).
+
+   See helper method :py:func:`udf` for argument details.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Scalar UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.ScalarUDF) -> ScalarUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
+   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
+      :staticmethod:
+
+
+      Create a Scalar UDF from ScalarUDF PyCapsule object.
+
+      This function will instantiate a Scalar UDF that uses a DataFusion
+      ScalarUDF that is exported via the FFI bindings.
+
+
+
+   .. py:method:: udf(input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
+                  udf(func: collections.abc.Callable[Ellipsis, _R], input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
+                  udf(func: ScalarUDFExportable) -> ScalarUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Function (UDF).
+
+      This class can be used both as either a function or a decorator.
+
+      Usage:
+          - As a function: ``udf(func, input_fields, return_field,
+            volatility, name)``.
+          - As a decorator: ``@udf(input_fields, return_field, volatility, name)``.
+            When used a decorator, do **not** pass ``func`` explicitly.
+
+      In lieu of passing a PyArrow Field, you can pass a DataType for simplicity.
+      When you do so, it will be assumed that the nullability of the inputs and
+      output are True and that they have no metadata.
+
+      :param func: Only needed when calling as a function.
+                   Skip this argument when using `udf` as a decorator. If you have a Rust
+                   backed ScalarUDF within a PyCapsule, you can pass this parameter
+                   and ignore the rest. They will be determined directly from the
+                   underlying function. See the online documentation for more information.
+      :type func: Callable, optional
+      :param input_fields: The data types or Fields
+                           of the arguments to ``func``. This list must be of the same length
+                           as the number of arguments.
+      :type input_fields: list[pa.Field | pa.DataType]
+      :param return_field: The field of the return value from the function.
+      :type return_field: _R
+      :param volatility: See `Volatility` for allowed values.
+      :type volatility: Volatility | str
+      :param name: A descriptive name for the function.
+      :type name: Optional[str]
+
+      :returns: A user-defined function that can be used in SQL expressions,
+                data aggregation, or window function calls.
+
+      .. rubric:: Examples
+
+      Using ``udf`` as a function:
+
+      >>> import pyarrow.compute as pc
+      >>> from datafusion.user_defined import ScalarUDF
+      >>> def double_func(x):
+      ...     return pc.multiply(x, 2)
+      >>> double_udf = ScalarUDF.udf(
+      ...     double_func, [pa.int64()], pa.int64(),
+      ...     "volatile", "double_it")
+
+      Using ``udf`` as a decorator:
+
+      >>> @ScalarUDF.udf([pa.int64()], pa.int64(), "volatile")
+      ... def decorator_double_udf(x):
+      ...     return pc.multiply(x, 3)
+
+      Apply to a dataframe:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"x": [1, 2, 3]})
+      >>> df.select(double_udf(col("x")).alias("result")).to_pydict()
+      {'result': [2, 4, 6]}
+      >>> df.select(decorator_double_udf(col("x")).alias("result")).to_pydict()
+      {'result': [3, 6, 9]}
+
+
+
+   .. py:attribute:: _udf
+
+
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDF.
+
+      For UDFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import udf
+      >>> double = udf(
+      ...     lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+      ...     [pa.int64()],
+      ...     pa.int64(),
+      ...     volatility="immutable",
+      ...     name="double",
+      ... )
+      >>> double.name
+      'double'
 
 
 .. py:class:: SessionConfig(config_options: dict[str, str] | None = None)
@@ -2135,6 +2972,110 @@ Package Contents
       Returns the schema associated with this table.
 
 
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[Ellipsis, Any], ctx: datafusion.SessionContext | None = None, *, with_session: bool = False)
+
+   Class for performing user-defined table functions (UDTF).
+
+   Table functions generate new table providers based on the
+   input expressions.
+
+   Instantiate a user-defined table function (UDTF).
+
+   Set ``with_session=True`` to have the calling
+   :class:`SessionContext` passed as a ``session`` keyword argument
+   on each invocation. Use it inside the callback to look up
+   registered tables, UDFs, or session configuration. When
+   ``with_session`` is ``False`` (the default), ``func`` is invoked
+   with the positional expression arguments only.
+
+   ``with_session=True`` is only supported for pure-Python callables.
+   Passing it together with an FFI-exported table function (one
+   exposing ``__datafusion_table_function__``) raises
+   :class:`TypeError`.
+
+   Registry mutations performed through the injected session (such
+   as registering tables or UDFs) propagate to the caller's
+   :class:`SessionContext` because the registries are shared.
+   Configuration changes do **not** propagate; the wrapper holds
+   its own clone of the session config.
+
+   See :py:func:`udtf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> Any
+
+      Execute the UDTF and return a table provider.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      User printable representation.
+
+
+
+   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
+      :staticmethod:
+
+
+      Create a TableFunction instance from function arguments.
+
+
+
+   .. py:method:: _create_table_udf_decorator(name: str | None = None, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
+      :staticmethod:
+
+
+      Create a decorator for a TableFunction.
+
+
+
+   .. py:method:: udtf(name: str, *, with_session: bool = False) -> collections.abc.Callable[Ellipsis, Any]
+                  udtf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
+      :staticmethod:
+
+
+      Create a new User-Defined Table Function (UDTF).
+
+      Pass ``with_session=True`` to have the calling
+      :class:`SessionContext` injected as a ``session`` keyword
+      argument on each invocation.
+
+
+
+   .. py:attribute:: _udtf
+
+
+.. py:class:: TableProviderFactory
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract class for defining a Python based Table Provider Factory.
+
+
+   .. py:method:: create(cmd: datafusion.expr.CreateExternalTable) -> Table
+      :abstractmethod:
+
+
+      Create a table using the :class:`CreateExternalTable`.
+
+
+
+.. py:class:: TableProviderFactoryExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object that has __datafusion_table_provider_factory__ PyCapsule.
+
+   https://docs.rs/datafusion/latest/datafusion/catalog/trait.TableProviderFactory.html
+
+
+   .. py:method:: __datafusion_table_provider_factory__(session: Any) -> object
+
+
 .. py:class:: WindowFrame(units: str, start_bound: Any | None, end_bound: Any | None)
 
    Defines a window frame for performing window operations.
@@ -2175,6 +3116,171 @@ Package Contents
 
 
    .. py:attribute:: window_frame
+
+
+.. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+
+   Class for performing window user-defined functions (UDF).
+
+   Window UDFs operate on a partition of rows. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user-defined window function (UDWF).
+
+   See :py:func:`udwf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDWF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Window UDF.
+
+
+
+   .. py:method:: _create_window_udf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a WindowUDF instance from function arguments.
+
+
+
+   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
+      :staticmethod:
+
+
+      Create a decorator for a WindowUDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.WindowUDF) -> WindowUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``WindowUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udwf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
+   .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
+      :staticmethod:
+
+
+      Get the default name for a function based on its attributes.
+
+
+
+   .. py:method:: _normalize_input_types(input_types: pyarrow.DataType | list[pyarrow.DataType]) -> list[pyarrow.DataType]
+      :staticmethod:
+
+
+      Convert a single DataType to a list if needed.
+
+
+
+   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
+      :staticmethod:
+
+
+      Create a Window UDF from WindowUDF PyCapsule object.
+
+      This function will instantiate a Window UDF that uses a DataFusion
+      WindowUDF that is exported via the FFI bindings.
+
+
+
+   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
+                  udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Window Function (UDWF).
+
+      This class can be used both as either a function or a decorator.
+
+      Usage:
+          - As a function: ``udwf(func, input_types, return_type, volatility, name)``.
+          - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
+            When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
+
+      .. rubric:: Examples
+
+      >>> from datafusion.user_defined import WindowUDF, WindowEvaluator, udwf
+      >>> class BiasedNumbers(WindowEvaluator):
+      ...     def __init__(self, start: int = 0):
+      ...         self.start = start
+      ...     def evaluate_all(self, values, num_rows):
+      ...         return pa.array(
+      ...             [self.start + i for i in range(num_rows)])
+
+      Using ``udwf`` as a function:
+
+      >>> udwf1 = WindowUDF.udwf(
+      ...     BiasedNumbers, pa.int64(), pa.int64(), "immutable")
+      >>> def bias_10() -> BiasedNumbers:
+      ...    return BiasedNumbers(10)
+      >>> udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+      >>> udwf3 = udwf(
+      ...     lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable"
+      ... )
+
+      Using ``udwf`` as a decorator:
+
+      >>> @WindowUDF.udwf(pa.int64(), pa.int64(), "immutable")
+      ... def biased_numbers():
+      ...     return BiasedNumbers(10)
+
+      Apply to a dataframe:
+
+      >>> ctx = dfn.SessionContext()
+      >>> df = ctx.from_pydict({"a": [10, 20, 30]})
+      >>> df.select(udwf1(col("a")).alias("result")).to_pydict()
+      {'result': [0, 1, 2]}
+      >>> df.select(udwf2(col("a")).alias("result")).to_pydict()
+      {'result': [10, 11, 12]}
+      >>> df.select(udwf3(col("a")).alias("result")).to_pydict()
+      {'result': [20, 21, 22]}
+      >>> df.select(biased_numbers(col("a")).alias("result")).to_pydict()
+      {'result': [10, 11, 12]}
+
+      :param func: Only needed when calling as a function. Skip this argument when
+                   using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
+                   within a PyCapsule, you can pass this parameter and ignore the rest.
+                   They will be determined directly from the underlying function. See
+                   the online documentation for more information.
+      :param input_types: The data types of the arguments.
+      :param return_type: The data type of the return value.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user-defined window function that can be used in window function calls.
+
+
+
+   .. py:attribute:: _udwf
+
+
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDWF.
+
+      For UDWFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
 
 
 .. py:function:: configure_formatter(**kwargs: Any) -> None
@@ -2305,4 +3411,12 @@ Package Contents
 
 .. py:data:: column
    :type:  Col
+
+.. py:data:: udaf
+
+.. py:data:: udf
+
+.. py:data:: udtf
+
+.. py:data:: udwf
 

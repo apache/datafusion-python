@@ -29,6 +29,8 @@ Classes
    datafusion.user_defined.Accumulator
    datafusion.user_defined.AggregateUDF
    datafusion.user_defined.AggregateUDFExportable
+   datafusion.user_defined.LogicalExtensionCodecExportable
+   datafusion.user_defined.PhysicalExtensionCodecExportable
    datafusion.user_defined.ScalarUDF
    datafusion.user_defined.ScalarUDFExportable
    datafusion.user_defined.TableFunction
@@ -44,6 +46,7 @@ Functions
 .. autoapisummary::
 
    datafusion.user_defined._is_pycapsule
+   datafusion.user_defined._wrap_session_kwarg_for_udtf
    datafusion.user_defined.data_type_or_field_to_field
    datafusion.user_defined.data_types_or_fields_to_field_list
 
@@ -130,6 +133,18 @@ Module Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Aggregate UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.AggregateUDF) -> AggregateUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``AggregateUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udaf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 
@@ -248,6 +263,17 @@ Module Contents
    .. py:attribute:: _udaf
 
 
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDAF.
+
+      For UDAFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+
 .. py:class:: AggregateUDFExportable
 
    Bases: :py:obj:`Protocol`
@@ -259,7 +285,29 @@ Module Contents
    .. py:method:: __datafusion_aggregate_udf__() -> object
 
 
-.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: _R, volatility: Volatility | str)
+.. py:class:: LogicalExtensionCodecExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
+
+
+   .. py:method:: __datafusion_logical_extension_codec__() -> object
+
+
+.. py:class:: PhysicalExtensionCodecExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
+
+
+   .. py:method:: __datafusion_physical_extension_codec__() -> object
+
+
+.. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -283,6 +331,18 @@ Module Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the Scalar UDF.
+
+
+
+   .. py:method:: _from_internal(internal: datafusion._internal.ScalarUDF) -> ScalarUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``ScalarUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
 
 
 
@@ -369,6 +429,31 @@ Module Contents
    .. py:attribute:: _udf
 
 
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDF.
+
+      For UDFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import udf
+      >>> double = udf(
+      ...     lambda arr: pa.array([(v.as_py() or 0) * 2 for v in arr]),
+      ...     [pa.int64()],
+      ...     pa.int64(),
+      ...     volatility="immutable",
+      ...     name="double",
+      ... )
+      >>> double.name
+      'double'
+
+
 .. py:class:: ScalarUDFExportable
 
    Bases: :py:obj:`Protocol`
@@ -380,7 +465,7 @@ Module Contents
    .. py:method:: __datafusion_scalar_udf__() -> object
 
 
-.. py:class:: TableFunction(name: str, func: collections.abc.Callable[[], any], ctx: datafusion.SessionContext | None = None)
+.. py:class:: TableFunction(name: str, func: collections.abc.Callable[Ellipsis, Any], ctx: datafusion.SessionContext | None = None, *, with_session: bool = False)
 
    Class for performing user-defined table functions (UDTF).
 
@@ -388,6 +473,24 @@ Module Contents
    input expressions.
 
    Instantiate a user-defined table function (UDTF).
+
+   Set ``with_session=True`` to have the calling
+   :class:`SessionContext` passed as a ``session`` keyword argument
+   on each invocation. Use it inside the callback to look up
+   registered tables, UDFs, or session configuration. When
+   ``with_session`` is ``False`` (the default), ``func`` is invoked
+   with the positional expression arguments only.
+
+   ``with_session=True`` is only supported for pure-Python callables.
+   Passing it together with an FFI-exported table function (one
+   exposing ``__datafusion_table_function__``) raises
+   :class:`TypeError`.
+
+   Registry mutations performed through the injected session (such
+   as registering tables or UDFs) propagate to the caller's
+   :class:`SessionContext` because the registries are shared.
+   Configuration changes do **not** propagate; the wrapper holds
+   its own clone of the session config.
 
    See :py:func:`udtf` for a convenience function and argument
    descriptions.
@@ -405,7 +508,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str) -> TableFunction
+   .. py:method:: _create_table_udf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
       :staticmethod:
 
 
@@ -413,20 +516,24 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: str | None = None) -> collections.abc.Callable[[collections.abc.Callable[[], WindowEvaluator]], collections.abc.Callable[Ellipsis, datafusion.expr.Expr]]
+   .. py:method:: _create_table_udf_decorator(name: str | None = None, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
       :staticmethod:
 
 
-      Create a decorator for a WindowUDF.
+      Create a decorator for a TableFunction.
 
 
 
-   .. py:method:: udtf(name: str) -> collections.abc.Callable[Ellipsis, Any]
-                  udtf(func: collections.abc.Callable[[], Any], name: str) -> TableFunction
+   .. py:method:: udtf(name: str, *, with_session: bool = False) -> collections.abc.Callable[Ellipsis, Any]
+                  udtf(func: collections.abc.Callable[Ellipsis, Any], name: str, *, with_session: bool = False) -> TableFunction
       :staticmethod:
 
 
       Create a new User-Defined Table Function (UDTF).
+
+      Pass ``with_session=True`` to have the calling
+      :class:`SessionContext` injected as a ``session`` keyword
+      argument on each invocation.
 
 
 
@@ -705,6 +812,18 @@ Module Contents
 
 
 
+   .. py:method:: _from_internal(internal: datafusion._internal.WindowUDF) -> WindowUDF
+      :classmethod:
+
+
+      Wrap an already-constructed internal ``WindowUDF`` handle.
+
+      Used by :py:meth:`SessionContext.udwf` to surface a function looked
+      up from the session's function registry without re-running
+      :py:meth:`__init__`.
+
+
+
    .. py:method:: _get_default_name(func: collections.abc.Callable) -> str
       :staticmethod:
 
@@ -803,6 +922,17 @@ Module Contents
    .. py:attribute:: _udwf
 
 
+   .. py:property:: name
+      :type: str
+
+
+      Return the registered name of this UDWF.
+
+      For UDWFs imported via the FFI capsule protocol, this is the
+      name the capsule itself reports — not the ``name`` argument
+      passed to the constructor (which is ignored on the FFI path).
+
+
 .. py:class:: WindowUDFExportable
 
    Bases: :py:obj:`Protocol`
@@ -817,6 +947,16 @@ Module Contents
 .. py:function:: _is_pycapsule(value: object) -> TypeGuard[_typeshed.CapsuleType]
 
    Return ``True`` when ``value`` is a CPython ``PyCapsule``.
+
+
+.. py:function:: _wrap_session_kwarg_for_udtf(func: collections.abc.Callable[Ellipsis, Any]) -> collections.abc.Callable[Ellipsis, Any]
+
+   Adapt the raw internal session pyo3 object back to a Python wrapper.
+
+   The Rust call site forwards a ``datafusion._internal.SessionContext``,
+   but UDTF authors expect to interact with the public
+   :class:`datafusion.SessionContext` wrapper. This closure wraps the
+   internal object once per call before delegating to ``func``.
 
 
 .. py:function:: data_type_or_field_to_field(value: pyarrow.DataType | pyarrow.Field, name: str) -> pyarrow.Field

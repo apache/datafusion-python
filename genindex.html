@@ -1,416 +1,460 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+
+<html lang="en" data-content_root="./" data-theme="auto">
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Apache Arrow DataFusion  documentation</title>
-    
-    <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+    <title>Index &#8212; Apache DataFusion in Python  documentation</title>
   
-    
-    <link rel="stylesheet"
-      href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-    <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
   
-    
-      
   
-    
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css?v=dca7052a" />
-    
-    <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+    <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css?v=4af573bc" />
   
-    <script src="_static/documentation_options.js?v=8a448e45"></script>
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script src="_static/toc-toggle.js?v=36375f01"></script>
+    <link rel="icon" href="_static/favicon.svg"/>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
     
-    <div class="container-fluid" id="banner"></div>
-
-    
-
-
-    <div class="container-xl">
-      <div class="row">
-          
-            
-            <!-- Only show if we have sidebars configured, else just a small margin  -->
-            <div class="col-12 col-md-3 bd-sidebar">
-              <div class="sidebar-start-items">
-<a class="navbar-brand" href="index.html">
-  <img src="_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
-</a>
-
-<form class="bd-search d-flex align-items-center" action="search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
+  </dialog>
 
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  <div class="bd-toc-item active">
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
     
-    <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  LINKS
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python">
-   Github and Issue Tracker
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
-   Rust's API Docs
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
-   Code of conduct
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
-   Examples
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  USER GUIDE
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/basics.html">
-   Concepts
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/data-sources.html">
-   Data Sources
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="user-guide/dataframe/index.html">
-   DataFrames
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/dataframe/rendering.html">
-     DataFrame Rendering
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="user-guide/common-operations/index.html">
-   Common Operations
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/views.html">
-     Registering Views
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/basic-info.html">
-     Basic Operations
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/select-and-filter.html">
-     Column Selections
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/expressions.html">
-     Expressions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/joins.html">
-     Joins
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/functions.html">
-     Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/aggregations.html">
-     Aggregation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/windows.html">
-     Window Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/common-operations/udf-and-udfa.html">
-     User-Defined Functions
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="user-guide/io/index.html">
-   IO
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/arrow.html">
-     Arrow
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/avro.html">
-     Avro
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/csv.html">
-     CSV
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/json.html">
-     JSON
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/parquet.html">
-     Parquet
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="user-guide/io/table_provider.html">
-     Custom Table Provider
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/configuration.html">
-   Configuration
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/sql.html">
-   SQL
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="user-guide/upgrade-guides.html">
-   Upgrade Guides
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  CONTRIBUTOR GUIDE
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="contributor-guide/introduction.html">
-   Introduction
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="contributor-guide/ffi.html">
-   Python Extensions
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  API
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="autoapi/index.html">
-   API Reference
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-  <label for="toctree-checkbox-4">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="autoapi/datafusion/index.html">
-     datafusion
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/catalog/index.html">
-       datafusion.catalog
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/context/index.html">
-       datafusion.context
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/dataframe/index.html">
-       datafusion.dataframe
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/dataframe_formatter/index.html">
-       datafusion.dataframe_formatter
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/expr/index.html">
-       datafusion.expr
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/functions/index.html">
-       datafusion.functions
-      </a>
-     </li>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="autoapi/datafusion/input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-      <label for="toctree-checkbox-6">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="autoapi/datafusion/input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="autoapi/datafusion/input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/io/index.html">
-       datafusion.io
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/object_store/index.html">
-       datafusion.object_store
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/options/index.html">
-       datafusion.options
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/plan/index.html">
-       datafusion.plan
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/record_batch/index.html">
-       datafusion.record_batch
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/substrait/index.html">
-       datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/unparser/index.html">
-       datafusion.unparser
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="autoapi/datafusion/user_defined/index.html">
-       datafusion.user_defined
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
-</ul>
+      <div class="navbar-item">
 
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
     
   </div>
-</nav>
-              </div>
-              <div class="sidebar-end-items">
-              </div>
-            </div>
-            
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
           
 
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
           
-          <div class="d-none d-xl-block col-xl-2 bd-toc">
-            
-          </div>
           
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
 
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
           
           
-            
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
           
-          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/functions.html">Functions</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributor-guide/ffi.html">Python Extensions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/datafusion/index.html">datafusion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
               
-              <div>
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
                 
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
 
 <h1 id="index">Index</h1>
 
@@ -439,6 +483,7 @@
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -485,9 +530,15 @@
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.__arrow_c_stream__">(datafusion.dataframe.DataFrame method)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.CellFormatter.__call__">__call__() (datafusion.dataframe_formatter.CellFormatter method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.__call__">__call__() (datafusion.AggregateUDF method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.CellFormatter.__call__">(datafusion.dataframe_formatter.CellFormatter method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.__call__">(datafusion.ScalarUDF method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.__call__">(datafusion.TableFunction method)</a>
+</li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.__call__">(datafusion.user_defined.AggregateUDF method)</a>
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.__call__">(datafusion.user_defined.ScalarUDF method)</a>
@@ -496,14 +547,30 @@
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.__call__">(datafusion.user_defined.WindowUDF method)</a>
 </li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.__call__">(datafusion.WindowUDF method)</a>
+</li>
       </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDFExportable.__datafusion_aggregate_udf__">__datafusion_aggregate_udf__() (datafusion.user_defined.AggregateUDFExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__datafusion_logical_extension_codec__">__datafusion_logical_extension_codec__() (datafusion.context.SessionContext method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__">(datafusion.user_defined.LogicalExtensionCodecExportable method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__datafusion_physical_extension_codec__">__datafusion_physical_extension_codec__() (datafusion.context.SessionContext method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__">(datafusion.user_defined.PhysicalExtensionCodecExportable method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">__datafusion_physical_optimizer_rule__() (datafusion.context.PhysicalOptimizerRuleExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDFExportable.__datafusion_scalar_udf__">__datafusion_scalar_udf__() (datafusion.user_defined.ScalarUDFExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable.__datafusion_table_provider__">__datafusion_table_provider__() (datafusion.context.TableProviderExportable method)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableProviderFactoryExportable.__datafusion_table_provider_factory__">__datafusion_table_provider_factory__() (datafusion.TableProviderFactoryExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__datafusion_task_context_provider__">__datafusion_task_context_provider__() (datafusion.context.SessionContext method)</a>
 </li>
@@ -607,9 +674,17 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rand__">(datafusion.expr.Expr attribute)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.__repr__">__repr__() (datafusion.Catalog method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__reduce__">__reduce__() (datafusion.Expr method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__reduce__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.__repr__">__repr__() (datafusion.AggregateUDF method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.__repr__">(datafusion.Catalog method)</a>
+</li>
         <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.__repr__">(datafusion.catalog.Catalog method)</a>
 </li>
         <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogList.__repr__">(datafusion.catalog.CatalogList method)</a>
@@ -634,11 +709,23 @@
 </li>
         <li><a href="autoapi/datafusion/index.html#datafusion.LogicalPlan.__repr__">(datafusion.LogicalPlan method)</a>
 </li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Metric.__repr__">(datafusion.Metric method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.__repr__">(datafusion.MetricsSet method)</a>
+</li>
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.__repr__">(datafusion.plan.ExecutionPlan method)</a>
 </li>
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.__repr__">(datafusion.plan.LogicalPlan method)</a>
 </li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.__repr__">(datafusion.plan.Metric method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.__repr__">(datafusion.plan.MetricsSet method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.__repr__">(datafusion.ScalarUDF method)</a>
+</li>
         <li><a href="autoapi/datafusion/index.html#datafusion.Table.__repr__">(datafusion.Table method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.__repr__">(datafusion.TableFunction method)</a>
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.__repr__">(datafusion.user_defined.AggregateUDF method)</a>
 </li>
@@ -649,6 +736,8 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.__repr__">(datafusion.user_defined.WindowUDF method)</a>
 </li>
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.__repr__">(datafusion.WindowFrame method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.__repr__">(datafusion.WindowUDF method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -727,14 +816,30 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext._convert_table_partition_cols">_convert_table_partition_cols() (datafusion.context.SessionContext static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf">_create_table_udf() (datafusion.user_defined.TableFunction static method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._create_table_udf">_create_table_udf() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf">(datafusion.user_defined.TableFunction static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf_decorator">_create_table_udf_decorator() (datafusion.user_defined.TableFunction static method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._create_table_udf_decorator">_create_table_udf_decorator() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf_decorator">(datafusion.user_defined.TableFunction static method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._create_window_udf">_create_window_udf() (datafusion.user_defined.WindowUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._create_window_udf">(datafusion.WindowUDF static method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._create_window_udf_decorator">_create_window_udf_decorator() (datafusion.user_defined.WindowUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._create_window_udf_decorator">(datafusion.WindowUDF static method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_cell_builder">_custom_cell_builder (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder">_custom_header_builder (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
@@ -743,12 +848,30 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._format_cell_value">_format_cell_value() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF._from_internal">_from_internal() (datafusion.AggregateUDF class method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF._from_internal">(datafusion.ScalarUDF class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF._from_internal">(datafusion.user_defined.AggregateUDF class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF._from_internal">(datafusion.user_defined.ScalarUDF class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._from_internal">(datafusion.user_defined.WindowUDF class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._from_internal">(datafusion.WindowUDF class method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_cell_value">_get_cell_value() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_default_css">_get_default_css() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._get_default_name">_get_default_name() (datafusion.user_defined.WindowUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._get_default_name">(datafusion.WindowUDF static method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._get_javascript">_get_javascript() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table._inner">_inner (datafusion.catalog.Table attribute)</a>
@@ -762,7 +885,11 @@
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._max_rows">_max_rows (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._normalize_input_types">_normalize_input_types() (datafusion.user_defined.WindowUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._normalize_input_types">(datafusion.WindowUDF static method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Window._null_treatment">_null_treatment (datafusion.expr.Window attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Window._order_by">_order_by (datafusion.expr.Window attribute)</a>
@@ -771,6 +898,16 @@
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined._R">_R (in module datafusion.user_defined)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric._raw">_raw (datafusion.Metric attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet._raw">(datafusion.MetricsSet attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric._raw">(datafusion.plan.Metric attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet._raw">(datafusion.plan.MetricsSet attribute)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan._raw_plan">_raw_plan (datafusion.ExecutionPlan attribute)</a>
 
       <ul>
@@ -789,6 +926,12 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.DataFrameWriteOptions._raw_write_options">(datafusion.DataFrameWriteOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr._reconstruct">_reconstruct() (datafusion.Expr class method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr._reconstruct">(datafusion.expr.Expr class method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter._refresh_formatter_reference">_refresh_formatter_reference() (in module datafusion.dataframe_formatter)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame._repr_html_">_repr_html_() (datafusion.dataframe.DataFrame method)</a>
@@ -801,14 +944,30 @@
       </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter._type_formatters">_type_formatters (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF._udaf">_udaf (datafusion.user_defined.AggregateUDF attribute)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF._udaf">_udaf (datafusion.AggregateUDF attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF._udaf">(datafusion.user_defined.AggregateUDF attribute)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF._udf">_udf (datafusion.user_defined.ScalarUDF attribute)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF._udf">_udf (datafusion.ScalarUDF attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF._udf">(datafusion.user_defined.ScalarUDF attribute)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._udtf">_udtf (datafusion.user_defined.TableFunction attribute)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._udtf">_udtf (datafusion.TableFunction attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._udtf">(datafusion.user_defined.TableFunction attribute)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._udwf">_udwf (datafusion.user_defined.WindowUDF attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF._udwf">(datafusion.WindowUDF attribute)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter._validate_bool">_validate_bool() (in module datafusion.dataframe_formatter)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter._validate_formatter_parameters">_validate_formatter_parameters() (in module datafusion.dataframe_formatter)</a>
@@ -816,6 +975,8 @@
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter._validate_positive_int">_validate_positive_int() (in module datafusion.dataframe_formatter)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Window._window_frame">_window_frame (datafusion.expr.Window attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined._wrap_session_kwarg_for_udtf">_wrap_session_kwarg_for_udtf() (in module datafusion.user_defined)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -830,9 +991,15 @@
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.abs">(in module datafusion.functions)</a>
 </li>
-      </ul></li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator">Accumulator (class in datafusion.user_defined)</a>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.abs">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator">Accumulator (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator">(class in datafusion.user_defined)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.acos">acos() (datafusion.Expr method)</a>
 
       <ul>
@@ -849,21 +1016,31 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.acosh">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.add_months">add_months() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.add_physical_optimizer_rule">add_physical_optimizer_rule() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Aggregate">Aggregate (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate">aggregate() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.AggregateFunction">AggregateFunction (in module datafusion.expr)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF">AggregateUDF (class in datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF">AggregateUDF (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF">(class in datafusion.user_defined)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDFExportable">AggregateUDFExportable (class in datafusion.user_defined)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Alias">Alias (in module datafusion.expr)</a>
 </li>
-      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.alias">alias() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.alias">alias() (datafusion.dataframe.DataFrame method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.alias">(datafusion.Expr method)</a>
+</li>
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.alias">(datafusion.expr.Expr method)</a>
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.alias">(in module datafusion.functions)</a>
@@ -878,6 +1055,8 @@
       <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.AmazonS3">AmazonS3 (in module datafusion.object_store)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Analyze">Analyze (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.any_match">any_match() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.InsertOp.APPEND">APPEND (datafusion.dataframe.InsertOp attribute)</a>
 
@@ -894,8 +1073,14 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont_with_weight">approx_percentile_cont_with_weight() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array">array() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.array">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_agg">array_agg() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_any_match">array_any_match() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_any_value">array_any_value() (in module datafusion.functions)</a>
 </li>
@@ -903,10 +1088,16 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_cat">array_cat() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_compact">array_compact() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_concat">array_concat() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_contains">array_contains() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.array_contains">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.array_dims">array_dims() (datafusion.Expr method)</a>
 
       <ul>
@@ -939,6 +1130,8 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_extract">array_extract() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_filter">array_filter() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_has">array_has() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_has_all">array_has_all() (in module datafusion.functions)</a>
@@ -949,6 +1142,8 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_intersect">array_intersect() (in module datafusion.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_join">array_join() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.array_length">array_length() (datafusion.Expr method)</a>
@@ -959,8 +1154,6 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_length">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_max">array_max() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_min">array_min() (in module datafusion.functions)</a>
@@ -973,6 +1166,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_ndims">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_normalize">array_normalize() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.array_pop_back">array_pop_back() (datafusion.Expr method)</a>
 
       <ul>
@@ -1006,7 +1201,11 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_remove_n">array_remove_n() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_repeat">array_repeat() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.array_repeat">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_replace">array_replace() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_replace_all">array_replace_all() (in module datafusion.functions)</a>
@@ -1023,6 +1222,8 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_to_string">array_to_string() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_transform">array_transform() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_union">array_union() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrays_overlap">arrays_overlap() (in module datafusion.functions)</a>
@@ -1031,7 +1232,11 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrow_cast">arrow_cast() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrow_field">arrow_field() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrow_metadata">arrow_metadata() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrow_try_cast">arrow_try_cast() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.arrow_typeof">arrow_typeof() (datafusion.Expr method)</a>
 
@@ -1053,6 +1258,8 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.ascii">(datafusion.expr.Expr method)</a>
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ascii">(in module datafusion.functions)</a>
+</li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.ascii">(in module datafusion.functions.spark)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.asin">asin() (datafusion.Expr method)</a>
@@ -1090,13 +1297,19 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.avg">avg() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.avg">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.base64">base64() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/input/base/index.html#datafusion.input.base.BaseInputSource">BaseInputSource (class in datafusion.input.base)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Between">Between (in module datafusion.expr)</a>
@@ -1107,9 +1320,15 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.between">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bin">bin() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.BinaryExpr">BinaryExpr (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_and">bit_and() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bit_count">bit_count() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bit_get">bit_get() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.bit_length">bit_length() (datafusion.Expr method)</a>
 
@@ -1123,12 +1342,22 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_xor">bit_xor() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bitmap_bit_position">bitmap_bit_position() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bitmap_bucket_number">bitmap_bucket_number() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bitmap_count">bitmap_count() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.bitwise_not">bitwise_not() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetColumnOptions.bloom_filter_enabled">bloom_filter_enabled (datafusion.dataframe.ParquetColumnOptions attribute)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.ParquetColumnOptions.bloom_filter_enabled">(datafusion.ParquetColumnOptions attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetColumnOptions.bloom_filter_fpp">bloom_filter_fpp (datafusion.dataframe.ParquetColumnOptions attribute)</a>
 
       <ul>
@@ -1139,8 +1368,6 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.ParquetWriterOptions.bloom_filter_fpp">(datafusion.ParquetWriterOptions attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetColumnOptions.bloom_filter_ndv">bloom_filter_ndv (datafusion.dataframe.ParquetColumnOptions attribute)</a>
 
       <ul>
@@ -1219,6 +1446,8 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.cast">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cast_to_type">cast_to_type() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Catalog">Catalog (class in datafusion)</a>
 
       <ul>
@@ -1270,8 +1499,12 @@
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ceil">(in module datafusion.functions)</a>
 </li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.ceil">(in module datafusion.functions.spark)</a>
+</li>
       </ul></li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.CellFormatter">CellFormatter (class in datafusion.dataframe_formatter)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.char">char() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.char_length">char_length() (datafusion.Expr method)</a>
 
@@ -1303,7 +1536,17 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.chr">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.clear_sender_ctx">clear_sender_ctx() (in module datafusion.ipc)</a>
+</li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.clear_worker_ctx">clear_worker_ctx() (in module datafusion.ipc)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.coalesce">coalesce() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.coerce_to_expr">coerce_to_expr() (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.coerce_to_expr_list">coerce_to_expr_list() (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.coerce_to_expr_or_none">coerce_to_expr_or_none() (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.col">col (in module datafusion)</a>
 </li>
@@ -1317,12 +1560,24 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect_column">collect_column() (datafusion.dataframe.DataFrame method)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.collect_list">collect_list() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.collect_metrics">collect_metrics() (datafusion.ExecutionPlan method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.collect_metrics">(datafusion.plan.ExecutionPlan method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect_partitioned">collect_partitioned() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.collect_set">collect_set() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.column">column (in module datafusion)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Column">Column (in module datafusion.expr)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.column">column() (datafusion.dataframe.DataFrame method)</a>
 
       <ul>
@@ -1331,8 +1586,6 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.column">(datafusion.expr.Expr static method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetWriterOptions.column_index_truncate_length">column_index_truncate_length (datafusion.dataframe.ParquetWriterOptions attribute)</a>
 
       <ul>
@@ -1366,7 +1619,11 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.concat">concat() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.concat">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.concat_ws">concat_ws() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.config_internal">config_internal (datafusion.context.RuntimeEnvBuilder attribute)</a>
@@ -1389,6 +1646,8 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.contains">contains() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.copied_config">copied_config() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CopyTo">CopyTo (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.corr">corr() (in module datafusion.functions)</a>
@@ -1409,6 +1668,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cosh">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cosine_distance">cosine_distance() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.cot">cot() (datafusion.Expr method)</a>
 
       <ul>
@@ -1430,6 +1691,10 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.covar_pop">covar_pop() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.covar_samp">covar_samp() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.crc32">crc32() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableProviderFactory.create">create() (datafusion.TableProviderFactory method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.create_dataframe">create_dataframe() (datafusion.context.SessionContext method)</a>
 </li>
@@ -1456,6 +1721,8 @@
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CreateMemoryTable">CreateMemoryTable (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CreateView">CreateView (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.csc">csc() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions">CsvReadOptions (class in datafusion)</a>
 
@@ -1559,6 +1826,13 @@
 </li>
       </ul></li>
       <li>
+    datafusion.functions.spark
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#module-datafusion.functions.spark">module</a>
+</li>
+      </ul></li>
+      <li>
     datafusion.input
 
       <ul>
@@ -1584,6 +1858,13 @@
 
       <ul>
         <li><a href="autoapi/datafusion/io/index.html#module-datafusion.io">module</a>
+</li>
+      </ul></li>
+      <li>
+    datafusion.ipc
+
+      <ul>
+        <li><a href="autoapi/datafusion/ipc/index.html#module-datafusion.ipc">module</a>
 </li>
       </ul></li>
       <li>
@@ -1635,18 +1916,34 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined">module</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.date_add">date_add() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_bin">date_bin() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.date_diff">date_diff() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_format">date_format() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_part">date_part() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.date_part">(in module datafusion.functions.spark)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.date_sub">date_sub() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_trunc">date_trunc() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.date_trunc">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datepart">datepart() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Deallocate">Deallocate (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
@@ -1655,8 +1952,6 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.default_str_repr">default_str_repr() (datafusion.dataframe.DataFrame static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DefaultStyleProvider">DefaultStyleProvider (class in datafusion.dataframe_formatter)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.degrees">degrees() (datafusion.Expr method)</a>
@@ -1781,6 +2076,8 @@
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.DmlStatement">DmlStatement (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.dot_product">dot_product() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.drop">drop() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.DropCatalogSchema">DropCatalogSchema (in module datafusion.expr)</a>
@@ -1799,7 +2096,15 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.elapsed_compute">elapsed_compute (datafusion.MetricsSet property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.elapsed_compute">(datafusion.plan.MetricsSet property)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.element_at">element_at() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.elt">elt() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.empty">empty() (datafusion.Expr method)</a>
 
@@ -1816,6 +2121,8 @@
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.enable_cell_expansion">enable_cell_expansion (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.enable_ident_normalization">enable_ident_normalization() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.enable_spark_functions">enable_spark_functions() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.enable_url_table">enable_url_table() (datafusion.context.SessionContext method)</a>
 </li>
@@ -1849,18 +2156,20 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.escape">(datafusion.options.CsvReadOptions attribute)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.evaluate">evaluate() (datafusion.user_defined.Accumulator method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.evaluate">evaluate() (datafusion.Accumulator method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.evaluate">(datafusion.user_defined.Accumulator method)</a>
+</li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.evaluate">(datafusion.user_defined.WindowEvaluator method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.evaluate_all">evaluate_all() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.evaluate_all_with_rank">evaluate_all_with_rank() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.except_all">except_all() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Execute">Execute (in module datafusion.expr)</a>
@@ -1901,6 +2210,8 @@
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ExplainFormat">(class in datafusion.dataframe)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.expm1">expm1() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr">Expr (class in datafusion)</a>
 
       <ul>
@@ -1933,6 +2244,8 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.factorial">(datafusion.expr.Expr method)</a>
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.factorial">(in module datafusion.functions)</a>
+</li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.factorial">(in module datafusion.functions.spark)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.file_compression_type">file_compression_type (datafusion.CsvReadOptions attribute)</a>
@@ -2000,12 +2313,16 @@
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.floor">(in module datafusion.functions)</a>
 </li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.floor">(in module datafusion.functions.spark)</a>
+</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html">format_html() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str">format_str() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.format_string">format_string() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.FormatterManager">FormatterManager (class in datafusion.dataframe_formatter)</a>
 </li>
@@ -2013,6 +2330,20 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow">from_arrow() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.from_bytes">from_bytes() (datafusion.ExecutionPlan static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.from_bytes">(datafusion.Expr class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.from_bytes">(datafusion.expr.Expr class method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.LogicalPlan.from_bytes">(datafusion.LogicalPlan static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.from_bytes">(datafusion.plan.ExecutionPlan static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.from_bytes">(datafusion.plan.LogicalPlan static method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.from_dataset">from_dataset() (datafusion.catalog.Table static method)</a>
 
       <ul>
@@ -2035,12 +2366,18 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.from_proto">(datafusion.plan.LogicalPlan static method)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.from_pycapsule">from_pycapsule() (datafusion.user_defined.AggregateUDF static method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.from_pycapsule">from_pycapsule() (datafusion.AggregateUDF static method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.from_pycapsule">(datafusion.ScalarUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.from_pycapsule">(datafusion.user_defined.AggregateUDF static method)</a>
+</li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.from_pycapsule">(datafusion.user_defined.ScalarUDF static method)</a>
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.from_pycapsule">(datafusion.user_defined.WindowUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.from_pycapsule">(datafusion.WindowUDF static method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pydict">from_pydict() (datafusion.context.SessionContext method)</a>
@@ -2059,6 +2396,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.from_unixtime">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.from_utc_timestamp">from_utc_timestamp() (in module datafusion.functions.spark)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -2111,12 +2450,16 @@
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.get_range">get_range() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.get_sender_ctx">get_sender_ctx() (in module datafusion.ipc)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame.get_upper_bound">get_upper_bound() (datafusion.expr.WindowFrame method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.get_upper_bound">(datafusion.WindowFrame method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.get_worker_ctx">get_worker_ctx() (in module datafusion.ipc)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.global_ctx">global_ctx() (datafusion.context.SessionContext class method)</a>
 </li>
       <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.GoogleCloud">GoogleCloud (in module datafusion.object_store)</a>
@@ -2149,9 +2492,15 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.has_header">(datafusion.options.CsvReadOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.head">head() (datafusion.dataframe.DataFrame method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.head">head() (datafusion.dataframe.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.hex">hex() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.HigherOrderFunction">HigherOrderFunction (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.hour">hour() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.Http">Http (in module datafusion.object_store)</a>
 </li>
@@ -2161,9 +2510,13 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.if_">if_() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ifnull">ifnull() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ILike">ILike (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.ilike">ilike() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Volatility.Immutable">Immutable (datafusion.user_defined.Volatility attribute)</a>
 </li>
@@ -2187,6 +2540,8 @@
       </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.InList">InList (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.inner_product">inner_product() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.LogicalPlan.inputs">inputs() (datafusion.LogicalPlan method)</a>
 
       <ul>
@@ -2199,6 +2554,8 @@
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.InsertOp">(class in datafusion.dataframe)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.instr">instr() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.InSubquery">InSubquery (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.intersect">intersect() (datafusion.dataframe.DataFrame method)</a>
@@ -2236,6 +2593,8 @@
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_preceding">is_preceding() (datafusion.expr.WindowFrameBound method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_unbounded">is_unbounded() (datafusion.expr.WindowFrameBound method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.is_valid_utf8">is_valid_utf8() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsFalse">IsFalse (in module datafusion.expr)</a>
 </li>
@@ -2279,13 +2638,15 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.join">join() (datafusion.dataframe.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.join_on">join_on() (datafusion.dataframe.DataFrame method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.JoinConstraint">JoinConstraint (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.JoinType">JoinType (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.json_tuple">json_tuple() (in module datafusion.functions.spark)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2305,7 +2666,23 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric.labels">labels() (datafusion.Metric method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.labels">(datafusion.plan.Metric method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lag">lag() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Lambda">Lambda (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lambda_">lambda_() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lambda_var">lambda_var() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.LambdaVariable">LambdaVariable (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.last_day">last_day() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.last_value">last_value() (in module datafusion.functions)</a>
 </li>
@@ -2324,20 +2701,28 @@
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.length">(in module datafusion.functions)</a>
 </li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.length">(in module datafusion.functions.spark)</a>
+</li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.levenshtein">levenshtein() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Like">Like (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.like">like() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Limit">Limit (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit">limit() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_any_match">list_any_match() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_any_value">list_any_value() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_append">list_append() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_cat">list_cat() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_compact">list_compact() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_concat">list_concat() (in module datafusion.functions)</a>
 </li>
@@ -2368,6 +2753,8 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_except">list_except() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_extract">list_extract() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_filter">list_filter() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_has">list_has() (in module datafusion.functions)</a>
 </li>
@@ -2401,6 +2788,10 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_ndims">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_normalize">list_normalize() (in module datafusion.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_overlap">list_overlap() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_pop_back">list_pop_back() (in module datafusion.functions)</a>
@@ -2411,8 +2802,6 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_positions">list_positions() (in module datafusion.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_prepend">list_prepend() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_push_back">list_push_back() (in module datafusion.functions)</a>
@@ -2442,6 +2831,8 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_sort">list_sort() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_to_string">list_to_string() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_transform">list_transform() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_union">list_union() (in module datafusion.functions)</a>
 </li>
@@ -2501,6 +2892,8 @@
       </ul></li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.logical_plan">logical_plan() (datafusion.dataframe.DataFrame method)</a>
 </li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable">LogicalExtensionCodecExportable (class in datafusion.user_defined)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.LogicalPlan">LogicalPlan (class in datafusion)</a>
 
       <ul>
@@ -2525,6 +2918,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ltrim">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.luhn_check">luhn_check() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.LZ4">LZ4 (datafusion.dataframe.Compression attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.LZ4_RAW">LZ4_RAW (datafusion.dataframe.Compression attribute)</a>
@@ -2539,15 +2934,25 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_date">make_date() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.make_dt_interval">make_dt_interval() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.make_interval">make_interval() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_list">make_list() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_map">make_map() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_time">make_time() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.make_valid_utf8">make_valid_utf8() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.map_entries">map_entries() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.map_extract">map_extract() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.map_from_arrays">map_from_arrays() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.map_from_entries">map_from_entries() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.map_keys">map_keys() (in module datafusion.functions)</a>
 </li>
@@ -2597,8 +3002,6 @@
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.memoize">memoize() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.memory_catalog">memory_catalog() (datafusion.Catalog static method)</a>
 
       <ul>
@@ -2609,13 +3012,43 @@
       </ul></li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.memory_schema">memory_schema() (datafusion.catalog.Schema static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.merge">merge() (datafusion.user_defined.Accumulator method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.merge">merge() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.merge">(datafusion.user_defined.Accumulator method)</a>
 </li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric">Metric (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric">(class in datafusion.plan)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.metrics">metrics() (datafusion.ExecutionPlan method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.metrics">(datafusion.MetricsSet method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.metrics">(datafusion.plan.ExecutionPlan method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.metrics">(datafusion.plan.MetricsSet method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet">MetricsSet (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet">(class in datafusion.plan)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.MicrosoftAzure">MicrosoftAzure (in module datafusion.object_store)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.min">min() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.min_rows">min_rows (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.minute">minute() (in module datafusion.functions.spark)</a>
 </li>
       <li>
     module
@@ -2635,6 +3068,8 @@
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#module-datafusion.functions">datafusion.functions</a>
 </li>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#module-datafusion.functions.spark">datafusion.functions.spark</a>
+</li>
         <li><a href="autoapi/datafusion/input/index.html#module-datafusion.input">datafusion.input</a>
 </li>
         <li><a href="autoapi/datafusion/input/base/index.html#module-datafusion.input.base">datafusion.input.base</a>
@@ -2642,6 +3077,8 @@
         <li><a href="autoapi/datafusion/input/location/index.html#module-datafusion.input.location">datafusion.input.location</a>
 </li>
         <li><a href="autoapi/datafusion/io/index.html#module-datafusion.io">datafusion.io</a>
+</li>
+        <li><a href="autoapi/datafusion/ipc/index.html#module-datafusion.ipc">datafusion.ipc</a>
 </li>
         <li><a href="autoapi/datafusion/object_store/index.html#module-datafusion.object_store">datafusion.object_store</a>
 </li>
@@ -2658,6 +3095,8 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined">datafusion.user_defined</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.modulus">modulus() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.mysql">mysql() (datafusion.unparser.Dialect static method)</a>
 </li>
   </ul></td>
@@ -2666,6 +3105,24 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.name">name (datafusion.AggregateUDF property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Metric.name">(datafusion.Metric property)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.name">(datafusion.plan.Metric property)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.name">(datafusion.ScalarUDF property)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.name">(datafusion.user_defined.AggregateUDF property)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.name">(datafusion.user_defined.ScalarUDF property)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.name">(datafusion.user_defined.WindowUDF property)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.name">(datafusion.WindowUDF property)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.named_struct">named_struct() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.names">names() (datafusion.Catalog method)</a>
@@ -2682,6 +3139,10 @@
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Negative">Negative (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.negative">negative() (in module datafusion.functions.spark)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.newlines_in_values">newlines_in_values (datafusion.CsvReadOptions attribute)</a>
 
       <ul>
@@ -2694,8 +3155,8 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream.next">(datafusion.RecordBatchStream method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.next_day">next_day() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Not">Not (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.now">now() (in module datafusion.functions)</a>
@@ -2760,6 +3221,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder.otherwise">otherwise() (datafusion.expr.CaseBuilder method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.output_rows">output_rows (datafusion.MetricsSet property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.output_rows">(datafusion.plan.MetricsSet property)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.over">over() (datafusion.Expr method)</a>
 
       <ul>
@@ -2794,10 +3261,20 @@
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetWriterOptions">(class in datafusion.dataframe)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.parse_capacity_limit">parse_capacity_limit() (datafusion.context.SessionContext static method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.parse_sql_expr">parse_sql_expr() (datafusion.context.SessionContext method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.parse_sql_expr">(datafusion.dataframe.DataFrame method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.parse_url">parse_url() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric.partition">partition (datafusion.Metric property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.partition">(datafusion.plan.Metric property)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.partition_by">partition_by() (datafusion.Expr method)</a>
@@ -2826,6 +3303,10 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable">PhysicalExtensionCodecExportable (class in datafusion.user_defined)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.PhysicalOptimizerRuleExportable">PhysicalOptimizerRuleExportable (class in datafusion.context)</a>
+</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.pi">pi() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Placeholder">Placeholder (in module datafusion.expr)</a>
@@ -2835,6 +3316,10 @@
       <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan.plan_internal">plan_internal (datafusion.substrait.Plan attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.plan_to_sql">plan_to_sql() (datafusion.unparser.Unparser method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.pmod">pmod() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.position">position() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.postgres">postgres() (datafusion.unparser.Dialect static method)</a>
 </li>
@@ -2908,6 +3393,10 @@
         <li><a href="autoapi/datafusion/io/index.html#datafusion.io.read_avro">(in module datafusion.io)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_batch">read_batch() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_batches">read_batches() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_csv">read_csv() (datafusion.context.SessionContext method)</a>
 
       <ul>
@@ -3100,10 +3589,16 @@
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.right">right() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.rint">rint() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet.rollup">rollup() (datafusion.expr.GroupingSet static method)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.round">round() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.round">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.row">row() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.row_number">row_number() (in module datafusion.functions)</a>
@@ -3132,8 +3627,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarSubquery">ScalarSubquery (in module datafusion.expr)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF">ScalarUDF (class in datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF">ScalarUDF (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF">(class in datafusion.user_defined)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDFExportable">ScalarUDFExportable (class in datafusion.user_defined)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarVariable">ScalarVariable (in module datafusion.expr)</a>
@@ -3182,6 +3681,10 @@
       </ul></li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider">SchemaProvider (class in datafusion.catalog)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.sec">sec() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.second">second() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select">select() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select_exprs">select_exprs() (datafusion.dataframe.DataFrame method)</a>
@@ -3222,7 +3725,15 @@
         <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.set_formatter">(in module datafusion.dataframe_formatter)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.set_sender_ctx">set_sender_ctx() (in module datafusion.ipc)</a>
+</li>
+      <li><a href="autoapi/datafusion/ipc/index.html#datafusion.ipc.set_worker_ctx">set_worker_ctx() (in module datafusion.ipc)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SetVariable">SetVariable (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.sha1">sha1() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.sha2">sha2() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sha224">sha224() (datafusion.Expr method)</a>
 
@@ -3256,9 +3767,17 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sha512">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.shiftleft">shiftleft() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.shiftright">shiftright() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.shiftrightunsigned">shiftrightunsigned() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.show">show() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.show_truncation_message">show_truncation_message (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.shuffle">shuffle() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.signum">signum() (datafusion.Expr method)</a>
 
@@ -3268,10 +3787,10 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.signum">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SimilarTo">SimilarTo (in module datafusion.expr)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sin">sin() (datafusion.Expr method)</a>
 
       <ul>
@@ -3288,12 +3807,16 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sinh">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.size">size() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetWriterOptions.skip_arrow_metadata">skip_arrow_metadata (datafusion.dataframe.ParquetWriterOptions attribute)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.ParquetWriterOptions.skip_arrow_metadata">(datafusion.ParquetWriterOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.slice">slice() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.SNAPPY">SNAPPY (datafusion.dataframe.Compression attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Sort">Sort (in module datafusion.expr)</a>
@@ -3312,6 +3835,30 @@
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SortKey">SortKey (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.soundex">soundex() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.space">space() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.spark_cast">spark_cast() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.spill_count">spill_count (datafusion.MetricsSet property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.spill_count">(datafusion.plan.MetricsSet property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.spilled_bytes">spilled_bytes (datafusion.MetricsSet property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.spilled_bytes">(datafusion.plan.MetricsSet property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.spilled_rows">spilled_rows (datafusion.MetricsSet property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.spilled_rows">(datafusion.plan.MetricsSet property)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.split_part">split_part() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.sql">sql() (datafusion.context.SessionContext method)</a>
@@ -3338,8 +3885,12 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.starts_with">starts_with() (in module datafusion.functions)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.state">state() (datafusion.user_defined.Accumulator method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.state">state() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.state">(datafusion.user_defined.Accumulator method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetColumnOptions.statistics_enabled">statistics_enabled (datafusion.dataframe.ParquetColumnOptions attribute)</a>
 
       <ul>
@@ -3361,6 +3912,8 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.stddev_pop">stddev_pop() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.stddev_samp">stddev_samp() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.str_to_map">str_to_map() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.string_agg">string_agg() (in module datafusion.functions)</a>
 </li>
@@ -3391,9 +3944,19 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.substr_index">substr_index() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.substring">substring() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.substring">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sum">sum() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.MetricsSet.sum_by_name">sum_by_name() (datafusion.MetricsSet method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.MetricsSet.sum_by_name">(datafusion.plan.MetricsSet method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.supports_bounded_execution">supports_bounded_execution() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
   </ul></td>
@@ -3438,9 +4001,17 @@
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_provider">table_provider() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction">TableFunction (class in datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction">TableFunction (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction">(class in datafusion.user_defined)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable">TableProviderExportable (class in datafusion.context)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableProviderFactory">TableProviderFactory (class in datafusion)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableProviderFactoryExportable">TableProviderFactoryExportable (class in datafusion)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.TableScan">TableScan (in module datafusion.expr)</a>
 </li>
@@ -3468,8 +4039,24 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.terminator">(datafusion.options.CsvReadOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.time_trunc">time_trunc() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_arrow_table">to_arrow_table() (datafusion.dataframe.DataFrame method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.to_bytes">to_bytes() (datafusion.ExecutionPlan method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.to_bytes">(datafusion.Expr method)</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.to_bytes">(datafusion.expr.Expr method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.LogicalPlan.to_bytes">(datafusion.LogicalPlan method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.to_bytes">(datafusion.plan.ExecutionPlan method)</a>
+</li>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.to_bytes">(datafusion.plan.LogicalPlan method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_char">to_char() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_date">to_date() (in module datafusion.functions)</a>
@@ -3496,6 +4083,8 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_polars">to_polars() (datafusion.dataframe.DataFrame method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.ExecutionPlan.to_proto">to_proto() (datafusion.ExecutionPlan method)</a>
 
       <ul>
@@ -3506,8 +4095,6 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.to_proto">(datafusion.plan.LogicalPlan method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch.to_pyarrow">to_pyarrow() (datafusion.record_batch.RecordBatch method)</a>
 
       <ul>
@@ -3533,6 +4120,8 @@
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp_seconds">to_timestamp_seconds() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_unixtime">to_unixtime() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.to_utc_timestamp">to_utc_timestamp() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.to_variant">to_variant() (datafusion.Expr method)</a>
 
@@ -3575,13 +4164,31 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.trunc">trunc() (in module datafusion.functions)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.trunc">(in module datafusion.functions.spark)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.truncated_rows">truncated_rows (datafusion.CsvReadOptions attribute)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.truncated_rows">(datafusion.options.CsvReadOptions attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.try_cast">try_cast() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.try_cast">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.try_cast_to_type">try_cast_to_type() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.try_parse_url">try_parse_url() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.try_sum">try_sum() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.try_url_decode">try_url_decode() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.TryCast">TryCast (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.types">types() (datafusion.Expr method)</a>
@@ -3596,24 +4203,74 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udaf">udaf (in module datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.udaf">udaf (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udaf">(in module datafusion.user_defined)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.udaf">udaf() (datafusion.user_defined.AggregateUDF static method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.udaf">udaf() (datafusion.AggregateUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udaf">(datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udf">udf (in module datafusion.user_defined)</a>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.udaf">(datafusion.user_defined.AggregateUDF static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.udf">udf() (datafusion.user_defined.ScalarUDF static method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udafs">udafs() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udtf">udtf (in module datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.udf">udf (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udf">(in module datafusion.user_defined)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction.udtf">udtf() (datafusion.user_defined.TableFunction static method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udf">udf() (datafusion.context.SessionContext method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.udf">(datafusion.ScalarUDF static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udwf">udwf (in module datafusion.user_defined)</a>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.udf">(datafusion.user_defined.ScalarUDF static method)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.udwf">udwf() (datafusion.user_defined.WindowUDF static method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udfs">udfs() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.udtf">udtf (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udtf">(in module datafusion.user_defined)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.udtf">udtf() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction.udtf">(datafusion.user_defined.TableFunction static method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.udwf">udwf (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udwf">(in module datafusion.user_defined)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udwf">udwf() (datafusion.context.SessionContext method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.udwf">(datafusion.user_defined.WindowUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.udwf">(datafusion.WindowUDF static method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.udwfs">udwfs() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unbase64">unbase64() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.UNCOMPRESSED">UNCOMPRESSED (datafusion.dataframe.Compression attribute)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unhex">unhex() (in module datafusion.functions.spark)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Union">Union (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union">union() (datafusion.dataframe.DataFrame method)</a>
@@ -3622,11 +4279,17 @@
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union_distinct">union_distinct() (datafusion.dataframe.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.union_extract">union_extract() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.union_tag">union_tag() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unix_date">unix_date() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unix_micros">unix_micros() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unix_millis">unix_millis() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.unix_seconds">unix_seconds() (in module datafusion.functions.spark)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Unnest">Unnest (in module datafusion.expr)</a>
 </li>
@@ -3638,8 +4301,12 @@
 </li>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.unparser">unparser (datafusion.unparser.Unparser attribute)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.update">update() (datafusion.user_defined.Accumulator method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.update">update() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.update">(datafusion.user_defined.Accumulator method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.upper">upper() (datafusion.Expr method)</a>
 
       <ul>
@@ -3648,6 +4315,10 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.upper">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.url_decode">url_decode() (in module datafusion.functions.spark)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.url_encode">url_encode() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.use_shared_styles">use_shared_styles (datafusion.dataframe_formatter.DataFrameHtmlFormatter attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.uses_window_frame">uses_window_frame() (datafusion.user_defined.WindowEvaluator method)</a>
@@ -3660,18 +4331,30 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric.value">value (datafusion.Metric property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.value">(datafusion.plan.Metric property)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Metric.value_as_datetime">value_as_datetime (datafusion.Metric property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.Metric.value_as_datetime">(datafusion.plan.Metric property)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Values">Values (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var">var() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_pop">var_pop() (in module datafusion.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_population">var_population() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_samp">var_samp() (in module datafusion.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_sample">var_sample() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.variant_name">variant_name() (datafusion.Expr method)</a>
@@ -3698,6 +4381,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.when">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.width_bucket">width_bucket() (in module datafusion.functions.spark)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Window">Window (class in datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.window">window() (datafusion.dataframe.DataFrame method)</a>
@@ -3726,8 +4411,12 @@
       </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound">WindowFrameBound (class in datafusion.expr)</a>
 </li>
-      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF">WindowUDF (class in datafusion.user_defined)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF">WindowUDF (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF">(class in datafusion.user_defined)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDFExportable">WindowUDFExportable (class in datafusion.user_defined)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.with_allow_ddl">with_allow_ddl() (datafusion.context.SQLOptions method)</a>
@@ -3838,14 +4527,14 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.with_file_sort_order">(datafusion.options.CsvReadOptions method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool">with_greedy_memory_pool() (datafusion.context.RuntimeEnvBuilder method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeEnvBuilder.with_greedy_memory_pool">(datafusion.RuntimeEnvBuilder method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.with_has_header">with_has_header() (datafusion.CsvReadOptions method)</a>
 
       <ul>
@@ -3859,6 +4548,8 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.with_logical_extension_codec">with_logical_extension_codec() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.with_metadata">with_metadata() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.with_newlines_in_values">with_newlines_in_values() (datafusion.CsvReadOptions method)</a>
 
@@ -3878,7 +4569,11 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_parquet_pruning">(datafusion.SessionConfig method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.with_physical_extension_codec">with_physical_extension_codec() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.with_pretty">with_pretty() (datafusion.unparser.Unparser method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.with_python_udf_inlining">with_python_udf_inlining() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.with_quote">with_quote() (datafusion.CsvReadOptions method)</a>
 
@@ -3995,6 +4690,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.xxhash64">xxhash64() (in module datafusion.functions.spark)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -4005,36 +4708,39 @@
 
 
 
-              </div>
+                </article>
               
               
-              <!-- Previous / next buttons -->
-<div class='prev-next-area'>
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
 </div>
+                </footer>
               
-          </main>
-          
-
-      </div>
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
+  </div>
   
-    <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
 <!-- Based on pydata_sphinx_theme/footer.html -->
 <footer class="footer mt-5 mt-md-0">
   <div class="container">
-    
-    <div class="footer-item">
-      <p class="copyright">
-    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
-</p>
-    </div>
-    
-    <div class="footer-item">
-      <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
-</p>
-    </div>
     
     <div class="footer-item">
       <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
