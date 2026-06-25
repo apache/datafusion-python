@@ -59,6 +59,8 @@ serde_json = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 mimalloc = { workspace = true, optional = true, features = [
   "local_dynamic_tls",
+  # Pin to mimalloc v2 until apache/datafusion-python#1607 resolves.
+  "v2",
 ] }
 async-trait = { workspace = true }
 futures = { workspace = true }
