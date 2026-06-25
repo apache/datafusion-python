@@ -140,7 +140,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-tag: ["abi3", "3.13t", "3.14t"]
+        python-tag: ["abi3", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -219,7 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-tag: ["abi3", "3.13t", "3.14t"]
+        python-tag: ["abi3", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -282,7 +282,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        python-tag: ["abi3", "3.13t", "3.14t"]
+        python-tag: ["abi3", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 
@@ -364,7 +364,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-tag: ["abi3", "3.13t", "3.14t"]
+        python-tag: ["abi3", "3.14t"]
     steps:
       - uses: actions/checkout@v6
 

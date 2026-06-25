@@ -44,7 +44,6 @@ jobs:
           - { python-version: "3.13", wheel-tag: "abi3", freethreaded: false }
           - { python-version: "3.14", wheel-tag: "abi3", freethreaded: false }
           # Free-threaded builds — one wheel per interpreter.
-          - { python-version: "3.13t", wheel-tag: "3.13t", freethreaded: true }
           - { python-version: "3.14t", wheel-tag: "3.14t", freethreaded: true }
     steps:
       - uses: actions/checkout@v6
@@ -90,7 +89,7 @@ jobs:
           # asked by exact path, so plain `uv sync` (even with an activated
           # venv or --active) re-picks the system 3.12 and recreates .venv.
           # Targeting .venv/bin/python keeps sync and pip install in the
-          # same 3.13t/3.14t environment as the cp313t/cp314t wheel.
+          # same 3.14t environment as the cp314t wheel.
           uv venv --python "${{ steps.setup-python.outputs.python-path }}"
           VENV_PY="$PWD/.venv/bin/python"
           uv sync --python "$VENV_PY" --dev --no-install-package datafusion
