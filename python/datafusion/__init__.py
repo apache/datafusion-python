@@ -65,7 +65,7 @@ except ImportError:
     import importlib_metadata  # type: ignore[import]
 
 # Public submodules
-from . import functions, ipc, object_store, substrait, unparser
+from . import distributed, functions, ipc, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from .catalog import (
@@ -81,6 +81,7 @@ from .context import (
     SessionConfig,
     SessionContext,
     SQLOptions,
+    WorkerResolver,
 )
 from .dataframe import (
     DataFrame,
@@ -91,6 +92,7 @@ from .dataframe import (
     ParquetWriterOptions,
 )
 from .dataframe_formatter import configure_formatter
+from .distributed import Worker, WorkerQueryContext
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
@@ -140,11 +142,15 @@ __all__ = [
     "TableProviderFactoryExportable",
     "WindowFrame",
     "WindowUDF",
+    "Worker",
+    "WorkerQueryContext",
+    "WorkerResolver",
     "catalog",
     "col",
     "column",
     "common",
     "configure_formatter",
+    "distributed",
     "expr",
     "functions",
     "ipc",

@@ -49,6 +49,20 @@ Here is a direct link to the file used in the examples:
 - [Fan out distinct expressions to a multiprocessing pool](./multiprocessing_pickle_expr.py)
 - [Distribute expression evaluation across Ray actors](./ray_pickle_expr.py)
 
+### Distributed Query Execution
+
+- [Start a localhost datafusion-distributed worker](./distributed-localhost-worker.py)
+- [Run a distributed query against localhost workers](./distributed-run.py)
+
+Example:
+
+```bash
+curl -LO https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+python examples/distributed-localhost-worker.py 50051
+python examples/distributed-localhost-worker.py 50052
+WORKERS=50051,50052 python examples/distributed-run.py --plan yellow_tripdata_2021-01.parquet
+```
+
 ### Substrait Support
 
 - [Serialize query plans using Substrait](./substrait.py)

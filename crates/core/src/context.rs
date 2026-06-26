@@ -43,10 +43,11 @@ use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, Unboun
 use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
-use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::execution::{FunctionRegistry, SessionState, TaskContextProvider};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
+use datafusion_distributed::{DistributedConfig, DistributedExt, SessionStateBuilderExt};
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::catalog_provider_list::FFI_CatalogProviderList;
 use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
@@ -78,6 +79,7 @@ use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
+use crate::distributed_worker_resolver::PyWorkerResolver;
 use crate::errors::{
     PyDataFusionError, PyDataFusionResult, from_datafusion_error, py_datafusion_err,
 };
@@ -218,6 +220,15 @@ impl PySessionConfig {
         options.extensions.insert(extension);
 
         Ok(Self::from(config))
+    }
+
+    #[pyo3(signature = (worker_resolver))]
+    fn with_distributed(&self, worker_resolver: PyWorkerResolver) -> Self {
+        let config = self
+            .config
+            .clone()
+            .with_distributed_worker_resolver(worker_resolver);
+        Self::from(config)
     }
 }
 
@@ -392,13 +403,20 @@ impl PySessionContext {
         } else {
             RuntimeEnvBuilder::default()
         };
+        let distributed = DistributedConfig::from_config_options(config.options()).is_ok();
+
         let runtime = Arc::new(runtime_env_builder.build()?);
-        let session_state = SessionStateBuilder::new()
+        let mut builder = SessionStateBuilder::new()
             .with_config(config)
             .with_runtime_env(runtime)
             .with_default_features()
-            .with_analyzer_rule(Arc::new(crate::analyzer::ResolveLambdaVariables::new()))
-            .build();
+            .with_analyzer_rule(Arc::new(crate::analyzer::ResolveLambdaVariables::new()));
+
+        if distributed {
+            builder = builder.with_distributed_planner();
+        }
+
+        let session_state = builder.build();
         let ctx = Arc::new(SessionContext::new_with_state(session_state));
         Ok(PySessionContext {
             ctx,
@@ -1430,6 +1448,14 @@ impl PySessionContext {
 }
 
 impl PySessionContext {
+    pub(crate) fn from_session_state(session_state: SessionState) -> Self {
+        Self {
+            ctx: Arc::new(SessionContext::new_with_state(session_state)),
+            logical_codec: Arc::new(PythonLogicalCodec::default()),
+            physical_codec: Arc::new(PythonPhysicalCodec::default()),
+        }
+    }
+
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
     }

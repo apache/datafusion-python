@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import datafusion._internal as df_internal
 
@@ -159,6 +159,29 @@ class ExecutionPlan:
     def display_indent(self) -> str:
         """Print an indented form of the physical plan."""
         return self._raw_plan.display_indent()
+
+    def display_distributed(
+        self,
+        metrics_format: Literal["none", "aggregated", "per_task"] = "none",
+    ) -> str:
+        """Print the physical plan with datafusion-distributed formatting.
+
+        Args:
+            metrics_format: ``"none"`` prints the plan without metrics.
+                ``"aggregated"`` and ``"per_task"`` include execution metrics.
+                For distributed plans, metrics are first collected from workers.
+                The plan must have already been executed when metrics are requested.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> plan = ctx.sql("SELECT 1").execution_plan()
+            >>> isinstance(plan.display_distributed(), str)
+            True
+            >>> isinstance(plan.display_distributed(metrics_format="aggregated"), str)
+            True
+        """
+        return self._raw_plan.display_distributed(metrics_format)
 
     def __repr__(self) -> str:
         """Print a string representation of the physical plan."""

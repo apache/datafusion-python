@@ -18,7 +18,11 @@
 use std::sync::Arc;
 
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
+use datafusion_distributed::{
+    DistributedMetricsFormat, display_plan_ascii, rewrite_distributed_plan_with_metrics,
+};
 use datafusion_proto::physical_plan::AsExecutionPlan;
+use datafusion_python_util::wait_for_future;
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
@@ -67,6 +71,25 @@ impl PyExecutionPlan {
     pub fn display_indent(&self) -> String {
         let d = displayable(self.plan.as_ref());
         format!("{}", d.indent(false))
+    }
+
+    #[pyo3(signature = (metrics_format="none"))]
+    pub fn display_distributed(
+        &self,
+        py: Python<'_>,
+        metrics_format: &str,
+    ) -> PyDataFusionResult<String> {
+        let metrics_format = parse_distributed_metrics_format(metrics_format)?;
+        let show_metrics = metrics_format.is_some();
+        let plan = match metrics_format {
+            Some(metrics_format) => wait_for_future(
+                py,
+                rewrite_distributed_plan_with_metrics(self.plan.clone(), metrics_format),
+            )??,
+            None => self.plan.clone(),
+        };
+
+        Ok(display_plan_ascii(plan.as_ref(), show_metrics))
     }
 
     #[pyo3(signature = (ctx=None))]
@@ -125,6 +148,19 @@ impl PyExecutionPlan {
     #[getter]
     pub fn partition_count(&self) -> usize {
         self.plan.output_partitioning().partition_count()
+    }
+}
+
+fn parse_distributed_metrics_format(
+    format: &str,
+) -> PyDataFusionResult<Option<DistributedMetricsFormat>> {
+    match format {
+        "none" => Ok(None),
+        "aggregated" => Ok(Some(DistributedMetricsFormat::Aggregated)),
+        "per_task" => Ok(Some(DistributedMetricsFormat::PerTask)),
+        _ => Err(crate::errors::PyDataFusionError::Common(format!(
+            "invalid distributed metrics format {format:?}; expected 'none', 'aggregated', or 'per_task'"
+        ))),
     }
 }
 
