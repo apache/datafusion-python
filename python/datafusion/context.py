@@ -143,6 +143,22 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
+class WorkerResolver(Protocol):
+    """Type hint for datafusion-distributed worker discovery objects."""
+
+    def get_urls(self) -> Iterable[str]:
+        """Return worker URLs available for distributed query execution.
+
+        Examples:
+            >>> class StaticWorkerResolver:
+            ...     def get_urls(self) -> list[str]:
+            ...         return ["http://127.0.0.1:50051"]
+            >>> StaticWorkerResolver().get_urls()
+            ['http://127.0.0.1:50051']
+        """
+        ...
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -346,6 +362,29 @@ class SessionConfig:
             A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_extension(extension)
+        return self
+
+    def with_distributed(
+        self,
+        worker_resolver: WorkerResolver,
+    ) -> SessionConfig:
+        """Enable datafusion-distributed planning with a worker resolver.
+
+        Args:
+            worker_resolver: Object whose ``get_urls()`` method returns worker
+                URL strings.
+
+        Returns:
+            A new :py:class:`SessionConfig` object with distributed planning enabled.
+
+        Examples:
+            >>> from datafusion import SessionConfig
+            >>> class StaticWorkerResolver:
+            ...     def get_urls(self) -> list[str]:
+            ...         return ["http://127.0.0.1:50051"]
+            >>> config = SessionConfig().with_distributed(StaticWorkerResolver())
+        """
+        self.config_internal = self.config_internal.with_distributed(worker_resolver)
         return self
 
 

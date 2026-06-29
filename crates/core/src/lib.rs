@@ -51,6 +51,8 @@ pub mod table;
 pub mod unparser;
 
 mod array;
+mod distributed_worker;
+mod distributed_worker_resolver;
 #[cfg(feature = "substrait")]
 pub mod substrait;
 mod udaf;
@@ -96,6 +98,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<physical_plan::PyExecutionPlan>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;
+    m.add_class::<distributed_worker::PyWorker>()?;
+    m.add_class::<distributed_worker::PyWorkerQueryContext>()?;
 
     let catalog = PyModule::new(py, "catalog")?;
     catalog::init_module(&catalog)?;
