@@ -39,7 +39,7 @@ chrono = { version = "0.4", default-features = false }
 arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
-arrow-select = { version = "58" }
+arrow-select = { version = "59" }
 datafusion = { version = "54" }
 datafusion-substrait = { version = "54" }
 datafusion-proto = { version = "54" }
