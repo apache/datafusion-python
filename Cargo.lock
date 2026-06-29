@@ -1181,7 +1181,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-ffi-example"
-version = "53.0.0"
+version = "54.0.0"
 dependencies = [
  "arrow",
  "arrow-array",
@@ -1527,7 +1527,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-python"
-version = "53.0.0"
+version = "54.0.0"
 dependencies = [
  "arrow",
  "arrow-select",
@@ -1559,7 +1559,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-python-util"
-version = "53.0.0"
+version = "54.0.0"
 dependencies = [
  "arrow",
  "datafusion",
