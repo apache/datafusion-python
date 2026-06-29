@@ -36,7 +36,7 @@ pyo3 = { version = "0.28" }
 pyo3-async-runtimes = { version = "0.28" }
 pyo3-log = "0.13.3"
 chrono = { version = "0.4", default-features = false }
-arrow = { version = "58" }
+arrow = { version = "59" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
 arrow-select = { version = "58" }
