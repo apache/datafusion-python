@@ -16,7 +16,12 @@
 # under the License.
 
 name: Dev
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - branch-*
+  pull_request:
 
 jobs:
 
