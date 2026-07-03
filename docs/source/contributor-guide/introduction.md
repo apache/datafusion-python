@@ -66,7 +66,7 @@ Whenever rust code changes (your changes or via `git pull`):
 
 ```shell
 # make sure you activate the venv using "source .venv/bin/activate" first
-maturin develop -uv
+maturin develop --uv
 python -m pytest
 ```
 
