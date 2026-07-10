@@ -832,7 +832,20 @@ impl PySessionContext {
         name: &str,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
     ) -> PyDataFusionResult<()> {
-        let schema = partitions.0[0][0].schema();
+        // Take the schema from the first available batch; error instead of
+        // panicking when the partitions hold no batches.
+        let schema = partitions
+            .0
+            .iter()
+            .flatten()
+            .next()
+            .ok_or_else(|| {
+                PyValueError::new_err(
+                    "Cannot register record batches without a schema: the \
+                     provided partitions contain no record batches.",
+                )
+            })?
+            .schema();
         let table = MemTable::try_new(schema, partitions.0)?;
         self.ctx.register_table(name, Arc::new(table))?;
         Ok(())
