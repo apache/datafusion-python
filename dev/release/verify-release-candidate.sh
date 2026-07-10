@@ -132,7 +132,7 @@ test_source_distribution() {
 
   # Clone testing repositories into the expected location
   git clone https://github.com/apache/arrow-testing.git testing
-  git clone https://github.com/apache/parquet-testing.git parquet-testing
+  git clone https://github.com/apache/parquet-testing.git parquet
 
   python3 -m venv .venv
   if [ -x ".venv/bin/python" ]; then
