@@ -122,6 +122,10 @@ def test_register_record_batches_empty(ctx):
     with pytest.raises(ValueError, match="no record batches"):
         ctx.register_record_batches("t", [[]])
 
+    # An empty outer partition list carries no schema either, and raises the same error.
+    with pytest.raises(ValueError, match="no record batches"):
+        ctx.register_record_batches("t", [])
+
     # The schema is still recovered from a later non-empty partition.
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["a"])
     ctx.register_record_batches("t2", [[], [batch]])

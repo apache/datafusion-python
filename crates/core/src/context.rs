@@ -837,8 +837,7 @@ impl PySessionContext {
         let schema = partitions
             .0
             .iter()
-            .flatten()
-            .next()
+            .find_map(|partition| partition.first())
             .ok_or_else(|| {
                 PyValueError::new_err(
                     "Cannot register record batches without a schema: the \
