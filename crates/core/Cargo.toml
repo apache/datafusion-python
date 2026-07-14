@@ -40,6 +40,7 @@ tokio = { workspace = true, features = [
   "rt-multi-thread",
   "sync",
 ] }
+tonic = { workspace = true }
 pyo3 = { workspace = true, features = [
   "extension-module",
   "generate-import-lib",
@@ -54,6 +55,7 @@ datafusion-substrait = { workspace = true, optional = true }
 datafusion-proto = { workspace = true }
 datafusion-ffi = { workspace = true }
 datafusion-spark = { workspace = true }
+datafusion-distributed = { workspace = true }
 prost = { workspace = true } # keep in line with `datafusion-substrait`
 serde_json = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }

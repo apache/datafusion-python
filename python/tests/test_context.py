@@ -29,6 +29,7 @@ from datafusion import (
     SessionContext,
     SQLOptions,
     Table,
+    WorkerResolver,
     column,
     literal,
     udf,
@@ -97,6 +98,54 @@ def test_create_context_with_all_valid_args():
     ctx.catalog("foo").schema("bar")
     with pytest.raises(KeyError):
         ctx.catalog("datafusion")
+
+
+def test_create_context_with_distributed_worker_resolver():
+    class StaticWorkerResolver:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def get_urls(self) -> list[str]:
+            self.calls += 1
+            return ["http://localhost:50051", "http://localhost:50052"]
+
+    resolver: WorkerResolver = StaticWorkerResolver()
+    config = SessionConfig().with_distributed(resolver)
+    ctx = SessionContext(config)
+
+    ctx.sql("SELECT 1").execution_plan()
+
+    assert isinstance(resolver, StaticWorkerResolver)
+    assert resolver.calls > 0
+
+
+def test_distributed_worker_resolver_does_not_accept_file_scan_config_argument():
+    class StaticWorkerResolver:
+        def get_urls(self) -> list[str]:
+            return ["http://localhost:50051"]
+
+    with pytest.raises(TypeError):
+        SessionConfig().with_distributed(StaticWorkerResolver(), 1)  # type: ignore[call-arg]
+
+
+def test_distributed_worker_resolver_requires_callable_get_urls():
+    class InvalidWorkerResolver:
+        get_urls = "not-callable"
+
+    with pytest.raises(TypeError, match="get_urls"):
+        SessionConfig().with_distributed(InvalidWorkerResolver())
+
+
+def test_distributed_worker_resolver_requires_valid_urls():
+    class InvalidWorkerResolver:
+        def get_urls(self) -> list[str]:
+            return ["not-a-url"]
+
+    config = SessionConfig().with_distributed(InvalidWorkerResolver())
+    ctx = SessionContext(config)
+
+    with pytest.raises(Exception, match="invalid URL"):
+        ctx.sql("SELECT 1").execution_plan()
 
 
 def test_register_record_batches(ctx):

@@ -54,6 +54,24 @@ def test_execution_plan_to_bytes_roundtrip(ctx, df) -> None:
     assert str(original_execution_plan) == str(execution_plan)
 
 
+@pytest.mark.parametrize("metrics_format", ["none", "aggregated", "per_task"])
+def test_execution_plan_display_distributed(ctx, metrics_format) -> None:
+    text = (
+        ctx.sql("SELECT 1")
+        .execution_plan()
+        .display_distributed(metrics_format=metrics_format)
+    )
+
+    assert text
+
+
+def test_execution_plan_display_distributed_validates_metrics_format(ctx) -> None:
+    plan = ctx.sql("SELECT 1").execution_plan()
+
+    with pytest.raises(Exception, match="metrics format"):
+        plan.display_distributed(metrics_format="invalid")  # type: ignore[arg-type]
+
+
 def test_logical_plan_to_proto_is_deprecated(ctx, df) -> None:
     """to_proto / from_proto still work but emit DeprecationWarning."""
     plan = df.logical_plan()
