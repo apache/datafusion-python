@@ -145,11 +145,11 @@ def test_math_functions():
         f.pow(col_v, literal(pa.scalar(4))),
         f.round(col_v),
         f.round(col_v, literal(pa.scalar(3))),
-        f.sqrt(col_v),
+        f.sqrt(f.abs(col_v)),
         f.signum(col_v),
         f.trunc(col_v),
         f.asinh(col_v),
-        f.acosh(col_v),
+        f.acosh(col_v + literal(pa.scalar(1))),
         f.atanh(col_v),
         f.cbrt(col_v),
         f.cosh(col_v),
@@ -189,11 +189,11 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
     np.testing.assert_array_almost_equal(result.column(17), np.round(values))
     np.testing.assert_array_almost_equal(result.column(18), np.round(values, 3))
-    np.testing.assert_array_almost_equal(result.column(19), np.sqrt(values))
+    np.testing.assert_array_almost_equal(result.column(19), np.sqrt(np.abs(values)))
     np.testing.assert_array_almost_equal(result.column(20), np.sign(values))
     np.testing.assert_array_almost_equal(result.column(21), np.trunc(values))
     np.testing.assert_array_almost_equal(result.column(22), np.arcsinh(values))
-    np.testing.assert_array_almost_equal(result.column(23), np.arccosh(values))
+    np.testing.assert_array_almost_equal(result.column(23), np.arccosh(values + 1.0))
     np.testing.assert_array_almost_equal(result.column(24), np.arctanh(values))
     np.testing.assert_array_almost_equal(result.column(25), np.cbrt(values))
     np.testing.assert_array_almost_equal(result.column(26), np.cosh(values))

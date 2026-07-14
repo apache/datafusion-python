@@ -143,6 +143,16 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
+class QueryPlannerExportable(Protocol):
+    """Type hint for object that has __datafusion_query_planner__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
+    produced by a separate compiled extension.
+    """
+
+    def __datafusion_query_planner__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -1657,6 +1667,25 @@ class SessionContext:
         """
         self.ctx.add_physical_optimizer_rule(rule)
 
+    def with_query_planner(
+        self, planner: QueryPlannerExportable | _PyCapsule
+    ) -> SessionContext:
+        """Create a new session context with a custom FFI query planner.
+
+        The planner is imported via its ``__datafusion_query_planner__``
+        PyCapsule, typically produced by a separate compiled extension. The
+        returned context shares this context's installed logical and physical
+        codecs and preserves the existing session state.
+
+        Args:
+            planner: Object exposing ``__datafusion_query_planner__`` or a raw
+                ``datafusion_query_planner_v1`` PyCapsule.
+        """
+        new_internal = self.ctx.with_query_planner(planner)
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = new_internal
+        return new
+
     def table_provider(self, name: str) -> Table:
         """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
 
@@ -2020,6 +2049,10 @@ class SessionContext:
     def __datafusion_logical_extension_codec__(self) -> Any:
         """Access the PyCapsule FFI_LogicalExtensionCodec."""
         return self.ctx.__datafusion_logical_extension_codec__()
+
+    def __datafusion_query_planner__(self) -> Any:
+        """Access the PyCapsule FFI_QueryPlanner for the current planner."""
+        return self.ctx.__datafusion_query_planner__()
 
     def with_logical_extension_codec(
         self, codec: LogicalExtensionCodecExportable | _PyCapsule
