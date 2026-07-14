@@ -116,6 +116,22 @@ def test_register_record_batches(ctx):
     assert result[0].column(1) == pa.array([-3, -3, -3])
 
 
+def test_register_record_batches_empty(ctx):
+    # A partition list with no record batches carries no schema, so this used to
+    # panic on unchecked `[0][0]` indexing. It should now raise a clear error.
+    with pytest.raises(ValueError, match="no record batches"):
+        ctx.register_record_batches("t", [[]])
+
+    # An empty outer partition list carries no schema either, and raises the same error.
+    with pytest.raises(ValueError, match="no record batches"):
+        ctx.register_record_batches("t", [])
+
+    # The schema is still recovered from a later non-empty partition.
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["a"])
+    ctx.register_record_batches("t2", [[], [batch]])
+    assert ctx.sql("SELECT a FROM t2").collect()[0].column(0) == pa.array([1, 2, 3])
+
+
 def test_create_dataframe_registers_unique_table_name(ctx):
     # create a RecordBatch and register it as memtable
     batch = pa.RecordBatch.from_arrays(
