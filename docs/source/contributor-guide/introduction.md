@@ -47,6 +47,8 @@ Bootstrap:
 ```shell
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
+# cd to the repo root
+cd datafusion-python/
 # create the virtual environment
 uv sync --dev --no-install-package datafusion
 # activate the environment
@@ -64,7 +66,7 @@ Whenever rust code changes (your changes or via `git pull`):
 
 ```shell
 # make sure you activate the venv using "source .venv/bin/activate" first
-maturin develop -uv
+maturin develop --uv
 python -m pytest
 ```
 
