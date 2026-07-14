@@ -153,7 +153,7 @@ test_source_distribution() {
   #TODO: we should really run tests here as well
   #python3 -m pytest
 
-  if ( find -iname 'Cargo.toml' | xargs grep SNAPSHOT ); then
+  if ( find . -iname 'Cargo.toml' | xargs grep SNAPSHOT ); then
     echo "Cargo.toml version should not contain SNAPSHOT for releases"
     exit 1
   fi

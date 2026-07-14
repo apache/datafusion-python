@@ -714,6 +714,17 @@ def test_remove_optimizer_rule(ctx):
     assert ctx.remove_optimizer_rule("nonexistent_rule") is False
 
 
+def test_with_query_planner_rejects_non_capsule(ctx):
+    with pytest.raises(TypeError, match="not an instance of 'PyCapsule'"):
+        ctx.with_query_planner(object())
+
+
+def test_with_query_planner_round_trip(ctx):
+    planner_context = ctx.with_query_planner(ctx)
+    batches = planner_context.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
 def test_table_provider(ctx):
     batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
     ctx.register_record_batches("provider_test", [[batch]])

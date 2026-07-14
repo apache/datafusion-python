@@ -40,17 +40,17 @@ arrow = { version = "58" }
 arrow-array = { version = "58" }
 arrow-schema = { version = "58" }
 arrow-select = { version = "58" }
-datafusion = { version = "54" }
-datafusion-substrait = { version = "54" }
-datafusion-proto = { version = "54" }
-datafusion-ffi = { version = "54" }
-datafusion-catalog = { version = "54", default-features = false }
-datafusion-common = { version = "54", default-features = false }
-datafusion-functions-aggregate = { version = "54" }
-datafusion-functions-window = { version = "54" }
-datafusion-spark = { version = "54" }
-datafusion-expr = { version = "54" }
-prost = "0.14.3"
+datafusion = { path = "../datafusion/datafusion/core", version = "54" }
+datafusion-substrait = { path = "../datafusion/datafusion/substrait", version = "54" }
+datafusion-proto = { path = "../datafusion/datafusion/proto", version = "54" }
+datafusion-ffi = { path = "../datafusion/datafusion/ffi", version = "54" }
+datafusion-catalog = { path = "../datafusion/datafusion/catalog", version = "54", default-features = false }
+datafusion-common = { path = "../datafusion/datafusion/common", version = "54", default-features = false }
+datafusion-functions-aggregate = { path = "../datafusion/datafusion/functions-aggregate", version = "54" }
+datafusion-functions-window = { path = "../datafusion/datafusion/functions-window", version = "54" }
+datafusion-spark = { path = "../datafusion/datafusion/spark", version = "54", features = ["datafusion"] }
+datafusion-expr = { path = "../datafusion/datafusion/expr", version = "54" }
+prost = "0.14.1"
 serde_json = "1"
 uuid = { version = "1.23" }
 mimalloc = { version = "0.1", default-features = false }
@@ -61,7 +61,7 @@ object_store = { version = "0.13.1" }
 url = "2"
 log = "0.4.29"
 parking_lot = "0.12"
-prost-types = "0.14.3"                                                # keep in line with `datafusion-substrait`
+prost-types = "0.14.1"                                                # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.28"
 datafusion-python-util = { path = "crates/util", version = "54.0.0" }
 

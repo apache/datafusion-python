@@ -24,6 +24,7 @@ use std::sync::Arc;
 use arrow::array::RecordBatchReader;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
+use async_trait::async_trait;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -36,14 +37,16 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::{MemTable, TableProvider};
 use datafusion::execution::context::{
-    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
+    DataFilePaths, QueryPlanner, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
 use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
-use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::execution::{FunctionRegistry, Session, TaskContextProvider};
+use datafusion::logical_expr::LogicalPlan;
+use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -53,6 +56,7 @@ use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
@@ -219,6 +223,39 @@ impl PySessionConfig {
 
         Ok(Self::from(config))
     }
+}
+
+#[derive(Debug, Clone)]
+struct PythonRuntimeQueryPlanner {
+    planner: FFI_QueryPlanner,
+}
+
+#[async_trait]
+impl QueryPlanner for PythonRuntimeQueryPlanner {
+    async fn create_physical_plan(
+        &self,
+        logical_plan: &LogicalPlan,
+        session: &dyn Session,
+    ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
+        let runtime = get_tokio_runtime().handle().clone();
+        self.planner
+            .create_physical_plan_with_session_runtime(logical_plan, session, Some(runtime))
+            .await
+    }
+}
+
+fn ffi_query_planner_from_pycapsule(obj: &Bound<PyAny>) -> PyResult<FFI_QueryPlanner> {
+    let capsule = if obj.hasattr("__datafusion_query_planner__")? {
+        obj.getattr("__datafusion_query_planner__")?.call0()?
+    } else {
+        obj.clone()
+    };
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    let data: NonNull<FFI_QueryPlanner> = capsule
+        .pointer_checked(Some(c"datafusion_query_planner_v1"))?
+        .cast();
+    Ok(unsafe { data.as_ref().clone() })
 }
 
 /// Runtime options for a SessionContext
@@ -1199,6 +1236,21 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn with_query_planner(&self, query_planner: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        let planner = ffi_query_planner_from_pycapsule(&query_planner)?;
+        let planner = Arc::new(PythonRuntimeQueryPlanner { planner });
+        let state = SessionStateBuilder::new_from_existing(self.ctx.state())
+            .with_query_planner(planner)
+            .build();
+        let ctx = Arc::new(SessionContext::new_with_state(state));
+
+        Ok(Self {
+            ctx,
+            logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec: Arc::clone(&self.physical_codec),
+        })
+    }
+
     pub fn table_provider(&self, name: &str, py: Python) -> PyResult<PyTable> {
         let provider = wait_for_future(py, self.ctx.table_provider(name))
             // Outer error: runtime/async failure
@@ -1373,6 +1425,19 @@ impl PySessionContext {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let ffi = self.ffi_logical_codec();
         create_logical_extension_capsule(py, ffi.as_ref())
+    }
+
+    pub fn __datafusion_query_planner__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let planner = Arc::clone(self.ctx.state().query_planner());
+        let ffi = FFI_QueryPlanner::new_with_ffi_codecs(
+            planner,
+            self.ffi_logical_codec().as_ref().clone(),
+            self.ffi_physical_codec().as_ref().clone(),
+        );
+        PyCapsule::new(py, ffi, Some(cr"datafusion_query_planner_v1".into()))
     }
 
     pub fn with_logical_extension_codec<'py>(
