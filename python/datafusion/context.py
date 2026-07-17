@@ -54,6 +54,8 @@ except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
 
+from urllib.parse import urlparse
+
 import pyarrow as pa
 
 from datafusion.catalog import (
@@ -611,6 +613,34 @@ class SessionContext:
         """
         self.ctx.deregister_object_store(schema, host)
 
+    def _register_object_store_for_path(
+        self, path: str | pathlib.Path, store: Any
+    ) -> None:
+        """Parse a URL path and register the given object store for its scheme and host.
+
+        This is a convenience helper used by methods like
+        :py:meth:`register_parquet` and :py:meth:`read_parquet` to
+        automatically register an object store when an ``object_store``
+        parameter is provided.
+
+        Args:
+            path: A URL-style path (e.g. ``"s3://bucket/key.parquet"``).
+            store: An object store instance to register.
+
+        Raises:
+            ValueError: If the path does not contain a recognized URL scheme.
+        """
+        parsed = urlparse(str(path))
+        if not parsed.scheme or not parsed.netloc:
+            msg = (
+                f"Cannot determine object store URL from path {path!r}. "
+                "The path must use a URL scheme (e.g. 's3://bucket/key')."
+            )
+            raise ValueError(msg)
+        scheme = f"{parsed.scheme}://"
+        host = parsed.netloc
+        self.register_object_store(scheme, store, host=host)
+
     def register_listing_table(
         self,
         name: str,
@@ -1028,6 +1058,7 @@ class SessionContext:
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -1049,7 +1080,41 @@ class SessionContext:
             file_sort_order: Sort order for the file. Each sort key can be
                 specified as a column name (``str``), an expression
                 (``Expr``), or a ``SortExpr``.
+            object_store: A pre-configured object store instance (e.g.
+                :py:class:`~datafusion.object_store.AmazonS3`,
+                :py:class:`~datafusion.object_store.GoogleCloud`,
+                :py:class:`~datafusion.object_store.MicrosoftAzure`) to use
+                for accessing the file. When provided, the store is
+                automatically registered for the URL scheme and host parsed
+                from ``path``, removing the need to call
+                :py:meth:`register_object_store` separately. This is
+                especially useful in multi-threaded environments where
+                setting credentials via ``os.environ`` is not thread-safe.
+
+        Examples:
+            Register a local Parquet file:
+
+            >>> import datafusion
+            >>> ctx = datafusion.SessionContext()
+            >>> ctx.register_parquet("my_table", "data.parquet")
+
+            Register from S3 with inline credentials (thread-safe):
+
+            >>> from datafusion.object_store import AmazonS3  # doctest: +SKIP
+            >>> store = AmazonS3(
+            ...     bucket_name="my-bucket",
+            ...     region="us-east-1",
+            ...     access_key_id="...",
+            ...     secret_access_key="...",
+            ... )  # doctest: +SKIP
+            >>> ctx.register_parquet(
+            ...     "my_table",
+            ...     "s3://my-bucket/data.parquet",
+            ...     object_store=store,
+            ... )  # doctest: +SKIP
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1075,6 +1140,7 @@ class SessionContext:
         file_extension: str = ".csv",
         file_compression_type: str | None = None,
         options: CsvReadOptions | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a CSV file as a table.
 
@@ -1096,7 +1162,14 @@ class SessionContext:
             file_compression_type: File compression type.
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
         """
+        if object_store is not None:
+            # For list paths, register from the first entry
+            register_path = path[0] if isinstance(path, list) else path
+            self._register_object_store_for_path(register_path, object_store)
         if options is not None and (
             schema is not None
             or not has_header
@@ -1143,6 +1216,7 @@ class SessionContext:
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register a JSON file as a table.
 
@@ -1159,7 +1233,12 @@ class SessionContext:
                 selected for data input.
             table_partition_cols: Partition columns.
             file_compression_type: File compression type.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1180,6 +1259,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_extension: str = ".avro",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register an Avro file as a table.
 
@@ -1192,7 +1272,12 @@ class SessionContext:
             schema: The data source schema.
             file_extension: File extension to select.
             table_partition_cols:  Partition columns.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1205,6 +1290,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_extension: str = ".arrow",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+        object_store: Any | None = None,
     ) -> None:
         """Register an Arrow IPC file as a table.
 
@@ -1217,6 +1303,9 @@ class SessionContext:
             schema: The data source schema.
             file_extension: File extension to select.
             table_partition_cols: Partition columns.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
 
         Examples:
             >>> import tempfile, os
@@ -1271,6 +1360,8 @@ class SessionContext:
               30
             ]
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1690,6 +1781,7 @@ class SessionContext:
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a line-delimited JSON data source.
 
@@ -1702,10 +1794,15 @@ class SessionContext:
                 selected for data input.
             table_partition_cols: Partition columns.
             file_compression_type: File compression type.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
 
         Returns:
             DataFrame representation of the read JSON files.
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1731,6 +1828,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
         options: CsvReadOptions | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
 
@@ -1750,10 +1848,16 @@ class SessionContext:
             file_compression_type:  File compression type.
             options: Set advanced options for CSV reading. This cannot be
                 combined with any of the other options in this method.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
 
         Returns:
             DataFrame representation of the read CSV files
         """
+        if object_store is not None:
+            register_path = path[0] if isinstance(path, list) else path
+            self._register_object_store_for_path(register_path, object_store)
         if options is not None and (
             schema is not None
             or not has_header
@@ -1803,6 +1907,7 @@ class SessionContext:
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1822,10 +1927,43 @@ class SessionContext:
             file_sort_order: Sort order for the file. Each sort key can be
                 specified as a column name (``str``), an expression
                 (``Expr``), or a ``SortExpr``.
+            object_store: A pre-configured object store instance (e.g.
+                :py:class:`~datafusion.object_store.AmazonS3`,
+                :py:class:`~datafusion.object_store.GoogleCloud`,
+                :py:class:`~datafusion.object_store.MicrosoftAzure`) to use
+                for accessing the file. When provided, the store is
+                automatically registered for the URL scheme and host parsed
+                from ``path``, removing the need to call
+                :py:meth:`register_object_store` separately. This is
+                especially useful in multi-threaded environments where
+                setting credentials via ``os.environ`` is not thread-safe.
 
         Returns:
             DataFrame representation of the read Parquet files
+
+        Examples:
+            Read a local Parquet file:
+
+            >>> import datafusion
+            >>> ctx = datafusion.SessionContext()
+            >>> df = ctx.read_parquet("data.parquet")  # doctest: +SKIP
+
+            Read from S3 with inline credentials (thread-safe):
+
+            >>> from datafusion.object_store import AmazonS3  # doctest: +SKIP
+            >>> store = AmazonS3(
+            ...     bucket_name="my-bucket",
+            ...     region="us-east-1",
+            ...     access_key_id="...",
+            ...     secret_access_key="...",
+            ... )  # doctest: +SKIP
+            >>> df = ctx.read_parquet(
+            ...     "s3://my-bucket/data.parquet",
+            ...     object_store=store,
+            ... )  # doctest: +SKIP
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = _convert_table_partition_cols(table_partition_cols)
@@ -1848,6 +1986,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".avro",
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading Avro data source.
 
@@ -1856,10 +1995,15 @@ class SessionContext:
             schema: The data source schema.
             file_partition_cols: Partition columns.
             file_extension: File extension to select.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
 
         Returns:
             DataFrame representation of the read Avro file
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if file_partition_cols is None:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
@@ -1873,6 +2017,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         file_extension: str = ".arrow",
         file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
+        object_store: Any | None = None,
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading an Arrow IPC data source.
 
@@ -1881,6 +2026,9 @@ class SessionContext:
             schema: The data source schema.
             file_extension: File extension to select.
             file_partition_cols: Partition columns.
+            object_store: A pre-configured object store instance to use for
+                accessing the file. When provided, the store is automatically
+                registered for the URL scheme and host parsed from ``path``.
 
         Returns:
             DataFrame representation of the read Arrow IPC file.
@@ -1932,6 +2080,8 @@ class SessionContext:
               3
             ]
         """
+        if object_store is not None:
+            self._register_object_store_for_path(path, object_store)
         if file_partition_cols is None:
             file_partition_cols = []
         file_partition_cols = _convert_table_partition_cols(file_partition_cols)
