@@ -217,6 +217,7 @@ __all__ = [
     "initcap",
     "inner_product",
     "instr",
+    "is_nan",
     "isnan",
     "iszero",
     "lag",
@@ -411,6 +412,11 @@ def isnan(expr: Expr) -> Expr:
         True
     """
     return Expr(f.isnan(expr.expr))
+
+
+def is_nan(expr: Expr) -> Expr:
+    """Returns true if a given number is +NaN or -NaN otherwise returns false."""
+    return isnan(expr)
 
 
 def nullif(expr1: Expr, expr2: Expr) -> Expr:

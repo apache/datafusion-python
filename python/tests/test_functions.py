@@ -215,6 +215,15 @@ def test_math_functions():
     )
 
 
+def test_is_nan_alias():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"value": [1.0, np.nan, None]})
+
+    result = df.select(f.is_nan(column("value")).alias("is_nan")).to_pydict()
+
+    assert result == {"is_nan": [False, True, None]}
+
+
 def py_indexof(arr, v):
     try:
         return arr.index(v) + 1
