@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -302,7 +302,7 @@ jobs:
 
       - name: Setup Python (free-threaded)
         if: matrix.python-tag != 'abi3'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
@@ -384,7 +384,7 @@ jobs:
 
       - name: Setup Python (free-threaded)
         if: matrix.python-tag != 'abi3'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
@@ -513,7 +513,7 @@ jobs:
           path: docs-target
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.10"
 
