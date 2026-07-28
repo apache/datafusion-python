@@ -686,15 +686,15 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 +----------+--------------------------------------------------+
 | Type 1   | Type 2 List                                      |
 +----------+--------------------------------------------------+
-| Water    | [Poison, Psychic, Ice, , Dark, Fighting, Flying] |
-| Rock     | [Water, Flying, Ground]                          |
+| Water    | [Psychic, Dark, Poison, Flying, , Fighting, Ice] |
+| Rock     | [Flying, Water, Ground]                          |
 | Ghost    | [Poison]                                         |
 | Ice      | [Flying, Psychic]                                |
 | Dragon   | [, Flying]                                       |
-| Grass    | [, Psychic, Poison]                              |
-| Fire     | [Dragon, Flying, ]                               |
-| Normal   | [Fairy, , Flying]                                |
-| Poison   | [, Ground, Flying]                               |
+| Grass    | [, Poison, Psychic]                              |
+| Fire     | [Flying, , Dragon]                               |
+| Normal   | [, Fairy, Flying]                                |
+| Poison   | [, Flying, Ground]                               |
 | Fighting | []                                               |
 +----------+--------------------------------------------------+
 Data truncated.
@@ -719,12 +719,12 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 +----------+------------------------------------------------+
 | Type 1   | Type 2 List                                    |
 +----------+------------------------------------------------+
-| Water    | [Flying, Psychic, Fighting, Poison, Dark, Ice] |
-| Rock     | [Water, Ground, Flying]                        |
+| Water    | [Dark, Flying, Fighting, Poison, Ice, Psychic] |
+| Rock     | [Ground, Flying, Water]                        |
 | Ghost    | [Poison]                                       |
-| Ice      | [Flying, Psychic]                              |
+| Ice      | [Psychic, Flying]                              |
 | Dragon   | [Flying]                                       |
-| Grass    | [Psychic, Poison]                              |
+| Grass    | [Poison, Psychic]                              |
 | Fire     | [Flying, Dragon]                               |
 | Normal   | [Fairy, Flying]                                |
 | Poison   | [Ground, Flying]                               |
@@ -1273,7 +1273,7 @@ name. They live in a separate namespace so you opt in explicitly. See
 <h2>User-Defined Aggregate Functions<a class="headerlink" href="#user-defined-aggregate-functions" title="Link to this heading">#</a></h2>
 <p>You can ship custom aggregations to the engine by subclassing
 <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> and registering it via
-<a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a>. See <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> for
+<code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code>. See <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> for
 the accumulator interface and worked examples.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
