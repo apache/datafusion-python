@@ -65,10 +65,10 @@ impl Display for PyTableScan {
             Projections: {:?}
             Projected Schema: {:?}
             Filters: {:?}",
-            &self.table_scan.table_name,
-            &self.py_projections(),
-            &self.py_schema(),
-            &self.py_filters(),
+            self.table_scan.table_name,
+            self.py_projections(),
+            self.py_schema(),
+            self.py_filters(),
         )
     }
 }

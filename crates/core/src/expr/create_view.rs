@@ -58,7 +58,7 @@ impl Display for PyCreateView {
             input: {:?}
             or_replace: {:?}
             definition: {:?}",
-            &self.create.name, &self.create.input, &self.create.or_replace, &self.create.definition,
+            self.create.name, self.create.input, self.create.or_replace, self.create.definition,
         )
     }
 }
