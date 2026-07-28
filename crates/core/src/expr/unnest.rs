@@ -56,7 +56,7 @@ impl Display for PyUnnest {
             "Unnest
             Inputs: {:?}
             Schema: {:?}",
-            &self.unnest_.input, &self.unnest_.schema,
+            self.unnest_.input, self.unnest_.schema,
         )
     }
 }

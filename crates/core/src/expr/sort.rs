@@ -61,7 +61,7 @@ impl Display for PySort {
             \nExpr(s): {:?}
             \nInput: {:?}
             \nSchema: {:?}",
-            &self.sort.expr,
+            self.sort.expr,
             self.sort.input,
             self.sort.input.schema()
         )

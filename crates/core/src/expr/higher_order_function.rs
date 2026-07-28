@@ -52,7 +52,7 @@ impl Display for PyHigherOrderFunction {
             f,
             "HigherOrderFunction(name={}, args={:?})",
             self.higher_order.name(),
-            &self.higher_order.args,
+            self.higher_order.args,
         )
     }
 }

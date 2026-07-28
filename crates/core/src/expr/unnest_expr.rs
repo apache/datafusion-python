@@ -52,7 +52,7 @@ impl Display for PyUnnestExpr {
             f,
             "Unnest
             Expr: {:?}",
-            &self.unnest.expr,
+            self.unnest.expr,
         )
     }
 }

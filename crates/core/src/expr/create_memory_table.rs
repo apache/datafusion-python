@@ -57,10 +57,7 @@ impl Display for PyCreateMemoryTable {
             Input: {:?}
             if_not_exists: {:?}
             or_replace: {:?}",
-            &self.create.name,
-            &self.create.input,
-            &self.create.if_not_exists,
-            &self.create.or_replace,
+            self.create.name, self.create.input, self.create.if_not_exists, self.create.or_replace,
         )
     }
 }
