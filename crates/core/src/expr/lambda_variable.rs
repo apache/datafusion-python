@@ -46,7 +46,7 @@ impl From<PyLambdaVariable> for LambdaVariable {
 
 impl Display for PyLambdaVariable {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "LambdaVariable({})", &self.variable.name)
+        write!(f, "LambdaVariable({})", self.variable.name)
     }
 }
 
