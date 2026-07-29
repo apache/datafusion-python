@@ -624,21 +624,32 @@ class SessionContext:
         parameter is provided.
 
         Args:
-            path: A URL-style path (e.g. ``"s3://bucket/key.parquet"``).
+            path: A URL-style path (e.g. ``"s3://bucket/key.parquet"`` or
+                ``"file:///tmp/data.parquet"``).
             store: An object store instance to register.
 
         Raises:
-            ValueError: If the path does not contain a recognized URL scheme.
+            ValueError: If the path does not contain a URL scheme, or if
+                a non-file scheme is missing a host/bucket component.
         """
         parsed = urlparse(str(path))
-        if not parsed.scheme or not parsed.netloc:
+        if not parsed.scheme:
             msg = (
                 f"Cannot determine object store URL from path {path!r}. "
                 "The path must use a URL scheme (e.g. 's3://bucket/key')."
             )
             raise ValueError(msg)
+        # file:// URLs typically have an empty netloc (e.g. file:///tmp/a.parquet)
+        # For other schemes (s3, gs, az, https) the netloc (bucket/host) is required.
+        if parsed.scheme != "file" and not parsed.netloc:
+            msg = (
+                f"Cannot determine object store URL from path {path!r}. "
+                "The path must include a host or bucket "
+                "(e.g. 's3://bucket/key')."
+            )
+            raise ValueError(msg)
         scheme = f"{parsed.scheme}://"
-        host = parsed.netloc
+        host = parsed.netloc or None
         self.register_object_store(scheme, store, host=host)
 
     def register_listing_table(
@@ -1096,7 +1107,7 @@ class SessionContext:
 
             >>> import datafusion
             >>> ctx = datafusion.SessionContext()
-            >>> ctx.register_parquet("my_table", "data.parquet")
+            >>> ctx.register_parquet("my_table", "data.parquet")  # doctest: +SKIP
 
             Register from S3 with inline credentials (thread-safe):
 

@@ -84,10 +84,25 @@ class TestRegisterObjectStoreForPath:
 
     def test_raises_on_windows_path(self, ctx):
         mock_store = MagicMock()
-        with pytest.raises(ValueError, match="Cannot determine object store URL"):
+        with pytest.raises(ValueError, match="must include a host or bucket"):
             ctx._register_object_store_for_path(
                 "C:\\Users\\data\\file.parquet", mock_store
             )
+
+    def test_raises_on_scheme_without_host_for_non_file(self, ctx):
+        """Non-file schemes (s3, gs, etc.) require a host/bucket."""
+        mock_store = MagicMock()
+        with pytest.raises(ValueError, match="must include a host or bucket"):
+            ctx._register_object_store_for_path("s3:///key.parquet", mock_store)
+
+    def test_parses_file_url(self, ctx):
+        """file:// URLs with empty netloc should be accepted."""
+        mock_store = MagicMock()
+        with patch.object(ctx, "register_object_store") as mock_register:
+            ctx._register_object_store_for_path(
+                "file:///tmp/path/to/file.parquet", mock_store
+            )
+            mock_register.assert_called_once_with("file://", mock_store, host=None)
 
     def test_accepts_pathlib_path_raises(self, ctx):
         """pathlib.Path cannot represent URLs, so this should raise."""
@@ -258,7 +273,7 @@ class TestEndToEndWithLocalFileSystem:
 
         # Use file:// URL with LocalFileSystem object store
         store = LocalFileSystem()
-        file_url = f"file://{tmp_path}/test.parquet"
+        file_url = parquet_path.as_uri()
 
         ctx.register_parquet("test_tbl", file_url, object_store=store)
         result = ctx.sql("SELECT * FROM test_tbl").collect()
@@ -277,7 +292,7 @@ class TestEndToEndWithLocalFileSystem:
         pq.write_table(table, str(parquet_path))
 
         store = LocalFileSystem()
-        file_url = f"file://{tmp_path}/read_test.parquet"
+        file_url = parquet_path.as_uri()
 
         df = ctx.read_parquet(file_url, object_store=store)
         result = df.collect()
