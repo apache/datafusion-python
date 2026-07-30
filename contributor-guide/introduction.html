@@ -529,6 +529,8 @@ and for <code class="docutils literal notranslate"><span class="pre">uv</span> <
 <p>Bootstrap:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch this repo</span>
 git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/datafusion-python.git
+<span class="c1"># cd to the repo root</span>
+<span class="nb">cd</span><span class="w"> </span>datafusion-python/
 <span class="c1"># create the virtual environment</span>
 uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
 <span class="c1"># activate the environment</span>
@@ -542,7 +544,7 @@ git<span class="w"> </span>submodule<span class="w"> </span>update
 </div>
 <p>Whenever rust code changes (your changes or via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span></code>):</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source .venv/bin/activate&quot; first</span>
-maturin<span class="w"> </span>develop<span class="w"> </span>-uv
+maturin<span class="w"> </span>develop<span class="w"> </span>--uv
 python<span class="w"> </span>-m<span class="w"> </span>pytest
 </pre></div>
 </div>
