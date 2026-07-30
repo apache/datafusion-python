@@ -22,8 +22,10 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import SessionContext
+from datafusion.object_store import LocalFileSystem
 
 
 @pytest.fixture
@@ -31,271 +33,108 @@ def ctx():
     return SessionContext()
 
 
-class TestRegisterObjectStoreForPath:
-    """Unit tests for _register_object_store_for_path URL parsing logic."""
+@pytest.mark.parametrize(
+    ("path", "scheme", "host"),
+    [
+        ("s3://my-bucket/path/file.parquet", "s3://", "my-bucket"),
+        ("gs://my-gcs-bucket/data.parquet", "gs://", "my-gcs-bucket"),
+        ("az://my-container/data.parquet", "az://", "my-container"),
+        ("https://example.com/data.parquet", "https://", "example.com"),
+        ("file:///tmp/data.parquet", "file://", None),
+    ],
+)
+def test_register_object_store_for_url(ctx, path, scheme, host):
+    store = MagicMock()
 
-    def test_parses_s3_url(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            ctx._register_object_store_for_path(
-                "s3://my-bucket/path/to/file.parquet", mock_store
-            )
-            mock_register.assert_called_once_with("s3://", mock_store, host="my-bucket")
+    with patch.object(ctx, "register_object_store") as register:
+        ctx._register_object_store_for_path(path, store)
 
-    def test_parses_gs_url(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            ctx._register_object_store_for_path(
-                "gs://my-gcs-bucket/data.parquet", mock_store
-            )
-            mock_register.assert_called_once_with(
-                "gs://", mock_store, host="my-gcs-bucket"
-            )
-
-    def test_parses_az_url(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            ctx._register_object_store_for_path(
-                "az://my-container/data.parquet", mock_store
-            )
-            mock_register.assert_called_once_with(
-                "az://", mock_store, host="my-container"
-            )
-
-    def test_parses_https_url(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            ctx._register_object_store_for_path(
-                "https://my-host.example.com/data.parquet", mock_store
-            )
-            mock_register.assert_called_once_with(
-                "https://", mock_store, host="my-host.example.com"
-            )
-
-    def test_raises_on_local_path(self, ctx):
-        mock_store = MagicMock()
-        with pytest.raises(ValueError, match="Cannot determine object store URL"):
-            ctx._register_object_store_for_path("/local/path/file.parquet", mock_store)
-
-    def test_raises_on_relative_path(self, ctx):
-        mock_store = MagicMock()
-        with pytest.raises(ValueError, match="Cannot determine object store URL"):
-            ctx._register_object_store_for_path("relative/path.parquet", mock_store)
-
-    def test_raises_on_windows_path(self, ctx):
-        mock_store = MagicMock()
-        with pytest.raises(ValueError, match="must include a host or bucket"):
-            ctx._register_object_store_for_path(
-                "C:\\Users\\data\\file.parquet", mock_store
-            )
-
-    def test_raises_on_scheme_without_host_for_non_file(self, ctx):
-        """Non-file schemes (s3, gs, etc.) require a host/bucket."""
-        mock_store = MagicMock()
-        with pytest.raises(ValueError, match="must include a host or bucket"):
-            ctx._register_object_store_for_path("s3:///key.parquet", mock_store)
-
-    def test_parses_file_url(self, ctx):
-        """file:// URLs with empty netloc should be accepted."""
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            ctx._register_object_store_for_path(
-                "file:///tmp/path/to/file.parquet", mock_store
-            )
-            mock_register.assert_called_once_with("file://", mock_store, host=None)
-
-    def test_accepts_pathlib_path_raises(self, ctx):
-        """pathlib.Path cannot represent URLs, so this should raise."""
-        mock_store = MagicMock()
-        # pathlib.Path strips the scheme, so this becomes a local path
-        with pytest.raises(ValueError, match="Cannot determine object store URL"):
-            ctx._register_object_store_for_path(Path("/local/file.parquet"), mock_store)
+    register.assert_called_once_with(scheme, store, host=host)
 
 
-class TestRegisterParquetObjectStore:
-    """Tests for register_parquet with object_store parameter."""
-
-    def test_object_store_none_does_not_register(self, ctx):
-        """When object_store is None, register_object_store is not called."""
-        with patch.object(ctx, "register_object_store") as mock_register:
-            # This will fail at the Rust level (file doesn't exist), but
-            # we're testing that register_object_store is NOT called
-            with contextlib.suppress(Exception):
-                ctx.register_parquet("t", "s3://bucket/file.parquet")
-            mock_register.assert_not_called()
-
-    def test_object_store_triggers_registration(self, ctx):
-        """When object_store is provided, register_object_store is called."""
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_parquet(
-                    "t",
-                    "s3://my-bucket/file.parquet",
-                    object_store=mock_store,
-                )
-            mock_register.assert_called_once_with("s3://", mock_store, host="my-bucket")
-
-    def test_object_store_invalid_path_raises(self, ctx):
-        """Providing object_store with a local path raises ValueError."""
-        mock_store = MagicMock()
-        with pytest.raises(ValueError, match="Cannot determine object store URL"):
-            ctx.register_parquet("t", "/local/file.parquet", object_store=mock_store)
+@pytest.mark.parametrize(
+    ("path", "error"),
+    [
+        ("/local/path/file.parquet", "Cannot determine object store URL"),
+        ("relative/path.parquet", "Cannot determine object store URL"),
+        (Path("/local/file.parquet"), "Cannot determine object store URL"),
+        ("C:\\Users\\data\\file.parquet", "must include a host or bucket"),
+        ("s3:///key.parquet", "must include a host or bucket"),
+    ],
+)
+def test_register_object_store_rejects_invalid_url(path, error, ctx):
+    with pytest.raises(ValueError, match=error):
+        ctx._register_object_store_for_path(path, MagicMock())
 
 
-class TestReadParquetObjectStore:
-    """Tests for read_parquet with object_store parameter."""
+@pytest.mark.parametrize(
+    ("method_name", "args", "path"),
+    [
+        ("register_parquet", ("table",), "s3://bucket/data.parquet"),
+        ("read_parquet", (), "s3://bucket/data.parquet"),
+        ("register_csv", ("table",), "s3://bucket/data.csv"),
+        ("read_csv", (), "s3://bucket/data.csv"),
+        ("register_json", ("table",), "s3://bucket/data.json"),
+        ("read_json", (), "s3://bucket/data.json"),
+        ("register_avro", ("table",), "s3://bucket/data.avro"),
+        ("read_avro", (), "s3://bucket/data.avro"),
+        ("register_arrow", ("table",), "s3://bucket/data.arrow"),
+        ("read_arrow", (), "s3://bucket/data.arrow"),
+    ],
+)
+def test_file_methods_register_object_store(ctx, method_name, args, path):
+    store = MagicMock()
 
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.read_parquet("s3://my-bucket/file.parquet", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="my-bucket")
+    # The remote file does not exist. Registration happens before DataFusion
+    # tries to inspect it, which is the behavior under test.
+    with (
+        patch.object(ctx, "register_object_store") as register,
+        contextlib.suppress(Exception),
+    ):
+        getattr(ctx, method_name)(*args, path, object_store=store)
 
-
-class TestRegisterCsvObjectStore:
-    """Tests for register_csv with object_store parameter."""
-
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_csv(
-                    "t", "s3://my-bucket/data.csv", object_store=mock_store
-                )
-            mock_register.assert_called_once_with("s3://", mock_store, host="my-bucket")
-
-    def test_object_store_with_list_path(self, ctx):
-        """For list paths, the first entry is used for URL parsing."""
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_csv(
-                    "t",
-                    ["s3://my-bucket/a.csv", "s3://my-bucket/b.csv"],
-                    object_store=mock_store,
-                )
-            mock_register.assert_called_once_with("s3://", mock_store, host="my-bucket")
+    register.assert_called_once_with("s3://", store, host="bucket")
 
 
-class TestReadCsvObjectStore:
-    """Tests for read_csv with object_store parameter."""
+def test_register_csv_uses_first_path_for_object_store(ctx):
+    store = MagicMock()
+    paths = ["s3://bucket/a.csv", "s3://bucket/b.csv"]
 
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.read_csv("gs://bucket/data.csv", object_store=mock_store)
-            mock_register.assert_called_once_with("gs://", mock_store, host="bucket")
+    with (
+        patch.object(ctx, "register_object_store") as register,
+        contextlib.suppress(Exception),
+    ):
+        ctx.register_csv("table", paths, object_store=store)
 
-
-class TestRegisterJsonObjectStore:
-    """Tests for register_json with object_store parameter."""
-
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_json("t", "s3://bucket/data.json", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
+    register.assert_called_once_with("s3://", store, host="bucket")
 
 
-class TestReadJsonObjectStore:
-    """Tests for read_json with object_store parameter."""
+def test_object_store_none_does_not_register(ctx):
+    with (
+        patch.object(ctx, "register_object_store") as register,
+        contextlib.suppress(Exception),
+    ):
+        ctx.register_parquet("table", "missing.parquet")
 
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.read_json("s3://bucket/data.json", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
-
-
-class TestRegisterAvroObjectStore:
-    """Tests for register_avro with object_store parameter."""
-
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_avro("t", "s3://bucket/data.avro", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
+    register.assert_not_called()
 
 
-class TestReadAvroObjectStore:
-    """Tests for read_avro with object_store parameter."""
-
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.read_avro("s3://bucket/data.avro", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
+def test_file_method_rejects_local_path_with_object_store(ctx):
+    with pytest.raises(ValueError, match="Cannot determine object store URL"):
+        ctx.register_parquet("table", "/local/file.parquet", object_store=MagicMock())
 
 
-class TestRegisterArrowObjectStore:
-    """Tests for register_arrow with object_store parameter."""
+@pytest.mark.parametrize("method_name", ["register_parquet", "read_parquet"])
+def test_parquet_methods_with_local_object_store(ctx, tmp_path, method_name):
+    table = pa.table({"value": [10, 20, 30]})
+    parquet_path = tmp_path / "data.parquet"
+    pq.write_table(table, parquet_path)
 
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.register_arrow(
-                    "t", "s3://bucket/data.arrow", object_store=mock_store
-                )
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
+    path = parquet_path.as_uri()
+    if method_name == "register_parquet":
+        ctx.register_parquet("test_table", path, object_store=LocalFileSystem())
+        dataframe = ctx.sql("SELECT * FROM test_table")
+    else:
+        dataframe = ctx.read_parquet(path, object_store=LocalFileSystem())
 
-
-class TestReadArrowObjectStore:
-    """Tests for read_arrow with object_store parameter."""
-
-    def test_object_store_triggers_registration(self, ctx):
-        mock_store = MagicMock()
-        with patch.object(ctx, "register_object_store") as mock_register:
-            with contextlib.suppress(Exception):
-                ctx.read_arrow("s3://bucket/data.arrow", object_store=mock_store)
-            mock_register.assert_called_once_with("s3://", mock_store, host="bucket")
-
-
-class TestEndToEndWithLocalFileSystem:
-    """Integration test using LocalFileSystem object store with register_parquet."""
-
-    def test_register_parquet_with_local_object_store(self, ctx, tmp_path):
-        """Verify the full flow works with a real object store and local file."""
-        import pyarrow.parquet as pq
-        from datafusion.object_store import LocalFileSystem
-
-        # Write a test parquet file
-        table = pa.table({"x": [1, 2, 3], "y": ["a", "b", "c"]})
-        parquet_path = tmp_path / "test.parquet"
-        pq.write_table(table, str(parquet_path))
-
-        # Use file:// URL with LocalFileSystem object store
-        store = LocalFileSystem()
-        file_url = parquet_path.as_uri()
-
-        ctx.register_parquet("test_tbl", file_url, object_store=store)
-        result = ctx.sql("SELECT * FROM test_tbl").collect()
-
-        assert len(result) == 1
-        assert result[0].num_rows == 3
-        assert result[0].column("x").to_pylist() == [1, 2, 3]
-
-    def test_read_parquet_with_local_object_store(self, ctx, tmp_path):
-        """Verify read_parquet works with object_store parameter."""
-        import pyarrow.parquet as pq
-        from datafusion.object_store import LocalFileSystem
-
-        table = pa.table({"val": [10, 20, 30]})
-        parquet_path = tmp_path / "read_test.parquet"
-        pq.write_table(table, str(parquet_path))
-
-        store = LocalFileSystem()
-        file_url = parquet_path.as_uri()
-
-        df = ctx.read_parquet(file_url, object_store=store)
-        result = df.collect()
-
-        assert len(result) == 1
-        assert result[0].column("val").to_pylist() == [10, 20, 30]
+    assert dataframe.collect()[0].column("value").to_pylist() == [10, 20, 30]
