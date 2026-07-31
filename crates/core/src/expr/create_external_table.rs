@@ -118,10 +118,6 @@ impl PyCreateExternalTable {
         Ok(self.create.name.to_string())
     }
 
-    pub fn location(&self) -> String {
-        self.create.locations.first().cloned().unwrap_or_default()
-    }
-
     pub fn locations(&self) -> Vec<String> {
         self.create.locations.clone()
     }
