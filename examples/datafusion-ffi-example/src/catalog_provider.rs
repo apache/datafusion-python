@@ -33,8 +33,8 @@ use pyo3::types::PyCapsule;
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
 
 pub fn my_table() -> Arc<dyn TableProvider + 'static> {
+    use arrow::array::record_batch;
     use arrow::datatypes::{DataType, Field};
-    use datafusion_common::record_batch;
 
     let schema = Arc::new(Schema::new(vec![
         Field::new("units", DataType::Int32, true),
@@ -92,14 +92,12 @@ impl FixedSchemaProvider {
         py: Python<'py>,
         session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_schema_provider".into();
-
         let provider = Arc::clone(&self.inner) as Arc<dyn SchemaProvider + Send>;
 
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider = FFI_SchemaProvider::new_with_ffi_codec(provider, None, codec);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_schema_provider")
     }
 }
 
@@ -186,14 +184,12 @@ impl MyCatalogProvider {
         py: Python<'py>,
         session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_catalog_provider".into();
-
         let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProvider + Send>;
 
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider = FFI_CatalogProvider::new_with_ffi_codec(provider, None, codec);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_catalog_provider")
     }
 }
 
@@ -247,13 +243,11 @@ impl MyCatalogProviderList {
         py: Python<'py>,
         session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_catalog_provider_list".into();
-
         let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProviderList + Send>;
 
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider = FFI_CatalogProviderList::new_with_ffi_codec(provider, None, codec);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_catalog_provider_list")
     }
 }

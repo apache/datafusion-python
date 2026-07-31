@@ -16,7 +16,7 @@
 // under the License.
 
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::ptr::NonNull;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -1237,8 +1237,7 @@ impl PyDataFrame {
         // destructor provided by PyO3 will drop the stream unless ownership is
         // transferred to PyArrow during import.
         let stream = FFI_ArrowArrayStream::new(reader);
-        let name = CString::new(ARROW_ARRAY_STREAM_NAME.to_bytes()).unwrap();
-        let capsule = PyCapsule::new(py, stream, Some(name))?;
+        let capsule = PyCapsule::new_with_value(py, stream, ARROW_ARRAY_STREAM_NAME)?;
         Ok(capsule)
     }
 
@@ -1317,7 +1316,8 @@ impl PyDataFrame {
             None => Vec::new(), // Empty vector means fill null for all columns
         };
 
-        let df = self.df.as_ref().clone().fill_null(scalar_value.0, cols)?;
+        let cols = cols.iter().map(String::as_str).collect::<Vec<_>>();
+        let df = self.df.as_ref().fill_null(&scalar_value.0, &cols)?;
         Ok(Self::new(df))
     }
 }

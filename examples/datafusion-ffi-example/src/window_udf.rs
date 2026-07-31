@@ -45,12 +45,10 @@ impl MyRankUDF {
     }
 
     fn __datafusion_window_udf__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_window_udf".into();
-
         let func = Arc::new(WindowUDF::from(self.clone()));
         let provider = FFI_WindowUDF::from(func);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_window_udf")
     }
 }
 

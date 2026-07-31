@@ -92,7 +92,6 @@ impl MyPhysicalOptimizerRule {
         let runtime = get_tokio_runtime().handle().clone();
         let ffi = FFI_PhysicalOptimizerRule::new(rule, Some(runtime));
 
-        let name = cr"datafusion_physical_optimizer_rule".into();
-        PyCapsule::new(py, ffi, Some(name))
+        PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_optimizer_rule")
     }
 }

@@ -164,7 +164,8 @@ pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()
         )));
     }
 
-    let capsule_name = unsafe { capsule_name.unwrap().as_cstr().to_str()? };
+    let capsule_name = unsafe { capsule_name.unwrap().as_cstr().to_str() }
+        .map_err(|err| PyValueError::new_err(err.to_string()))?;
     if capsule_name != name {
         return Err(PyValueError::new_err(format!(
             "Expected name '{name}' in PyCapsule, instead got '{capsule_name}'"
@@ -208,10 +209,9 @@ pub fn create_logical_extension_capsule<'py>(
     py: Python<'py>,
     codec: &FFI_LogicalExtensionCodec,
 ) -> PyResult<Bound<'py, PyCapsule>> {
-    let name = cr"datafusion_logical_extension_codec".into();
     let codec = codec.clone();
 
-    PyCapsule::new(py, codec, Some(name))
+    PyCapsule::new_with_value(py, codec, cr"datafusion_logical_extension_codec")
 }
 
 pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_LogicalExtensionCodec> {
@@ -235,10 +235,9 @@ pub fn create_physical_extension_capsule<'py>(
     py: Python<'py>,
     codec: &FFI_PhysicalExtensionCodec,
 ) -> PyResult<Bound<'py, PyCapsule>> {
-    let name = cr"datafusion_physical_extension_codec".into();
     let codec = codec.clone();
 
-    PyCapsule::new(py, codec, Some(name))
+    PyCapsule::new_with_value(py, codec, cr"datafusion_physical_extension_codec")
 }
 
 /// Define a `<fn_name>(obj) -> PyResult<Arc<$output_type>>` extractor that

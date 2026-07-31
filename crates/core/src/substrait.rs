@@ -131,8 +131,8 @@ impl PySubstraitSerializer {
     }
 
     #[staticmethod]
-    pub fn deserialize_bytes(proto_bytes: Vec<u8>, py: Python) -> PyDataFusionResult<PyPlan> {
-        let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))??;
+    pub fn deserialize_bytes(proto_bytes: Vec<u8>, _py: Python) -> PyDataFusionResult<PyPlan> {
+        let plan = serializer::deserialize_bytes(&proto_bytes)?;
         Ok(PyPlan { plan: *plan })
     }
 }

@@ -50,12 +50,10 @@ impl IsNullUDF {
     }
 
     fn __datafusion_scalar_udf__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_scalar_udf".into();
-
         let func = Arc::new(ScalarUDF::from(self.clone()));
         let provider = FFI_ScalarUDF::from(func);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_scalar_udf")
     }
 }
 

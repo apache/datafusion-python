@@ -99,8 +99,6 @@ impl MyTableProvider {
         py: Python<'py>,
         session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_table_provider".into();
-
         let provider = self
             .create_table()
             .map_err(|e: DataFusionError| PyRuntimeError::new_err(e.to_string()))?;
@@ -109,6 +107,6 @@ impl MyTableProvider {
         let provider =
             FFI_TableProvider::new_with_ffi_codec(Arc::new(provider), false, None, codec);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_table_provider")
     }
 }

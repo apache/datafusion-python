@@ -24,7 +24,9 @@ use datafusion::logical_expr::ScalarUDF;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::SessionContext;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
-use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
+use datafusion_proto::physical_plan::{
+    DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
+};
 use datafusion_python_util::get_tokio_runtime;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -51,12 +53,18 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         buf: &[u8],
         inputs: &[Arc<dyn ExecutionPlan>],
         ctx: &TaskContext,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
-        self.inner.try_decode(buf, inputs, ctx)
+        self.inner.try_decode(buf, inputs, ctx, proto_converter)
     }
 
-    fn try_encode(&self, node: Arc<dyn ExecutionPlan>, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode(node, buf)
+    fn try_encode(
+        &self,
+        node: Arc<dyn ExecutionPlan>,
+        buf: &mut Vec<u8>,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
+    ) -> Result<()> {
+        self.inner.try_encode(node, buf, proto_converter)
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
@@ -113,7 +121,6 @@ impl MyPhysicalExtensionCodec {
         let ctx_provider = bare_session as Arc<dyn TaskContextProvider>;
         let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
 
-        let name = cr"datafusion_physical_extension_codec".into();
-        PyCapsule::new(py, ffi, Some(name))
+        PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
     }
 }

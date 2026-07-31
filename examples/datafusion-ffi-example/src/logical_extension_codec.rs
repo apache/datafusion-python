@@ -147,7 +147,6 @@ impl MyLogicalExtensionCodec {
         let ctx_provider = bare_session as Arc<dyn TaskContextProvider>;
         let ffi = FFI_LogicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
 
-        let name = cr"datafusion_logical_extension_codec".into();
-        PyCapsule::new(py, ffi, Some(name))
+        PyCapsule::new_with_value(py, ffi, cr"datafusion_logical_extension_codec")
     }
 }

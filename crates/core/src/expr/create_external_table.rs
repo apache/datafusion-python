@@ -88,7 +88,7 @@ impl PyCreateExternalTable {
         let create = CreateExternalTable {
             schema: Arc::new(schema.into()),
             name: name.into(),
-            location,
+            locations: vec![location],
             file_type,
             table_partition_cols,
             if_not_exists,
@@ -119,7 +119,11 @@ impl PyCreateExternalTable {
     }
 
     pub fn location(&self) -> String {
-        self.create.location.clone()
+        self.create.locations.first().cloned().unwrap_or_default()
+    }
+
+    pub fn locations(&self) -> Vec<String> {
+        self.create.locations.clone()
     }
 
     pub fn file_type(&self) -> String {

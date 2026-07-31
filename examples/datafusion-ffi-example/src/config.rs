@@ -53,14 +53,12 @@ impl MyConfig {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_extension_options".into();
-
         let mut config = FFI_ExtensionOptions::default();
         config
             .add_config(self)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
 
-        PyCapsule::new(py, config, Some(name))
+        PyCapsule::new_with_value(py, config, cr"datafusion_extension_options")
     }
 }
 
