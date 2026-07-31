@@ -23,7 +23,6 @@ use crate::config::MyConfig;
 use crate::logical_extension_codec::MyLogicalExtensionCodec;
 use crate::physical_extension_codec::MyPhysicalExtensionCodec;
 use crate::physical_optimizer::MyPhysicalOptimizerRule;
-use crate::query_planner::MyQueryPlanner;
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
@@ -36,7 +35,6 @@ pub(crate) mod config;
 pub(crate) mod logical_extension_codec;
 pub(crate) mod physical_extension_codec;
 pub(crate) mod physical_optimizer;
-pub(crate) mod query_planner;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
@@ -60,6 +58,5 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyLogicalExtensionCodec>()?;
     m.add_class::<MyPhysicalExtensionCodec>()?;
     m.add_class::<MyPhysicalOptimizerRule>()?;
-    m.add_class::<MyQueryPlanner>()?;
     Ok(())
 }

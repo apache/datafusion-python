@@ -186,13 +186,23 @@ jobs:
           manylinux: "2_28"
 
       # FFI test wheel only needs to be built once per platform; gate to abi3.
-      - name: Build FFI test library
+      - name: Build FFI provider test library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64-unknown-linux-gnu
           manylinux: "2_28"
           working-directory: examples/datafusion-ffi-example
+          args: --out dist
+          rustup-components: rust-std
+
+      - name: Build FFI query planner test library
+        if: matrix.python-tag == 'abi3'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/datafusion-ffi-query-planner-example
           args: --out dist
           rustup-components: rust-std
 
@@ -207,7 +217,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-ffi-manylinux-x86_64
-          path: examples/datafusion-ffi-example/dist/*
+          path: |
+            examples/datafusion-ffi-example/dist/*
+            examples/datafusion-ffi-query-planner-example/dist/*
 
   # ============================================
   # Build - Linux ARM64

@@ -227,9 +227,34 @@ impl PySessionConfig {
     }
 }
 
+#[derive(Debug)]
+struct PlanningTaskContextProvider(Arc<TaskContext>);
+
+impl TaskContextProvider for PlanningTaskContextProvider {
+    fn task_ctx(&self) -> Arc<TaskContext> {
+        Arc::clone(&self.0)
+    }
+}
+
 #[derive(Debug, Clone)]
 struct PythonQueryPlanner {
     planner: FFI_QueryPlanner,
+    logical_codec: Arc<PythonLogicalCodec>,
+    physical_codec: Arc<PythonPhysicalCodec>,
+}
+
+impl PythonQueryPlanner {
+    fn with_codecs(
+        &self,
+        logical_codec: Arc<PythonLogicalCodec>,
+        physical_codec: Arc<PythonPhysicalCodec>,
+    ) -> Self {
+        Self {
+            planner: self.planner.clone(),
+            logical_codec,
+            physical_codec,
+        }
+    }
 }
 
 #[async_trait]
@@ -240,9 +265,35 @@ impl QueryPlanner for PythonQueryPlanner {
         session: &dyn Session,
     ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
         let runtime = get_tokio_runtime().handle().clone();
-        self.planner
+        let ctx_provider = Arc::new(PlanningTaskContextProvider(session.task_ctx()));
+        let (logical_codec, physical_codec) = {
+            let dyn_ctx_provider: Arc<dyn TaskContextProvider> = ctx_provider.clone();
+            let logical_codec: Arc<dyn LogicalExtensionCodec> =
+                Arc::clone(&self.logical_codec) as Arc<dyn LogicalExtensionCodec>;
+            let physical_codec: Arc<dyn PhysicalExtensionCodec + Send> =
+                Arc::clone(&self.physical_codec) as Arc<dyn PhysicalExtensionCodec + Send>;
+            (
+                FFI_LogicalExtensionCodec::new(
+                    logical_codec,
+                    Some(runtime.clone()),
+                    &dyn_ctx_provider,
+                ),
+                FFI_PhysicalExtensionCodec::new(
+                    physical_codec,
+                    Some(runtime.clone()),
+                    &dyn_ctx_provider,
+                ),
+            )
+        };
+
+        let mut planner = self.planner.clone();
+        planner.logical_codec = logical_codec;
+        planner.physical_codec = physical_codec;
+        let result = planner
             .create_physical_plan_with_session_runtime(logical_plan, session, Some(runtime))
-            .await
+            .await;
+        drop(ctx_provider);
+        result
     }
 }
 
@@ -1237,10 +1288,12 @@ impl PySessionContext {
     }
 
     pub fn with_query_planner(&self, planner: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        let mut planner = ffi_query_planner_from_pycapsule(&planner)?;
-        planner.logical_codec = self.ffi_logical_codec().as_ref().clone();
-        planner.physical_codec = self.ffi_physical_codec().as_ref().clone();
-        let planner = Arc::new(PythonQueryPlanner { planner });
+        let planner = ffi_query_planner_from_pycapsule(&planner)?;
+        let planner = Arc::new(PythonQueryPlanner {
+            planner,
+            logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec: Arc::clone(&self.physical_codec),
+        });
         let state = SessionStateBuilder::new_from_existing(self.ctx.state())
             .with_query_planner(planner)
             .build();
@@ -1448,10 +1501,13 @@ impl PySessionContext {
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
         let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
+        let physical_codec = Arc::clone(&self.physical_codec);
+        let ctx = self
+            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
         Ok(Self {
-            ctx: Arc::clone(&self.ctx),
+            ctx,
             logical_codec,
-            physical_codec: Arc::clone(&self.physical_codec),
+            physical_codec,
         })
     }
 
@@ -1470,9 +1526,12 @@ impl PySessionContext {
         let inner = physical_codec_from_pycapsule(&codec)?;
         let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
 
+        let logical_codec = Arc::clone(&self.logical_codec);
+        let ctx = self
+            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
         Ok(Self {
-            ctx: Arc::clone(&self.ctx),
-            logical_codec: Arc::clone(&self.logical_codec),
+            ctx,
+            logical_codec,
             physical_codec,
         })
     }
@@ -1486,8 +1545,10 @@ impl PySessionContext {
             PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
                 .with_python_udf_inlining(enabled),
         );
+        let ctx = self
+            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
         Self {
-            ctx: Arc::clone(&self.ctx),
+            ctx,
             logical_codec,
             physical_codec,
         }
@@ -1495,6 +1556,25 @@ impl PySessionContext {
 }
 
 impl PySessionContext {
+    fn ctx_with_query_planner_codecs(
+        &self,
+        logical_codec: Arc<PythonLogicalCodec>,
+        physical_codec: Arc<PythonPhysicalCodec>,
+    ) -> Arc<SessionContext> {
+        let state = self.ctx.state();
+        let query_planner = state.query_planner();
+        let planner_any: &dyn std::any::Any = query_planner.as_ref();
+        let Some(planner) = planner_any.downcast_ref::<PythonQueryPlanner>() else {
+            return Arc::clone(&self.ctx);
+        };
+
+        let planner = Arc::new(planner.with_codecs(logical_codec, physical_codec));
+        let state = SessionStateBuilder::new_from_existing(self.ctx.state())
+            .with_query_planner(planner)
+            .build();
+        Arc::new(SessionContext::new_with_state(state))
+    }
+
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
     }

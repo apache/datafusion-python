@@ -1188,6 +1188,21 @@ dependencies = [
  "datafusion-functions-window",
  "datafusion-proto",
  "datafusion-python-util",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+]
+
+[[package]]
+name = "datafusion-ffi-query-planner-example"
+version = "54.0.0"
+dependencies = [
+ "async-trait",
+ "datafusion",
+ "datafusion-catalog",
+ "datafusion-common",
+ "datafusion-ffi",
+ "datafusion-python-util",
  "datafusion-session",
  "pyo3",
  "pyo3-build-config",

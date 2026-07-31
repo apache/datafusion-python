@@ -15,25 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from __future__ import annotations
+[build-system]
+requires = ["maturin>=1.6,<2.0"]
+build-backend = "maturin"
 
-import pytest
-from datafusion import SessionContext
-from datafusion_ffi_example import MyQueryPlanner
+[project]
+name = "datafusion_ffi_query_planner_example"
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+dynamic = ["version"]
 
-
-@pytest.mark.parametrize("raw_capsule", [False, True])
-def test_ffi_query_planner_runs_during_planning(raw_capsule: bool):
-    """A query planner imported from another library creates the physical plan."""
-    planner = MyQueryPlanner()
-    exported_planner = (
-        planner.__datafusion_query_planner__() if raw_capsule else planner
-    )
-    ctx = SessionContext().with_query_planner(exported_planner)
-
-    before = planner.plan_calls()
-    result = ctx.sql("SELECT 1 AS value").collect()
-    after = planner.plan_calls()
-
-    assert after > before
-    assert result == []
+[tool.maturin]
+features = ["pyo3/extension-module"]

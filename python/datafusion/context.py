@@ -1776,7 +1776,8 @@ class SessionContext:
 
         The planner is imported through its ``__datafusion_query_planner__``
         PyCapsule. The returned context preserves the existing session state and
-        its logical and physical extension codec settings.
+        its logical and physical extension codec settings. Codec changes made on
+        a derived context are rebound to the planner before planning.
 
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` or a raw

@@ -1,0 +1,41 @@
+# DataFusion Python FFI query planner example
+
+This crate is an independent query-planner Python extension. Together with [`../datafusion-ffi-example`](../datafusion-ffi-example/) it demonstrates a real three-library plan exchange:
+
+- **A — `datafusion-python`:** owns the session and final execution.
+- **B — `datafusion-ffi-example`:** owns a table provider, UDF, and provider codecs.
+- **C — this crate:** owns the query planner and its custom configuration.
+
+Two extension crates are used rather than placing the planner in the provider crate. Loading distinct `cdylib` images gives each library a distinct DataFusion marker and proves that foreign sessions, providers, and plans survive the actual ABI boundary.
+
+## Running the example
+
+From the repository root, build and install all three extensions, then run the
+integration tests:
+
+```bash
+maturin develop --uv
+uv run maturin develop --manifest-path examples/datafusion-ffi-example/Cargo.toml
+uv run maturin develop \
+  --manifest-path examples/datafusion-ffi-query-planner-example/Cargo.toml
+uv run pytest \
+  examples/datafusion-ffi-query-planner-example/python/tests/_test*.py
+```
+
+The integration test follows this setup:
+
+```python
+config = SessionConfig().with_extension(PlannerConfig(max_rows=3))
+ctx = SessionContext(config)
+ctx = ctx.with_logical_extension_codec(provider_logical_codec)
+ctx = ctx.with_physical_extension_codec(provider_physical_codec)
+ctx.register_table("numbers", provider)
+ctx.register_udf(provider_udf)
+ctx = ctx.with_query_planner(MyQueryPlanner())
+```
+
+`PlannerConfig` is transferred through the foreign session. `MyQueryPlanner` reads `ffi_query_planner.max_rows`, creates the plan with `DefaultPhysicalPlanner`, and adds a built-in `GlobalLimitExec`. The test changes the setting with `SET` and verifies the new row limit.
+
+The provider's codec pair is injected into the planner for each planning call and is also used to decode the returned physical plan in `datafusion-python`. The API currently supports one external codec owner rather than a registry of independently composed codecs, so this planner deliberately uses only built-in physical nodes. Install the codecs before the planner where possible; derived contexts rebind codecs after planner installation, but planner-last order is easier to audit.
+
+The pinned FFI logical codec cannot encode arbitrary custom `LogicalPlan::Extension` nodes. The example therefore demonstrates table-provider, UDF, and physical-plan interoperability without claiming custom logical extension support.

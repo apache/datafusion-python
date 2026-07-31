@@ -121,6 +121,8 @@ jobs:
         run: |
           cd examples/datafusion-ffi-example
           uv run --no-project pytest python/tests/_test*.py
+          cd ../datafusion-ffi-query-planner-example
+          uv run --no-project pytest python/tests/_test*.py
 
       - name: Run tpchgen-cli to create 1 Gb dataset
         if: matrix.wheel-tag == 'abi3'
