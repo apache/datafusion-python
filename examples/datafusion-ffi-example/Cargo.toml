@@ -34,6 +34,7 @@ datafusion-functions-window = { workspace = true }
 datafusion-expr = { workspace = true }
 datafusion-ffi = { workspace = true }
 datafusion-proto = { workspace = true }
+datafusion-session = { workspace = true }
 
 arrow = { workspace = true }
 arrow-array = { workspace = true }
