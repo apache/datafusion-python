@@ -145,7 +145,7 @@ def test_math_functions():
         f.pow(col_v, literal(pa.scalar(4))),
         f.round(col_v),
         f.round(col_v, literal(pa.scalar(3))),
-        f.sqrt(col_v),
+        f.sqrt(f.abs(col_v)),
         f.signum(col_v),
         f.trunc(col_v),
         f.asinh(col_v),
@@ -189,7 +189,7 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
     np.testing.assert_array_almost_equal(result.column(17), np.round(values))
     np.testing.assert_array_almost_equal(result.column(18), np.round(values, 3))
-    np.testing.assert_array_almost_equal(result.column(19), np.sqrt(values))
+    np.testing.assert_array_almost_equal(result.column(19), np.sqrt(np.abs(values)))
     np.testing.assert_array_almost_equal(result.column(20), np.sign(values))
     np.testing.assert_array_almost_equal(result.column(21), np.trunc(values))
     np.testing.assert_array_almost_equal(result.column(22), np.arcsinh(values))
@@ -213,6 +213,14 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(
         result.column(38), np.emath.logn(3, values + 1.0)
     )
+
+
+def test_sqrt_rejects_negative_input():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"value": [-1.0]})
+
+    with pytest.raises(Exception, match="cannot take square root of a negative number"):
+        df.select(f.sqrt(column("value"))).collect()
 
 
 def py_indexof(arr, v):

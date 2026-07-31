@@ -273,12 +273,10 @@ def slice(x: Expr, start: Expr | int, length: Expr | int) -> Expr:
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"x": [1]})
+        >>> df = ctx.from_pydict({"x": [[1, 2, 3, 4]]})
         >>> r = df.select(
         ...     dfn.functions.spark.slice(
-        ...         dfn.functions.spark.array(
-        ...             dfn.lit(1), dfn.lit(2), dfn.lit(3), dfn.lit(4)),
-        ...         2, 2,
+        ...         dfn.col("x"), 2, 2,
         ...     ).alias("v")
         ... )
         >>> r.collect_column("v")[0].as_py()

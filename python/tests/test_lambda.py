@@ -16,6 +16,8 @@
 # under the License.
 """Tests for lambda expressions and higher-order array functions."""
 
+import pickle
+
 import pytest
 from datafusion import SessionConfig, SessionContext, col, lit
 from datafusion import functions as f
@@ -137,8 +139,9 @@ def test_sql_lambda_keyword_syntax(dialect):
     assert result.to_pylist() == [[2, 4, 6]]
 
 
-def test_pickle_lambda_expr_not_supported():
-    # v1 limitation: upstream proto serialization rejects lambda expressions.
+def test_pickle_lambda_expr_round_trip(df):
     expr = f.array_transform(col("a"), lambda v: v * 2)
-    with pytest.raises(Exception, match="Lambda not implemented"):
-        expr.to_bytes()
+    decoded = pickle.loads(pickle.dumps(expr))  # noqa: S301
+
+    assert decoded.canonical_name() == expr.canonical_name()
+    assert _column(df, decoded, "r") == [[2, 4, 6], [8, 10]]

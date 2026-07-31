@@ -107,6 +107,7 @@ def test_register_csv(ctx, tmp_path):
 
 def test_register_csv_list(ctx, tmp_path):
     path = tmp_path / "test.csv"
+    second_path = tmp_path / "test2.csv"
 
     int_values = [1, 2, 3, 4]
     table = pa.Table.from_arrays(
@@ -118,6 +119,7 @@ def test_register_csv_list(ctx, tmp_path):
         names=["int", "str", "float"],
     )
     write_csv(table, path)
+    write_csv(table, second_path)
     ctx.register_csv("csv", path)
 
     csv_df = ctx.table("csv")
@@ -126,7 +128,7 @@ def test_register_csv_list(ctx, tmp_path):
         "double_csv",
         path=[
             path,
-            path,
+            second_path,
         ],
     )
 
