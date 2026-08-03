@@ -32,7 +32,7 @@ def test_table_provider_factory_ffi() -> None:
         CREATE EXTERNAL TABLE
         foo
         STORED AS my_format
-        LOCATION '';
+        LOCATION 'unused';
     """).collect()
 
     # Query the pre-populated table
