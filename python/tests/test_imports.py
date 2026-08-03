@@ -24,6 +24,9 @@ from datafusion import (
     SessionContext,
     TableProviderFactory,
     TableProviderFactoryExportable,
+    Worker,
+    WorkerQueryContext,
+    WorkerResolver,
     functions,
 )
 from datafusion.common import (
@@ -98,8 +101,16 @@ def test_class_module_is_datafusion():
     # context
     for klass in [
         SessionContext,
+        WorkerResolver,
     ]:
         assert klass.__module__ == "datafusion.context"
+
+    # distributed
+    for klass in [
+        Worker,
+        WorkerQueryContext,
+    ]:
+        assert klass.__module__ == "datafusion.distributed"
 
     # dataframe
     for klass in [
