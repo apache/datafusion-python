@@ -249,7 +249,8 @@ class ScalarUDF:
             input_fields (list[pa.Field | pa.DataType]): The data types or Fields
                 of the arguments to ``func``. This list must be of the same length
                 as the number of arguments.
-            return_field (_R): The field of the return value from the function.
+            return_field (pa.DataType | pa.Field): The field of the return value
+                from the function.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 
