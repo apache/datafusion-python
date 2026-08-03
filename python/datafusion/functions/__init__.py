@@ -415,7 +415,7 @@ def isnan(expr: Expr) -> Expr:
 
 
 def is_nan(expr: Expr) -> Expr:
-    """Returns true if a given number is +NaN or -NaN otherwise returns false."""
+    """Alias for :func:`isnan`."""
     return isnan(expr)
 
 
