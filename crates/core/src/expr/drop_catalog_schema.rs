@@ -18,9 +18,8 @@
 use std::fmt::{self, Display, Formatter};
 use std::sync::Arc;
 
-use datafusion::common::SchemaReference;
+use datafusion::common::{SchemaReference, TableReference};
 use datafusion::logical_expr::DropCatalogSchema;
-use datafusion::sql::TableReference;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;

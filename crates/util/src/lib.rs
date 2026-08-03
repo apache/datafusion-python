@@ -22,13 +22,14 @@ use std::time::Duration;
 
 use datafusion::datasource::TableProvider;
 use datafusion::execution::TaskContext;
-use datafusion::execution::context::SessionContext;
+use datafusion::execution::context::{QueryPlanner, SessionContext};
 use datafusion::logical_expr::Volatility;
 use datafusion::physical_optimizer::PhysicalOptimizerRule;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::physical_optimizer::FFI_PhysicalOptimizerRule;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
@@ -339,6 +340,13 @@ from_pycapsule!(
     "datafusion_physical_optimizer_rule",
     FFI_PhysicalOptimizerRule,
     dyn PhysicalOptimizerRule + Send + Sync
+);
+
+from_pycapsule!(
+    query_planner_from_pycapsule,
+    "datafusion_query_planner_v1",
+    FFI_QueryPlanner,
+    dyn QueryPlanner + Send + Sync
 );
 
 try_from_pycapsule!(
