@@ -501,6 +501,11 @@ def test_alias_with_metadata(df):
             id="isnan",
         ),
         pytest.param(
+            col("e").is_nan(),
+            pa.array([False, True, False, None], type=pa.bool_()),
+            id="is_nan",
+        ),
+        pytest.param(
             functions.round(col("a").degrees(), lit(4)),
             pa.array([-42.9718, 28.6479, 0.0, None], type=pa.float64()),
             id="degrees",

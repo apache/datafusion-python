@@ -1226,6 +1226,12 @@ class Expr:  # noqa: PLW1641
 
         return F.isnan(self)
 
+    def is_nan(self) -> Expr:
+        """Returns true if a given number is +NaN or -NaN otherwise returns false."""
+        from . import functions as F
+
+        return F.is_nan(self)
+
     def degrees(self) -> Expr:
         """Converts the argument from radians to degrees."""
         from . import functions as F
