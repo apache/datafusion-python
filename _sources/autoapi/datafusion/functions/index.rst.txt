@@ -191,6 +191,7 @@ Functions
    datafusion.functions.initcap
    datafusion.functions.inner_product
    datafusion.functions.instr
+   datafusion.functions.is_nan
    datafusion.functions.isnan
    datafusion.functions.iszero
    datafusion.functions.lag
@@ -3068,6 +3069,11 @@ Package Contents
    Finds the position from where the ``substring`` matches the ``string``.
 
    .. seealso:: This is an alias for :py:func:`strpos`.
+
+
+.. py:function:: is_nan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Alias for :func:`isnan`.
 
 
 .. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr

@@ -744,6 +744,12 @@ Module Contents
 
 
 
+   .. py:method:: is_nan() -> Expr
+
+      Returns true if a given number is +NaN or -NaN otherwise returns false.
+
+
+
    .. py:method:: is_not_null() -> Expr
 
       Returns ``True`` if this expression is not null.
