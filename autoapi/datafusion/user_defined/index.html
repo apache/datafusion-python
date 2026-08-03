@@ -900,7 +900,8 @@ underlying function. See the online documentation for more information.</p></li>
 <li><p><strong>input_fields</strong> (<em>list</em><em>[</em><em>pa.Field</em><em> | </em><em>pa.DataType</em><em>]</em>) – The data types or Fields
 of the arguments to <code class="docutils literal notranslate"><span class="pre">func</span></code>. This list must be of the same length
 as the number of arguments.</p></li>
-<li><p><strong>return_field</strong> (<em>_R</em>) – The field of the return value from the function.</p></li>
+<li><p><strong>return_field</strong> (<em>pa.DataType</em><em> | </em><em>pa.Field</em>) – The field of the return value
+from the function.</p></li>
 <li><p><strong>volatility</strong> (<a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><em>Volatility</em></a><em> | </em><em>str</em>) – See <cite>Volatility</cite> for allowed values.</p></li>
 <li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A descriptive name for the function.</p></li>
 </ul>

@@ -387,8 +387,9 @@ Module Contents
                            of the arguments to ``func``. This list must be of the same length
                            as the number of arguments.
       :type input_fields: list[pa.Field | pa.DataType]
-      :param return_field: The field of the return value from the function.
-      :type return_field: _R
+      :param return_field: The field of the return value
+                           from the function.
+      :type return_field: pa.DataType | pa.Field
       :param volatility: See `Volatility` for allowed values.
       :type volatility: Volatility | str
       :param name: A descriptive name for the function.
