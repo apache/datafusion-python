@@ -62,7 +62,7 @@ jobs:
           key: cargo-cache-stable-${{ hashFiles('Cargo.lock') }}
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
         with:
           enable-cache: true
 
