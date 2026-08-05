@@ -109,7 +109,7 @@ impl PySubstraitSerializer {
     ) -> PyDataFusionResult<PyPlan> {
         PySubstraitSerializer::serialize_bytes(sql, ctx, py).and_then(|proto_bytes| {
             let proto_bytes = proto_bytes.bind(py).cast::<PyBytes>().unwrap();
-            PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
+            PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec())
         })
     }
 
@@ -131,7 +131,7 @@ impl PySubstraitSerializer {
     }
 
     #[staticmethod]
-    pub fn deserialize_bytes(proto_bytes: Vec<u8>, _py: Python) -> PyDataFusionResult<PyPlan> {
+    pub fn deserialize_bytes(proto_bytes: Vec<u8>) -> PyDataFusionResult<PyPlan> {
         let plan = serializer::deserialize_bytes(&proto_bytes)?;
         Ok(PyPlan { plan: *plan })
     }
