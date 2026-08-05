@@ -21,6 +21,7 @@ use datafusion::logical_expr::expr::{GetFieldAccess, GetIndexedField};
 use pyo3::prelude::*;
 
 use super::literal::PyLiteral;
+use crate::errors::py_unsupported_variant_err;
 use crate::expr::PyExpr;
 
 #[pyclass(
@@ -68,7 +69,9 @@ impl PyGetIndexedField {
     fn key(&self) -> PyResult<PyLiteral> {
         match &self.indexed_field.field {
             GetFieldAccess::NamedStructField { name, .. } => Ok(name.clone().into()),
-            _ => todo!(),
+            GetFieldAccess::ListIndex { .. } | GetFieldAccess::ListRange { .. } => Err(
+                py_unsupported_variant_err("GetIndexedField.key is only supported for struct fields"),
+            ),
         }
     }
 
