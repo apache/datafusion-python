@@ -50,12 +50,10 @@ impl MySumUDF {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_aggregate_udf".into();
-
         let func = Arc::new(AggregateUDF::from(self.clone()));
         let provider = FFI_AggregateUDF::from(func);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_aggregate_udf")
     }
 }
 

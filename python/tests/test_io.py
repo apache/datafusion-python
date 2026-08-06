@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import shutil
 from pathlib import Path
 
 import pyarrow as pa
@@ -72,16 +73,15 @@ def test_read_csv():
     csv_df.select(column("c1")).show()
 
 
-def test_read_csv_list():
-    csv_df = read_csv(path=["testing/data/csv/aggregate_test_100.csv"])
+def test_read_csv_list(tmp_path):
+    source_path = Path("testing/data/csv/aggregate_test_100.csv")
+    copied_path = tmp_path / source_path.name
+    shutil.copy(source_path, copied_path)
+
+    csv_df = read_csv(path=[source_path])
     expected = csv_df.count() * 2
 
-    double_csv_df = read_csv(
-        path=[
-            "testing/data/csv/aggregate_test_100.csv",
-            "testing/data/csv/aggregate_test_100.csv",
-        ]
-    )
+    double_csv_df = read_csv(path=[source_path, copied_path])
     actual = double_csv_df.count()
 
     double_csv_df.select(column("c1")).show()

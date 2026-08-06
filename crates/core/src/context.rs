@@ -1371,12 +1371,10 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_task_context_provider".into();
-
         let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
         let ffi_ctx_provider = FFI_TaskContextProvider::from(&ctx_provider);
 
-        PyCapsule::new(py, ffi_ctx_provider, Some(name))
+        PyCapsule::new_with_value(py, ffi_ctx_provider, cr"datafusion_task_context_provider")
     }
 
     pub fn __datafusion_logical_extension_codec__<'py>(

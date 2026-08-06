@@ -135,7 +135,7 @@ impl PyLogicalPlan {
             LogicalPlan::Dml(plan) => PyDmlStatement::from(plan.clone()).to_variant(py),
             LogicalPlan::Ddl(plan) => match plan {
                 DdlStatement::CreateExternalTable(plan) => {
-                    PyCreateExternalTable::from(plan.clone()).to_variant(py)
+                    PyCreateExternalTable::from(plan.as_ref().clone()).to_variant(py)
                 }
                 DdlStatement::CreateMemoryTable(plan) => {
                     PyCreateMemoryTable::from(plan.clone()).to_variant(py)
@@ -154,7 +154,7 @@ impl PyLogicalPlan {
                     PyDropCatalogSchema::from(plan.clone()).to_variant(py)
                 }
                 DdlStatement::CreateFunction(plan) => {
-                    PyCreateFunction::from(plan.clone()).to_variant(py)
+                    PyCreateFunction::from(plan.as_ref().clone()).to_variant(py)
                 }
                 DdlStatement::DropFunction(plan) => {
                     PyDropFunction::from(plan.clone()).to_variant(py)

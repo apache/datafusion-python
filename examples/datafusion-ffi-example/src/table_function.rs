@@ -47,13 +47,11 @@ impl MyTableFunction {
         py: Python<'py>,
         session: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_table_function".into();
-
         let func = self.clone();
         let codec = ffi_logical_codec_from_pycapsule(session)?;
         let provider = FFI_TableFunction::new_with_ffi_codec(Arc::new(func), None, codec);
 
-        PyCapsule::new(py, provider, Some(name))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_table_function")
     }
 }
 

@@ -49,6 +49,11 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
+
 import pyarrow as pa
 
 from ._internal import expr as expr_internal
@@ -90,6 +95,27 @@ CopyTo = expr_internal.CopyTo
 CreateCatalog = expr_internal.CreateCatalog
 CreateCatalogSchema = expr_internal.CreateCatalogSchema
 CreateExternalTable = expr_internal.CreateExternalTable
+
+
+@deprecated("CreateExternalTable.location() is deprecated; use locations() instead.")
+def _create_external_table_location(self: Any) -> str:
+    """Return the first external table location.
+
+    Use :meth:`CreateExternalTable.locations` instead.
+
+    Examples:
+        >>> class Command:
+        ...     def locations(self) -> list[str]:
+        ...         return ["data.csv"]
+        >>> Command().locations()
+        ['data.csv']
+    """
+    locations = self.locations()
+    return locations[0] if locations else ""
+
+
+CreateExternalTable.location = _create_external_table_location
+
 CreateFunction = expr_internal.CreateFunction
 CreateFunctionBody = expr_internal.CreateFunctionBody
 CreateIndex = expr_internal.CreateIndex

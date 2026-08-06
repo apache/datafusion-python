@@ -63,10 +63,10 @@ impl PyArrowArrayExportable {
         };
 
         let ffi_schema = FFI_ArrowSchema::try_from(&field)?;
-        let schema_capsule = PyCapsule::new(py, ffi_schema, Some(cr"arrow_schema".into()))?;
+        let schema_capsule = PyCapsule::new_with_value(py, ffi_schema, cr"arrow_schema")?;
 
         let ffi_array = FFI_ArrowArray::new(&self.array.to_data());
-        let array_capsule = PyCapsule::new(py, ffi_array, Some(cr"arrow_array".into()))?;
+        let array_capsule = PyCapsule::new_with_value(py, ffi_array, cr"arrow_array")?;
 
         Ok((schema_capsule, array_capsule))
     }

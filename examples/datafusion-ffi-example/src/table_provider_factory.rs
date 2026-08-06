@@ -77,11 +77,10 @@ impl MyTableProviderFactory {
         py: Python<'py>,
         codec: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_table_provider_factory".into();
         let codec = ffi_logical_codec_from_pycapsule(codec)?;
         let factory = Arc::clone(&self.inner) as Arc<dyn TableProviderFactory + Send>;
         let factory = FFI_TableProviderFactory::new_with_ffi_codec(factory, None, codec);
 
-        PyCapsule::new(py, factory, Some(name))
+        PyCapsule::new_with_value(py, factory, cr"datafusion_table_provider_factory")
     }
 }

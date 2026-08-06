@@ -17,6 +17,7 @@
 import datetime as dt
 import gzip
 import pathlib
+import shutil
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -799,16 +800,15 @@ def test_read_csv(ctx):
     csv_df.select(column("c1")).show()
 
 
-def test_read_csv_list(ctx):
-    csv_df = ctx.read_csv(path=["testing/data/csv/aggregate_test_100.csv"])
+def test_read_csv_list(ctx, tmp_path):
+    source_path = pathlib.Path("testing/data/csv/aggregate_test_100.csv")
+    copied_path = tmp_path / source_path.name
+    shutil.copy(source_path, copied_path)
+
+    csv_df = ctx.read_csv(path=[source_path])
     expected = csv_df.count() * 2
 
-    double_csv_df = ctx.read_csv(
-        path=[
-            "testing/data/csv/aggregate_test_100.csv",
-            "testing/data/csv/aggregate_test_100.csv",
-        ]
-    )
+    double_csv_df = ctx.read_csv(path=[source_path, copied_path])
     actual = double_csv_df.count()
 
     double_csv_df.select(column("c1")).show()

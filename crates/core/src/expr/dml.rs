@@ -18,6 +18,7 @@
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::{DmlStatement, WriteOp};
 use pyo3::IntoPyObjectExt;
+use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
@@ -71,8 +72,8 @@ impl PyDmlStatement {
         })
     }
 
-    pub fn op(&self) -> PyWriteOp {
-        self.dml.op.clone().into()
+    pub fn op(&self) -> PyResult<PyWriteOp> {
+        self.dml.op.clone().try_into()
     }
 
     pub fn input(&self) -> PyLogicalPlan {
@@ -112,16 +113,21 @@ pub enum PyWriteOp {
     Truncate,
 }
 
-impl From<WriteOp> for PyWriteOp {
-    fn from(write_op: WriteOp) -> Self {
+impl TryFrom<WriteOp> for PyWriteOp {
+    type Error = PyErr;
+
+    fn try_from(write_op: WriteOp) -> Result<Self, Self::Error> {
         match write_op {
-            WriteOp::Insert(InsertOp::Append) => PyWriteOp::Append,
-            WriteOp::Insert(InsertOp::Overwrite) => PyWriteOp::Overwrite,
-            WriteOp::Insert(InsertOp::Replace) => PyWriteOp::Replace,
-            WriteOp::Update => PyWriteOp::Update,
-            WriteOp::Delete => PyWriteOp::Delete,
-            WriteOp::Ctas => PyWriteOp::Ctas,
-            WriteOp::Truncate => PyWriteOp::Truncate,
+            WriteOp::Insert(InsertOp::Append) => Ok(PyWriteOp::Append),
+            WriteOp::Insert(InsertOp::Overwrite) => Ok(PyWriteOp::Overwrite),
+            WriteOp::Insert(InsertOp::Replace) => Ok(PyWriteOp::Replace),
+            WriteOp::Update => Ok(PyWriteOp::Update),
+            WriteOp::Delete => Ok(PyWriteOp::Delete),
+            WriteOp::Ctas => Ok(PyWriteOp::Ctas),
+            WriteOp::Truncate => Ok(PyWriteOp::Truncate),
+            unsupported => Err(PyNotImplementedError::new_err(format!(
+                "DataFusion write operation {unsupported:?} is not supported"
+            ))),
         }
     }
 }

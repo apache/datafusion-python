@@ -100,9 +100,13 @@ use datafusion::logical_expr::{
     TypeSignature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use datafusion::physical_expr::PhysicalExpr;
+use datafusion::physical_expr_common::physical_expr::proto_decode::PhysicalExprDecodeCtx;
+use datafusion::physical_expr_common::physical_expr::proto_encode::PhysicalExprEncodeCtx;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
-use datafusion_proto::physical_plan::{DefaultPhysicalExtensionCodec, PhysicalExtensionCodec};
+use datafusion_proto::physical_plan::{
+    DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
+};
 use pyo3::prelude::*;
 use pyo3::sync::PyOnceLock;
 use pyo3::types::{PyBytes, PyTuple};
@@ -483,12 +487,18 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         buf: &[u8],
         inputs: &[Arc<dyn ExecutionPlan>],
         ctx: &TaskContext,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
-        self.inner.try_decode(buf, inputs, ctx)
+        self.inner.try_decode(buf, inputs, ctx, proto_converter)
     }
 
-    fn try_encode(&self, node: Arc<dyn ExecutionPlan>, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode(node, buf)
+    fn try_encode(
+        &self,
+        node: Arc<dyn ExecutionPlan>,
+        buf: &mut Vec<u8>,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
+    ) -> Result<()> {
+        self.inner.try_encode(node, buf, proto_converter)
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
@@ -509,16 +519,22 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         self.inner.try_decode_udf(name, buf)
     }
 
-    fn try_encode_expr(&self, node: &Arc<dyn PhysicalExpr>, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode_expr(node, buf)
+    fn try_encode_expr(
+        &self,
+        node: &Arc<dyn PhysicalExpr>,
+        buf: &mut Vec<u8>,
+        ctx: &PhysicalExprEncodeCtx<'_>,
+    ) -> Result<()> {
+        self.inner.try_encode_expr(node, buf, ctx)
     }
 
     fn try_decode_expr(
         &self,
         buf: &[u8],
         inputs: &[Arc<dyn PhysicalExpr>],
+        ctx: &PhysicalExprDecodeCtx<'_>,
     ) -> Result<Arc<dyn PhysicalExpr>> {
-        self.inner.try_decode_expr(buf, inputs)
+        self.inner.try_decode_expr(buf, inputs, ctx)
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
