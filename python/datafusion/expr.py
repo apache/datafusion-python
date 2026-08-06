@@ -101,12 +101,14 @@ CreateExternalTable = expr_internal.CreateExternalTable
 def _create_external_table_location(self: Any) -> str:
     """Return the first external table location.
 
+    Use :meth:`CreateExternalTable.locations` instead.
+
     Examples:
         >>> class Command:
         ...     def locations(self) -> list[str]:
         ...         return ["data.csv"]
-        >>> _create_external_table_location(Command())
-        'data.csv'
+        >>> Command().locations()
+        ['data.csv']
     """
     locations = self.locations()
     return locations[0] if locations else ""

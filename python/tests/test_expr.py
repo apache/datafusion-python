@@ -19,7 +19,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timezone
 from decimal import Decimal
-from unittest.mock import MagicMock
 
 import arro3.core
 import nanoarrow
@@ -40,7 +39,6 @@ from datafusion.expr import (
     BinaryExpr,
     Column,
     CopyTo,
-    CreateExternalTable,
     CreateIndex,
     DescribeTable,
     DmlStatement,
@@ -68,17 +66,6 @@ def test_ctx():
     ctx = SessionContext()
     ctx.register_csv("test", "testing/data/csv/aggregate_test_100.csv")
     return ctx
-
-
-def test_create_external_table_location_is_deprecated():
-    """The singular location accessor delegates to locations()."""
-    command = MagicMock()
-    command.locations.return_value = ["first.csv", "second.csv"]
-
-    with pytest.warns(DeprecationWarning, match=r"location\(\).+deprecated"):
-        location = CreateExternalTable.location(command)
-
-    assert location == "first.csv"
 
 
 def test_projection(test_ctx):

@@ -123,6 +123,11 @@ class CustomCatalogProviderList(dfn.catalog.CatalogProviderList):
 class CustomTableProviderFactory(dfn.catalog.TableProviderFactory):
     def create(self, cmd: dfn.expr.CreateExternalTable):
         assert cmd.name() == "test_table_factory"
+        assert cmd.locations() == ["foo"]
+
+        with pytest.warns(DeprecationWarning, match=r"location\(\).+deprecated"):
+            assert cmd.location() == "foo"
+
         return create_dataset()
 
 
