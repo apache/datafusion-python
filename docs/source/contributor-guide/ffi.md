@@ -283,8 +283,60 @@ planner are rebound automatically, but a planner wrapped inside another planner 
 fallback is opaque and keeps the codecs it was exported with. **Install all extension
 codecs before exporting or chaining planners.**
 
-Putting it together for a session using two extension libraries that each provide
-tables, functions, and a query planner:
+### Extension bundles: `with_extensions`
+
+Codec and planner capsules carry an `FFI_TaskContextProvider` holding a *weak*
+reference to the `SessionContext` they were created against. A capsule does not keep
+that context alive, and a component bound to one context cannot be rebound to another.
+Chaining the low-level `with_*` methods by hand therefore risks binding components to
+an intermediate context that is later garbage collected, which fails at query time
+with `TaskContextProvider went out of scope over FFI boundary` — or worse, silently
+reads stale session state.
+
+`SessionContext.with_extensions` avoids this by construction. An extension library
+exposes a bundle object implementing the `__datafusion_session_extension__` protocol:
+
+```python
+class MyEngineExtension:
+    def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
+        # Create fresh components bound to `ctx` on every call. `ctx` is the
+        # exact context the host will return from with_extensions.
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self._make_logical_codec(ctx),),
+            physical_extension_codecs=(self._make_physical_codec(ctx),),
+            query_planner=self._make_planner(ctx),
+        )
+```
+
+The host creates one destination context, passes it to every factory, installs all
+codecs, binds the planner against the final codec chains, and returns the context in
+a single step:
+
+```python
+ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
+
+Extensions are processed left to right and prepend to the codec chain, so codecs from
+later extensions are consulted first. At most one extension may supply a query
+planner. If any factory fails, the source context's state is unchanged.
+
+Bundle objects must be configuration-only: create fresh components on each call, never
+cache bound components, and do not retain the context passed in. Catalogs are shared
+with the source context, so registrations made during binding are not rolled back on
+failure.
+
+`MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
+implementation of this protocol, including extracting the task-context provider from
+the supplied context and constructing a Python `SessionExtensionComponents`.
+
+### Advanced: chaining the low-level methods
+
+The `with_logical_extension_codec`, `with_physical_extension_codec`, and
+`with_query_planner` methods remain available for advanced use. Putting them together
+for a session using two extension libraries that each provide tables, functions, and
+a query planner:
 
 ```python
 ctx = SessionContext(config)
@@ -306,6 +358,12 @@ ctx = ctx.with_query_planner(
 ctx.register_table("t", lib_a.TableProvider())
 ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
+
+When chaining by hand, keep the final context assigned to `ctx` as the single owner:
+components created against earlier intermediate contexts (for example a codec
+constructed with a context that is later discarded) hold weak references that break
+once that intermediate context is collected. Prefer `with_extensions` whenever the
+extension library provides a bundle.
 
 ## Alternative Approach
 
