@@ -248,10 +248,43 @@ foreign planner. This lets the planner decode provider-owned objects and lets
 process-local tokens to demonstrate ownership; production codecs should serialize
 durable metadata instead.
 
-The current Python API has one external logical codec and one external physical codec.
-Installing another codec replaces the prior codec rather than composing a registry.
-The example therefore has one external codec owner, and the planner uses built-in
-physical nodes. Install the provider codecs before the planner where possible.
+### Composable codecs
+
+Extension codecs compose. Each call to `with_logical_extension_codec` or
+`with_physical_extension_codec` adds the codec to the front of the session's codec
+chain rather than replacing prior codecs. During encoding and decoding, the most
+recently installed codec is consulted first, falling through codec by codec to
+DataFusion's default codec. A codec signals "not mine" by returning an error, which
+sends the chain on to the next codec. Two conventions keep this dispatch sound:
+
+- Frame your payloads with a distinct byte prefix (pick a `DF` namespace plus a
+  crate-specific suffix) and only decode payloads carrying your prefix.
+- Return an error for objects and payloads you do not own. A codec that answers
+  success for objects outside its family shadows every codec installed before it.
+
+Because dispatch keys off payload prefixes rather than install position, codec
+registration order between independent libraries does not matter. Two libraries that
+each own tables, functions, and a planner register like this:
+
+```python
+ctx = SessionContext(config)
+
+# Codecs from both libraries. Order between libraries does not matter.
+ctx = ctx.with_logical_extension_codec(lib_a.codec())
+ctx = ctx.with_logical_extension_codec(lib_b.codec())
+ctx = ctx.with_physical_extension_codec(lib_a.physical_codec())
+ctx = ctx.with_physical_extension_codec(lib_b.physical_codec())
+
+# A session holds one planner, so layering is explicit delegation. Install the
+# codecs first: the fallback captured here keeps the codecs it was exported
+# with. See "Rebinding a planner's codecs is one level deep" below.
+ctx.set_query_planner(lib_a.Planner())
+ctx.set_query_planner(lib_b.Planner(fallback=ctx.__datafusion_query_planner__()))
+
+# Tables and functions — any time before the first query.
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
 
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
@@ -347,7 +380,7 @@ side is visible to both.
 so it is a property of the session rather than of a handle on it, and installing one is
 visible to every context sharing that session — including ones a `with_*` call returned
 earlier. Installing a codec on a session that already has a foreign planner rebuilds
-that planner against the new codec for the same reason: there is one planner, and it has
+that planner against the new chain for the same reason: there is one planner, and it has
 to carry the codecs currently in force. This happens on the shared session, so it takes
 effect even if the returned context is discarded — `ctx.with_python_udf_inlining(...)`
 whose result is thrown away still leaves the session's planner carrying the codecs of
@@ -361,15 +394,17 @@ that surprises people:
 > installed one. Every other path — `Expr.to_bytes(ctx)`, `ExecutionPlan.to_bytes(ctx)`,
 > registering a provider — uses the codecs of the handle you call it on.
 
-Those can be different handles, and then one session has two codecs in effect at once:
+Those can be different handles, and then one session has two codec chains in effect at
+once:
 
 ```python
 ctx = ctx.with_logical_extension_codec(codec_a)
 ctx.set_query_planner(planner)
 ctx.with_logical_extension_codec(codec_b)  # discarded
 
-Expr.to_bytes(expr, ctx)   # encodes with codec_a -- ctx's own field
-ctx.sql(...).collect()     # plans with codec_b -- installed via the discarded handle
+Expr.to_bytes(expr, ctx)   # encodes with [codec_a, default] -- ctx's own field
+ctx.sql(...).collect()     # plans with [codec_b, codec_a, default] -- the discarded
+                           # handle's chain, installed on the shared session
 ```
 
 Chaining `ctx = ctx.with_...(...)`, as the example below does, keeps the two in step.

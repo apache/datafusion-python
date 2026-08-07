@@ -1793,7 +1793,8 @@ class SessionContext:
         fallback inside it, which keeps the codecs it was imported with. Note
         also that the planner is built against the codecs of the context this
         method is called on, so installing the same planner again on a different
-        handle rebinds the session's planner to *that* handle's codecs.
+        handle rebinds the session's planner to *that* handle's codecs. See the
+        FFI extensions guide for the full multi-library registration recipe.
 
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` (see
@@ -2255,15 +2256,23 @@ class SessionContext:
     def with_logical_extension_codec(
         self, codec: LogicalExtensionCodecExportable | _PyCapsule
     ) -> SessionContext:
-        """Create a new session context with specified codec.
+        """Create a new session context with an additional logical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
+        Codecs compose: each call adds the codec to the front of the
+        session's codec chain rather than replacing prior codecs. During
+        encoding and decoding, the most recently installed codec is
+        consulted first, falling through codec by codec to DataFusion's
+        default codec. Codecs signal "not mine" by returning an error, so
+        extension codecs should only answer for payloads they own —
+        typically identified by a distinct byte prefix.
+
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new codec on the shared
+        planner is installed, it is rebuilt against the new chain on the shared
         session, so the original context plans with the new codec too. This
         happens on the shared session, so it takes effect even if the returned
         context is discarded.
@@ -2283,15 +2292,20 @@ class SessionContext:
     def with_physical_extension_codec(
         self, codec: PhysicalExtensionCodecExportable | _PyCapsule
     ) -> SessionContext:
-        """Create a new session context with the specified physical codec.
+        """Create a new session context with an additional physical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
+        Codecs compose the same way as in
+        :py:meth:`with_logical_extension_codec`: each call prepends to the
+        session's codec chain, and the most recently installed codec is
+        consulted first.
+
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new codec on the shared
+        planner is installed, it is rebuilt against the new chain on the shared
         session, so the original context plans with the new codec too. This
         happens on the shared session, so it takes effect even if the returned
         context is discarded.

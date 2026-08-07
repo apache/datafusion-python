@@ -667,3 +667,26 @@ def test_query_planner_rejects_invalid_config(max_rows: str):
 
     with pytest.raises(Exception, match=r"max_rows|Invalid value"):
         ctx.sql(f"SET ffi_query_planner.max_rows = '{max_rows}'").collect()
+
+
+def test_composed_codecs_with_query_planner():
+    """A second pair of codecs installed on top of the provider codecs
+    composes with them instead of replacing them. The extra codecs
+    (default-backed exports from a fresh session) decline everything,
+    so planner-driven encode/decode falls through to the provider
+    codecs and the query still succeeds end to end."""
+    ctx, logical_codec, physical_codec = configured_context(max_rows=2)
+    other = SessionContext()
+    ctx = ctx.with_logical_extension_codec(
+        other.__datafusion_logical_extension_codec__()
+    )
+    ctx = ctx.with_physical_extension_codec(
+        other.__datafusion_physical_extension_codec__()
+    )
+    ctx.set_query_planner(MyQueryPlanner())
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert logical_codec.table_provider_encode_calls() > 0
+    assert logical_codec.table_provider_decode_calls() > 0
+    assert physical_codec.execution_plan_decode_calls() > 0

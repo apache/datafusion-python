@@ -29,16 +29,16 @@
 //!
 //! [`PythonLogicalCodec`] is the [`LogicalExtensionCodec`] that
 //! datafusion-python parks on every `SessionContext`. It wraps a
-//! user-supplied (or default) inner codec and adds Python-aware
-//! in-band encoding on top: when the encoder sees a Python-defined
-//! UDF, the codec cloudpickles the callable + signature into the
-//! `fun_definition` proto field; when the decoder sees a payload it
-//! produced, it reconstructs the UDF from the bytes alone — no
-//! pre-registration on the receiver. UDFs the codec does not
-//! recognise are delegated to `inner`, which is typically
-//! `DefaultLogicalExtensionCodec` but may be a downstream-supplied
-//! FFI codec installed via
-//! `SessionContext.with_logical_extension_codec(...)`.
+//! chain of composable codecs and adds Python-aware in-band encoding
+//! on top: when the encoder sees a Python-defined UDF, the codec
+//! cloudpickles the callable + signature into the `fun_definition`
+//! proto field; when the decoder sees a payload it produced, it
+//! reconstructs the UDF from the bytes alone — no pre-registration on
+//! the receiver. Everything the codec does not recognise is delegated
+//! to the chain: each downstream FFI codec installed via
+//! `SessionContext.with_logical_extension_codec(...)` is consulted in
+//! most-recently-installed-first order, with
+//! `DefaultLogicalExtensionCodec` as the terminal fallback.
 //!
 //! [`PythonPhysicalCodec`] is the symmetric wrapper around
 //! [`PhysicalExtensionCodec`]. Logical and physical layers each have
@@ -58,7 +58,7 @@
 //! actionable error instead of an opaque `marshal` failure on load
 //! (cloudpickle payloads are not portable across Python minor
 //! versions). Dispatch precedence on decode: **family match +
-//! supported version + matching Python version → `inner` codec →
+//! supported version + matching Python version → codec chain →
 //! caller's `FunctionRegistry` fallback.**
 //!
 //! ## Wire-format family registry
@@ -81,10 +81,11 @@
 //! for an older shape.
 //!
 //! Downstream FFI codecs should pick non-colliding family prefixes
-//! (use a `DF` namespace plus a crate-specific suffix). The codec
-//! implementations in this module currently delegate every method to
-//! `inner`; the encoder/decoder hooks for each kind are added as the
-//! corresponding Python-side type becomes serializable.
+//! (use a `DF` namespace plus a crate-specific suffix) and return an
+//! error for payloads and objects they do not own — that error is the
+//! chain's "not mine" signal, letting the next codec take a turn. A
+//! codec that answers `Ok` for objects outside its family shadows
+//! every codec installed before it.
 
 use std::sync::Arc;
 
@@ -167,7 +168,7 @@ fn write_wire_header(buf: &mut Vec<u8>, family: &[u8], py_version: (u8, u8)) {
 /// Inspect the framing on `buf`.
 ///
 /// * `Ok(None)` — `buf` does not carry `family`. The caller should
-///   delegate to its `inner` codec.
+///   delegate to its codec chain.
 /// * `Ok(Some(payload))` — `buf` carries `family` at a version this
 ///   build accepts and a Python `(major, minor)` matching
 ///   `expected_py`; `payload` is the cloudpickle blob.
@@ -223,12 +224,100 @@ fn strip_wire_header<'a>(
     Ok(Some(&buf[py_minor_idx + 1..]))
 }
 
+/// Run `f` against each codec in `chain`, returning the first `Ok`.
+///
+/// A codec signals "not mine" by returning an error, so the chain
+/// keeps trying until a codec succeeds. When every codec fails and the
+/// chain has more than one entry, the errors are aggregated into a
+/// single message — returning only the last error would surface the
+/// terminal `Default*ExtensionCodec` "not provided" message and mask
+/// the more specific diagnostic from an installed codec (e.g. a
+/// corrupt-token error from the codec that owns the payload family).
+fn chain_try<C: ?Sized, R>(chain: &[Arc<C>], what: &str, f: impl Fn(&C) -> Result<R>) -> Result<R> {
+    let mut errors: Vec<datafusion::error::DataFusionError> = Vec::new();
+    for codec in chain {
+        match f(codec) {
+            Ok(value) => return Ok(value),
+            Err(err) => errors.push(err),
+        }
+    }
+    Err(aggregate_chain_errors(what, errors))
+}
+
+/// Collapse per-codec failures into one error. A single failure is
+/// returned as-is so the one-codec (default-only) chain behaves
+/// exactly like the pre-chain implementation.
+fn aggregate_chain_errors(
+    what: &str,
+    mut errors: Vec<datafusion::error::DataFusionError>,
+) -> datafusion::error::DataFusionError {
+    match errors.len() {
+        0 => datafusion::error::DataFusionError::Internal(format!(
+            "Empty extension codec chain while handling {what}"
+        )),
+        1 => errors.swap_remove(0),
+        _ => {
+            let joined = errors
+                .iter()
+                .map(|err| err.to_string())
+                .collect::<Vec<_>>()
+                .join("; ");
+            datafusion::error::DataFusionError::Execution(format!(
+                "None of the {} composed extension codecs handled {what}: {joined}",
+                errors.len()
+            ))
+        }
+    }
+}
+
+/// Encode variant of [`chain_try`] for methods that write into a
+/// caller-provided buffer.
+///
+/// Each codec encodes into a scratch buffer so a failed attempt cannot
+/// leave partial bytes behind. `Ok` with bytes written commits those
+/// bytes and ends the chain. `Ok` with an empty buffer is treated as
+/// "no opinion" — the standard `Default*ExtensionCodec` behavior of
+/// encoding a UDF by name writes nothing — so later codecs still get a
+/// chance to emit a richer payload. If no codec writes bytes but at
+/// least one returned `Ok`, the overall result is `Ok` with nothing
+/// written (encode by name).
+fn chain_encode<C: ?Sized>(
+    chain: &[Arc<C>],
+    buf: &mut Vec<u8>,
+    what: &str,
+    f: impl Fn(&C, &mut Vec<u8>) -> Result<()>,
+) -> Result<()> {
+    let mut saw_empty_ok = false;
+    let mut errors: Vec<datafusion::error::DataFusionError> = Vec::new();
+    for codec in chain {
+        let mut scratch = Vec::new();
+        match f(codec, &mut scratch) {
+            Ok(()) if !scratch.is_empty() => {
+                buf.extend_from_slice(&scratch);
+                return Ok(());
+            }
+            Ok(()) => saw_empty_ok = true,
+            Err(err) => errors.push(err),
+        }
+    }
+    if saw_empty_ok {
+        return Ok(());
+    }
+    Err(aggregate_chain_errors(what, errors))
+}
+
 /// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
 /// the Python-aware encoding hooks for logical-layer types
 /// (`LogicalPlan`, `Expr`) and delegates everything it does not
-/// handle to the composable `inner` codec — typically
-/// `DefaultLogicalExtensionCodec`, or a downstream FFI codec
-/// installed via `SessionContext.with_logical_extension_codec(...)`.
+/// handle to a chain of composable codecs. The chain starts as just
+/// `DefaultLogicalExtensionCodec`; each downstream FFI codec installed
+/// via `SessionContext.with_logical_extension_codec(...)` is prepended,
+/// so the most recently installed codec is consulted first and the
+/// default codec always runs last.
+///
+/// Chain dispatch relies on each codec recognizing its own payloads
+/// (distinct family prefixes — see the module docs) and returning an
+/// error for everything else so the next codec gets a chance.
 ///
 /// Sitting at the top of the session's logical codec stack means
 /// every serializer that reads `session.logical_codec()` automatically
@@ -241,22 +330,31 @@ fn strip_wire_header<'a>(
 /// the weak `FFI_TaskContextProvider` valid is instead a matter of never
 /// replacing the session's `Arc<SessionContext>`; see
 /// `PySessionContext::set_session_query_planner`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PythonLogicalCodec {
-    inner: Arc<dyn LogicalExtensionCodec>,
+    chain: Vec<Arc<dyn LogicalExtensionCodec>>,
     python_udf_inlining: bool,
 }
 
 impl PythonLogicalCodec {
     pub fn new(inner: Arc<dyn LogicalExtensionCodec>) -> Self {
         Self {
-            inner,
+            chain: vec![inner],
             python_udf_inlining: true,
         }
     }
 
-    pub fn inner(&self) -> &Arc<dyn LogicalExtensionCodec> {
-        &self.inner
+    /// Return a copy of this codec with `codec` prepended to the
+    /// chain, preserving the Python-UDF-inlining setting. The new
+    /// codec is consulted before every previously installed codec.
+    pub fn with_additional_codec(&self, codec: Arc<dyn LogicalExtensionCodec>) -> Self {
+        let mut chain = Vec::with_capacity(self.chain.len() + 1);
+        chain.push(codec);
+        chain.extend(self.chain.iter().map(Arc::clone));
+        Self {
+            chain,
+            python_udf_inlining: self.python_udf_inlining,
+        }
     }
 
     /// Toggle inline encoding of Python UDFs. See
@@ -297,11 +395,18 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         inputs: &[LogicalPlan],
         ctx: &TaskContext,
     ) -> Result<Extension> {
-        self.inner.try_decode(buf, inputs, ctx)
+        chain_try(&self.chain, "an extension logical plan node", |codec| {
+            codec.try_decode(buf, inputs, ctx)
+        })
     }
 
     fn try_encode(&self, node: &Extension, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode(node, buf)
+        chain_encode(
+            &self.chain,
+            buf,
+            "an extension logical plan node",
+            |codec, buf| codec.try_encode(node, buf),
+        )
     }
 
     fn try_decode_table_provider(
@@ -311,8 +416,9 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
-        self.inner
-            .try_decode_table_provider(buf, table_ref, schema, ctx)
+        chain_try(&self.chain, "a table provider", |codec| {
+            codec.try_decode_table_provider(buf, table_ref, Arc::clone(&schema), ctx)
+        })
     }
 
     fn try_encode_table_provider(
@@ -321,7 +427,9 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         node: Arc<dyn TableProvider>,
         buf: &mut Vec<u8>,
     ) -> Result<()> {
-        self.inner.try_encode_table_provider(table_ref, node, buf)
+        chain_encode(&self.chain, buf, "a table provider", |codec, buf| {
+            codec.try_encode_table_provider(table_ref, Arc::clone(&node), buf)
+        })
     }
 
     fn try_decode_file_format(
@@ -329,7 +437,9 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         buf: &[u8],
         ctx: &TaskContext,
     ) -> Result<Arc<dyn FileFormatFactory>> {
-        self.inner.try_decode_file_format(buf, ctx)
+        chain_try(&self.chain, "a file format", |codec| {
+            codec.try_decode_file_format(buf, ctx)
+        })
     }
 
     fn try_encode_file_format(
@@ -337,14 +447,18 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         buf: &mut Vec<u8>,
         node: Arc<dyn FileFormatFactory>,
     ) -> Result<()> {
-        self.inner.try_encode_file_format(buf, node)
+        chain_encode(&self.chain, buf, "a file format", |codec, buf| {
+            codec.try_encode_file_format(buf, Arc::clone(&node))
+        })
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udf(node, buf)
+        chain_encode(&self.chain, buf, "a scalar UDF", |codec, buf| {
+            codec.try_encode_udf(node, buf)
+        })
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
@@ -355,14 +469,18 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
-        self.inner.try_decode_udf(name, buf)
+        chain_try(&self.chain, "a scalar UDF", |codec| {
+            codec.try_decode_udf(name, buf)
+        })
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udaf(node, buf)
+        chain_encode(&self.chain, buf, "an aggregate UDF", |codec, buf| {
+            codec.try_encode_udaf(node, buf)
+        })
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
@@ -373,14 +491,18 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
-        self.inner.try_decode_udaf(name, buf)
+        chain_try(&self.chain, "an aggregate UDF", |codec| {
+            codec.try_decode_udaf(name, buf)
+        })
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udwf(node, buf)
+        chain_encode(&self.chain, buf, "a window UDF", |codec, buf| {
+            codec.try_encode_udwf(node, buf)
+        })
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
@@ -391,13 +513,15 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
-        self.inner.try_decode_udwf(name, buf)
+        chain_try(&self.chain, "a window UDF", |codec| {
+            codec.try_decode_udwf(name, buf)
+        })
     }
 }
 
 /// Strict-mode gate: if `buf` is a well-framed inline payload for
 /// `family`, return the strict-refusal error; otherwise return
-/// `Ok(())` so the caller can delegate to its `inner` codec.
+/// `Ok(())` so the caller can delegate to its codec chain.
 ///
 /// Routing through [`read_framed_payload`] (rather than a bare
 /// `starts_with` probe) means malformed inline bytes — wrong
@@ -442,7 +566,8 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`] parked
 /// on the same `SessionContext`. Carries the Python-aware encoding
 /// hooks for physical-layer types (`ExecutionPlan`, `PhysicalExpr`)
-/// and delegates the rest to `inner`.
+/// and delegates the rest to the composable codec chain (see
+/// [`PythonLogicalCodec`] for chain ordering and dispatch rules).
 ///
 /// The `PhysicalExtensionCodec` trait has its own `try_encode_udf`
 /// / `try_decode_udf` pair distinct from the logical one, so a
@@ -454,22 +579,31 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 ///
 /// Like [`PythonLogicalCodec`], this does not retain the session it was built
 /// from; see that type for why.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PythonPhysicalCodec {
-    inner: Arc<dyn PhysicalExtensionCodec>,
+    chain: Vec<Arc<dyn PhysicalExtensionCodec>>,
     python_udf_inlining: bool,
 }
 
 impl PythonPhysicalCodec {
     pub fn new(inner: Arc<dyn PhysicalExtensionCodec>) -> Self {
         Self {
-            inner,
+            chain: vec![inner],
             python_udf_inlining: true,
         }
     }
 
-    pub fn inner(&self) -> &Arc<dyn PhysicalExtensionCodec> {
-        &self.inner
+    /// Return a copy of this codec with `codec` prepended to the
+    /// chain, preserving the Python-UDF-inlining setting. The new
+    /// codec is consulted before every previously installed codec.
+    pub fn with_additional_codec(&self, codec: Arc<dyn PhysicalExtensionCodec>) -> Self {
+        let mut chain = Vec::with_capacity(self.chain.len() + 1);
+        chain.push(codec);
+        chain.extend(self.chain.iter().map(Arc::clone));
+        Self {
+            chain,
+            python_udf_inlining: self.python_udf_inlining,
+        }
     }
 
     /// Toggle inline encoding of Python UDFs on this physical codec.
@@ -500,7 +634,9 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         ctx: &TaskContext,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
-        self.inner.try_decode(buf, inputs, ctx, proto_converter)
+        chain_try(&self.chain, "an execution plan", |codec| {
+            codec.try_decode(buf, inputs, ctx, proto_converter)
+        })
     }
 
     fn try_encode(
@@ -509,14 +645,18 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
-        self.inner.try_encode(node, buf, proto_converter)
+        chain_encode(&self.chain, buf, "an execution plan", |codec, buf| {
+            codec.try_encode(Arc::clone(&node), buf, proto_converter)
+        })
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udf(node, buf)
+        chain_encode(&self.chain, buf, "a scalar UDF", |codec, buf| {
+            codec.try_encode_udf(node, buf)
+        })
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
@@ -527,7 +667,9 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
-        self.inner.try_decode_udf(name, buf)
+        chain_try(&self.chain, "a scalar UDF", |codec| {
+            codec.try_decode_udf(name, buf)
+        })
     }
 
     fn try_encode_expr(
@@ -536,7 +678,9 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         buf: &mut Vec<u8>,
         ctx: &PhysicalExprEncodeCtx<'_>,
     ) -> Result<()> {
-        self.inner.try_encode_expr(node, buf, ctx)
+        chain_encode(&self.chain, buf, "a physical expression", |codec, buf| {
+            codec.try_encode_expr(node, buf, ctx)
+        })
     }
 
     fn try_decode_expr(
@@ -545,14 +689,18 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         inputs: &[Arc<dyn PhysicalExpr>],
         ctx: &PhysicalExprDecodeCtx<'_>,
     ) -> Result<Arc<dyn PhysicalExpr>> {
-        self.inner.try_decode_expr(buf, inputs, ctx)
+        chain_try(&self.chain, "a physical expression", |codec| {
+            codec.try_decode_expr(buf, inputs, ctx)
+        })
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udaf(node, buf)
+        chain_encode(&self.chain, buf, "an aggregate UDF", |codec, buf| {
+            codec.try_encode_udaf(node, buf)
+        })
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
@@ -563,14 +711,18 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
-        self.inner.try_decode_udaf(name, buf)
+        chain_try(&self.chain, "an aggregate UDF", |codec| {
+            codec.try_decode_udaf(name, buf)
+        })
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udwf(node, buf)
+        chain_encode(&self.chain, buf, "a window UDF", |codec, buf| {
+            codec.try_encode_udwf(node, buf)
+        })
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
@@ -581,7 +733,9 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
-        self.inner.try_decode_udwf(name, buf)
+        chain_try(&self.chain, "a window UDF", |codec| {
+            codec.try_decode_udwf(name, buf)
+        })
     }
 }
 
@@ -598,7 +752,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 /// `Ok(true)` when the payload (`DFPYUDF` family prefix, version byte,
 /// cloudpickled tuple) was written and the caller should skip its
 /// inner codec. Returns `Ok(false)` for any non-Python UDF, signalling
-/// the caller to delegate to its `inner`.
+/// the caller to delegate to its codec chain.
 pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<bool> {
     let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionScalarUDF>() else {
         return Ok(false);
@@ -613,7 +767,7 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 
 /// Decode an inline Python scalar UDF payload. Returns `Ok(None)`
 /// when `buf` does not carry the `DFPYUDF` family prefix, signalling
-/// the caller to delegate to its `inner` codec (and eventually the
+/// the caller to delegate to its codec chain (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
     if !buf.starts_with(PY_SCALAR_UDF_FAMILY) {
@@ -1171,5 +1325,183 @@ mod wire_header_tests {
             strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF", TEST_PY),
             Ok(None)
         ));
+    }
+}
+
+#[cfg(test)]
+mod codec_chain_tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use datafusion::catalog::MemTable;
+    use datafusion::common::exec_err;
+
+    use super::*;
+
+    /// Codec that owns a single byte token for table providers and
+    /// errors on everything else, mirroring the family-prefix
+    /// discipline expected of downstream FFI codecs.
+    #[derive(Debug)]
+    struct TokenCodec {
+        token: &'static [u8],
+        /// Return `Ok` from `try_encode_table_provider` without
+        /// writing bytes, imitating a "no opinion" codec.
+        encode_by_name: bool,
+        decode_hits: AtomicUsize,
+        encode_hits: AtomicUsize,
+    }
+
+    impl TokenCodec {
+        fn new(token: &'static [u8]) -> Arc<Self> {
+            Arc::new(Self {
+                token,
+                encode_by_name: false,
+                decode_hits: AtomicUsize::new(0),
+                encode_hits: AtomicUsize::new(0),
+            })
+        }
+
+        fn new_by_name(token: &'static [u8]) -> Arc<Self> {
+            Arc::new(Self {
+                token,
+                encode_by_name: true,
+                decode_hits: AtomicUsize::new(0),
+                encode_hits: AtomicUsize::new(0),
+            })
+        }
+    }
+
+    impl LogicalExtensionCodec for TokenCodec {
+        fn try_decode(
+            &self,
+            _buf: &[u8],
+            _inputs: &[LogicalPlan],
+            _ctx: &TaskContext,
+        ) -> Result<Extension> {
+            exec_err!("TokenCodec does not decode extension nodes")
+        }
+
+        fn try_encode(&self, _node: &Extension, _buf: &mut Vec<u8>) -> Result<()> {
+            exec_err!("TokenCodec does not encode extension nodes")
+        }
+
+        fn try_decode_table_provider(
+            &self,
+            buf: &[u8],
+            _table_ref: &TableReference,
+            schema: SchemaRef,
+            _ctx: &TaskContext,
+        ) -> Result<Arc<dyn TableProvider>> {
+            if buf != self.token {
+                return exec_err!("Unknown table provider token for TokenCodec");
+            }
+            self.decode_hits.fetch_add(1, Ordering::SeqCst);
+            Ok(Arc::new(MemTable::try_new(schema, vec![vec![]])?))
+        }
+
+        fn try_encode_table_provider(
+            &self,
+            _table_ref: &TableReference,
+            _node: Arc<dyn TableProvider>,
+            buf: &mut Vec<u8>,
+        ) -> Result<()> {
+            self.encode_hits.fetch_add(1, Ordering::SeqCst);
+            if !self.encode_by_name {
+                buf.extend_from_slice(self.token);
+            }
+            Ok(())
+        }
+    }
+
+    fn mem_table() -> Arc<dyn TableProvider> {
+        Arc::new(MemTable::try_new(Arc::new(Schema::empty()), vec![vec![]]).unwrap())
+    }
+
+    fn table_ref() -> TableReference {
+        TableReference::bare("t")
+    }
+
+    #[test]
+    fn decode_falls_through_to_earlier_installed_codec() {
+        let first = TokenCodec::new(b"AAAA");
+        let second = TokenCodec::new(b"BBBB");
+        let codec = PythonLogicalCodec::default()
+            .with_additional_codec(first.clone())
+            .with_additional_codec(second.clone());
+
+        let ctx = TaskContext::default();
+        codec
+            .try_decode_table_provider(b"AAAA", &table_ref(), Arc::new(Schema::empty()), &ctx)
+            .unwrap();
+
+        assert_eq!(first.decode_hits.load(Ordering::SeqCst), 1);
+        assert_eq!(second.decode_hits.load(Ordering::SeqCst), 0);
+    }
+
+    #[test]
+    fn most_recently_installed_codec_encodes_first() {
+        let first = TokenCodec::new(b"AAAA");
+        let second = TokenCodec::new(b"BBBB");
+        let codec = PythonLogicalCodec::default()
+            .with_additional_codec(first.clone())
+            .with_additional_codec(second.clone());
+
+        let mut buf = Vec::new();
+        codec
+            .try_encode_table_provider(&table_ref(), mem_table(), &mut buf)
+            .unwrap();
+
+        assert_eq!(buf, b"BBBB");
+        assert_eq!(first.encode_hits.load(Ordering::SeqCst), 0);
+    }
+
+    #[test]
+    fn empty_ok_encode_lets_later_codec_write_payload() {
+        let writer = TokenCodec::new(b"AAAA");
+        let by_name = TokenCodec::new_by_name(b"BBBB");
+        let codec = PythonLogicalCodec::default()
+            .with_additional_codec(writer.clone())
+            .with_additional_codec(by_name.clone());
+
+        let mut buf = Vec::new();
+        codec
+            .try_encode_table_provider(&table_ref(), mem_table(), &mut buf)
+            .unwrap();
+
+        assert_eq!(buf, b"AAAA");
+        assert_eq!(by_name.encode_hits.load(Ordering::SeqCst), 1);
+        assert_eq!(writer.encode_hits.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn decode_failure_aggregates_every_codec_error() {
+        let codec = PythonLogicalCodec::default()
+            .with_additional_codec(TokenCodec::new(b"AAAA"))
+            .with_additional_codec(TokenCodec::new(b"BBBB"));
+
+        let ctx = TaskContext::default();
+        let err = codec
+            .try_decode_table_provider(b"????", &table_ref(), Arc::new(Schema::empty()), &ctx)
+            .unwrap_err();
+
+        let msg = err.to_string();
+        assert!(msg.contains("None of the 3 composed extension codecs"));
+        assert!(msg.contains("Unknown table provider token"));
+    }
+
+    #[test]
+    fn single_codec_chain_error_is_returned_verbatim() {
+        let codec = PythonLogicalCodec::default();
+        let ctx = TaskContext::default();
+        let err = codec
+            .try_decode_table_provider(b"????", &table_ref(), Arc::new(Schema::empty()), &ctx)
+            .unwrap_err();
+        assert!(!err.to_string().contains("composed extension codecs"));
+    }
+
+    #[test]
+    fn with_additional_codec_preserves_udf_inlining_setting() {
+        let strict = PythonLogicalCodec::default().with_python_udf_inlining(false);
+        let extended = strict.with_additional_codec(TokenCodec::new(b"AAAA"));
+        assert!(!extended.python_udf_inlining());
     }
 }
