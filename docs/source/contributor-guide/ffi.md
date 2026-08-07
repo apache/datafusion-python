@@ -387,6 +387,13 @@ cache bound components, and do not retain the context passed in. Catalogs are sh
 with the source context, so registrations made during binding are not rolled back on
 failure.
 
+The returned context is the strong owner of every installed component's task-context
+provider, and dependent objects do not extend its lifetime. A `DataFrame`, logical
+plan, or capsule can outlive the context, but any operation that reaches an FFI codec
+after the context is collected fails with `TaskContextProvider went out of scope over
+FFI boundary`. Keep the context alive for as long as objects derived from it are in
+use.
+
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
 implementation of the protocol, including taking the task-context provider off the
 supplied context and constructing a Python `SessionExtensionComponents`.

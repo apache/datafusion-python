@@ -1890,6 +1890,11 @@ class SessionContext:
         registering tables or otherwise mutating the context during binding is
         not rolled back on failure.
 
+        The returned context is the strong owner of the installed components'
+        task-context providers. Keep it alive for as long as DataFrames or
+        plans derived from it are in use; FFI operations after the context is
+        collected raise an error.
+
         Args:
             extensions: One or more objects implementing
                 ``__datafusion_session_extension__`` (see
