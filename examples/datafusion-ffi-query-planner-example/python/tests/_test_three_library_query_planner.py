@@ -720,6 +720,43 @@ class ProviderCodecsExtension:
         )
 
 
+class _NamedCodec:
+    """Forwards a codec's capsule getters under a declared id.
+
+    ``with_extensions`` takes no ``codec_id=``, so an extension that ships a
+    codec class another extension also ships declares
+    ``__datafusion_codec_id__`` on the object it hands over. Both getters are
+    forwarded because one wrapper stands in for whichever kind it wraps.
+    """
+
+    def __init__(self, codec: object, codec_id: str) -> None:
+        self._codec = codec
+        self.__datafusion_codec_id__ = codec_id
+
+    def __datafusion_logical_extension_codec__(self, session: object = None) -> object:
+        return self._codec.__datafusion_logical_extension_codec__(session)
+
+    def __datafusion_physical_extension_codec__(self, session: object = None) -> object:
+        return self._codec.__datafusion_physical_extension_codec__(session)
+
+
+class IdentifiedProviderCodecsExtension(ProviderCodecsExtension):
+    """``ProviderCodecsExtension`` whose codecs carry ids of their own."""
+
+    def __init__(self, prefix: str) -> None:
+        super().__init__()
+        self.logical = _NamedCodec(self.logical_codec, f"{prefix}.logical")
+        self.physical = _NamedCodec(self.physical_codec, f"{prefix}.physical")
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self.logical,),
+            physical_extension_codecs=(self.physical,),
+        )
+
+
 def test_with_extensions_three_library_query():
     """One with_extensions call installs provider codecs and a planner bundle,
     and a real non-empty plan flows across the three libraries."""
@@ -850,6 +887,66 @@ def test_with_extensions_failure_leaves_source_usable():
     # No planner was installed, so the default planner runs unrestricted.
     batches = source.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2, 3, 4, 5]
+
+
+def test_with_extensions_rebinds_existing_planner():
+    """Codec-only bundles installed on a context that already has an FFI
+    planner rebind that planner to the new codec chains."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    planner = MyQueryPlanner()
+    ctx = SessionContext(config)
+    ctx.set_query_planner(planner)
+    provider_ext = ProviderCodecsExtension()
+    ctx = ctx.with_extensions(provider_ext)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner.last_max_rows() == 2
+    # The planner only sees these codecs if it was rebound to the chains
+    # built during with_extensions.
+    assert provider_ext.logical_codec.table_provider_decode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_with_extensions_rejects_two_bundles_of_the_same_codec_class():
+    """Two bundles contributing the same codec class collide on id.
+
+    Ids are derived from the exporting class, so two instances of one class
+    claim the same id. A payload names its codec by id when it is decoded, so
+    the ambiguity is refused at install time rather than resolved by position.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    with pytest.raises(ValueError, match="is already installed on this session"):
+        SessionContext(config).with_extensions(
+            ProviderCodecsExtension(), ProviderCodecsExtension(), MyPlannerExtension()
+        )
+
+
+def test_with_extensions_accepts_distinct_codec_ids():
+    """Declaring ``__datafusion_codec_id__`` resolves the collision above.
+
+    Both codec pairs then install, and the query still runs end to end: only
+    the codec that wrote a payload is asked to decode it, so the second pair
+    is simply never consulted.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ext_a = ProviderCodecsExtension()
+    ext_b = IdentifiedProviderCodecsExtension("second")
+    ctx = SessionContext(config).with_extensions(ext_a, ext_b, MyPlannerExtension())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+    ids = ctx.logical_extension_codec_ids()
+    assert "datafusion_ffi_example.MyLogicalExtensionCodec" in ids
+    assert "second.logical" in ids
+
+    # The first pair wrote the payloads, so decoding routes back to it alone.
+    assert ext_a.logical_codec.table_provider_encode_calls() > 0
+    assert ext_a.logical_codec.table_provider_decode_calls() > 0
+    assert ext_b.logical_codec.table_provider_decode_calls() == 0
 
 
 def test_dataframe_outliving_context_fails_cleanly():
