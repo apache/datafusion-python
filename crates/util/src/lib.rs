@@ -20,6 +20,7 @@ use std::ptr::NonNull;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
+use datafusion::catalog::TableProviderFactory;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::TaskContext;
 use datafusion::execution::context::SessionContext;
@@ -30,6 +31,7 @@ use datafusion_ffi::physical_optimizer::FFI_PhysicalOptimizerRule;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_ffi::table_provider::FFI_TableProvider;
+use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
@@ -249,6 +251,44 @@ pub fn create_physical_extension_capsule<'py>(
 /// instead.
 #[macro_export]
 macro_rules! from_pycapsule {
+    ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty, call_args) => {
+        pub fn $fn_name<'py, A>(
+            obj: &$crate::pyo3::Bound<'py, $crate::pyo3::PyAny>,
+            args: A,
+        ) -> $crate::pyo3::PyResult<std::sync::Arc<$output_type>>
+        where
+            A: $crate::pyo3::call::PyCallArgs<'py>,
+        {
+            use $crate::pyo3::prelude::*;
+            use $crate::pyo3::types::PyCapsule;
+
+            let mut obj = obj.clone();
+            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
+                obj = obj
+                    .getattr(concat!("__", $capsule_name, "__"))?
+                    .call1(args)?;
+            }
+            let capsule = obj.cast::<PyCapsule>().map_err(|_| {
+                $crate::errors::py_datafusion_err(concat!(
+                    "Invalid ",
+                    $capsule_name,
+                    ". Does not contain PyCapsule object."
+                ))
+            })?;
+            $crate::validate_pycapsule(&capsule, $capsule_name)?;
+
+            let expected_name = std::ffi::CString::new($capsule_name)
+                .expect("capsule name must not contain interior NUL bytes");
+            let data: std::ptr::NonNull<$ffi_type> = capsule
+                .pointer_checked(Some(expected_name.as_c_str()))?
+                .cast();
+            let output_obj = unsafe { data.as_ref() };
+            let output_obj: std::sync::Arc<$output_type> = output_obj.into();
+
+            Ok(output_obj)
+        }
+    };
+
     ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty) => {
         pub fn $fn_name(
             obj: &$crate::pyo3::Bound<$crate::pyo3::PyAny>,
@@ -338,6 +378,14 @@ from_pycapsule!(
     "datafusion_physical_optimizer_rule",
     FFI_PhysicalOptimizerRule,
     dyn PhysicalOptimizerRule + Send + Sync
+);
+
+from_pycapsule!(
+    table_provider_factory_from_pycapsule,
+    "datafusion_table_provider_factory",
+    FFI_TableProviderFactory,
+    dyn TableProviderFactory,
+    call_args
 );
 
 try_from_pycapsule!(
