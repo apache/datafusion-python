@@ -21,7 +21,14 @@ import gc
 
 import pyarrow as pa
 import pytest
-from datafusion import Expr, SessionConfig, SessionContext, col, udf
+from datafusion import (
+    Expr,
+    SessionConfig,
+    SessionContext,
+    SessionExtensionComponents,
+    col,
+    udf,
+)
 from datafusion_ffi_example import (
     IsNullUDF,
     MyCatalogProvider,
@@ -30,7 +37,11 @@ from datafusion_ffi_example import (
     MyPhysicalOptimizerRule,
     MyTableProvider,
 )
-from datafusion_ffi_query_planner_example import MyPlannerConfig, MyQueryPlanner
+from datafusion_ffi_query_planner_example import (
+    MyPlannerConfig,
+    MyPlannerExtension,
+    MyQueryPlanner,
+)
 
 
 def configured_context(max_rows: int):
@@ -686,6 +697,159 @@ def test_query_planner_rejects_invalid_config(max_rows: str):
 
     with pytest.raises(Exception, match=r"max_rows|Invalid value"):
         ctx.sql(f"SET ffi_query_planner.max_rows = '{max_rows}'").collect()
+
+
+class ProviderCodecsExtension:
+    """Bundles the provider library's codecs for ``with_extensions``.
+
+    These codecs keep their own private task-context provider, so they only
+    need to be created once; the bundle can hand out the same exporters on
+    every call.
+    """
+
+    def __init__(self) -> None:
+        self.logical_codec = MyLogicalExtensionCodec()
+        self.physical_codec = MyPhysicalExtensionCodec()
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self.logical_codec,),
+            physical_extension_codecs=(self.physical_codec,),
+        )
+
+
+def test_with_extensions_three_library_query():
+    """One with_extensions call installs provider codecs and a planner bundle,
+    and a real non-empty plan flows across the three libraries."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    provider_ext = ProviderCodecsExtension()
+    planner_ext = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(provider_ext, planner_ext)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.register_udf(udf(IsNullUDF()))
+
+    batches = ctx.sql(
+        'SELECT "A", my_custom_is_null("A") AS is_null FROM numbers ORDER BY "A"'
+    ).collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert batches[0].column(1).to_pylist() == [False, False, False]
+    assert planner_ext.plan_calls() >= 1
+    assert planner_ext.last_max_rows() == 3
+    assert planner_ext.foreign_session_observed()
+    assert planner_ext.foreign_provider_observed()
+    assert planner_ext.foreign_plan_observed()
+    assert provider_ext.logical_codec.table_provider_encode_calls() > 0
+    assert provider_ext.logical_codec.table_provider_decode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_encode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_with_extensions_provider_targets_returned_context():
+    """The bundle's task-context provider reads current state from the
+    returned context, not the source it was derived from."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    source = SessionContext(config)
+    source.register_table("numbers", MyTableProvider(1, 6, 1))
+    planner_ext = MyPlannerExtension()
+    result = source.with_extensions(ProviderCodecsExtension(), planner_ext)
+
+    # Diverge the two live contexts. Config state is copied at derivation,
+    # so after these statements source and result disagree.
+    source.sql("SET ffi_query_planner.max_rows = 5").collect()
+    result.sql("SET ffi_query_planner.max_rows = 2").collect()
+
+    batches = result.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+
+    # Resolving the provider bound during with_extensions is what a codec's
+    # decode callback does. Seeing 2 (never 5) proves the provider targets the
+    # returned context rather than the source.
+    assert planner_ext.max_rows_through_provider() == 2
+
+
+def test_with_extensions_survives_dropping_source_and_bundles():
+    """Neither the source context nor the bundle objects are needed to keep
+    the installed components' task-context provider alive."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    gc.collect()
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+
+def test_with_extensions_sees_state_changes_after_install():
+    """Tables, UDFs, and config changes made after installation are visible
+    to the planner and to provider callbacks."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=4))
+    planner_ext = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(ProviderCodecsExtension(), planner_ext)
+
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.register_udf(udf(IsNullUDF()))
+    ctx.sql("SET ffi_query_planner.max_rows = 2").collect()
+
+    batches = ctx.sql(
+        'SELECT "A", my_custom_is_null("A") AS is_null FROM numbers ORDER BY "A"'
+    ).collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+    assert planner_ext.max_rows_through_provider() == 2
+
+
+def test_with_extensions_bundle_is_reusable():
+    """Installing the same bundle into two contexts binds fresh components to
+    each destination."""
+    planner_ext = MyPlannerExtension()
+
+    config_a = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ctx_a = SessionContext(config_a).with_extensions(
+        ProviderCodecsExtension(), planner_ext
+    )
+    ctx_a.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    config_b = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    ctx_b = SessionContext(config_b).with_extensions(
+        ProviderCodecsExtension(), planner_ext
+    )
+    ctx_b.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx_a.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+
+    batches = ctx_b.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert planner_ext.last_max_rows() == 3
+
+
+def test_with_extensions_failure_leaves_source_usable():
+    """A failing factory after a successful one leaves the source context
+    fully functional."""
+
+    class BoomExtension:
+        def __datafusion_session_extension__(
+            self, ctx: SessionContext
+        ) -> SessionExtensionComponents:
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    source = SessionContext(config)
+    source.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    with pytest.raises(RuntimeError, match="boom"):
+        source.with_extensions(MyPlannerExtension(), BoomExtension())
+
+    # No planner was installed, so the default planner runs unrestricted.
+    batches = source.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2, 3, 4, 5]
 
 
 def test_composed_codecs_with_query_planner():

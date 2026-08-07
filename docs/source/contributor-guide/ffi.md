@@ -343,6 +343,54 @@ The current FFI logical codec supports providers and UDFs but not arbitrary cust
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
 
+### Extension bundles: `with_extensions`
+
+The chaining above works, but it makes the caller responsible for two things that are
+easy to get wrong: keeping every intermediate context alive, and installing the codecs
+before the planner. Every codec and planner capsule carries an
+`FFI_TaskContextProvider` holding a *weak* reference to the context it was built
+against, so a component bound to a `with_*` result that is then discarded fails at
+query time with `TaskContextProvider went out of scope over FFI boundary`.
+
+`SessionContext.with_extensions` removes both hazards. An extension library exposes a
+bundle object implementing `__datafusion_session_extension__`:
+
+```python
+class MyEngineExtension:
+    def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
+        # Create fresh components bound to `ctx` on every call. `ctx` is the
+        # exact context the host will return from with_extensions.
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self._make_logical_codec(ctx),),
+            physical_extension_codecs=(self._make_physical_codec(ctx),),
+            query_planner=self._make_planner(ctx),
+        )
+```
+
+The host creates one destination context, passes it to every factory, installs all the
+codecs, binds the planner against the final codec chains, and returns that context in
+a single step:
+
+```python
+ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
+
+Extensions are processed left to right and their codecs are appended to the chain in
+that order. As above, order affects only encoding — decoding routes by id. At most one
+extension per call may supply a query planner. If any factory raises, the source
+context is left exactly as it was.
+
+Bundle objects must be configuration-only: create fresh components on each call, never
+cache bound components, and do not retain the context passed in. Catalogs are shared
+with the source context, so registrations made during binding are not rolled back on
+failure.
+
+`MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
+implementation of the protocol, including taking the task-context provider off the
+supplied context and constructing a Python `SessionExtensionComponents`.
+
 ### Capsule getters receive the session they are installed on
 
 `__datafusion_query_planner__`, `__datafusion_logical_extension_codec__`, and
@@ -515,6 +563,9 @@ its getter, which re-imports the fallback against that handle's codecs. Re-insta
 the original handle rebinds the session's planner back to the original handle's codecs
 instead, which is the trap
 `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs` pins.
+
+`with_extensions` sidesteps the ordering question entirely: it installs every codec
+before it binds the planner, so there is no "afterwards" for a bundle's own planner.
 
 ## Alternative Approach
 

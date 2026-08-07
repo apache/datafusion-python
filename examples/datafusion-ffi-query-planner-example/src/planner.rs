@@ -52,14 +52,14 @@ use crate::config::MyPlannerConfig;
 /// most recent plan would be answering a different question than the one its
 /// accessor name asks.
 #[derive(Default)]
-struct PlannerObservations {
-    plan_calls: AtomicUsize,
-    last_max_rows: AtomicUsize,
-    foreign_session: AtomicBool,
-    foreign_provider: AtomicBool,
-    foreign_plan: AtomicBool,
+pub(crate) struct PlannerObservations {
+    pub(crate) plan_calls: AtomicUsize,
+    pub(crate) last_max_rows: AtomicUsize,
+    pub(crate) foreign_session: AtomicBool,
+    pub(crate) foreign_provider: AtomicBool,
+    pub(crate) foreign_plan: AtomicBool,
     /// Only ever set to `true`, so it is already cumulative.
-    used_fallback: AtomicBool,
+    pub(crate) used_fallback: AtomicBool,
 }
 
 impl fmt::Debug for PlannerObservations {
@@ -104,8 +104,12 @@ const MAX_ROWS_KEY: &str = "ffi_query_planner.max_rows";
 const FFI_MAX_ROWS_KEY: &str = "datafusion_ffi.ffi_query_planner.max_rows";
 
 fn planner_config(session: &dyn Session) -> datafusion::common::Result<MyPlannerConfig> {
-    let options = session.config_options();
+    planner_config_from_options(session.config_options())
+}
 
+pub(crate) fn planner_config_from_options(
+    options: &datafusion::common::config::ConfigOptions,
+) -> datafusion::common::Result<MyPlannerConfig> {
     // Prefer the raw entry. `local_or_ffi_extension` discards a value it cannot
     // parse and hands back `MyPlannerConfig::default()`, which would quietly turn
     // a typo into a different row limit instead of reporting it.
@@ -143,8 +147,8 @@ fn planner_config(session: &dyn Session) -> datafusion::common::Result<MyPlanner
 }
 
 #[derive(Debug)]
-struct DistributedQueryPlanner {
-    observations: Arc<PlannerObservations>,
+pub(crate) struct DistributedQueryPlanner {
+    pub(crate) observations: Arc<PlannerObservations>,
     /// Planner to hand the work to instead of planning here.
     ///
     /// This is how a real planner layers on top of an existing one. The capsule
@@ -156,7 +160,7 @@ struct DistributedQueryPlanner {
     /// Note that `Session::create_physical_plan` cannot be used for this. It
     /// dispatches through the session's installed query planner, so calling it
     /// from inside that planner recurses until the stack overflows.
-    fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
+    pub(crate) fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
 }
 
 #[async_trait]
