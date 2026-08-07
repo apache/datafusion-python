@@ -31,6 +31,8 @@ use datafusion_ffi::execution_plan::ForeignExecutionPlan;
 use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::session::ForeignSession;
 use datafusion_ffi::table_provider::ForeignTableProvider;
+use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
+use datafusion_proto::physical_plan::DefaultPhysicalExtensionCodec;
 use datafusion_python_util::get_tokio_runtime;
 use datafusion_session::{QueryPlanner, Session};
 use pyo3::prelude::*;
@@ -192,7 +194,13 @@ impl MyQueryPlanner {
         });
         let runtime = get_tokio_runtime().handle().clone();
         let ctx_provider = Arc::new(SessionContext::new()) as Arc<dyn TaskContextProvider>;
-        let ffi = FFI_QueryPlanner::new(planner, Some(runtime), &ctx_provider, None, None);
+        let ffi = FFI_QueryPlanner::new(
+            planner,
+            Some(runtime),
+            &ctx_provider,
+            Arc::new(DefaultLogicalExtensionCodec {}),
+            Arc::new(DefaultPhysicalExtensionCodec {}),
+        );
         PyCapsule::new_with_value(py, ffi, cr"datafusion_query_planner")
     }
 }

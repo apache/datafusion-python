@@ -227,73 +227,39 @@ impl PySessionConfig {
     }
 }
 
-#[derive(Debug)]
-struct PlanningTaskContextProvider(Arc<TaskContext>);
-
-impl TaskContextProvider for PlanningTaskContextProvider {
-    fn task_ctx(&self) -> Arc<TaskContext> {
-        Arc::clone(&self.0)
-    }
-}
-
+/// Adapts an FFI planner to the Tokio runtime owned by datafusion-python.
+///
+/// Upstream's `ForeignQueryPlanner` cannot recover the runtime handle from the
+/// `QueryPlanner` trait, so embedders that own the runtime must call
+/// `create_physical_plan_with_session_runtime` directly.
 #[derive(Debug, Clone)]
-struct PythonQueryPlanner {
+struct RuntimeAwareQueryPlanner {
     planner: FFI_QueryPlanner,
-    logical_codec: Arc<PythonLogicalCodec>,
-    physical_codec: Arc<PythonPhysicalCodec>,
 }
 
-impl PythonQueryPlanner {
-    fn with_codecs(
+impl RuntimeAwareQueryPlanner {
+    fn with_ffi_codecs(
         &self,
-        logical_codec: Arc<PythonLogicalCodec>,
-        physical_codec: Arc<PythonPhysicalCodec>,
+        logical_codec: FFI_LogicalExtensionCodec,
+        physical_codec: FFI_PhysicalExtensionCodec,
     ) -> Self {
-        Self {
-            planner: self.planner.clone(),
-            logical_codec,
-            physical_codec,
-        }
+        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&self.planner).into();
+        let planner = FFI_QueryPlanner::new_with_ffi_codecs(planner, logical_codec, physical_codec);
+        Self { planner }
     }
 }
 
 #[async_trait]
-impl QueryPlanner for PythonQueryPlanner {
+impl QueryPlanner for RuntimeAwareQueryPlanner {
     async fn create_physical_plan(
         &self,
         logical_plan: &LogicalPlan,
         session: &dyn Session,
     ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::new(PlanningTaskContextProvider(session.task_ctx()));
-        let (logical_codec, physical_codec) = {
-            let dyn_ctx_provider: Arc<dyn TaskContextProvider> = ctx_provider.clone();
-            let logical_codec: Arc<dyn LogicalExtensionCodec> =
-                Arc::clone(&self.logical_codec) as Arc<dyn LogicalExtensionCodec>;
-            let physical_codec: Arc<dyn PhysicalExtensionCodec + Send> =
-                Arc::clone(&self.physical_codec) as Arc<dyn PhysicalExtensionCodec + Send>;
-            (
-                FFI_LogicalExtensionCodec::new(
-                    logical_codec,
-                    Some(runtime.clone()),
-                    &dyn_ctx_provider,
-                ),
-                FFI_PhysicalExtensionCodec::new(
-                    physical_codec,
-                    Some(runtime.clone()),
-                    &dyn_ctx_provider,
-                ),
-            )
-        };
-
-        let mut planner = self.planner.clone();
-        planner.logical_codec = logical_codec;
-        planner.physical_codec = physical_codec;
-        let result = planner
+        self.planner
             .create_physical_plan_with_session_runtime(logical_plan, session, Some(runtime))
-            .await;
-        drop(ctx_provider);
-        result
+            .await
     }
 }
 
@@ -1289,15 +1255,22 @@ impl PySessionContext {
 
     pub fn with_query_planner(&self, planner: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         let planner = ffi_query_planner_from_pycapsule(&planner)?;
-        let planner = Arc::new(PythonQueryPlanner {
+
+        // Build the codecs against the derived context, then update that same
+        // context in place. FFI codecs keep a weak task-context provider, so
+        // rebuilding the context after creating them would leave a stale link.
+        let ctx = Arc::new(SessionContext::new_with_state(self.ctx.state()));
+        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
+        let planner = FFI_QueryPlanner::new_with_ffi_codecs(
             planner,
-            logical_codec: Arc::clone(&self.logical_codec),
-            physical_codec: Arc::clone(&self.physical_codec),
-        });
-        let state = SessionStateBuilder::new_from_existing(self.ctx.state())
+            Self::ffi_logical_codec_for(&ctx, &self.logical_codec),
+            Self::ffi_physical_codec_for(&ctx, &self.physical_codec),
+        );
+        let planner = Arc::new(RuntimeAwareQueryPlanner { planner });
+        let state = SessionStateBuilder::new_from_existing(ctx.state())
             .with_query_planner(planner)
             .build();
-        let ctx = Arc::new(SessionContext::new_with_state(state));
+        *ctx.state_ref().write() = state;
 
         Ok(Self {
             ctx,
@@ -1564,15 +1537,24 @@ impl PySessionContext {
         let state = self.ctx.state();
         let query_planner = state.query_planner();
         let planner_any: &dyn std::any::Any = query_planner.as_ref();
-        let Some(planner) = planner_any.downcast_ref::<PythonQueryPlanner>() else {
+        let Some(planner) = planner_any
+            .downcast_ref::<RuntimeAwareQueryPlanner>()
+            .cloned()
+        else {
             return Arc::clone(&self.ctx);
         };
 
-        let planner = Arc::new(planner.with_codecs(logical_codec, physical_codec));
-        let state = SessionStateBuilder::new_from_existing(self.ctx.state())
+        // Preserve the context identity captured by the replacement codecs.
+        let ctx = Arc::new(SessionContext::new_with_state(state));
+        let planner = Arc::new(planner.with_ffi_codecs(
+            Self::ffi_logical_codec_for(&ctx, &logical_codec),
+            Self::ffi_physical_codec_for(&ctx, &physical_codec),
+        ));
+        let state = SessionStateBuilder::new_from_existing(ctx.state())
             .with_query_planner(planner)
             .build();
-        Arc::new(SessionContext::new_with_state(state))
+        *ctx.state_ref().write() = state;
+        ctx
     }
 
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
@@ -1636,28 +1618,37 @@ impl PySessionContext {
     /// Used at every site that exports the codec across an FFI boundary
     /// (capsule getters, Rust wrappers for Python-defined providers, etc.).
     pub(crate) fn ffi_logical_codec(&self) -> Arc<FFI_LogicalExtensionCodec> {
-        let inner: Arc<dyn LogicalExtensionCodec> =
-            Arc::clone(&self.logical_codec) as Arc<dyn LogicalExtensionCodec>;
+        Arc::new(Self::ffi_logical_codec_for(&self.ctx, &self.logical_codec))
+    }
+
+    fn ffi_logical_codec_for(
+        ctx: &Arc<SessionContext>,
+        codec: &Arc<PythonLogicalCodec>,
+    ) -> FFI_LogicalExtensionCodec {
+        let codec: Arc<dyn LogicalExtensionCodec> =
+            Arc::clone(codec) as Arc<dyn LogicalExtensionCodec>;
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        Arc::new(FFI_LogicalExtensionCodec::new(
-            inner,
-            Some(runtime),
-            &ctx_provider,
-        ))
+        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        FFI_LogicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
     }
 
     /// Build an FFI-wrapped clone of the session's physical codec on demand.
     pub(crate) fn ffi_physical_codec(&self) -> Arc<FFI_PhysicalExtensionCodec> {
-        let inner: Arc<dyn PhysicalExtensionCodec + Send> =
-            Arc::clone(&self.physical_codec) as Arc<dyn PhysicalExtensionCodec + Send>;
-        let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        Arc::new(FFI_PhysicalExtensionCodec::new(
-            inner,
-            Some(runtime),
-            &ctx_provider,
+        Arc::new(Self::ffi_physical_codec_for(
+            &self.ctx,
+            &self.physical_codec,
         ))
+    }
+
+    fn ffi_physical_codec_for(
+        ctx: &Arc<SessionContext>,
+        codec: &Arc<PythonPhysicalCodec>,
+    ) -> FFI_PhysicalExtensionCodec {
+        let codec: Arc<dyn PhysicalExtensionCodec + Send> =
+            Arc::clone(codec) as Arc<dyn PhysicalExtensionCodec + Send>;
+        let runtime = get_tokio_runtime().handle().clone();
+        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        FFI_PhysicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
     }
 }
 
