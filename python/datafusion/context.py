@@ -145,6 +145,29 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
+class ExtensionOptionsExportable(Protocol):
+    """Type hint for object that has __datafusion_extension_options__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_ExtensionOptions``,
+    typically produced by a separate compiled extension and consumed by
+    :py:meth:`SessionConfig.with_extension`.
+    """
+
+    def __datafusion_extension_options__(self) -> object: ...  # noqa: D105
+
+
+class TaskContextProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_task_context_provider__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_TaskContextProvider``.
+    :py:class:`SessionContext` exposes one for its own task context; a
+    separate compiled extension can decode it (or one of its own) using
+    the matching Rust-side ``from_pycapsule`` helper.
+    """
+
+    def __datafusion_task_context_provider__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -337,12 +360,14 @@ class SessionConfig:
         self.config_internal = self.config_internal.set(key, value)
         return self
 
-    def with_extension(self, extension: Any) -> SessionConfig:
+    def with_extension(self, extension: ExtensionOptionsExportable) -> SessionConfig:
         """Create a new configuration using an extension.
 
         Args:
             extension: A custom configuration extension object. These are
-            shared from another DataFusion extension library.
+            shared from another DataFusion extension library. It must expose
+            an ``__datafusion_extension_options__`` PyCapsule, see
+            :py:class:`ExtensionOptionsExportable`.
 
         Returns:
             A new :py:class:`SessionConfig` object with the updated setting.

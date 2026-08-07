@@ -1121,6 +1121,15 @@ def _wrap_session_kwarg_for_udtf(func: Callable[..., Any]) -> Callable[..., Any]
     return adapter
 
 
+class TableFunctionExportable(Protocol):
+    """Type hint for object that has __datafusion_table_function__ PyCapsule.
+
+    https://datafusion.apache.org/python/user-guide/io/table_provider.html
+    """
+
+    def __datafusion_table_function__(self, session: Any) -> object: ...  # noqa: D105
+
+
 class TableFunction:
     """Class for performing user-defined table functions (UDTF).
 
@@ -1131,7 +1140,7 @@ class TableFunction:
     def __init__(
         self,
         name: str,
-        func: Callable[..., Any],
+        func: Callable[..., Any] | TableFunctionExportable,
         ctx: SessionContext | None = None,
         *,
         with_session: bool = False,
@@ -1189,6 +1198,10 @@ class TableFunction:
         *,
         with_session: bool = False,
     ) -> TableFunction: ...
+
+    @overload
+    @staticmethod
+    def udtf(func: TableFunctionExportable, name: str) -> TableFunction: ...
 
     @staticmethod
     def udtf(*args: Any, with_session: bool = False, **kwargs: Any):
