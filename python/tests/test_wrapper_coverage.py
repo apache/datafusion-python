@@ -67,6 +67,14 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         pytest.fail(f"Missing __repr__: {internal_obj.__name__}")
 
     for internal_attr_name in dir(internal_obj):
+        # Single-underscore names are private support methods for the
+        # wrappers (e.g. SessionContext._install_extensions) and are not
+        # part of the public surface that requires a wrapper.
+        if internal_attr_name.startswith("_") and not internal_attr_name.startswith(
+            "__"
+        ):
+            continue
+
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")
 
         assert wrapped_attr_name in dir(wrapped_obj)
