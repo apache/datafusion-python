@@ -286,6 +286,25 @@ def test_with_extensions_failure_leaves_source_usable():
     assert batches[0].column(0).to_pylist() == [0, 1, 2, 3, 4, 5]
 
 
+def test_dataframe_outliving_context_fails_cleanly():
+    """A DataFrame does not keep its SessionContext alive. FFI components
+    resolve the task context through a weak reference, so using the
+    DataFrame after dropping the context raises a clean error instead of
+    crashing. This locks in the documented ownership contract: the context
+    must outlive DataFrames that depend on FFI codecs."""
+    config = SessionConfig().with_extension(PlannerConfig(max_rows=2))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    df = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"')
+    del ctx
+    gc.collect()
+
+    with pytest.raises(Exception, match="went out of scope"):
+        df.collect()
+
+
 def test_composed_codecs_with_query_planner():
     """A second pair of codecs installed on top of the provider codecs
     composes with them instead of replacing them. The extra codecs
