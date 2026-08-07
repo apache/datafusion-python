@@ -1472,7 +1472,9 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let inner_ffi = ffi_logical_codec_from_pycapsule(codec)?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
-        let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
+        // Prepend rather than replace: previously installed codecs stay
+        // active, with the most recently installed one consulted first.
+        let logical_codec = Arc::new(self.logical_codec.with_additional_codec(inner));
 
         let physical_codec = Arc::clone(&self.physical_codec);
         let ctx = self
@@ -1497,7 +1499,9 @@ impl PySessionContext {
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
         let inner = physical_codec_from_pycapsule(&codec)?;
-        let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
+        // Prepend rather than replace: previously installed codecs stay
+        // active, with the most recently installed one consulted first.
+        let physical_codec = Arc::new(self.physical_codec.with_additional_codec(inner));
 
         let logical_codec = Arc::clone(&self.logical_codec);
         let ctx = self
@@ -1511,11 +1515,15 @@ impl PySessionContext {
 
     pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
         let logical_codec = Arc::new(
-            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+            self.logical_codec
+                .as_ref()
+                .clone()
                 .with_python_udf_inlining(enabled),
         );
         let physical_codec = Arc::new(
-            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+            self.physical_codec
+                .as_ref()
+                .clone()
                 .with_python_udf_inlining(enabled),
         );
         let ctx = self

@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from datafusion import LogicalPlan, SessionContext
-from datafusion_ffi_example import MyLogicalExtensionCodec
+from datafusion_ffi_example import MyLogicalExtensionCodec, MyTableProvider
 
 
 def _setup_session_with_codec() -> tuple[SessionContext, MyLogicalExtensionCodec]:
@@ -76,6 +76,31 @@ def test_ffi_logical_codec_roundtrip():
     ctx, _codec = _setup_session_with_codec()
     df = ctx.sql("SELECT abs(-1) AS x")
     blob = df.logical_plan().to_bytes(ctx)
+
+    restored = LogicalPlan.from_bytes(ctx, blob)
+    df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
+    assert df.collect() == df_round_trip.collect()
+
+
+def test_ffi_logical_codec_composes_with_later_install():
+    """Codecs compose: installing a second codec prepends it to the
+    session's codec chain instead of replacing the first. The second
+    codec here (a default-backed codec exported from a fresh session)
+    cannot encode this library's table provider, so encoding falls
+    through to the user codec installed first. Under replace semantics
+    this test fails with `LogicalExtensionCodec is not provided`."""
+    ctx, codec = _setup_session_with_codec()
+    ctx = ctx.with_logical_extension_codec(
+        SessionContext().__datafusion_logical_extension_codec__()
+    )
+
+    ctx.register_table("numbers", MyTableProvider(1, 4, 1))
+    df = ctx.sql('SELECT "A" FROM numbers')
+    plan = df.logical_plan()
+
+    before = codec.table_provider_encode_calls()
+    blob = plan.to_bytes(ctx)
+    assert codec.table_provider_encode_calls() > before
 
     restored = LogicalPlan.from_bytes(ctx, blob)
     df_round_trip = ctx.create_dataframe_from_logical_plan(restored)

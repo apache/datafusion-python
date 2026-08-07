@@ -248,14 +248,64 @@ foreign planner. This lets the planner decode provider-owned objects and lets
 process-local tokens to demonstrate ownership; production codecs should serialize
 durable metadata instead.
 
-The current Python API has one external logical codec and one external physical codec.
-Installing another codec replaces the prior codec rather than composing a registry.
-The example therefore has one external codec owner, and the planner uses built-in
-physical nodes. Install the provider codecs before the planner where possible.
+### Composable codecs
+
+Extension codecs compose. Each call to `with_logical_extension_codec` or
+`with_physical_extension_codec` adds the codec to the front of the session's codec
+chain rather than replacing prior codecs. During encoding and decoding, the most
+recently installed codec is consulted first, falling through codec by codec to
+DataFusion's default codec. A codec signals "not mine" by returning an error, which
+sends the chain on to the next codec. Two conventions keep this dispatch sound:
+
+- Frame your payloads with a distinct byte prefix (pick a `DF` namespace plus a
+  crate-specific suffix) and only decode payloads carrying your prefix.
+- Return an error for objects and payloads you do not own. A codec that answers
+  success for objects outside its family shadows every codec installed before it.
+
+Because dispatch keys off payload prefixes rather than install position, codec
+registration order between independent libraries does not matter.
 
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
+
+### One planner per session, with explicit fallback
+
+Unlike codecs, a `SessionState` holds exactly one query planner — installing another
+replaces it. Planner layering is therefore explicit: a planner that wants to handle
+only some queries should accept a fallback planner and delegate the rest to it. The
+current planner can be exported for that purpose with
+`ctx.__datafusion_query_planner__()`.
+
+One ordering rule applies: a planner capsule captures the session's codecs at export
+time and cannot be rebound afterward. Codec changes made after installing a single
+planner are rebound automatically, but a planner wrapped inside another planner as a
+fallback is opaque and keeps the codecs it was exported with. **Install all extension
+codecs before exporting or chaining planners.**
+
+Putting it together for a session using two extension libraries that each provide
+tables, functions, and a query planner:
+
+```python
+ctx = SessionContext(config)
+
+# 1. Codecs from both libraries. Order between libraries does not matter.
+ctx = ctx.with_logical_extension_codec(lib_a.codec())
+ctx = ctx.with_logical_extension_codec(lib_b.codec())
+ctx = ctx.with_physical_extension_codec(lib_a.physical_codec())
+ctx = ctx.with_physical_extension_codec(lib_b.physical_codec())
+
+# 2. Planners, innermost fallback first. Library A's planner falls back to
+#    DataFusion's default planner; library B's planner falls back to A's.
+ctx = ctx.with_query_planner(lib_a.Planner())
+ctx = ctx.with_query_planner(
+    lib_b.Planner(fallback=ctx.__datafusion_query_planner__())
+)
+
+# 3. Tables and functions — any time before the first query.
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
 
 ## Alternative Approach
 

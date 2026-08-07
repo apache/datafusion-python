@@ -35,7 +35,7 @@ Separate shared libraries guarantee distinct DataFusion library markers. This ca
 
 The example codecs do not inspect the callback `TaskContext`. A production codec that depends on session configuration or registered functions must ensure its exported FFI codec is bound to, and retains, the appropriate host `TaskContextProvider`.
 
-The current Python API installs one external logical codec and one external physical codec. It does not yet compose codecs from several independent plugin owners. This example therefore makes the provider library the sole external codec owner; the planner uses built-in physical nodes and receives the provider codecs from the host.
+Extension codecs compose: each `with_logical_extension_codec` / `with_physical_extension_codec` call prepends the codec to the session's codec chain, with the most recently installed codec consulted first and DataFusion's default codec as the terminal fallback. A codec signals "not mine" by returning an error, so several independent plugin libraries can install codecs on the same session as long as each only answers for payloads it owns (frame them with a distinct byte prefix). In this example the provider library is the only codec owner; the planner uses built-in physical nodes and receives the provider codecs from the host.
 
 Register both provider codecs before installing the planner:
 
