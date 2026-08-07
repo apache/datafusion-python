@@ -1534,6 +1534,90 @@ impl PySessionContext {
             physical_codec,
         }
     }
+
+    /// Create the destination context for a `with_extensions` transaction.
+    ///
+    /// Private support method for `SessionContext.with_extensions`. The
+    /// returned context is the single `Arc<SessionContext>` that every FFI
+    /// task-context provider created during the transaction must target;
+    /// `_install_extensions` later mutates its state in place rather than
+    /// deriving a new context.
+    pub fn _derive_for_extensions(&self) -> Self {
+        Self {
+            ctx: Arc::new(SessionContext::new_with_state(self.ctx.state())),
+            logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec: Arc::clone(&self.physical_codec),
+        }
+    }
+
+    /// Commit a `with_extensions` transaction onto this context.
+    ///
+    /// Private support method for `SessionContext.with_extensions`; `self`
+    /// must be a context produced by `_derive_for_extensions`. Codec capsules
+    /// are imported and validated before any state change, so a failure
+    /// leaves the context untouched. The final state is written through this
+    /// context's own `state_ref()`, never a derived context, so FFI
+    /// task-context providers bound to it stay valid.
+    #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
+    pub fn _install_extensions<'py>(
+        &self,
+        logical_codecs: Vec<Bound<'py, PyAny>>,
+        physical_codecs: Vec<Bound<'py, PyAny>>,
+        planner: Option<Bound<'py, PyAny>>,
+    ) -> PyDataFusionResult<Self> {
+        let mut logical_codec = self.logical_codec.as_ref().clone();
+        for codec in logical_codecs {
+            let inner_ffi = ffi_logical_codec_from_pycapsule(codec)?;
+            let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
+            logical_codec = logical_codec.with_additional_codec(inner);
+        }
+        let logical_codec = Arc::new(logical_codec);
+
+        let mut physical_codec = self.physical_codec.as_ref().clone();
+        for codec in physical_codecs {
+            let inner = physical_codec_from_pycapsule(&codec)?;
+            physical_codec = physical_codec.with_additional_codec(inner);
+        }
+        let physical_codec = Arc::new(physical_codec);
+
+        // Bind the planner only after the codec chains are final. Both FFI
+        // codec wrappers target this exact context so their weak task-context
+        // providers stay valid for as long as the returned context lives.
+        let ffi_logical = Self::ffi_logical_codec_for(&self.ctx, &logical_codec);
+        let ffi_physical = Self::ffi_physical_codec_for(&self.ctx, &physical_codec);
+        let query_planner: Option<Arc<dyn QueryPlanner + Send + Sync>> = match planner {
+            Some(planner) => {
+                let planner = ffi_query_planner_from_pycapsule(&planner)?;
+                let planner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
+                let planner =
+                    FFI_QueryPlanner::new_with_ffi_codecs(planner, ffi_logical, ffi_physical);
+                Some(Arc::new(RuntimeAwareQueryPlanner { planner }))
+            }
+            None => {
+                let state = self.ctx.state();
+                let planner_any: &dyn std::any::Any = state.query_planner().as_ref();
+                planner_any
+                    .downcast_ref::<RuntimeAwareQueryPlanner>()
+                    .map(|p| {
+                        Arc::new(p.with_ffi_codecs(ffi_logical, ffi_physical))
+                            as Arc<dyn QueryPlanner + Send + Sync>
+                    })
+            }
+        };
+
+        if let Some(query_planner) = query_planner {
+            let state = SessionStateBuilder::new_from_existing(self.ctx.state())
+                .with_query_planner(query_planner)
+                .build();
+            *self.ctx.state_ref().write() = state;
+        }
+
+        Ok(Self {
+            ctx: Arc::clone(&self.ctx),
+            logical_codec,
+            physical_codec,
+        })
+    }
 }
 
 impl PySessionContext {
