@@ -286,6 +286,45 @@ def test_with_extensions_failure_leaves_source_usable():
     assert batches[0].column(0).to_pylist() == [0, 1, 2, 3, 4, 5]
 
 
+def test_with_extensions_rebinds_existing_planner():
+    """Codec-only bundles installed on a context that already has an FFI
+    planner rebind that planner to the new codec chains."""
+    config = SessionConfig().with_extension(PlannerConfig(max_rows=2))
+    planner = MyQueryPlanner()
+    ctx = SessionContext(config).with_query_planner(planner)
+    provider_ext = ProviderCodecsExtension()
+    ctx = ctx.with_extensions(provider_ext)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner.last_max_rows() == 2
+    # The planner only sees these codecs if it was rebound to the chains
+    # built during with_extensions.
+    assert provider_ext.logical_codec.table_provider_decode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_with_extensions_codec_precedence():
+    """Extensions are processed left to right and prepend to the codec
+    chain, so codecs from later extensions are consulted first. Both
+    bundles' codecs can handle the payload (they share the provider
+    library's token registry); only the one consulted first is used."""
+    config = SessionConfig().with_extension(PlannerConfig(max_rows=2))
+    ext_a = ProviderCodecsExtension()
+    ext_b = ProviderCodecsExtension()
+    ctx = SessionContext(config).with_extensions(ext_a, ext_b, MyPlannerExtension())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+    assert ext_b.logical_codec.table_provider_encode_calls() > 0
+    assert ext_b.logical_codec.table_provider_decode_calls() > 0
+    assert ext_a.logical_codec.table_provider_encode_calls() == 0
+    assert ext_a.logical_codec.table_provider_decode_calls() == 0
+
+
 def test_dataframe_outliving_context_fails_cleanly():
     """A DataFrame does not keep its SessionContext alive. FFI components
     resolve the task context through a weak reference, so using the
