@@ -1608,6 +1608,81 @@ impl PySessionContext {
         derived.set_session_query_planner(None);
         derived
     }
+
+    /// Create the destination context for a `with_extensions` transaction.
+    ///
+    /// Private support method for `SessionContext.with_extensions`. The
+    /// returned context is the single `Arc<SessionContext>` that every FFI
+    /// task-context provider created during the transaction must target;
+    /// `_install_extensions` later mutates its state in place rather than
+    /// deriving a new context.
+    pub fn _derive_for_extensions(&self) -> Self {
+        Self {
+            ctx: Arc::new(SessionContext::new_with_state(self.ctx.state())),
+            logical_codec: Arc::clone(&self.logical_codec),
+            physical_codec: Arc::clone(&self.physical_codec),
+        }
+    }
+
+    /// Commit a `with_extensions` transaction onto this context.
+    ///
+    /// Private support method for `SessionContext.with_extensions`; `self`
+    /// must be a context produced by `_derive_for_extensions`. Codec capsules
+    /// are imported and validated before any state change, so a failure
+    /// leaves the context untouched. The final state is written through this
+    /// context's own `state_ref()`, never a derived context, so FFI
+    /// task-context providers bound to it stay valid.
+    #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
+    pub fn _install_extensions<'py>(
+        slf: &Bound<'py, Self>,
+        logical_codecs: Vec<Bound<'py, PyAny>>,
+        physical_codecs: Vec<Bound<'py, PyAny>>,
+        planner: Option<Bound<'py, PyAny>>,
+    ) -> PyDataFusionResult<Self> {
+        // Chains are built as local values, so a codec that fails to import --
+        // or that collides with an id already installed -- leaves the session
+        // untouched. Nothing is borrowed across a call back into Python.
+        let (mut logical_codec, mut physical_codec) = {
+            let this = slf.borrow();
+            (
+                this.logical_codec.as_ref().clone(),
+                this.physical_codec.as_ref().clone(),
+            )
+        };
+
+        for codec in logical_codecs {
+            let id = resolve_codec_id(&codec, None, &logical_codec.codec_ids())?;
+            let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+            let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
+            logical_codec = logical_codec.with_additional_codec(id, inner);
+        }
+        let logical_codec = Arc::new(logical_codec);
+
+        for codec in physical_codecs {
+            let id = resolve_codec_id(&codec, None, &physical_codec.codec_ids())?;
+            let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+            let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
+            physical_codec = physical_codec.with_additional_codec(id, inner);
+        }
+        let physical_codec = Arc::new(physical_codec);
+
+        let planner = planner
+            .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
+            .transpose()?;
+
+        let derived = Self {
+            ctx: Arc::clone(&slf.borrow().ctx),
+            logical_codec,
+            physical_codec,
+        };
+        // Bind the planner only once the codec chains are final, and through
+        // the derived handle so it carries them. Passing `None` still rebuilds
+        // whichever planner the session already holds against the new chains,
+        // exactly as `with_logical_extension_codec` does.
+        derived.set_session_query_planner(planner);
+
+        Ok(derived)
+    }
 }
 
 impl PySessionContext {

@@ -16,6 +16,7 @@
 # under the License.
 import ctypes
 import datetime as dt
+import gc
 import gzip
 import pathlib
 import shutil
@@ -29,6 +30,7 @@ from datafusion import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
+    SessionExtensionComponents,
     SQLOptions,
     Table,
     column,
@@ -877,6 +879,121 @@ def test_contexts_sharing_a_session_share_the_planner(ctx):
 
     assert sibling.table_exist("shared_planner_test")
     assert sibling.session_id() == ctx.session_id()
+
+
+class _CodecOnlyExtension:
+    """Contributes decline-all codecs exported from an unrelated session."""
+
+    def __init__(self):
+        self.exporter = SessionContext()
+        self.bound_ctx = None
+
+    def __datafusion_session_extension__(self, ctx):
+        self.bound_ctx = ctx
+        return SessionExtensionComponents(
+            logical_extension_codecs=(
+                self.exporter.__datafusion_logical_extension_codec__(),
+            ),
+            physical_extension_codecs=(
+                self.exporter.__datafusion_physical_extension_codec__(),
+            ),
+        )
+
+
+class _PlannerExtension:
+    """Contributes the destination context's own exported planner."""
+
+    def __datafusion_session_extension__(self, ctx):
+        return SessionExtensionComponents(
+            query_planner=ctx.__datafusion_query_planner__()
+        )
+
+
+def test_with_extensions_requires_an_extension(ctx):
+    with pytest.raises(ValueError, match="at least one extension"):
+        ctx.with_extensions()
+
+
+def test_with_extensions_rejects_non_extension(ctx):
+    with pytest.raises(TypeError, match="__datafusion_session_extension__"):
+        ctx.with_extensions(object())
+
+
+def test_with_extensions_rejects_bad_components(ctx):
+    class BadExtension:
+        def __datafusion_session_extension__(self, ctx):
+            return 42
+
+    with pytest.raises(TypeError, match="SessionExtensionComponents"):
+        ctx.with_extensions(BadExtension())
+
+
+def test_with_extensions_rejects_multiple_planners(ctx):
+    with pytest.raises(ValueError, match="query planner"):
+        ctx.with_extensions(_PlannerExtension(), _PlannerExtension())
+
+
+def test_with_extensions_rejects_bad_codec_capsule(ctx):
+    class BadCodecExtension:
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(ctx.__datafusion_task_context_provider__(),),
+            )
+
+    with pytest.raises(
+        ValueError, match="Expected name 'datafusion_logical_extension_codec'"
+    ):
+        ctx.with_extensions(BadCodecExtension())
+
+
+def test_with_extensions_installs_codecs_and_planner(ctx):
+    ctx.register_record_batches(
+        "extensions_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+    extension = _CodecOnlyExtension()
+    result = ctx.with_extensions(extension, _PlannerExtension())
+
+    assert result.table_exist("extensions_test")
+    # In-memory tables need a real extension codec to round-trip through the
+    # FFI planner, so query plans that don't serialize a table provider.
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_binds_to_returned_context(ctx):
+    extension = _CodecOnlyExtension()
+    result = ctx.with_extensions(extension)
+
+    # The context passed to the factory shares the same underlying session
+    # as the returned context: registrations made through it are visible.
+    extension.bound_ctx.register_record_batches(
+        "bound_test",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    assert result.table_exist("bound_test")
+
+
+def test_with_extensions_survives_source_collection():
+    extension = _CodecOnlyExtension()
+    result = SessionContext().with_extensions(extension, _PlannerExtension())
+    gc.collect()
+
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_failure_leaves_source_usable(ctx):
+    class BoomExtension:
+        def __datafusion_session_extension__(self, ctx):
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(_CodecOnlyExtension(), BoomExtension())
+
+    batches = ctx.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
 
 
 def test_table_provider(ctx):

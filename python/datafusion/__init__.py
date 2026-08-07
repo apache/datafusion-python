@@ -80,6 +80,8 @@ from .context import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
+    SessionExtensionComponents,
+    SessionExtensionExportable,
     SQLOptions,
 )
 from .dataframe import (
@@ -134,6 +136,8 @@ __all__ = [
     "ScalarUDF",
     "SessionConfig",
     "SessionContext",
+    "SessionExtensionComponents",
+    "SessionExtensionExportable",
     "Table",
     "TableFunction",
     "TableProviderFactory",
