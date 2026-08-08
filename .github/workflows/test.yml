@@ -93,11 +93,15 @@ jobs:
           uv venv --python "${{ steps.setup-python.outputs.python-path }}"
           VENV_PY="$PWD/.venv/bin/python"
           uv sync --python "$VENV_PY" --dev --no-install-package datafusion
+          # Search recursively: the FFI artifact bundles more than one
+          # project, so upload-artifact keeps a `<project>/dist/` prefix
+          # and the wheels are not all at the top of wheels/.
           WHEELS=$(find wheels/ -name "*.whl")
           if [ -n "$WHEELS" ]; then
             echo "Installing wheels:"
             echo "$WHEELS"
-            uv pip install --python "$VENV_PY" wheels/*.whl
+            # shellcheck disable=SC2086  # intentional split on newlines
+            uv pip install --python "$VENV_PY" $WHEELS
           else
             echo "ERROR: No wheels found!"
             exit 1
