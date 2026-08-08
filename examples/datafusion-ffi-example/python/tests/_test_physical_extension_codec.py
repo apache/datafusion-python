@@ -76,3 +76,26 @@ def test_ffi_physical_codec_roundtrip():
 
     restored = ExecutionPlan.from_bytes(ctx, blob)
     assert str(original) == str(restored)
+
+
+def test_ffi_physical_codec_composes_with_later_install():
+    """Codecs compose: a second install prepends to the chain instead
+    of replacing the first codec. The second codec here (default-backed
+    export from a fresh session) encodes UDFs by name without writing
+    bytes, which the chain treats as "no opinion" — so the user codec
+    installed first is still consulted. Under replace semantics its
+    counter stays at zero."""
+    ctx, codec = _setup_session_with_codec()
+    ctx = ctx.with_physical_extension_codec(
+        SessionContext().__datafusion_physical_extension_codec__()
+    )
+
+    df = ctx.sql("SELECT abs(a) AS x FROM t")
+    original = df.execution_plan()
+
+    before = codec.encode_udf_calls()
+    blob = original.to_bytes(ctx)
+    assert codec.encode_udf_calls() > before
+
+    restored = ExecutionPlan.from_bytes(ctx, blob)
+    assert str(original) == str(restored)

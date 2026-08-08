@@ -1779,6 +1779,15 @@ class SessionContext:
         its logical and physical extension codec settings. Codec changes made on
         a derived context are rebound to the planner before planning.
 
+        A session holds exactly one query planner; installing another replaces
+        it. To layer planners, construct the new planner with the current
+        planner as its fallback (export it via
+        :py:meth:`__datafusion_query_planner__`) before installing. A planner
+        exported this way captures the codecs installed at export time and
+        cannot be rebound afterward, so install all extension codecs before
+        chaining planners. See the FFI extensions guide for the full
+        multi-library registration recipe.
+
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` or a raw
                 ``datafusion_query_planner`` PyCapsule.
@@ -2229,11 +2238,19 @@ class SessionContext:
     def with_logical_extension_codec(
         self, codec: LogicalExtensionCodecExportable | _PyCapsule
     ) -> SessionContext:
-        """Create a new session context with specified codec.
+        """Create a new session context with an additional logical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
+
+        Codecs compose: each call adds the codec to the front of the
+        session's codec chain rather than replacing prior codecs. During
+        encoding and decoding, the most recently installed codec is
+        consulted first, falling through codec by codec to DataFusion's
+        default codec. Codecs signal "not mine" by returning an error, so
+        extension codecs should only answer for payloads they own —
+        typically identified by a distinct byte prefix.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2247,11 +2264,16 @@ class SessionContext:
     def with_physical_extension_codec(
         self, codec: PhysicalExtensionCodecExportable | _PyCapsule
     ) -> SessionContext:
-        """Create a new session context with the specified physical codec.
+        """Create a new session context with an additional physical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
+
+        Codecs compose the same way as in
+        :py:meth:`with_logical_extension_codec`: each call prepends to the
+        session's codec chain, and the most recently installed codec is
+        consulted first.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)

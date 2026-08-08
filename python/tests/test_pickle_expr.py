@@ -323,6 +323,49 @@ class TestErrorPaths:
         ):
             Expr.from_bytes(bytes(tampered))
 
+    def test_unsupported_wire_version_error_message(self):
+        """A payload stamped with a wire-format version newer than this
+        build supports names both versions and points at the fix, rather
+        than failing deep inside cloudpickle with an opaque tuple-unpack
+        error.
+
+        Patches the version byte at offset 7 of the frame described in
+        :meth:`test_cross_version_error_message`. The patch is
+        length-preserving, so the enclosing protobuf stays parseable and
+        the bytes reach the codec.
+        """
+        e = _double_udf()(col("a"))
+        blob = e.to_bytes()
+
+        idx = blob.find(b"DFPYUDF")
+        assert idx >= 0, "DFPYUDF frame not found in payload"
+
+        tampered = bytearray(blob)
+        tampered[idx + 7] = 2  # WIRE_VERSION_CURRENT is 1
+
+        with pytest.raises(Exception, match="wire-format version v2") as excinfo:
+            Expr.from_bytes(bytes(tampered))
+        assert "Align datafusion-python versions" in str(excinfo.value)
+
+    def test_cross_major_version_error_message(self):
+        """Same diagnostic as the minor-version mismatch, driven from the
+        major byte at offset 8. Guards against a check that compares only
+        the minor component."""
+        import sys
+
+        e = _double_udf()(col("a"))
+        blob = e.to_bytes()
+
+        idx = blob.find(b"DFPYUDF")
+        assert idx >= 0, "DFPYUDF frame not found in payload"
+
+        tampered = bytearray(blob)
+        tampered[idx + 8] = (sys.version_info.major + 1) % 256
+
+        with pytest.raises(Exception, match="not portable") as excinfo:
+            Expr.from_bytes(bytes(tampered))
+        assert f"Python {sys.version_info.major + 1}." in str(excinfo.value)
+
 
 class TestPythonUdfInliningToggle:
     """`SessionContext.with_python_udf_inlining(enabled=False)` opts out of
