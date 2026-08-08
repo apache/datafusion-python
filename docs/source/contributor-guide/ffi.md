@@ -232,6 +232,31 @@ extension that has been written using this approach and the most thoroughly impl
 As we continue to expose more of the DataFusion features, we intend to follow this same
 design pattern.
 
+## Query Planners Across Multiple Libraries
+
+A query can involve three independent native libraries: `datafusion-python`, a library
+that owns table providers or functions, and a library that owns the query planner. The
+examples use two separate extension crates so each role has a distinct shared-library
+identity:
+
+- [`datafusion-ffi-example`] owns providers, functions, and their codecs.
+- [`datafusion-ffi-query-planner-example`] owns the planner and its configuration.
+
+The `SessionContext` owns the codecs used for the exchange and supplies them to the
+foreign planner. This lets the planner decode provider-owned objects and lets
+`datafusion-python` decode the physical plan returned by the planner. The examples use
+process-local tokens to demonstrate ownership; production codecs should serialize
+durable metadata instead.
+
+The current Python API has one external logical codec and one external physical codec.
+Installing another codec replaces the prior codec rather than composing a registry.
+The example therefore has one external codec owner, and the planner uses built-in
+physical nodes. Install the provider codecs before the planner where possible.
+
+The current FFI logical codec supports providers and UDFs but not arbitrary custom
+`LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
+local build commands.
+
 ## Alternative Approach
 
 Suppose you needed to expose some other features of DataFusion and you could not wait
@@ -257,3 +282,5 @@ At the time of this writing, the FFI features are under active development. To s
 the latest status, we recommend reviewing the code in the [datafusion-ffi] crate.
 
 [datafusion-ffi]: https://crates.io/crates/datafusion-ffi
+[`datafusion-ffi-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example
+[`datafusion-ffi-query-planner-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example

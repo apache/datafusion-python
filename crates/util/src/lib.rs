@@ -29,6 +29,7 @@ use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::physical_optimizer::FFI_PhysicalOptimizerRule;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
@@ -229,6 +230,38 @@ pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_Logic
     let codec = unsafe { data.as_ref() };
 
     Ok(codec.clone())
+}
+
+pub fn create_query_planner_capsule<'py>(
+    py: Python<'py>,
+    planner: &FFI_QueryPlanner,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    PyCapsule::new_with_value(py, planner.clone(), cr"datafusion_query_planner")
+}
+
+pub fn ffi_query_planner_from_pycapsule(obj: &Bound<PyAny>) -> PyResult<FFI_QueryPlanner> {
+    let attr_name = "__datafusion_query_planner__";
+    let capsule = if obj.hasattr(attr_name)? {
+        obj.getattr(attr_name)?.call0()?
+    } else {
+        obj.clone()
+    };
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_query_planner")?;
+    let data: NonNull<FFI_QueryPlanner> = capsule
+        .pointer_checked(Some(c"datafusion_query_planner"))?
+        .cast();
+    let planner = unsafe { data.as_ref() };
+    let planner_version = unsafe { (planner.version)() };
+    let expected_version = datafusion_ffi::version();
+    if planner_version != expected_version {
+        return Err(PyImportError::new_err(format!(
+            "Incompatible DataFusion query planner version {planner_version}; expected major version {expected_version}."
+        )));
+    }
+
+    Ok(planner.clone())
 }
 
 pub fn create_physical_extension_capsule<'py>(

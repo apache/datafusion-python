@@ -15,11 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::collections::HashMap;
+use std::fmt;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use arrow::datatypes::SchemaRef;
-use datafusion::common::{Result, TableReference};
+use datafusion::catalog::MemTable;
+use datafusion::common::{DataFusionError, Result, TableReference};
 use datafusion::datasource::TableProvider;
 use datafusion::execution::{TaskContext, TaskContextProvider};
 use datafusion::logical_expr::{Extension, LogicalPlan, ScalarUDF};
@@ -30,25 +33,49 @@ use datafusion_python_util::get_tokio_runtime;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
-/// Tracks how often each `try_*_udf` entry point fires. Surface for
-/// Python tests to assert the session routed UDF
-/// encode/decode through this user-supplied codec rather than the
-/// upstream default.
+const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
+static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
+static TABLE_PROVIDERS: OnceLock<Mutex<HashMap<u64, Arc<dyn TableProvider>>>> = OnceLock::new();
+
+fn table_providers() -> &'static Mutex<HashMap<u64, Arc<dyn TableProvider>>> {
+    TABLE_PROVIDERS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn token_id(buf: &[u8], prefix: &[u8]) -> Option<u64> {
+    let id: [u8; 8] = buf.strip_prefix(prefix)?.try_into().ok()?;
+    Some(u64::from_le_bytes(id))
+}
+
 #[derive(Debug, Default)]
 pub(crate) struct CallCounters {
     pub encode_udf: AtomicUsize,
     pub decode_udf: AtomicUsize,
+    pub encode_table_provider: AtomicUsize,
+    pub decode_table_provider: AtomicUsize,
 }
 
-/// Minimal user-supplied `LogicalExtensionCodec` for integration tests.
-/// Delegates everything to `DefaultLogicalExtensionCodec` and bumps
-/// counters on the UDF entry points so tests can prove the wrapper
-/// installed via `SessionContext.with_logical_extension_codec(...)`
-/// actually gets consulted.
-#[derive(Debug)]
+/// Example codec for objects owned by this extension library.
+///
+/// The table-provider token registry is intentionally process-local. It is a compact
+/// example of preserving Rust type identity across three loaded libraries, not a
+/// network serialization format. Production libraries should encode reconstructible
+/// provider metadata rather than retaining objects in a global registry.
 struct CountingLogicalExtensionCodec {
     inner: DefaultLogicalExtensionCodec,
     counters: Arc<CallCounters>,
+    // The FFI task-context handle is weak. Retain its provider for as long as
+    // this codec can be called, even if Python drops the exporter object.
+    _ctx_provider: Arc<SessionContext>,
+}
+
+impl fmt::Debug for CountingLogicalExtensionCodec {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("CountingLogicalExtensionCodec")
+            .field("inner", &self.inner)
+            .field("counters", &self.counters)
+            .finish_non_exhaustive()
+    }
 }
 
 impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
@@ -72,6 +99,20 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
+        if let Some(id) = token_id(buf, TABLE_PROVIDER_TOKEN) {
+            self.counters
+                .decode_table_provider
+                .fetch_add(1, Ordering::SeqCst);
+            return table_providers()
+                .lock()
+                .map_err(|err| DataFusionError::Internal(err.to_string()))?
+                .remove(&id)
+                .ok_or_else(|| {
+                    DataFusionError::Internal(format!(
+                        "Unknown datafusion-ffi-example table provider token {id}"
+                    ))
+                });
+        }
         self.inner
             .try_decode_table_provider(buf, table_ref, schema, ctx)
     }
@@ -82,6 +123,19 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         node: Arc<dyn TableProvider>,
         buf: &mut Vec<u8>,
     ) -> Result<()> {
+        if node.downcast_ref::<MemTable>().is_some() {
+            self.counters
+                .encode_table_provider
+                .fetch_add(1, Ordering::SeqCst);
+            let id = NEXT_TABLE_PROVIDER_ID.fetch_add(1, Ordering::SeqCst);
+            table_providers()
+                .lock()
+                .map_err(|err| DataFusionError::Internal(err.to_string()))?
+                .insert(id, node);
+            buf.extend_from_slice(TABLE_PROVIDER_TOKEN);
+            buf.extend_from_slice(&id.to_le_bytes());
+            return Ok(());
+        }
         self.inner.try_encode_table_provider(table_ref, node, buf)
     }
 
@@ -105,6 +159,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 #[derive(Clone)]
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
+    ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
@@ -113,26 +168,26 @@ impl MyLogicalExtensionCodec {
     fn new() -> Self {
         Self {
             counters: Arc::new(CallCounters::default()),
+            ctx_provider: Arc::new(SessionContext::new()),
         }
     }
 
-    /// Number of `try_encode_udf` invocations observed since
-    /// construction.
     fn encode_udf_calls(&self) -> usize {
         self.counters.encode_udf.load(Ordering::SeqCst)
     }
 
-    /// Number of `try_decode_udf` invocations observed.
     fn decode_udf_calls(&self) -> usize {
         self.counters.decode_udf.load(Ordering::SeqCst)
     }
 
-    /// Capsule entry point consumed by
-    /// `datafusion_python_util::ffi_logical_codec_from_pycapsule`.
-    /// datafusion-python invokes this with no arguments when the user
-    /// calls `ctx.with_logical_extension_codec(my_codec)`. The codec
-    /// owns its own bare `SessionContext` as a TaskContextProvider —
-    /// good enough for tests that only exercise UDF encode/decode.
+    fn table_provider_encode_calls(&self) -> usize {
+        self.counters.encode_table_provider.load(Ordering::SeqCst)
+    }
+
+    fn table_provider_decode_calls(&self) -> usize {
+        self.counters.decode_table_provider.load(Ordering::SeqCst)
+    }
+
     fn __datafusion_logical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
@@ -140,11 +195,11 @@ impl MyLogicalExtensionCodec {
         let inner: Arc<dyn LogicalExtensionCodec> = Arc::new(CountingLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
+            _ctx_provider: Arc::clone(&self.ctx_provider),
         });
 
         let runtime = get_tokio_runtime().handle().clone();
-        let bare_session: Arc<SessionContext> = Arc::new(SessionContext::new());
-        let ctx_provider = bare_session as Arc<dyn TaskContextProvider>;
+        let ctx_provider: Arc<dyn TaskContextProvider> = self.ctx_provider.clone();
         let ffi = FFI_LogicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
 
         PyCapsule::new_with_value(py, ffi, cr"datafusion_logical_extension_codec")

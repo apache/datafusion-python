@@ -15,14 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::collections::HashMap;
+use std::fmt;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 
-use datafusion::common::Result;
+use datafusion::common::{DataFusionError, Result};
+use datafusion::datasource::source::DataSourceExec;
 use datafusion::execution::{TaskContext, TaskContextProvider};
 use datafusion::logical_expr::ScalarUDF;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::SessionContext;
+use datafusion_ffi::execution_plan::ForeignExecutionPlan;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_proto::physical_plan::{
     DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
@@ -31,20 +35,48 @@ use datafusion_python_util::get_tokio_runtime;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
+const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
+static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
+static EXECUTION_PLANS: OnceLock<Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>>> = OnceLock::new();
+
+fn execution_plans() -> &'static Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>> {
+    EXECUTION_PLANS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn token_id(buf: &[u8]) -> Option<u64> {
+    let id: [u8; 8] = buf.strip_prefix(EXECUTION_PLAN_TOKEN)?.try_into().ok()?;
+    Some(u64::from_le_bytes(id))
+}
+
 #[derive(Debug, Default)]
 pub(crate) struct PhysicalCallCounters {
     pub encode_udf: AtomicUsize,
     pub decode_udf: AtomicUsize,
+    pub encode_execution_plan: AtomicUsize,
+    pub decode_execution_plan: AtomicUsize,
 }
 
-/// Mirror of [`super::logical_extension_codec::CountingLogicalExtensionCodec`]
-/// for the physical layer. Delegates to `DefaultPhysicalExtensionCodec`
-/// and bumps counters on UDF encode/decode so tests can prove the
-/// session routed through a user-supplied physical codec.
-#[derive(Debug)]
+/// Physical companion to the logical example codec.
+///
+/// Provider-owned memory scan plans use a same-process token registry so the
+/// owning cdylib can restore their concrete Rust type after the plan travels
+/// through the independent query-planner and datafusion-python libraries.
 struct CountingPhysicalExtensionCodec {
     inner: DefaultPhysicalExtensionCodec,
     counters: Arc<PhysicalCallCounters>,
+    // The FFI task-context handle is weak. Keep its provider alive with the
+    // codec rather than relying on the lifetime of the Python exporter.
+    _ctx_provider: Arc<SessionContext>,
+}
+
+impl fmt::Debug for CountingPhysicalExtensionCodec {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("CountingPhysicalExtensionCodec")
+            .field("inner", &self.inner)
+            .field("counters", &self.counters)
+            .finish_non_exhaustive()
+    }
 }
 
 impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
@@ -55,6 +87,20 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         ctx: &TaskContext,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
+        if let Some(id) = token_id(buf) {
+            self.counters
+                .decode_execution_plan
+                .fetch_add(1, Ordering::SeqCst);
+            return execution_plans()
+                .lock()
+                .map_err(|err| DataFusionError::Internal(err.to_string()))?
+                .remove(&id)
+                .ok_or_else(|| {
+                    DataFusionError::Internal(format!(
+                        "Unknown datafusion-ffi-example execution plan token {id}"
+                    ))
+                });
+        }
         self.inner.try_decode(buf, inputs, ctx, proto_converter)
     }
 
@@ -64,6 +110,22 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
+        // The provider owns DataSourceExec. A ForeignExecutionPlan can wrap a
+        // host-added execution decorator around that scan; retaining the opaque
+        // wrapper preserves its original library identity without downcasting it.
+        if node.is::<DataSourceExec>() || node.is::<ForeignExecutionPlan>() {
+            self.counters
+                .encode_execution_plan
+                .fetch_add(1, Ordering::SeqCst);
+            let id = NEXT_EXECUTION_PLAN_ID.fetch_add(1, Ordering::SeqCst);
+            execution_plans()
+                .lock()
+                .map_err(|err| DataFusionError::Internal(err.to_string()))?
+                .insert(id, node);
+            buf.extend_from_slice(EXECUTION_PLAN_TOKEN);
+            buf.extend_from_slice(&id.to_le_bytes());
+            return Ok(());
+        }
         self.inner.try_encode(node, buf, proto_converter)
     }
 
@@ -87,6 +149,7 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
 #[derive(Clone)]
 pub(crate) struct MyPhysicalExtensionCodec {
     counters: Arc<PhysicalCallCounters>,
+    ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
@@ -95,6 +158,7 @@ impl MyPhysicalExtensionCodec {
     fn new() -> Self {
         Self {
             counters: Arc::new(PhysicalCallCounters::default()),
+            ctx_provider: Arc::new(SessionContext::new()),
         }
     }
 
@@ -106,6 +170,14 @@ impl MyPhysicalExtensionCodec {
         self.counters.decode_udf.load(Ordering::SeqCst)
     }
 
+    fn execution_plan_encode_calls(&self) -> usize {
+        self.counters.encode_execution_plan.load(Ordering::SeqCst)
+    }
+
+    fn execution_plan_decode_calls(&self) -> usize {
+        self.counters.decode_execution_plan.load(Ordering::SeqCst)
+    }
+
     fn __datafusion_physical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
@@ -114,11 +186,11 @@ impl MyPhysicalExtensionCodec {
             Arc::new(CountingPhysicalExtensionCodec {
                 inner: DefaultPhysicalExtensionCodec {},
                 counters: Arc::clone(&self.counters),
+                _ctx_provider: Arc::clone(&self.ctx_provider),
             });
 
         let runtime = get_tokio_runtime().handle().clone();
-        let bare_session: Arc<SessionContext> = Arc::new(SessionContext::new());
-        let ctx_provider = bare_session as Arc<dyn TaskContextProvider>;
+        let ctx_provider: Arc<dyn TaskContextProvider> = self.ctx_provider.clone();
         let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
 
         PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")

@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import ctypes
 import datetime as dt
 import gzip
 import pathlib
@@ -729,6 +730,28 @@ def test_refresh_catalogs(ctx):
 def test_remove_optimizer_rule(ctx):
     assert ctx.remove_optimizer_rule("push_down_filter") is True
     assert ctx.remove_optimizer_rule("nonexistent_rule") is False
+
+
+def test_with_query_planner_rejects_wrong_capsule(ctx):
+    with pytest.raises(ValueError, match="datafusion_query_planner"):
+        ctx.with_query_planner(ctx.__datafusion_task_context_provider__())
+
+
+def test_with_query_planner_capsule(ctx):
+    capsule = ctx.__datafusion_query_planner__()
+    get_name = ctypes.pythonapi.PyCapsule_GetName
+    get_name.argtypes = [ctypes.py_object]
+    get_name.restype = ctypes.c_char_p
+    assert get_name(capsule) == b"datafusion_query_planner"
+
+    ctx.register_record_batches(
+        "query_planner_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+    planner_context = ctx.with_query_planner(capsule)
+    assert planner_context.table_exist("query_planner_test")
+    batches = planner_context.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
 
 
 def test_table_provider(ctx):
