@@ -63,6 +63,9 @@ pub(crate) struct CallCounters {
 struct CountingLogicalExtensionCodec {
     inner: DefaultLogicalExtensionCodec,
     counters: Arc<CallCounters>,
+    // Byte prefix identifying providers this codec owns. Distinct tokens let a
+    // test install several instances and observe which one the chain picks.
+    token: Arc<[u8]>,
     // The FFI task-context handle is weak. Retain its provider for as long as
     // this codec can be called, even if Python drops the exporter object.
     _ctx_provider: Arc<SessionContext>,
@@ -99,7 +102,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
-        if let Some(id) = token_id(buf, TABLE_PROVIDER_TOKEN) {
+        if let Some(id) = token_id(buf, &self.token) {
             self.counters
                 .decode_table_provider
                 .fetch_add(1, Ordering::SeqCst);
@@ -132,7 +135,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
                 .lock()
                 .map_err(|err| DataFusionError::Internal(err.to_string()))?
                 .insert(id, node);
-            buf.extend_from_slice(TABLE_PROVIDER_TOKEN);
+            buf.extend_from_slice(&self.token);
             buf.extend_from_slice(&id.to_le_bytes());
             return Ok(());
         }
@@ -160,15 +163,26 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
     ctx_provider: Arc<SessionContext>,
+    token: Arc<[u8]>,
 }
 
 #[pymethods]
 impl MyLogicalExtensionCodec {
+    /// `token` overrides the byte prefix stamped on encoded table
+    /// providers. Two instances built with different tokens each own a
+    /// disjoint slice of the wire format, which is what lets a test
+    /// install both and tell from the decoded bytes which one the
+    /// session's codec chain consulted.
     #[new]
-    fn new() -> Self {
+    #[pyo3(signature = (token = None))]
+    fn new(token: Option<&str>) -> Self {
         Self {
             counters: Arc::new(CallCounters::default()),
             ctx_provider: Arc::new(SessionContext::new()),
+            token: token.map_or_else(
+                || Arc::from(TABLE_PROVIDER_TOKEN),
+                |token| Arc::from(token.as_bytes()),
+            ),
         }
     }
 
@@ -195,6 +209,7 @@ impl MyLogicalExtensionCodec {
         let inner: Arc<dyn LogicalExtensionCodec> = Arc::new(CountingLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
+            token: Arc::clone(&self.token),
             _ctx_provider: Arc::clone(&self.ctx_provider),
         });
 
