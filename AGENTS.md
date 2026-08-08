@@ -82,6 +82,40 @@ pre-commit run --all-files
 
 Fix any failures before committing.
 
+## Test Coverage
+
+Always prefer Python coverage — a doctest example in a docstring, or a pytest
+case. The user-facing Python surface is the first line of defense and the
+primary focus, so behavior should be pinned where users actually meet it.
+
+**CI does not run Rust tests.** No workflow invokes `cargo test`; the only
+Rust checks are `cargo fmt --check` and
+`cargo clippy --no-deps --all-targets`. `--all-targets` compiles
+`#[cfg(test)]` code, so a Rust test cannot rot into a non-compiling state, but
+it is never executed and a behavioral regression will not fail the build. A
+Rust test added today is dead weight.
+
+Adding a `cargo test` job is not a one-line change: `crates/core/Cargo.toml`
+enables `pyo3/extension-module` unconditionally, so the test binary fails to
+link against `Py_*` symbols on Linux. The feature would have to be gated first.
+
+Write a Rust test only when the behavior is genuinely unreachable from Python,
+and wire up CI in the same change so it actually runs. Before concluding it is
+unreachable, check the suites that already exist:
+
+- `python/tests/` — the main suite. Run `pytest python/`, **not**
+  `pytest python/tests/`: `--doctest-modules` is on by default and the
+  narrower path skips the doctests in `python/datafusion/`.
+- `examples/datafusion-ffi-example/python/tests/` and
+  `examples/datafusion-ffi-query-planner-example/python/tests/` — integration
+  coverage across a real FFI boundary, for anything involving extension
+  codecs, table providers, query planners, or capsule export. These need the
+  example crates built (`maturin build`, then install the wheel).
+- `examples/tpch/` — end-to-end query coverage.
+
+Prefer asserting observable behavior over internal accessors. A test that
+checks a getter can pass while the path a user actually takes is broken.
+
 ## Python Function Docstrings
 
 Every Python function must include a docstring with usage examples.
