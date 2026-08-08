@@ -165,23 +165,24 @@ class SessionExtensionComponents:
     must be created against the context passed to that method; components bound
     to any other context hold a task-context provider for the wrong session and
     cannot be rebound.
-
-    Attributes:
-        logical_extension_codecs: Logical codecs to add to the session's codec
-            chain, in declaration order.
-        physical_extension_codecs: Physical codecs to add to the session's
-            codec chain, in declaration order.
-        query_planner: Optional query planner. At most one extension per
-            :py:meth:`SessionContext.with_extensions` call may supply one.
     """
 
     logical_extension_codecs: tuple[
         LogicalExtensionCodecExportable | _PyCapsule, ...
     ] = ()
+    """Logical codecs to add to the session's codec chain, in declaration order."""
+
     physical_extension_codecs: tuple[
         PhysicalExtensionCodecExportable | _PyCapsule, ...
     ] = ()
+    """Physical codecs to add to the session's codec chain, in declaration order."""
+
     query_planner: QueryPlannerExportable | _PyCapsule | None = None
+    """Optional query planner.
+
+    At most one extension per :py:meth:`SessionContext.with_extensions` call may
+    supply one.
+    """
 
 
 class SessionExtensionExportable(Protocol):
