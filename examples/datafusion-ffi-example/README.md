@@ -37,6 +37,8 @@ Both codec getters take the `SessionContext` they are being installed on and pul
 
 Extension codecs compose: each `with_logical_extension_codec` / `with_physical_extension_codec` call prepends the codec to the session's codec chain, with the most recently installed codec consulted first and DataFusion's default codec as the terminal fallback. A codec signals "not mine" by returning an error, so several independent plugin libraries can install codecs on the same session as long as each only answers for payloads it owns (frame them with a distinct byte prefix). This example keeps the provider library as the sole external codec owner; the planner uses built-in physical nodes and receives the provider codecs from the host.
 
+`MyLogicalExtensionCodec` takes an optional `provider_prefix` argument (`MyLogicalExtensionCodec(provider_prefix="TOKENAAA")`) that overrides the byte prefix it stamps on encoded table providers. It exists so the tests can install two instances that own disjoint slices of the wire format, which is what makes chain ordering and fall-through observable from Python. Real plugin libraries should hard-code a prefix unique to the library rather than accept one from the caller.
+
 Register both provider codecs before installing the planner:
 
 ```python
