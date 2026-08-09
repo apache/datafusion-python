@@ -46,7 +46,6 @@ from __future__ import annotations
 
 import uuid
 import warnings
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 try:
@@ -70,6 +69,11 @@ from datafusion.catalog import (
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
+from datafusion.extensions import (
+    QueryPlannerExportable,
+    SessionExtensionComponents,
+    SessionExtensionExportable,
+)
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
     CsvReadOptions,
@@ -144,62 +148,6 @@ class PhysicalOptimizerRuleExportable(Protocol):
     """
 
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
-
-
-class QueryPlannerExportable(Protocol):
-    """Type hint for object that has a __datafusion_query_planner__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
-    produced by a separate compiled extension. ``session`` is the
-    :py:class:`SessionContext` the planner is being installed on; take the
-    extension codecs from it rather than building your own.
-    """
-
-    def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
-
-
-@dataclass(frozen=True)
-class SessionExtensionComponents:
-    """Components an extension contributes to a session context.
-
-    Returned by :py:meth:`SessionExtensionExportable.__datafusion_session_extension__`
-    and consumed by :py:meth:`SessionContext.with_extensions`. Every component
-    must be created against the context passed to that method; components bound
-    to any other context hold a task-context provider for the wrong session and
-    cannot be rebound.
-    """
-
-    logical_extension_codecs: tuple[
-        LogicalExtensionCodecExportable | _PyCapsule, ...
-    ] = ()
-    """Logical codecs to add to the session's codec chain, in declaration order."""
-
-    physical_extension_codecs: tuple[
-        PhysicalExtensionCodecExportable | _PyCapsule, ...
-    ] = ()
-    """Physical codecs to add to the session's codec chain, in declaration order."""
-
-    query_planner: QueryPlannerExportable | _PyCapsule | None = None
-    """Optional query planner.
-
-    At most one extension per :py:meth:`SessionContext.with_extensions` call may
-    supply one.
-    """
-
-
-class SessionExtensionExportable(Protocol):
-    """Type hint for extension bundles installable via ``with_extensions``.
-
-    Implementations are reusable configuration objects: they must not retain a
-    :py:class:`SessionContext` and must create fresh components on every call
-    using the context supplied by :py:meth:`SessionContext.with_extensions`.
-    They should also avoid mutating global state during binding, since a
-    failed installation discards the destination context.
-    """
-
-    def __datafusion_session_extension__(  # noqa: D105
-        self, ctx: SessionContext
-    ) -> SessionExtensionComponents: ...
 
 
 class SessionConfig:
