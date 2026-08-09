@@ -22,6 +22,7 @@ use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 
 use crate::common::df_schema::PyDFSchema;
+use crate::expr::PyExpr;
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -64,19 +65,23 @@ impl Display for PyLimit {
 
 #[pymethods]
 impl PyLimit {
-    // NOTE: Upstream now has expressions for skip and fetch
-    // TODO: Do we still want to expose these?
-    // REF: https://github.com/apache/datafusion/pull/12836
+    // Retrieves the skip expression for this `Limit`, if any.
+    //
+    // `LIMIT`/`OFFSET` were changed upstream to support arbitrary
+    // expressions (not just constants), see
+    // https://github.com/apache/datafusion/pull/13028. Callers that expect
+    // a simple literal (the common case, e.g. `OFFSET 5`) should evaluate
+    // the returned `PyExpr` via `Expr.python_value()`.
+    fn skip(&self) -> PyResult<Option<PyExpr>> {
+        Ok(self.limit.skip.as_deref().cloned().map(PyExpr::from))
+    }
 
-    // /// Retrieves the skip value for this `Limit`
-    // fn skip(&self) -> usize {
-    //     self.limit.skip
-    // }
-
-    // /// Retrieves the fetch value for this `Limit`
-    // fn fetch(&self) -> Option<usize> {
-    //     self.limit.fetch
-    // }
+    // Retrieves the fetch expression for this `Limit`, if any.
+    //
+    // See the note on `skip` above regarding expression-based limits.
+    fn fetch(&self) -> PyResult<Option<PyExpr>> {
+        Ok(self.limit.fetch.as_deref().cloned().map(PyExpr::from))
+    }
 
     /// Retrieves the input `LogicalPlan` to this `Limit` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
