@@ -21,11 +21,12 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::arrow::error::{ArrowError, Result as ArrowResult};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::common::tree_node::TreeNodeRecursion;
 use datafusion::error::{DataFusionError as InnerDataFusionError, Result as DFResult};
 use datafusion::execution::context::TaskContext;
 use datafusion::logical_expr::Expr;
 use datafusion::logical_expr::utils::conjunction;
-use datafusion::physical_expr::{EquivalenceProperties, LexOrdering};
+use datafusion::physical_expr::{EquivalenceProperties, LexOrdering, PhysicalExpr};
 use datafusion::physical_plan::execution_plan::{Boundedness, EmissionType};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
@@ -163,6 +164,15 @@ impl ExecutionPlan for DatasetExec {
     fn children(&self) -> Vec<&Arc<dyn ExecutionPlan>> {
         // this is a leaf node and has no children
         vec![]
+    }
+
+    fn apply_expressions(
+        &self,
+        _f: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> DFResult<TreeNodeRecursion>,
+    ) -> DFResult<TreeNodeRecursion> {
+        // Any filters are pushed down into the PyArrow dataset scanner as pyarrow
+        // expressions, so this node owns no physical expressions to visit.
+        Ok(TreeNodeRecursion::Continue)
     }
 
     fn with_new_children(
