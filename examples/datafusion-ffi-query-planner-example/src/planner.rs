@@ -41,12 +41,12 @@ use pyo3::types::PyCapsule;
 use crate::config::PlannerConfig;
 
 #[derive(Debug, Default)]
-struct PlannerObservations {
-    plan_calls: AtomicUsize,
-    last_max_rows: AtomicUsize,
-    foreign_session: AtomicBool,
-    foreign_provider: AtomicBool,
-    foreign_plan: AtomicBool,
+pub(crate) struct PlannerObservations {
+    pub(crate) plan_calls: AtomicUsize,
+    pub(crate) last_max_rows: AtomicUsize,
+    pub(crate) foreign_session: AtomicBool,
+    pub(crate) foreign_provider: AtomicBool,
+    pub(crate) foreign_plan: AtomicBool,
 }
 
 fn logical_plan_has_foreign_provider(plan: &LogicalPlan) -> bool {
@@ -70,8 +70,12 @@ fn physical_plan_has_foreign_plan(plan: &Arc<dyn ExecutionPlan>) -> bool {
 }
 
 fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerConfig> {
-    let options = session.config_options();
+    planner_config_from_options(session.config_options())
+}
 
+pub(crate) fn planner_config_from_options(
+    options: &datafusion::common::config::ConfigOptions,
+) -> datafusion::common::Result<PlannerConfig> {
     // Read the flattened entry first. Some DataFusion revisions add an extra
     // `datafusion_ffi` namespace while reconstructing a ForeignSession. Parsing
     // it directly also ensures malformed values are reported instead of being
@@ -107,8 +111,8 @@ fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerCo
 }
 
 #[derive(Debug)]
-struct DistributedQueryPlanner {
-    observations: Arc<PlannerObservations>,
+pub(crate) struct DistributedQueryPlanner {
+    pub(crate) observations: Arc<PlannerObservations>,
 }
 
 #[async_trait]

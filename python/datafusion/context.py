@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import uuid
 import warnings
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 try:
@@ -153,6 +154,50 @@ class QueryPlannerExportable(Protocol):
     """
 
     def __datafusion_query_planner__(self) -> object: ...  # noqa: D105
+
+
+@dataclass(frozen=True)
+class SessionExtensionComponents:
+    """Components an extension contributes to a session context.
+
+    Returned by :py:meth:`SessionExtensionExportable.__datafusion_session_extension__`
+    and consumed by :py:meth:`SessionContext.with_extensions`. Every component
+    must be created against the context passed to that method; components bound
+    to any other context hold a task-context provider for the wrong session and
+    cannot be rebound.
+    """
+
+    logical_extension_codecs: tuple[
+        LogicalExtensionCodecExportable | _PyCapsule, ...
+    ] = ()
+    """Logical codecs to add to the session's codec chain, in declaration order."""
+
+    physical_extension_codecs: tuple[
+        PhysicalExtensionCodecExportable | _PyCapsule, ...
+    ] = ()
+    """Physical codecs to add to the session's codec chain, in declaration order."""
+
+    query_planner: QueryPlannerExportable | _PyCapsule | None = None
+    """Optional query planner.
+
+    At most one extension per :py:meth:`SessionContext.with_extensions` call may
+    supply one.
+    """
+
+
+class SessionExtensionExportable(Protocol):
+    """Type hint for extension bundles installable via ``with_extensions``.
+
+    Implementations are reusable configuration objects: they must not retain a
+    :py:class:`SessionContext` and must create fresh components on every call
+    using the context supplied by :py:meth:`SessionContext.with_extensions`.
+    They should also avoid mutating global state during binding, since a
+    failed installation discards the destination context.
+    """
+
+    def __datafusion_session_extension__(  # noqa: D105
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents: ...
 
 
 class SessionConfig:
@@ -1806,6 +1851,108 @@ class SessionContext:
         new_internal = self.ctx.with_query_planner(planner)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
+        return new
+
+    def with_extensions(
+        self, *extensions: SessionExtensionExportable
+    ) -> SessionContext:
+        """Create a new session context with the given extension bundles.
+
+        This is the preferred way to install FFI extensions that need a
+        task-context provider (extension codecs and query planners). Each
+        extension's ``__datafusion_session_extension__`` method is called with
+        the destination context so it can bind its components to that exact
+        context, then all components are installed in one step. This avoids
+        the pitfalls of chaining :py:meth:`with_logical_extension_codec`,
+        :py:meth:`with_physical_extension_codec`, and
+        :py:meth:`with_query_planner` by hand, where components can end up
+        bound to an intermediate context that is later garbage collected.
+
+        Codecs compose with the existing chain and with each other: extensions
+        are processed left to right and prepend to the codec chain, so codecs
+        from later extensions are consulted first. At most one extension may
+        supply a query planner. If none does, an existing FFI planner on the
+        source context is rebound to the final codec chains.
+
+        If any extension raises or returns invalid components, the source
+        context's state is left unchanged and the partially built destination
+        is discarded. Extension factories must treat the context they receive
+        as configuration-only: catalogs are shared with the source context, so
+        registering tables or otherwise mutating the context during binding is
+        not rolled back on failure.
+
+        The returned context is the strong owner of the installed components'
+        task-context providers. Keep it alive for as long as DataFrames or
+        plans derived from it are in use; FFI operations after the context is
+        collected raise an error.
+
+        Args:
+            extensions: One or more objects implementing
+                ``__datafusion_session_extension__`` (see
+                :py:class:`SessionExtensionExportable`).
+
+        Returns:
+            A new context with all extension components installed.
+
+        Raises:
+            TypeError: If an argument does not implement the protocol or
+                returns something other than a
+                :py:class:`SessionExtensionComponents`.
+            ValueError: If no extensions are given or more than one extension
+                supplies a query planner.
+
+        Examples:
+            >>> from my_extension import DistributedEngineExtension  # doctest: +SKIP
+            >>> ctx = SessionContext().with_extensions(
+            ...     DistributedEngineExtension("scheduler:50050")
+            ... )  # doctest: +SKIP
+            >>> ctx.sql("SELECT 1").collect()  # doctest: +SKIP
+        """
+        if not extensions:
+            msg = "with_extensions requires at least one extension"
+            raise ValueError(msg)
+        for extension in extensions:
+            if not hasattr(extension, "__datafusion_session_extension__"):
+                msg = (
+                    "Extension does not implement __datafusion_session_extension__: "
+                    f"{extension!r}"
+                )
+                raise TypeError(msg)
+
+        # Single destination context. Every component the extensions create
+        # must bind to this context; _install_extensions later mutates its
+        # state in place so those bindings stay valid.
+        destination = SessionContext.__new__(SessionContext)
+        destination.ctx = self.ctx._derive_for_extensions()
+
+        logical_codecs: list[LogicalExtensionCodecExportable | _PyCapsule] = []
+        physical_codecs: list[PhysicalExtensionCodecExportable | _PyCapsule] = []
+        planner: QueryPlannerExportable | _PyCapsule | None = None
+        for extension in extensions:
+            components = extension.__datafusion_session_extension__(destination)
+            if not isinstance(components, SessionExtensionComponents):
+                msg = (
+                    "__datafusion_session_extension__ must return "
+                    "SessionExtensionComponents, got "
+                    f"{type(components).__name__} from {extension!r}"
+                )
+                raise TypeError(msg)
+            logical_codecs.extend(components.logical_extension_codecs)
+            physical_codecs.extend(components.physical_extension_codecs)
+            if components.query_planner is not None:
+                if planner is not None:
+                    msg = (
+                        "Multiple extensions supplied a query planner; a "
+                        "session context has exactly one. Layer planners "
+                        "explicitly instead."
+                    )
+                    raise ValueError(msg)
+                planner = components.query_planner
+
+        new = SessionContext.__new__(SessionContext)
+        new.ctx = destination.ctx._install_extensions(
+            logical_codecs, physical_codecs, planner
+        )
         return new
 
     def table_provider(self, name: str) -> Table:
