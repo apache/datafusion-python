@@ -202,7 +202,7 @@ dependencies = [
  "arrow-schema",
  "arrow-select",
  "atoi",
- "base64 0.23.1",
+ "base64 0.23.0",
  "chrono",
  "comfy-table",
  "half",
@@ -429,9 +429,9 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "base64"
-version = "0.23.1"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
+checksum = "b25655df2c3cdd83c5e5b293b88acd880332b2ddadd7c30ac43144fdc0033da9"
 
 [[package]]
 name = "bigdecimal"
@@ -1201,13 +1201,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "datafusion-ffi-query-planner-example"
+version = "54.0.0"
+dependencies = [
+ "async-trait",
+ "datafusion",
+ "datafusion-catalog",
+ "datafusion-common",
+ "datafusion-ffi",
+ "datafusion-proto",
+ "datafusion-python-util",
+ "datafusion-session",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+]
+
+[[package]]
 name = "datafusion-functions"
 version = "55.0.0"
 source = "git+https://github.com/apache/datafusion?rev=55.0.0-rc3#d5552342012888b7d1a3ab88d92e3d292fc0cde0"
 dependencies = [
  "arrow",
  "arrow-buffer",
- "base64 0.23.1",
+ "base64 0.23.0",
  "blake2",
  "blake3",
  "chrono",
@@ -1537,6 +1554,7 @@ dependencies = [
  "datafusion-ffi",
  "datafusion-proto",
  "datafusion-python-util",
+ "datafusion-session",
  "datafusion-spark",
  "datafusion-substrait",
  "futures",
@@ -2667,7 +2685,7 @@ dependencies = [
  "arrow-ipc",
  "arrow-schema",
  "arrow-select",
- "base64 0.23.1",
+ "base64 0.23.0",
  "brotli",
  "bytes",
  "chrono",
