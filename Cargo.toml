@@ -45,17 +45,17 @@ arrow = { version = "59" }
 arrow-array = { version = "59" }
 arrow-schema = { version = "59" }
 arrow-select = { version = "59" }
-datafusion = { version = "54.1.0" }
-datafusion-substrait = { version = "54.1.0" }
-datafusion-proto = { version = "54.1.0" }
-datafusion-ffi = { version = "54.1.0" }
-datafusion-catalog = { version = "54.1.0", default-features = false }
-datafusion-common = { version = "54.1.0", default-features = false }
-datafusion-functions-aggregate = { version = "54.1.0" }
-datafusion-functions-window = { version = "54.1.0" }
-datafusion-spark = { version = "54.1.0" }
-datafusion-expr = { version = "54.1.0" }
-datafusion-session = { version = "54.1.0" }
+datafusion = { version = "55.0.0" }
+datafusion-substrait = { version = "55.0.0" }
+datafusion-proto = { version = "55.0.0" }
+datafusion-ffi = { version = "55.0.0" }
+datafusion-catalog = { version = "55.0.0", default-features = false }
+datafusion-common = { version = "55.0.0", default-features = false }
+datafusion-functions-aggregate = { version = "55.0.0" }
+datafusion-functions-window = { version = "55.0.0" }
+datafusion-spark = { version = "55.0.0" }
+datafusion-expr = { version = "55.0.0" }
+datafusion-session = { version = "55.0.0" }
 prost = "0.14.3"
 serde_json = "1"
 uuid = { version = "1.23" }
@@ -78,14 +78,14 @@ codegen-units = 2
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-common = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-spark = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
-datafusion-session = { git = "https://github.com/apache/datafusion", rev = "e08aed1e5de41dcf81d529140dae07723b942a5e" }
+datafusion = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-spark = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
+datafusion-session = { git = "https://github.com/apache/datafusion", rev = "55.0.0-rc3" }
