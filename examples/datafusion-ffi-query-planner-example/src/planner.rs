@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use async_trait::async_trait;
+use datafusion::common::DataFusionError;
 use datafusion::execution::TaskContextProvider;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::LogicalPlan;
@@ -69,41 +70,54 @@ fn physical_plan_has_foreign_plan(plan: &Arc<dyn ExecutionPlan>) -> bool {
             .any(|child| physical_plan_has_foreign_plan(child))
 }
 
+/// The row limit as the host spells it, where `PlannerConfig` is registered as
+/// an ordinary config extension under its own `ConfigExtension::PREFIX`.
+const MAX_ROWS_KEY: &str = "ffi_query_planner.max_rows";
+
+/// The same setting as it appears once the session has crossed the FFI
+/// boundary. Rebuilding a `ConfigOptions` on this side parks every foreign
+/// extension inside a single `FFI_ExtensionOptions`, which is itself a config
+/// extension namespaced under `datafusion_ffi`, so `ConfigOptions::entries`
+/// reports the key with both prefixes.
+const FFI_MAX_ROWS_KEY: &str = "datafusion_ffi.ffi_query_planner.max_rows";
+
 fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerConfig> {
     let options = session.config_options();
 
-    // Read the flattened entry first. Some DataFusion revisions add an extra
-    // `datafusion_ffi` namespace while reconstructing a ForeignSession. Parsing
-    // it directly also ensures malformed values are reported instead of being
-    // replaced silently by PlannerConfig::default().
-    if let Some(entry) = options
+    // Prefer the raw entry. `local_or_ffi_extension` discards a value it cannot
+    // parse and hands back `PlannerConfig::default()`, which would quietly turn
+    // a typo into a different row limit instead of reporting it.
+    let config = match options
         .entries()
         .into_iter()
-        .find(|entry| entry.key.ends_with("ffi_query_planner.max_rows"))
+        .find(|entry| entry.key == MAX_ROWS_KEY || entry.key == FFI_MAX_ROWS_KEY)
     {
-        let value = entry.value.ok_or_else(|| {
-            datafusion::common::DataFusionError::Configuration(format!(
-                "{} must have a value",
-                entry.key
-            ))
-        })?;
-        let max_rows = value.parse::<usize>().map_err(|err| {
-            datafusion::common::DataFusionError::Configuration(format!(
-                "Invalid value '{value}' for {}: {err}",
-                entry.key
-            ))
-        })?;
-        if max_rows == 0 {
-            return Err(datafusion::common::DataFusionError::Configuration(
-                "ffi_query_planner.max_rows must be greater than zero".to_owned(),
-            ));
+        Some(entry) => {
+            let value = entry.value.ok_or_else(|| {
+                DataFusionError::Configuration(format!("{} must have a value", entry.key))
+            })?;
+            let max_rows = value.parse::<usize>().map_err(|err| {
+                DataFusionError::Configuration(format!(
+                    "Invalid value '{value}' for {}: {err}",
+                    entry.key
+                ))
+            })?;
+            PlannerConfig { max_rows }
         }
-        return Ok(PlannerConfig { max_rows });
+        None => options
+            .local_or_ffi_extension::<PlannerConfig>()
+            .unwrap_or_default(),
+    };
+
+    // Validate after both paths so the fallback cannot smuggle in a limit that
+    // the direct path rejects.
+    if config.max_rows == 0 {
+        return Err(DataFusionError::Configuration(format!(
+            "{MAX_ROWS_KEY} must be greater than zero"
+        )));
     }
 
-    Ok(options
-        .local_or_ffi_extension::<PlannerConfig>()
-        .unwrap_or_default())
+    Ok(config)
 }
 
 #[derive(Debug)]

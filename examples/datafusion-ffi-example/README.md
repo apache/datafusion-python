@@ -35,9 +35,7 @@ Separate shared libraries guarantee distinct DataFusion library markers. This ca
 
 The example codecs do not inspect the callback `TaskContext`. A production codec that depends on session configuration or registered functions must ensure its exported FFI codec is bound to, and retains, the appropriate host `TaskContextProvider`.
 
-The current Python API installs one external logical codec and one external physical codec. It does not yet compose codecs from several independent plugin owners. This example therefore makes the provider library the sole external codec owner; the planner uses built-in physical nodes and receives the provider codecs from the host.
-
-Register both provider codecs before installing the planner:
+This example makes the provider library the sole external codec owner. Register both provider codecs before installing the planner:
 
 ```python
 ctx = ctx.with_logical_extension_codec(provider_logical_codec)
@@ -45,6 +43,6 @@ ctx = ctx.with_physical_extension_codec(provider_physical_codec)
 ctx = ctx.with_query_planner(planner)
 ```
 
-Derived contexts also rebind an installed planner when codecs change, but planner-last order is recommended because it states the ownership flow clearly.
+Derived contexts also rebind an installed planner when codecs change, so this order is a recommendation rather than a requirement. Planner-last states the ownership flow more clearly.
 
-Arbitrary custom `LogicalPlan::Extension` nodes are not supported by the current DataFusion FFI logical codec. This example covers foreign table providers, UDFs, and physical execution plans only.
+For the limits behind that choice — why there is one external codec owner rather than a registry, which node kinds survive the boundary, and what a derived context shares with the context it came from — see [Query Planners Across Multiple Libraries](../../docs/source/contributor-guide/ffi.md#query-planners-across-multiple-libraries) in the contributor guide.

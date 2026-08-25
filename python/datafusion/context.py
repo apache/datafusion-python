@@ -1775,12 +1775,26 @@ class SessionContext:
         """Create a new session context with a custom query planner.
 
         The planner is imported through its ``__datafusion_query_planner__``
-        PyCapsule. The returned context preserves the existing session state and
-        its logical and physical extension codec settings. Codec changes made on
-        a derived context are rebound to the planner before planning.
+        PyCapsule. The returned context carries over the current session state
+        and the logical and physical extension codec settings. Codec changes
+        made on a derived context are rebound to the planner before planning.
+
+        A session holds exactly one planner, so calling this again replaces the
+        previous one rather than layering. To chain planners, have the new
+        planner wrap the capsule from
+        :meth:`~SessionContext.__datafusion_query_planner__`.
+
+        .. note:: Derived contexts share catalogs, not registrations
+            The returned context is a fork. Catalogs, schemas, and tables stay
+            shared with the original context, but registered functions and
+            configuration are copied at the time of the call. A UDF registered
+            on the original context afterwards is **not** visible here, while a
+            table registered on either context is visible to both. Register
+            functions before deriving, or register them on the derived context.
 
         Args:
-            planner: Object exposing ``__datafusion_query_planner__`` or a raw
+            planner: Object exposing ``__datafusion_query_planner__`` (see
+                :class:`QueryPlannerExportable`) or a raw
                 ``datafusion_query_planner`` PyCapsule.
 
         Returns:
@@ -2234,6 +2248,12 @@ class SessionContext:
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
+
+        The returned context shares its session state with the original, so a
+        later registration on either is visible to both. The exception is a
+        session with a custom query planner installed: that planner has to be
+        rebound to the new codec, which forks the state. See
+        :meth:`~SessionContext.with_query_planner` for what a fork shares.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2252,6 +2272,12 @@ class SessionContext:
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
+
+        The returned context shares its session state with the original, so a
+        later registration on either is visible to both. The exception is a
+        session with a custom query planner installed: that planner has to be
+        rebound to the new codec, which forks the state. See
+        :meth:`~SessionContext.with_query_planner` for what a fork shares.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2294,7 +2320,13 @@ class SessionContext:
             regardless of the toggle.
 
         Returns a new :class:`SessionContext` with the toggle applied;
-        the original session is unchanged.
+        the original session is unchanged. The returned context shares
+        its session state with the original, so a later registration on
+        either is visible to both. The exception is a session with a
+        custom query planner installed: that planner has to be rebound
+        to the new codecs, which forks the state. See
+        :meth:`~SessionContext.with_query_planner` for what a fork
+        shares.
 
         Examples:
             >>> import pyarrow as pa

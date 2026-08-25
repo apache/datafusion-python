@@ -257,6 +257,48 @@ The current FFI logical codec supports providers and UDFs but not arbitrary cust
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
 
+### What a derived context shares
+
+`with_query_planner`, `with_logical_extension_codec`, `with_physical_extension_codec`,
+and `with_python_udf_inlining` all return a new `SessionContext` rather than mutating
+the receiver. How much the two contexts then share depends on whether a foreign query
+planner is involved.
+
+Without one, the derived context wraps the *same* underlying session, so a registration
+on either side is visible to both.
+
+`with_query_planner` is different, and so is any codec change made on a session that
+already has a foreign planner installed. A foreign planner holds the FFI codecs it was
+built with, so changing the codecs means rebuilding the planner against the context
+that will actually run the query. That forks the session state, and the two halves of
+the fork behave differently:
+
+- **Shared.** Catalogs, schemas, and tables. `SessionState` holds its catalog list
+  behind an `Arc`, so a table registered on either context is visible to both. The
+  runtime environment is shared for the same reason.
+- **Copied.** Registered scalar, aggregate, and window functions, table functions, the
+  session configuration, and the analyzer and optimizer rule lists. These are
+  snapshotted when the derived context is created, so a UDF registered on the original
+  context afterwards is not visible to the derived one, and a `SET` applied to one does
+  not reach the other.
+
+The session id is carried over to the fork, so both contexts report the same id.
+
+Register functions before deriving, or register them directly on the derived context:
+
+```python
+ctx = SessionContext(config)
+ctx = ctx.with_logical_extension_codec(provider_logical_codec)
+ctx = ctx.with_physical_extension_codec(provider_physical_codec)
+ctx = ctx.with_query_planner(planner)
+ctx.register_udf(my_udf)  # registered on the context that will run the query
+```
+
+A session holds exactly one query planner. Calling `with_query_planner` again replaces
+the installed planner instead of layering another one. To chain planners, have the new
+planner wrap the capsule returned by `SessionContext.__datafusion_query_planner__()`
+and delegate to it explicitly.
+
 ## Alternative Approach
 
 Suppose you needed to expose some other features of DataFusion and you could not wait

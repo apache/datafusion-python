@@ -229,24 +229,37 @@ impl PySessionConfig {
 
 /// Adapts an FFI planner to the Tokio runtime owned by datafusion-python.
 ///
-/// Upstream's `ForeignQueryPlanner` cannot recover the runtime handle from the
-/// `QueryPlanner` trait, so embedders that own the runtime must call
-/// `create_physical_plan_with_session_runtime` directly.
-#[derive(Debug, Clone)]
+/// Upstream's `ForeignQueryPlanner` is the consumer-side adapter that lets an
+/// `FFI_QueryPlanner` satisfy the `QueryPlanner` trait, which is what makes a
+/// planner from another shared library installable in a `SessionState`. Its
+/// trait method receives only a `&LogicalPlan` and a `&dyn Session`, so it has
+/// nowhere to obtain a runtime handle and calls
+/// `create_physical_plan_with_session_runtime` with `None`.
+///
+/// Throughout datafusion-ffi each library attaches its *own* runtime to the
+/// objects it exports, so a producer-side wrapper can `Handle::enter` before
+/// running that library's code. A provider owned by another library keeps its
+/// owner's runtime even when it travels through our catalog, because
+/// `FFI_TableProvider::new_with_ffi_codec` unwraps a `ForeignTableProvider`
+/// back to the original handle and discards the runtime passed alongside it.
+/// `session_runtime` is that same rule applied to the session: `FFI_SessionRef`
+/// is our object, and every callback on it runs our code.
+///
+/// It matters for what those callbacks hand back. A plan produced by our own
+/// planner returns as `FFI_ExecutionPlan::new(plan, runtime)`, and `execute`
+/// enters that runtime before calling into the plan. The same holds for our
+/// physical optimizer rules and for tables we own rather than re-export. The
+/// delegation case this type exists for is exactly that shape: a foreign
+/// planner that falls back to our planner through
+/// `__datafusion_query_planner__` receives a plan whose execution needs our
+/// runtime, and datafusion-python owns that runtime as a process global while
+/// the Python thread calling in carries no ambient one.
+///
+/// This adapter is where the handle gets attached. It wraps the foreign handle
+/// and calls `create_physical_plan_with_session_runtime` with `Some(handle)`.
+#[derive(Debug)]
 struct RuntimeAwareQueryPlanner {
     planner: FFI_QueryPlanner,
-}
-
-impl RuntimeAwareQueryPlanner {
-    fn with_ffi_codecs(
-        &self,
-        logical_codec: FFI_LogicalExtensionCodec,
-        physical_codec: FFI_PhysicalExtensionCodec,
-    ) -> Self {
-        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&self.planner).into();
-        let planner = FFI_QueryPlanner::new_with_ffi_codecs(planner, logical_codec, physical_codec);
-        Self { planner }
-    }
 }
 
 #[async_trait]
@@ -1255,22 +1268,8 @@ impl PySessionContext {
 
     pub fn with_query_planner(&self, planner: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         let planner = ffi_query_planner_from_pycapsule(&planner)?;
-
-        // Build the codecs against the derived context, then update that same
-        // context in place. FFI codecs keep a weak task-context provider, so
-        // rebuilding the context after creating them would leave a stale link.
-        let ctx = Arc::new(SessionContext::new_with_state(self.ctx.state()));
-        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
-        let planner = FFI_QueryPlanner::new_with_ffi_codecs(
-            planner,
-            Self::ffi_logical_codec_for(&ctx, &self.logical_codec),
-            Self::ffi_physical_codec_for(&ctx, &self.physical_codec),
-        );
-        let planner = Arc::new(RuntimeAwareQueryPlanner { planner });
-        let state = SessionStateBuilder::new_from_existing(ctx.state())
-            .with_query_planner(planner)
-            .build();
-        *ctx.state_ref().write() = state;
+        let ctx =
+            self.ctx_with_rebound_planner(&self.logical_codec, &self.physical_codec, Some(planner));
 
         Ok(Self {
             ctx,
@@ -1457,6 +1456,14 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        // When the installed planner is already foreign, this exports a handle
+        // that wraps `RuntimeAwareQueryPlanner`, which in turn wraps the
+        // original foreign handle. That extra layer looks redundant but is not:
+        // a consumer reaching us through `ForeignQueryPlanner` always calls
+        // `create_physical_plan_with_session_runtime` with `None`, so the
+        // adapter is what puts our Tokio handle back on the session before the
+        // call continues outward. Unwrapping to the inner handle here would
+        // save one planning-time round trip and silently drop that runtime.
         let planner = Arc::clone(self.ctx.state().query_planner());
         let ffi = FFI_QueryPlanner::new_with_ffi_codecs(
             planner,
@@ -1475,8 +1482,7 @@ impl PySessionContext {
         let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
         let physical_codec = Arc::clone(&self.physical_codec);
-        let ctx = self
-            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
+        let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Ok(Self {
             ctx,
             logical_codec,
@@ -1500,8 +1506,7 @@ impl PySessionContext {
         let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
 
         let logical_codec = Arc::clone(&self.logical_codec);
-        let ctx = self
-            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
+        let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Ok(Self {
             ctx,
             logical_codec,
@@ -1518,8 +1523,7 @@ impl PySessionContext {
             PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
                 .with_python_udf_inlining(enabled),
         );
-        let ctx = self
-            .ctx_with_query_planner_codecs(Arc::clone(&logical_codec), Arc::clone(&physical_codec));
+        let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Self {
             ctx,
             logical_codec,
@@ -1529,31 +1533,60 @@ impl PySessionContext {
 }
 
 impl PySessionContext {
-    fn ctx_with_query_planner_codecs(
+    /// Return the [`SessionContext`] a derived `PySessionContext` should use,
+    /// binding a foreign query planner to `logical_codec` and `physical_codec`.
+    ///
+    /// Pass `Some(planner)` to install one, or `None` to rebind whichever
+    /// planner the session already holds.
+    ///
+    /// With no foreign planner in play there is nothing to rebind, so the
+    /// existing context is shared and swapping codecs alone does not change
+    /// what a derived context observes. A foreign planner does have to be
+    /// rebound, and the FFI codecs capture the context they are built against,
+    /// so that case forks the session: the codecs are built from the fork and
+    /// then the fork's state is overwritten in place, because rebuilding the
+    /// context afterwards would leave the codecs pointing at a session that is
+    /// no longer used for planning.
+    ///
+    /// A fork is not a deep copy. `SessionState` keeps its catalog list behind
+    /// an `Arc`, so catalogs and tables stay shared with the original session,
+    /// while registered functions and the configuration are snapshotted at the
+    /// time of the call. The session id is deliberately carried over.
+    fn ctx_with_rebound_planner(
         &self,
-        logical_codec: Arc<PythonLogicalCodec>,
-        physical_codec: Arc<PythonPhysicalCodec>,
+        logical_codec: &Arc<PythonLogicalCodec>,
+        physical_codec: &Arc<PythonPhysicalCodec>,
+        planner: Option<FFI_QueryPlanner>,
     ) -> Arc<SessionContext> {
         let state = self.ctx.state();
-        let query_planner = state.query_planner();
-        let planner_any: &dyn std::any::Any = query_planner.as_ref();
-        let Some(planner) = planner_any
-            .downcast_ref::<RuntimeAwareQueryPlanner>()
-            .cloned()
-        else {
+
+        // When the caller is only replacing codecs, recover the foreign planner
+        // already installed so it can be rebound below.
+        let planner = planner.or_else(|| {
+            let installed: &dyn std::any::Any = state.query_planner().as_ref();
+            installed
+                .downcast_ref::<RuntimeAwareQueryPlanner>()
+                .map(|planner| planner.planner.clone())
+        });
+
+        let Some(planner) = planner else {
             return Arc::clone(&self.ctx);
         };
 
-        // Preserve the context identity captured by the replacement codecs.
         let ctx = Arc::new(SessionContext::new_with_state(state));
-        let planner = Arc::new(planner.with_ffi_codecs(
-            Self::ffi_logical_codec_for(&ctx, &logical_codec),
-            Self::ffi_physical_codec_for(&ctx, &physical_codec),
-        ));
+        let inner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
+        let planner = Arc::new(RuntimeAwareQueryPlanner {
+            planner: FFI_QueryPlanner::new_with_ffi_codecs(
+                inner,
+                Self::ffi_logical_codec_for(&ctx, logical_codec),
+                Self::ffi_physical_codec_for(&ctx, physical_codec),
+            ),
+        });
         let state = SessionStateBuilder::new_from_existing(ctx.state())
             .with_query_planner(planner)
             .build();
         *ctx.state_ref().write() = state;
+
         ctx
     }
 

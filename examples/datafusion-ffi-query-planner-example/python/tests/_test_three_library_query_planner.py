@@ -74,6 +74,32 @@ def test_three_library_query_planner(raw_capsule: bool):
     assert physical_codec.execution_plan_decode_calls() > 0
 
 
+def test_second_planner_replaces_the_first():
+    """A session holds exactly one planner, so installing another replaces it."""
+    ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
+    first = MyQueryPlanner()
+    second = MyQueryPlanner()
+    ctx = ctx.with_query_planner(first).with_query_planner(second)
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert second.plan_calls() > 0
+    assert first.plan_calls() == 0
+
+
+def test_planner_is_not_installed_on_the_original_context():
+    """``with_query_planner`` returns a fork; the receiver keeps its planner."""
+    ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
+    planner = MyQueryPlanner()
+    derived = ctx.with_query_planner(planner)
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert planner.plan_calls() == 0
+
+    derived.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert planner.plan_calls() > 0
+
+
 def test_installed_codecs_outlive_python_exporters():
     ctx, logical_codec, physical_codec = configured_context(max_rows=2)
     del logical_codec, physical_codec

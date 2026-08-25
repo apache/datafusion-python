@@ -754,6 +754,58 @@ def test_with_query_planner_capsule(ctx):
     assert batches[0].column(0) == pa.array([1])
 
 
+def test_derived_context_shares_catalogs(ctx):
+    """Catalogs live behind an Arc, so tables cross the fork in both directions."""
+    derived = ctx.with_query_planner(ctx.__datafusion_query_planner__())
+
+    ctx.register_record_batches(
+        "registered_on_parent",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    derived.register_record_batches(
+        "registered_on_derived",
+        [[pa.RecordBatch.from_pydict({"value": [2]})]],
+    )
+
+    assert derived.table_exist("registered_on_parent")
+    assert ctx.table_exist("registered_on_derived")
+
+
+def test_derived_context_snapshots_functions(ctx):
+    """Function registries are copied at fork time, unlike catalogs.
+
+    A UDF registered on the parent before the fork is carried over; one
+    registered afterwards is not. Guards the caveat documented on
+    ``SessionContext.with_query_planner``.
+    """
+    before = udf(
+        lambda arr: arr,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="registered_before_fork",
+    )
+    ctx.register_udf(before)
+
+    derived = ctx.with_query_planner(ctx.__datafusion_query_planner__())
+
+    after = udf(
+        lambda arr: arr,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="registered_after_fork",
+    )
+    ctx.register_udf(after)
+
+    assert derived.sql("SELECT registered_before_fork(1)").collect()
+    with pytest.raises(Exception, match="registered_after_fork"):
+        derived.sql("SELECT registered_after_fork(1)").collect()
+
+    # The parent is unaffected by the fork.
+    assert ctx.sql("SELECT registered_after_fork(1)").collect()
+
+
 def test_table_provider(ctx):
     batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
     ctx.register_record_batches("provider_test", [[batch]])
