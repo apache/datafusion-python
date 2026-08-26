@@ -103,6 +103,7 @@ use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_expr_common::physical_expr::proto_decode::PhysicalExprDecodeCtx;
 use datafusion::physical_expr_common::physical_expr::proto_encode::PhysicalExprEncodeCtx;
 use datafusion::physical_plan::ExecutionPlan;
+use datafusion::prelude::SessionContext;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{
     DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
@@ -233,10 +234,31 @@ fn strip_wire_header<'a>(
 /// Sitting at the top of the session's logical codec stack means
 /// every serializer that reads `session.logical_codec()` automatically
 /// picks up Python-aware encoding for free.
-#[derive(Debug)]
 pub struct PythonLogicalCodec {
     inner: Arc<dyn LogicalExtensionCodec>,
     python_udf_inlining: bool,
+    /// Keeps the exporting session alive for a codec handed across the FFI
+    /// boundary.
+    ///
+    /// `FFI_TaskContextProvider` stores its provider in a `Weak`, so an exported
+    /// codec stops working the moment the object that produced it goes out of
+    /// scope. Retaining the session in the inner codec survives both that and
+    /// `clone`, which clones the inner codec's `Arc` and so carries this along.
+    ///
+    /// Set this only on codecs that are leaving this library. A codec installed
+    /// *in* a session must not hold one, or the session would own itself:
+    /// `SessionContext -> SessionState -> query planner -> FFI codec -> here`.
+    exported_session: Option<Arc<SessionContext>>,
+}
+
+impl std::fmt::Debug for PythonLogicalCodec {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("PythonLogicalCodec")
+            .field("inner", &self.inner)
+            .field("python_udf_inlining", &self.python_udf_inlining)
+            .finish_non_exhaustive()
+    }
 }
 
 impl PythonLogicalCodec {
@@ -244,7 +266,17 @@ impl PythonLogicalCodec {
         Self {
             inner,
             python_udf_inlining: true,
+            exported_session: None,
         }
+    }
+
+    /// Retain `ctx` so this codec keeps working after the exporting
+    /// `SessionContext` goes out of scope. Only for codecs being exported over
+    /// FFI; see the `exported_session` field for why installed codecs must not
+    /// use this.
+    pub fn with_exported_session(mut self, ctx: Arc<SessionContext>) -> Self {
+        self.exported_session = Some(ctx);
+        self
     }
 
     pub fn inner(&self) -> &Arc<dyn LogicalExtensionCodec> {
@@ -443,10 +475,31 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
 /// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
-#[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,
     python_udf_inlining: bool,
+    /// Keeps the exporting session alive for a codec handed across the FFI
+    /// boundary.
+    ///
+    /// `FFI_TaskContextProvider` stores its provider in a `Weak`, so an exported
+    /// codec stops working the moment the object that produced it goes out of
+    /// scope. Retaining the session in the inner codec survives both that and
+    /// `clone`, which clones the inner codec's `Arc` and so carries this along.
+    ///
+    /// Set this only on codecs that are leaving this library. A codec installed
+    /// *in* a session must not hold one, or the session would own itself:
+    /// `SessionContext -> SessionState -> query planner -> FFI codec -> here`.
+    exported_session: Option<Arc<SessionContext>>,
+}
+
+impl std::fmt::Debug for PythonPhysicalCodec {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("PythonPhysicalCodec")
+            .field("inner", &self.inner)
+            .field("python_udf_inlining", &self.python_udf_inlining)
+            .finish_non_exhaustive()
+    }
 }
 
 impl PythonPhysicalCodec {
@@ -454,7 +507,17 @@ impl PythonPhysicalCodec {
         Self {
             inner,
             python_udf_inlining: true,
+            exported_session: None,
         }
+    }
+
+    /// Retain `ctx` so this codec keeps working after the exporting
+    /// `SessionContext` goes out of scope. Only for codecs being exported over
+    /// FFI; see the `exported_session` field for why installed codecs must not
+    /// use this.
+    pub fn with_exported_session(mut self, ctx: Arc<SessionContext>) -> Self {
+        self.exported_session = Some(ctx);
+        self
     }
 
     pub fn inner(&self) -> &Arc<dyn PhysicalExtensionCodec> {

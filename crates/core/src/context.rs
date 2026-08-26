@@ -24,7 +24,6 @@ use std::sync::Arc;
 use arrow::array::RecordBatchReader;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
-use async_trait::async_trait;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -45,8 +44,6 @@ use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::execution::{FunctionRegistry, TaskContextProvider};
-use datafusion::logical_expr::LogicalPlan;
-use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -56,7 +53,7 @@ use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
-use datafusion_ffi::query_planner::FFI_QueryPlanner;
+use datafusion_ffi::query_planner::{FFI_QueryPlanner, ForeignQueryPlanner};
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
@@ -67,7 +64,6 @@ use datafusion_python_util::{
     physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
     wait_for_future,
 };
-use datafusion_session::Session;
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::{PyKeyError, PyRuntimeError, PyValueError};
@@ -224,55 +220,6 @@ impl PySessionConfig {
         options.extensions.insert(extension);
 
         Ok(Self::from(config))
-    }
-}
-
-/// Adapts an FFI planner to the Tokio runtime owned by datafusion-python.
-///
-/// Upstream's `ForeignQueryPlanner` is the consumer-side adapter that lets an
-/// `FFI_QueryPlanner` satisfy the `QueryPlanner` trait, which is what makes a
-/// planner from another shared library installable in a `SessionState`. Its
-/// trait method receives only a `&LogicalPlan` and a `&dyn Session`, so it has
-/// nowhere to obtain a runtime handle and calls
-/// `create_physical_plan_with_session_runtime` with `None`.
-///
-/// Throughout datafusion-ffi each library attaches its *own* runtime to the
-/// objects it exports, so a producer-side wrapper can `Handle::enter` before
-/// running that library's code. A provider owned by another library keeps its
-/// owner's runtime even when it travels through our catalog, because
-/// `FFI_TableProvider::new_with_ffi_codec` unwraps a `ForeignTableProvider`
-/// back to the original handle and discards the runtime passed alongside it.
-/// `session_runtime` is that same rule applied to the session: `FFI_SessionRef`
-/// is our object, and every callback on it runs our code.
-///
-/// It matters for what those callbacks hand back. A plan produced by our own
-/// planner returns as `FFI_ExecutionPlan::new(plan, runtime)`, and `execute`
-/// enters that runtime before calling into the plan. The same holds for our
-/// physical optimizer rules and for tables we own rather than re-export. The
-/// delegation case this type exists for is exactly that shape: a foreign
-/// planner that falls back to our planner through
-/// `__datafusion_query_planner__` receives a plan whose execution needs our
-/// runtime, and datafusion-python owns that runtime as a process global while
-/// the Python thread calling in carries no ambient one.
-///
-/// This adapter is where the handle gets attached. It wraps the foreign handle
-/// and calls `create_physical_plan_with_session_runtime` with `Some(handle)`.
-#[derive(Debug)]
-struct RuntimeAwareQueryPlanner {
-    planner: FFI_QueryPlanner,
-}
-
-#[async_trait]
-impl QueryPlanner for RuntimeAwareQueryPlanner {
-    async fn create_physical_plan(
-        &self,
-        logical_plan: &LogicalPlan,
-        session: &dyn Session,
-    ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
-        let runtime = get_tokio_runtime().handle().clone();
-        self.planner
-            .create_physical_plan_with_session_runtime(logical_plan, session, Some(runtime))
-            .await
     }
 }
 
@@ -1448,27 +1395,23 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let ffi = self.ffi_logical_codec();
-        create_logical_extension_capsule(py, ffi.as_ref())
+        create_logical_extension_capsule(py, &self.exported_ffi_logical_codec())
     }
 
     pub fn __datafusion_query_planner__<'py>(
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        // When the installed planner is already foreign, this exports a handle
-        // that wraps `RuntimeAwareQueryPlanner`, which in turn wraps the
-        // original foreign handle. That extra layer looks redundant but is not:
-        // a consumer reaching us through `ForeignQueryPlanner` always calls
-        // `create_physical_plan_with_session_runtime` with `None`, so the
-        // adapter is what puts our Tokio handle back on the session before the
-        // call continues outward. Unwrapping to the inner handle here would
-        // save one planning-time round trip and silently drop that runtime.
+        // An already-foreign planner is re-exported as its original handle
+        // rather than gaining another layer, because `new_with_ffi_codecs`
+        // unwraps a `ForeignQueryPlanner`. It still adopts the codecs supplied
+        // here, so a consumer that wraps this capsule decodes our plans with
+        // our codecs.
         let planner = Arc::clone(self.ctx.state().query_planner());
         let ffi = FFI_QueryPlanner::new_with_ffi_codecs(
             planner,
-            self.ffi_logical_codec().as_ref().clone(),
-            self.ffi_physical_codec().as_ref().clone(),
+            self.exported_ffi_logical_codec(),
+            self.exported_ffi_physical_codec(),
         );
         create_query_planner_capsule(py, &ffi)
     }
@@ -1494,8 +1437,7 @@ impl PySessionContext {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let ffi = self.ffi_physical_codec();
-        create_physical_extension_capsule(py, ffi.as_ref())
+        create_physical_extension_capsule(py, &self.exported_ffi_physical_codec())
     }
 
     pub fn with_physical_extension_codec<'py>(
@@ -1560,13 +1502,15 @@ impl PySessionContext {
     ) -> Arc<SessionContext> {
         let state = self.ctx.state();
 
-        // When the caller is only replacing codecs, recover the foreign planner
-        // already installed so it can be rebound below.
+        // When the caller is only replacing codecs, recover the handle behind
+        // the installed planner so it can be rebound below. A planner this
+        // library owns is not a `ForeignQueryPlanner` and needs no rebinding,
+        // because it does not carry codecs of its own.
         let planner = planner.or_else(|| {
             let installed: &dyn std::any::Any = state.query_planner().as_ref();
             installed
-                .downcast_ref::<RuntimeAwareQueryPlanner>()
-                .map(|planner| planner.planner.clone())
+                .downcast_ref::<ForeignQueryPlanner>()
+                .map(|planner| planner.0.clone())
         });
 
         let Some(planner) = planner else {
@@ -1575,13 +1519,12 @@ impl PySessionContext {
 
         let ctx = Arc::new(SessionContext::new_with_state(state));
         let inner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
-        let planner = Arc::new(RuntimeAwareQueryPlanner {
-            planner: FFI_QueryPlanner::new_with_ffi_codecs(
-                inner,
-                Self::ffi_logical_codec_for(&ctx, logical_codec),
-                Self::ffi_physical_codec_for(&ctx, physical_codec),
-            ),
-        });
+        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&FFI_QueryPlanner::new_with_ffi_codecs(
+            inner,
+            Self::ffi_logical_codec_for(&ctx, logical_codec),
+            Self::ffi_physical_codec_for(&ctx, physical_codec),
+        ))
+            .into();
         let state = SessionStateBuilder::new_from_existing(ctx.state())
             .with_query_planner(planner)
             .build();
@@ -1665,14 +1608,6 @@ impl PySessionContext {
         FFI_LogicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
     }
 
-    /// Build an FFI-wrapped clone of the session's physical codec on demand.
-    pub(crate) fn ffi_physical_codec(&self) -> Arc<FFI_PhysicalExtensionCodec> {
-        Arc::new(Self::ffi_physical_codec_for(
-            &self.ctx,
-            &self.physical_codec,
-        ))
-    }
-
     fn ffi_physical_codec_for(
         ctx: &Arc<SessionContext>,
         codec: &Arc<PythonPhysicalCodec>,
@@ -1682,6 +1617,35 @@ impl PySessionContext {
         let runtime = get_tokio_runtime().handle().clone();
         let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
         FFI_PhysicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
+    }
+
+    /// Build an FFI-wrapped logical codec for handing out in a PyCapsule.
+    ///
+    /// Same as [`Self::ffi_logical_codec`] except the inner codec retains this
+    /// session. The FFI task-context handle is weak, so without that a capsule
+    /// stops working as soon as the exporting `SessionContext` goes out of
+    /// scope, which the natural `ctx = ctx.with_query_planner(planner)` does.
+    ///
+    /// Only for codecs leaving this library. The plain builder is still correct
+    /// for codecs attached to objects that end up back inside this session,
+    /// which would otherwise make the session own itself.
+    fn exported_ffi_logical_codec(&self) -> FFI_LogicalExtensionCodec {
+        let codec = Arc::new(
+            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+                .with_python_udf_inlining(self.logical_codec.python_udf_inlining())
+                .with_exported_session(Arc::clone(&self.ctx)),
+        );
+        Self::ffi_logical_codec_for(&self.ctx, &codec)
+    }
+
+    /// Physical companion to [`Self::exported_ffi_logical_codec`].
+    fn exported_ffi_physical_codec(&self) -> FFI_PhysicalExtensionCodec {
+        let codec = Arc::new(
+            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+                .with_python_udf_inlining(self.physical_codec.python_udf_inlining())
+                .with_exported_session(Arc::clone(&self.ctx)),
+        );
+        Self::ffi_physical_codec_for(&self.ctx, &codec)
     }
 }
 

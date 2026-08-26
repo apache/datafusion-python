@@ -74,6 +74,66 @@ def test_three_library_query_planner(raw_capsule: bool):
     assert physical_codec.execution_plan_decode_calls() > 0
 
 
+def test_spawning_plan_across_three_libraries():
+    """A plan that spawns Tokio tasks survives the full three-library round trip.
+
+    ``target_partitions`` above one puts a ``RepartitionExec`` under the
+    aggregate, and that operator spawns tasks while it runs. This exercises the
+    codecs on a multi-node plan rather than the bare scan the other tests use.
+    """
+    config = SessionConfig().with_extension(PlannerConfig(max_rows=100))
+    config = config.with_target_partitions(4)
+    logical_codec = MyLogicalExtensionCodec()
+    physical_codec = MyPhysicalExtensionCodec()
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(physical_codec)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 3))
+
+    planner = MyQueryPlanner()
+    ctx = ctx.with_query_planner(planner)
+
+    batches = ctx.sql(
+        'SELECT "A" % 2 AS parity, count(*) AS n FROM numbers GROUP BY 1 ORDER BY 1'
+    ).collect()
+    counts = {
+        row[0]: row[1]
+        for batch in batches
+        for row in zip(
+            batch.column(0).to_pylist(), batch.column(1).to_pylist(), strict=True
+        )
+    }
+    assert sum(counts.values()) == 6 + 7 + 8
+    assert planner.plan_calls() > 0
+    assert planner.foreign_provider_observed()
+
+
+def test_planner_layers_on_the_session_planner():
+    """A planner can wrap the one already installed and delegate to it.
+
+    The capsule has to be captured before this planner is installed, because
+    ``__datafusion_query_planner__`` exports whichever planner is installed when
+    it is called. Capturing it afterwards would hand the planner a handle to
+    itself, and planning would recurse.
+    """
+    ctx, logical_codec, physical_codec = configured_context(max_rows=3)
+    fallback = ctx.__datafusion_query_planner__()
+    planner = MyQueryPlanner(fallback=fallback)
+    # Rebinding `ctx` drops the context that produced the capsule. The exported
+    # codecs retain it, so the capsule stays usable. Without that the FFI
+    # task-context handle is weak and planning fails with "TaskContextProvider
+    # went out of scope over FFI boundary".
+    ctx = ctx.with_query_planner(planner)
+    gc.collect()
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert planner.plan_calls() > 0
+    assert planner.used_fallback()
+    assert logical_codec.table_provider_decode_calls() > 0
+    assert physical_codec.execution_plan_decode_calls() > 0
+
+
 def test_second_planner_replaces_the_first():
     """A session holds exactly one planner, so installing another replaces it."""
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)

@@ -1554,7 +1554,6 @@ dependencies = [
  "datafusion-ffi",
  "datafusion-proto",
  "datafusion-python-util",
- "datafusion-session",
  "datafusion-spark",
  "datafusion-substrait",
  "futures",
