@@ -53,14 +53,13 @@ use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
-use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, create_physical_extension_capsule,
     ffi_logical_codec_from_pycapsule, get_global_ctx, get_tokio_runtime,
     physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
-    wait_for_future,
+    table_provider_factory_from_pycapsule, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -713,30 +712,22 @@ impl PySessionContext {
     pub fn register_table_factory(
         &self,
         format: &str,
-        mut factory: Bound<'_, PyAny>,
+        factory: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        if factory.hasattr("__datafusion_table_provider_factory__")? {
+        let factory: Arc<dyn TableProviderFactory> = if factory
+            .hasattr("__datafusion_table_provider_factory__")?
+            || factory.cast::<PyCapsule>().is_ok()
+        {
             let py = factory.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            factory = factory
-                .getattr("__datafusion_table_provider_factory__")?
-                .call1((codec_capsule,))?;
-        }
-
-        let factory: Arc<dyn TableProviderFactory> =
-            if let Ok(capsule) = factory.cast::<PyCapsule>().map_err(py_datafusion_err) {
-                let data: NonNull<FFI_TableProviderFactory> = capsule
-                    .pointer_checked(Some(c"datafusion_table_provider_factory"))?
-                    .cast();
-                let factory = unsafe { data.as_ref() };
-                factory.into()
-            } else {
-                Arc::new(RustWrappedPyTableProviderFactory::new(
-                    factory.into(),
-                    self.ffi_logical_codec(),
-                ))
-            };
+            table_provider_factory_from_pycapsule(&factory, (codec_capsule,))?
+        } else {
+            Arc::new(RustWrappedPyTableProviderFactory::new(
+                factory.into(),
+                self.ffi_logical_codec(),
+            ))
+        };
 
         let st = self.ctx.state_ref();
         let mut lock = st.write();
