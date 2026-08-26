@@ -283,6 +283,31 @@ something that lives at least as long as the exported planner — the example st
 on both the Python-facing planner object and the `QueryPlanner` the capsule carries, so
 the capsule keeps working even if the Python object is dropped first.
 
+One wrinkle specific to installing a planner here: `with_query_planner` rebuilds the
+foreign planner against the context that will run the query, so the codecs the planner
+was exported with — and the provider behind them — are replaced by the session's own.
+A planner library still has to supply a provider to construct the capsule, but in this
+path it is not the one consulted. A codec installed with
+`with_logical_extension_codec` or `with_physical_extension_codec` keeps the provider its
+own library exported.
+
+### A codec decodes against its own library's registry
+
+Follows from the above, and it is the part most likely to surprise: a decode callback
+resolves names against the session the *exporting library* supplied, not the host
+session running the query. A scalar function registered on the host with
+`ctx.register_udf(...)` is therefore not visible to a foreign codec decoding a node that
+references it by name. Register anything a codec has to resolve on the context that
+codec exports.
+
+This is covered directly. Both example codecs accept `require_udf_on_decode`, which
+makes every decode call resolve a named scalar function out of the `TaskContext` it was
+handed, and
+`examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`
+asserts both halves: a function registered on the codec's own context resolves, and one
+registered only on the host does not. The host-registered cases are `xfail(strict=True)`
+so they will announce themselves if the underlying design changes upstream.
+
 ### What a derived context shares
 
 `with_query_planner`, `with_logical_extension_codec`, `with_physical_extension_codec`,

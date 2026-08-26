@@ -35,6 +35,7 @@ pub(crate) mod config;
 pub(crate) mod logical_extension_codec;
 pub(crate) mod physical_extension_codec;
 pub(crate) mod physical_optimizer;
+pub(crate) mod required_udf;
 pub(crate) mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;

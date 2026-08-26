@@ -35,6 +35,8 @@ use datafusion_python_util::get_tokio_runtime;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
+use crate::required_udf::{new_codec_context, resolve_required_udf};
+
 const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
 static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
 static EXECUTION_PLANS: OnceLock<Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>>> = OnceLock::new();
@@ -54,6 +56,7 @@ pub(crate) struct PhysicalCallCounters {
     pub decode_udf: AtomicUsize,
     pub encode_execution_plan: AtomicUsize,
     pub decode_execution_plan: AtomicUsize,
+    pub task_ctx_udf_resolutions: AtomicUsize,
 }
 
 /// Physical companion to the logical example codec.
@@ -64,6 +67,9 @@ pub(crate) struct PhysicalCallCounters {
 struct CountingPhysicalExtensionCodec {
     inner: DefaultPhysicalExtensionCodec,
     counters: Arc<PhysicalCallCounters>,
+    /// Scalar function every decode call must resolve from the `TaskContext`
+    /// it is handed. See [`crate::required_udf`].
+    required_udf: Option<String>,
     // The FFI task-context handle is weak. Keep its provider alive with the
     // codec rather than relying on the lifetime of the Python exporter.
     _ctx_provider: Arc<SessionContext>,
@@ -87,6 +93,11 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         ctx: &TaskContext,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
+        resolve_required_udf(
+            self.required_udf.as_deref(),
+            ctx,
+            &self.counters.task_ctx_udf_resolutions,
+        )?;
         if let Some(id) = token_id(buf) {
             self.counters
                 .decode_execution_plan
@@ -149,17 +160,33 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
 #[derive(Clone)]
 pub(crate) struct MyPhysicalExtensionCodec {
     counters: Arc<PhysicalCallCounters>,
+    required_udf: Option<String>,
     ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
 impl MyPhysicalExtensionCodec {
+    /// Build the codec.
+    ///
+    /// `require_udf_on_decode` names a scalar function that every decode call
+    /// must find in the `TaskContext` it is handed. Leave it unset for the
+    /// ordinary behaviour; set it to observe *which* session's registry the
+    /// FFI decode callback actually receives.
     #[new]
-    fn new() -> Self {
+    #[pyo3(signature = (require_udf_on_decode=None))]
+    fn new(require_udf_on_decode: Option<String>) -> Self {
         Self {
             counters: Arc::new(PhysicalCallCounters::default()),
-            ctx_provider: Arc::new(SessionContext::new()),
+            required_udf: require_udf_on_decode,
+            ctx_provider: new_codec_context(),
         }
+    }
+
+    /// Number of decode calls that resolved `require_udf_on_decode`.
+    fn task_context_udf_resolutions(&self) -> usize {
+        self.counters
+            .task_ctx_udf_resolutions
+            .load(Ordering::SeqCst)
     }
 
     fn encode_udf_calls(&self) -> usize {
@@ -186,6 +213,7 @@ impl MyPhysicalExtensionCodec {
             Arc::new(CountingPhysicalExtensionCodec {
                 inner: DefaultPhysicalExtensionCodec {},
                 counters: Arc::clone(&self.counters),
+                required_udf: self.required_udf.clone(),
                 _ctx_provider: Arc::clone(&self.ctx_provider),
             });
 

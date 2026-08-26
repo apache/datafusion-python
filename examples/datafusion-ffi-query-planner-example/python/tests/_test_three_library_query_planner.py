@@ -42,6 +42,108 @@ def configured_context(max_rows: int):
     return ctx, logical_codec, physical_codec
 
 
+LIBRARY_LOCAL_UDF = "library_local_marker"
+"""Scalar function registered on the context each example codec owns."""
+
+HOST_ONLY_UDF = "my_custom_is_null"
+"""Scalar function ``configured_context`` registers on the host session only."""
+
+
+def probe_context(
+    *,
+    logical_requires: str | None = None,
+    physical_requires: str | None = None,
+    max_rows: int = 3,
+):
+    """Three-library context whose codecs read the task context they are given.
+
+    ``require_udf_on_decode`` makes each codec resolve a scalar function from
+    the ``TaskContext`` handed to its FFI decode callback, which is otherwise
+    unobservable: the example codecs restore objects from a token registry and
+    never look at the registry they are passed.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=max_rows))
+    logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=logical_requires)
+    physical_codec = MyPhysicalExtensionCodec(require_udf_on_decode=physical_requires)
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(physical_codec)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.register_udf(udf(IsNullUDF()))
+    ctx = ctx.with_query_planner(MyQueryPlanner())
+    return ctx, logical_codec, physical_codec
+
+
+def test_logical_codec_resolves_its_own_libraries_udf():
+    """``try_decode_table_provider`` sees the registry of the codec's own session."""
+    ctx, logical_codec, _physical_codec = probe_context(
+        logical_requires=LIBRARY_LOCAL_UDF
+    )
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert logical_codec.table_provider_decode_calls() > 0
+    assert logical_codec.task_context_udf_resolutions() > 0
+
+
+def test_physical_codec_resolves_its_own_libraries_udf():
+    """``try_decode`` sees the registry of the codec's own session."""
+    ctx, _logical_codec, physical_codec = probe_context(
+        physical_requires=LIBRARY_LOCAL_UDF
+    )
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert physical_codec.execution_plan_decode_calls() > 0
+    assert physical_codec.task_context_udf_resolutions() > 0
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "A codec exported over FFI is built with its own TaskContextProvider, so "
+        "its decode callbacks resolve names against the exporting library's "
+        "session rather than the host session that is running the query. A "
+        "function registered only on the host is therefore invisible to them."
+    ),
+)
+def test_logical_codec_resolves_a_host_registered_udf():
+    ctx, logical_codec, _physical_codec = probe_context(logical_requires=HOST_ONLY_UDF)
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert logical_codec.task_context_udf_resolutions() > 0
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Same as the logical case: the physical codec's decode callback is "
+        "handed the exporting library's task context, which does not know about "
+        "functions registered on the host session."
+    ),
+)
+def test_physical_codec_resolves_a_host_registered_udf():
+    ctx, _logical_codec, physical_codec = probe_context(physical_requires=HOST_ONLY_UDF)
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert physical_codec.task_context_udf_resolutions() > 0
+
+
+def test_decode_task_context_is_not_the_host_session():
+    """Pin the current behaviour so the failure mode above stays legible.
+
+    The host registers ``my_custom_is_null`` and can use it in a query, but the
+    codec's decode callback cannot see it, and the error names the session it
+    was given instead.
+    """
+    ctx, _logical_codec, _physical_codec = probe_context(logical_requires=HOST_ONLY_UDF)
+
+    with pytest.raises(
+        Exception, match=rf"could not resolve scalar function '{HOST_ONLY_UDF}'"
+    ):
+        ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+
+
 @pytest.mark.parametrize("raw_capsule", [False, True])
 def test_three_library_query_planner(raw_capsule: bool):
     """Host, provider, and planner exchange a real non-empty plan over FFI."""

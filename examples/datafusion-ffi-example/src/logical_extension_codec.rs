@@ -33,6 +33,8 @@ use datafusion_python_util::get_tokio_runtime;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
+use crate::required_udf::{new_codec_context, resolve_required_udf};
+
 const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
 static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
 static TABLE_PROVIDERS: OnceLock<Mutex<HashMap<u64, Arc<dyn TableProvider>>>> = OnceLock::new();
@@ -52,6 +54,7 @@ pub(crate) struct CallCounters {
     pub decode_udf: AtomicUsize,
     pub encode_table_provider: AtomicUsize,
     pub decode_table_provider: AtomicUsize,
+    pub task_ctx_udf_resolutions: AtomicUsize,
 }
 
 /// Example codec for objects owned by this extension library.
@@ -63,6 +66,9 @@ pub(crate) struct CallCounters {
 struct CountingLogicalExtensionCodec {
     inner: DefaultLogicalExtensionCodec,
     counters: Arc<CallCounters>,
+    /// Scalar function every table-provider decode must resolve from the
+    /// `TaskContext` it is handed. See [`crate::required_udf`].
+    required_udf: Option<String>,
     // The FFI task-context handle is weak. Retain its provider for as long as
     // this codec can be called, even if Python drops the exporter object.
     _ctx_provider: Arc<SessionContext>,
@@ -99,6 +105,11 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
+        resolve_required_udf(
+            self.required_udf.as_deref(),
+            ctx,
+            &self.counters.task_ctx_udf_resolutions,
+        )?;
         if let Some(id) = token_id(buf, TABLE_PROVIDER_TOKEN) {
             self.counters
                 .decode_table_provider
@@ -159,17 +170,33 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 #[derive(Clone)]
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
+    required_udf: Option<String>,
     ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
 impl MyLogicalExtensionCodec {
+    /// Build the codec.
+    ///
+    /// `require_udf_on_decode` names a scalar function that every table
+    /// provider decode must find in the `TaskContext` it is handed. Leave it
+    /// unset for the ordinary behaviour; set it to observe *which* session's
+    /// registry the FFI decode callback actually receives.
     #[new]
-    fn new() -> Self {
+    #[pyo3(signature = (require_udf_on_decode=None))]
+    fn new(require_udf_on_decode: Option<String>) -> Self {
         Self {
             counters: Arc::new(CallCounters::default()),
-            ctx_provider: Arc::new(SessionContext::new()),
+            required_udf: require_udf_on_decode,
+            ctx_provider: new_codec_context(),
         }
+    }
+
+    /// Number of decode calls that resolved `require_udf_on_decode`.
+    fn task_context_udf_resolutions(&self) -> usize {
+        self.counters
+            .task_ctx_udf_resolutions
+            .load(Ordering::SeqCst)
     }
 
     fn encode_udf_calls(&self) -> usize {
@@ -195,6 +222,7 @@ impl MyLogicalExtensionCodec {
         let inner: Arc<dyn LogicalExtensionCodec> = Arc::new(CountingLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
+            required_udf: self.required_udf.clone(),
             _ctx_provider: Arc::clone(&self.ctx_provider),
         });
 
