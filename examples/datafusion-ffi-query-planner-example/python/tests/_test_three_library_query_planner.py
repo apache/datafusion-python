@@ -27,11 +27,11 @@ from datafusion_ffi_example import (
     MyPhysicalExtensionCodec,
     MyTableProvider,
 )
-from datafusion_ffi_query_planner_example import MyQueryPlanner, PlannerConfig
+from datafusion_ffi_query_planner_example import MyPlannerConfig, MyQueryPlanner
 
 
 def configured_context(max_rows: int):
-    config = SessionConfig().with_extension(PlannerConfig(max_rows=max_rows))
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=max_rows))
     logical_codec = MyLogicalExtensionCodec()
     physical_codec = MyPhysicalExtensionCodec()
     ctx = SessionContext(config)
@@ -81,7 +81,7 @@ def test_spawning_plan_across_three_libraries():
     aggregate, and that operator spawns tasks while it runs. This exercises the
     codecs on a multi-node plan rather than the bare scan the other tests use.
     """
-    config = SessionConfig().with_extension(PlannerConfig(max_rows=100))
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=100))
     config = config.with_target_partitions(4)
     logical_codec = MyLogicalExtensionCodec()
     physical_codec = MyPhysicalExtensionCodec()
@@ -171,7 +171,7 @@ def test_installed_codecs_outlive_python_exporters():
 
 
 def test_provider_codecs_can_be_installed_after_planner():
-    config = SessionConfig().with_extension(PlannerConfig(max_rows=2))
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     planner = MyQueryPlanner()
     logical_codec = MyLogicalExtensionCodec()
     physical_codec = MyPhysicalExtensionCodec()
@@ -188,7 +188,7 @@ def test_provider_codecs_can_be_installed_after_planner():
 
 
 def test_query_planner_requires_provider_codec():
-    config = SessionConfig().with_extension(PlannerConfig(max_rows=2))
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     ctx = SessionContext(config)
     ctx.register_table("numbers", MyTableProvider(1, 3, 1))
     ctx = ctx.with_query_planner(MyQueryPlanner())

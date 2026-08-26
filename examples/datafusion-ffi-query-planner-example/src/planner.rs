@@ -40,7 +40,7 @@ use datafusion_session::{QueryPlanner, Session};
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
-use crate::config::PlannerConfig;
+use crate::config::MyPlannerConfig;
 
 #[derive(Default)]
 struct PlannerObservations {
@@ -82,7 +82,7 @@ fn physical_plan_has_foreign_plan(plan: &Arc<dyn ExecutionPlan>) -> bool {
             .any(|child| physical_plan_has_foreign_plan(child))
 }
 
-/// The row limit as the host spells it, where `PlannerConfig` is registered as
+/// The row limit as the host spells it, where `MyPlannerConfig` is registered as
 /// an ordinary config extension under its own `ConfigExtension::PREFIX`.
 const MAX_ROWS_KEY: &str = "ffi_query_planner.max_rows";
 
@@ -93,11 +93,11 @@ const MAX_ROWS_KEY: &str = "ffi_query_planner.max_rows";
 /// reports the key with both prefixes.
 const FFI_MAX_ROWS_KEY: &str = "datafusion_ffi.ffi_query_planner.max_rows";
 
-fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerConfig> {
+fn planner_config(session: &dyn Session) -> datafusion::common::Result<MyPlannerConfig> {
     let options = session.config_options();
 
     // Prefer the raw entry. `local_or_ffi_extension` discards a value it cannot
-    // parse and hands back `PlannerConfig::default()`, which would quietly turn
+    // parse and hands back `MyPlannerConfig::default()`, which would quietly turn
     // a typo into a different row limit instead of reporting it.
     let config = match options
         .entries()
@@ -114,10 +114,10 @@ fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerCo
                     entry.key
                 ))
             })?;
-            PlannerConfig { max_rows }
+            MyPlannerConfig { max_rows }
         }
         None => options
-            .local_or_ffi_extension::<PlannerConfig>()
+            .local_or_ffi_extension::<MyPlannerConfig>()
             .unwrap_or_default(),
     };
 
@@ -132,9 +132,18 @@ fn planner_config(session: &dyn Session) -> datafusion::common::Result<PlannerCo
     Ok(config)
 }
 
-#[derive(Debug)]
 struct DistributedQueryPlanner {
     observations: Arc<PlannerObservations>,
+    /// Keeps the context behind the exported codecs' `TaskContextProvider`
+    /// alive. See [`MyQueryPlanner::codec_ctx`]. The reference lives here as
+    /// well as on `MyQueryPlanner` because this is the value the capsule
+    /// carries, so the provider stays valid even if the Python object that
+    /// exported it is dropped first.
+    #[expect(
+        dead_code,
+        reason = "strong reference keeping the FFI codecs' weakly held provider alive"
+    )]
+    codec_ctx: Arc<SessionContext>,
     /// Planner to hand the work to instead of planning here.
     ///
     /// This is how a real planner layers on top of an existing one. The capsule
@@ -147,6 +156,16 @@ struct DistributedQueryPlanner {
     /// dispatches through the session's installed query planner, so calling it
     /// from inside that planner recurses until the stack overflows.
     fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
+}
+
+impl fmt::Debug for DistributedQueryPlanner {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DistributedQueryPlanner")
+            .field("observations", &self.observations)
+            .field("has_fallback", &self.fallback.is_some())
+            .finish_non_exhaustive()
+    }
 }
 
 #[async_trait]
@@ -201,10 +220,48 @@ impl QueryPlanner for DistributedQueryPlanner {
     module = "datafusion_ffi_query_planner_example",
     subclass
 )]
-#[derive(Debug, Default, Clone)]
+#[derive(Clone)]
 pub(crate) struct MyQueryPlanner {
     observations: Arc<PlannerObservations>,
     fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
+    /// Context backing the `TaskContextProvider` handed to the exported
+    /// codecs.
+    ///
+    /// This is *not* the session that arrives at `create_physical_plan`. That
+    /// one belongs to the host and is what this planner reads config from. The
+    /// provider here serves the other direction: when the host decodes the
+    /// plan bytes this library returned, any extension node in them is decoded
+    /// by a callback back into this library, and that callback needs a
+    /// `TaskContext` whose registry can resolve *this* library's nodes and
+    /// functions. A real planner library registers its UDFs and extension
+    /// types on this context; the example uses the default codecs, so nothing
+    /// ever calls back.
+    ///
+    /// It must be owned rather than built inline: `FFI_TaskContextProvider`
+    /// downgrades the provider to a `Weak`, so a temporary would already be
+    /// dropped by the time the capsule is used, and every codec callback would
+    /// fail with "TaskContextProvider went out of scope over FFI boundary".
+    codec_ctx: Arc<SessionContext>,
+}
+
+impl Default for MyQueryPlanner {
+    fn default() -> Self {
+        Self {
+            observations: Arc::default(),
+            fallback: None,
+            codec_ctx: Arc::new(SessionContext::new()),
+        }
+    }
+}
+
+impl fmt::Debug for MyQueryPlanner {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("MyQueryPlanner")
+            .field("observations", &self.observations)
+            .field("has_fallback", &self.fallback.is_some())
+            .finish_non_exhaustive()
+    }
 }
 
 #[pymethods]
@@ -260,10 +317,11 @@ impl MyQueryPlanner {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
             observations: Arc::clone(&self.observations),
+            codec_ctx: Arc::clone(&self.codec_ctx),
             fallback: self.fallback.clone(),
         });
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::new(SessionContext::new()) as Arc<dyn TaskContextProvider>;
+        let ctx_provider = Arc::clone(&self.codec_ctx) as Arc<dyn TaskContextProvider>;
         let ffi = FFI_QueryPlanner::new(
             planner,
             Some(runtime),

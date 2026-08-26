@@ -28,17 +28,17 @@ use pyo3::types::PyCapsule;
 
 #[pyclass(
     from_py_object,
-    name = "PlannerConfig",
+    name = "MyPlannerConfig",
     module = "datafusion_ffi_query_planner_example",
     subclass
 )]
 #[derive(Clone, Debug)]
-pub(crate) struct PlannerConfig {
+pub(crate) struct MyPlannerConfig {
     pub max_rows: usize,
 }
 
 #[pymethods]
-impl PlannerConfig {
+impl MyPlannerConfig {
     #[new]
     #[pyo3(signature = (max_rows=10))]
     fn new(max_rows: usize) -> Self {
@@ -57,17 +57,17 @@ impl PlannerConfig {
     }
 }
 
-impl Default for PlannerConfig {
+impl Default for MyPlannerConfig {
     fn default() -> Self {
         Self { max_rows: 10 }
     }
 }
 
-impl ConfigExtension for PlannerConfig {
+impl ConfigExtension for MyPlannerConfig {
     const PREFIX: &'static str = "ffi_query_planner";
 }
 
-impl ExtensionOptions for PlannerConfig {
+impl ExtensionOptions for MyPlannerConfig {
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -93,7 +93,7 @@ impl ExtensionOptions for PlannerConfig {
     }
 }
 
-impl ConfigField for PlannerConfig {
+impl ConfigField for MyPlannerConfig {
     fn visit<V: Visit>(&self, visitor: &mut V, _key: &str, _description: &'static str) {
         self.max_rows.visit(
             visitor,
@@ -106,7 +106,7 @@ impl ConfigField for PlannerConfig {
         let (key, rem) = key.split_once('.').unwrap_or((key, ""));
         match key {
             "max_rows" => self.max_rows.set(rem, value),
-            _ => config_err!("Config value '{key}' not found on PlannerConfig"),
+            _ => config_err!("Config value '{key}' not found on MyPlannerConfig"),
         }
     }
 }

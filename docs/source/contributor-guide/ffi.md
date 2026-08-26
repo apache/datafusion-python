@@ -257,6 +257,32 @@ The current FFI logical codec supports providers and UDFs but not arbitrary cust
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
 
+### The task context a planner exports is not the session it plans against
+
+`FFI_QueryPlanner::new` takes a `TaskContextProvider` alongside the two codecs. It is
+easy to mistake this for the session the planner will be asked to plan against, but the
+two are unrelated and serve opposite directions of the exchange:
+
+- The `&dyn Session` passed to `QueryPlanner::create_physical_plan` belongs to the
+  host. It arrives as a `ForeignSession` when the call crossed the boundary, and it is
+  what the planner reads configuration and catalogs from.
+- The `TaskContextProvider` given at export time backs the *exported codecs*. When the
+  host decodes the plan bytes the planner returned, any extension node in them is
+  decoded by a callback back into the planner's own library, and that callback needs a
+  `TaskContext` whose registry can resolve that library's own nodes and functions.
+
+So a planner library should hand over a context it owns, and register its own UDFs and
+extension types on it. It cannot use the host's session for this even if it wanted to:
+the codecs are built when the capsule is exported, long before any session shows up.
+
+That context must be kept alive by the exporter. `FFI_TaskContextProvider` downgrades
+it to a `Weak`, so a provider constructed inline in the capsule getter is already
+dropped by the time the capsule is used, and every codec callback fails with
+`TaskContextProvider went out of scope over FFI boundary`. Hold the reference on
+something that lives at least as long as the exported planner — the example stores it
+on both the Python-facing planner object and the `QueryPlanner` the capsule carries, so
+the capsule keeps working even if the Python object is dropped first.
+
 ### What a derived context shares
 
 `with_query_planner`, `with_logical_extension_codec`, `with_physical_extension_codec`,
