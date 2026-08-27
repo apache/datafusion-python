@@ -19,6 +19,60 @@
 
 # Upgrade Guides
 
+## DataFusion 55.0.0
+
+This release extends the change made in 52.0.0 to the remaining {ref}`ffi` hook
+methods. Users who contribute their own `LogicalExtensionCodec` or
+`PhysicalExtensionCodec` via FFI must update
+`__datafusion_logical_extension_codec__` and
+`__datafusion_physical_extension_codec__` to accept an additional
+`session: Bound<PyAny>` parameter, and take the `TaskContextProvider` from that
+session rather than constructing a `SessionContext` of their own.
+
+Before:
+
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let ctx_provider: Arc<dyn TaskContextProvider> = Arc::clone(&self.ctx_provider);
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
+
+After:
+
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+    session: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
+
+A codec that keeps its own `SessionContext` still compiles, but its decode
+callbacks resolve names against that empty session instead of the one running
+the query, so a function registered with `SessionContext.register_udf` is not
+visible to it. Taking the provider from `session` also removes a lifetime
+hazard: `FFI_TaskContextProvider` holds its provider weakly, so a context
+constructed inside the getter is already dropped by the time the capsule is
+used.
+
+`SessionContext` accepts the argument on its own capsule getters and ignores
+it, so existing calls such as `ctx.__datafusion_logical_extension_codec__()`
+continue to work unchanged.
+
+New in this release, `__datafusion_query_planner__` follows the same protocol.
+It receives the session and takes both extension codecs from it, so a planner
+library never builds a `TaskContextProvider` at all. See the {ref}`ffi` guide
+for the full protocol.
+
 ## DataFusion 54.0.0
 
 The `Config` class has been removed. It was a standalone wrapper around
