@@ -31,7 +31,6 @@ use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::table_provider::FFI_TableProvider;
-use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
@@ -447,13 +446,12 @@ macro_rules! try_from_pycapsule {
 #[doc(hidden)]
 pub use pyo3;
 
-from_pycapsule!(
-    physical_codec_from_pycapsule,
-    "datafusion_physical_extension_codec",
-    FFI_PhysicalExtensionCodec,
-    dyn PhysicalExtensionCodec
-);
-
+// There is deliberately no `physical_codec_from_pycapsule` here. These macros
+// call the getter with no arguments, which is right for the two hooks below but
+// wrong for `__datafusion_physical_extension_codec__`, which takes the session
+// it is being installed on. Use `ffi_physical_codec_from_pycapsule`, which
+// passes the session, and convert with `(&ffi).into()` if you need an
+// `Arc<dyn PhysicalExtensionCodec>`.
 from_pycapsule!(
     physical_optimizer_rule_from_pycapsule,
     "datafusion_physical_optimizer_rule",

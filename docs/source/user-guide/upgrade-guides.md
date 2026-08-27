@@ -73,6 +73,47 @@ It receives the session and takes both extension codecs from it, so a planner
 library never builds a `TaskContextProvider` at all. See the {ref}`ffi` guide
 for the full protocol.
 
+### Changes to the `datafusion-python-util` crate
+
+Extension libraries written in Rust usually depend on the
+`datafusion-python-util` crate for the helpers that read these capsules. Two of
+those helpers changed, because the getter they call now takes the session.
+
+`ffi_logical_codec_from_pycapsule` takes a second argument. Pass `Some(session)`
+when importing an object from another library, so its getter receives the
+session it is being installed on. Pass `None` when the object *is* a session and
+you are asking it for what it holds:
+
+```rust
+// Before
+let codec = ffi_logical_codec_from_pycapsule(obj)?;
+
+// After
+let codec = ffi_logical_codec_from_pycapsule(obj, Some(session))?;
+```
+
+`physical_codec_from_pycapsule` has been **removed**. It called
+`__datafusion_physical_extension_codec__` with no arguments, which no longer
+matches the protocol, so against an updated codec it raised a bare `TypeError`
+and against an outdated one it silently produced a codec bound to the wrong
+session. Use `ffi_physical_codec_from_pycapsule`, which passes the session:
+
+```rust
+// Before
+let codec: Arc<dyn PhysicalExtensionCodec> = physical_codec_from_pycapsule(&obj)?;
+
+// After
+let ffi = ffi_physical_codec_from_pycapsule(obj, Some(session))?;
+let codec: Arc<dyn PhysicalExtensionCodec> = (&ffi).into();
+```
+
+`physical_optimizer_rule_from_pycapsule` and `task_context_from_pycapsule` are
+unchanged. Their hooks take no session.
+
+Calling a getter that still has the old signature now raises an `ImportError`
+naming the method, with the original `TypeError` retained as its `__cause__`,
+rather than a bare `TypeError`.
+
 ## DataFusion 54.0.0
 
 The `Config` class has been removed. It was a standalone wrapper around
