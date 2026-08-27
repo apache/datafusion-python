@@ -38,6 +38,24 @@ const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
 static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
 static TABLE_PROVIDERS: OnceLock<Mutex<HashMap<u64, Arc<dyn TableProvider>>>> = OnceLock::new();
 
+/// Hands a provider to another library in this process by token.
+///
+/// Encoding inserts, decoding removes. Two consequences worth knowing before
+/// copying this:
+///
+/// - **Decode consumes the token.** Decoding the same encoded bytes twice
+///   fails the second time with `Unknown ... table provider token`. That is
+///   fine here because every plan is encoded immediately before the single
+///   decode that consumes it, but it rules out anything that replays a stored
+///   plan, retries a decode, or fans one encoded plan out to several readers.
+/// - **An encode that is never decoded leaks.** Nothing expires entries, so a
+///   plan that fails to reach its decoder keeps its provider alive for the
+///   life of the process.
+///
+/// Both are acceptable for an example whose job is to show that Rust type
+/// identity survives a trip through two other libraries. Neither is acceptable
+/// in a real codec, which should encode metadata sufficient to rebuild the
+/// provider rather than parking the object here.
 fn table_providers() -> &'static Mutex<HashMap<u64, Arc<dyn TableProvider>>> {
     TABLE_PROVIDERS.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -62,6 +80,10 @@ pub(crate) struct CallCounters {
 /// example of preserving Rust type identity across three loaded libraries, not a
 /// network serialization format. Production libraries should encode reconstructible
 /// provider metadata rather than retaining objects in a global registry.
+///
+/// See [`table_providers`] for the token lifecycle, which is narrower than it
+/// looks: a decode consumes its token, so the same encoded plan cannot be
+/// decoded twice.
 struct CountingLogicalExtensionCodec {
     inner: DefaultLogicalExtensionCodec,
     counters: Arc<CallCounters>,

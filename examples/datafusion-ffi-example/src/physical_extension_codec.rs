@@ -40,6 +40,11 @@ const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
 static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
 static EXECUTION_PLANS: OnceLock<Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>>> = OnceLock::new();
 
+/// Execution-plan counterpart of the logical codec's provider registry, with
+/// the same lifecycle: encoding inserts, decoding removes, so a decode
+/// consumes its token and an encode that is never decoded leaks. See
+/// [`crate::logical_extension_codec`] for why that is acceptable here and not
+/// in a real codec.
 fn execution_plans() -> &'static Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>> {
     EXECUTION_PLANS.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -63,6 +68,10 @@ pub(crate) struct PhysicalCallCounters {
 /// Provider-owned memory scan plans use a same-process token registry so the
 /// owning cdylib can restore their concrete Rust type after the plan travels
 /// through the independent query-planner and datafusion-python libraries.
+///
+/// See [`execution_plans`] for the token lifecycle, which is narrower than it
+/// looks: a decode consumes its token, so the same encoded plan cannot be
+/// decoded twice.
 struct CountingPhysicalExtensionCodec {
     inner: DefaultPhysicalExtensionCodec,
     counters: Arc<PhysicalCallCounters>,
