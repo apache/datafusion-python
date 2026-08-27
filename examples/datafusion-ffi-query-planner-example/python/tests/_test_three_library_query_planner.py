@@ -358,6 +358,46 @@ def test_planner_layers_on_the_session_planner():
     assert physical_codec.execution_plan_decode_calls() > 0
 
 
+def test_a_planner_can_fall_back_to_another_planner_library():
+    """A fallback may be another foreign planner, not only a session.
+
+    The fallback is imported when this planner is installed rather than when
+    it is constructed, so its own getter receives the session. Importing it at
+    construction time would mean calling that getter with no session, which
+    only a ``SessionContext`` or a raw capsule tolerates -- and layering on
+    another planner is the case a distributed engine actually needs.
+    """
+    ctx, logical_codec, physical_codec = configured_context(max_rows=3)
+    inner = MyQueryPlanner()
+    outer = MyQueryPlanner(fallback=inner)
+    ctx = ctx.with_query_planner(outer)
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert outer.plan_calls() > 0
+    assert outer.used_fallback()
+    # The delegation reached the inner planner rather than stopping at the
+    # default physical planner.
+    assert inner.plan_calls() > 0
+    assert logical_codec.table_provider_decode_calls() > 0
+    assert physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_a_session_fallback_delegates_to_its_installed_planner():
+    """Passing a SessionContext delegates to whatever planner it holds."""
+    ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
+    first = MyQueryPlanner()
+    ctx = ctx.with_query_planner(first)
+
+    second = MyQueryPlanner(fallback=ctx)
+    ctx = ctx.with_query_planner(second)
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert second.used_fallback()
+    assert first.plan_calls() > 0
+
+
 def test_second_planner_replaces_the_first():
     """A session holds exactly one planner, so installing another replaces it."""
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)

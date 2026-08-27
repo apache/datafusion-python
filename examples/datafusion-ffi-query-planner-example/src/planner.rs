@@ -203,30 +203,38 @@ impl QueryPlanner for DistributedQueryPlanner {
 #[derive(Debug, Default, Clone)]
 pub(crate) struct MyQueryPlanner {
     observations: Arc<PlannerObservations>,
-    fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
+    /// Held as the Python object rather than an imported planner, and resolved
+    /// in `__datafusion_query_planner__` where a session is in hand.
+    ///
+    /// Importing it here would mean calling its getter with no session, which
+    /// only a `SessionContext` or a raw capsule accepts. Another foreign
+    /// planner -- the case that matters, since layering is the whole point of
+    /// a fallback -- implements the same protocol this type does and requires
+    /// the argument.
+    fallback: Option<Arc<Py<PyAny>>>,
 }
 
 #[pymethods]
 impl MyQueryPlanner {
     /// Build a planner, optionally layered on top of an existing one.
     ///
-    /// `fallback` takes anything exporting `__datafusion_query_planner__`,
-    /// including a `SessionContext`. Capture it *before* installing this
-    /// planner on that context, or the capsule will describe this planner and
-    /// planning will recurse.
+    /// `fallback` takes anything exporting `__datafusion_query_planner__`:
+    /// another planner library, a `SessionContext`, or a raw capsule. It is
+    /// imported when this planner is installed, not here, so that the session
+    /// can be handed to its getter.
+    ///
+    /// Passing a `SessionContext` delegates to whichever planner that context
+    /// holds at install time. If you instead capture a capsule with
+    /// `ctx.__datafusion_query_planner__()`, capture it *before* installing
+    /// this planner on that context, or the capsule will describe this planner
+    /// and planning will recurse.
     #[new]
     #[pyo3(signature = (fallback=None))]
-    fn new(fallback: Option<Bound<'_, PyAny>>) -> PyResult<Self> {
-        let fallback = fallback
-            .map(|planner| {
-                ffi_query_planner_from_pycapsule(&planner, None)
-                    .map(|ffi| -> Arc<dyn QueryPlanner + Send + Sync> { (&ffi).into() })
-            })
-            .transpose()?;
-        Ok(Self {
-            fallback,
+    fn new(fallback: Option<Bound<'_, PyAny>>) -> Self {
+        Self {
+            fallback: fallback.map(|obj| Arc::new(obj.unbind())),
             ..Self::default()
-        })
+        }
     }
 
     fn used_fallback(&self) -> bool {
@@ -264,9 +272,21 @@ impl MyQueryPlanner {
         py: Python<'py>,
         session: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        // Resolved here rather than in `new` so the fallback's own getter
+        // receives the session, which is what the protocol requires of every
+        // implementation other than a `SessionContext`.
+        let fallback = self
+            .fallback
+            .as_ref()
+            .map(|planner| {
+                ffi_query_planner_from_pycapsule(planner.bind(py), Some(&session))
+                    .map(|ffi| -> Arc<dyn QueryPlanner + Send + Sync> { (&ffi).into() })
+            })
+            .transpose()?;
+
         let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
             observations: Arc::clone(&self.observations),
-            fallback: self.fallback.clone(),
+            fallback,
         });
         let logical_codec = ffi_logical_codec_from_pycapsule(session.clone(), None)?;
         let physical_codec = ffi_physical_codec_from_pycapsule(session, None)?;
