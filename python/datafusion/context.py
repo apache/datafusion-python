@@ -149,10 +149,12 @@ class QueryPlannerExportable(Protocol):
     """Type hint for object that has a __datafusion_query_planner__ PyCapsule.
 
     The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
-    produced by a separate compiled extension.
+    produced by a separate compiled extension. ``session`` is the
+    :py:class:`SessionContext` the planner is being installed on; take the
+    extension codecs from it rather than building your own.
     """
 
-    def __datafusion_query_planner__(self) -> object: ...  # noqa: D105
+    def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -2232,13 +2234,22 @@ class SessionContext:
         """Access the PyCapsule FFI_TaskContextProvider."""
         return self.ctx.__datafusion_task_context_provider__()
 
-    def __datafusion_logical_extension_codec__(self) -> Any:
-        """Access the PyCapsule FFI_LogicalExtensionCodec."""
-        return self.ctx.__datafusion_logical_extension_codec__()
+    def __datafusion_logical_extension_codec__(self, session: Any = None) -> Any:
+        """Access the PyCapsule FFI_LogicalExtensionCodec.
 
-    def __datafusion_query_planner__(self) -> Any:
-        """Access the ``FFI_QueryPlanner`` PyCapsule for the current planner."""
-        return self.ctx.__datafusion_query_planner__()
+        ``session`` is accepted so a context satisfies the same protocol an
+        extension library implements, where the argument is how the library
+        reaches the session it is being installed on. A context already is one,
+        so the argument is ignored.
+        """
+        return self.ctx.__datafusion_logical_extension_codec__(session)
+
+    def __datafusion_query_planner__(self, session: Any = None) -> Any:
+        """Access the ``FFI_QueryPlanner`` PyCapsule for the current planner.
+
+        See :meth:`__datafusion_logical_extension_codec__` for ``session``.
+        """
+        return self.ctx.__datafusion_query_planner__(session)
 
     def with_logical_extension_codec(
         self, codec: LogicalExtensionCodecExportable | _PyCapsule
@@ -2260,9 +2271,12 @@ class SessionContext:
         new.ctx = new_internal
         return new
 
-    def __datafusion_physical_extension_codec__(self) -> Any:
-        """Access the PyCapsule FFI_PhysicalExtensionCodec."""
-        return self.ctx.__datafusion_physical_extension_codec__()
+    def __datafusion_physical_extension_codec__(self, session: Any = None) -> Any:
+        """Access the PyCapsule FFI_PhysicalExtensionCodec.
+
+        See :meth:`__datafusion_logical_extension_codec__` for ``session``.
+        """
+        return self.ctx.__datafusion_physical_extension_codec__(session)
 
     def with_physical_extension_codec(
         self, codec: PhysicalExtensionCodecExportable | _PyCapsule

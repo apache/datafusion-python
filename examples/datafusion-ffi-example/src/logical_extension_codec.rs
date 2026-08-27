@@ -24,16 +24,15 @@ use arrow::datatypes::SchemaRef;
 use datafusion::catalog::MemTable;
 use datafusion::common::{DataFusionError, Result, TableReference};
 use datafusion::datasource::TableProvider;
-use datafusion::execution::{TaskContext, TaskContextProvider};
+use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{Extension, LogicalPlan, ScalarUDF};
-use datafusion::prelude::SessionContext;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
-use datafusion_python_util::get_tokio_runtime;
+use datafusion_python_util::{ffi_task_context_provider_from_pycapsule, get_tokio_runtime};
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
-use crate::required_udf::{new_codec_context, resolve_required_udf};
+use crate::required_udf::resolve_required_udf;
 
 const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
 static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
@@ -69,9 +68,6 @@ struct CountingLogicalExtensionCodec {
     /// Scalar function every table-provider decode must resolve from the
     /// `TaskContext` it is handed. See [`crate::required_udf`].
     required_udf: Option<String>,
-    // The FFI task-context handle is weak. Retain its provider for as long as
-    // this codec can be called, even if Python drops the exporter object.
-    _ctx_provider: Arc<SessionContext>,
 }
 
 impl fmt::Debug for CountingLogicalExtensionCodec {
@@ -171,7 +167,6 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
     required_udf: Option<String>,
-    ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
@@ -188,7 +183,6 @@ impl MyLogicalExtensionCodec {
         Self {
             counters: Arc::new(CallCounters::default()),
             required_udf: require_udf_on_decode,
-            ctx_provider: new_codec_context(),
         }
     }
 
@@ -215,20 +209,25 @@ impl MyLogicalExtensionCodec {
         self.counters.decode_table_provider.load(Ordering::SeqCst)
     }
 
+    /// Export the codec, bound to the session it is being installed on.
+    ///
+    /// `session` supplies the `TaskContextProvider` the FFI decode callbacks
+    /// resolve, so this library never constructs a `SessionContext` and the
+    /// callbacks see the registry of the session running the query.
     fn __datafusion_logical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let inner: Arc<dyn LogicalExtensionCodec> = Arc::new(CountingLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
             required_udf: self.required_udf.clone(),
-            _ctx_provider: Arc::clone(&self.ctx_provider),
         });
 
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider: Arc<dyn TaskContextProvider> = self.ctx_provider.clone();
-        let ffi = FFI_LogicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
+        let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+        let ffi = FFI_LogicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
 
         PyCapsule::new_with_value(py, ffi, cr"datafusion_logical_extension_codec")
     }

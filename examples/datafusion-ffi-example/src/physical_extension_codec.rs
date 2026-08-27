@@ -22,20 +22,19 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use datafusion::common::{DataFusionError, Result};
 use datafusion::datasource::source::DataSourceExec;
-use datafusion::execution::{TaskContext, TaskContextProvider};
+use datafusion::execution::TaskContext;
 use datafusion::logical_expr::ScalarUDF;
 use datafusion::physical_plan::ExecutionPlan;
-use datafusion::prelude::SessionContext;
 use datafusion_ffi::execution_plan::ForeignExecutionPlan;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_proto::physical_plan::{
     DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
 };
-use datafusion_python_util::get_tokio_runtime;
+use datafusion_python_util::{ffi_task_context_provider_from_pycapsule, get_tokio_runtime};
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
-use crate::required_udf::{new_codec_context, resolve_required_udf};
+use crate::required_udf::resolve_required_udf;
 
 const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
 static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
@@ -70,9 +69,6 @@ struct CountingPhysicalExtensionCodec {
     /// Scalar function every decode call must resolve from the `TaskContext`
     /// it is handed. See [`crate::required_udf`].
     required_udf: Option<String>,
-    // The FFI task-context handle is weak. Keep its provider alive with the
-    // codec rather than relying on the lifetime of the Python exporter.
-    _ctx_provider: Arc<SessionContext>,
 }
 
 impl fmt::Debug for CountingPhysicalExtensionCodec {
@@ -161,7 +157,6 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
 pub(crate) struct MyPhysicalExtensionCodec {
     counters: Arc<PhysicalCallCounters>,
     required_udf: Option<String>,
-    ctx_provider: Arc<SessionContext>,
 }
 
 #[pymethods]
@@ -178,7 +173,6 @@ impl MyPhysicalExtensionCodec {
         Self {
             counters: Arc::new(PhysicalCallCounters::default()),
             required_udf: require_udf_on_decode,
-            ctx_provider: new_codec_context(),
         }
     }
 
@@ -205,21 +199,25 @@ impl MyPhysicalExtensionCodec {
         self.counters.decode_execution_plan.load(Ordering::SeqCst)
     }
 
+    /// Export the codec, bound to the session it is being installed on.
+    ///
+    /// See [`crate::logical_extension_codec::MyLogicalExtensionCodec`] for why
+    /// `session` is taken rather than a context this library invents.
     fn __datafusion_physical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let inner: Arc<dyn PhysicalExtensionCodec + Send> =
             Arc::new(CountingPhysicalExtensionCodec {
                 inner: DefaultPhysicalExtensionCodec {},
                 counters: Arc::clone(&self.counters),
                 required_udf: self.required_udf.clone(),
-                _ctx_provider: Arc::clone(&self.ctx_provider),
             });
 
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider: Arc<dyn TaskContextProvider> = self.ctx_provider.clone();
-        let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
+        let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+        let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
 
         PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
     }

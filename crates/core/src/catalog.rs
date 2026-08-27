@@ -689,7 +689,7 @@ fn extract_logical_extension_codec(
         Some(obj) => obj,
         None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
     };
-    ffi_logical_codec_from_pycapsule(obj).map(Arc::new)
+    ffi_logical_codec_from_pycapsule(obj, None).map(Arc::new)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

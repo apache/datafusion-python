@@ -42,11 +42,10 @@ def configured_context(max_rows: int):
     return ctx, logical_codec, physical_codec
 
 
-LIBRARY_LOCAL_UDF = "library_local_marker"
-"""Scalar function registered on the context each example codec owns."""
-
 HOST_ONLY_UDF = "my_custom_is_null"
-"""Scalar function ``configured_context`` registers on the host session only."""
+"""Scalar function registered on the host session and nowhere else."""
+
+UNREGISTERED_UDF = "not_registered_anywhere"
 
 
 def probe_context(
@@ -74,11 +73,14 @@ def probe_context(
     return ctx, logical_codec, physical_codec
 
 
-def test_logical_codec_resolves_its_own_libraries_udf():
-    """``try_decode_table_provider`` sees the registry of the codec's own session."""
-    ctx, logical_codec, _physical_codec = probe_context(
-        logical_requires=LIBRARY_LOCAL_UDF
-    )
+def test_logical_codec_resolves_a_host_registered_udf():
+    """``try_decode_table_provider`` sees the host session's registry.
+
+    The codec takes its task context provider from the session it is installed
+    on, so a function the host registered is resolvable inside a decode
+    callback running in the other library.
+    """
+    ctx, logical_codec, _physical_codec = probe_context(logical_requires=HOST_ONLY_UDF)
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
@@ -86,11 +88,9 @@ def test_logical_codec_resolves_its_own_libraries_udf():
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-def test_physical_codec_resolves_its_own_libraries_udf():
-    """``try_decode`` sees the registry of the codec's own session."""
-    ctx, _logical_codec, physical_codec = probe_context(
-        physical_requires=LIBRARY_LOCAL_UDF
-    )
+def test_physical_codec_resolves_a_host_registered_udf():
+    """``try_decode`` sees the host session's registry, as above."""
+    ctx, _logical_codec, physical_codec = probe_context(physical_requires=HOST_ONLY_UDF)
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
@@ -98,48 +98,54 @@ def test_physical_codec_resolves_its_own_libraries_udf():
     assert physical_codec.task_context_udf_resolutions() > 0
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "A codec exported over FFI is built with its own TaskContextProvider, so "
-        "its decode callbacks resolve names against the exporting library's "
-        "session rather than the host session that is running the query. A "
-        "function registered only on the host is therefore invisible to them."
-    ),
-)
-def test_logical_codec_resolves_a_host_registered_udf():
-    ctx, logical_codec, _physical_codec = probe_context(logical_requires=HOST_ONLY_UDF)
+def test_codec_still_reports_a_name_registered_nowhere():
+    """Negative control: resolution really is a lookup, not an unconditional pass."""
+    ctx, _logical_codec, _physical_codec = probe_context(
+        logical_requires=UNREGISTERED_UDF
+    )
 
-    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    with pytest.raises(
+        Exception, match=rf"could not resolve scalar function '{UNREGISTERED_UDF}'"
+    ):
+        ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+
+
+def test_codec_sees_a_udf_registered_after_it_was_installed():
+    """The provider is a live handle to the session, not a snapshot of it.
+
+    A function registered after the codec is installed is still visible to the
+    decode callback. It has to be registered before the planner, though:
+    installing a foreign planner forks the session, and the codec keeps
+    pointing at the one it was built against.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    # Registered after the codec was installed and bound to this session.
+    ctx.register_udf(udf(IsNullUDF()))
+    ctx = ctx.with_query_planner(MyQueryPlanner())
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Same as the logical case: the physical codec's decode callback is "
-        "handed the exporting library's task context, which does not know about "
-        "functions registered on the host session."
-    ),
-)
-def test_physical_codec_resolves_a_host_registered_udf():
-    ctx, _logical_codec, physical_codec = probe_context(physical_requires=HOST_ONLY_UDF)
+def test_codec_does_not_see_a_udf_registered_after_the_planner_fork():
+    """Installing a planner forks; the codec still points at the pre-fork session.
 
-    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
-    assert physical_codec.task_context_udf_resolutions() > 0
-
-
-def test_decode_task_context_is_not_the_host_session():
-    """Pin the current behaviour so the failure mode above stays legible.
-
-    The host registers ``my_custom_is_null`` and can use it in a query, but the
-    codec's decode callback cannot see it, and the error names the session it
-    was given instead.
+    This is the same rule as the documented fork caveat, seen from the codec's
+    side. Register before installing the planner, as the guide advises.
     """
-    ctx, _logical_codec, _physical_codec = probe_context(logical_requires=HOST_ONLY_UDF)
+    ctx, _logical_codec, _physical_codec = probe_context()
+    ctx = ctx.with_logical_extension_codec(
+        MyLogicalExtensionCodec(require_udf_on_decode="registered_after_fork")
+    )
 
     with pytest.raises(
-        Exception, match=rf"could not resolve scalar function '{HOST_ONLY_UDF}'"
+        Exception, match=r"could not resolve scalar function 'registered_after_fork'"
     ):
         ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
 
@@ -150,7 +156,7 @@ def test_three_library_query_planner(raw_capsule: bool):
     ctx, logical_codec, physical_codec = configured_context(max_rows=3)
     planner = MyQueryPlanner()
     exported_planner = (
-        planner.__datafusion_query_planner__() if raw_capsule else planner
+        planner.__datafusion_query_planner__(ctx) if raw_capsule else planner
     )
     ctx = ctx.with_query_planner(exported_planner)
 

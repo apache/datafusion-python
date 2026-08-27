@@ -60,9 +60,8 @@ use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
     create_logical_extension_capsule, create_physical_extension_capsule,
     create_query_planner_capsule, ffi_logical_codec_from_pycapsule,
-    ffi_query_planner_from_pycapsule, get_global_ctx, get_tokio_runtime,
-    physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
-    wait_for_future,
+    ffi_physical_codec_from_pycapsule, ffi_query_planner_from_pycapsule, get_global_ctx,
+    get_tokio_runtime, physical_optimizer_rule_from_pycapsule, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -374,6 +373,16 @@ pub struct PySessionContext {
     pub ctx: Arc<SessionContext>,
     logical_codec: Arc<PythonLogicalCodec>,
     physical_codec: Arc<PythonPhysicalCodec>,
+    /// Sessions this one was derived from, held only to keep them alive.
+    ///
+    /// A foreign codec installed here is built against the session current at
+    /// the time of the call, and `FFI_TaskContextProvider` holds that session
+    /// weakly. Installing a foreign query planner afterwards forks, and
+    /// rebinding the Python name would otherwise drop the session the codec
+    /// still points at. Retaining ancestors here rather than on the codec
+    /// avoids a cycle: nothing reachable from a `SessionContext` reaches back
+    /// to a `PySessionContext`.
+    ancestors: Vec<Arc<SessionContext>>,
 }
 
 #[pymethods]
@@ -406,6 +415,7 @@ impl PySessionContext {
             ctx,
             logical_codec: Arc::new(PythonLogicalCodec::default()),
             physical_codec: Arc::new(PythonPhysicalCodec::default()),
+            ancestors: Vec::new(),
         })
     }
 
@@ -414,6 +424,7 @@ impl PySessionContext {
             ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
             logical_codec: Arc::clone(&self.logical_codec),
             physical_codec: Arc::clone(&self.physical_codec),
+            ancestors: self.ancestors_including_self(),
         })
     }
 
@@ -425,6 +436,7 @@ impl PySessionContext {
             ctx,
             logical_codec: Arc::new(PythonLogicalCodec::default()),
             physical_codec: Arc::new(PythonPhysicalCodec::default()),
+            ancestors: Vec::new(),
         })
     }
 
@@ -1213,15 +1225,20 @@ impl PySessionContext {
         Ok(())
     }
 
-    pub fn with_query_planner(&self, planner: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        let planner = ffi_query_planner_from_pycapsule(&planner)?;
+    pub fn with_query_planner(
+        slf: &Bound<'_, Self>,
+        planner: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<Self> {
+        let planner = ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any()))?;
+        let this = slf.borrow();
         let ctx =
-            self.ctx_with_rebound_planner(&self.logical_codec, &self.physical_codec, Some(planner));
+            this.ctx_with_rebound_planner(&this.logical_codec, &this.physical_codec, Some(planner));
 
         Ok(Self {
+            ancestors: this.ancestors_for(&ctx),
             ctx,
-            logical_codec: Arc::clone(&self.logical_codec),
-            physical_codec: Arc::clone(&self.physical_codec),
+            logical_codec: Arc::clone(&this.logical_codec),
+            physical_codec: Arc::clone(&this.physical_codec),
         })
     }
 
@@ -1391,17 +1408,27 @@ impl PySessionContext {
         PyCapsule::new_with_value(py, ffi_ctx_provider, cr"datafusion_task_context_provider")
     }
 
+    /// `session` exists so this matches the protocol an extension library
+    /// implements, where the argument is how the library reaches the session
+    /// it is being installed on. A session already is one, so it is ignored.
+    #[pyo3(signature = (session=None))]
     pub fn __datafusion_logical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
         create_logical_extension_capsule(py, &self.exported_ffi_logical_codec())
     }
 
+    /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
+    #[pyo3(signature = (session=None))]
     pub fn __datafusion_query_planner__<'py>(
         &self,
         py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
         // An already-foreign planner is re-exported as its original handle
         // rather than gaining another layer, because `new_with_ffi_codecs`
         // unwraps a `ForeignQueryPlanner`. It still adopts the codecs supplied
@@ -1417,39 +1444,48 @@ impl PySessionContext {
     }
 
     pub fn with_logical_extension_codec<'py>(
-        &self,
+        slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let inner_ffi = ffi_logical_codec_from_pycapsule(codec)?;
+        let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
         let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
-        let physical_codec = Arc::clone(&self.physical_codec);
-        let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
+        let this = slf.borrow();
+        let physical_codec = Arc::clone(&this.physical_codec);
+        let ctx = this.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Ok(Self {
+            ancestors: this.ancestors_for(&ctx),
             ctx,
             logical_codec,
             physical_codec,
         })
     }
 
+    /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
+    #[pyo3(signature = (session=None))]
     pub fn __datafusion_physical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
         create_physical_extension_capsule(py, &self.exported_ffi_physical_codec())
     }
 
     pub fn with_physical_extension_codec<'py>(
-        &self,
+        slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let inner = physical_codec_from_pycapsule(&codec)?;
+        let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+        let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
         let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
 
-        let logical_codec = Arc::clone(&self.logical_codec);
-        let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
+        let this = slf.borrow();
+        let logical_codec = Arc::clone(&this.logical_codec);
+        let ctx = this.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Ok(Self {
+            ancestors: this.ancestors_for(&ctx),
             ctx,
             logical_codec,
             physical_codec,
@@ -1467,6 +1503,7 @@ impl PySessionContext {
         );
         let ctx = self.ctx_with_rebound_planner(&logical_codec, &physical_codec, None);
         Self {
+            ancestors: self.ancestors_for(&ctx),
             ctx,
             logical_codec,
             physical_codec,
@@ -1475,6 +1512,25 @@ impl PySessionContext {
 }
 
 impl PySessionContext {
+    /// Keep-alive list for a context derived from this one.
+    ///
+    /// Sharing the same `SessionContext` carries the list through unchanged.
+    /// A fork adds this session, because a foreign codec installed here holds
+    /// it weakly and would otherwise dangle once the Python name is rebound.
+    fn ancestors_for(&self, derived: &Arc<SessionContext>) -> Vec<Arc<SessionContext>> {
+        if Arc::ptr_eq(derived, &self.ctx) {
+            self.ancestors.clone()
+        } else {
+            self.ancestors_including_self()
+        }
+    }
+
+    fn ancestors_including_self(&self) -> Vec<Arc<SessionContext>> {
+        let mut ancestors = self.ancestors.clone();
+        ancestors.push(Arc::clone(&self.ctx));
+        ancestors
+    }
+
     /// Return the [`SessionContext`] a derived `PySessionContext` should use,
     /// binding a foreign query planner to `logical_codec` and `physical_codec`.
     ///
@@ -1760,6 +1816,7 @@ impl From<SessionContext> for PySessionContext {
             ctx: Arc::new(ctx),
             logical_codec: Arc::new(PythonLogicalCodec::default()),
             physical_codec: Arc::new(PythonPhysicalCodec::default()),
+            ancestors: Vec::new(),
         }
     }
 }

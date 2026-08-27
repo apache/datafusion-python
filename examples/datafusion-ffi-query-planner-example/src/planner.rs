@@ -21,8 +21,6 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use async_trait::async_trait;
 use datafusion::common::DataFusionError;
-use datafusion::execution::TaskContextProvider;
-use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::LogicalPlan;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::physical_plan::limit::GlobalLimitExec;
@@ -33,9 +31,10 @@ use datafusion_ffi::execution_plan::ForeignExecutionPlan;
 use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::session::ForeignSession;
 use datafusion_ffi::table_provider::ForeignTableProvider;
-use datafusion_proto::logical_plan::DefaultLogicalExtensionCodec;
-use datafusion_proto::physical_plan::DefaultPhysicalExtensionCodec;
-use datafusion_python_util::{ffi_query_planner_from_pycapsule, get_tokio_runtime};
+use datafusion_python_util::{
+    ffi_logical_codec_from_pycapsule, ffi_physical_codec_from_pycapsule,
+    ffi_query_planner_from_pycapsule,
+};
 use datafusion_session::{QueryPlanner, Session};
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -132,18 +131,9 @@ fn planner_config(session: &dyn Session) -> datafusion::common::Result<MyPlanner
     Ok(config)
 }
 
+#[derive(Debug)]
 struct DistributedQueryPlanner {
     observations: Arc<PlannerObservations>,
-    /// Keeps the context behind the exported codecs' `TaskContextProvider`
-    /// alive. See [`MyQueryPlanner::codec_ctx`]. The reference lives here as
-    /// well as on `MyQueryPlanner` because this is the value the capsule
-    /// carries, so the provider stays valid even if the Python object that
-    /// exported it is dropped first.
-    #[expect(
-        dead_code,
-        reason = "strong reference keeping the FFI codecs' weakly held provider alive"
-    )]
-    codec_ctx: Arc<SessionContext>,
     /// Planner to hand the work to instead of planning here.
     ///
     /// This is how a real planner layers on top of an existing one. The capsule
@@ -156,16 +146,6 @@ struct DistributedQueryPlanner {
     /// dispatches through the session's installed query planner, so calling it
     /// from inside that planner recurses until the stack overflows.
     fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
-}
-
-impl fmt::Debug for DistributedQueryPlanner {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("DistributedQueryPlanner")
-            .field("observations", &self.observations)
-            .field("has_fallback", &self.fallback.is_some())
-            .finish_non_exhaustive()
-    }
 }
 
 #[async_trait]
@@ -220,48 +200,10 @@ impl QueryPlanner for DistributedQueryPlanner {
     module = "datafusion_ffi_query_planner_example",
     subclass
 )]
-#[derive(Clone)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct MyQueryPlanner {
     observations: Arc<PlannerObservations>,
     fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
-    /// Context backing the `TaskContextProvider` handed to the exported
-    /// codecs.
-    ///
-    /// This is *not* the session that arrives at `create_physical_plan`. That
-    /// one belongs to the host and is what this planner reads config from. The
-    /// provider here serves the other direction: when the host decodes the
-    /// plan bytes this library returned, any extension node in them is decoded
-    /// by a callback back into this library, and that callback needs a
-    /// `TaskContext` whose registry can resolve *this* library's nodes and
-    /// functions. A real planner library registers its UDFs and extension
-    /// types on this context; the example uses the default codecs, so nothing
-    /// ever calls back.
-    ///
-    /// It must be owned rather than built inline: `FFI_TaskContextProvider`
-    /// downgrades the provider to a `Weak`, so a temporary would already be
-    /// dropped by the time the capsule is used, and every codec callback would
-    /// fail with "TaskContextProvider went out of scope over FFI boundary".
-    codec_ctx: Arc<SessionContext>,
-}
-
-impl Default for MyQueryPlanner {
-    fn default() -> Self {
-        Self {
-            observations: Arc::default(),
-            fallback: None,
-            codec_ctx: Arc::new(SessionContext::new()),
-        }
-    }
-}
-
-impl fmt::Debug for MyQueryPlanner {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("MyQueryPlanner")
-            .field("observations", &self.observations)
-            .field("has_fallback", &self.fallback.is_some())
-            .finish_non_exhaustive()
-    }
 }
 
 #[pymethods]
@@ -277,7 +219,7 @@ impl MyQueryPlanner {
     fn new(fallback: Option<Bound<'_, PyAny>>) -> PyResult<Self> {
         let fallback = fallback
             .map(|planner| {
-                ffi_query_planner_from_pycapsule(&planner)
+                ffi_query_planner_from_pycapsule(&planner, None)
                     .map(|ffi| -> Arc<dyn QueryPlanner + Send + Sync> { (&ffi).into() })
             })
             .transpose()?;
@@ -311,24 +253,24 @@ impl MyQueryPlanner {
         self.observations.foreign_plan.load(Ordering::SeqCst)
     }
 
+    /// Export the planner, bound to the session it is being installed on.
+    ///
+    /// The codecs come off `session` rather than being built here. They carry
+    /// the host's `TaskContextProvider`, so this library never constructs a
+    /// `SessionContext`, and `with_query_planner` would rebind them to the
+    /// running session anyway.
     fn __datafusion_query_planner__<'py>(
         &self,
         py: Python<'py>,
+        session: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
             observations: Arc::clone(&self.observations),
-            codec_ctx: Arc::clone(&self.codec_ctx),
             fallback: self.fallback.clone(),
         });
-        let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(&self.codec_ctx) as Arc<dyn TaskContextProvider>;
-        let ffi = FFI_QueryPlanner::new(
-            planner,
-            Some(runtime),
-            &ctx_provider,
-            Arc::new(DefaultLogicalExtensionCodec {}),
-            Arc::new(DefaultPhysicalExtensionCodec {}),
-        );
+        let logical_codec = ffi_logical_codec_from_pycapsule(session.clone(), None)?;
+        let physical_codec = ffi_physical_codec_from_pycapsule(session, None)?;
+        let ffi = FFI_QueryPlanner::new_with_ffi_codecs(planner, logical_codec, physical_codec);
         PyCapsule::new_with_value(py, ffi, cr"datafusion_query_planner")
     }
 }

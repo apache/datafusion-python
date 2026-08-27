@@ -17,85 +17,22 @@
 
 //! Support for exercising the `TaskContext` a codec is handed when it decodes.
 //!
-//! A codec exported over FFI is built with a `TaskContextProvider`, and the
-//! decode callbacks in `datafusion-ffi` resolve that provider to a
-//! `TaskContext` before calling into the codec. Nothing in the example codecs
-//! read anything out of that context, so which session it belongs to was
-//! untestable: the token registries they use are keyed by an integer and
-//! ignore the registry entirely.
+//! A codec exported over FFI carries a `TaskContextProvider`, and the decode
+//! callbacks in `datafusion-ffi` resolve it to a `TaskContext` before calling
+//! into the codec. Nothing in the example codecs read anything out of that
+//! context, so which session it belongs to was untestable: the token
+//! registries they use are keyed by an integer and ignore the registry.
 //!
 //! The codecs can now be asked to resolve a named scalar function from the
 //! context they are given on every decode, which makes the answer observable.
-//! Two names matter:
-//!
-//! - [`LIBRARY_LOCAL_UDF_NAME`] is registered by [`new_codec_context`] on the
-//!   context this library owns and hands to the FFI codec, so a decode
-//!   callback resolves it.
-//! - A function registered only on the *host* `SessionContext` does not
-//!   resolve, because the decode callback never sees the host's registry.
+//! Because the codecs take their provider from the session they are installed
+//! on, a function registered on the host with `register_udf` resolves.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use arrow_schema::DataType;
 use datafusion::execution::TaskContext;
-use datafusion::prelude::SessionContext;
 use datafusion_common::error::Result as DataFusionResult;
 use datafusion_common::plan_err;
-use datafusion_expr::{
-    ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, TypeSignature,
-    Volatility,
-};
-
-/// Name of the scalar function registered on the context this library owns.
-pub(crate) const LIBRARY_LOCAL_UDF_NAME: &str = "library_local_marker";
-
-/// Placeholder scalar function used only as a registry entry.
-///
-/// Decode callbacks look it up by name to prove which `TaskContext` they were
-/// handed. It is never invoked, so the body is unreachable in practice.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-struct LibraryLocalUDF {
-    signature: Signature,
-}
-
-impl LibraryLocalUDF {
-    fn new() -> Self {
-        Self {
-            signature: Signature::new(TypeSignature::Any(1), Volatility::Immutable),
-        }
-    }
-}
-
-impl ScalarUDFImpl for LibraryLocalUDF {
-    fn name(&self) -> &str {
-        LIBRARY_LOCAL_UDF_NAME
-    }
-
-    fn signature(&self) -> &Signature {
-        &self.signature
-    }
-
-    fn return_type(&self, _arg_types: &[DataType]) -> DataFusionResult<DataType> {
-        Ok(DataType::Boolean)
-    }
-
-    fn invoke_with_args(&self, _args: ScalarFunctionArgs) -> DataFusionResult<ColumnarValue> {
-        plan_err!("{LIBRARY_LOCAL_UDF_NAME} exists only as a registry entry and cannot be invoked")
-    }
-}
-
-/// Builds the context a codec keeps for its own FFI `TaskContextProvider`.
-///
-/// This is the context every extension library has to conjure in order to
-/// export a codec, and it is a plain empty session apart from the marker
-/// function. The host's registrations are not in it, which is the point the
-/// codec tests make observable.
-pub(crate) fn new_codec_context() -> Arc<SessionContext> {
-    let ctx = SessionContext::new();
-    ctx.register_udf(ScalarUDF::from(LibraryLocalUDF::new()));
-    Arc::new(ctx)
-}
 
 /// Resolves `required` against `ctx`, the context the decode callback was given.
 ///

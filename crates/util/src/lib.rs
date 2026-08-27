@@ -215,13 +215,46 @@ pub fn create_logical_extension_capsule<'py>(
     PyCapsule::new_with_value(py, codec, cr"datafusion_logical_extension_codec")
 }
 
-pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_LogicalExtensionCodec> {
-    let attr_name = "__datafusion_logical_extension_codec__";
-    let capsule = if obj.hasattr(attr_name)? {
-        obj.getattr(attr_name)?.call0()?
-    } else {
-        obj
+/// Calls `obj.__<attr_name>__(session)`, or `obj.__<attr_name>__()` when no
+/// session is supplied.
+///
+/// The session is how an exporting library obtains the codecs and task context
+/// of the session it is being installed on, instead of inventing one of its
+/// own. `None` is for the reverse direction, where `obj` *is* a session and is
+/// being asked for what it holds.
+fn call_capsule_getter<'py>(
+    obj: Bound<'py, PyAny>,
+    attr_name: &str,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<Bound<'py, PyAny>> {
+    if !obj.hasattr(attr_name)? {
+        return Ok(obj);
+    }
+
+    let getter = obj.getattr(attr_name)?;
+    let result = match session {
+        Some(session) => getter.call1((session,)),
+        None => getter.call0(),
     };
+
+    result.map_err(|err| {
+        let py = obj.py();
+        if session.is_some() && err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+            PyImportError::new_err(format!(
+                "Incompatible libraries. `{attr_name}` must accept the SessionContext it \
+                 is being installed on. Upgrade the library providing this object."
+            ))
+        } else {
+            err
+        }
+    })
+}
+
+pub fn ffi_logical_codec_from_pycapsule<'py>(
+    obj: Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_LogicalExtensionCodec> {
+    let capsule = call_capsule_getter(obj, "__datafusion_logical_extension_codec__", session)?;
 
     let capsule = capsule.cast::<PyCapsule>()?;
     let data: NonNull<FFI_LogicalExtensionCodec> = capsule
@@ -232,6 +265,47 @@ pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_Logic
     Ok(codec.clone())
 }
 
+pub fn ffi_physical_codec_from_pycapsule<'py>(
+    obj: Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_PhysicalExtensionCodec> {
+    let capsule = call_capsule_getter(obj, "__datafusion_physical_extension_codec__", session)?;
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_physical_extension_codec")?;
+    let data: NonNull<FFI_PhysicalExtensionCodec> = capsule
+        .pointer_checked(Some(c"datafusion_physical_extension_codec"))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
+
+    Ok(codec.clone())
+}
+
+/// Extracts the `FFI_TaskContextProvider` a session exposes.
+///
+/// An extension library exporting a codec needs one for the decode callbacks
+/// its codec will receive. Taking the host's means those callbacks resolve
+/// names against the session that is actually running the query, and removes
+/// any need for the library to construct a `SessionContext` of its own.
+pub fn ffi_task_context_provider_from_pycapsule(
+    session: &Bound<PyAny>,
+) -> PyResult<FFI_TaskContextProvider> {
+    let capsule = call_capsule_getter(
+        session.clone(),
+        "__datafusion_task_context_provider__",
+        None,
+    )?;
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_task_context_provider")?;
+    let data: NonNull<FFI_TaskContextProvider> = capsule
+        .pointer_checked(Some(c"datafusion_task_context_provider"))?
+        .cast();
+    let provider = unsafe { data.as_ref() };
+
+    Ok(provider.clone())
+}
+
 pub fn create_query_planner_capsule<'py>(
     py: Python<'py>,
     planner: &FFI_QueryPlanner,
@@ -239,13 +313,11 @@ pub fn create_query_planner_capsule<'py>(
     PyCapsule::new_with_value(py, planner.clone(), cr"datafusion_query_planner")
 }
 
-pub fn ffi_query_planner_from_pycapsule(obj: &Bound<PyAny>) -> PyResult<FFI_QueryPlanner> {
-    let attr_name = "__datafusion_query_planner__";
-    let capsule = if obj.hasattr(attr_name)? {
-        obj.getattr(attr_name)?.call0()?
-    } else {
-        obj.clone()
-    };
+pub fn ffi_query_planner_from_pycapsule<'py>(
+    obj: &Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_QueryPlanner> {
+    let capsule = call_capsule_getter(obj.clone(), "__datafusion_query_planner__", session)?;
 
     let capsule = capsule.cast::<PyCapsule>()?;
     validate_pycapsule(capsule, "datafusion_query_planner")?;

@@ -257,56 +257,59 @@ The current FFI logical codec supports providers and UDFs but not arbitrary cust
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
 
-### The task context a planner exports is not the session it plans against
+### Capsule getters receive the session they are installed on
 
-`FFI_QueryPlanner::new` takes a `TaskContextProvider` alongside the two codecs. It is
-easy to mistake this for the session the planner will be asked to plan against, but the
-two are unrelated and serve opposite directions of the exchange:
+`__datafusion_query_planner__`, `__datafusion_logical_extension_codec__`, and
+`__datafusion_physical_extension_codec__` all take the `SessionContext` the object is
+being installed on, the same way `__datafusion_table_provider__` does:
 
-- The `&dyn Session` passed to `QueryPlanner::create_physical_plan` belongs to the
-  host. It arrives as a `ForeignSession` when the call crossed the boundary, and it is
-  what the planner reads configuration and catalogs from.
-- The `TaskContextProvider` given at export time backs the *exported codecs*. When the
-  host decodes the plan bytes the planner returned, any extension node in them is
-  decoded by a callback back into the planner's own library, and that callback needs a
-  `TaskContext` whose registry can resolve that library's own nodes and functions.
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+    session: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let runtime = get_tokio_runtime().handle().clone();
+    let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
 
-So a planner library should hand over a context it owns, and register its own UDFs and
-extension types on it. It cannot use the host's session for this even if it wanted to:
-the codecs are built when the capsule is exported, long before any session shows up.
+This exists because the FFI constructors need things an extension library does not
+have. `FFI_{Logical,Physical}ExtensionCodec::new` needs a `TaskContextProvider` for the
+decode callbacks the codec will receive, and `FFI_QueryPlanner::new` needs both codecs
+on top of that. Taking them from the session is what keeps a library from constructing
+a `SessionContext` purely to satisfy a parameter — an empty one resolves nothing, and
+`FFI_TaskContextProvider` holds it weakly, so a context built inline in the getter is
+already dropped by the time the capsule is used.
 
-That context must be kept alive by the exporter. `FFI_TaskContextProvider` downgrades
-it to a `Weak`, so a provider constructed inline in the capsule getter is already
-dropped by the time the capsule is used, and every codec callback fails with
-`TaskContextProvider went out of scope over FFI boundary`. Hold the reference on
-something that lives at least as long as the exported planner — the example stores it
-on both the Python-facing planner object and the `QueryPlanner` the capsule carries, so
-the capsule keeps working even if the Python object is dropped first.
+A planner uses `FFI_QueryPlanner::new_with_ffi_codecs` with the two codecs it takes off
+the session, and never touches a provider directly. That also matches what installation
+does anyway: `with_query_planner` rebinds a foreign planner to the codecs of the session
+that will run the query.
 
-One wrinkle specific to installing a planner here: `with_query_planner` rebuilds the
-foreign planner against the context that will run the query, so the codecs the planner
-was exported with — and the provider behind them — are replaced by the session's own.
-A planner library still has to supply a provider to construct the capsule, but in this
-path it is not the one consulted. A codec installed with
-`with_logical_extension_codec` or `with_physical_extension_codec` keeps the provider its
-own library exported.
+`SessionContext` accepts the argument on all three getters and ignores it, so a session
+satisfies the same protocol an extension library implements. When you export the current
+planner to wrap it, `ctx.__datafusion_query_planner__()` and
+`ctx.__datafusion_query_planner__(ctx)` are both fine.
 
-### A codec decodes against its own library's registry
+### A codec decodes against the session it was installed on
 
-Follows from the above, and it is the part most likely to surprise: a decode callback
-resolves names against the session the *exporting library* supplied, not the host
-session running the query. A scalar function registered on the host with
-`ctx.register_udf(...)` is therefore not visible to a foreign codec decoding a node that
-references it by name. Register anything a codec has to resolve on the context that
-codec exports.
+Because the provider comes from the host, a decode callback running inside an extension
+library resolves names against the session that is running the query. A function
+registered with `ctx.register_udf(...)` is visible to a foreign codec decoding a node
+that references it by name, and the handle is live rather than a snapshot, so a
+registration made after the codec is installed is visible too.
 
-This is covered directly. Both example codecs accept `require_udf_on_decode`, which
-makes every decode call resolve a named scalar function out of the `TaskContext` it was
-handed, and
-`examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`
-asserts both halves: a function registered on the codec's own context resolves, and one
-registered only on the host does not. The host-registered cases are `xfail(strict=True)`
-so they will announce themselves if the underlying design changes upstream.
+The one boundary is the fork. Installing a foreign query planner forks the session, and
+a codec installed beforehand keeps pointing at the session it was built against, so a
+function registered after that point is not visible to it. This is the same rule as the
+caveat below, seen from the codec's side: register before deriving. Both halves are
+covered in
+`examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`,
+where the example codecs take a `require_udf_on_decode` name and resolve it out of the
+task context they are handed.
 
 ### What a derived context shares
 

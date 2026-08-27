@@ -33,7 +33,7 @@ Separate shared libraries guarantee distinct DataFusion library markers. This ca
 
 `MyLogicalExtensionCodec` serializes this example's in-memory table providers, and `MyPhysicalExtensionCodec` serializes provider-owned memory scans and opaque FFI wrappers around them. Both use documented, process-local, one-shot token registries. The registries make ownership and callback routing visible without pretending to be a portable format. They assume trusted in-process payloads and consume each token during decoding. A production provider should instead encode durable metadata from which its provider and plans can be reconstructed.
 
-The example codecs do not inspect the callback `TaskContext`. A production codec that depends on session configuration or registered functions must ensure its exported FFI codec is bound to, and retains, the appropriate host `TaskContextProvider`.
+Both codec getters take the `SessionContext` they are being installed on and pull the `TaskContextProvider` off it, so decode callbacks resolve session configuration and registered functions against the session that is running the query. Passing `require_udf_on_decode` to either constructor makes every decode call resolve a named scalar function out of that context, which is how the tests check where the registry came from.
 
 This example makes the provider library the sole external codec owner. Register both provider codecs before installing the planner:
 
