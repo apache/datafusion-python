@@ -192,6 +192,24 @@ pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()
 /// Not every FFI type carries a version. `FFI_TaskContextProvider`,
 /// `FFI_TableProviderFactory`, and `FFI_ExtensionOptions` have no such field,
 /// so their importers cannot check and are not expected to.
+///
+/// # If the FFI ABI stabilizes
+///
+/// Exact equality is the right test only while `datafusion_ffi::version`
+/// tracks the DataFusion crate's semver major, which it does today
+/// (`env!("CARGO_PKG_VERSION")`, `.major`). That number therefore moves on
+/// every major release whether or not the ABI actually changed.
+///
+/// Should a version span become compatible, **this function body is the only
+/// thing to change** -- callers pass a `found` value and no policy. Relaxing it
+/// at a call site instead would reintroduce the split this helper exists to
+/// remove.
+///
+/// The likelier fix is upstream, not here: if the ABI is stable but `version`
+/// still follows the crate major, upstream's own compatibility marker is wrong
+/// for every consumer, not just this one. Prefer waiting for
+/// `datafusion_ffi::version` to reflect the real ABI over inventing a range
+/// policy locally.
 pub fn check_ffi_version(kind: &str, found: u64) -> PyResult<()> {
     let expected = datafusion_ffi::version();
     if found != expected {
