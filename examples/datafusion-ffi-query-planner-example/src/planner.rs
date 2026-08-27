@@ -41,6 +41,16 @@ use pyo3::types::PyCapsule;
 
 use crate::config::MyPlannerConfig;
 
+/// What the planner saw, accumulated across every call rather than reset each
+/// time.
+///
+/// Two kinds of field here, and mixing them up is easy. `last_max_rows`
+/// reports the most recent value, as its name says. Everything else is
+/// cumulative: a count, or a "did this ever happen" flag written with
+/// `fetch_or` so a later plan cannot retract an earlier observation. Tests
+/// assert after running more than one query, so a flag that only described the
+/// most recent plan would be answering a different question than the one its
+/// accessor name asks.
 #[derive(Default)]
 struct PlannerObservations {
     plan_calls: AtomicUsize,
@@ -48,6 +58,7 @@ struct PlannerObservations {
     foreign_session: AtomicBool,
     foreign_provider: AtomicBool,
     foreign_plan: AtomicBool,
+    /// Only ever set to `true`, so it is already cumulative.
     used_fallback: AtomicBool,
 }
 
@@ -156,10 +167,14 @@ impl QueryPlanner for DistributedQueryPlanner {
         session: &dyn Session,
     ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
         self.observations.plan_calls.fetch_add(1, Ordering::SeqCst);
+        // `fetch_or`, not `store`: these answer "was this ever seen", so a
+        // later plan that happens not to touch a foreign object must not
+        // retract what an earlier one observed. A bare `SELECT 1` after a
+        // scan of a foreign provider would otherwise clear the flag.
         self.observations
             .foreign_session
-            .store(session.as_any().is::<ForeignSession>(), Ordering::SeqCst);
-        self.observations.foreign_provider.store(
+            .fetch_or(session.as_any().is::<ForeignSession>(), Ordering::SeqCst);
+        self.observations.foreign_provider.fetch_or(
             logical_plan_has_foreign_provider(logical_plan),
             Ordering::SeqCst,
         );
@@ -184,7 +199,7 @@ impl QueryPlanner for DistributedQueryPlanner {
         };
         self.observations
             .foreign_plan
-            .store(physical_plan_has_foreign_plan(&plan), Ordering::SeqCst);
+            .fetch_or(physical_plan_has_foreign_plan(&plan), Ordering::SeqCst);
 
         Ok(Arc::new(GlobalLimitExec::new(
             plan,

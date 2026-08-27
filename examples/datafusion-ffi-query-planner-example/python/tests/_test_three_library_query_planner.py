@@ -398,6 +398,36 @@ def test_a_session_fallback_delegates_to_its_installed_planner():
     assert first.plan_calls() > 0
 
 
+def test_observations_accumulate_across_queries():
+    """A later plain query must not retract what an earlier query observed.
+
+    The ``*_observed`` accessors answer "was this ever seen". They are written
+    with ``fetch_or`` rather than ``store`` so a query that touches no foreign
+    object cannot clear a flag an earlier one set. Written with ``store``,
+    ``SELECT 1`` here clears ``foreign_provider_observed``, and every other
+    test asserting these flags after more than one query is a coincidence away
+    from failing.
+    """
+    ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
+    planner = MyQueryPlanner()
+    ctx = ctx.with_query_planner(planner)
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert planner.foreign_session_observed()
+    assert planner.foreign_provider_observed()
+    assert planner.foreign_plan_observed()
+
+    # Touches no table, so this plan has no foreign provider of its own.
+    ctx.sql("SELECT 1").collect()
+    assert planner.foreign_session_observed()
+    assert planner.foreign_provider_observed()
+    assert planner.foreign_plan_observed()
+
+    # `last_max_rows` is deliberately not cumulative; it reports the last plan.
+    assert planner.last_max_rows() == 3
+    assert planner.plan_calls() >= 2
+
+
 def test_second_planner_replaces_the_first():
     """A session holds exactly one planner, so installing another replaces it."""
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
