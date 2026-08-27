@@ -1,3 +1,9 @@
+---
+name: ffi-capsule-protocol
+description: "TRIGGER — read before adding, changing, or reviewing any __datafusion_*__ capsule getter, any FFI_* export that asks for a TaskContextProvider or an extension codec, or any code that calls FFI_QueryPlanner::new / FFI_TableProvider::new / FFI_{Logical,Physical}ExtensionCodec::new. These methods are one protocol with a settled convention. Do not design it fresh; do not construct a SessionContext inside an extension library."
+argument-hint: "[getter name] (e.g., \"__datafusion_query_planner__\", \"table provider\", \"codec\", or omit to review the whole family)"
+---
+
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -16,12 +22,6 @@
   specific language governing permissions and limitations
   under the License.
 -->
-
----
-name: ffi-capsule-protocol
-description: "TRIGGER — read before adding, changing, or reviewing any __datafusion_*__ capsule getter, any FFI_* export that asks for a TaskContextProvider or an extension codec, or any code that calls FFI_QueryPlanner::new / FFI_TableProvider::new / FFI_{Logical,Physical}ExtensionCodec::new. These methods are one protocol with a settled convention. Do not design it fresh; do not construct a SessionContext inside an extension library."
-argument-hint: "[getter name] (e.g., \"__datafusion_query_planner__\", \"table provider\", \"codec\", or omit to review the whole family)"
----
 
 # FFI Capsule Protocol
 
@@ -44,9 +44,6 @@ grep -rn "__datafusion_[a-z_]*__" --include="*.rs" crates/ examples/*/src/
 Compare the signature you are about to write against what the others already
 do. If yours is shaped differently, that is a finding about your design, not
 about theirs.
-
-Search `docs/source/`, never `docs/` — `docs/temp/` is gitignored build output
-that shadows the real files with stale copies.
 
 ## Rule 2 — a getter takes the session it is being installed on
 

@@ -41,18 +41,9 @@ stated condition.
 
 ## FFI Capsule Protocol
 
-Before adding or changing any `__datafusion_*__` capsule getter, read
-[`.ai/skills/ffi-capsule-protocol/SKILL.md`](.ai/skills/ffi-capsule-protocol/SKILL.md)
-and enumerate the existing family:
-
-```bash
-grep -rn "__datafusion_[a-z_]*__" --include="*.rs" crates/ examples/*/src/
-```
-
-These methods are one protocol with a settled convention: a getter receives the
-`SessionContext` it is being installed on and takes what the FFI constructor
-needs from that session. Never construct a `SessionContext` inside an extension
-library to satisfy a `TaskContextProvider` or codec parameter.
+The `__datafusion_*__` capsule getters are one protocol with a settled
+convention. Before adding or changing one, read
+[`.ai/skills/ffi-capsule-protocol/SKILL.md`](.ai/skills/ffi-capsule-protocol/SKILL.md).
 
 ## Documentation Sources
 
