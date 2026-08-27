@@ -344,7 +344,10 @@ the fork behave differently:
   context afterwards is not visible to the derived one, and a `SET` applied to one does
   not reach the other.
 
-The session id is carried over to the fork, so both contexts report the same id.
+The session id is carried over to the fork, so both contexts report the same id, and so
+does every `TaskContext` either one hands to a foreign codec. A library that identifies a
+session by its id — to correlate host-side and worker-side state, or to assert which
+session a decode callback was bound to — keeps working across a fork.
 
 Register functions before deriving, or register them directly on the derived context:
 

@@ -1517,7 +1517,8 @@ impl PySessionContext {
     /// A fork is not a deep copy. `SessionState` keeps its catalog list behind
     /// an `Arc`, so catalogs and tables stay shared with the original session,
     /// while registered functions and the configuration are snapshotted at the
-    /// time of the call. The session id is deliberately carried over.
+    /// time of the call. The session id is explicitly carried over, so the fork
+    /// and its `TaskContext`s all report the id the original session had.
     fn derived_parts(
         &self,
         logical_codec: Arc<PythonLogicalCodec>,
@@ -1556,7 +1557,14 @@ impl PySessionContext {
             Self::ffi_physical_codec_for(&ctx, &physical_codec),
         ))
             .into();
+        // `with_session_id` is load-bearing, not redundant.
+        // `SessionStateBuilder::new_from_existing` drops the id and `build`
+        // mints a fresh one, while `SessionContext` cached the original in a
+        // field of its own at `new_with_state`. Without this the fork would
+        // report one id from `session_id()` and another from every
+        // `TaskContext` it hands out.
         let state = SessionStateBuilder::new_from_existing(ctx.state())
+            .with_session_id(ctx.session_id())
             .with_query_planner(planner)
             .build();
         *ctx.state_ref().write() = state;
