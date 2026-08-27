@@ -56,6 +56,13 @@ fn __datafusion_physical_extension_codec__<'py>(
 }
 ```
 
+The dropped `&` on the last argument is not a typo. That parameter is
+`impl Into<FFI_TaskContextProvider>`, so it accepts either an
+`&Arc<dyn TaskContextProvider>`, as before, or an `FFI_TaskContextProvider`,
+which is what `ffi_task_context_provider_from_pycapsule` hands back. Both forms
+compile; the argument changes because the provider now comes from the session
+rather than from a field.
+
 A codec that keeps its own `SessionContext` still compiles, but its decode
 callbacks resolve names against that empty session instead of the one running
 the query, so a function registered with `SessionContext.register_udf` is not
