@@ -175,6 +175,34 @@ pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()
     Ok(())
 }
 
+/// Reject an FFI struct built against a different major version of
+/// `datafusion-ffi`.
+///
+/// `found` comes from the struct's own `version` function pointer, which
+/// reports the major version of the library that produced it.
+///
+/// This is a diagnostic, not a soundness guarantee. Reading `version` out of
+/// the struct already assumes the local field layout, and `version` is not the
+/// first field on any of these types, so a sufficiently different layout can
+/// fault before this ever runs. What it buys is a clear error for the case that
+/// actually happens -- an extension library compiled against a different
+/// DataFusion -- rather than undefined behaviour on first use, which is what
+/// `datafusion_ffi::version` exists for.
+///
+/// Not every FFI type carries a version. `FFI_TaskContextProvider`,
+/// `FFI_TableProviderFactory`, and `FFI_ExtensionOptions` have no such field,
+/// so their importers cannot check and are not expected to.
+pub fn check_ffi_version(kind: &str, found: u64) -> PyResult<()> {
+    let expected = datafusion_ffi::version();
+    if found != expected {
+        return Err(PyImportError::new_err(format!(
+            "Incompatible DataFusion {kind} major version {found}; expected {expected}. \
+             Rebuild the library providing this object against a matching DataFusion."
+        )));
+    }
+    Ok(())
+}
+
 pub fn table_provider_from_pycapsule<'py>(
     mut obj: Bound<'py, PyAny>,
     session: Bound<'py, PyAny>,
@@ -197,6 +225,7 @@ pub fn table_provider_from_pycapsule<'py>(
             .pointer_checked(Some(c"datafusion_table_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
+        check_ffi_version("table provider", unsafe { (provider.version)() })?;
         let provider: Arc<dyn TableProvider> = provider.into();
 
         Ok(Some(provider))
@@ -276,6 +305,7 @@ pub fn ffi_logical_codec_from_pycapsule<'py>(
         .pointer_checked(Some(c"datafusion_logical_extension_codec"))?
         .cast();
     let codec = unsafe { data.as_ref() };
+    check_ffi_version("logical extension codec", unsafe { (codec.version)() })?;
 
     Ok(codec.clone())
 }
@@ -292,6 +322,7 @@ pub fn ffi_physical_codec_from_pycapsule<'py>(
         .pointer_checked(Some(c"datafusion_physical_extension_codec"))?
         .cast();
     let codec = unsafe { data.as_ref() };
+    check_ffi_version("physical extension codec", unsafe { (codec.version)() })?;
 
     Ok(codec.clone())
 }
@@ -340,13 +371,7 @@ pub fn ffi_query_planner_from_pycapsule<'py>(
         .pointer_checked(Some(c"datafusion_query_planner"))?
         .cast();
     let planner = unsafe { data.as_ref() };
-    let planner_version = unsafe { (planner.version)() };
-    let expected_version = datafusion_ffi::version();
-    if planner_version != expected_version {
-        return Err(PyImportError::new_err(format!(
-            "Incompatible DataFusion query planner version {planner_version}; expected major version {expected_version}."
-        )));
-    }
+    check_ffi_version("query planner", unsafe { (planner.version)() })?;
 
     Ok(planner.clone())
 }
@@ -367,6 +392,11 @@ pub fn create_physical_extension_capsule<'py>(
 /// Use this when `Arc<$output_type>: From<&$ffi_type>` (infallible
 /// conversion). For fallible conversions use [`try_from_pycapsule!`]
 /// instead.
+///
+/// The generated extractor does not check the FFI major version, because not
+/// every FFI type carries one. If `$ffi_type` has a `version` field, call
+/// [`check_ffi_version`] on it yourself, as the hand-written extractors in this
+/// crate do.
 #[macro_export]
 macro_rules! from_pycapsule {
     ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty) => {
