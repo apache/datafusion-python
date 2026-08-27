@@ -25,6 +25,7 @@ from datafusion_ffi_example import (
     IsNullUDF,
     MyLogicalExtensionCodec,
     MyPhysicalExtensionCodec,
+    MyPhysicalOptimizerRule,
     MyTableProvider,
 )
 from datafusion_ffi_query_planner_example import MyPlannerConfig, MyQueryPlanner
@@ -177,6 +178,92 @@ def test_rebinding_a_fork_leaves_the_receiver_bound_to_its_own_session():
         Exception, match=rf"could not resolve scalar function '{HOST_ONLY_UDF}'"
     ):
         first.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+
+
+def codec_context(max_rows: int = 3):
+    """Context with both example codecs installed and a table to scan.
+
+    Unlike :func:`probe_context` the codecs ask for no function, so the only
+    thing they record is the session id of the task context they are handed.
+    No planner yet -- the caller installs one, since that is what forks.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=max_rows))
+    logical_codec = MyLogicalExtensionCodec()
+    physical_codec = MyPhysicalExtensionCodec()
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(physical_codec)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    return ctx, logical_codec, physical_codec
+
+
+def test_a_fork_decodes_against_the_session_id_it_reports():
+    """A fork and its decode callbacks must agree on the session id.
+
+    ``with_query_planner`` forks the session state by rebuilding it through
+    ``SessionStateBuilder``, which mints a fresh id unless handed one, and
+    ``SessionContext`` caches its id in a field of its own. Dropping the id
+    there leaves the fork reporting one id from ``session_id()`` and a
+    different one from every ``TaskContext`` it gives a foreign codec.
+
+    Asserting on ``session_id()`` alone cannot catch that: it reads the cached
+    copy, which stays correct either way. The codec-side id is the only
+    observable that moves, which is what makes this worth a test rather than a
+    one-line equality check.
+    """
+    ctx, logical_codec, physical_codec = codec_context()
+    session_id = ctx.session_id()
+
+    fork = ctx.with_query_planner(MyQueryPlanner())
+    assert fork.session_id() == session_id
+
+    fork.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert logical_codec.last_task_context_session_id() == session_id
+    assert physical_codec.last_task_context_session_id() == session_id
+
+
+def test_adding_a_physical_optimizer_rule_keeps_the_session_id():
+    """Mutating a session in place must not move the id it decodes against.
+
+    ``add_physical_optimizer_rule`` rebuilds ``SessionState`` and writes it
+    back into the caller's own session rather than deriving a new one, so a
+    regenerated id would desync a context from itself with no fork to explain
+    it.
+    """
+    ctx, logical_codec, physical_codec = codec_context()
+    fork = ctx.with_query_planner(MyQueryPlanner())
+    session_id = fork.session_id()
+
+    fork.add_physical_optimizer_rule(MyPhysicalOptimizerRule())
+    assert fork.session_id() == session_id
+
+    fork.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert logical_codec.last_task_context_session_id() == session_id
+    assert physical_codec.last_task_context_session_id() == session_id
+
+
+def test_rebinding_a_fork_does_not_move_the_parent_session_id():
+    """Each context in a fork chain decodes against its own id.
+
+    Two forks off one parent share the parent's id, so a test that only
+    compared against the parent would pass even if rebinding leaked one
+    context's provider into the other. Registering a function on just one fork
+    is what distinguishes them.
+    """
+    ctx, logical_codec, _physical_codec = codec_context()
+    session_id = ctx.session_id()
+
+    first = ctx.with_query_planner(MyQueryPlanner())
+    second = first.with_query_planner(MyQueryPlanner())
+
+    assert first.session_id() == session_id
+    assert second.session_id() == session_id
+
+    first.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert logical_codec.last_task_context_session_id() == session_id
+
+    second.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert logical_codec.last_task_context_session_id() == session_id
 
 
 @pytest.mark.parametrize("raw_capsule", [False, True])

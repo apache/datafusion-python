@@ -28,28 +28,66 @@
 //! Because the codecs take their provider from the session they are installed
 //! on, a function registered on the host with `register_udf` resolves.
 
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use datafusion::execution::TaskContext;
 use datafusion_common::error::Result as DataFusionResult;
 use datafusion_common::plan_err;
 
+/// What the codecs record about the `TaskContext` their decode callbacks run
+/// against.
+#[derive(Debug, Default)]
+pub(crate) struct TaskContextProbe {
+    resolutions: AtomicUsize,
+    last_session_id: Mutex<Option<String>>,
+}
+
+impl TaskContextProbe {
+    /// Successful `require_udf_on_decode` lookups since construction.
+    pub(crate) fn resolutions(&self) -> usize {
+        self.resolutions.load(Ordering::SeqCst)
+    }
+
+    /// Session id of the most recent decode callback, or `None` if the codec
+    /// has not been asked to decode anything yet.
+    ///
+    /// Recorded on every decode, so a test can tell *which* session the
+    /// callback was bound to rather than only that some session resolved a
+    /// name. A `SessionContext` that derives a fork must keep reporting the id
+    /// it reports from `session_id()`.
+    pub(crate) fn last_session_id(&self) -> Option<String> {
+        self.last_session_id
+            .lock()
+            .expect("task context probe mutex poisoned")
+            .clone()
+    }
+}
+
 /// Resolves `required` against `ctx`, the context the decode callback was given.
 ///
-/// `Ok(())` when nothing was requested. Otherwise the name must be present in
-/// the context's scalar function registry, and `resolutions` counts each
-/// success so a test can tell a resolved lookup from a skipped one.
+/// Records `ctx`'s session id either way. `Ok(())` when nothing was requested.
+/// Otherwise the name must be present in the context's scalar function
+/// registry, and `probe` counts each success so a test can tell a resolved
+/// lookup from a skipped one.
 pub(crate) fn resolve_required_udf(
     required: Option<&str>,
     ctx: &TaskContext,
-    resolutions: &AtomicUsize,
+    probe: &TaskContextProbe,
 ) -> DataFusionResult<()> {
+    // Unconditional: the session id is worth observing even when the caller
+    // asked for no function.
+    *probe
+        .last_session_id
+        .lock()
+        .expect("task context probe mutex poisoned") = Some(ctx.session_id().to_string());
+
     let Some(name) = required else {
         return Ok(());
     };
 
     if ctx.scalar_functions().contains_key(name) {
-        resolutions.fetch_add(1, Ordering::SeqCst);
+        probe.resolutions.fetch_add(1, Ordering::SeqCst);
         return Ok(());
     }
 

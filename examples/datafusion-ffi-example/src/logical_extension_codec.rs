@@ -32,7 +32,7 @@ use datafusion_python_util::{ffi_task_context_provider_from_pycapsule, get_tokio
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
-use crate::required_udf::resolve_required_udf;
+use crate::required_udf::{TaskContextProbe, resolve_required_udf};
 
 const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
 static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
@@ -53,7 +53,7 @@ pub(crate) struct CallCounters {
     pub decode_udf: AtomicUsize,
     pub encode_table_provider: AtomicUsize,
     pub decode_table_provider: AtomicUsize,
-    pub task_ctx_udf_resolutions: AtomicUsize,
+    pub task_ctx: TaskContextProbe,
 }
 
 /// Example codec for objects owned by this extension library.
@@ -101,11 +101,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
-        resolve_required_udf(
-            self.required_udf.as_deref(),
-            ctx,
-            &self.counters.task_ctx_udf_resolutions,
-        )?;
+        resolve_required_udf(self.required_udf.as_deref(), ctx, &self.counters.task_ctx)?;
         if let Some(id) = token_id(buf, TABLE_PROVIDER_TOKEN) {
             self.counters
                 .decode_table_provider
@@ -188,9 +184,13 @@ impl MyLogicalExtensionCodec {
 
     /// Number of decode calls that resolved `require_udf_on_decode`.
     fn task_context_udf_resolutions(&self) -> usize {
-        self.counters
-            .task_ctx_udf_resolutions
-            .load(Ordering::SeqCst)
+        self.counters.task_ctx.resolutions()
+    }
+
+    /// Session id of the `TaskContext` the most recent decode callback ran
+    /// against, or `None` before any decode.
+    fn last_task_context_session_id(&self) -> Option<String> {
+        self.counters.task_ctx.last_session_id()
     }
 
     fn encode_udf_calls(&self) -> usize {
