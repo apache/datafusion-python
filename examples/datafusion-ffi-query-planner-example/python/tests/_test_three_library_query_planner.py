@@ -111,13 +111,7 @@ def test_codec_still_reports_a_name_registered_nowhere():
 
 
 def test_codec_sees_a_udf_registered_after_it_was_installed():
-    """The provider is a live handle to the session, not a snapshot of it.
-
-    A function registered after the codec is installed is still visible to the
-    decode callback. It has to be registered before the planner, though:
-    installing a foreign planner forks the session, and the codec keeps
-    pointing at the one it was built against.
-    """
+    """The provider is a live handle to the session, not a snapshot of it."""
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
     ctx = SessionContext(config)
@@ -133,21 +127,56 @@ def test_codec_sees_a_udf_registered_after_it_was_installed():
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-def test_codec_does_not_see_a_udf_registered_after_the_planner_fork():
-    """Installing a planner forks; the codec still points at the pre-fork session.
+def test_codec_follows_the_session_across_a_planner_fork():
+    """Installing a planner forks the session, and the codec moves with it.
 
-    This is the same rule as the documented fork caveat, seen from the codec's
-    side. Register before installing the planner, as the guide advises.
+    The codec is bound to the session before the fork and the function is
+    registered on the fork afterwards, so resolving it proves the codec's task
+    context provider was rebound to the forked session rather than left
+    pointing at the one it was installed on.
     """
-    ctx, _logical_codec, _physical_codec = probe_context()
-    ctx = ctx.with_logical_extension_codec(
-        MyLogicalExtensionCodec(require_udf_on_decode="registered_after_fork")
-    )
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx = ctx.with_query_planner(MyQueryPlanner())
+    # Registered on the fork, after the codec was installed on its parent.
+    ctx.register_udf(udf(IsNullUDF()))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert logical_codec.table_provider_decode_calls() > 0
+    assert logical_codec.task_context_udf_resolutions() > 0
+
+
+def test_rebinding_a_fork_leaves_the_receiver_bound_to_its_own_session():
+    """Rebinding the fork's codec must not disturb the context it came from.
+
+    ``FFI_LogicalExtensionCodec::new`` clones the handle before adopting the
+    new provider, so each context keeps its own binding. Both contexts here
+    have a planner, so both exercise the codec; the function is registered only
+    on the second, and only the second can resolve it.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
+    ctx = SessionContext(config)
+    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    first = ctx.with_query_planner(MyQueryPlanner())
+    second = first.with_query_planner(MyQueryPlanner())
+    second.register_udf(udf(IsNullUDF()))
+
+    batches = second.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
 
     with pytest.raises(
-        Exception, match=r"could not resolve scalar function 'registered_after_fork'"
+        Exception, match=rf"could not resolve scalar function '{HOST_ONLY_UDF}'"
     ):
-        ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+        first.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
 
 
 @pytest.mark.parametrize("raw_capsule", [False, True])

@@ -77,6 +77,11 @@ codegen-units = 2
 
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
+#
+# When these are removed, raise the DataFusion requirement above to 55.1.0. The
+# FFI codec rebinding in `PySessionContext::derived_parts` is a silent no-op
+# before that release (apache/datafusion#24722), so a 55.0.0 build would compile
+# and then resolve decode callbacks against the pre-fork session.
 [patch.crates-io]
 datafusion = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
 datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }

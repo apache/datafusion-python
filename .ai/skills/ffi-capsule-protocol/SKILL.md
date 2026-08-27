@@ -116,14 +116,22 @@ one of them, and the failure is a bare `TypeError` from a `call1`. So:
   `python/datafusion/user_defined.py`, where the `Protocol` type hints for
   these methods live.
 
-## Rule 6 — the session a codec captures is not always the running session
+## Rule 6 — a fork must rebind the codecs it carries
 
 Installing a foreign query planner **forks** the session
-(`PySessionContext::ctx_with_rebound_planner`). A codec installed beforehand
-keeps pointing at the pre-fork session, so registrations made after the fork
-are invisible to it. Install codecs before the planner, which is what the
-contributor guide already advises. `PySessionContext::ancestors` keeps forked
-parents alive so the captured session cannot be dropped out from under a codec.
+(`PySessionContext::derived_parts`), because installing one writes to
+`SessionState` and the receiver must not be modified. A foreign codec holds an
+`FFI_TaskContextProvider` pointing at the session it was installed on, so the
+fork rebinds each one onto itself via
+`PySessionContext::rebound_{logical,physical}_codec`. Skip that and decode
+callbacks answer from the pre-fork registry.
+
+Rebinding relies on `FFI_{Logical,Physical}ExtensionCodec::new` adopting the
+provider on the already-foreign path, which needs DataFusion 55.1.0 or newer
+(apache/datafusion#24722). It clones the handle before overwriting, so the
+receiver keeps its own binding — assert that, not just that the fork works.
+A codec this library owns round-trips unchanged, so the rebind is safe to apply
+unconditionally.
 
 ## Where the truth is
 

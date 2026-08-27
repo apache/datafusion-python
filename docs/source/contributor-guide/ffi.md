@@ -294,19 +294,27 @@ satisfies the same protocol an extension library implements. When you export the
 planner to wrap it, `ctx.__datafusion_query_planner__()` and
 `ctx.__datafusion_query_planner__(ctx)` are both fine.
 
-### A codec decodes against the session it was installed on
+### A codec decodes against the session that is running the query
 
 Because the provider comes from the host, a decode callback running inside an extension
-library resolves names against the session that is running the query. A function
-registered with `ctx.register_udf(...)` is visible to a foreign codec decoding a node
-that references it by name, and the handle is live rather than a snapshot, so a
-registration made after the codec is installed is visible too.
+library resolves names against the session running the query. A function registered with
+`ctx.register_udf(...)` is visible to a foreign codec decoding a node that references it
+by name, and the handle is live rather than a snapshot, so a registration made after the
+codec is installed is visible too.
 
-The one boundary is the fork. Installing a foreign query planner forks the session, and
-a codec installed beforehand keeps pointing at the session it was built against, so a
-function registered after that point is not visible to it. This is the same rule as the
-caveat below, seen from the codec's side: register before deriving. Both halves are
-covered in
+This survives a fork. Installing a foreign query planner forks the session, and the fork
+rebinds every foreign codec it carries onto the new session, so a function registered
+after the fork is still visible to them. `FFI_LogicalExtensionCodec::new` adopts the
+provider supplied to it when the codec is already foreign, returning a clone of the
+handle, so the context the fork was derived from keeps its own binding and continues to
+resolve against its own session.
+
+That behaviour requires DataFusion 55.1.0 or newer. Before it, those constructors
+silently discarded the provider, a foreign codec could not be rebound, and a fork left
+it resolving against the pre-fork session
+([apache/datafusion#24722](https://github.com/apache/datafusion/issues/24722)).
+
+All three properties are covered in
 `examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`,
 where the example codecs take a `require_udf_on_decode` name and resolve it out of the
 task context they are handed.
