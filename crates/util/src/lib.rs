@@ -239,14 +239,30 @@ fn call_capsule_getter<'py>(
 
     result.map_err(|err| {
         let py = obj.py();
-        if session.is_some() && err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
-            PyImportError::new_err(format!(
-                "Incompatible libraries. `{attr_name}` must accept the SessionContext it \
-                 is being installed on. Upgrade the library providing this object."
-            ))
-        } else {
-            err
+        if session.is_none() || !err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+            return err;
         }
+
+        // Not every `TypeError` here means the getter refused the argument. One
+        // raised *inside* a correctly-signed getter would otherwise be reported
+        // as a version mismatch, sending an extension author to upgrade a
+        // library that is already correct.
+        //
+        // The two are distinguishable: an arity mismatch is raised by the call
+        // machinery before the getter's frame exists, so nothing unwinds and no
+        // traceback is attached. An error from the body unwinds that frame and
+        // carries one.
+        if err.traceback(py).is_some() {
+            return err;
+        }
+
+        let import_err = PyImportError::new_err(format!(
+            "Incompatible libraries. `{attr_name}` must accept the SessionContext it \
+             is being installed on. Upgrade the library providing this object."
+        ));
+        // Keep the original reachable as `__cause__` rather than discarding it.
+        import_err.set_cause(py, Some(err));
+        import_err
     })
 }
 

@@ -737,6 +737,57 @@ def test_with_query_planner_rejects_wrong_capsule(ctx):
         ctx.with_query_planner(ctx.__datafusion_task_context_provider__())
 
 
+def test_pre_55_codec_signature_reports_an_upgrade(ctx):
+    """A getter that refuses the session is named, not left as a bare TypeError.
+
+    Extension libraries implement these getters, so the pre-55.0.0 signature
+    is what an out-of-date one still has. The original error stays reachable
+    as ``__cause__`` rather than being replaced outright.
+    """
+
+    class PreSessionCodec:
+        def __datafusion_logical_extension_codec__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_logical_extension_codec__"):
+        ctx.with_logical_extension_codec(PreSessionCodec())
+
+    with pytest.raises(ImportError) as excinfo:
+        ctx.with_logical_extension_codec(PreSessionCodec())
+    assert isinstance(excinfo.value.__cause__, TypeError)
+    assert "positional argument" in str(excinfo.value.__cause__)
+
+
+def test_type_error_inside_a_getter_is_not_reported_as_an_upgrade(ctx):
+    """A correctly-signed getter's own TypeError must survive unchanged.
+
+    Only the call machinery's arity error means the library is out of date.
+    Rewriting every TypeError would send an author debugging their own getter
+    off to upgrade a library that is already correct.
+    """
+
+    class RaisesTypeError:
+        def __datafusion_logical_extension_codec__(self, session):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.with_logical_extension_codec(RaisesTypeError())
+
+
+def test_non_type_errors_from_a_getter_propagate(ctx):
+    """Anything that is not a TypeError was never a signature problem."""
+
+    class RaisesValueError:
+        def __datafusion_logical_extension_codec__(self, session):
+            msg = "something else entirely"
+            raise ValueError(msg)
+
+    with pytest.raises(ValueError, match="something else entirely"):
+        ctx.with_logical_extension_codec(RaisesValueError())
+
+
 def test_with_query_planner_capsule(ctx):
     capsule = ctx.__datafusion_query_planner__()
     get_name = ctypes.pythonapi.PyCapsule_GetName
