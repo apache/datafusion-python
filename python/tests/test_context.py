@@ -1275,3 +1275,32 @@ def test_read_csv_with_options(tmp_path, as_read, global_ctx):
     read_csv_with_options_inner(
         tmp_path, csv_content, options, expected, as_read, global_ctx
     )
+
+
+def test_pre_52_table_provider_signature_reports_an_upgrade(ctx):
+    """The table provider hook reports an upgrade the same way codecs do.
+
+    The 52.0.0 signature change added the session argument. This path had its
+    own copy of the error mapping and so missed later corrections to it.
+    """
+
+    class PreSessionProvider:
+        def __datafusion_table_provider__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_table_provider__") as excinfo:
+        ctx.register_table_provider("old_sig", PreSessionProvider())
+    assert isinstance(excinfo.value.__cause__, TypeError)
+
+
+def test_type_error_inside_a_table_provider_getter_propagates(ctx):
+    """A correctly-signed provider getter's own TypeError survives unchanged."""
+
+    class RaisesTypeError:
+        def __datafusion_table_provider__(self, session):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.register_table_provider("raises", RaisesTypeError())

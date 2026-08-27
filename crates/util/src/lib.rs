@@ -225,18 +225,7 @@ pub fn table_provider_from_pycapsule<'py>(
     mut obj: Bound<'py, PyAny>,
     session: Bound<'py, PyAny>,
 ) -> PyResult<Option<Arc<dyn TableProvider>>> {
-    if obj.hasattr("__datafusion_table_provider__")? {
-        obj = obj
-            .getattr("__datafusion_table_provider__")?
-            .call1((session,)).map_err(|err| {
-            let py = obj.py();
-            if err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
-                PyImportError::new_err("Incompatible libraries. DataFusion 52.0.0 introduced an incompatible signature change for table providers. Either downgrade DataFusion or upgrade your function library.")
-            } else {
-                err
-            }
-        })?;
-    }
+    obj = call_capsule_getter(obj, "__datafusion_table_provider__", Some(&session))?;
 
     if let Ok(capsule) = obj.cast::<PyCapsule>() {
         let data: NonNull<FFI_TableProvider> = capsule
@@ -268,7 +257,11 @@ pub fn create_logical_extension_capsule<'py>(
 /// of the session it is being installed on, instead of inventing one of its
 /// own. `None` is for the reverse direction, where `obj` *is* a session and is
 /// being asked for what it holds.
-fn call_capsule_getter<'py>(
+/// Every capsule getter must go through here rather than calling `getattr`
+/// directly, so that the mapping from a refused argument to a useful error
+/// lives in one place. Three importers previously each had their own copy and
+/// each missed later corrections to it.
+pub fn call_capsule_getter<'py>(
     obj: Bound<'py, PyAny>,
     attr_name: &str,
     session: Option<&Bound<'py, PyAny>>,
