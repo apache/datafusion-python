@@ -1205,7 +1205,13 @@ impl PySessionContext {
         let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
         let state_ref = self.ctx.state_ref();
         let mut guard = state_ref.write();
+        // Rebuilding through the builder mints a fresh session id, but this
+        // mutates the caller's own session rather than deriving a new one, so
+        // the id has to survive. See `derived_parts` for why losing it leaves
+        // `session_id()` disagreeing with every `TaskContext` the session
+        // hands out.
         let new_state = SessionStateBuilder::new_from_existing(guard.clone())
+            .with_session_id(guard.session_id().to_string())
             .with_physical_optimizer_rule(rule)
             .build();
         *guard = new_state;
