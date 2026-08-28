@@ -77,8 +77,11 @@ continue to work unchanged.
 
 New in this release, `__datafusion_query_planner__` follows the same protocol.
 It receives the session and takes both extension codecs from it, so a planner
-library never builds a `TaskContextProvider` at all. See the {ref}`ffi` guide
-for the full protocol.
+library never builds a `TaskContextProvider` at all. Install one with
+`SessionContext.set_query_planner(planner)`, which mutates the session the same
+way `add_physical_optimizer_rule` does and returns nothing — the query planner
+lives in `SessionState`, so it belongs to the session rather than to a
+particular handle on it. See the {ref}`ffi` guide for the full protocol.
 
 ### Changes to the `datafusion-python-util` crate
 

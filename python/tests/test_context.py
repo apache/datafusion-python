@@ -732,9 +732,9 @@ def test_remove_optimizer_rule(ctx):
     assert ctx.remove_optimizer_rule("nonexistent_rule") is False
 
 
-def test_with_query_planner_rejects_wrong_capsule(ctx):
+def test_set_query_planner_rejects_wrong_capsule(ctx):
     with pytest.raises(ValueError, match="datafusion_query_planner"):
-        ctx.with_query_planner(ctx.__datafusion_task_context_provider__())
+        ctx.set_query_planner(ctx.__datafusion_task_context_provider__())
 
 
 def test_pre_55_codec_signature_reports_an_upgrade(ctx):
@@ -788,7 +788,7 @@ def test_non_type_errors_from_a_getter_propagate(ctx):
         ctx.with_logical_extension_codec(RaisesValueError())
 
 
-def test_with_query_planner_capsule(ctx):
+def test_set_query_planner_capsule(ctx):
     capsule = ctx.__datafusion_query_planner__()
     get_name = ctypes.pythonapi.PyCapsule_GetName
     get_name.argtypes = [ctypes.py_object]
@@ -799,62 +799,69 @@ def test_with_query_planner_capsule(ctx):
         "query_planner_test",
         [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
     )
-    planner_context = ctx.with_query_planner(capsule)
-    assert planner_context.table_exist("query_planner_test")
-    batches = planner_context.sql("SELECT 1 AS value").collect()
+    ctx.set_query_planner(capsule)
+    assert ctx.table_exist("query_planner_test")
+    batches = ctx.sql("SELECT 1 AS value").collect()
     assert batches[0].column(0) == pa.array([1])
 
 
-def test_derived_context_shares_catalogs(ctx):
-    """Catalogs live behind an Arc, so tables cross the fork in both directions."""
-    derived = ctx.with_query_planner(ctx.__datafusion_query_planner__())
+def test_installing_a_planner_leaves_the_session_intact(ctx):
+    """The planner is written into the existing session, not a copy of it.
 
+    Registrations made before the install are still visible afterwards, and
+    ones made after are visible too -- there is a single session throughout,
+    so neither the catalogs nor the function registry are snapshotted.
+    """
     ctx.register_record_batches(
-        "registered_on_parent",
+        "registered_before",
         [[pa.RecordBatch.from_pydict({"value": [1]})]],
     )
-    derived.register_record_batches(
-        "registered_on_derived",
-        [[pa.RecordBatch.from_pydict({"value": [2]})]],
-    )
-
-    assert derived.table_exist("registered_on_parent")
-    assert ctx.table_exist("registered_on_derived")
-
-
-def test_derived_context_snapshots_functions(ctx):
-    """Function registries are copied at fork time, unlike catalogs.
-
-    A UDF registered on the parent before the fork is carried over; one
-    registered afterwards is not. Guards the caveat documented on
-    ``SessionContext.with_query_planner``.
-    """
     before = udf(
         lambda arr: arr,
         [pa.int64()],
         pa.int64(),
         volatility="immutable",
-        name="registered_before_fork",
+        name="registered_before",
     )
     ctx.register_udf(before)
 
-    derived = ctx.with_query_planner(ctx.__datafusion_query_planner__())
+    ctx.set_query_planner(ctx.__datafusion_query_planner__())
 
+    ctx.register_record_batches(
+        "registered_after",
+        [[pa.RecordBatch.from_pydict({"value": [2]})]],
+    )
     after = udf(
         lambda arr: arr,
         [pa.int64()],
         pa.int64(),
         volatility="immutable",
-        name="registered_after_fork",
+        name="registered_after",
     )
     ctx.register_udf(after)
 
-    assert derived.sql("SELECT registered_before_fork(1)").collect()
-    with pytest.raises(Exception, match="registered_after_fork"):
-        derived.sql("SELECT registered_after_fork(1)").collect()
+    assert ctx.table_exist("registered_before")
+    assert ctx.table_exist("registered_after")
+    assert ctx.sql("SELECT registered_before(1)").collect()
+    assert ctx.sql("SELECT registered_after(1)").collect()
 
-    # The parent is unaffected by the fork.
-    assert ctx.sql("SELECT registered_after_fork(1)").collect()
+
+def test_contexts_sharing_a_session_share_the_planner(ctx):
+    """A context derived before the install still plans through the planner.
+
+    ``with_python_udf_inlining`` returns a handle on the same session, and the
+    query planner lives in that session's state.
+    """
+    sibling = ctx.with_python_udf_inlining(enabled=False)
+    ctx.register_record_batches(
+        "shared_planner_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+
+    ctx.set_query_planner(ctx.__datafusion_query_planner__())
+
+    assert sibling.table_exist("shared_planner_test")
+    assert sibling.session_id() == ctx.session_id()
 
 
 def test_table_provider(ctx):

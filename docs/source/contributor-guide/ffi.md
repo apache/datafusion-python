@@ -286,7 +286,7 @@ already dropped by the time the capsule is used.
 
 A planner uses `FFI_QueryPlanner::new_with_ffi_codecs` with the two codecs it takes off
 the session, and never touches a provider directly. That also matches what installation
-does anyway: `with_query_planner` rebinds a foreign planner to the codecs of the session
+does anyway: `set_query_planner` builds the planner against the codecs of the session
 that will run the query.
 
 `SessionContext` accepts the argument on all three getters and ignores it, so a session
@@ -302,67 +302,69 @@ library resolves names against the session running the query. A function registe
 by name, and the handle is live rather than a snapshot, so a registration made after the
 codec is installed is visible too.
 
-This survives a fork. Installing a foreign query planner forks the session, and the fork
-rebinds every foreign codec it carries onto the new session, so a function registered
-after the fork is still visible to them. `FFI_LogicalExtensionCodec::new` adopts the
-provider supplied to it when the codec is already foreign, returning a clone of the
-handle, so the context the fork was derived from keeps its own binding and continues to
-resolve against its own session.
-
-That behaviour requires DataFusion 55.1.0 or newer. Before it, those constructors
-silently discarded the provider, a foreign codec could not be rebound, and a fork left
-it resolving against the pre-fork session
-([apache/datafusion#24722](https://github.com/apache/datafusion/issues/24722)).
-
-All three properties are covered in
+This is covered in
 `examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`,
 where the example codecs take a `require_udf_on_decode` name and resolve it out of the
 task context they are handed.
 
+### One session, one `Arc<SessionContext>`
+
+Every codec handed to a foreign object carries an `FFI_TaskContextProvider`, and that
+type holds its provider **weakly**. A registered catalog provider upgrades the handle on
+every `supports_filters_pushdown` and every `scan`. Those handles are bound to one
+particular `Arc<SessionContext>` allocation, not to the logical session, so anything that
+replaces the allocation orphans all of them and the next query fails with
+`TaskContextProvider went out of scope over FFI boundary`.
+
+So a `PySessionContext` keeps the `Arc<SessionContext>` it was created with for its whole
+life. Installing a query planner writes the new `SessionState` back through
+`state_ref()`, exactly as `add_physical_optimizer_rule` does, rather than deriving a
+replacement context. The session id is carried across that rewrite — `SessionStateBuilder`
+mints a fresh one otherwise — so `session_id()` and every `TaskContext` the session hands
+out keep agreeing.
+
+Repairing the damage instead of avoiding it does not work in general. A context can
+rebuild the codecs it holds in its own fields, but a codec already embedded in a
+registered `FFI_CatalogProvider` — and in every `FFI_SchemaProvider` and
+`FFI_TableProvider` minted from it — is not reachable from Python at all. Nor can the
+codec simply retain the session that built it: a codec handed to a provider is routinely
+registered straight back into that same session, which would close the cycle
+`SessionContext -> catalog -> FFI provider -> FFI codec -> SessionContext` and leak it.
+
+`SessionContext.enable_url_table` is the one exception. It clones the underlying
+`SessionContext`, so the returned context has an allocation of its own and must not
+outlive the receiver.
+
 ### What a derived context shares
 
-`with_query_planner`, `with_logical_extension_codec`, `with_physical_extension_codec`,
-and `with_python_udf_inlining` all return a new `SessionContext` rather than mutating
-the receiver. How much the two contexts then share depends on whether a foreign query
-planner is involved.
+`with_logical_extension_codec`, `with_physical_extension_codec`, and
+`with_python_udf_inlining` return a new `SessionContext` wrapping the *same* underlying
+session. Only the Python-side codec settings differ; catalogs, tables, registered
+functions, and configuration are the one shared session, so a registration on either
+side is visible to both.
 
-Without one, the derived context wraps the *same* underlying session, so a registration
-on either side is visible to both.
-
-`with_query_planner` is different, and so is any codec change made on a session that
-already has a foreign planner installed. A foreign planner holds the FFI codecs it was
-built with, so changing the codecs means rebuilding the planner against the context
-that will actually run the query. That forks the session state, and the two halves of
-the fork behave differently:
-
-- **Shared.** Catalogs, schemas, and tables. `SessionState` holds its catalog list
-  behind an `Arc`, so a table registered on either context is visible to both. The
-  runtime environment is shared for the same reason.
-- **Copied.** Registered scalar, aggregate, and window functions, table functions, the
-  session configuration, and the analyzer and optimizer rule lists. These are
-  snapshotted when the derived context is created, so a UDF registered on the original
-  context afterwards is not visible to the derived one, and a `SET` applied to one does
-  not reach the other.
-
-The session id is carried over to the fork, so both contexts report the same id, and so
-does every `TaskContext` either one hands to a foreign codec. A library that identifies a
-session by its id — to correlate host-side and worker-side state, or to assert which
-session a decode callback was bound to — keeps working across a fork.
-
-Register functions before deriving, or register them directly on the derived context:
+`set_query_planner` does not return anything. The query planner lives in `SessionState`,
+so it is a property of the session rather than of a handle on it, and installing one is
+visible to every context sharing that session — including ones a `with_*` call returned
+earlier. Installing a codec on a session that already has a foreign planner rebuilds
+that planner against the new codec for the same reason: there is one planner, and it has
+to carry the codecs currently in force.
 
 ```python
 ctx = SessionContext(config)
 ctx = ctx.with_logical_extension_codec(provider_logical_codec)
 ctx = ctx.with_physical_extension_codec(provider_physical_codec)
-ctx = ctx.with_query_planner(planner)
-ctx.register_udf(my_udf)  # registered on the context that will run the query
+ctx.set_query_planner(planner)
+ctx.register_udf(my_udf)
 ```
 
-A session holds exactly one query planner. Calling `with_query_planner` again replaces
-the installed planner instead of layering another one. To chain planners, have the new
-planner wrap the capsule returned by `SessionContext.__datafusion_query_planner__()`
-and delegate to it explicitly.
+Order is a readability preference rather than a requirement — installing a codec after a
+planner rebuilds the planner against it.
+
+A session holds exactly one query planner. Calling `set_query_planner` again replaces the
+installed planner instead of layering another one. To chain planners, have the new
+planner wrap the capsule returned by `SessionContext.__datafusion_query_planner__()`,
+captured before the new planner is installed, and delegate to it explicitly.
 
 ## Alternative Approach
 

@@ -1771,49 +1771,43 @@ class SessionContext:
         """
         self.ctx.add_physical_optimizer_rule(rule)
 
-    def with_query_planner(
-        self, planner: QueryPlannerExportable | _PyCapsule
-    ) -> SessionContext:
-        """Create a new session context with a custom query planner.
+    def set_query_planner(self, planner: QueryPlannerExportable | _PyCapsule) -> None:
+        """Install a custom query planner on this session.
 
         The planner is imported through its ``__datafusion_query_planner__``
-        PyCapsule. The returned context carries over the current session state
-        and the logical and physical extension codec settings. Codec changes
-        made on a derived context are rebound to the planner before planning.
+        PyCapsule and installed on this context, in the same way
+        :meth:`~SessionContext.add_physical_optimizer_rule` installs a rule.
+        The query planner is part of the session state, so it applies to this
+        context and to every context sharing its session — including ones
+        already returned by
+        :meth:`~SessionContext.with_logical_extension_codec` and friends.
 
         A session holds exactly one planner, so calling this again replaces the
         previous one rather than layering. To chain planners, have the new
         planner wrap the capsule from
-        :meth:`~SessionContext.__datafusion_query_planner__`.
-
-        .. note:: Derived contexts share catalogs, not registrations
-            The returned context is a fork. Catalogs, schemas, and tables stay
-            shared with the original context, but registered functions and
-            configuration are copied at the time of the call. A UDF registered
-            on the original context afterwards is **not** visible here, while a
-            table registered on either context is visible to both. Register
-            functions before deriving, or register them on the derived context.
+        :meth:`~SessionContext.__datafusion_query_planner__`, captured
+        *before* the new planner is installed.
 
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` (see
                 :class:`QueryPlannerExportable`) or a raw
                 ``datafusion_query_planner`` PyCapsule.
 
-        Returns:
-            A new context that uses the specified query planner.
-
         Examples:
             >>> from my_extension import DistributedQueryPlanner  # doctest: +SKIP
             >>> ctx = SessionContext()
-            >>> planner = DistributedQueryPlanner()  # doctest: +SKIP
-            >>> planner_ctx = ctx.with_query_planner(planner)  # doctest: +SKIP
-            >>> query = planner_ctx.sql("SELECT * FROM remote_table")  # doctest: +SKIP
-            >>> query.collect()  # doctest: +SKIP
+            >>> ctx.set_query_planner(DistributedQueryPlanner())  # doctest: +SKIP
+            >>> ctx.sql("SELECT * FROM remote_table").collect()  # doctest: +SKIP
+
+            Layer a planner on top of the one already installed by capturing
+            the existing planner first:
+
+            >>> fallback = ctx.__datafusion_query_planner__()  # doctest: +SKIP
+            >>> ctx.set_query_planner(
+            ...     DistributedQueryPlanner(fallback=fallback)
+            ... )  # doctest: +SKIP
         """
-        new_internal = self.ctx.with_query_planner(planner)
-        new = SessionContext.__new__(SessionContext)
-        new.ctx = new_internal
-        return new
+        self.ctx.set_query_planner(planner)
 
     def table_provider(self, name: str) -> Table:
         """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
@@ -2261,10 +2255,9 @@ class SessionContext:
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
         The returned context shares its session state with the original, so a
-        later registration on either is visible to both. The exception is a
-        session with a custom query planner installed: that planner has to be
-        rebound to the new codec, which forks the state. See
-        :meth:`~SessionContext.with_query_planner` for what a fork shares.
+        later registration on either is visible to both. If a custom query
+        planner is installed, it is rebuilt against the new codec on the shared
+        session, so the original context plans with the new codec too.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2288,10 +2281,9 @@ class SessionContext:
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
         The returned context shares its session state with the original, so a
-        later registration on either is visible to both. The exception is a
-        session with a custom query planner installed: that planner has to be
-        rebound to the new codec, which forks the state. See
-        :meth:`~SessionContext.with_query_planner` for what a fork shares.
+        later registration on either is visible to both. If a custom query
+        planner is installed, it is rebuilt against the new codec on the shared
+        session, so the original context plans with the new codec too.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2336,11 +2328,9 @@ class SessionContext:
         Returns a new :class:`SessionContext` with the toggle applied;
         the original session is unchanged. The returned context shares
         its session state with the original, so a later registration on
-        either is visible to both. The exception is a session with a
-        custom query planner installed: that planner has to be rebound
-        to the new codecs, which forks the state. See
-        :meth:`~SessionContext.with_query_planner` for what a fork
-        shares.
+        either is visible to both. If a custom query planner is
+        installed, it is rebuilt against the new codecs on the shared
+        session, so the original context plans with them too.
 
         Examples:
             >>> import pyarrow as pa

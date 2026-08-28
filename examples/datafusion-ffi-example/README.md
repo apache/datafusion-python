@@ -40,9 +40,9 @@ This example makes the provider library the sole external codec owner. Register 
 ```python
 ctx = ctx.with_logical_extension_codec(provider_logical_codec)
 ctx = ctx.with_physical_extension_codec(provider_physical_codec)
-ctx = ctx.with_query_planner(planner)
+ctx.set_query_planner(planner)
 ```
 
-Derived contexts also rebind an installed planner when codecs change, so this order is a recommendation rather than a requirement. Planner-last states the ownership flow more clearly.
+Installing a codec after the planner rebuilds the planner against it, so this order is a recommendation rather than a requirement. Planner-last states the ownership flow more clearly.
 
 For the limits behind that choice — why there is one external codec owner rather than a registry, which node kinds survive the boundary, and what a derived context shares with the context it came from — see [Query Planners Across Multiple Libraries](../../docs/source/contributor-guide/ffi.md#query-planners-across-multiple-libraries) in the contributor guide.

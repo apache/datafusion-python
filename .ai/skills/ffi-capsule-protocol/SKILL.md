@@ -116,22 +116,49 @@ one of them, and the failure is a bare `TypeError` from a `call1`. So:
   `python/datafusion/user_defined.py`, where the `Protocol` type hints for
   these methods live.
 
-## Rule 6 — a fork must rebind the codecs it carries
+## Rule 6 — a session keeps one `Arc<SessionContext>` for life
 
-Installing a foreign query planner **forks** the session
-(`PySessionContext::derived_parts`), because installing one writes to
-`SessionState` and the receiver must not be modified. A foreign codec holds an
-`FFI_TaskContextProvider` pointing at the session it was installed on, so the
-fork rebinds each one onto itself via
-`PySessionContext::rebound_{logical,physical}_codec`. Skip that and decode
-callbacks answer from the pre-fork registry.
+`FFI_TaskContextProvider` holds its provider **weakly**, and every codec handed
+to a foreign object carries one. A registered catalog provider upgrades that
+handle on every `supports_filters_pushdown` and every `scan`. The handle is
+bound to an `Arc<SessionContext>` *allocation*, so anything that replaces the
+allocation orphans every handle bound to the old one:
+`TaskContextProvider went out of scope over FFI boundary`.
 
-Rebinding relies on `FFI_{Logical,Physical}ExtensionCodec::new` adopting the
-provider on the already-foreign path, which needs DataFusion 55.1.0 or newer
-(apache/datafusion#24722). It clones the handle before overwriting, so the
-receiver keeps its own binding — assert that, not just that the fork works.
-A codec this library owns round-trips unchanged, so the rebind is safe to apply
-unconditionally.
+So mutate `SessionState` in place — `*self.ctx.state_ref().write() = ...`, the
+way `add_physical_optimizer_rule` and `set_session_query_planner` both do —
+rather than deriving a replacement `SessionContext`. Carry the session id
+across the rewrite; `SessionStateBuilder::new_from_existing` drops it and
+`build` mints a fresh one, which desyncs `session_id()` from every
+`TaskContext` the session hands out.
+
+Do not try to repair it after the fact:
+
+- **You cannot rebind what you cannot reach.** A codec embedded in a registered
+  `FFI_CatalogProvider`, and in every `FFI_SchemaProvider` and
+  `FFI_TableProvider` minted from it, has no Python-side handle.
+- **A codec must not retain its session.** Codecs are routinely handed to a
+  provider that is registered straight back into the session that built them,
+  closing `SessionContext -> catalog -> FFI provider -> FFI codec ->
+  SessionContext`.
+
+`test_registered_providers_survive_a_planner_install` in
+`examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`
+guards this. Its `WHERE` clause is load-bearing: filter pushdown upgrades the
+weak handle during logical optimization, before plan serialization could fail
+first for an unrelated reason.
+
+`SessionContext.enable_url_table` is the one method that mints a second
+allocation for a session. Its result must not outlive the receiver.
+
+## Rule 7 — installing a planner mutates the session, and says so
+
+`set_query_planner` returns `None`, matching `add_physical_optimizer_rule`. The
+query planner lives in `SessionState`, so it belongs to the session and not to
+a handle on it; every context sharing that session plans through it. Do not
+reintroduce a `with_query_planner` that pretends otherwise — the only way to
+give a handle its own planner is a fresh `Arc<SessionContext>`, which is what
+Rule 6 forbids.
 
 ## Where the truth is
 

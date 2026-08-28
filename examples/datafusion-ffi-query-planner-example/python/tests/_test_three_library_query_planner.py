@@ -23,6 +23,7 @@ import pytest
 from datafusion import SessionConfig, SessionContext, udf
 from datafusion_ffi_example import (
     IsNullUDF,
+    MyCatalogProvider,
     MyLogicalExtensionCodec,
     MyPhysicalExtensionCodec,
     MyPhysicalOptimizerRule,
@@ -70,7 +71,7 @@ def probe_context(
     ctx = ctx.with_physical_extension_codec(physical_codec)
     ctx.register_table("numbers", MyTableProvider(1, 6, 1))
     ctx.register_udf(udf(IsNullUDF()))
-    ctx = ctx.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
     return ctx, logical_codec, physical_codec
 
 
@@ -121,20 +122,21 @@ def test_codec_sees_a_udf_registered_after_it_was_installed():
     ctx.register_table("numbers", MyTableProvider(1, 6, 1))
     # Registered after the codec was installed and bound to this session.
     ctx.register_udf(udf(IsNullUDF()))
-    ctx = ctx.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-def test_codec_follows_the_session_across_a_planner_fork():
-    """Installing a planner forks the session, and the codec moves with it.
+def test_codec_sees_a_udf_registered_after_the_planner():
+    """Installing a planner does not detach the codec from the session.
 
-    The codec is bound to the session before the fork and the function is
-    registered on the fork afterwards, so resolving it proves the codec's task
-    context provider was rebound to the forked session rather than left
-    pointing at the one it was installed on.
+    The codec is bound to the session before the planner is installed and the
+    function is registered afterwards. Installing writes through
+    ``state_ref()`` rather than deriving a new ``SessionContext``, so the
+    codec's task context provider still points at the one live session and
+    sees the later registration.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
@@ -142,8 +144,8 @@ def test_codec_follows_the_session_across_a_planner_fork():
     ctx = ctx.with_logical_extension_codec(logical_codec)
     ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
     ctx.register_table("numbers", MyTableProvider(1, 6, 1))
-    ctx = ctx.with_query_planner(MyQueryPlanner())
-    # Registered on the fork, after the codec was installed on its parent.
+    ctx.set_query_planner(MyQueryPlanner())
+    # Registered after the planner, on the same session the codec is bound to.
     ctx.register_udf(udf(IsNullUDF()))
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
@@ -152,32 +154,64 @@ def test_codec_follows_the_session_across_a_planner_fork():
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-def test_rebinding_a_fork_leaves_the_receiver_bound_to_its_own_session():
-    """Rebinding the fork's codec must not disturb the context it came from.
+def test_registered_providers_survive_a_planner_install():
+    """A planner install must not orphan a previously registered provider.
 
-    ``FFI_LogicalExtensionCodec::new`` clones the handle before adopting the
-    new provider, so each context keeps its own binding. Both contexts here
-    have a planner, so both exercise the codec; the function is registered only
-    on the second, and only the second can resolve it.
+    A foreign catalog provider is handed a codec carrying a *weak*
+    ``FFI_TaskContextProvider`` pointing at the session it was registered on,
+    and upgrades it on every ``supports_filters_pushdown`` and every ``scan``.
+    That codec lives inside the registered ``FFI_CatalogProvider``, so nothing
+    on the Python side can reach it to rebind it. Deriving a replacement
+    ``SessionContext`` here would drop the allocation those handles point at
+    and the next query would fail with ``TaskContextProvider went out of scope
+    over FFI boundary``; installing in place keeps the one allocation alive.
+
+    The ``WHERE`` clause is load-bearing -- it forces filter pushdown, which
+    upgrades the weak handle during logical optimization, before any plan
+    serialization could fail first for an unrelated reason.
     """
-    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
-    logical_codec = MyLogicalExtensionCodec(require_udf_on_decode=HOST_ONLY_UDF)
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=10))
     ctx = SessionContext(config)
-    ctx = ctx.with_logical_extension_codec(logical_codec)
+    ctx.register_catalog_provider("ffi_catalog", MyCatalogProvider())
+
+    ctx.set_query_planner(MyQueryPlanner())
+    gc.collect()
+
+    batches = ctx.sql(
+        "SELECT units FROM ffi_catalog.my_schema.my_table WHERE units > 5"
+    ).collect()
+    assert sorted(v for b in batches for v in b.column(0).to_pylist()) == [
+        7,
+        10,
+        20,
+        30,
+    ]
+
+
+def test_registered_providers_survive_a_codec_install_after_a_planner():
+    """The same, for the other write path.
+
+    Installing a codec on a session that already has a foreign planner rebuilds
+    that planner against the new codec. That rebuild must also happen in place.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=10))
+    ctx = SessionContext(config)
+    ctx.register_catalog_provider("ffi_catalog", MyCatalogProvider())
+
+    ctx.set_query_planner(MyQueryPlanner())
+    ctx = ctx.with_logical_extension_codec(MyLogicalExtensionCodec())
     ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
-    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    gc.collect()
 
-    first = ctx.with_query_planner(MyQueryPlanner())
-    second = first.with_query_planner(MyQueryPlanner())
-    second.register_udf(udf(IsNullUDF()))
-
-    batches = second.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
-    assert batches[0].column(0).to_pylist() == [0, 1, 2]
-
-    with pytest.raises(
-        Exception, match=rf"could not resolve scalar function '{HOST_ONLY_UDF}'"
-    ):
-        first.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    batches = ctx.sql(
+        "SELECT units FROM ffi_catalog.my_schema.my_table WHERE units > 5"
+    ).collect()
+    assert sorted(v for b in batches for v in b.column(0).to_pylist()) == [
+        7,
+        10,
+        20,
+        30,
+    ]
 
 
 def codec_context(max_rows: int = 3):
@@ -185,7 +219,7 @@ def codec_context(max_rows: int = 3):
 
     Unlike :func:`probe_context` the codecs ask for no function, so the only
     thing they record is the session id of the task context they are handed.
-    No planner yet -- the caller installs one, since that is what forks.
+    No planner yet -- the caller installs one.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=max_rows))
     logical_codec = MyLogicalExtensionCodec()
@@ -197,13 +231,13 @@ def codec_context(max_rows: int = 3):
     return ctx, logical_codec, physical_codec
 
 
-def test_a_fork_decodes_against_the_session_id_it_reports():
-    """A fork and its decode callbacks must agree on the session id.
+def test_installing_a_planner_keeps_the_session_id():
+    """A session and its decode callbacks must agree on the session id.
 
-    ``with_query_planner`` forks the session state by rebuilding it through
-    ``SessionStateBuilder``, which mints a fresh id unless handed one, and
+    Installing a planner rebuilds ``SessionState`` through
+    ``SessionStateBuilder``, which mints a fresh id unless handed one, while
     ``SessionContext`` caches its id in a field of its own. Dropping the id
-    there leaves the fork reporting one id from ``session_id()`` and a
+    there leaves the session reporting one id from ``session_id()`` and a
     different one from every ``TaskContext`` it gives a foreign codec.
 
     Asserting on ``session_id()`` alone cannot catch that: it reads the cached
@@ -214,55 +248,46 @@ def test_a_fork_decodes_against_the_session_id_it_reports():
     ctx, logical_codec, physical_codec = codec_context()
     session_id = ctx.session_id()
 
-    fork = ctx.with_query_planner(MyQueryPlanner())
-    assert fork.session_id() == session_id
+    ctx.set_query_planner(MyQueryPlanner())
+    assert ctx.session_id() == session_id
 
-    fork.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert logical_codec.last_task_context_session_id() == session_id
     assert physical_codec.last_task_context_session_id() == session_id
 
 
 def test_adding_a_physical_optimizer_rule_keeps_the_session_id():
-    """Mutating a session in place must not move the id it decodes against.
+    """The same guarantee for the other in-place ``SessionState`` rewrite.
 
-    ``add_physical_optimizer_rule`` rebuilds ``SessionState`` and writes it
-    back into the caller's own session rather than deriving a new one, so a
-    regenerated id would desync a context from itself with no fork to explain
-    it.
+    ``add_physical_optimizer_rule`` also rebuilds ``SessionState`` and writes
+    it back, so a regenerated id would desync a context from itself.
     """
     ctx, logical_codec, physical_codec = codec_context()
-    fork = ctx.with_query_planner(MyQueryPlanner())
-    session_id = fork.session_id()
+    ctx.set_query_planner(MyQueryPlanner())
+    session_id = ctx.session_id()
 
-    fork.add_physical_optimizer_rule(MyPhysicalOptimizerRule())
-    assert fork.session_id() == session_id
+    ctx.add_physical_optimizer_rule(MyPhysicalOptimizerRule())
+    assert ctx.session_id() == session_id
 
-    fork.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert logical_codec.last_task_context_session_id() == session_id
     assert physical_codec.last_task_context_session_id() == session_id
 
 
-def test_rebinding_a_fork_does_not_move_the_parent_session_id():
-    """Each context in a fork chain decodes against its own id.
+def test_replacing_a_planner_keeps_the_session_id():
+    """Installing repeatedly must not drift the id.
 
-    Two forks off one parent share the parent's id, so a test that only
-    compared against the parent would pass even if rebinding leaked one
-    context's provider into the other. Registering a function on just one fork
-    is what distinguishes them.
+    Each install rebuilds ``SessionState``, so an id carried over only on the
+    first write would still be lost by the second.
     """
     ctx, logical_codec, _physical_codec = codec_context()
     session_id = ctx.session_id()
 
-    first = ctx.with_query_planner(MyQueryPlanner())
-    second = first.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
+    assert ctx.session_id() == session_id
 
-    assert first.session_id() == session_id
-    assert second.session_id() == session_id
-
-    first.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
-    assert logical_codec.last_task_context_session_id() == session_id
-
-    second.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert logical_codec.last_task_context_session_id() == session_id
 
 
@@ -274,7 +299,7 @@ def test_three_library_query_planner(raw_capsule: bool):
     exported_planner = (
         planner.__datafusion_query_planner__(ctx) if raw_capsule else planner
     )
-    ctx = ctx.with_query_planner(exported_planner)
+    ctx.set_query_planner(exported_planner)
 
     batches = ctx.sql(
         'SELECT "A", my_custom_is_null("A") AS is_null FROM numbers ORDER BY "A"'
@@ -315,7 +340,7 @@ def test_spawning_plan_across_three_libraries():
     ctx.register_table("numbers", MyTableProvider(1, 6, 3))
 
     planner = MyQueryPlanner()
-    ctx = ctx.with_query_planner(planner)
+    ctx.set_query_planner(planner)
 
     batches = ctx.sql(
         'SELECT "A" % 2 AS parity, count(*) AS n FROM numbers GROUP BY 1 ORDER BY 1'
@@ -343,11 +368,11 @@ def test_planner_layers_on_the_session_planner():
     ctx, logical_codec, physical_codec = configured_context(max_rows=3)
     fallback = ctx.__datafusion_query_planner__()
     planner = MyQueryPlanner(fallback=fallback)
-    # Rebinding `ctx` drops the context that produced the capsule. The exported
-    # codecs retain it, so the capsule stays usable. Without that the FFI
-    # task-context handle is weak and planning fails with "TaskContextProvider
-    # went out of scope over FFI boundary".
-    ctx = ctx.with_query_planner(planner)
+    # The capsule's FFI codecs hold weak handles to this session. Installing in
+    # place keeps that session alive, so the capsule stays usable; deriving a
+    # replacement here would fail with "TaskContextProvider went out of scope
+    # over FFI boundary".
+    ctx.set_query_planner(planner)
     gc.collect()
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
@@ -370,7 +395,7 @@ def test_a_planner_can_fall_back_to_another_planner_library():
     ctx, logical_codec, physical_codec = configured_context(max_rows=3)
     inner = MyQueryPlanner()
     outer = MyQueryPlanner(fallback=inner)
-    ctx = ctx.with_query_planner(outer)
+    ctx.set_query_planner(outer)
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
@@ -387,10 +412,10 @@ def test_a_session_fallback_delegates_to_its_installed_planner():
     """Passing a SessionContext delegates to whatever planner it holds."""
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
     first = MyQueryPlanner()
-    ctx = ctx.with_query_planner(first)
+    ctx.set_query_planner(first)
 
     second = MyQueryPlanner(fallback=ctx)
-    ctx = ctx.with_query_planner(second)
+    ctx.set_query_planner(second)
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
@@ -410,7 +435,7 @@ def test_observations_accumulate_across_queries():
     """
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
     planner = MyQueryPlanner()
-    ctx = ctx.with_query_planner(planner)
+    ctx.set_query_planner(planner)
 
     ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert planner.foreign_session_observed()
@@ -433,7 +458,8 @@ def test_second_planner_replaces_the_first():
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
     first = MyQueryPlanner()
     second = MyQueryPlanner()
-    ctx = ctx.with_query_planner(first).with_query_planner(second)
+    ctx.set_query_planner(first)
+    ctx.set_query_planner(second)
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1]
@@ -441,16 +467,23 @@ def test_second_planner_replaces_the_first():
     assert first.plan_calls() == 0
 
 
-def test_planner_is_not_installed_on_the_original_context():
-    """``with_query_planner`` returns a fork; the receiver keeps its planner."""
+def test_the_planner_reaches_every_handle_on_the_session():
+    """The planner is session state, so all handles on that session use it.
+
+    ``set_query_planner`` writes through ``state_ref()``. A context returned by
+    an earlier ``with_*`` call shares that session, so it plans through the new
+    planner too -- there is one session and one planner, not a family of
+    diverging copies.
+    """
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
+    # Shares the session with `ctx`; predates the planner.
+    sibling = ctx.with_python_udf_inlining(enabled=False)
+
     planner = MyQueryPlanner()
-    derived = ctx.with_query_planner(planner)
+    ctx.set_query_planner(planner)
 
-    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
-    assert planner.plan_calls() == 0
-
-    derived.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    batches = sibling.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
     assert planner.plan_calls() > 0
 
 
@@ -459,7 +492,7 @@ def test_installed_codecs_outlive_python_exporters():
     del logical_codec, physical_codec
     gc.collect()
 
-    ctx = ctx.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1]
 
@@ -469,7 +502,8 @@ def test_provider_codecs_can_be_installed_after_planner():
     planner = MyQueryPlanner()
     logical_codec = MyLogicalExtensionCodec()
     physical_codec = MyPhysicalExtensionCodec()
-    ctx = SessionContext(config).with_query_planner(planner)
+    ctx = SessionContext(config)
+    ctx.set_query_planner(planner)
     ctx = ctx.with_logical_extension_codec(logical_codec)
     ctx = ctx.with_physical_extension_codec(physical_codec)
     ctx.register_table("numbers", MyTableProvider(1, 4, 1))
@@ -485,7 +519,7 @@ def test_query_planner_requires_provider_codec():
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     ctx = SessionContext(config)
     ctx.register_table("numbers", MyTableProvider(1, 3, 1))
-    ctx = ctx.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
 
     with pytest.raises(Exception, match=r"LogicalExtensionCodec|TableProvider"):
         ctx.sql('SELECT "A" FROM numbers').collect()
@@ -494,7 +528,7 @@ def test_query_planner_requires_provider_codec():
 @pytest.mark.parametrize("max_rows", ["0", "oops"])
 def test_query_planner_rejects_invalid_config(max_rows: str):
     ctx, _logical_codec, _physical_codec = configured_context(max_rows=2)
-    ctx = ctx.with_query_planner(MyQueryPlanner())
+    ctx.set_query_planner(MyQueryPlanner())
 
     with pytest.raises(Exception, match=r"max_rows|Invalid value"):
         ctx.sql(f"SET ffi_query_planner.max_rows = '{max_rows}'").collect()

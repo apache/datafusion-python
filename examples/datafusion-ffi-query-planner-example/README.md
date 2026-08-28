@@ -50,11 +50,11 @@ ctx = ctx.with_logical_extension_codec(provider_logical_codec)
 ctx = ctx.with_physical_extension_codec(provider_physical_codec)
 ctx.register_table("numbers", provider)
 ctx.register_udf(provider_udf)
-ctx = ctx.with_query_planner(MyQueryPlanner())
+ctx.set_query_planner(MyQueryPlanner())
 ```
 
 `MyPlannerConfig` is transferred through the foreign session. `MyQueryPlanner` reads `ffi_query_planner.max_rows`, creates the plan with `DefaultPhysicalPlanner`, and adds a built-in `GlobalLimitExec`. The test changes the setting with `SET` and verifies the new row limit.
 
-The provider's codec pair is attached to the planner when the derived context is created and is also used to decode the returned physical plan in `datafusion-python`. This planner deliberately uses only built-in physical nodes. Install the codecs before the planner where possible; derived contexts rebind codecs after planner installation, but planner-last order is easier to audit.
+The provider's codec pair is attached to the planner when it is installed and is also used to decode the returned physical plan in `datafusion-python`. This planner deliberately uses only built-in physical nodes. Install the codecs before the planner where possible; installing a codec afterwards rebuilds the planner against it, but planner-last order is easier to audit.
 
 For the limits behind that choice — why there is one external codec owner rather than a registry, which node kinds survive the boundary, and what a derived context shares with the context it came from — see [Query Planners Across Multiple Libraries](../../docs/source/contributor-guide/ffi.md#query-planners-across-multiple-libraries) in the contributor guide.
