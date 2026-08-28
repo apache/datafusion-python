@@ -83,14 +83,14 @@ codegen-units = 2
 # before that release (apache/datafusion#24722), so a 55.0.0 build would compile
 # and then resolve decode callbacks against the pre-fork session.
 [patch.crates-io]
-datafusion = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-proto = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-ffi = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-catalog = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-common = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-functions-aggregate = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-functions-window = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-spark = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-expr = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
-datafusion-session = { git = "https://github.com/timsaucer/datafusion", branch = "fix/ffi-constructor-argument-drop-55" }
+datafusion = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-spark = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-session = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
