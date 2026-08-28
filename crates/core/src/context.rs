@@ -1445,9 +1445,16 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
-        let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
         let this = slf.borrow();
+        // Carry the receiver's inlining setting over. `PythonLogicalCodec::new`
+        // defaults it to on, so building the replacement without this would
+        // silently re-enable inline Python UDF encoding on a context that had
+        // opted out with `with_python_udf_inlining(enabled=False)`.
+        let logical_codec = Arc::new(
+            PythonLogicalCodec::new(inner)
+                .with_python_udf_inlining(this.logical_codec.python_udf_inlining()),
+        );
         let derived = Self {
             ctx: Arc::clone(&this.ctx),
             logical_codec,
@@ -1476,9 +1483,13 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
-        let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
 
         let this = slf.borrow();
+        // See `with_logical_extension_codec` for why the flag is carried over.
+        let physical_codec = Arc::new(
+            PythonPhysicalCodec::new(inner)
+                .with_python_udf_inlining(this.physical_codec.python_udf_inlining()),
+        );
         let derived = Self {
             ctx: Arc::clone(&this.ctx),
             logical_codec: Arc::clone(&this.logical_codec),

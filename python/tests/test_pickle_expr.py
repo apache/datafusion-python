@@ -387,6 +387,45 @@ class TestPythonUdfInliningToggle:
         decoded = Expr.from_bytes(blob_toggled, ctx=SessionContext())
         assert "double" in decoded.canonical_name()
 
+    def test_installing_a_codec_preserves_strict_mode(self):
+        """Installing an extension codec must not re-enable inlining.
+
+        `with_{logical,physical}_extension_codec` builds a replacement
+        `Python{Logical,Physical}Codec` around the imported one, and the
+        constructor defaults inlining to on. A context that opted out has to
+        keep its setting, or a codec install silently starts shipping
+        cloudpickled callables again.
+
+        The session's own capsule getters are a convenient stand-in for a real
+        extension codec here: they return a genuine FFI codec, so the import
+        path under test is the same one an extension library exercises.
+
+        This covers the logical codec. The physical one is checked in
+        ``test_plans.py``, since it takes an ``ExecutionPlan`` to observe.
+        """
+        strict = SessionContext().with_python_udf_inlining(enabled=False)
+        e = self._build_double_udf()(col("a"))
+        assert b"DFPYUDF" not in e.to_bytes(strict)
+
+        with_logical = strict.with_logical_extension_codec(
+            strict.__datafusion_logical_extension_codec__()
+        )
+        assert b"DFPYUDF" not in e.to_bytes(with_logical)
+
+    def test_installing_a_codec_preserves_inlining_when_enabled(self):
+        """The converse: the default stays on across a codec install.
+
+        Guards against 'fixing' the above by hard-coding inlining off.
+        """
+        ctx = SessionContext()
+        e = self._build_double_udf()(col("a"))
+        assert b"DFPYUDF" in e.to_bytes(ctx)
+
+        installed = ctx.with_logical_extension_codec(
+            ctx.__datafusion_logical_extension_codec__()
+        )
+        assert b"DFPYUDF" in e.to_bytes(installed)
+
     def test_strict_roundtrip_via_registry(self):
         """When both sender and receiver disable inlining, the UDF
         travels by name only and the receiver resolves it from its
