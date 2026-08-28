@@ -58,10 +58,11 @@ use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
-    create_logical_extension_capsule, create_physical_extension_capsule,
-    create_query_planner_capsule, ffi_logical_codec_from_pycapsule,
-    ffi_physical_codec_from_pycapsule, ffi_query_planner_from_pycapsule, get_global_ctx,
-    get_tokio_runtime, physical_optimizer_rule_from_pycapsule, spawn_future, wait_for_future,
+    CapsuleGetterArg, call_capsule_getter, create_logical_extension_capsule,
+    create_physical_extension_capsule, create_query_planner_capsule,
+    ffi_logical_codec_from_pycapsule, ffi_physical_codec_from_pycapsule,
+    ffi_query_planner_from_pycapsule, get_global_ctx, get_tokio_runtime,
+    physical_optimizer_rule_from_pycapsule, spawn_future, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -725,9 +726,11 @@ impl PySessionContext {
             let py = factory.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            factory = factory
-                .getattr("__datafusion_table_provider_factory__")?
-                .call1((codec_capsule,))?;
+            factory = call_capsule_getter(
+                factory,
+                "__datafusion_table_provider_factory__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let factory: Arc<dyn TableProviderFactory> =
@@ -760,9 +763,11 @@ impl PySessionContext {
             let py = provider.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            provider = provider
-                .getattr("__datafusion_catalog_provider_list__")?
-                .call1((codec_capsule,))?;
+            provider = call_capsule_getter(
+                provider,
+                "__datafusion_catalog_provider_list__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
@@ -796,9 +801,11 @@ impl PySessionContext {
             let py = provider.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            provider = provider
-                .getattr("__datafusion_catalog_provider__")?
-                .call1((codec_capsule,))?;
+            provider = call_capsule_getter(
+                provider,
+                "__datafusion_catalog_provider__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {

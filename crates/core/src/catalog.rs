@@ -30,7 +30,8 @@ use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use datafusion_python_util::{
-    create_logical_extension_capsule, ffi_logical_codec_from_pycapsule, wait_for_future,
+    CapsuleGetterArg, call_capsule_getter, create_logical_extension_capsule,
+    ffi_logical_codec_from_pycapsule, wait_for_future,
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::exceptions::PyKeyError;
@@ -626,9 +627,11 @@ fn extract_catalog_provider_from_pyobj(
     if catalog_provider.hasattr("__datafusion_catalog_provider__")? {
         let py = catalog_provider.py();
         let codec_capsule = create_logical_extension_capsule(py, codec)?;
-        catalog_provider = catalog_provider
-            .getattr("__datafusion_catalog_provider__")?
-            .call1((codec_capsule,))?;
+        catalog_provider = call_capsule_getter(
+            catalog_provider,
+            "__datafusion_catalog_provider__",
+            CapsuleGetterArg::LogicalCodec(&codec_capsule),
+        )?;
     }
 
     let provider = if let Ok(capsule) = catalog_provider.cast::<PyCapsule>() {
@@ -658,9 +661,11 @@ fn extract_schema_provider_from_pyobj(
     if schema_provider.hasattr("__datafusion_schema_provider__")? {
         let py = schema_provider.py();
         let codec_capsule = create_logical_extension_capsule(py, codec)?;
-        schema_provider = schema_provider
-            .getattr("__datafusion_schema_provider__")?
-            .call1((codec_capsule,))?;
+        schema_provider = call_capsule_getter(
+            schema_provider,
+            "__datafusion_schema_provider__",
+            CapsuleGetterArg::LogicalCodec(&codec_capsule),
+        )?;
     }
 
     let provider = if let Ok(capsule) = schema_provider.cast::<PyCapsule>() {

@@ -156,6 +156,17 @@ pub fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
     })
 }
 
+/// Check that `capsule` carries the name `name`, and say so usefully if not.
+///
+/// This looks redundant next to `capsule.pointer_checked(Some(name))`, which
+/// also rejects a mismatched name, and it is not. `pointer_checked` bottoms out
+/// in CPython's `PyCapsule_GetPointer`, whose error is the fixed string
+/// `PyCapsule_GetPointer called with incorrect name` — it names neither what
+/// was expected nor what was found. Handing an extension author that message
+/// tells them nothing about which capsule they got wrong.
+///
+/// So call this first at every extraction site. `pointer_checked` still gets
+/// the name, because it is what actually guards the cast.
 pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
     let capsule_name = capsule.name()?;
     if capsule_name.is_none() {
@@ -228,6 +239,7 @@ pub fn table_provider_from_pycapsule<'py>(
     obj = call_capsule_getter(obj, "__datafusion_table_provider__", Some(&session))?;
 
     if let Ok(capsule) = obj.cast::<PyCapsule>() {
+        validate_pycapsule(capsule, "datafusion_table_provider")?;
         let data: NonNull<FFI_TableProvider> = capsule
             .pointer_checked(Some(c"datafusion_table_provider"))?
             .cast();
@@ -250,35 +262,75 @@ pub fn create_logical_extension_capsule<'py>(
     PyCapsule::new_with_value(py, codec, cr"datafusion_logical_extension_codec")
 }
 
-/// Calls `obj.__<attr_name>__(session)`, or `obj.__<attr_name>__()` when no
-/// session is supplied.
+/// The single positional argument datafusion-python hands a capsule getter.
 ///
-/// The session is how an exporting library obtains the codecs and task context
-/// of the session it is being installed on, instead of inventing one of its
-/// own. `None` is for the reverse direction, where `obj` *is* a session and is
-/// being asked for what it holds.
-/// Every capsule getter must go through here rather than calling `getattr`
+/// Carrying the argument and its description together is what lets one
+/// diagnostic serve the whole family: the getters do not all take a session,
+/// and telling the author of a catalog provider that their method "must accept
+/// the SessionContext" would send them to fix the wrong signature.
+#[derive(Clone, Copy)]
+pub enum CapsuleGetterArg<'a, 'py> {
+    /// The getter takes no arguments, so it cannot refuse one. A `TypeError`
+    /// from one of these is always the getter's own and is never rewritten.
+    None,
+    /// The `SessionContext` the object is being installed on.
+    Session(&'a Bound<'py, PyAny>),
+    /// The host's logical extension codec, as a
+    /// `datafusion_logical_extension_codec` capsule.
+    LogicalCodec(&'a Bound<'py, PyAny>),
+}
+
+impl<'a, 'py> CapsuleGetterArg<'a, 'py> {
+    fn value(self) -> Option<&'a Bound<'py, PyAny>> {
+        match self {
+            Self::None => None,
+            Self::Session(value) | Self::LogicalCodec(value) => Some(value),
+        }
+    }
+
+    fn expected(self) -> &'static str {
+        match self {
+            Self::None => "",
+            Self::Session(_) => "the SessionContext it is being installed on",
+            Self::LogicalCodec(_) => "the host's logical extension codec",
+        }
+    }
+}
+
+impl<'a, 'py> From<Option<&'a Bound<'py, PyAny>>> for CapsuleGetterArg<'a, 'py> {
+    fn from(session: Option<&'a Bound<'py, PyAny>>) -> Self {
+        session.map_or(Self::None, Self::Session)
+    }
+}
+
+/// Calls `obj.__<attr_name>__(arg)`, or `obj.__<attr_name>__()` for
+/// [`CapsuleGetterArg::None`]. Returns `obj` untouched when it has no such
+/// attribute, so a raw capsule passes straight through.
+///
+/// **Every** capsule getter goes through here rather than calling `getattr`
 /// directly, so that the mapping from a refused argument to a useful error
 /// lives in one place. Three importers previously each had their own copy and
-/// each missed later corrections to it.
-pub fn call_capsule_getter<'py>(
+/// each missed later corrections to it; the getters that take no argument route
+/// through as well, so the rule has no exceptions to remember.
+pub fn call_capsule_getter<'a, 'py: 'a>(
     obj: Bound<'py, PyAny>,
     attr_name: &str,
-    session: Option<&Bound<'py, PyAny>>,
+    arg: impl Into<CapsuleGetterArg<'a, 'py>>,
 ) -> PyResult<Bound<'py, PyAny>> {
     if !obj.hasattr(attr_name)? {
         return Ok(obj);
     }
 
+    let arg = arg.into();
     let getter = obj.getattr(attr_name)?;
-    let result = match session {
-        Some(session) => getter.call1((session,)),
+    let result = match arg.value() {
+        Some(value) => getter.call1((value,)),
         None => getter.call0(),
     };
 
     result.map_err(|err| {
         let py = obj.py();
-        if session.is_none() || !err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+        if arg.value().is_none() || !err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
             return err;
         }
 
@@ -296,8 +348,9 @@ pub fn call_capsule_getter<'py>(
         }
 
         let import_err = PyImportError::new_err(format!(
-            "Incompatible libraries. `{attr_name}` must accept the SessionContext it \
-             is being installed on. Upgrade the library providing this object."
+            "Incompatible libraries. `{attr_name}` must accept {}. \
+             Upgrade the library providing this object.",
+            arg.expected()
         ));
         // Keep the original reachable as `__cause__` rather than discarding it.
         import_err.set_cause(py, Some(err));
@@ -312,6 +365,7 @@ pub fn ffi_logical_codec_from_pycapsule<'py>(
     let capsule = call_capsule_getter(obj, "__datafusion_logical_extension_codec__", session)?;
 
     let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
     let data: NonNull<FFI_LogicalExtensionCodec> = capsule
         .pointer_checked(Some(c"datafusion_logical_extension_codec"))?
         .cast();
@@ -350,7 +404,7 @@ pub fn ffi_task_context_provider_from_pycapsule(
     let capsule = call_capsule_getter(
         session.clone(),
         "__datafusion_task_context_provider__",
-        None,
+        CapsuleGetterArg::None,
     )?;
 
     let capsule = capsule.cast::<PyCapsule>()?;

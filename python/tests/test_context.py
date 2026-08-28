@@ -1301,6 +1301,42 @@ def test_pre_52_table_provider_signature_reports_an_upgrade(ctx):
     assert isinstance(excinfo.value.__cause__, TypeError)
 
 
+def test_catalog_provider_getter_arity_error_names_the_codec(ctx):
+    """A getter refusing the codec capsule is diagnosed, not left as a TypeError.
+
+    `__datafusion_catalog_provider__` is handed the host's logical extension
+    codec, not the session. It used to call `getattr(...).call1(...)` directly
+    and so produced a bare `TypeError` for an out-of-date library; it now routes
+    through `call_capsule_getter` like the rest of the family.
+
+    The message has to name the codec rather than the SessionContext, or it
+    would send the author to change the wrong parameter.
+    """
+
+    class PreCodecCatalogProvider:
+        def __datafusion_catalog_provider__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_catalog_provider__") as excinfo:
+        ctx.register_catalog_provider("old_sig", PreCodecCatalogProvider())
+    assert "logical extension codec" in str(excinfo.value)
+    assert "SessionContext" not in str(excinfo.value)
+    assert isinstance(excinfo.value.__cause__, TypeError)
+
+
+def test_type_error_inside_a_catalog_provider_getter_propagates(ctx):
+    """A correctly-signed catalog getter's own TypeError survives unchanged."""
+
+    class RaisesTypeError:
+        def __datafusion_catalog_provider__(self, codec):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.register_catalog_provider("raises", RaisesTypeError())
+
+
 def test_type_error_inside_a_table_provider_getter_propagates(ctx):
     """A correctly-signed provider getter's own TypeError survives unchanged."""
 

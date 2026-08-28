@@ -1209,7 +1209,6 @@ dependencies = [
  "datafusion-catalog",
  "datafusion-common",
  "datafusion-ffi",
- "datafusion-proto",
  "datafusion-python-util",
  "datafusion-session",
  "pyo3",
