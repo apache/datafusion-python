@@ -343,6 +343,13 @@ pub fn call_capsule_getter<'a, 'py: 'a>(
         // machinery before the getter's frame exists, so nothing unwinds and no
         // traceback is attached. An error from the body unwinds that frame and
         // carries one.
+        //
+        // This holds because the call originates in Rust. `call1` pushes no
+        // Python caller frame, so an arity error has nothing to unwind and
+        // arrives bare. If a Python-level shim is ever interposed between the
+        // host and the getter, its frame would supply a traceback and this
+        // check would quietly stop firing -- the diagnostic would degrade to
+        // the bare `TypeError` it exists to replace, with no test failing.
         if err.traceback(py).is_some() {
             return err;
         }

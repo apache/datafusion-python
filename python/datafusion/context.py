@@ -2257,7 +2257,9 @@ class SessionContext:
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
         planner is installed, it is rebuilt against the new codec on the shared
-        session, so the original context plans with the new codec too.
+        session, so the original context plans with the new codec too. This
+        happens on the shared session, so it takes effect even if the returned
+        context is discarded.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2283,7 +2285,9 @@ class SessionContext:
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
         planner is installed, it is rebuilt against the new codec on the shared
-        session, so the original context plans with the new codec too.
+        session, so the original context plans with the new codec too. This
+        happens on the shared session, so it takes effect even if the returned
+        context is discarded.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2326,11 +2330,13 @@ class SessionContext:
             regardless of the toggle.
 
         Returns a new :class:`SessionContext` with the toggle applied;
-        the original session is unchanged. The returned context shares
-        its session state with the original, so a later registration on
-        either is visible to both. If a custom query planner is
-        installed, it is rebuilt against the new codecs on the shared
-        session, so the original context plans with them too.
+        the original context's own codec settings are unchanged. The
+        returned context shares its session state with the original, so
+        a later registration on either is visible to both. If a custom
+        query planner is installed, it is rebuilt against the new codecs
+        on the shared session, so the original context plans with them
+        too. This happens on the shared session, so it takes effect even
+        if the returned context is discarded.
 
         Examples:
             >>> import pyarrow as pa

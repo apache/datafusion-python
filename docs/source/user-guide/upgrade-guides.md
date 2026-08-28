@@ -83,6 +83,23 @@ way `add_physical_optimizer_rule` does and returns nothing — the query planner
 lives in `SessionState`, so it belongs to the session rather than to a
 particular handle on it. See the {ref}`ffi` guide for the full protocol.
 
+### Mismatched extension libraries now fail loudly
+
+Objects imported through the capsule protocol are checked against the major
+version of `datafusion-ffi` this package was built with. A table provider,
+extension codec, or query planner produced by a library built against a
+different DataFusion major version now raises an `ImportError` naming the
+version found and the one expected, instead of being used as-is. Table
+providers previously performed no such check.
+
+This is a diagnostic rather than a soundness guarantee — reading the version
+out of the struct already assumes the local field layout — but it turns the
+common "extension library built against the wrong DataFusion" mistake into a
+clear message rather than undefined behaviour on first use.
+
+`FFI_TaskContextProvider`, `FFI_TableProviderFactory`, and `FFI_ExtensionOptions`
+carry no version field, so objects of those types cannot be checked.
+
 ### Changes to the `datafusion-python-util` crate
 
 Extension libraries written in Rust usually depend on the

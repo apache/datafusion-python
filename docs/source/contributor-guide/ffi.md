@@ -348,7 +348,10 @@ so it is a property of the session rather than of a handle on it, and installing
 visible to every context sharing that session — including ones a `with_*` call returned
 earlier. Installing a codec on a session that already has a foreign planner rebuilds
 that planner against the new codec for the same reason: there is one planner, and it has
-to carry the codecs currently in force.
+to carry the codecs currently in force. This happens on the shared session, so it takes
+effect even if the returned context is discarded — `ctx.with_python_udf_inlining(...)`
+whose result is thrown away still leaves the session's planner carrying the codecs of
+that discarded handle.
 
 ```python
 ctx = SessionContext(config)
