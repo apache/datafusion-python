@@ -28,7 +28,7 @@ use datafusion::logical_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
-use datafusion_python_util::parse_volatility;
+use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -365,7 +365,11 @@ impl PyAggregateUDF {
         }
 
         if func.hasattr("__datafusion_aggregate_udf__")? {
-            let capsule = func.getattr("__datafusion_aggregate_udf__")?.call0()?;
+            let capsule = call_capsule_getter(
+                func.clone(),
+                "__datafusion_aggregate_udf__",
+                CapsuleGetterArg::None,
+            )?;
             let capsule = capsule.cast::<PyCapsule>().map_err(py_datafusion_err)?;
             let function = aggregate_udf_from_capsule(capsule)?;
             return Ok(Self { function });

@@ -35,7 +35,24 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. Each ski
 
 To discover what skills are available, list `.ai/skills/` and read each
 `SKILL.md`. The frontmatter `name` and `description` fields summarize the
-skill's purpose.
+skill's purpose. Some descriptions begin with `TRIGGER —`; those are not tasks
+to run on request but conventions to read *before* writing code that meets the
+stated condition.
+
+## FFI Capsule Protocol
+
+The `__datafusion_*__` capsule getters are one protocol with a settled
+convention. Before adding or changing one, read
+[`.ai/skills/ffi-capsule-protocol/SKILL.md`](.ai/skills/ffi-capsule-protocol/SKILL.md).
+
+## Documentation Sources
+
+Search and edit `docs/source/`. `docs/temp/` is gitignored build output that
+`grep -r` will surface with stale copies of the same pages.
+
+Before changing a public API, check
+`docs/source/user-guide/upgrade-guides.md` for how the same API family was
+migrated previously. Follow the established pattern rather than inventing one.
 
 ## Pull Requests
 
@@ -48,7 +65,10 @@ Every pull request must follow the template in
 3. **What changes are included in this PR?** — Summarize the individual changes.
 4. **Are there any user-facing changes?** — Note any changes visible to users
    (new APIs, changed behavior, new files shipped in the package, etc.). If
-   there are breaking changes to public APIs, add the `api change` label.
+   there are breaking changes to public APIs, add the `api change` label **and
+   add a section to `docs/source/user-guide/upgrade-guides.md`** showing the
+   before and after. This applies to FFI hook method signatures, which
+   extension libraries implement.
 
 ## Pre-commit Checks
 

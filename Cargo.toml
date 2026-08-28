@@ -27,7 +27,12 @@ edition = "2024"
 rust-version = "1.88"
 
 [workspace]
-members = ["crates/core", "crates/util", "examples/datafusion-ffi-example"]
+members = [
+  "crates/core",
+  "crates/util",
+  "examples/datafusion-ffi-example",
+  "examples/datafusion-ffi-query-planner-example",
+]
 resolver = "3"
 
 [workspace.dependencies]
@@ -50,6 +55,7 @@ datafusion-functions-aggregate = { version = "55.0.0" }
 datafusion-functions-window = { version = "55.0.0" }
 datafusion-spark = { version = "55.0.0" }
 datafusion-expr = { version = "55.0.0" }
+datafusion-session = { version = "55.0.0" }
 prost = "0.14.3"
 serde_json = "1"
 uuid = { version = "1.23" }
@@ -71,4 +77,24 @@ codegen-units = 2
 
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
+#
+# When these are removed, raise the DataFusion requirement above to 55.1.0.
+# `PySessionContext::set_session_query_planner` rebuilds an installed foreign
+# query planner against the session's current codecs, and relies on
+# `FFI_QueryPlanner::new_with_ffi_codecs` unwrapping a `ForeignQueryPlanner` and
+# replacing its codecs. That replacement is a silent no-op before 55.1.0
+# (apache/datafusion#24722), so a 55.0.0 build would compile and then keep
+# decoding with whichever codecs the planner was installed with -- installing a
+# codec after `set_query_planner` would not take effect.
 [patch.crates-io]
+datafusion = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-catalog = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-common = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-spark = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }
+datafusion-session = { git = "https://github.com/apache/datafusion", rev = "1a944f43983188712aa1934d034f3087d82172e1" }

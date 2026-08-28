@@ -36,7 +36,7 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::{MemTable, TableProvider};
 use datafusion::execution::context::{
-    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
+    DataFilePaths, QueryPlanner, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
 use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
@@ -53,14 +53,16 @@ use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_ffi::query_planner::{FFI_QueryPlanner, ForeignQueryPlanner};
 use datafusion_ffi::table_provider_factory::FFI_TableProviderFactory;
 use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
-    create_logical_extension_capsule, create_physical_extension_capsule,
-    ffi_logical_codec_from_pycapsule, get_global_ctx, get_tokio_runtime,
-    physical_codec_from_pycapsule, physical_optimizer_rule_from_pycapsule, spawn_future,
-    wait_for_future,
+    CapsuleGetterArg, call_capsule_getter, create_logical_extension_capsule,
+    create_physical_extension_capsule, create_query_planner_capsule,
+    ffi_logical_codec_from_pycapsule, ffi_physical_codec_from_pycapsule,
+    ffi_query_planner_from_pycapsule, get_global_ctx, get_tokio_runtime,
+    physical_optimizer_rule_from_pycapsule, spawn_future, validate_pycapsule, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -199,9 +201,20 @@ impl PySessionConfig {
                 "Expected extension object to define __datafusion_extension_options__()",
             ));
         }
-        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        // Routed through `call_capsule_getter` like every other getter in the
+        // family, even though this one takes no argument and so has no arity
+        // error to diagnose. The point is that the grep in the FFI capsule
+        // protocol skill turns up no exceptions.
+        let capsule = call_capsule_getter(
+            extension,
+            "__datafusion_extension_options__",
+            CapsuleGetterArg::None,
+        )?;
         let capsule = capsule.cast::<PyCapsule>()?;
+        validate_pycapsule(capsule, "datafusion_extension_options")?;
 
+        // No `check_ffi_version` here: `FFI_ExtensionOptions` carries no
+        // version field, so there is nothing to compare.
         let extension: NonNull<FFI_ExtensionOptions> = capsule
             .pointer_checked(Some(c"datafusion_extension_options"))?
             .cast();
@@ -408,6 +421,11 @@ impl PySessionContext {
     }
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
+        // Pre-existing caveat, unrelated to query planners: this is the one
+        // method that mints a second `Arc<SessionContext>` for a session. Any
+        // weak `FFI_TaskContextProvider` handed out by the receiver stays bound
+        // to the receiver, so the returned context must not outlive it. See
+        // `set_session_query_planner` for why everything else mutates in place.
         Ok(PySessionContext {
             ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
             logical_codec: Arc::clone(&self.logical_codec),
@@ -719,9 +737,11 @@ impl PySessionContext {
             let py = factory.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            factory = factory
-                .getattr("__datafusion_table_provider_factory__")?
-                .call1((codec_capsule,))?;
+            factory = call_capsule_getter(
+                factory,
+                "__datafusion_table_provider_factory__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let factory: Arc<dyn TableProviderFactory> =
@@ -754,9 +774,11 @@ impl PySessionContext {
             let py = provider.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            provider = provider
-                .getattr("__datafusion_catalog_provider_list__")?
-                .call1((codec_capsule,))?;
+            provider = call_capsule_getter(
+                provider,
+                "__datafusion_catalog_provider_list__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
@@ -790,9 +812,11 @@ impl PySessionContext {
             let py = provider.py();
             let ffi = self.ffi_logical_codec();
             let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            provider = provider
-                .getattr("__datafusion_catalog_provider__")?
-                .call1((codec_capsule,))?;
+            provider = call_capsule_getter(
+                provider,
+                "__datafusion_catalog_provider__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
         }
 
         let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
@@ -1204,10 +1228,31 @@ impl PySessionContext {
         let rule = physical_optimizer_rule_from_pycapsule(&rule)?;
         let state_ref = self.ctx.state_ref();
         let mut guard = state_ref.write();
+        // Rebuilding through the builder mints a fresh session id, but this
+        // mutates the caller's own session rather than deriving a new one, so
+        // the id has to survive. See `set_session_query_planner` for why losing
+        // it leaves `session_id()` disagreeing with every `TaskContext` the
+        // session hands out.
         let new_state = SessionStateBuilder::new_from_existing(guard.clone())
+            .with_session_id(guard.session_id().to_string())
             .with_physical_optimizer_rule(rule)
             .build();
         *guard = new_state;
+        Ok(())
+    }
+
+    /// Install a foreign query planner on this session.
+    ///
+    /// A session holds exactly one planner, so this replaces whichever one is
+    /// installed. It mutates the session rather than deriving a new one, the
+    /// same way `add_physical_optimizer_rule` does; see
+    /// [`Self::set_session_query_planner`] for why that matters to FFI handles.
+    pub fn set_query_planner(
+        slf: &Bound<'_, Self>,
+        planner: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        let planner = ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any()))?;
+        slf.borrow().set_session_query_planner(Some(planner));
         Ok(())
     }
 
@@ -1377,52 +1422,120 @@ impl PySessionContext {
         PyCapsule::new_with_value(py, ffi_ctx_provider, cr"datafusion_task_context_provider")
     }
 
+    /// `session` exists so this matches the protocol an extension library
+    /// implements, where the argument is how the library reaches the session
+    /// it is being installed on. A session already is one, so it is ignored.
+    #[pyo3(signature = (session=None))]
     pub fn __datafusion_logical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let ffi = self.ffi_logical_codec();
-        create_logical_extension_capsule(py, ffi.as_ref())
+        let _ = session;
+        create_logical_extension_capsule(py, self.ffi_logical_codec().as_ref())
+    }
+
+    /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
+    #[pyo3(signature = (session=None))]
+    pub fn __datafusion_query_planner__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
+        // An already-foreign planner is re-exported as its original handle
+        // rather than gaining another layer, because `new_with_ffi_codecs`
+        // unwraps a `ForeignQueryPlanner`. It still adopts the codecs supplied
+        // here, so a consumer that wraps this capsule decodes our plans with
+        // our codecs.
+        let planner = Arc::clone(self.ctx.state().query_planner());
+        let ffi = FFI_QueryPlanner::new_with_ffi_codecs(
+            planner,
+            Self::ffi_logical_codec_for(&self.ctx, &self.logical_codec),
+            Self::ffi_physical_codec_for(&self.ctx, &self.physical_codec),
+        );
+        create_query_planner_capsule(py, &ffi)
     }
 
     pub fn with_logical_extension_codec<'py>(
-        &self,
+        slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let inner_ffi = ffi_logical_codec_from_pycapsule(codec)?;
+        let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
-        let logical_codec = Arc::new(PythonLogicalCodec::new(inner));
 
-        Ok(Self {
-            ctx: Arc::clone(&self.ctx),
+        let this = slf.borrow();
+        // Carry the receiver's inlining setting over. `PythonLogicalCodec::new`
+        // defaults it to on, so building the replacement without this would
+        // silently re-enable inline Python UDF encoding on a context that had
+        // opted out with `with_python_udf_inlining(enabled=False)`.
+        let logical_codec = Arc::new(
+            PythonLogicalCodec::new(inner)
+                .with_python_udf_inlining(this.logical_codec.python_udf_inlining()),
+        );
+        let derived = Self {
+            ctx: Arc::clone(&this.ctx),
             logical_codec,
-            physical_codec: Arc::clone(&self.physical_codec),
-        })
+            physical_codec: Arc::clone(&this.physical_codec),
+        };
+        // The session is shared, and an installed foreign planner holds the
+        // codecs it was built with, so it has to be rebuilt against this one.
+        derived.set_session_query_planner(None);
+        Ok(derived)
     }
 
+    /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
+    #[pyo3(signature = (session=None))]
     pub fn __datafusion_physical_extension_codec__<'py>(
         &self,
         py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let ffi = self.ffi_physical_codec();
-        create_physical_extension_capsule(py, ffi.as_ref())
+        let _ = session;
+        create_physical_extension_capsule(py, self.ffi_physical_codec().as_ref())
     }
 
     pub fn with_physical_extension_codec<'py>(
-        &self,
+        slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Self> {
-        let inner = physical_codec_from_pycapsule(&codec)?;
-        let physical_codec = Arc::new(PythonPhysicalCodec::new(inner));
+        let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+        let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
 
-        Ok(Self {
-            ctx: Arc::clone(&self.ctx),
-            logical_codec: Arc::clone(&self.logical_codec),
+        let this = slf.borrow();
+        // See `with_logical_extension_codec` for why the flag is carried over.
+        let physical_codec = Arc::new(
+            PythonPhysicalCodec::new(inner)
+                .with_python_udf_inlining(this.physical_codec.python_udf_inlining()),
+        );
+        let derived = Self {
+            ctx: Arc::clone(&this.ctx),
+            logical_codec: Arc::clone(&this.logical_codec),
             physical_codec,
-        })
+        };
+        // See `with_logical_extension_codec`.
+        derived.set_session_query_planner(None);
+        Ok(derived)
     }
 
     pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
+        // Rebinding the session's planner is a side effect on state shared with
+        // every other handle, so do not pay it for a call that changes nothing.
+        // A defensive `with_python_udf_inlining(enabled=True)` on a context that
+        // already inlines would otherwise rebind the session's planner to this
+        // handle's codecs, and callers routinely discard the result. Returning
+        // the codecs as-is is observationally equivalent to the rebuild below,
+        // which wraps the same inner codec in a fresh `Python*Codec`.
+        if self.logical_codec.python_udf_inlining() == enabled
+            && self.physical_codec.python_udf_inlining() == enabled
+        {
+            return Self {
+                ctx: Arc::clone(&self.ctx),
+                logical_codec: Arc::clone(&self.logical_codec),
+                physical_codec: Arc::clone(&self.physical_codec),
+            };
+        }
+
         let logical_codec = Arc::new(
             PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
                 .with_python_udf_inlining(enabled),
@@ -1431,15 +1544,72 @@ impl PySessionContext {
             PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
                 .with_python_udf_inlining(enabled),
         );
-        Self {
+        let derived = Self {
             ctx: Arc::clone(&self.ctx),
             logical_codec,
             physical_codec,
-        }
+        };
+        // See `with_logical_extension_codec`.
+        derived.set_session_query_planner(None);
+        derived
     }
 }
 
 impl PySessionContext {
+    /// Write the session's query planner, in place.
+    ///
+    /// Pass `Some(planner)` to install one, or `None` to rebuild whichever
+    /// foreign planner is already installed against this context's current
+    /// codecs. A foreign planner carries the FFI codecs it encodes and decodes
+    /// with, so replacing a codec means handing the planner new ones. A planner
+    /// this library owns carries no codecs and needs neither.
+    ///
+    /// This mutates `SessionState` through `state_ref()` rather than deriving a
+    /// new `SessionContext`, and that is the whole point. Every codec handed to
+    /// a foreign object carries an `FFI_TaskContextProvider`, which holds its
+    /// provider *weakly* and upgrades it on each callback — a registered
+    /// catalog provider does so on every `supports_filters_pushdown` and every
+    /// `scan`. Those handles are bound to one `Arc<SessionContext>` allocation.
+    /// Deriving a replacement would orphan every handle bound to the old one
+    /// and leave callbacks failing with `TaskContextProvider went out of scope
+    /// over FFI boundary`, and only the codecs this struct happens to hold
+    /// could be moved across; one already embedded in a registered
+    /// `FFI_CatalogProvider` is unreachable. Keeping the single allocation for
+    /// the life of the session avoids the problem rather than repairing it.
+    fn set_session_query_planner(&self, planner: Option<FFI_QueryPlanner>) {
+        let planner = planner.or_else(|| {
+            let state = self.ctx.state();
+            let installed: &dyn std::any::Any = state.query_planner().as_ref();
+            installed
+                .downcast_ref::<ForeignQueryPlanner>()
+                .map(|planner| planner.0.clone())
+        });
+        let Some(planner) = planner else {
+            return;
+        };
+
+        let inner: Arc<dyn QueryPlanner + Send + Sync> = (&planner).into();
+        let planner: Arc<dyn QueryPlanner + Send + Sync> = (&FFI_QueryPlanner::new_with_ffi_codecs(
+            inner,
+            Self::ffi_logical_codec_for(&self.ctx, &self.logical_codec),
+            Self::ffi_physical_codec_for(&self.ctx, &self.physical_codec),
+        ))
+            .into();
+
+        let state_ref = self.ctx.state_ref();
+        let mut guard = state_ref.write();
+        // `with_session_id` is load-bearing, not redundant.
+        // `SessionStateBuilder::new_from_existing` drops the id and `build`
+        // mints a fresh one, while `SessionContext` cached the original in a
+        // field of its own. Without this the session would report one id from
+        // `session_id()` and another from every `TaskContext` it hands out.
+        // Same reason `add_physical_optimizer_rule` carries it over.
+        *guard = SessionStateBuilder::new_from_existing(guard.clone())
+            .with_session_id(guard.session_id().to_string())
+            .with_query_planner(planner)
+            .build();
+    }
+
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
     }
@@ -1501,27 +1671,36 @@ impl PySessionContext {
     /// Used at every site that exports the codec across an FFI boundary
     /// (capsule getters, Rust wrappers for Python-defined providers, etc.).
     pub(crate) fn ffi_logical_codec(&self) -> Arc<FFI_LogicalExtensionCodec> {
-        let inner: Arc<dyn LogicalExtensionCodec> =
-            Arc::clone(&self.logical_codec) as Arc<dyn LogicalExtensionCodec>;
+        Arc::new(Self::ffi_logical_codec_for(&self.ctx, &self.logical_codec))
+    }
+
+    fn ffi_logical_codec_for(
+        ctx: &Arc<SessionContext>,
+        codec: &Arc<PythonLogicalCodec>,
+    ) -> FFI_LogicalExtensionCodec {
+        let codec: Arc<dyn LogicalExtensionCodec> =
+            Arc::clone(codec) as Arc<dyn LogicalExtensionCodec>;
         let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        Arc::new(FFI_LogicalExtensionCodec::new(
-            inner,
-            Some(runtime),
-            &ctx_provider,
-        ))
+        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        FFI_LogicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
+    }
+
+    fn ffi_physical_codec_for(
+        ctx: &Arc<SessionContext>,
+        codec: &Arc<PythonPhysicalCodec>,
+    ) -> FFI_PhysicalExtensionCodec {
+        let codec: Arc<dyn PhysicalExtensionCodec + Send> =
+            Arc::clone(codec) as Arc<dyn PhysicalExtensionCodec + Send>;
+        let runtime = get_tokio_runtime().handle().clone();
+        let ctx_provider = Arc::clone(ctx) as Arc<dyn TaskContextProvider>;
+        FFI_PhysicalExtensionCodec::new(codec, Some(runtime), &ctx_provider)
     }
 
     /// Build an FFI-wrapped clone of the session's physical codec on demand.
     pub(crate) fn ffi_physical_codec(&self) -> Arc<FFI_PhysicalExtensionCodec> {
-        let inner: Arc<dyn PhysicalExtensionCodec + Send> =
-            Arc::clone(&self.physical_codec) as Arc<dyn PhysicalExtensionCodec + Send>;
-        let runtime = get_tokio_runtime().handle().clone();
-        let ctx_provider = Arc::clone(&self.ctx) as Arc<dyn TaskContextProvider>;
-        Arc::new(FFI_PhysicalExtensionCodec::new(
-            inner,
-            Some(runtime),
-            &ctx_provider,
+        Arc::new(Self::ffi_physical_codec_for(
+            &self.ctx,
+            &self.physical_codec,
         ))
     }
 }

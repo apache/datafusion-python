@@ -233,3 +233,33 @@ def test_with_session_rejected_for_ffi_table_function() -> None:
 
     with pytest.raises(TypeError, match="FFI-exported table functions"):
         TableFunction("fake_ffi", fake, with_session=True)
+
+
+def test_pre_52_table_function_signature_reports_an_upgrade() -> None:
+    """A getter that refuses the session is named, not left as a bare TypeError.
+
+    The 52.0.0 signature change added the session argument. An out-of-date
+    library still has the old one, and the original error stays reachable as
+    ``__cause__``.
+    """
+
+    class PreSessionTableFunction:
+        def __datafusion_table_function__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_table_function__") as excinfo:
+        TableFunction("old_sig", PreSessionTableFunction(), None)
+    assert isinstance(excinfo.value.__cause__, TypeError)
+
+
+def test_type_error_inside_a_table_function_getter_propagates() -> None:
+    """A correctly-signed getter's own TypeError must survive unchanged."""
+
+    class RaisesTypeError:
+        def __datafusion_table_function__(self, session):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        TableFunction("raises", RaisesTypeError(), None)

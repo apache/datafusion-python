@@ -17,6 +17,7 @@
 
 import datetime
 
+import pyarrow as pa
 import pytest
 from datafusion import (
     ExecutionPlan,
@@ -24,6 +25,8 @@ from datafusion import (
     Metric,
     MetricsSet,
     SessionContext,
+    col,
+    udf,
 )
 
 
@@ -90,6 +93,46 @@ def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:
     restored = LogicalPlan.from_bytes(ctx, blob)
     df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
     assert df.collect() == df_round_trip.collect()
+
+
+def test_installing_a_physical_codec_preserves_strict_mode() -> None:
+    """Installing a physical extension codec must not re-enable inlining.
+
+    `with_physical_extension_codec` builds a replacement `PythonPhysicalCodec`
+    around the imported one, and the constructor defaults inlining to on. A
+    context that opted out via `with_python_udf_inlining(enabled=False)` has to
+    keep its setting, or installing a codec silently starts embedding
+    cloudpickled callables in serialized execution plans.
+
+    The logical counterpart lives in `test_pickle_expr.py`; this one needs an
+    `ExecutionPlan` because only the physical codec encodes it. `DFPYUDF` is
+    the scalar Python-UDF family prefix, shared by both layers; see
+    `PY_SCALAR_UDF_FAMILY` in crates/core/src/codec.rs.
+    """
+    identity = udf(
+        lambda arr: arr,
+        [pa.string()],
+        pa.string(),
+        volatility="immutable",
+        name="identity_str",
+    )
+
+    def plan_bytes(ctx: SessionContext) -> bytes:
+        df = ctx.read_csv(path="testing/data/csv/aggregate_test_100.csv").select(
+            identity(col("c1"))
+        )
+        return df.execution_plan().to_bytes(ctx)
+
+    # The inlining default is on, so the strict blob is what has to differ.
+    assert b"DFPYUDF" in plan_bytes(SessionContext())
+
+    strict = SessionContext().with_python_udf_inlining(enabled=False)
+    assert b"DFPYUDF" not in plan_bytes(strict)
+
+    installed = strict.with_physical_extension_codec(
+        strict.__datafusion_physical_extension_codec__()
+    )
+    assert b"DFPYUDF" not in plan_bytes(installed)
 
 
 def test_session_codec_capsule_getters(ctx) -> None:

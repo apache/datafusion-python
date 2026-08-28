@@ -77,7 +77,7 @@ impl MyTableProviderFactory {
         py: Python<'py>,
         codec: Bound<PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let codec = ffi_logical_codec_from_pycapsule(codec)?;
+        let codec = ffi_logical_codec_from_pycapsule(codec, None)?;
         let factory = Arc::clone(&self.inner) as Arc<dyn TableProviderFactory + Send>;
         let factory = FFI_TableProviderFactory::new_with_ffi_codec(factory, None, codec);
 

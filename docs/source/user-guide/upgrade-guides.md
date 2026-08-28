@@ -19,6 +19,128 @@
 
 # Upgrade Guides
 
+## DataFusion 55.0.0
+
+This release extends the change made in 52.0.0 to the remaining {ref}`ffi` hook
+methods. Users who contribute their own `LogicalExtensionCodec` or
+`PhysicalExtensionCodec` via FFI must update
+`__datafusion_logical_extension_codec__` and
+`__datafusion_physical_extension_codec__` to accept an additional
+`session: Bound<PyAny>` parameter, and take the `TaskContextProvider` from that
+session rather than constructing a `SessionContext` of their own.
+
+Before:
+
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let ctx_provider: Arc<dyn TaskContextProvider> = Arc::clone(&self.ctx_provider);
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), &ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
+
+After:
+
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+    session: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
+
+The dropped `&` on the last argument is not a typo. That parameter is
+`impl Into<FFI_TaskContextProvider>`, so it accepts either an
+`&Arc<dyn TaskContextProvider>`, as before, or an `FFI_TaskContextProvider`,
+which is what `ffi_task_context_provider_from_pycapsule` hands back. Both forms
+compile; the argument changes because the provider now comes from the session
+rather than from a field.
+
+A codec that keeps its own `SessionContext` still compiles, but its decode
+callbacks resolve names against that empty session instead of the one running
+the query, so a function registered with `SessionContext.register_udf` is not
+visible to it. Taking the provider from `session` also removes a lifetime
+hazard: `FFI_TaskContextProvider` holds its provider weakly, so a context
+constructed inside the getter is already dropped by the time the capsule is
+used.
+
+`SessionContext` accepts the argument on its own capsule getters and ignores
+it, so existing calls such as `ctx.__datafusion_logical_extension_codec__()`
+continue to work unchanged.
+
+New in this release, `__datafusion_query_planner__` follows the same protocol.
+It receives the session and takes both extension codecs from it, so a planner
+library never builds a `TaskContextProvider` at all. Install one with
+`SessionContext.set_query_planner(planner)`, which mutates the session the same
+way `add_physical_optimizer_rule` does and returns nothing — the query planner
+lives in `SessionState`, so it belongs to the session rather than to a
+particular handle on it. See the {ref}`ffi` guide for the full protocol.
+
+### Mismatched extension libraries now fail loudly
+
+Objects imported through the capsule protocol are checked against the major
+version of `datafusion-ffi` this package was built with. A table provider,
+extension codec, or query planner produced by a library built against a
+different DataFusion major version now raises an `ImportError` naming the
+version found and the one expected, instead of being used as-is. Table
+providers previously performed no such check.
+
+This is a diagnostic rather than a soundness guarantee — reading the version
+out of the struct already assumes the local field layout — but it turns the
+common "extension library built against the wrong DataFusion" mistake into a
+clear message rather than undefined behaviour on first use.
+
+`FFI_TaskContextProvider`, `FFI_TableProviderFactory`, and `FFI_ExtensionOptions`
+carry no version field, so objects of those types cannot be checked.
+
+### Changes to the `datafusion-python-util` crate
+
+Extension libraries written in Rust usually depend on the
+`datafusion-python-util` crate for the helpers that read these capsules. Two of
+those helpers changed, because the getter they call now takes the session.
+
+`ffi_logical_codec_from_pycapsule` takes a second argument. Pass `Some(session)`
+when importing an object from another library, so its getter receives the
+session it is being installed on. Pass `None` when the object *is* a session and
+you are asking it for what it holds:
+
+```rust
+// Before
+let codec = ffi_logical_codec_from_pycapsule(obj)?;
+
+// After
+let codec = ffi_logical_codec_from_pycapsule(obj, Some(session))?;
+```
+
+`physical_codec_from_pycapsule` has been **removed**. It called
+`__datafusion_physical_extension_codec__` with no arguments, which no longer
+matches the protocol, so against an updated codec it raised a bare `TypeError`
+and against an outdated one it silently produced a codec bound to the wrong
+session. Use `ffi_physical_codec_from_pycapsule`, which passes the session:
+
+```rust
+// Before
+let codec: Arc<dyn PhysicalExtensionCodec> = physical_codec_from_pycapsule(&obj)?;
+
+// After
+let ffi = ffi_physical_codec_from_pycapsule(obj, Some(session))?;
+let codec: Arc<dyn PhysicalExtensionCodec> = (&ffi).into();
+```
+
+`physical_optimizer_rule_from_pycapsule` and `task_context_from_pycapsule` are
+unchanged. Their hooks take no session.
+
+Calling a getter that still has the old signature now raises an `ImportError`
+naming the method, with the original `TypeError` retained as its `__cause__`,
+rather than a bare `TypeError`.
+
 ## DataFusion 54.0.0
 
 The `Config` class has been removed. It was a standalone wrapper around

@@ -114,15 +114,28 @@ def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
 
 
 class LogicalExtensionCodecExportable(Protocol):
-    """Type hint for objects exposing ``__datafusion_logical_extension_codec__``."""
+    """Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
 
-    def __datafusion_logical_extension_codec__(self) -> object: ...  # noqa: D105
+    ``session`` is the :py:class:`~datafusion.context.SessionContext` the codec
+    is being installed on. Take the task context provider from it rather than
+    building a session of your own, so the decode callbacks resolve names
+    against the session that runs the query.
+    """
+
+    def __datafusion_logical_extension_codec__(  # noqa: D105
+        self, session: Any
+    ) -> object: ...
 
 
 class PhysicalExtensionCodecExportable(Protocol):
-    """Type hint for objects exposing ``__datafusion_physical_extension_codec__``."""
+    """Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
 
-    def __datafusion_physical_extension_codec__(self) -> object: ...  # noqa: D105
+    See :py:class:`LogicalExtensionCodecExportable` for ``session``.
+    """
+
+    def __datafusion_physical_extension_codec__(  # noqa: D105
+        self, session: Any
+    ) -> object: ...
 
 
 class ScalarUDF:

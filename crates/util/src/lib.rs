@@ -29,8 +29,8 @@ use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::physical_optimizer::FFI_PhysicalOptimizerRule;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_ffi::query_planner::FFI_QueryPlanner;
 use datafusion_ffi::table_provider::FFI_TableProvider;
-use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use pyo3::exceptions::{PyImportError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyType};
@@ -156,6 +156,17 @@ pub fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
     })
 }
 
+/// Check that `capsule` carries the name `name`, and say so usefully if not.
+///
+/// This looks redundant next to `capsule.pointer_checked(Some(name))`, which
+/// also rejects a mismatched name, and it is not. `pointer_checked` bottoms out
+/// in CPython's `PyCapsule_GetPointer`, whose error is the fixed string
+/// `PyCapsule_GetPointer called with incorrect name` — it names neither what
+/// was expected nor what was found. Handing an extension author that message
+/// tells them nothing about which capsule they got wrong.
+///
+/// So call this first at every extraction site. `pointer_checked` still gets
+/// the name, because it is what actually guards the cast.
 pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
     let capsule_name = capsule.name()?;
     if capsule_name.is_none() {
@@ -175,28 +186,65 @@ pub fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()
     Ok(())
 }
 
+/// Reject an FFI struct built against a different major version of
+/// `datafusion-ffi`.
+///
+/// `found` comes from the struct's own `version` function pointer, which
+/// reports the major version of the library that produced it.
+///
+/// This is a diagnostic, not a soundness guarantee. Reading `version` out of
+/// the struct already assumes the local field layout, and `version` is not the
+/// first field on any of these types, so a sufficiently different layout can
+/// fault before this ever runs. What it buys is a clear error for the case that
+/// actually happens -- an extension library compiled against a different
+/// DataFusion -- rather than undefined behaviour on first use, which is what
+/// `datafusion_ffi::version` exists for.
+///
+/// Not every FFI type carries a version. `FFI_TaskContextProvider`,
+/// `FFI_TableProviderFactory`, and `FFI_ExtensionOptions` have no such field,
+/// so their importers cannot check and are not expected to.
+///
+/// # If the FFI ABI stabilizes
+///
+/// Exact equality is the right test only while `datafusion_ffi::version`
+/// tracks the DataFusion crate's semver major, which it does today
+/// (`env!("CARGO_PKG_VERSION")`, `.major`). That number therefore moves on
+/// every major release whether or not the ABI actually changed.
+///
+/// Should a version span become compatible, **this function body is the only
+/// thing to change** -- callers pass a `found` value and no policy. Relaxing it
+/// at a call site instead would reintroduce the split this helper exists to
+/// remove.
+///
+/// The likelier fix is upstream, not here: if the ABI is stable but `version`
+/// still follows the crate major, upstream's own compatibility marker is wrong
+/// for every consumer, not just this one. Prefer waiting for
+/// `datafusion_ffi::version` to reflect the real ABI over inventing a range
+/// policy locally.
+pub fn check_ffi_version(kind: &str, found: u64) -> PyResult<()> {
+    let expected = datafusion_ffi::version();
+    if found != expected {
+        return Err(PyImportError::new_err(format!(
+            "Incompatible DataFusion {kind} major version {found}; expected {expected}. \
+             Rebuild the library providing this object against a matching DataFusion."
+        )));
+    }
+    Ok(())
+}
+
 pub fn table_provider_from_pycapsule<'py>(
     mut obj: Bound<'py, PyAny>,
     session: Bound<'py, PyAny>,
 ) -> PyResult<Option<Arc<dyn TableProvider>>> {
-    if obj.hasattr("__datafusion_table_provider__")? {
-        obj = obj
-            .getattr("__datafusion_table_provider__")?
-            .call1((session,)).map_err(|err| {
-            let py = obj.py();
-            if err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
-                PyImportError::new_err("Incompatible libraries. DataFusion 52.0.0 introduced an incompatible signature change for table providers. Either downgrade DataFusion or upgrade your function library.")
-            } else {
-                err
-            }
-        })?;
-    }
+    obj = call_capsule_getter(obj, "__datafusion_table_provider__", Some(&session))?;
 
     if let Ok(capsule) = obj.cast::<PyCapsule>() {
+        validate_pycapsule(capsule, "datafusion_table_provider")?;
         let data: NonNull<FFI_TableProvider> = capsule
             .pointer_checked(Some(c"datafusion_table_provider"))?
             .cast();
         let provider = unsafe { data.as_ref() };
+        check_ffi_version("table provider", unsafe { (provider.version)() })?;
         let provider: Arc<dyn TableProvider> = provider.into();
 
         Ok(Some(provider))
@@ -214,21 +262,190 @@ pub fn create_logical_extension_capsule<'py>(
     PyCapsule::new_with_value(py, codec, cr"datafusion_logical_extension_codec")
 }
 
-pub fn ffi_logical_codec_from_pycapsule(obj: Bound<PyAny>) -> PyResult<FFI_LogicalExtensionCodec> {
-    let attr_name = "__datafusion_logical_extension_codec__";
-    let capsule = if obj.hasattr(attr_name)? {
-        obj.getattr(attr_name)?.call0()?
-    } else {
-        obj
+/// The single positional argument datafusion-python hands a capsule getter.
+///
+/// Carrying the argument and its description together is what lets one
+/// diagnostic serve the whole family: the getters do not all take a session,
+/// and telling the author of a catalog provider that their method "must accept
+/// the SessionContext" would send them to fix the wrong signature.
+#[derive(Clone, Copy)]
+pub enum CapsuleGetterArg<'a, 'py> {
+    /// The getter takes no arguments, so it cannot refuse one. A `TypeError`
+    /// from one of these is always the getter's own and is never rewritten.
+    None,
+    /// The `SessionContext` the object is being installed on.
+    Session(&'a Bound<'py, PyAny>),
+    /// The host's logical extension codec, as a
+    /// `datafusion_logical_extension_codec` capsule.
+    LogicalCodec(&'a Bound<'py, PyAny>),
+}
+
+impl<'a, 'py> CapsuleGetterArg<'a, 'py> {
+    fn value(self) -> Option<&'a Bound<'py, PyAny>> {
+        match self {
+            Self::None => None,
+            Self::Session(value) | Self::LogicalCodec(value) => Some(value),
+        }
+    }
+
+    fn expected(self) -> &'static str {
+        match self {
+            Self::None => "",
+            Self::Session(_) => "the SessionContext it is being installed on",
+            Self::LogicalCodec(_) => "the host's logical extension codec",
+        }
+    }
+}
+
+impl<'a, 'py> From<Option<&'a Bound<'py, PyAny>>> for CapsuleGetterArg<'a, 'py> {
+    fn from(session: Option<&'a Bound<'py, PyAny>>) -> Self {
+        session.map_or(Self::None, Self::Session)
+    }
+}
+
+/// Calls `obj.__<attr_name>__(arg)`, or `obj.__<attr_name>__()` for
+/// [`CapsuleGetterArg::None`]. Returns `obj` untouched when it has no such
+/// attribute, so a raw capsule passes straight through.
+///
+/// **Every** capsule getter goes through here rather than calling `getattr`
+/// directly, so that the mapping from a refused argument to a useful error
+/// lives in one place. Three importers previously each had their own copy and
+/// each missed later corrections to it; the getters that take no argument route
+/// through as well, so the rule has no exceptions to remember.
+pub fn call_capsule_getter<'a, 'py: 'a>(
+    obj: Bound<'py, PyAny>,
+    attr_name: &str,
+    arg: impl Into<CapsuleGetterArg<'a, 'py>>,
+) -> PyResult<Bound<'py, PyAny>> {
+    if !obj.hasattr(attr_name)? {
+        return Ok(obj);
+    }
+
+    let arg = arg.into();
+    let getter = obj.getattr(attr_name)?;
+    let result = match arg.value() {
+        Some(value) => getter.call1((value,)),
+        None => getter.call0(),
     };
 
+    result.map_err(|err| {
+        let py = obj.py();
+        if arg.value().is_none() || !err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
+            return err;
+        }
+
+        // Not every `TypeError` here means the getter refused the argument. One
+        // raised *inside* a correctly-signed getter would otherwise be reported
+        // as a version mismatch, sending an extension author to upgrade a
+        // library that is already correct.
+        //
+        // The two are distinguishable: an arity mismatch is raised by the call
+        // machinery before the getter's frame exists, so nothing unwinds and no
+        // traceback is attached. An error from the body unwinds that frame and
+        // carries one.
+        //
+        // This holds because the call originates in Rust. `call1` pushes no
+        // Python caller frame, so an arity error has nothing to unwind and
+        // arrives bare. If a Python-level shim is ever interposed between the
+        // host and the getter, its frame would supply a traceback and this
+        // check would quietly stop firing -- the diagnostic would degrade to
+        // the bare `TypeError` it exists to replace, with no test failing.
+        if err.traceback(py).is_some() {
+            return err;
+        }
+
+        let import_err = PyImportError::new_err(format!(
+            "Incompatible libraries. `{attr_name}` must accept {}. \
+             Upgrade the library providing this object.",
+            arg.expected()
+        ));
+        // Keep the original reachable as `__cause__` rather than discarding it.
+        import_err.set_cause(py, Some(err));
+        import_err
+    })
+}
+
+pub fn ffi_logical_codec_from_pycapsule<'py>(
+    obj: Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_LogicalExtensionCodec> {
+    let capsule = call_capsule_getter(obj, "__datafusion_logical_extension_codec__", session)?;
+
     let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_logical_extension_codec")?;
     let data: NonNull<FFI_LogicalExtensionCodec> = capsule
         .pointer_checked(Some(c"datafusion_logical_extension_codec"))?
         .cast();
     let codec = unsafe { data.as_ref() };
+    check_ffi_version("logical extension codec", unsafe { (codec.version)() })?;
 
     Ok(codec.clone())
+}
+
+pub fn ffi_physical_codec_from_pycapsule<'py>(
+    obj: Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_PhysicalExtensionCodec> {
+    let capsule = call_capsule_getter(obj, "__datafusion_physical_extension_codec__", session)?;
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_physical_extension_codec")?;
+    let data: NonNull<FFI_PhysicalExtensionCodec> = capsule
+        .pointer_checked(Some(c"datafusion_physical_extension_codec"))?
+        .cast();
+    let codec = unsafe { data.as_ref() };
+    check_ffi_version("physical extension codec", unsafe { (codec.version)() })?;
+
+    Ok(codec.clone())
+}
+
+/// Extracts the `FFI_TaskContextProvider` a session exposes.
+///
+/// An extension library exporting a codec needs one for the decode callbacks
+/// its codec will receive. Taking the host's means those callbacks resolve
+/// names against the session that is actually running the query, and removes
+/// any need for the library to construct a `SessionContext` of its own.
+pub fn ffi_task_context_provider_from_pycapsule(
+    session: &Bound<PyAny>,
+) -> PyResult<FFI_TaskContextProvider> {
+    let capsule = call_capsule_getter(
+        session.clone(),
+        "__datafusion_task_context_provider__",
+        CapsuleGetterArg::None,
+    )?;
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_task_context_provider")?;
+    let data: NonNull<FFI_TaskContextProvider> = capsule
+        .pointer_checked(Some(c"datafusion_task_context_provider"))?
+        .cast();
+    let provider = unsafe { data.as_ref() };
+
+    Ok(provider.clone())
+}
+
+pub fn create_query_planner_capsule<'py>(
+    py: Python<'py>,
+    planner: &FFI_QueryPlanner,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    PyCapsule::new_with_value(py, planner.clone(), cr"datafusion_query_planner")
+}
+
+pub fn ffi_query_planner_from_pycapsule<'py>(
+    obj: &Bound<'py, PyAny>,
+    session: Option<&Bound<'py, PyAny>>,
+) -> PyResult<FFI_QueryPlanner> {
+    let capsule = call_capsule_getter(obj.clone(), "__datafusion_query_planner__", session)?;
+
+    let capsule = capsule.cast::<PyCapsule>()?;
+    validate_pycapsule(capsule, "datafusion_query_planner")?;
+    let data: NonNull<FFI_QueryPlanner> = capsule
+        .pointer_checked(Some(c"datafusion_query_planner"))?
+        .cast();
+    let planner = unsafe { data.as_ref() };
+    check_ffi_version("query planner", unsafe { (planner.version)() })?;
+
+    Ok(planner.clone())
 }
 
 pub fn create_physical_extension_capsule<'py>(
@@ -247,6 +464,11 @@ pub fn create_physical_extension_capsule<'py>(
 /// Use this when `Arc<$output_type>: From<&$ffi_type>` (infallible
 /// conversion). For fallible conversions use [`try_from_pycapsule!`]
 /// instead.
+///
+/// The generated extractor does not check the FFI major version, because not
+/// every FFI type carries one. If `$ffi_type` has a `version` field, call
+/// [`check_ffi_version`] on it yourself, as the hand-written extractors in this
+/// crate do.
 #[macro_export]
 macro_rules! from_pycapsule {
     ($fn_name:ident, $capsule_name:literal, $ffi_type:ty, $output_type:ty) => {
@@ -256,10 +478,11 @@ macro_rules! from_pycapsule {
             use $crate::pyo3::prelude::*;
             use $crate::pyo3::types::PyCapsule;
 
-            let mut obj = obj.clone();
-            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
-                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
-            }
+            let obj = $crate::call_capsule_getter(
+                obj.clone(),
+                concat!("__", $capsule_name, "__"),
+                $crate::CapsuleGetterArg::None,
+            )?;
             let capsule = obj.cast::<PyCapsule>().map_err(|_| {
                 $crate::errors::py_datafusion_err(concat!(
                     "Invalid ",
@@ -293,10 +516,11 @@ macro_rules! try_from_pycapsule {
             use $crate::pyo3::prelude::*;
             use $crate::pyo3::types::PyCapsule;
 
-            let mut obj = obj.clone();
-            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
-                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
-            }
+            let obj = $crate::call_capsule_getter(
+                obj.clone(),
+                concat!("__", $capsule_name, "__"),
+                $crate::CapsuleGetterArg::None,
+            )?;
             let capsule = obj.cast::<PyCapsule>().map_err(|_| {
                 $crate::errors::py_datafusion_err(concat!(
                     "Invalid ",
@@ -326,13 +550,12 @@ macro_rules! try_from_pycapsule {
 #[doc(hidden)]
 pub use pyo3;
 
-from_pycapsule!(
-    physical_codec_from_pycapsule,
-    "datafusion_physical_extension_codec",
-    FFI_PhysicalExtensionCodec,
-    dyn PhysicalExtensionCodec
-);
-
+// There is deliberately no `physical_codec_from_pycapsule` here. These macros
+// call the getter with no arguments, which is right for the two hooks below but
+// wrong for `__datafusion_physical_extension_codec__`, which takes the session
+// it is being installed on. Use `ffi_physical_codec_from_pycapsule`, which
+// passes the session, and convert with `(&ffi).into()` if you need an
+// `Arc<dyn PhysicalExtensionCodec>`.
 from_pycapsule!(
     physical_optimizer_rule_from_pycapsule,
     "datafusion_physical_optimizer_rule",

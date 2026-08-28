@@ -233,6 +233,14 @@ fn strip_wire_header<'a>(
 /// Sitting at the top of the session's logical codec stack means
 /// every serializer that reads `session.logical_codec()` automatically
 /// picks up Python-aware encoding for free.
+///
+/// A codec deliberately does **not** retain the session it was built from.
+/// Codecs are routinely handed to a provider that is then registered back into
+/// that same session, so retaining here would close a cycle:
+/// `SessionContext -> catalog -> FFI provider -> FFI codec -> here`. Keeping
+/// the weak `FFI_TaskContextProvider` valid is instead a matter of never
+/// replacing the session's `Arc<SessionContext>`; see
+/// `PySessionContext::set_session_query_planner`.
 #[derive(Debug)]
 pub struct PythonLogicalCodec {
     inner: Arc<dyn LogicalExtensionCodec>,
@@ -443,6 +451,9 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// would round-trip at the logical level but break at the physical
 /// level. Both layers reuse the shared payload framing
 /// ([`PY_SCALAR_UDF_FAMILY`] et al.) so the wire format is identical.
+///
+/// Like [`PythonLogicalCodec`], this does not retain the session it was built
+/// from; see that type for why.
 #[derive(Debug)]
 pub struct PythonPhysicalCodec {
     inner: Arc<dyn PhysicalExtensionCodec>,

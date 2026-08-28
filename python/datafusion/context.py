@@ -145,6 +145,18 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
+class QueryPlannerExportable(Protocol):
+    """Type hint for object that has a __datafusion_query_planner__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
+    produced by a separate compiled extension. ``session`` is the
+    :py:class:`SessionContext` the planner is being installed on; take the
+    extension codecs from it rather than building your own.
+    """
+
+    def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -1759,6 +1771,51 @@ class SessionContext:
         """
         self.ctx.add_physical_optimizer_rule(rule)
 
+    def set_query_planner(self, planner: QueryPlannerExportable | _PyCapsule) -> None:
+        """Install a custom query planner on this session.
+
+        The planner is imported through its ``__datafusion_query_planner__``
+        PyCapsule and installed on this context, in the same way
+        :meth:`~SessionContext.add_physical_optimizer_rule` installs a rule.
+        The query planner is part of the session state, so it applies to this
+        context and to every context sharing its session — including ones
+        already returned by
+        :meth:`~SessionContext.with_logical_extension_codec` and friends.
+
+        A session holds exactly one planner, so calling this again replaces the
+        previous one rather than layering. To chain planners, have the new
+        planner wrap the capsule from
+        :meth:`~SessionContext.__datafusion_query_planner__`, captured
+        *before* the new planner is installed.
+
+        Install any extension codecs before a layered planner. Installing a
+        codec afterwards rebuilds the installed planner against it, but not the
+        fallback inside it, which keeps the codecs it was imported with. Note
+        also that the planner is built against the codecs of the context this
+        method is called on, so installing the same planner again on a different
+        handle rebinds the session's planner to *that* handle's codecs.
+
+        Args:
+            planner: Object exposing ``__datafusion_query_planner__`` (see
+                :class:`QueryPlannerExportable`) or a raw
+                ``datafusion_query_planner`` PyCapsule.
+
+        Examples:
+            >>> from my_extension import DistributedQueryPlanner  # doctest: +SKIP
+            >>> ctx = SessionContext()
+            >>> ctx.set_query_planner(DistributedQueryPlanner())  # doctest: +SKIP
+            >>> ctx.sql("SELECT * FROM remote_table").collect()  # doctest: +SKIP
+
+            Layer a planner on top of the one already installed by capturing
+            the existing planner first:
+
+            >>> fallback = ctx.__datafusion_query_planner__()  # doctest: +SKIP
+            >>> ctx.set_query_planner(
+            ...     DistributedQueryPlanner(fallback=fallback)
+            ... )  # doctest: +SKIP
+        """
+        self.ctx.set_query_planner(planner)
+
     def table_provider(self, name: str) -> Table:
         """Return the :py:class:`~datafusion.catalog.Table` for the given table name.
 
@@ -2178,9 +2235,22 @@ class SessionContext:
         """Access the PyCapsule FFI_TaskContextProvider."""
         return self.ctx.__datafusion_task_context_provider__()
 
-    def __datafusion_logical_extension_codec__(self) -> Any:
-        """Access the PyCapsule FFI_LogicalExtensionCodec."""
-        return self.ctx.__datafusion_logical_extension_codec__()
+    def __datafusion_logical_extension_codec__(self, session: Any = None) -> Any:
+        """Access the PyCapsule FFI_LogicalExtensionCodec.
+
+        ``session`` is accepted so a context satisfies the same protocol an
+        extension library implements, where the argument is how the library
+        reaches the session it is being installed on. A context already is one,
+        so the argument is ignored.
+        """
+        return self.ctx.__datafusion_logical_extension_codec__(session)
+
+    def __datafusion_query_planner__(self, session: Any = None) -> Any:
+        """Access the ``FFI_QueryPlanner`` PyCapsule for the current planner.
+
+        See :meth:`__datafusion_logical_extension_codec__` for ``session``.
+        """
+        return self.ctx.__datafusion_query_planner__(session)
 
     def with_logical_extension_codec(
         self, codec: LogicalExtensionCodecExportable | _PyCapsule
@@ -2190,15 +2260,25 @@ class SessionContext:
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
+
+        The returned context shares its session state with the original, so a
+        later registration on either is visible to both. If a custom query
+        planner is installed, it is rebuilt against the new codec on the shared
+        session, so the original context plans with the new codec too. This
+        happens on the shared session, so it takes effect even if the returned
+        context is discarded.
         """
         new_internal = self.ctx.with_logical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
 
-    def __datafusion_physical_extension_codec__(self) -> Any:
-        """Access the PyCapsule FFI_PhysicalExtensionCodec."""
-        return self.ctx.__datafusion_physical_extension_codec__()
+    def __datafusion_physical_extension_codec__(self, session: Any = None) -> Any:
+        """Access the PyCapsule FFI_PhysicalExtensionCodec.
+
+        See :meth:`__datafusion_logical_extension_codec__` for ``session``.
+        """
+        return self.ctx.__datafusion_physical_extension_codec__(session)
 
     def with_physical_extension_codec(
         self, codec: PhysicalExtensionCodecExportable | _PyCapsule
@@ -2208,6 +2288,13 @@ class SessionContext:
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
+
+        The returned context shares its session state with the original, so a
+        later registration on either is visible to both. If a custom query
+        planner is installed, it is rebuilt against the new codec on the shared
+        session, so the original context plans with the new codec too. This
+        happens on the shared session, so it takes effect even if the returned
+        context is discarded.
         """
         new_internal = self.ctx.with_physical_extension_codec(codec)
         new = SessionContext.__new__(SessionContext)
@@ -2250,7 +2337,13 @@ class SessionContext:
             regardless of the toggle.
 
         Returns a new :class:`SessionContext` with the toggle applied;
-        the original session is unchanged.
+        the original context's own codec settings are unchanged. The
+        returned context shares its session state with the original, so
+        a later registration on either is visible to both. If a custom
+        query planner is installed, it is rebuilt against the new codecs
+        on the shared session, so the original context plans with them
+        too. This happens on the shared session, so it takes effect even
+        if the returned context is discarded.
 
         Examples:
             >>> import pyarrow as pa
