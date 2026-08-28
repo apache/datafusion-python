@@ -154,53 +154,43 @@ def test_codec_sees_a_udf_registered_after_the_planner():
     assert logical_codec.task_context_udf_resolutions() > 0
 
 
-def test_registered_providers_survive_a_planner_install():
-    """A planner install must not orphan a previously registered provider.
+@pytest.mark.parametrize("codecs_first", [True, False])
+def test_registered_providers_survive_a_planner_install(codecs_first: bool):
+    """Neither write path may orphan a previously registered provider.
 
     A foreign catalog provider is handed a codec carrying a *weak*
     ``FFI_TaskContextProvider`` pointing at the session it was registered on,
     and upgrades it on every ``supports_filters_pushdown`` and every ``scan``.
     That codec lives inside the registered ``FFI_CatalogProvider``, so nothing
     on the Python side can reach it to rebind it. Deriving a replacement
-    ``SessionContext`` here would drop the allocation those handles point at
-    and the next query would fail with ``TaskContextProvider went out of scope
-    over FFI boundary``; installing in place keeps the one allocation alive.
+    ``SessionContext`` would drop the allocation those handles point at, and
+    the next query would fail with ``TaskContextProvider went out of scope over
+    FFI boundary``. Installing in place keeps the one allocation alive.
+
+    Both parameters exercise that, because both write ``SessionState``:
+    ``set_query_planner`` installs the planner, and installing a codec on a
+    session that already has one rebuilds that planner against the new codec.
 
     The ``WHERE`` clause is load-bearing -- it forces filter pushdown, which
-    upgrades the weak handle during logical optimization, before any plan
-    serialization could fail first for an unrelated reason.
+    upgrades the weak handle during logical optimization. It is also why both
+    codecs have to be installed: without them the query fails at plan
+    serialization with ``LogicalExtensionCodec is not provided``, which would
+    mask a dangling handle rather than expose it.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=10))
     ctx = SessionContext(config)
     ctx.register_catalog_provider("ffi_catalog", MyCatalogProvider())
 
-    ctx.set_query_planner(MyQueryPlanner())
-    gc.collect()
+    def install_codecs(ctx):
+        ctx = ctx.with_logical_extension_codec(MyLogicalExtensionCodec())
+        return ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
 
-    batches = ctx.sql(
-        "SELECT units FROM ffi_catalog.my_schema.my_table WHERE units > 5"
-    ).collect()
-    assert sorted(v for b in batches for v in b.column(0).to_pylist()) == [
-        7,
-        10,
-        20,
-        30,
-    ]
-
-
-def test_registered_providers_survive_a_codec_install_after_a_planner():
-    """The same, for the other write path.
-
-    Installing a codec on a session that already has a foreign planner rebuilds
-    that planner against the new codec. That rebuild must also happen in place.
-    """
-    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=10))
-    ctx = SessionContext(config)
-    ctx.register_catalog_provider("ffi_catalog", MyCatalogProvider())
-
-    ctx.set_query_planner(MyQueryPlanner())
-    ctx = ctx.with_logical_extension_codec(MyLogicalExtensionCodec())
-    ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
+    if codecs_first:
+        ctx = install_codecs(ctx)
+        ctx.set_query_planner(MyQueryPlanner())
+    else:
+        ctx.set_query_planner(MyQueryPlanner())
+        ctx = install_codecs(ctx)
     gc.collect()
 
     batches = ctx.sql(
