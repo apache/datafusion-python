@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install taplo
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.5
         with:
           tool: taplo-cli
 
@@ -118,7 +118,7 @@ jobs:
           enable-cache: true
 
       - name: Install cargo-license
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.5
         with:
           tool: cargo-license
 
