@@ -1764,7 +1764,7 @@ def regexp_like(
     Args:
         string: Data to test against the regular expression.
         regex: Regular expression to search for.
-        flags: Optional regular expression flags to control regex behavior.
+        flags: Flags to control regex behavior.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1805,7 +1805,7 @@ def regexp_match(
     Args:
         string: Data to match against the regular expression.
         regex: Regular expression to search for.
-        flags: Optional regular expression flags to control regex behavior.
+        flags: Flags to control regex behavior.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1853,8 +1853,8 @@ def regexp_replace(
         string: Data to search for the regular expression match.
         pattern: Regular expression to search for.
         replacement: Text substituted for each match.
-        flags: Optional regular expression flags to control regex behavior. Add
-            ``g`` to replace every match rather than only the first.
+        flags: Flags to control regex behavior. Add ``g`` to replace every
+            match rather than only the first.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1905,8 +1905,8 @@ def regexp_count(
     Args:
         string: Data to search for the regular expression match.
         pattern: Regular expression to search for.
-        start: Optional position to start the search (the first position is 1).
-        flags: Optional regular expression flags to control regex behavior.
+        start: Position to start the search (the first position is 1).
+        flags: Flags to control regex behavior.
 
     Examples:
         >>> ctx = dfn.SessionContext()
