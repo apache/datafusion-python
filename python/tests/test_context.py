@@ -1297,7 +1297,7 @@ def test_pre_52_table_provider_signature_reports_an_upgrade(ctx):
             raise AssertionError(msg)
 
     with pytest.raises(ImportError, match="__datafusion_table_provider__") as excinfo:
-        ctx.register_table_provider("old_sig", PreSessionProvider())
+        ctx.register_table("old_sig", PreSessionProvider())
     assert isinstance(excinfo.value.__cause__, TypeError)
 
 
@@ -1346,4 +1346,4 @@ def test_type_error_inside_a_table_provider_getter_propagates(ctx):
             raise TypeError(msg)
 
     with pytest.raises(TypeError, match="bad cast inside the getter"):
-        ctx.register_table_provider("raises", RaisesTypeError())
+        ctx.register_table("raises", RaisesTypeError())

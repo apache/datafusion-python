@@ -505,6 +505,36 @@ def test_provider_codecs_can_be_installed_after_planner():
     assert physical_codec.execution_plan_decode_calls() > 0
 
 
+def test_a_discarded_derived_context_still_rebinds_the_planner():
+    """Installing a codec rebinds the planner even if the handle is thrown away.
+
+    `with_logical_extension_codec` returns a context sharing this session, and
+    rebuilding the installed planner against the new codec happens on that
+    shared session rather than on the returned handle. So the rebind outlives
+    the handle, and the codec below takes effect on `ctx` despite `ctx`'s own
+    codec field never changing.
+
+    That is spooky enough to be worth pinning as a decision. It is also forced:
+    `FFI_QueryPlanner` holds its codecs by value, so a planner cannot read the
+    session's current codecs at plan time and the rebuild has to be eager.
+
+    A fresh codec instance is what makes it observable -- it carries its own
+    counters, and the planner encodes the outbound logical plan with whichever
+    codec it is holding.
+    """
+    ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
+    ctx.set_query_planner(MyQueryPlanner())
+
+    later = MyLogicalExtensionCodec()
+    # Deliberately discarded. The rebind still lands on the shared session.
+    ctx.with_logical_extension_codec(later)
+    gc.collect()
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert later.table_provider_encode_calls() > 0
+
+
 def test_query_planner_requires_provider_codec():
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     ctx = SessionContext(config)
