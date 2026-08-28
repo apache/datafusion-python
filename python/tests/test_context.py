@@ -737,6 +737,21 @@ def test_set_query_planner_rejects_wrong_capsule(ctx):
         ctx.set_query_planner(ctx.__datafusion_task_context_provider__())
 
 
+def test_with_extension_rejects_wrong_capsule(ctx):
+    """The extension options hook names the capsule it was handed.
+
+    Like the rest of the capsule family, this reports which capsule turned up
+    rather than CPython's fixed "called with incorrect name" string.
+    """
+
+    class WrongCapsule:
+        def __datafusion_extension_options__(self):
+            return ctx.__datafusion_task_context_provider__()
+
+    with pytest.raises(ValueError, match="datafusion_extension_options"):
+        SessionConfig().with_extension(WrongCapsule())
+
+
 def test_pre_55_codec_signature_reports_an_upgrade(ctx):
     """A getter that refuses the session is named, not left as a bare TypeError.
 

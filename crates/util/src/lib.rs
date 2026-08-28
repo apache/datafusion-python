@@ -478,10 +478,11 @@ macro_rules! from_pycapsule {
             use $crate::pyo3::prelude::*;
             use $crate::pyo3::types::PyCapsule;
 
-            let mut obj = obj.clone();
-            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
-                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
-            }
+            let obj = $crate::call_capsule_getter(
+                obj.clone(),
+                concat!("__", $capsule_name, "__"),
+                $crate::CapsuleGetterArg::None,
+            )?;
             let capsule = obj.cast::<PyCapsule>().map_err(|_| {
                 $crate::errors::py_datafusion_err(concat!(
                     "Invalid ",
@@ -515,10 +516,11 @@ macro_rules! try_from_pycapsule {
             use $crate::pyo3::prelude::*;
             use $crate::pyo3::types::PyCapsule;
 
-            let mut obj = obj.clone();
-            if obj.hasattr(concat!("__", $capsule_name, "__"))? {
-                obj = obj.getattr(concat!("__", $capsule_name, "__"))?.call0()?;
-            }
+            let obj = $crate::call_capsule_getter(
+                obj.clone(),
+                concat!("__", $capsule_name, "__"),
+                $crate::CapsuleGetterArg::None,
+            )?;
             let capsule = obj.cast::<PyCapsule>().map_err(|_| {
                 $crate::errors::py_datafusion_err(concat!(
                     "Invalid ",

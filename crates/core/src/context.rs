@@ -62,7 +62,7 @@ use datafusion_python_util::{
     create_physical_extension_capsule, create_query_planner_capsule,
     ffi_logical_codec_from_pycapsule, ffi_physical_codec_from_pycapsule,
     ffi_query_planner_from_pycapsule, get_global_ctx, get_tokio_runtime,
-    physical_optimizer_rule_from_pycapsule, spawn_future, wait_for_future,
+    physical_optimizer_rule_from_pycapsule, spawn_future, validate_pycapsule, wait_for_future,
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
@@ -201,9 +201,20 @@ impl PySessionConfig {
                 "Expected extension object to define __datafusion_extension_options__()",
             ));
         }
-        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        // Routed through `call_capsule_getter` like every other getter in the
+        // family, even though this one takes no argument and so has no arity
+        // error to diagnose. The point is that the grep in the FFI capsule
+        // protocol skill turns up no exceptions.
+        let capsule = call_capsule_getter(
+            extension,
+            "__datafusion_extension_options__",
+            CapsuleGetterArg::None,
+        )?;
         let capsule = capsule.cast::<PyCapsule>()?;
+        validate_pycapsule(capsule, "datafusion_extension_options")?;
 
+        // No `check_ffi_version` here: `FFI_ExtensionOptions` carries no
+        // version field, so there is nothing to compare.
         let extension: NonNull<FFI_ExtensionOptions> = capsule
             .pointer_checked(Some(c"datafusion_extension_options"))?
             .cast();
