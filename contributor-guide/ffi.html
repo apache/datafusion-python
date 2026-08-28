@@ -688,6 +688,182 @@ extension that has been written using this approach and the most thoroughly impl
 As we continue to expose more of the DataFusion features, we intend to follow this same
 design pattern.</p>
 </section>
+<section id="query-planners-across-multiple-libraries">
+<h2>Query Planners Across Multiple Libraries<a class="headerlink" href="#query-planners-across-multiple-libraries" title="Link to this heading">#</a></h2>
+<p>A query can involve three independent native libraries: <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code>, a library
+that owns table providers or functions, and a library that owns the query planner. The
+examples use two separate extension crates so each role has a distinct shared-library
+identity:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example"><code class="docutils literal notranslate"><span class="pre">datafusion-ffi-example</span></code></a> owns providers, functions, and their codecs.</p></li>
+<li><p><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example"><code class="docutils literal notranslate"><span class="pre">datafusion-ffi-query-planner-example</span></code></a> owns the planner and its configuration.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> owns the codecs used for the exchange and supplies them to the
+foreign planner. This lets the planner decode provider-owned objects and lets
+<code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> decode the physical plan returned by the planner. The examples use
+process-local tokens to demonstrate ownership; production codecs should serialize
+durable metadata instead.</p>
+<p>The current Python API has one external logical codec and one external physical codec.
+Installing another codec replaces the prior codec rather than composing a registry.
+The example therefore has one external codec owner, and the planner uses built-in
+physical nodes. Install the provider codecs before the planner where possible.</p>
+<p>The current FFI logical codec supports providers and UDFs but not arbitrary custom
+<code class="docutils literal notranslate"><span class="pre">LogicalPlan::Extension</span></code> nodes. See both example READMEs for the supported flow and
+local build commands.</p>
+<section id="capsule-getters-receive-the-session-they-are-installed-on">
+<h3>Capsule getters receive the session they are installed on<a class="headerlink" href="#capsule-getters-receive-the-session-they-are-installed-on" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code>, <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> all take the <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> the object is
+being installed on, the same way <code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code> does:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">session</span><span class="p">:</span><span class="w"> </span><span class="nc">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyAny</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">runtime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_tokio_runtime</span><span class="p">().</span><span class="n">handle</span><span class="p">().</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_task_context_provider_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">session</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This exists because the FFI constructors need things an extension library does not
+have. <code class="docutils literal notranslate"><span class="pre">FFI_{Logical,Physical}ExtensionCodec::new</span></code> needs a <code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> for the
+decode callbacks the codec will receive, and <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner::new</span></code> needs both codecs
+on top of that. Taking them from the session is what keeps a library from constructing
+a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> purely to satisfy a parameter — an empty one resolves nothing, and
+<code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code> holds it weakly, so a context built inline in the getter is
+already dropped by the time the capsule is used.</p>
+<p>A planner uses <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner::new_with_ffi_codecs</span></code> with the two codecs it takes off
+the session, and never touches a provider directly. That also matches what installation
+does anyway: <code class="docutils literal notranslate"><span class="pre">set_query_planner</span></code> builds the planner against the codecs of the session
+that will run the query.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> accepts the argument on all three getters and ignores it, so a session
+satisfies the same protocol an extension library implements. When you export the current
+planner to wrap it, <code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_query_planner__()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_query_planner__(ctx)</span></code> are both fine.</p>
+</section>
+<section id="a-codec-decodes-against-the-session-that-is-running-the-query">
+<h3>A codec decodes against the session that is running the query<a class="headerlink" href="#a-codec-decodes-against-the-session-that-is-running-the-query" title="Link to this heading">#</a></h3>
+<p>Because the provider comes from the host, a decode callback running inside an extension
+library resolves names against the session running the query. A function registered with
+<code class="docutils literal notranslate"><span class="pre">ctx.register_udf(...)</span></code> is visible to a foreign codec decoding a node that references it
+by name, and the handle is live rather than a snapshot, so a registration made after the
+codec is installed is visible too.</p>
+<p>This is covered in
+<code class="docutils literal notranslate"><span class="pre">examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py</span></code>,
+where the example codecs take a <code class="docutils literal notranslate"><span class="pre">require_udf_on_decode</span></code> name and resolve it out of the
+task context they are handed.</p>
+</section>
+<section id="one-session-one-arc-sessioncontext">
+<h3>One session, one <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code><a class="headerlink" href="#one-session-one-arc-sessioncontext" title="Link to this heading">#</a></h3>
+<p>Every codec handed to a foreign object carries an <code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>, and that
+type holds its provider <strong>weakly</strong>. A registered catalog provider upgrades the handle on
+every <code class="docutils literal notranslate"><span class="pre">supports_filters_pushdown</span></code> and every <code class="docutils literal notranslate"><span class="pre">scan</span></code>. Those handles are bound to one
+particular <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code> allocation, not to the logical session, so anything that
+replaces the allocation orphans all of them and the next query fails with
+<code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span> <span class="pre">went</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">scope</span> <span class="pre">over</span> <span class="pre">FFI</span> <span class="pre">boundary</span></code>.</p>
+<p>So a <code class="docutils literal notranslate"><span class="pre">PySessionContext</span></code> keeps the <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code> it was created with for its whole
+life. Installing a query planner writes the new <code class="docutils literal notranslate"><span class="pre">SessionState</span></code> back through
+<code class="docutils literal notranslate"><span class="pre">state_ref()</span></code>, exactly as <code class="docutils literal notranslate"><span class="pre">add_physical_optimizer_rule</span></code> does, rather than deriving a
+replacement context. The session id is carried across that rewrite — <code class="docutils literal notranslate"><span class="pre">SessionStateBuilder</span></code>
+mints a fresh one otherwise — so <code class="docutils literal notranslate"><span class="pre">session_id()</span></code> and every <code class="docutils literal notranslate"><span class="pre">TaskContext</span></code> the session hands
+out keep agreeing.</p>
+<p>Repairing the damage instead of avoiding it does not work in general. A context can
+rebuild the codecs it holds in its own fields, but a codec already embedded in a
+registered <code class="docutils literal notranslate"><span class="pre">FFI_CatalogProvider</span></code> — and in every <code class="docutils literal notranslate"><span class="pre">FFI_SchemaProvider</span></code> and
+<code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code> minted from it — is not reachable from Python at all. Nor can the
+codec simply retain the session that built it: a codec handed to a provider is routinely
+registered straight back into that same session, which would close the cycle
+<code class="docutils literal notranslate"><span class="pre">SessionContext</span> <span class="pre">-&gt;</span> <span class="pre">catalog</span> <span class="pre">-&gt;</span> <span class="pre">FFI</span> <span class="pre">provider</span> <span class="pre">-&gt;</span> <span class="pre">FFI</span> <span class="pre">codec</span> <span class="pre">-&gt;</span> <span class="pre">SessionContext</span></code> and leak it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext.enable_url_table</span></code> is the one exception. It clones the underlying
+<code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>, so the returned context has an allocation of its own and must not
+outlive the receiver.</p>
+</section>
+<section id="what-a-derived-context-shares">
+<h3>What a derived context shares<a class="headerlink" href="#what-a-derived-context-shares" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">with_logical_extension_codec</span></code>, <code class="docutils literal notranslate"><span class="pre">with_physical_extension_codec</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">with_python_udf_inlining</span></code> return a new <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> wrapping the <em>same</em> underlying
+session. Only the Python-side codec settings differ; catalogs, tables, registered
+functions, and configuration are the one shared session, so a registration on either
+side is visible to both.</p>
+<p><code class="docutils literal notranslate"><span class="pre">set_query_planner</span></code> does not return anything. The query planner lives in <code class="docutils literal notranslate"><span class="pre">SessionState</span></code>,
+so it is a property of the session rather than of a handle on it, and installing one is
+visible to every context sharing that session — including ones a <code class="docutils literal notranslate"><span class="pre">with_*</span></code> call returned
+earlier. Installing a codec on a session that already has a foreign planner rebuilds
+that planner against the new codec for the same reason: there is one planner, and it has
+to carry the codecs currently in force. This happens on the shared session, so it takes
+effect even if the returned context is discarded — <code class="docutils literal notranslate"><span class="pre">ctx.with_python_udf_inlining(...)</span></code>
+whose result is thrown away still leaves the session’s planner carrying the codecs of
+that discarded handle. A call that changes nothing is exempt: asking for the inlining
+setting a context already has returns a handle without touching the session.</p>
+<p>The rule that falls out of this is worth stating on its own, because it is the one thing
+that surprises people:</p>
+<blockquote>
+<div><p>The session’s query planner carries the codecs of the handle that most recently
+installed one. Every other path — <code class="docutils literal notranslate"><span class="pre">Expr.to_bytes(ctx)</span></code>, <code class="docutils literal notranslate"><span class="pre">ExecutionPlan.to_bytes(ctx)</span></code>,
+registering a provider — uses the codecs of the handle you call it on.</p>
+</div></blockquote>
+<p>Those can be different handles, and then one session has two codecs in effect at once:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">codec_a</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">planner</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">codec_b</span><span class="p">)</span>  <span class="c1"># discarded</span>
+
+<span class="n">Expr</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>   <span class="c1"># encodes with codec_a -- ctx&#39;s own field</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>     <span class="c1"># plans with codec_b -- installed via the discarded handle</span>
+</pre></div>
+</div>
+<p>Chaining <code class="docutils literal notranslate"><span class="pre">ctx</span> <span class="pre">=</span> <span class="pre">ctx.with_...(...)</span></code>, as the example below does, keeps the two in step.
+<code class="docutils literal notranslate"><span class="pre">test_the_planner_and_the_handle_can_hold_different_codecs</span></code> pins the divergence.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">provider_logical_codec</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span><span class="n">provider_physical_codec</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">planner</span><span class="p">)</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">my_udf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Order is a readability preference rather than a requirement — installing a codec after a
+planner rebuilds the planner against it.</p>
+<p>A session holds exactly one query planner. Calling <code class="docutils literal notranslate"><span class="pre">set_query_planner</span></code> again replaces the
+installed planner instead of layering another one. To chain planners, have the new
+planner wrap the capsule returned by <code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_query_planner__()</span></code>,
+captured before the new planner is installed, and delegate to it explicitly.</p>
+</section>
+<section id="rebinding-a-planner-s-codecs-is-one-level-deep">
+<h3>Rebinding a planner’s codecs is one level deep<a class="headerlink" href="#rebinding-a-planner-s-codecs-is-one-level-deep" title="Link to this heading">#</a></h3>
+<p>The rebuild above swaps the codecs on the installed <code class="docutils literal notranslate"><span class="pre">ForeignQueryPlanner</span></code> handle, and
+only that handle. A planner that wraps a fallback resolved that fallback when <em>it</em> was
+installed, and holds the result inside its own library’s private data — behind a
+<code class="docutils literal notranslate"><span class="pre">create_physical_plan</span></code> function pointer, with no Python-side handle. A codec installed
+afterwards therefore reaches the outer planner and not the fallback, which keeps
+whichever codecs were in force when it was imported.</p>
+<p>Neither side can repair that:</p>
+<ul class="simple">
+<li><p><strong>The host cannot reach it.</strong> <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner::new_with_ffi_codecs</span></code> unwraps exactly
+one <code class="docutils literal notranslate"><span class="pre">ForeignQueryPlanner</span></code> layer. There is no deeper handle to unwrap — the same
+situation as a codec embedded in a registered <code class="docutils literal notranslate"><span class="pre">FFI_CatalogProvider</span></code>.</p></li>
+<li><p><strong>The planner library cannot re-derive it.</strong> <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code> holds its codecs by
+value, and <code class="docutils literal notranslate"><span class="pre">Session</span></code> exposes no accessor for the ones the host currently has, so
+<code class="docutils literal notranslate"><span class="pre">create_physical_plan</span></code> cannot pick them up from the session it is handed. The rebuild
+has to be eager, and an eager rebuild only sees the top layer.</p></li>
+</ul>
+<p>A fix has to come from upstream, and is tracked in
+<a class="reference external" href="https://github.com/apache/datafusion/issues/24762">apache/datafusion#24762</a>.</p>
+<p>The stale codecs stay usable rather than dangling — they hold weak handles to the one
+<code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code> that Rule 6 keeps alive — so the effect is a fallback hop
+serializing with an older codec, not a failure. It is also invisible to the examples
+here, which use one fallback in the same cdylib as its wrapper; <code class="docutils literal notranslate"><span class="pre">datafusion-ffi</span></code>
+short-circuits a same-library hop rather than serializing, so no codec runs. A fallback
+in a <em>different</em> library would serialize, and would do it with the codecs it was
+imported with.</p>
+<p>So install the codecs before a layered planner. If a codec has to go in afterwards,
+install the outer planner again <em>on the handle that holds the new codec</em> — that re-runs
+its getter, which re-imports the fallback against that handle’s codecs. Re-installing on
+the original handle rebinds the session’s planner back to the original handle’s codecs
+instead, which is the trap
+<code class="docutils literal notranslate"><span class="pre">test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs</span></code> pins.</p>
+</section>
+</section>
 <section id="alternative-approach">
 <h2>Alternative Approach<a class="headerlink" href="#alternative-approach" title="Link to this heading">#</a></h2>
 <p>Suppose you needed to expose some other features of DataFusion and you could not wait
@@ -765,6 +941,14 @@ the latest status, we recommend reviewing the code in the <a class="reference ex
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspiration-from-arrow">Inspiration from Arrow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-details">Implementation Details</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyo3-class-mutability-guidelines">PyO3 class mutability guidelines</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#query-planners-across-multiple-libraries">Query Planners Across Multiple Libraries</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#capsule-getters-receive-the-session-they-are-installed-on">Capsule getters receive the session they are installed on</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-codec-decodes-against-the-session-that-is-running-the-query">A codec decodes against the session that is running the query</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#one-session-one-arc-sessioncontext">One session, one <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-a-derived-context-shares">What a derived context shares</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rebinding-a-planner-s-codecs-is-one-level-deep">Rebinding a planner’s codecs is one level deep</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alternative-approach">Alternative Approach</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#status-of-work">Status of Work</a></li>
 </ul>

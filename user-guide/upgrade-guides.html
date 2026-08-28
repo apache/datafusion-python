@@ -507,6 +507,112 @@
 -->
 <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">#</a></h1>
+<section id="datafusion-55-0-0">
+<h2>DataFusion 55.0.0<a class="headerlink" href="#datafusion-55-0-0" title="Link to this heading">#</a></h2>
+<p>This release extends the change made in 52.0.0 to the remaining <a class="reference internal" href="../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> hook
+methods. Users who contribute their own <code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> or
+<code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodec</span></code> via FFI must update
+<code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> to accept an additional
+<code class="docutils literal notranslate"><span class="pre">session:</span> <span class="pre">Bound&lt;PyAny&gt;</span></code> parameter, and take the <code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> from that
+session rather than constructing a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> of their own.</p>
+<p>Before:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">TaskContextProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">.</span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">session</span><span class="p">:</span><span class="w"> </span><span class="nc">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyAny</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_task_context_provider_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">session</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The dropped <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> on the last argument is not a typo. That parameter is
+<code class="docutils literal notranslate"><span class="pre">impl</span> <span class="pre">Into&lt;FFI_TaskContextProvider&gt;</span></code>, so it accepts either an
+<code class="docutils literal notranslate"><span class="pre">&amp;Arc&lt;dyn</span> <span class="pre">TaskContextProvider&gt;</span></code>, as before, or an <code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>,
+which is what <code class="docutils literal notranslate"><span class="pre">ffi_task_context_provider_from_pycapsule</span></code> hands back. Both forms
+compile; the argument changes because the provider now comes from the session
+rather than from a field.</p>
+<p>A codec that keeps its own <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> still compiles, but its decode
+callbacks resolve names against that empty session instead of the one running
+the query, so a function registered with <code class="docutils literal notranslate"><span class="pre">SessionContext.register_udf</span></code> is not
+visible to it. Taking the provider from <code class="docutils literal notranslate"><span class="pre">session</span></code> also removes a lifetime
+hazard: <code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code> holds its provider weakly, so a context
+constructed inside the getter is already dropped by the time the capsule is
+used.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> accepts the argument on its own capsule getters and ignores
+it, so existing calls such as <code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_logical_extension_codec__()</span></code>
+continue to work unchanged.</p>
+<p>New in this release, <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code> follows the same protocol.
+It receives the session and takes both extension codecs from it, so a planner
+library never builds a <code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> at all. Install one with
+<code class="docutils literal notranslate"><span class="pre">SessionContext.set_query_planner(planner)</span></code>, which mutates the session the same
+way <code class="docutils literal notranslate"><span class="pre">add_physical_optimizer_rule</span></code> does and returns nothing — the query planner
+lives in <code class="docutils literal notranslate"><span class="pre">SessionState</span></code>, so it belongs to the session rather than to a
+particular handle on it. See the <a class="reference internal" href="../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> guide for the full protocol.</p>
+<section id="mismatched-extension-libraries-now-fail-loudly">
+<h3>Mismatched extension libraries now fail loudly<a class="headerlink" href="#mismatched-extension-libraries-now-fail-loudly" title="Link to this heading">#</a></h3>
+<p>Objects imported through the capsule protocol are checked against the major
+version of <code class="docutils literal notranslate"><span class="pre">datafusion-ffi</span></code> this package was built with. A table provider,
+extension codec, or query planner produced by a library built against a
+different DataFusion major version now raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> naming the
+version found and the one expected, instead of being used as-is. Table
+providers previously performed no such check.</p>
+<p>This is a diagnostic rather than a soundness guarantee — reading the version
+out of the struct already assumes the local field layout — but it turns the
+common “extension library built against the wrong DataFusion” mistake into a
+clear message rather than undefined behaviour on first use.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>, <code class="docutils literal notranslate"><span class="pre">FFI_TableProviderFactory</span></code>, and <code class="docutils literal notranslate"><span class="pre">FFI_ExtensionOptions</span></code>
+carry no version field, so objects of those types cannot be checked.</p>
+</section>
+<section id="changes-to-the-datafusion-python-util-crate">
+<h3>Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate<a class="headerlink" href="#changes-to-the-datafusion-python-util-crate" title="Link to this heading">#</a></h3>
+<p>Extension libraries written in Rust usually depend on the
+<code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate for the helpers that read these capsules. Two of
+those helpers changed, because the getter they call now takes the session.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ffi_logical_codec_from_pycapsule</span></code> takes a second argument. Pass <code class="docutils literal notranslate"><span class="pre">Some(session)</span></code>
+when importing an object from another library, so its getter receives the
+session it is being installed on. Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> when the object <em>is</em> a session and
+you are asking it for what it holds:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// Before</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+<span class="c1">// After</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">session</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">physical_codec_from_pycapsule</span></code> has been <strong>removed</strong>. It called
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> with no arguments, which no longer
+matches the protocol, so against an updated codec it raised a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>
+and against an outdated one it silently produced a codec bound to the wrong
+session. Use <code class="docutils literal notranslate"><span class="pre">ffi_physical_codec_from_pycapsule</span></code>, which passes the session:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// Before</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">PhysicalExtensionCodec</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">physical_codec_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">obj</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+<span class="c1">// After</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_physical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">session</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">PhysicalExtensionCodec</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">ffi</span><span class="p">).</span><span class="n">into</span><span class="p">();</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">physical_optimizer_rule_from_pycapsule</span></code> and <code class="docutils literal notranslate"><span class="pre">task_context_from_pycapsule</span></code> are
+unchanged. Their hooks take no session.</p>
+<p>Calling a getter that still has the old signature now raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>
+naming the method, with the original <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> retained as its <code class="docutils literal notranslate"><span class="pre">__cause__</span></code>,
+rather than a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+</section>
+</section>
 <section id="datafusion-54-0-0">
 <h2>DataFusion 54.0.0<a class="headerlink" href="#datafusion-54-0-0" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">Config</span></code> class has been removed. It was a standalone wrapper around
@@ -677,6 +783,11 @@ using the specific datafusion project crates.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-54-0-0">DataFusion 54.0.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-53-0-0">DataFusion 53.0.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-52-0-0">DataFusion 52.0.0</a></li>

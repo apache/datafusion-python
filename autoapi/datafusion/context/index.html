@@ -528,19 +528,22 @@ execution model.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a></p></td>
+<td><p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -585,6 +588,22 @@ typically produced by a separate compiled extension.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
 <span class="sig-name descname"><span class="pre">__datafusion_physical_optimizer_rule__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.QueryPlannerExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">QueryPlannerExportable</span></span><a class="headerlink" href="#datafusion.context.QueryPlannerExportable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p>
+<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code>, typically
+produced by a separate compiled extension. <code class="docutils literal notranslate"><span class="pre">session</span></code> is the
+<a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> the planner is being installed on; take the
+extension codecs from it rather than building your own.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.QueryPlannerExportable.__datafusion_query_planner__">
+<span class="sig-name descname"><span class="pre">__datafusion_query_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.QueryPlannerExportable.__datafusion_query_planner__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1047,14 +1066,26 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_logical_extension_codec__">
-<span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="Link to this definition">#</a></dt>
 <dd><p>Access the PyCapsule FFI_LogicalExtensionCodec.</p>
+<p><code class="docutils literal notranslate"><span class="pre">session</span></code> is accepted so a context satisfies the same protocol an
+extension library implements, where the argument is how the library
+reaches the session it is being installed on. A context already is one,
+so the argument is ignored.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_physical_extension_codec__">
-<span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__" title="Link to this definition">#</a></dt>
 <dd><p>Access the PyCapsule FFI_PhysicalExtensionCodec.</p>
+<p>See <a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__()</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_query_planner__">
+<span class="sig-name descname"><span class="pre">__datafusion_query_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_query_planner__" title="Link to this definition">#</a></dt>
+<dd><p>Access the <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code> PyCapsule for the current planner.</p>
+<p>See <a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__()</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2216,6 +2247,52 @@ against this context.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.set_query_planner">
+<span class="sig-name descname"><span class="pre">set_query_planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">planner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><span class="pre">QueryPlannerExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.set_query_planner" title="Link to this definition">#</a></dt>
+<dd><p>Install a custom query planner on this session.</p>
+<p>The planner is imported through its <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code>
+PyCapsule and installed on this context, in the same way
+<a class="reference internal" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="datafusion.context.SessionContext.add_physical_optimizer_rule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_physical_optimizer_rule()</span></code></a> installs a rule.
+The query planner is part of the session state, so it applies to this
+context and to every context sharing its session — including ones
+already returned by
+<a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a> and friends.</p>
+<p>A session holds exactly one planner, so calling this again replaces the
+previous one rather than layering. To chain planners, have the new
+planner wrap the capsule from
+<a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_query_planner__" title="datafusion.context.SessionContext.__datafusion_query_planner__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_query_planner__()</span></code></a>, captured
+<em>before</em> the new planner is installed.</p>
+<p>Install any extension codecs before a layered planner. Installing a
+codec afterwards rebuilds the installed planner against it, but not the
+fallback inside it, which keeps the codecs it was imported with. Note
+also that the planner is built against the codecs of the context this
+method is called on, so installing the same planner again on a different
+handle rebinds the session’s planner to <em>that</em> handle’s codecs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>planner</strong> – Object exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code> (see
+<a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a>) or a raw
+<code class="docutils literal notranslate"><span class="pre">datafusion_query_planner</span></code> PyCapsule.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">my_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedQueryPlanner</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">DistributedQueryPlanner</span><span class="p">())</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM remote_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  
+</pre></div>
+</div>
+<p>Layer a planner on top of the one already installed by capturing
+the existing planner first:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fallback</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">DistributedQueryPlanner</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.sql">
 <span class="sig-name descname"><span class="pre">sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><span class="pre">SQLOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">named_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.sql" title="Link to this definition">#</a></dt>
 <dd><p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> from SQL query text.</p>
@@ -2452,6 +2529,12 @@ functions.</p>
 <p>Only FFI codecs are supported. Pass any object implementing
 <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code> (see
 <a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a>).</p>
+<p>The returned context shares its session state with the original, so a
+later registration on either is visible to both. If a custom query
+planner is installed, it is rebuilt against the new codec on the shared
+session, so the original context plans with the new codec too. This
+happens on the shared session, so it takes effect even if the returned
+context is discarded.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2461,6 +2544,12 @@ functions.</p>
 <p>Only FFI codecs are supported. Pass any object implementing
 <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> (see
 <a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalExtensionCodecExportable</span></code></a>).</p>
+<p>The returned context shares its session state with the original, so a
+later registration on either is visible to both. If a custom query
+planner is installed, it is rebuilt against the new codec on the shared
+session, so the original context plans with the new codec too. This
+happens on the shared session, so it takes effect even if the returned
+context is discarded.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2499,7 +2588,13 @@ This setting narrows only <code class="xref py py-meth docutils literal notransl
 regardless of the toggle.</p>
 </div>
 <p>Returns a new <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> with the toggle applied;
-the original session is unchanged.</p>
+the original context’s own codec settings are unchanged. The
+returned context shares its session state with the original, so
+a later registration on either is visible to both. If a custom
+query planner is installed, it is rebuilt against the new codecs
+on the shared session, so the original context plans with them
+too. This happens on the shared session, so it takes effect even
+if the returned context is discarded.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">udf</span>
@@ -2602,6 +2697,10 @@ the original session is unchanged.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.QueryPlannerExportable"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.QueryPlannerExportable.__datafusion_query_planner__"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable.__datafusion_query_planner__()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_disabled"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_disk_manager_disabled()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_os"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder.with_disk_manager_os()</span></code></a></li>
@@ -2641,6 +2740,7 @@ the original session is unchanged.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext"><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_logical_extension_codec__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_physical_extension_codec__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_query_planner__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_query_planner__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__datafusion_task_context_provider__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__datafusion_task_context_provider__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.__repr__"><code class="docutils literal notranslate"><span class="pre">SessionContext.__repr__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext._convert_file_sort_order"><code class="docutils literal notranslate"><span class="pre">SessionContext._convert_file_sort_order()</span></code></a></li>
@@ -2705,6 +2805,7 @@ the original session is unchanged.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.remove_optimizer_rule"><code class="docutils literal notranslate"><span class="pre">SessionContext.remove_optimizer_rule()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_id"><code class="docutils literal notranslate"><span class="pre">SessionContext.session_id()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.session_start_time"><code class="docutils literal notranslate"><span class="pre">SessionContext.session_start_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.set_query_planner"><code class="docutils literal notranslate"><span class="pre">SessionContext.set_query_planner()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.sql"><code class="docutils literal notranslate"><span class="pre">SessionContext.sql()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.sql_with_options"><code class="docutils literal notranslate"><span class="pre">SessionContext.sql_with_options()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.table"><code class="docutils literal notranslate"><span class="pre">SessionContext.table()</span></code></a></li>

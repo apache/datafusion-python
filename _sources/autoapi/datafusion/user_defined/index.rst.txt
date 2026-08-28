@@ -292,8 +292,13 @@ Module Contents
 
    Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
 
+   ``session`` is the :py:class:`~datafusion.context.SessionContext` the codec
+   is being installed on. Take the task context provider from it rather than
+   building a session of your own, so the decode callbacks resolve names
+   against the session that runs the query.
 
-   .. py:method:: __datafusion_logical_extension_codec__() -> object
+
+   .. py:method:: __datafusion_logical_extension_codec__(session: Any) -> object
 
 
 .. py:class:: PhysicalExtensionCodecExportable
@@ -303,8 +308,10 @@ Module Contents
 
    Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
 
+   See :py:class:`LogicalExtensionCodecExportable` for ``session``.
 
-   .. py:method:: __datafusion_physical_extension_codec__() -> object
+
+   .. py:method:: __datafusion_physical_extension_codec__(session: Any) -> object
 
 
 .. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
