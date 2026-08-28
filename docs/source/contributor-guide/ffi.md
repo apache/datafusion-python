@@ -369,6 +369,43 @@ installed planner instead of layering another one. To chain planners, have the n
 planner wrap the capsule returned by `SessionContext.__datafusion_query_planner__()`,
 captured before the new planner is installed, and delegate to it explicitly.
 
+### Rebinding a planner's codecs is one level deep
+
+The rebuild above swaps the codecs on the installed `ForeignQueryPlanner` handle, and
+only that handle. A planner that wraps a fallback resolved that fallback when *it* was
+installed, and holds the result inside its own library's private data — behind a
+`create_physical_plan` function pointer, with no Python-side handle. A codec installed
+afterwards therefore reaches the outer planner and not the fallback, which keeps
+whichever codecs were in force when it was imported.
+
+Neither side can repair that:
+
+- **The host cannot reach it.** `FFI_QueryPlanner::new_with_ffi_codecs` unwraps exactly
+  one `ForeignQueryPlanner` layer. There is no deeper handle to unwrap — the same
+  situation as a codec embedded in a registered `FFI_CatalogProvider`.
+- **The planner library cannot re-derive it.** `FFI_QueryPlanner` holds its codecs by
+  value, and `Session` exposes no accessor for the ones the host currently has, so
+  `create_physical_plan` cannot pick them up from the session it is handed. The rebuild
+  has to be eager, and an eager rebuild only sees the top layer.
+
+A fix has to come from upstream, and is tracked in
+[apache/datafusion#24762](https://github.com/apache/datafusion/issues/24762).
+
+The stale codecs stay usable rather than dangling — they hold weak handles to the one
+`Arc<SessionContext>` that Rule 6 keeps alive — so the effect is a fallback hop
+serializing with an older codec, not a failure. It is also invisible to the examples
+here, which use one fallback in the same cdylib as its wrapper; `datafusion-ffi`
+short-circuits a same-library hop rather than serializing, so no codec runs. A fallback
+in a *different* library would serialize, and would do it with the codecs it was
+imported with.
+
+So install the codecs before a layered planner. If a codec has to go in afterwards,
+install the outer planner again *on the handle that holds the new codec* — that re-runs
+its getter, which re-imports the fallback against that handle's codecs. Re-installing on
+the original handle rebinds the session's planner back to the original handle's codecs
+instead, which is the trap
+`test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs` pins.
+
 ## Alternative Approach
 
 Suppose you needed to expose some other features of DataFusion and you could not wait

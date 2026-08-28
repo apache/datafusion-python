@@ -43,6 +43,6 @@ ctx = ctx.with_physical_extension_codec(provider_physical_codec)
 ctx.set_query_planner(planner)
 ```
 
-Installing a codec after the planner rebuilds the planner against it, so this order is a recommendation rather than a requirement. Planner-last states the ownership flow more clearly.
+Installing a codec after the planner rebuilds the planner against it, so this order is a recommendation rather than a requirement. Planner-last states the ownership flow more clearly. The exception is a planner that wraps a fallback: the rebuild reaches the installed planner only, not the fallback inside it, so codecs-first is a requirement there. See [Rebinding a planner's codecs is one level deep](../../docs/source/contributor-guide/ffi.md#rebinding-a-planners-codecs-is-one-level-deep), which also covers why re-installing a planner rebinds the session to the codecs of whichever handle it was installed on.
 
 For the limits behind that choice — why there is one external codec owner rather than a registry, which node kinds survive the boundary, and what a derived context shares with the context it came from — see [Query Planners Across Multiple Libraries](../../docs/source/contributor-guide/ffi.md#query-planners-across-multiple-libraries) in the contributor guide.

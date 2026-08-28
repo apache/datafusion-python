@@ -1788,6 +1788,13 @@ class SessionContext:
         :meth:`~SessionContext.__datafusion_query_planner__`, captured
         *before* the new planner is installed.
 
+        Install any extension codecs before a layered planner. Installing a
+        codec afterwards rebuilds the installed planner against it, but not the
+        fallback inside it, which keeps the codecs it was imported with. Note
+        also that the planner is built against the codecs of the context this
+        method is called on, so installing the same planner again on a different
+        handle rebinds the session's planner to *that* handle's codecs.
+
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` (see
                 :class:`QueryPlannerExportable`) or a raw

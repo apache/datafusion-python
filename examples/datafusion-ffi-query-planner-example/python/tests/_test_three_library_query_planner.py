@@ -535,6 +535,41 @@ def test_a_discarded_derived_context_still_rebinds_the_planner():
     assert later.table_provider_encode_calls() > 0
 
 
+def test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs():
+    """A planner is built against the codecs of the handle it is installed from.
+
+    The sequel to the test above, and the trap it sets up. Once a discarded
+    derived handle has rebound the session's planner to its codec, installing
+    the same planner again from the *original* handle rebuilds it against that
+    handle's codec instead -- which never changed. The session's planner tracks
+    whichever handle wrote it last, not the newest codec installed anywhere.
+
+    So "re-install the planner after installing a codec" only repairs anything
+    when it is done from the handle holding the new codec.
+    """
+    ctx, original_logical, _physical_codec = codec_context()
+    planner = MyQueryPlanner()
+    ctx.set_query_planner(planner)
+
+    later = MyLogicalExtensionCodec()
+    # Deliberately discarded, exactly as in the test above.
+    ctx.with_logical_extension_codec(later)
+    gc.collect()
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert later.table_provider_encode_calls() > 0
+    assert original_logical.table_provider_encode_calls() == 0
+
+    # `ctx`'s own codec field never changed, so this rebuilds the planner
+    # against `original_logical` and drops `later` from the session's planner.
+    ctx.set_query_planner(planner)
+    encodes_by_later = later.table_provider_encode_calls()
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert original_logical.table_provider_encode_calls() > 0
+    assert later.table_provider_encode_calls() == encodes_by_later
+
+
 def test_query_planner_requires_provider_codec():
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     ctx = SessionContext(config)

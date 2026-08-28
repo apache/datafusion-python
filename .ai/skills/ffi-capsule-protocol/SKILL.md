@@ -160,6 +160,23 @@ reintroduce a `with_query_planner` that pretends otherwise — the only way to
 give a handle its own planner is a fresh `Arc<SessionContext>`, which is what
 Rule 6 forbids.
 
+Installing a codec rebuilds the installed planner against it, and that rebuild
+reaches exactly one layer. `FFI_QueryPlanner::new_with_ffi_codecs` unwraps one
+`ForeignQueryPlanner`; a fallback that planner resolved at install time sits in
+its library's private data with no handle on this side, and cannot re-derive
+codecs itself because `FFI_QueryPlanner` holds them by value and `Session`
+exposes no accessor for the host's current ones. So do not promise that install
+order is free — for a layered planner it is not. The examples cannot show this:
+their fallback lives in the same cdylib as its wrapper, and `datafusion-ffi`
+short-circuits a same-library hop rather than serializing. A fix has to come
+from upstream; tracked in
+[apache/datafusion#24762](https://github.com/apache/datafusion/issues/24762).
+
+The session's planner also tracks whichever handle wrote it last, so
+re-installing a planner on the original handle rebinds the session back to that
+handle's codecs. `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs`
+pins that; changing it should be deliberate.
+
 ## Where the truth is
 
 - `docs/source/contributor-guide/ffi.md` — the protocol, the fork caveat.
