@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import gc
 
+import pyarrow as pa
 import pytest
-from datafusion import SessionConfig, SessionContext, udf
+from datafusion import Expr, SessionConfig, SessionContext, col, udf
 from datafusion_ffi_example import (
     IsNullUDF,
     MyCatalogProvider,
@@ -533,6 +534,85 @@ def test_a_discarded_derived_context_still_rebinds_the_planner():
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1, 2]
     assert later.table_provider_encode_calls() > 0
+
+
+def test_the_planner_and_the_handle_can_hold_different_codecs():
+    """One session, two codecs in effect, depending on the path taken.
+
+    The planner is session state and carries whichever codecs installed it
+    last -- here, ones that arrived through a handle that was discarded.
+    Everything else on a context uses that context's own codec field, which
+    the discarded handle never touched. So `Expr.to_bytes(ctx)` and
+    `ctx.sql(...)` encode with different codecs on the same `ctx`.
+
+    Chaining ``ctx = ctx.with_...(...)`` keeps the two in step; this pins what
+    happens when they are allowed to diverge.
+
+    Inlining has to be off for the assertion to say anything: with it on, a
+    Python UDF is encoded inline by ``PythonLogicalCodec`` and never reaches
+    the installed codec's ``try_encode_udf``.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    handle_codec = MyLogicalExtensionCodec()
+    ctx = SessionContext(config).with_python_udf_inlining(enabled=False)
+    ctx = ctx.with_logical_extension_codec(handle_codec)
+    ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.set_query_planner(MyQueryPlanner())
+
+    planner_codec = MyLogicalExtensionCodec()
+    # Discarded, but the planner keeps its codec.
+    ctx.with_logical_extension_codec(planner_codec)
+    gc.collect()
+
+    identity = udf(
+        lambda arr: arr,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="identity_i64",
+    )
+    ctx.register_udf(identity)
+    Expr.to_bytes(identity(col("A")), ctx)
+
+    # Serializing through `ctx` uses `ctx`'s own codec field.
+    assert handle_codec.encode_udf_calls() > 0
+    assert planner_codec.encode_udf_calls() == 0
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+
+    # Planning through the same `ctx` uses the codec the planner was rebound to.
+    assert planner_codec.table_provider_encode_calls() > 0
+    assert handle_codec.table_provider_encode_calls() == 0
+
+
+def test_an_unchanged_inlining_setting_leaves_the_planner_alone():
+    """A no-op toggle must not rebind the session's planner.
+
+    ``with_python_udf_inlining`` rebuilds the handle's codecs and rebinds the
+    session's planner to them. Asking for the setting a context already has
+    changes nothing, so it must not pay that side effect.
+
+    Observable only once the planner is holding some *other* handle's codec:
+    without the guard, a defensive no-op toggle on `ctx` drags the planner back
+    onto `ctx`'s codec and silently undoes the install below. The rebuilt
+    codecs otherwise wrap the same inner codec, so nothing else distinguishes
+    the two paths.
+    """
+    ctx, handle_codec, _physical_codec = codec_context()
+    ctx.set_query_planner(MyQueryPlanner())
+
+    planner_codec = MyLogicalExtensionCodec()
+    ctx.with_logical_extension_codec(planner_codec)  # discarded; planner keeps it
+    gc.collect()
+
+    # The default is on, so this asks for what `ctx` already has.
+    ctx.with_python_udf_inlining(enabled=True)
+    gc.collect()
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert planner_codec.table_provider_encode_calls() > 0
+    assert handle_codec.table_provider_encode_calls() == 0
 
 
 def test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs():

@@ -351,7 +351,29 @@ that planner against the new codec for the same reason: there is one planner, an
 to carry the codecs currently in force. This happens on the shared session, so it takes
 effect even if the returned context is discarded — `ctx.with_python_udf_inlining(...)`
 whose result is thrown away still leaves the session's planner carrying the codecs of
-that discarded handle.
+that discarded handle. A call that changes nothing is exempt: asking for the inlining
+setting a context already has returns a handle without touching the session.
+
+The rule that falls out of this is worth stating on its own, because it is the one thing
+that surprises people:
+
+> The session's query planner carries the codecs of the handle that most recently
+> installed one. Every other path — `Expr.to_bytes(ctx)`, `ExecutionPlan.to_bytes(ctx)`,
+> registering a provider — uses the codecs of the handle you call it on.
+
+Those can be different handles, and then one session has two codecs in effect at once:
+
+```python
+ctx = ctx.with_logical_extension_codec(codec_a)
+ctx.set_query_planner(planner)
+ctx.with_logical_extension_codec(codec_b)  # discarded
+
+Expr.to_bytes(expr, ctx)   # encodes with codec_a -- ctx's own field
+ctx.sql(...).collect()     # plans with codec_b -- installed via the discarded handle
+```
+
+Chaining `ctx = ctx.with_...(...)`, as the example below does, keeps the two in step.
+`test_the_planner_and_the_handle_can_hold_different_codecs` pins the divergence.
 
 ```python
 ctx = SessionContext(config)

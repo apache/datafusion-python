@@ -1508,6 +1508,23 @@ impl PySessionContext {
     }
 
     pub fn with_python_udf_inlining(&self, enabled: bool) -> Self {
+        // Rebinding the session's planner is a side effect on state shared with
+        // every other handle, so do not pay it for a call that changes nothing.
+        // A defensive `with_python_udf_inlining(enabled=True)` on a context that
+        // already inlines would otherwise rebind the session's planner to this
+        // handle's codecs, and callers routinely discard the result. Returning
+        // the codecs as-is is observationally equivalent to the rebuild below,
+        // which wraps the same inner codec in a fresh `Python*Codec`.
+        if self.logical_codec.python_udf_inlining() == enabled
+            && self.physical_codec.python_udf_inlining() == enabled
+        {
+            return Self {
+                ctx: Arc::clone(&self.ctx),
+                logical_codec: Arc::clone(&self.logical_codec),
+                physical_codec: Arc::clone(&self.physical_codec),
+            };
+        }
+
         let logical_codec = Arc::new(
             PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
                 .with_python_udf_inlining(enabled),
