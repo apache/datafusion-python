@@ -1490,6 +1490,27 @@ impl PySessionContext {
         Ok(derived)
     }
 
+    /// Ids of the logical extension codecs installed on this session, in
+    /// install order — the same order encoding consults them in, and the keys
+    /// a payload names when it is decoded.
+    pub fn logical_extension_codec_ids(&self) -> Vec<String> {
+        self.logical_codec
+            .codec_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// Ids of the physical extension codecs installed on this session.
+    /// See [`Self::logical_extension_codec_ids`].
+    pub fn physical_extension_codec_ids(&self) -> Vec<String> {
+        self.physical_codec
+            .codec_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect()
+    }
+
     /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
     #[pyo3(signature = (session=None))]
     pub fn __datafusion_physical_extension_codec__<'py>(

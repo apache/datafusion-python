@@ -20,7 +20,12 @@ from __future__ import annotations
 import pyarrow as pa
 import pytest
 from datafusion import Expr, LogicalPlan, SessionContext, col, udf
-from datafusion_ffi_example import MyLogicalExtensionCodec, MyTableProvider
+from datafusion_ffi_example import (
+    MyLogicalExtensionCodec,
+    MyTableProvider,
+    NameOnlyFunction,
+    NameOnlyUdfCodec,
+)
 
 
 def _double_udf():
@@ -66,8 +71,8 @@ def _setup_session_with_codec() -> tuple[SessionContext, MyLogicalExtensionCodec
 
 
 def test_ffi_logical_codec_install_and_export():
-    """Installing a user FFI codec replaces the session's logical
-    codec; the capsule getter on the session re-exports it."""
+    """Installing a user FFI codec adds it to the session's logical
+    codec chain; the capsule getter on the session re-exports it."""
     ctx, _codec = _setup_session_with_codec()
     capsule = ctx.__datafusion_logical_extension_codec__()
     assert capsule is not None
@@ -116,12 +121,12 @@ def test_ffi_logical_codec_roundtrip():
 
 
 def test_ffi_logical_codec_composes_with_later_install():
-    """Codecs compose: installing a second codec prepends it to the
+    """Codecs compose: installing a second codec appends it to the
     session's codec chain instead of replacing the first. The second
     codec here (a default-backed codec exported from a fresh session)
-    cannot encode this library's table provider, so encoding falls
-    through to the user codec installed first. Under replace semantics
-    this test fails with `LogicalExtensionCodec is not provided`."""
+    cannot encode this library's table provider, so the first codec
+    still claims it. Under replace semantics this test fails with
+    `LogicalExtensionCodec is not provided`."""
     ctx, codec = _setup_session_with_codec()
     ctx = ctx.with_logical_extension_codec(
         SessionContext().__datafusion_logical_extension_codec__()
@@ -295,6 +300,46 @@ def test_bare_capsule_codec_is_session_local():
     with pytest.raises(Exception, match="bare PyCapsule") as excinfo:
         LogicalPlan.from_bytes(SessionContext(), blob)
     assert "codec_id" in str(excinfo.value)
+
+
+def test_name_only_codec_round_trips_without_a_payload():
+    """A codec may own functions that need no payload: the name is the
+    whole encoding. ``try_encode_udf`` writes nothing, and the decoder
+    rebuilds the function from the name with no registry entry.
+
+    DataFusion supports this directly -- an empty ``fun_definition``
+    sends the decoder to the registry first and the codec second. This
+    test pins that arm from the Python side, because it is the one path
+    where a payload is still offered to every installed codec: there are
+    no bytes, so there is no identity to dispatch on.
+
+    It is also the guard against a plausible "improvement". Wrapping
+    every chained encode in the identity envelope would make this
+    payload non-empty, which sets ``fun_definition`` and permanently
+    skips the registry lookup -- breaking both this codec and ordinary
+    by-name round trips, with nothing else in the suite noticing.
+    """
+    codec = NameOnlyUdfCodec()
+    name = NameOnlyUdfCodec.function_name()
+
+    # FROM-less, so serialization never reaches try_encode_table_provider --
+    # this codec owns functions, not providers.
+    encoder = SessionContext().with_logical_extension_codec(codec)
+    encoder.register_udf(udf(NameOnlyFunction()))
+    blob = encoder.sql(f"SELECT {name}(1) AS x").logical_plan().to_bytes(encoder)
+
+    # The name is the entire encoding, so the codec contributed no bytes
+    # and the payload carries no identity envelope for it.
+    assert codec.encode_udf_calls() > 0
+    assert b"DFPYCHN" not in blob
+
+    # A fresh session that never registered the function: only the codec
+    # can supply it, and only from the name.
+    decoder = SessionContext().with_logical_extension_codec(codec)
+    restored = LogicalPlan.from_bytes(decoder, blob)
+
+    assert codec.decode_udf_calls() > 0
+    assert decoder.create_dataframe_from_logical_plan(restored).collect()
 
 
 def test_default_only_session_writes_no_envelope():

@@ -2310,12 +2310,49 @@ class SessionContext:
         new.ctx = new_internal
         return new
 
+    def logical_extension_codec_ids(self) -> list[str]:
+        """List the logical extension codecs installed on this session.
+
+        Returns the identity of each installed codec, in install order. Those
+        identities are what encoding stamps onto a payload and what decoding
+        dispatches on, so this is how to check which library owns a plan and
+        whether a session is able to decode one.
+
+        The terminal codec is not listed. It handles whatever no installed
+        codec claims and writes unframed, so it is not addressable by id.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.logical_extension_codec_ids()
+            []
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     my_library.Codec()
+            ... )  # doctest: +SKIP
+            >>> ctx.logical_extension_codec_ids()  # doctest: +SKIP
+            ['my_library.Codec']
+        """
+        return self.ctx.logical_extension_codec_ids()
+
     def __datafusion_physical_extension_codec__(self, session: Any = None) -> Any:
         """Access the PyCapsule FFI_PhysicalExtensionCodec.
 
         See :meth:`__datafusion_logical_extension_codec__` for ``session``.
         """
         return self.ctx.__datafusion_physical_extension_codec__(session)
+
+    def physical_extension_codec_ids(self) -> list[str]:
+        """List the physical extension codecs installed on this session.
+
+        See :py:meth:`logical_extension_codec_ids`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.physical_extension_codec_ids()
+            []
+        """
+        return self.ctx.physical_extension_codec_ids()
 
     def with_physical_extension_codec(
         self,

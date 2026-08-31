@@ -100,6 +100,53 @@ clear message rather than undefined behaviour on first use.
 `FFI_TaskContextProvider`, `FFI_TableProviderFactory`, and `FFI_ExtensionOptions`
 carry no version field, so objects of those types cannot be checked.
 
+### Extension codecs compose instead of replacing
+
+`SessionContext.with_logical_extension_codec` and
+`with_physical_extension_codec` previously replaced whichever codec was already
+installed, so a session could only ever have one. Installing a second codec
+silently discarded the first, and plans failed later with a confusing decode
+error. Both methods now append to a chain, and a session can carry codecs from
+several independent libraries at once.
+
+**No change is required in an extension codec.** Keep implementing
+`LogicalExtensionCodec` or `PhysicalExtensionCodec` exactly as before. Payloads
+are wrapped in an envelope naming their author by `datafusion-python`, which
+strips it again before your codec sees the bytes.
+
+Callers relying on replacement semantics — installing a codec in order to remove
+a previous one — are affected. There is no way to remove an installed codec.
+
+Two behaviours are worth knowing:
+
+- Installing two codecs under the same identity raises a `ValueError`. Identity
+  is derived from the exporting class's module and qualified name, so this comes
+  up when installing two instances of one class. Pass `codec_id=` to distinguish
+  them.
+- A codec installed from a bare `PyCapsule` has no portable identity, because
+  every capsule reports the same type. It is tagged with a session-local
+  identity and works normally within that session, but a plan it encodes cannot
+  be decoded on an unrelated session. Pass `codec_id=` if plans must cross
+  sessions.
+
+```python
+ctx = ctx.with_logical_extension_codec(lib_a.codec())
+ctx = ctx.with_logical_extension_codec(lib_b.codec())  # no longer discards lib_a
+
+# Two instances of one class need distinct identities.
+ctx = ctx.with_logical_extension_codec(lib_a.Codec(), codec_id="lib_a.reader")
+ctx = ctx.with_logical_extension_codec(lib_a.Codec(), codec_id="lib_a.writer")
+
+ctx.logical_extension_codec_ids()
+```
+
+Serialized plans change shape once an extension codec is installed: payloads
+written by a chained codec now carry an identity envelope. A session with no
+extension codecs installed is unaffected and produces the same bytes as before,
+as do functions encoded by name. Plans serialized by an earlier release and
+stored for later use should be regenerated if they were produced by a session
+with an extension codec installed.
+
 ### Changes to the `datafusion-python-util` crate
 
 Extension libraries written in Rust usually depend on the

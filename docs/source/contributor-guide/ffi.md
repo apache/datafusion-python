@@ -251,20 +251,52 @@ durable metadata instead.
 ### Composable codecs
 
 Extension codecs compose. Each call to `with_logical_extension_codec` or
-`with_physical_extension_codec` adds the codec to the front of the session's codec
-chain rather than replacing prior codecs. During encoding and decoding, the most
-recently installed codec is consulted first, falling through codec by codec to
-DataFusion's default codec. A codec signals "not mine" by returning an error, which
-sends the chain on to the next codec. Two conventions keep this dispatch sound:
+`with_physical_extension_codec` appends the codec to the session's codec chain
+rather than replacing prior codecs.
 
-- Frame your payloads with a distinct byte prefix (pick a `DF` namespace plus a
-  crate-specific suffix) and only decode payloads carrying your prefix.
-- Return an error for objects and payloads you do not own. A codec that answers
-  success for objects outside its family shadows every codec installed before it.
+**Nothing is asked of the codec itself.** Implement `LogicalExtensionCodec` or
+`PhysicalExtensionCodec` exactly as you would for a session that installs only
+yours. `Python{Logical,Physical}Codec` sits between DataFusion and every installed
+codec, and it wraps each payload in an envelope naming the codec that produced it.
+Your codec receives, byte for byte, the payload it wrote, and never sees the
+envelope.
 
-Because dispatch keys off payload prefixes rather than install position, codec
-registration order between independent libraries does not matter. Two libraries that
-each own tables, functions, and a planner register like this:
+Decoding reads that name and consults exactly one codec. A codec is never offered
+bytes it did not write, so it does not have to recognise and reject foreign
+payloads — which is not something a codec can reliably do anyway. Protobuf carries
+no type identity: a `prost` message decodes cleanly from an unrelated message's
+bytes whenever their leading field numbers and wire types line up, and the natural
+implementation, `MyMessage::decode(buf)`, has no prefix to check and cannot
+decline. Trying codecs in turn until one succeeds is how upstream's
+`ComposedPhysicalExtensionCodec` came to decode a Parquet payload as CSV
+([apache/datafusion#16980](https://github.com/apache/datafusion/issues/16980)).
+
+Codec identity is derived automatically and is stable across processes:
+
+1. An explicit `codec_id=` argument to the install call.
+2. `__datafusion_codec_id__` on the exporting object, if it defines one. Declare it
+   when a class rename must not invalidate previously encoded plans, or when one
+   library installs two instances owning disjoint slices of the wire format.
+3. Otherwise the exporting class's `module.QualName`, which is the library's own
+   import path.
+
+Two codecs cannot share an identity — installing a second under an id already in
+use raises rather than shadowing the first, because a payload naming that id would
+otherwise resolve to whichever entry came first. A codec installed from a bare
+`PyCapsule` is the one case with nothing stable to derive from, since every capsule
+reports the same type; it gets a session-local identity, and plans it encodes fail
+with a pointed error on an unrelated session instead of being decoded by the wrong
+codec. Pass `codec_id=` for those.
+
+`SessionContext.logical_extension_codec_ids()` and its physical counterpart list
+what is installed, which is also what a decode failure names.
+
+Because decoding keys off identity rather than install position, registration order
+between independent libraries does not affect decoding at all. It is visible only
+on encoding, where codecs are consulted in install order and the first to claim an
+object wins — so installing a library can claim objects nothing else claimed, but
+never takes over an object an earlier codec was already encoding. Two libraries
+that each own tables, functions, and a planner register like this:
 
 ```python
 ctx = SessionContext(config)
@@ -285,6 +317,27 @@ ctx.set_query_planner(lib_b.Planner(fallback=ctx.__datafusion_query_planner__())
 ctx.register_table("t", lib_a.TableProvider())
 ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
+
+Two payloads are deliberately left unframed, and both matter if you are changing
+this code.
+
+The terminal codec — `Default{Logical,Physical}ExtensionCodec` unless a Rust caller
+supplied another to `Python{Logical,Physical}Codec::new` — handles whatever no
+installed codec claims and writes bare. A session with no extension codecs
+installed therefore serializes byte-identically to a build without codec chaining.
+
+An encode that writes nothing also stays empty. `try_encode_udf` returning `Ok`
+with an empty buffer is DataFusion's encode-by-name signal: it leaves
+`fun_definition` unset, and the decoder then tries the `FunctionRegistry` first and
+the codec second. Framing an empty payload would set the field and skip that
+registry lookup permanently, breaking both ordinary by-name round trips and codecs
+whose functions are reconstructible from a name alone — the case
+`NameOnlyUdfCodec` in the FFI example covers. That empty-buffer decode is also the
+one path where every installed codec is still consulted in turn, because there are
+no bytes to carry an identity. It is not the hazard the envelope removes: the
+question asked is "do you own the function named `x`", which is name-scoped, and
+two codecs disagreeing requires them to claim the same function name — already a
+collision in the function registry.
 
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
