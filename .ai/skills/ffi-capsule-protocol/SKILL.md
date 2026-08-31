@@ -1,7 +1,7 @@
 ---
 name: ffi-capsule-protocol
-description: "TRIGGER — read before adding, changing, or reviewing any __datafusion_*__ capsule getter, any FFI_* export that asks for a TaskContextProvider or an extension codec, or any code that calls FFI_QueryPlanner::new / FFI_TableProvider::new / FFI_{Logical,Physical}ExtensionCodec::new. These methods are one protocol with a settled convention. Do not design it fresh; do not construct a SessionContext inside an extension library."
-argument-hint: "[getter name] (e.g., \"__datafusion_query_planner__\", \"table provider\", \"codec\", or omit to review the whole family)"
+description: "TRIGGER — read before adding, changing, or reviewing any __datafusion_*__ capsule getter, any FFI_* export that asks for a TaskContextProvider or an extension codec, any code that calls FFI_QueryPlanner::new / FFI_TableProvider::new / FFI_{Logical,Physical}ExtensionCodec::new, or anything in crates/core/src/codec.rs that decides which extension codec handles a payload. These methods are one protocol with a settled convention. Do not design it fresh; do not construct a SessionContext inside an extension library; do not dispatch a codec chain by trying codecs until one succeeds."
+argument-hint: "[getter name] (e.g., \"__datafusion_query_planner__\", \"table provider\", \"codec\", \"codec chain\", or omit to review the whole family)"
 ---
 
 <!---
@@ -177,12 +177,79 @@ re-installing a planner on the original handle rebinds the session back to that
 handle's codecs. `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs`
 pins that; changing it should be deliberate.
 
+## Rule 8 — a codec chain dispatches by identity, never by trying codecs in turn
+
+A session holds a chain of extension codecs. `Python{Logical,Physical}Codec`
+wraps every payload a chained codec writes in an envelope naming that codec,
+and decoding consults exactly the codec named. The envelope is applied and
+stripped in `crates/core/src/codec.rs`; a third-party codec receives the bytes
+it wrote and never sees it. **Adding a codec to the chain asks nothing of the
+codec's author.**
+
+Do not replace this with "try each codec until one returns `Ok`". That is
+unsound, and it has already shipped and been reverted upstream: it is how
+`ComposedPhysicalExtensionCodec` decoded a Parquet payload as CSV
+([apache/datafusion#16980](https://github.com/apache/datafusion/issues/16980),
+fixed in [#16986](https://github.com/apache/datafusion/pull/16986)). Protobuf
+carries no type identity — a `prost` message decodes cleanly from an unrelated
+message's bytes whenever their leading field numbers and wire types line up, and
+an all-defaults message encodes to zero bytes, which decodes as *anything*.
+A byte-prefix convention does not rescue it, because the natural implementation
+is `MyMessage::decode(buf)`, which has no prefix to check and cannot decline.
+
+**Key on identity, not chain position.** Upstream's composed codec, Ballista's
+`FileFormatProto`, and `datafusion-distributed` all stamp the encoder's *index*.
+That is sound for them because their lists cannot disagree: Ballista's is a
+compile-time constant, and `datafusion-distributed` pins its own codec at index
+0 and appends user codecs rebuilt from the same startup code. A
+`datafusion-python` chain is assembled by user Python, and
+`Expr.to_bytes(ctx1)` / `Expr.from_bytes(ctx2)` puts two independently built
+sessions on either end of one payload — so an index would name a different codec
+in the decoder whenever install order differs. Copying the upstream design here
+would reintroduce the same class of silent mis-decode from the other direction.
+
+Identity resolves as: explicit `codec_id=` → `__datafusion_codec_id__` on the
+exporting object → the exporting class's `module.QualName` → a session-local id
+for a bare `PyCapsule`, which has nothing stable to derive from. Installing two
+codecs under one id raises rather than shadowing.
+
+**Two payloads are never framed, and both are load-bearing.**
+
+1. The terminal codec writes bare, so a session with no extension codecs
+   installed serializes byte-identically to a build without chaining.
+2. An encode that writes nothing stays empty. `Ok` with an empty buffer is
+   DataFusion's encode-by-name signal: it leaves `fun_definition` unset, and the
+   decoder then tries the `FunctionRegistry` **first** and the codec second —
+   `datafusion-proto`'s `from_proto.rs`, the
+   `None => ctx.udf(..).or_else(|_| codec.try_decode_udf(name, &[]))` arm.
+   Framing an empty payload sets the field and skips that registry lookup
+   permanently. Note upstream's `encode_protobuf` gets this wrong; do not copy
+   it.
+
+That second point is the one plausible "tidy-up" that breaks things silently, so
+it has a dedicated guard: `NameOnlyUdfCodec` in the FFI example owns functions
+reconstructible from their names alone, encodes no bytes, and is exercised by
+`test_name_only_codec_round_trips_without_a_payload` against a session that
+never registered the function. That empty-buffer decode is also the one path
+where every codec is still consulted in turn, because there are no bytes to
+carry an identity — sound here because the question is name-scoped, and two
+codecs disagreeing means they claim one function name, already a registry
+collision.
+
+**Encoding walks the chain in install order and the first codec to write bytes
+wins**, so a codec appends. Prepending would let an unrelated install take over
+an earlier library's objects, and would renumber nothing but still change which
+codec claims what. Order affects decoding not at all.
+
 ## Where the truth is
 
 - `docs/source/contributor-guide/ffi.md` — the protocol, the fork caveat.
 - `docs/source/user-guide/upgrade-guides.md` — every past migration.
+- `crates/core/src/codec.rs` — the codec chain: the envelope, identity dispatch,
+  and the two unframed cases from Rule 8.
 - `examples/datafusion-ffi-example/src/` — provider, catalog, function, codec
-  getters, all in current form.
+  getters, all in current form. `name_only_codec.rs` is the codec that encodes
+  nothing.
 - `examples/datafusion-ffi-query-planner-example/src/planner.rs` — planner
   getter.
 - `examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`
