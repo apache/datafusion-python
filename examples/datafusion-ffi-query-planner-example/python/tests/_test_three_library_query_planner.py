@@ -222,6 +222,23 @@ def codec_context(max_rows: int = 3):
     return ctx, logical_codec, physical_codec
 
 
+def physical_only_context(max_rows: int = 3):
+    """Context with the physical codec installed but no logical codec.
+
+    Encoding consults chained codecs in install order and the first to claim an
+    object wins, so a codec installed later cannot be observed while an earlier
+    one is already claiming table providers. Leaving the logical slot empty lets
+    a test install exactly one logical codec -- through a handle it then throws
+    away -- and watch its counters.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=max_rows))
+    physical_codec = MyPhysicalExtensionCodec()
+    ctx = SessionContext(config)
+    ctx = ctx.with_physical_extension_codec(physical_codec)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    return ctx, physical_codec
+
+
 def test_installing_a_planner_keeps_the_session_id():
     """A session and its decode callbacks must agree on the session id.
 
@@ -521,9 +538,11 @@ def test_a_discarded_derived_context_still_rebinds_the_planner():
 
     A fresh codec instance is what makes it observable -- it carries its own
     counters, and the planner encodes the outbound logical plan with whichever
-    codec it is holding.
+    codec it is holding. The base context deliberately installs no logical
+    codec, so this one is the only candidate; an already-installed codec would
+    claim the provider first and hide the rebind.
     """
-    ctx, _logical_codec, _physical_codec = configured_context(max_rows=3)
+    ctx, _physical_codec = physical_only_context(max_rows=3)
     ctx.set_query_planner(MyQueryPlanner())
 
     later = MyLogicalExtensionCodec()
@@ -548,14 +567,17 @@ def test_the_planner_and_the_handle_can_hold_different_codecs():
     Chaining ``ctx = ctx.with_...(...)`` keeps the two in step; this pins what
     happens when they are allowed to diverge.
 
+    ``ctx`` installs no logical codec of its own, so its chain is empty and the
+    planner's holds exactly one entry. That asymmetry is what makes the split
+    visible: an entry on both chains would be claimed by the same codec either
+    way, since encoding stops at the first codec to claim an object.
+
     Inlining has to be off for the assertion to say anything: with it on, a
     Python UDF is encoded inline by ``PythonLogicalCodec`` and never reaches
     the installed codec's ``try_encode_udf``.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
-    handle_codec = MyLogicalExtensionCodec()
     ctx = SessionContext(config).with_python_udf_inlining(enabled=False)
-    ctx = ctx.with_logical_extension_codec(handle_codec)
     ctx = ctx.with_physical_extension_codec(MyPhysicalExtensionCodec())
     ctx.register_table("numbers", MyTableProvider(1, 6, 1))
     ctx.set_query_planner(MyQueryPlanner())
@@ -575,15 +597,14 @@ def test_the_planner_and_the_handle_can_hold_different_codecs():
     ctx.register_udf(identity)
     Expr.to_bytes(identity(col("A")), ctx)
 
-    # Serializing through `ctx` uses `ctx`'s own codec field.
-    assert handle_codec.encode_udf_calls() > 0
+    # Serializing through `ctx` uses `ctx`'s own codec field, which is empty --
+    # the UDF goes out by name through the terminal codec.
     assert planner_codec.encode_udf_calls() == 0
 
     ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
 
     # Planning through the same `ctx` uses the codec the planner was rebound to.
     assert planner_codec.table_provider_encode_calls() > 0
-    assert handle_codec.table_provider_encode_calls() == 0
 
 
 def test_an_unchanged_inlining_setting_leaves_the_planner_alone():
@@ -595,11 +616,11 @@ def test_an_unchanged_inlining_setting_leaves_the_planner_alone():
 
     Observable only once the planner is holding some *other* handle's codec:
     without the guard, a defensive no-op toggle on `ctx` drags the planner back
-    onto `ctx`'s codec and silently undoes the install below. The rebuilt
-    codecs otherwise wrap the same inner codec, so nothing else distinguishes
-    the two paths.
+    onto `ctx`'s codecs and silently undoes the install below. `ctx` installs no
+    logical codec, so being dragged back leaves the planner with an empty chain
+    and the query fails outright rather than quietly using the wrong codec.
     """
-    ctx, handle_codec, _physical_codec = codec_context()
+    ctx, _physical_codec = physical_only_context()
     ctx.set_query_planner(MyQueryPlanner())
 
     planner_codec = MyLogicalExtensionCodec()
@@ -612,7 +633,6 @@ def test_an_unchanged_inlining_setting_leaves_the_planner_alone():
 
     ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert planner_codec.table_provider_encode_calls() > 0
-    assert handle_codec.table_provider_encode_calls() == 0
 
 
 def test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs():
@@ -627,7 +647,7 @@ def test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs():
     So "re-install the planner after installing a codec" only repairs anything
     when it is done from the handle holding the new codec.
     """
-    ctx, original_logical, _physical_codec = codec_context()
+    ctx, _physical_codec = physical_only_context()
     planner = MyQueryPlanner()
     ctx.set_query_planner(planner)
 
@@ -638,15 +658,14 @@ def test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs():
 
     ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert later.table_provider_encode_calls() > 0
-    assert original_logical.table_provider_encode_calls() == 0
 
-    # `ctx`'s own codec field never changed, so this rebuilds the planner
-    # against `original_logical` and drops `later` from the session's planner.
+    # `ctx`'s own codec field never changed -- it never had a logical codec --
+    # so this rebuilds the planner against an empty chain and drops `later`.
     ctx.set_query_planner(planner)
     encodes_by_later = later.table_provider_encode_calls()
 
-    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
-    assert original_logical.table_provider_encode_calls() > 0
+    with pytest.raises(Exception, match=r"LogicalExtensionCodec|TableProvider"):
+        ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert later.table_provider_encode_calls() == encodes_by_later
 
 

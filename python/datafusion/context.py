@@ -2254,7 +2254,9 @@ class SessionContext:
         return self.ctx.__datafusion_query_planner__(session)
 
     def with_logical_extension_codec(
-        self, codec: LogicalExtensionCodecExportable | _PyCapsule
+        self,
+        codec: LogicalExtensionCodecExportable | _PyCapsule,
+        codec_id: str | None = None,
     ) -> SessionContext:
         """Create a new session context with an additional logical codec.
 
@@ -2262,13 +2264,25 @@ class SessionContext:
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
-        Codecs compose: each call adds the codec to the front of the
-        session's codec chain rather than replacing prior codecs. During
-        encoding and decoding, the most recently installed codec is
-        consulted first, falling through codec by codec to DataFusion's
-        default codec. Codecs signal "not mine" by returning an error, so
-        extension codecs should only answer for payloads they own —
-        typically identified by a distinct byte prefix.
+        Codecs compose: each call appends the codec to the session's codec
+        chain rather than replacing prior codecs. Every payload a codec writes
+        is tagged with that codec's identity, so decoding consults exactly the
+        codec that encoded it and never offers bytes to a codec that did not
+        write them. Install order therefore does not affect decoding at all.
+
+        On encoding, codecs are consulted in install order and the first one to
+        claim an object wins, so installing a codec can only claim objects no
+        earlier codec claimed. Order is only observable when two codecs both
+        claim the same object, which is a collision worth avoiding regardless.
+
+        ``codec_id`` sets the identity used for tagging. It is normally
+        unnecessary: an identity is derived from the codec's
+        ``__datafusion_codec_id__`` attribute if present, otherwise from its
+        class's module and qualified name, which is stable across processes.
+        Pass it explicitly when installing from a bare ``PyCapsule``, which
+        exposes nothing stable to derive from — such a codec is tagged with a
+        session-local identity, and plans it encodes will not decode on an
+        unrelated session.
 
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
@@ -2276,8 +2290,22 @@ class SessionContext:
         session, so the original context plans with the new codec too. This
         happens on the shared session, so it takes effect even if the returned
         context is discarded.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     my_library.Codec()
+            ... )  # doctest: +SKIP
+
+            Installing from a bare capsule, pinning the identity so encoded
+            plans remain decodable on another session:
+
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     capsule, codec_id="my_library.Codec"
+            ... )  # doctest: +SKIP
         """
-        new_internal = self.ctx.with_logical_extension_codec(codec)
+        new_internal = self.ctx.with_logical_extension_codec(codec, codec_id)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
@@ -2290,7 +2318,9 @@ class SessionContext:
         return self.ctx.__datafusion_physical_extension_codec__(session)
 
     def with_physical_extension_codec(
-        self, codec: PhysicalExtensionCodecExportable | _PyCapsule
+        self,
+        codec: PhysicalExtensionCodecExportable | _PyCapsule,
+        codec_id: str | None = None,
     ) -> SessionContext:
         """Create a new session context with an additional physical codec.
 
@@ -2299,9 +2329,10 @@ class SessionContext:
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
         Codecs compose the same way as in
-        :py:meth:`with_logical_extension_codec`: each call prepends to the
-        session's codec chain, and the most recently installed codec is
-        consulted first.
+        :py:meth:`with_logical_extension_codec`: each call appends to the
+        session's codec chain, payloads are tagged with the identity of the
+        codec that wrote them, and ``codec_id`` overrides that identity. See
+        that method for the full description.
 
         The returned context shares its session state with the original, so a
         later registration on either is visible to both. If a custom query
@@ -2309,8 +2340,19 @@ class SessionContext:
         session, so the original context plans with the new codec too. This
         happens on the shared session, so it takes effect even if the returned
         context is discarded.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx = ctx.with_physical_extension_codec(
+            ...     my_library.PhysicalCodec()
+            ... )  # doctest: +SKIP
+
+            >>> ctx = ctx.with_physical_extension_codec(
+            ...     capsule, codec_id="my_library.PhysicalCodec"
+            ... )  # doctest: +SKIP
         """
-        new_internal = self.ctx.with_physical_extension_codec(codec)
+        new_internal = self.ctx.with_physical_extension_codec(codec, codec_id)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new

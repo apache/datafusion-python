@@ -40,9 +40,14 @@ def _encode_provider_plan(token: str) -> tuple[bytes, MyLogicalExtensionCodec]:
     Returns the blob and the codec, so callers can assert on its call
     counters. The token is chosen per test so a second codec installed
     later is provably unable to claim these bytes.
+
+    The codec is installed under ``token`` as its id as well, so a
+    caller can reinstall the same instance elsewhere and have the tag on
+    these bytes resolve. Identity would otherwise be derived from the
+    class, which every instance shares.
     """
     codec = MyLogicalExtensionCodec(provider_prefix=token)
-    ctx = SessionContext().with_logical_extension_codec(codec)
+    ctx = SessionContext().with_logical_extension_codec(codec, codec_id=token)
     ctx.register_table("numbers", MyTableProvider(1, 4, 1))
     blob = ctx.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(ctx)
     assert token.encode() in blob
@@ -135,22 +140,27 @@ def test_ffi_logical_codec_composes_with_later_install():
     assert df.collect() == df_round_trip.collect()
 
 
-def test_most_recently_installed_codec_encodes_first():
-    """Encoding walks the chain front to back, and the front is the most
-    recently installed codec. Both codecs here can encode the provider,
-    so the winner is decided purely by install order.
+def test_first_installed_codec_encodes():
+    """Encoding walks the chain in install order, so the earliest
+    installed codec that can claim an object gets it.
 
-    Both orders are exercised in one test on purpose. Asserting a single
-    order would also pass under replace semantics, where the second
-    install simply discards the first codec; swapping the order and
-    getting the other token proves the losing codec was still installed
-    and merely lost the race.
+    Both orders run in one test on purpose. Asserting a single order
+    would also pass under replace semantics, where the second install
+    simply discards the first codec; swapping the order and getting the
+    other token proves the losing codec was still installed and merely
+    lost the race.
+
+    The two instances need explicit ids: identity is otherwise derived
+    from the class, and these are two instances of one class owning
+    disjoint slices of the wire format.
     """
     for winner, loser in (("TOKENAAA", "TOKENBBB"), ("TOKENBBB", "TOKENAAA")):
-        loser_codec = MyLogicalExtensionCodec(provider_prefix=loser)
         winner_codec = MyLogicalExtensionCodec(provider_prefix=winner)
-        ctx = SessionContext().with_logical_extension_codec(loser_codec)
-        ctx = ctx.with_logical_extension_codec(winner_codec)
+        loser_codec = MyLogicalExtensionCodec(provider_prefix=loser)
+        ctx = SessionContext().with_logical_extension_codec(
+            winner_codec, codec_id=winner
+        )
+        ctx = ctx.with_logical_extension_codec(loser_codec, codec_id=loser)
 
         ctx.register_table("numbers", MyTableProvider(1, 4, 1))
         blob = ctx.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(ctx)
@@ -161,16 +171,47 @@ def test_most_recently_installed_codec_encodes_first():
         assert loser_codec.table_provider_encode_calls() == 0
 
 
-def test_decode_falls_through_to_earlier_installed_codec():
-    """A codec that does not own the payload signals "not mine" by
-    erroring, and the chain keeps walking. The bytes here are stamped
-    with the first codec's token, so the more recently installed second
-    codec must decline and let the first one decode."""
+def test_installing_a_codec_cannot_hijack_an_earlier_codecs_objects():
+    """Appending is additive: a later install can claim objects nothing
+    else claimed, but never takes over an object an earlier codec was
+    already encoding.
+
+    This is why install order is append rather than prepend. Under
+    prepend, adding an unrelated library would silently change how an
+    existing library's objects encode -- and, once payloads are tagged,
+    would renumber ids that older payloads already reference.
+    """
+    first = MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    ctx = SessionContext().with_logical_extension_codec(first, codec_id="TOKENAAA")
+    ctx.register_table("numbers", MyTableProvider(1, 4, 1))
+    before = ctx.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(ctx)
+
+    later = MyLogicalExtensionCodec(provider_prefix="TOKENBBB")
+    ctx = ctx.with_logical_extension_codec(later, codec_id="TOKENBBB")
+    after = ctx.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(ctx)
+
+    # Provider tokens are minted per encode, so the payloads differ in the
+    # token id. What must not change is which codec claimed the provider.
+    assert b"TOKENAAA" in after
+    assert b"TOKENBBB" not in after
+    assert later.table_provider_encode_calls() == 0
+    assert len(before) == len(after)
+
+
+def test_decode_dispatches_to_the_codec_that_encoded():
+    """A payload names the codec that wrote it, so decoding consults
+    exactly that codec and never offers the bytes to any other.
+
+    The blob here is written by ``first`` in its own session. Installing
+    ``second`` alongside it must not put ``second`` anywhere near those
+    bytes -- under trial-and-error dispatch it would be asked first, and
+    a codec that decodes structurally similar protobuf would answer.
+    """
     blob, first = _encode_provider_plan("TOKENAAA")
 
     second = MyLogicalExtensionCodec(provider_prefix="TOKENBBB")
-    ctx = SessionContext().with_logical_extension_codec(first)
-    ctx = ctx.with_logical_extension_codec(second)
+    ctx = SessionContext().with_logical_extension_codec(first, codec_id="TOKENAAA")
+    ctx = ctx.with_logical_extension_codec(second, codec_id="TOKENBBB")
 
     restored = LogicalPlan.from_bytes(ctx, blob)
     assert ctx.create_dataframe_from_logical_plan(restored).collect()
@@ -179,40 +220,92 @@ def test_decode_falls_through_to_earlier_installed_codec():
     assert second.table_provider_decode_calls() == 0
 
 
-def test_decode_failure_aggregates_every_codec_error():
-    """When no codec in the chain claims the payload, the error names
-    the number of codecs tried and carries each one's message, so an
-    operator can see which library was expected to own the bytes."""
+def test_decode_survives_a_different_install_order():
+    """Dispatch keys off codec identity, not chain position, so the
+    decoding session may install the same codecs in any order.
+
+    This is the case positional dispatch cannot handle: the encoding
+    session has the owning codec at index 0 and the decoding session has
+    it at index 1. Keying on position would hand the payload to whatever
+    sits at index 0 in the decoder -- silently, and with a plausible
+    result.
+    """
+    owner = MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    other = MyLogicalExtensionCodec(provider_prefix="TOKENBBB")
+
+    encoder = SessionContext().with_logical_extension_codec(owner, codec_id="TOKENAAA")
+    encoder = encoder.with_logical_extension_codec(other, codec_id="TOKENBBB")
+    encoder.register_table("numbers", MyTableProvider(1, 4, 1))
+    blob = encoder.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(encoder)
+
+    # Same codecs, opposite order.
+    decoder = SessionContext().with_logical_extension_codec(other, codec_id="TOKENBBB")
+    decoder = decoder.with_logical_extension_codec(owner, codec_id="TOKENAAA")
+
+    restored = LogicalPlan.from_bytes(decoder, blob)
+    assert decoder.create_dataframe_from_logical_plan(restored).collect()
+    assert other.table_provider_decode_calls() == 0
+
+
+def test_decode_names_the_codec_that_is_not_installed():
+    """When the owning codec is absent the error names it and lists what
+    is installed, instead of reporting DataFusion's generic "not
+    provided" from whichever codec was tried last."""
     blob, _owner = _encode_provider_plan("TOKENBBB")
 
-    # Neither installed codec owns TOKENBBB, so the chain is exhausted:
-    # two example codecs plus DataFusion's default codec.
     ctx = SessionContext().with_logical_extension_codec(
-        MyLogicalExtensionCodec(provider_prefix="TOKENCCC")
-    )
-    ctx = ctx.with_logical_extension_codec(
-        MyLogicalExtensionCodec(provider_prefix="TOKENDDD")
+        MyLogicalExtensionCodec(provider_prefix="TOKENCCC"), codec_id="lib_c.Codec"
     )
 
-    with pytest.raises(Exception, match="None of the 3 composed extension codecs"):
+    with pytest.raises(Exception, match="TOKENBBB") as excinfo:
         LogicalPlan.from_bytes(ctx, blob)
 
+    message = str(excinfo.value)
+    # Names the codec the payload belongs to, and what is actually here.
+    assert "not installed on this session" in message
+    assert "lib_c.Codec" in message
 
-def test_single_codec_chain_error_is_returned_verbatim():
-    """A session with no extra codec has a one-entry chain, so a decode
-    failure surfaces DataFusion's own error rather than the aggregated
-    wrapper. Keeps error messages unchanged for the common case where
-    nobody composed anything."""
-    blob, _owner = _encode_provider_plan("TOKENEEE")
 
-    # DataFusion's own wording for "no codec claimed this", surfaced
-    # unwrapped because the chain has a single entry.
-    with pytest.raises(
-        Exception, match="LogicalExtensionCodec is not provided"
-    ) as excinfo:
+def test_installing_two_codecs_under_one_id_is_rejected():
+    """Identity is derived from the class, so installing two instances of
+    one class collides. Rejecting at install time is the point: two
+    codecs sharing an id are indistinguishable when a payload is decoded,
+    and only the caller knows whether they write the same wire format."""
+    ctx = SessionContext().with_logical_extension_codec(MyLogicalExtensionCodec())
+
+    with pytest.raises(ValueError, match="already installed"):
+        ctx.with_logical_extension_codec(MyLogicalExtensionCodec())
+
+
+def test_bare_capsule_codec_is_session_local():
+    """A bare PyCapsule exposes nothing stable to derive an identity
+    from -- every capsule reports the same type -- so it is tagged with a
+    session-local id. A plan it encodes fails on an unrelated session
+    with an error naming the fix, rather than being decoded by whichever
+    codec happens to sit at the same position."""
+    exporter = SessionContext().with_logical_extension_codec(
+        MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    )
+    encoder = SessionContext().with_logical_extension_codec(
+        exporter.__datafusion_logical_extension_codec__()
+    )
+    encoder.register_table("numbers", MyTableProvider(1, 4, 1))
+    blob = encoder.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(encoder)
+
+    with pytest.raises(Exception, match="bare PyCapsule") as excinfo:
         LogicalPlan.from_bytes(SessionContext(), blob)
+    assert "codec_id" in str(excinfo.value)
 
-    assert "composed extension codecs" not in str(excinfo.value)
+
+def test_default_only_session_writes_no_envelope():
+    """A session with no extension codecs installed produces the same
+    bytes as a build without codec chaining: the terminal codec writes
+    unframed, so the envelope only appears once a codec is installed.
+
+    Keeps the wire break scoped to sessions that actually compose."""
+    ctx = SessionContext()
+    blob = ctx.sql("SELECT abs(-1) AS x").logical_plan().to_bytes(ctx)
+    assert b"DFPYCHN" not in blob
 
 
 def test_udf_inlining_setting_survives_codec_install():
