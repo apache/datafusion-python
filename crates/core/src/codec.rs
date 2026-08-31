@@ -253,9 +253,15 @@ pub(crate) const ANONYMOUS_CODEC_ID_PREFIX: &str = "anon:";
 /// The id is what makes dispatch order-independent. Keying on position
 /// in the chain — as `ComposedPhysicalExtensionCodec` does upstream —
 /// is sound only when both ends assemble the same list in the same
-/// order, which holds for a compile-time codec list but not for a
-/// chain built by user Python across two independently configured
-/// sessions.
+/// order. That holds for the consumers upstream was written for, whose
+/// lists structurally cannot disagree: Ballista's is a compile-time
+/// constant, and `datafusion-distributed` pins its own codec at index 0
+/// and appends user codecs rebuilt from the same startup code on every
+/// node. It does not hold here. A chain is assembled by user Python,
+/// and `Expr.to_bytes(ctx1)` / `Expr.from_bytes(ctx2)` puts two
+/// independently configured sessions on either end of one payload, so
+/// an index would name a different codec in the decoder as soon as
+/// install order differed.
 struct ChainEntry<C: ?Sized> {
     id: Arc<str>,
     codec: Arc<C>,
@@ -352,6 +358,18 @@ fn read_chained_payload(buf: &[u8]) -> Result<Option<(&str, &[u8])>> {
 /// Outside the empty case nothing is ever offered to a codec that did
 /// not write it, which is what stops a structurally similar prost
 /// message from decoding in the wrong library.
+///
+/// Do not replace this with a walk that hands `buf` to each codec until
+/// one returns `Ok`. That looks simpler and removes the envelope, and it
+/// is unsound: protobuf carries no type identity, so a `prost` message
+/// decodes cleanly from an unrelated message's bytes whenever their
+/// leading field numbers and wire types line up, and an all-defaults
+/// message encodes to zero bytes that decode as anything. Asking codecs
+/// to check a byte prefix does not fix it either, because the natural
+/// implementation is `MyMessage::decode(buf)`, which has no prefix to
+/// check and cannot decline. Upstream shipped that design and reverted
+/// it after a Parquet payload decoded as CSV — apache/datafusion#16980,
+/// fixed in #16986.
 fn chain_decode<C: ?Sized, R>(
     chain: &[ChainEntry<C>],
     terminal: &Arc<C>,
