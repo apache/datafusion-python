@@ -346,6 +346,56 @@ def test_a_bare_capsule_codec_id_is_not_re_mintable_by_another_session():
     assert "codec_id" in str(excinfo.value)
 
 
+def test_installing_a_session_as_a_codec_uses_a_per_session_id():
+    """A context installed as a codec is identified by its session, not by
+    its class.
+
+    Every ``SessionContext`` shares one class, so a class-derived id would
+    name all of them: two contexts could not coexist on one target, and a
+    payload written through one would resolve to the other on decode. The
+    sources are held in locals because the imported codecs resolve their
+    task context against them.
+    """
+    src_a = SessionContext().with_logical_extension_codec(
+        MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    )
+    src_b = SessionContext().with_logical_extension_codec(
+        MyLogicalExtensionCodec(provider_prefix="TOKENBBB")
+    )
+    assert src_a.__datafusion_codec_id__ != src_b.__datafusion_codec_id__
+
+    # Both sources compose onto one session, which a shared id would refuse.
+    both = SessionContext().with_logical_extension_codec(src_a)
+    both = both.with_logical_extension_codec(src_b)
+    assert both.logical_extension_codec_ids() == [
+        src_a.__datafusion_codec_id__,
+        src_b.__datafusion_codec_id__,
+    ]
+
+    # A payload written through one source does not resolve to the other.
+    encoder = SessionContext().with_logical_extension_codec(src_a)
+    encoder.register_table("numbers", MyTableProvider(1, 4, 1))
+    blob = encoder.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(encoder)
+
+    decoder = SessionContext().with_logical_extension_codec(src_b)
+    with pytest.raises(Exception, match="not installed on this session") as excinfo:
+        LogicalPlan.from_bytes(decoder, blob)
+    assert src_a.__datafusion_codec_id__ in str(excinfo.value)
+
+
+def test_a_derived_handle_reports_its_session_id():
+    """Handles derived from one session share its id, so only one of them
+    can be installed on a given target. Their payloads would be
+    indistinguishable on decode, so refusing is the right answer."""
+    base = SessionContext()
+    derived = base.with_python_udf_inlining(enabled=False)
+    assert derived.__datafusion_codec_id__ == base.__datafusion_codec_id__
+
+    target = SessionContext().with_logical_extension_codec(base)
+    with pytest.raises(ValueError, match="already installed"):
+        target.with_logical_extension_codec(derived)
+
+
 def test_name_only_codec_round_trips_without_a_payload():
     """A codec may own functions that need no payload: the name is the
     whole encoding. ``try_encode_udf`` writes nothing, and the decoder

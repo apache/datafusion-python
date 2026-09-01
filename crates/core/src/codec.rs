@@ -257,6 +257,17 @@ pub(crate) const CHAIN_WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
 /// installed anywhere would answer for every other session's first.
 pub(crate) const ANONYMOUS_CODEC_ID_PREFIX: &str = "anon:";
 
+/// Prefix for the id a `SessionContext` reports when its own codec stack
+/// is installed as an extension codec on another session.
+///
+/// Deriving that id from the class, as an ordinary codec object's is,
+/// would name every session at once: they all share one class. Two
+/// sessions installed as codecs on one target would collide, and a
+/// payload written by one would resolve to the other on decode. The
+/// session id is per session and already stable, so it is what the
+/// remainder of this id carries.
+pub(crate) const SESSION_CODEC_ID_PREFIX: &str = "session:";
+
 /// One installed codec plus the identity its payloads are tagged with.
 ///
 /// The id is what makes dispatch order-independent. Keying on position

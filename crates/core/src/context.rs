@@ -75,7 +75,9 @@ use uuid::Uuid;
 use crate::catalog::{
     PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
 };
-use crate::codec::{ANONYMOUS_CODEC_ID_PREFIX, PythonLogicalCodec, PythonPhysicalCodec};
+use crate::codec::{
+    ANONYMOUS_CODEC_ID_PREFIX, PythonLogicalCodec, PythonPhysicalCodec, SESSION_CODEC_ID_PREFIX,
+};
 use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
@@ -1422,6 +1424,24 @@ impl PySessionContext {
         PyCapsule::new_with_value(py, ffi_ctx_provider, cr"datafusion_task_context_provider")
     }
 
+    /// Identity this session's codec stack carries when it is itself installed
+    /// as an extension codec on another session.
+    ///
+    /// Without it the id would be derived from the class, which every session
+    /// shares: two sessions installed on one target would collide at install
+    /// time, and a payload written through one would resolve to the other on
+    /// decode. See [`SESSION_CODEC_ID_PREFIX`].
+    ///
+    /// Handles derived from one session — `with_python_udf_inlining`,
+    /// `with_logical_extension_codec` — report the same id even though their
+    /// codec chains differ, so installing two of them on one target is
+    /// refused. That is the intended answer: their payloads would be
+    /// indistinguishable on decode.
+    #[getter]
+    pub fn __datafusion_codec_id__(&self) -> String {
+        format!("{SESSION_CODEC_ID_PREFIX}{}", self.ctx.session_id())
+    }
+
     /// `session` exists so this matches the protocol an extension library
     /// implements, where the argument is how the library reaches the session
     /// it is being installed on. A session already is one, so it is ignored.
@@ -1750,6 +1770,9 @@ impl PySessionContext {
 /// 2. `codec.__datafusion_codec_id__`, letting a library pin its own identity
 ///    so a class rename does not invalidate previously encoded plans, and so
 ///    two instances of one class can own disjoint slices of the wire format.
+///    `SessionContext` pins its own through this arm — see
+///    [`PySessionContext::__datafusion_codec_id__`] — because the class-derived
+///    id below would name every session at once.
 /// 3. The exporting object's `module.QualName`, which is the library's own
 ///    import path and therefore already stable across processes. This is the
 ///    common case and asks nothing of existing extension libraries.

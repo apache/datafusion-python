@@ -2236,6 +2236,32 @@ class SessionContext:
         """Access the PyCapsule FFI_TaskContextProvider."""
         return self.ctx.__datafusion_task_context_provider__()
 
+    @property
+    def __datafusion_codec_id__(self) -> str:
+        """Identity this context carries when installed as an extension codec.
+
+        Installing one context's codec stack on another session tags the
+        payloads it writes with this string. It is derived from the session id
+        rather than from the class, because every context shares one class:
+        a class-derived identity would name them all, so two contexts installed
+        on one session would collide and a payload written through one would
+        resolve to the other when decoded.
+
+        Contexts derived from the same session — including the ones returned by
+        :py:meth:`with_logical_extension_codec` and
+        :py:meth:`with_python_udf_inlining` — report the same id, so only one of
+        them can be installed on a given session.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.__datafusion_codec_id__.startswith("session:")
+            True
+            >>> ctx.__datafusion_codec_id__ == SessionContext().__datafusion_codec_id__
+            False
+        """
+        return self.ctx.__datafusion_codec_id__
+
     def __datafusion_logical_extension_codec__(self, session: Any = None) -> Any:
         """Access the PyCapsule FFI_LogicalExtensionCodec.
 

@@ -277,6 +277,9 @@ Codec identity is derived automatically and is stable across processes:
 2. `__datafusion_codec_id__` on the exporting object, if it defines one. Declare it
    when a class rename must not invalidate previously encoded plans, or when one
    library installs two instances owning disjoint slices of the wire format.
+   `SessionContext` declares one itself, carrying its session id: installing one
+   context's codec stack on another session is the case where the class-derived id
+   below would name every session at once.
 3. Otherwise the exporting class's `module.QualName`, which is the library's own
    import path.
 
@@ -289,9 +292,20 @@ it encodes fail with a pointed error on an unrelated session instead of being
 decoded by the wrong codec. Pass `codec_id=` for those.
 
 The randomness there is deliberate, not laziness. An identity another session can
-mint the same value from — a counter, a position in the chain — reintroduces
-positional dispatch through the back door: every session numbers from the same end,
-so one session's first bare capsule would answer for every other session's first.
+mint the same value from — a counter, a position in the chain, a class every
+candidate shares — reintroduces positional dispatch through the back door: every
+session numbers from the same end, so one session's first bare capsule would answer
+for every other session's first.
+
+Composing whole sessions is worth one caution beyond identity. Install the context,
+not the capsule it exports: `ctx.with_logical_extension_codec(other_ctx)` carries
+`other_ctx`'s session id as the identity, whereas
+`ctx.with_logical_extension_codec(other_ctx.__datafusion_logical_extension_codec__())`
+hands over a bare capsule and gets a random one that no other session can decode.
+Either way the imported codecs resolve their task context against `other_ctx` and
+stop working when it is dropped — see
+[One session, one `Arc<SessionContext>`](#one-session-one-arcsessioncontext) — so
+this composes sessions, it does not copy codecs out of one.
 
 `SessionContext.logical_extension_codec_ids()` and its physical counterpart list
 what is installed, which is also what a decode failure names.
