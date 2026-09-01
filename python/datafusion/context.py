@@ -2293,17 +2293,18 @@ class SessionContext:
         independent libraries and the order they are installed in does not
         affect decoding.
 
-        ``codec_id`` is normally unnecessary — an identity is derived from the
-        codec's class. Pass it when installing from a bare ``PyCapsule``, which
-        exposes nothing to derive from, or when installing two instances of one
-        class, which otherwise collide and raise ``ValueError``.
+        A serialized plan records which codec wrote each payload, as a short id
+        taken from the codec's class. ``codec_id`` overrides that id and is
+        normally unnecessary. Pass it when installing from a bare ``PyCapsule``,
+        which has no class to take an id from, or when installing two instances
+        of one class, which otherwise claim the same id and raise ``ValueError``.
 
         The returned context shares its session state with the original, so a
         later registration on either is visible to both, and an installed query
         planner is rebound on the shared session even if the returned context is
         discarded.
 
-        See :ref:`ffi` in the online documentation for how identity is derived,
+        See :ref:`ffi` in the online documentation for how ids are assigned,
         what an extension codec has to implement, and a worked multi-library
         registration recipe.
 
@@ -2314,7 +2315,7 @@ class SessionContext:
             ...     my_library.Codec()
             ... )  # doctest: +SKIP
 
-            Installing from a bare capsule, pinning the identity so encoded
+            Installing from a bare capsule, pinning the id so encoded
             plans remain decodable on another session:
 
             >>> ctx = ctx.with_logical_extension_codec(
@@ -2381,7 +2382,7 @@ class SessionContext:
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
-        Composes and derives an identity exactly as
+        Composes and assigns an id exactly as
         :py:meth:`with_logical_extension_codec` does, including when to pass
         ``codec_id`` and what the returned context shares. See that method.
 

@@ -126,11 +126,11 @@ class LogicalExtensionCodecExportable(Protocol):
     codec that wrote it and is only ever handed back to that codec, so there is
     no need to recognise or reject another library's payloads.
 
-    An optional ``__datafusion_codec_id__`` attribute pins the identity a
-    payload records. It is not part of this protocol and is rarely needed:
-    identity otherwise comes from the class's module and qualified name, which
-    is already stable across processes. Declare it when a class rename must not
-    invalidate previously encoded plans, or when one library installs two
+    A serialized plan records which codec wrote each payload, as a short id
+    taken from your class's module and qualified name. An optional
+    ``__datafusion_codec_id__`` attribute pins that id instead. It is not part
+    of this protocol and is rarely needed: declare it when renaming your class
+    must not stop older plans from decoding, or when one library installs two
     instances that own disjoint slices of the wire format.
     """
 

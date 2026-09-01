@@ -256,49 +256,46 @@ rather than replacing prior codecs.
 
 **Nothing is asked of the codec itself.** Implement `LogicalExtensionCodec` or
 `PhysicalExtensionCodec` exactly as you would for a session that installs only
-yours. datafusion-python tags every payload with the identity of the codec that
-wrote it and strips the tag before handing the bytes back, so your codec receives,
-byte for byte, the payload it wrote, and is never offered a payload another codec
-wrote.
+yours. When your codec writes bytes into a serialized plan, datafusion-python
+records which codec wrote them, and strips that record off again before handing the
+bytes back. So your codec receives, byte for byte, the payload it wrote, and is
+never offered a payload another codec wrote.
 
 A codec that also ships to hosts which dispatch differently may still want its own
 guard against foreign payloads. Keeping one is fine; it is simply not needed for the
 datafusion-python path.
 
-Codec identity is derived automatically and is stable across processes:
+That record is the codec's **id**: a short string stored inside the plan, naming the
+codec that wrote each payload. Because plans are decoded in another process — or
+another program — the id has to name the same codec there as it did where the plan
+was written.
 
-1. An explicit `codec_id=` argument to the install call.
-2. `__datafusion_codec_id__` on the exporting object, if it defines one. Declare it
-   when a class rename must not invalidate previously encoded plans, or when one
-   library installs two instances owning disjoint slices of the wire format.
-   `SessionContext` declares one itself, carrying its session id: installing one
-   context's codec stack on another session is the case where the class-derived id
-   below would name every session at once.
-3. Otherwise the exporting class's `module.QualName`, which is the library's own
-   import path.
+Ids are assigned for you. A codec's id is normally its exporting class's import
+path, such as `my_library.Codec`, which is what you will see in
+`logical_extension_codec_ids()` and in decode errors. You choose one yourself in
+three cases:
 
-Two codecs cannot share an identity — installing a second under an id already in
-use raises rather than shadowing the first, because a payload naming that id would
-otherwise resolve to whichever entry came first. A codec installed from a bare
-`PyCapsule` is the one case with nothing stable to derive from, since every capsule
-reports the same type; it gets a random identity minted at install time, and plans
-it encodes fail with a pointed error on an unrelated session instead of being
-decoded by the wrong codec. Pass `codec_id=` for those.
+- **Two instances of one class.** Both get the same id, so the second install
+  raises `ValueError`. Pass `codec_id=` to tell them apart.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from, so it gets an
+  id private to the session that installed it. Plans it encodes fail with a clear
+  error on any other session, rather than being decoded by the wrong codec. Pass
+  `codec_id=` if those plans have to cross sessions.
+- **A class you intend to rename.** The id follows the class name, so renaming stops
+  older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
+  object to pin an id that survives the rename.
 
-Composing whole sessions is worth one caution beyond identity. Install the context,
-not the capsule it exports: `ctx.with_logical_extension_codec(other_ctx)` carries
-`other_ctx`'s session id as the identity, whereas
-`ctx.with_logical_extension_codec(other_ctx.__datafusion_logical_extension_codec__())`
-hands over a bare capsule and gets a random one that no other session can decode.
-Either way the imported codecs resolve their task context against `other_ctx` and
-stop working when it is dropped — see
-[One session, one `Arc<SessionContext>`](#one-session-one-arcsessioncontext) — so
-this composes sessions, it does not copy codecs out of one.
+`SessionContext.logical_extension_codec_ids()` and its physical counterpart list the
+ids installed on a session, which is also what a decode failure names.
 
-`SessionContext.logical_extension_codec_ids()` and its physical counterpart list
-what is installed, which is also what a decode failure names.
+Installing one context's codec stack on another session composes the two sessions
+rather than copying codecs out of one: the imported codecs resolve their task context
+against the original and stop working when it is dropped — see
+[One session, one `Arc<SessionContext>`](#one-session-one-arcsessioncontext). Pass
+the context itself rather than the capsule it exports, so its codecs get an id that
+other sessions can decode.
 
-Because decoding keys off identity rather than install position, registration order
+Because decoding keys off the id rather than install position, registration order
 between independent libraries does not affect decoding at all. It is visible only
 on encoding, where codecs are consulted in install order and the first to claim an
 object wins — so installing a library can claim objects nothing else claimed, but
@@ -327,18 +324,18 @@ ctx.register_udf(udf(lib_b.SomeUDF()))
 
 A codec may own functions that need no payload at all, where the name is the whole
 encoding: `try_encode_udf` writes nothing and `try_decode_udf` rebuilds the function
-from `name`. That is supported and needs no identity, because an `Ok` with an empty
+from `name`. That is supported and needs no id, because an `Ok` with an empty
 buffer is read as "no opinion" and passes the object to the next codec.
 `NameOnlyUdfCodec` in the FFI example is the worked case. Anything no installed
 codec claims falls through to `Default{Logical,Physical}ExtensionCodec`.
 
 This is the one case where your decoder is consulted about something you may not
-own, because an empty payload carries no identity to route on. `try_decode_udf` and
+own, because an empty payload has no id to route on. `try_decode_udf` and
 its aggregate and window siblings can therefore be called with an empty `buf` and a
 `name` belonging to another library. Decide from `name` and return an error if it is
 not yours; do not assume `buf` is non-empty.
 
-The framing itself — the envelope layout, the identity dispatch, and the two cases
+The framing itself — how an id is stored alongside a payload and routed back, and the two cases
 that stay unframed — is internal to datafusion-python and documented in
 `crates/core/src/codec.rs` for anyone changing it.
 

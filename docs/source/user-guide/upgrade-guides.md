@@ -117,23 +117,21 @@ another library's codec wrote.
 Callers relying on replacement semantics — installing a codec in order to remove
 a previous one — are affected. There is no way to remove an installed codec.
 
-Two behaviours are worth knowing:
+A serialized plan now records which codec wrote each payload, as a short id taken
+from the codec's class. Two behaviours follow from that:
 
-- Installing two codecs under the same identity raises a `ValueError`. Identity
-  is derived from the exporting class's module and qualified name, so this comes
-  up when installing two instances of one class. Pass `codec_id=` to distinguish
-  them.
-- A codec installed from a bare `PyCapsule` has no portable identity, because
-  every capsule reports the same type. It is tagged with a session-local
-  identity and works normally within that session, but a plan it encodes cannot
-  be decoded on an unrelated session. Pass `codec_id=` if plans must cross
-  sessions.
+- Installing two instances of one class raises a `ValueError`, because both would
+  claim the same id. Pass `codec_id=` to tell them apart.
+- A codec installed from a bare `PyCapsule` has no class to take an id from, so it
+  gets one private to the session that installed it. It works normally on that
+  session, but a plan it encodes cannot be decoded on an unrelated one. Pass
+  `codec_id=` if those plans have to cross sessions.
 
 ```python
 ctx = ctx.with_logical_extension_codec(lib_a.codec())
 ctx = ctx.with_logical_extension_codec(lib_b.codec())  # no longer discards lib_a
 
-# Two instances of one class need distinct identities.
+# Two instances of one class need distinct ids.
 ctx = ctx.with_logical_extension_codec(lib_a.Codec(), codec_id="lib_a.reader")
 ctx = ctx.with_logical_extension_codec(lib_a.Codec(), codec_id="lib_a.writer")
 
