@@ -271,6 +271,80 @@ def test_decode_names_the_codec_that_is_not_installed():
     assert "lib_c.Codec" in message
 
 
+def test_a_codec_id_defaults_to_its_class_module_and_qualname():
+    """A codec that declares no identity is named by its class.
+
+    That string goes on the wire in front of every payload the codec
+    writes, so it is a compatibility surface: renaming the class or moving
+    the module changes it, and plans stored by an earlier release stop
+    decoding. A library that needs to rename declares
+    ``__datafusion_codec_id__`` instead, which the next test covers.
+
+    Pinned twice on purpose -- once against the literal, so a rename has to
+    come here and be acknowledged, and once against the rule, so the
+    literal cannot drift into something the code no longer derives.
+    """
+    ctx = SessionContext().with_logical_extension_codec(MyLogicalExtensionCodec())
+
+    assert ctx.logical_extension_codec_ids() == [
+        "datafusion_ffi_example.MyLogicalExtensionCodec"
+    ]
+    assert ctx.logical_extension_codec_ids() == [
+        f"{MyLogicalExtensionCodec.__module__}.{MyLogicalExtensionCodec.__qualname__}"
+    ]
+
+
+class _CodecUnderItsOldName:
+    """A library codec that pins its identity, so the class can be renamed.
+
+    Delegates the capsule getter to a real FFI codec. ``session`` is
+    forwarded, because that argument is how the underlying library reaches
+    the session the codec is being installed on.
+    """
+
+    __datafusion_codec_id__ = "pinned.example.Codec"
+
+    def __init__(self, inner: MyLogicalExtensionCodec) -> None:
+        self._inner = inner
+
+    def __datafusion_logical_extension_codec__(self, session: object = None) -> object:
+        return self._inner.__datafusion_logical_extension_codec__(session)
+
+
+class _CodecUnderItsNewName(_CodecUnderItsOldName):
+    """The same codec after a rename. Same pinned id, different class."""
+
+
+def test_a_pinned_codec_id_survives_a_class_rename():
+    """``__datafusion_codec_id__`` decouples identity from the class name,
+    which is the reason to declare one.
+
+    A plan encoded by the codec under its old name decodes on a session
+    that only knows the new name. Under the class-derived default the two
+    would be different ids and the payload would be undecodable.
+    """
+    assert _CodecUnderItsOldName.__qualname__ != _CodecUnderItsNewName.__qualname__
+
+    old = MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    encoder = SessionContext().with_logical_extension_codec(_CodecUnderItsOldName(old))
+    assert encoder.logical_extension_codec_ids() == ["pinned.example.Codec"]
+
+    encoder.register_table("numbers", MyTableProvider(1, 4, 1))
+    blob = encoder.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(encoder)
+
+    # The pinned id, not the class name, is what the payload carries.
+    assert b"pinned.example.Codec" in blob
+    assert b"_CodecUnderItsOldName" not in blob
+
+    new = MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+    decoder = SessionContext().with_logical_extension_codec(_CodecUnderItsNewName(new))
+    assert decoder.logical_extension_codec_ids() == ["pinned.example.Codec"]
+
+    restored = LogicalPlan.from_bytes(decoder, blob)
+    assert decoder.create_dataframe_from_logical_plan(restored).collect()
+    assert new.table_provider_decode_calls() == 1
+
+
 def test_installing_two_codecs_under_one_id_is_rejected():
     """Identity is derived from the class, so installing two instances of
     one class collides. Rejecting at install time is the point: two
