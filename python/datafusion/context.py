@@ -2240,12 +2240,10 @@ class SessionContext:
     def __datafusion_codec_id__(self) -> str:
         """Identity this context carries when installed as an extension codec.
 
-        Installing one context's codec stack on another session tags the
-        payloads it writes with this string. It is derived from the session id
-        rather than from the class, because every context shares one class:
-        a class-derived identity would name them all, so two contexts installed
-        on one session would collide and a payload written through one would
-        resolve to the other when decoded.
+        A context can be installed on another session as an extension codec,
+        which tags the payloads it writes with this string. It is unique per
+        session, so two contexts can be installed on one session and a plan
+        written through one will not be decoded by the other.
 
         Contexts derived from the same session — including the ones returned by
         :py:meth:`with_logical_extension_codec` and
@@ -2290,32 +2288,24 @@ class SessionContext:
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
-        Codecs compose: each call appends the codec to the session's codec
-        chain rather than replacing prior codecs. Every payload a codec writes
-        is tagged with that codec's identity, so decoding consults exactly the
-        codec that encoded it and never offers bytes to a codec that did not
-        write them. Install order therefore does not affect decoding at all.
+        Codecs compose: each call appends the codec rather than replacing
+        codecs installed earlier, so one session can carry codecs from several
+        independent libraries and the order they are installed in does not
+        affect decoding.
 
-        On encoding, codecs are consulted in install order and the first one to
-        claim an object wins, so installing a codec can only claim objects no
-        earlier codec claimed. Order is only observable when two codecs both
-        claim the same object, which is a collision worth avoiding regardless.
-
-        ``codec_id`` sets the identity used for tagging. It is normally
-        unnecessary: an identity is derived from the codec's
-        ``__datafusion_codec_id__`` attribute if present, otherwise from its
-        class's module and qualified name, which is stable across processes.
-        Pass it explicitly when installing from a bare ``PyCapsule``, which
-        exposes nothing stable to derive from — such a codec is tagged with a
-        session-local identity, and plans it encodes will not decode on an
-        unrelated session.
+        ``codec_id`` is normally unnecessary — an identity is derived from the
+        codec's class. Pass it when installing from a bare ``PyCapsule``, which
+        exposes nothing to derive from, or when installing two instances of one
+        class, which otherwise collide and raise ``ValueError``.
 
         The returned context shares its session state with the original, so a
-        later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new chain on the shared
-        session, so the original context plans with the new codec too. This
-        happens on the shared session, so it takes effect even if the returned
-        context is discarded.
+        later registration on either is visible to both, and an installed query
+        planner is rebound on the shared session even if the returned context is
+        discarded.
+
+        See :ref:`ffi` in the online documentation for how identity is derived,
+        what an extension codec has to implement, and a worked multi-library
+        registration recipe.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -2344,8 +2334,8 @@ class SessionContext:
         dispatches on, so this is how to check which library owns a plan and
         whether a session is able to decode one.
 
-        The terminal codec is not listed. It handles whatever no installed
-        codec claims and writes unframed, so it is not addressable by id.
+        DataFusion's own default codec is not listed. It handles whatever no
+        installed codec claims, and it carries no identity to list.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -2391,18 +2381,9 @@ class SessionContext:
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
-        Codecs compose the same way as in
-        :py:meth:`with_logical_extension_codec`: each call appends to the
-        session's codec chain, payloads are tagged with the identity of the
-        codec that wrote them, and ``codec_id`` overrides that identity. See
-        that method for the full description.
-
-        The returned context shares its session state with the original, so a
-        later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new chain on the shared
-        session, so the original context plans with the new codec too. This
-        happens on the shared session, so it takes effect even if the returned
-        context is discarded.
+        Composes and derives an identity exactly as
+        :py:meth:`with_logical_extension_codec` does, including when to pass
+        ``codec_id`` and what the returned context shares. See that method.
 
         Examples:
             >>> from datafusion import SessionContext

@@ -110,9 +110,9 @@ error. Both methods now append to a chain, and a session can carry codecs from
 several independent libraries at once.
 
 **No change is required in an extension codec.** Keep implementing
-`LogicalExtensionCodec` or `PhysicalExtensionCodec` exactly as before. Payloads
-are wrapped in an envelope naming their author by `datafusion-python`, which
-strips it again before your codec sees the bytes.
+`LogicalExtensionCodec` or `PhysicalExtensionCodec` exactly as before. Your codec
+is still handed back exactly the bytes it wrote, and is never handed a payload
+another library's codec wrote.
 
 Callers relying on replacement semantics — installing a codec in order to remove
 a previous one — are affected. There is no way to remove an installed codec.
@@ -140,12 +140,11 @@ ctx = ctx.with_logical_extension_codec(lib_a.Codec(), codec_id="lib_a.writer")
 ctx.logical_extension_codec_ids()
 ```
 
-Serialized plans change shape once an extension codec is installed: payloads
-written by a chained codec now carry an identity envelope. A session with no
-extension codecs installed is unaffected and produces the same bytes as before,
-as do functions encoded by name. Plans serialized by an earlier release and
-stored for later use should be regenerated if they were produced by a session
-with an extension codec installed.
+Serialized plans change shape once an extension codec is installed, because each
+payload now records which codec wrote it. A session with no extension codecs
+installed produces the same bytes as before, as do functions encoded by name.
+Regenerate any plan you serialized with an earlier release and stored for later
+use, if it was produced by a session with an extension codec installed.
 
 ### Changes to the `datafusion-python-util` crate
 

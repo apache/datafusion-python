@@ -256,20 +256,15 @@ rather than replacing prior codecs.
 
 **Nothing is asked of the codec itself.** Implement `LogicalExtensionCodec` or
 `PhysicalExtensionCodec` exactly as you would for a session that installs only
-yours. `Python{Logical,Physical}Codec` sits between DataFusion and every installed
-codec, and it wraps each payload in an envelope naming the codec that produced it.
-Your codec receives, byte for byte, the payload it wrote, and never sees the
-envelope.
+yours. datafusion-python tags every payload with the identity of the codec that
+wrote it and strips the tag before handing the bytes back, so your codec receives,
+byte for byte, the payload it wrote, and is never offered a payload another codec
+wrote.
 
-Decoding reads that name and consults exactly one codec. A codec is never offered
-bytes it did not write, so it does not have to recognise and reject foreign
-payloads — which is not something a codec can reliably do anyway. Protobuf carries
-no type identity: a `prost` message decodes cleanly from an unrelated message's
-bytes whenever their leading field numbers and wire types line up, and the natural
-implementation, `MyMessage::decode(buf)`, has no prefix to check and cannot
-decline. Trying codecs in turn until one succeeds is how upstream's
-`ComposedPhysicalExtensionCodec` came to decode a Parquet payload as CSV
-([apache/datafusion#16980](https://github.com/apache/datafusion/issues/16980)).
+Do not add defensive prefix checks to guard against another library's payloads.
+They are unnecessary here, and a codec cannot do it reliably in any case: a `prost`
+message decodes cleanly from an unrelated message's bytes whenever their leading
+field numbers and wire types line up.
 
 Codec identity is derived automatically and is stable across processes:
 
@@ -290,12 +285,6 @@ otherwise resolve to whichever entry came first. A codec installed from a bare
 reports the same type; it gets a random identity minted at install time, and plans
 it encodes fail with a pointed error on an unrelated session instead of being
 decoded by the wrong codec. Pass `codec_id=` for those.
-
-The randomness there is deliberate, not laziness. An identity another session can
-mint the same value from — a counter, a position in the chain, a class every
-candidate shares — reintroduces positional dispatch through the back door: every
-session numbers from the same end, so one session's first bare capsule would answer
-for every other session's first.
 
 Composing whole sessions is worth one caution beyond identity. Install the context,
 not the capsule it exports: `ctx.with_logical_extension_codec(other_ctx)` carries
@@ -337,26 +326,16 @@ ctx.register_table("t", lib_a.TableProvider())
 ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
 
-Two payloads are deliberately left unframed, and both matter if you are changing
-this code.
+A codec may own functions that need no payload at all, where the name is the whole
+encoding: `try_encode_udf` writes nothing and `try_decode_udf` rebuilds the function
+from `name`. That is supported and needs no identity, because an `Ok` with an empty
+buffer is read as "no opinion" and passes the object to the next codec.
+`NameOnlyUdfCodec` in the FFI example is the worked case. Anything no installed
+codec claims falls through to `Default{Logical,Physical}ExtensionCodec`.
 
-The terminal codec — `Default{Logical,Physical}ExtensionCodec` unless a Rust caller
-supplied another to `Python{Logical,Physical}Codec::new` — handles whatever no
-installed codec claims and writes bare. A session with no extension codecs
-installed therefore serializes byte-identically to a build without codec chaining.
-
-An encode that writes nothing also stays empty. `try_encode_udf` returning `Ok`
-with an empty buffer is DataFusion's encode-by-name signal: it leaves
-`fun_definition` unset, and the decoder then tries the `FunctionRegistry` first and
-the codec second. Framing an empty payload would set the field and skip that
-registry lookup permanently, breaking both ordinary by-name round trips and codecs
-whose functions are reconstructible from a name alone — the case
-`NameOnlyUdfCodec` in the FFI example covers. That empty-buffer decode is also the
-one path where every installed codec is still consulted in turn, because there are
-no bytes to carry an identity. It is not the hazard the envelope removes: the
-question asked is "do you own the function named `x`", which is name-scoped, and
-two codecs disagreeing requires them to claim the same function name — already a
-collision in the function registry.
+The framing itself — the envelope layout, the identity dispatch, and the two cases
+that stay unframed — is internal to datafusion-python and documented in
+`crates/core/src/codec.rs` for anyone changing it.
 
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
