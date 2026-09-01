@@ -261,10 +261,9 @@ wrote it and strips the tag before handing the bytes back, so your codec receive
 byte for byte, the payload it wrote, and is never offered a payload another codec
 wrote.
 
-Do not add defensive prefix checks to guard against another library's payloads.
-They are unnecessary here, and a codec cannot do it reliably in any case: a `prost`
-message decodes cleanly from an unrelated message's bytes whenever their leading
-field numbers and wire types line up.
+A codec that also ships to hosts which dispatch differently may still want its own
+guard against foreign payloads. Keeping one is fine; it is simply not needed for the
+datafusion-python path.
 
 Codec identity is derived automatically and is stable across processes:
 
@@ -332,6 +331,12 @@ from `name`. That is supported and needs no identity, because an `Ok` with an em
 buffer is read as "no opinion" and passes the object to the next codec.
 `NameOnlyUdfCodec` in the FFI example is the worked case. Anything no installed
 codec claims falls through to `Default{Logical,Physical}ExtensionCodec`.
+
+This is the one case where your decoder is consulted about something you may not
+own, because an empty payload carries no identity to route on. `try_decode_udf` and
+its aggregate and window siblings can therefore be called with an empty `buf` and a
+`name` belonging to another library. Decide from `name` and return an error if it is
+not yours; do not assume `buf` is non-empty.
 
 The framing itself — the envelope layout, the identity dispatch, and the two cases
 that stay unframed — is internal to datafusion-python and documented in

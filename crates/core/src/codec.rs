@@ -90,8 +90,11 @@
 //! ahead of every codec installed after it.
 //!
 //! Rejecting foreign *payloads* is not asked of a codec, because a
-//! codec cannot reliably do it: a payload is only ever handed to the
-//! codec whose id it carries. See [`PythonLogicalCodec`].
+//! payload is only ever handed to the codec whose id it carries. A
+//! codec is free to check for a marker of its own anyway — that costs
+//! nothing here and is worth keeping for hosts that dispatch by
+//! position or by trial — but dispatch never depends on it. See
+//! [`PythonLogicalCodec`].
 
 use std::sync::Arc;
 
@@ -384,12 +387,14 @@ fn read_chained_payload(buf: &[u8]) -> Result<Option<(&str, &[u8])>> {
 /// is unsound: protobuf carries no type identity, so a `prost` message
 /// decodes cleanly from an unrelated message's bytes whenever their
 /// leading field numbers and wire types line up, and an all-defaults
-/// message encodes to zero bytes that decode as anything. Asking codecs
-/// to check a byte prefix does not fix it either, because the natural
-/// implementation is `MyMessage::decode(buf)`, which has no prefix to
-/// check and cannot decline. Upstream shipped that design and reverted
-/// it after a Parquet payload decoded as CSV — apache/datafusion#16980,
-/// fixed in #16986.
+/// message encodes to zero bytes that decode as anything. Requiring
+/// each codec to check a marker of its own does not fix it either: the
+/// codecs come from libraries this crate does not control, the natural
+/// implementation is `MyMessage::decode(buf)`, which has no marker to
+/// check and cannot decline, and one library skipping the convention is
+/// enough to lose someone else's payload. Upstream shipped that design
+/// and reverted it after a Parquet payload decoded as CSV —
+/// apache/datafusion#16980, fixed in #16986.
 fn chain_decode<C: ?Sized, R>(
     chain: &[ChainEntry<C>],
     terminal: &Arc<C>,
