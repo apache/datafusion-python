@@ -36,9 +36,11 @@
 //! reconstructs the UDF from the bytes alone — no pre-registration on
 //! the receiver. Everything the codec does not recognise is delegated
 //! to the chain: each downstream FFI codec installed via
-//! `SessionContext.with_logical_extension_codec(...)` is consulted in
-//! most-recently-installed-first order, with
-//! `DefaultLogicalExtensionCodec` as the terminal fallback.
+//! `SessionContext.with_logical_extension_codec(...)` is appended, and
+//! encoding consults them in install order with
+//! `DefaultLogicalExtensionCodec` as the terminal fallback. Decoding
+//! does not walk the chain at all — a payload names the codec that
+//! wrote it. See [`PythonLogicalCodec`].
 //!
 //! [`PythonPhysicalCodec`] is the symmetric wrapper around
 //! [`PhysicalExtensionCodec`]. Logical and physical layers each have
@@ -82,10 +84,14 @@
 //!
 //! Downstream FFI codecs should pick non-colliding family prefixes
 //! (use a `DF` namespace plus a crate-specific suffix) and return an
-//! error for payloads and objects they do not own — that error is the
+//! error for *objects* they do not own — on encode, that error is the
 //! chain's "not mine" signal, letting the next codec take a turn. A
-//! codec that answers `Ok` for objects outside its family shadows
-//! every codec installed before it.
+//! codec that answers `Ok` for objects outside its family claims them
+//! ahead of every codec installed after it.
+//!
+//! Rejecting foreign *payloads* is not asked of a codec, because a
+//! codec cannot reliably do it: a payload is only ever handed to the
+//! codec whose id it carries. See [`PythonLogicalCodec`].
 
 use std::sync::Arc;
 
@@ -242,10 +248,13 @@ pub(crate) const CHAIN_WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
 
 /// Prefix for the synthetic id given to a codec installed from a bare
 /// PyCapsule, which exposes nothing stable to derive an identity from.
-/// Such an id is unique to the installing session, so a payload
-/// carrying one decodes within that session's lineage and fails with a
-/// pointed error anywhere else rather than resolving to a different
-/// codec that happens to sit at the same position.
+/// The rest of the id is random per install, so no other session can
+/// mint it: a payload carrying one decodes within the installing
+/// session's lineage, which clones the id along with the chain, and
+/// fails with a pointed error anywhere else rather than resolving to a
+/// different codec. A counter or a chain position would not do — every
+/// session numbers from the same end, so the first bare capsule
+/// installed anywhere would answer for every other session's first.
 pub(crate) const ANONYMOUS_CODEC_ID_PREFIX: &str = "anon:";
 
 /// One installed codec plus the identity its payloads are tagged with.

@@ -282,23 +282,67 @@ def test_installing_two_codecs_under_one_id_is_rejected():
         ctx.with_logical_extension_codec(MyLogicalExtensionCodec())
 
 
-def test_bare_capsule_codec_is_session_local():
-    """A bare PyCapsule exposes nothing stable to derive an identity
-    from -- every capsule reports the same type -- so it is tagged with a
-    session-local id. A plan it encodes fails on an unrelated session
-    with an error naming the fix, rather than being decoded by whichever
-    codec happens to sit at the same position."""
+def _encode_through_a_bare_capsule(token: str) -> tuple[bytes, list[str]]:
+    """Serialize a provider plan through a codec installed as a bare
+    capsule, which is the case with no derivable identity.
+
+    Returns the blob and the encoding session's codec ids, so a caller
+    can compare them against another session's.
+    """
     exporter = SessionContext().with_logical_extension_codec(
-        MyLogicalExtensionCodec(provider_prefix="TOKENAAA")
+        MyLogicalExtensionCodec(provider_prefix=token)
     )
     encoder = SessionContext().with_logical_extension_codec(
         exporter.__datafusion_logical_extension_codec__()
     )
     encoder.register_table("numbers", MyTableProvider(1, 4, 1))
     blob = encoder.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(encoder)
+    return blob, encoder.logical_extension_codec_ids()
+
+
+def test_bare_capsule_codec_is_session_local():
+    """A bare PyCapsule exposes nothing stable to derive an identity
+    from -- every capsule reports the same type -- so it is tagged with a
+    session-local id. A plan it encodes fails on an unrelated session
+    with an error naming the fix, rather than being decoded by whichever
+    codec happens to sit at the same position."""
+    blob, _ids = _encode_through_a_bare_capsule("TOKENAAA")
 
     with pytest.raises(Exception, match="bare PyCapsule") as excinfo:
         LogicalPlan.from_bytes(SessionContext(), blob)
+    assert "codec_id" in str(excinfo.value)
+
+
+def test_a_bare_capsule_codec_id_is_not_re_mintable_by_another_session():
+    """The id given to a capsule-installed codec must be one no other
+    session can arrive at.
+
+    Both sessions here install exactly one bare capsule, so any identity
+    drawn from a namespace both sessions number the same way -- a
+    counter, a position in the chain -- collides, and the payload is
+    handed to the other library's codec. That failure is quiet: a codec
+    offered bytes it does not recognise falls through to its own inner
+    default codec, so the error names neither codec and no counter moves.
+    Asserting on the message is what separates the two schemes.
+
+    The empty-chain case in the test above passes under either scheme,
+    because a lookup in an empty chain misses whatever the id is.
+    """
+    blob, encoder_ids = _encode_through_a_bare_capsule("TOKENAAA")
+
+    # An unrelated session, also holding exactly one bare capsule.
+    other = SessionContext().with_logical_extension_codec(
+        MyLogicalExtensionCodec(provider_prefix="TOKENBBB")
+    )
+    decoder = SessionContext().with_logical_extension_codec(
+        other.__datafusion_logical_extension_codec__()
+    )
+    decoder_ids = decoder.logical_extension_codec_ids()
+    assert len(encoder_ids) == len(decoder_ids) == 1
+    assert encoder_ids != decoder_ids
+
+    with pytest.raises(Exception, match="bare PyCapsule") as excinfo:
+        LogicalPlan.from_bytes(decoder, blob)
     assert "codec_id" in str(excinfo.value)
 
 

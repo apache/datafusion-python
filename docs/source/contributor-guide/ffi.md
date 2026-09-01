@@ -284,9 +284,14 @@ Two codecs cannot share an identity — installing a second under an id already 
 use raises rather than shadowing the first, because a payload naming that id would
 otherwise resolve to whichever entry came first. A codec installed from a bare
 `PyCapsule` is the one case with nothing stable to derive from, since every capsule
-reports the same type; it gets a session-local identity, and plans it encodes fail
-with a pointed error on an unrelated session instead of being decoded by the wrong
-codec. Pass `codec_id=` for those.
+reports the same type; it gets a random identity minted at install time, and plans
+it encodes fail with a pointed error on an unrelated session instead of being
+decoded by the wrong codec. Pass `codec_id=` for those.
+
+The randomness there is deliberate, not laziness. An identity another session can
+mint the same value from — a counter, a position in the chain — reintroduces
+positional dispatch through the back door: every session numbers from the same end,
+so one session's first bare capsule would answer for every other session's first.
 
 `SessionContext.logical_extension_codec_ids()` and its physical counterpart list
 what is installed, which is also what a decode failure names.

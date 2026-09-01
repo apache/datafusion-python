@@ -1754,10 +1754,12 @@ impl PySessionContext {
 ///    import path and therefore already stable across processes. This is the
 ///    common case and asks nothing of existing extension libraries.
 /// 4. For a bare `PyCapsule` there is nothing stable to read — every capsule
-///    reports the same type — so fall back to a session-local id. Payloads
-///    tagged this way decode correctly within the session lineage that
-///    installed the codec and fail with a pointed error elsewhere, rather
-///    than resolving to whichever codec happens to sit at the same position.
+///    reports the same type — so mint a fresh random id. Payloads tagged this
+///    way decode correctly within the session lineage that installed the
+///    codec, because the chain is cloned along with the id, and fail with a
+///    pointed error everywhere else. Randomness is the point: an id drawn from
+///    a namespace another session can mint the same value from — a counter, a
+///    chain position — would let an unrelated codec answer for these bytes.
 ///
 /// An id already in use is rejected rather than shadowed. Two codecs sharing an
 /// id are indistinguishable on decode, and the API cannot tell whether two
@@ -1769,7 +1771,7 @@ fn resolve_codec_id(
     explicit: Option<String>,
     existing: &[&str],
 ) -> PyResult<String> {
-    let id = derive_codec_id(codec, explicit, existing.len())?;
+    let id = derive_codec_id(codec, explicit)?;
     if existing.contains(&id.as_str()) {
         return Err(PyValueError::new_err(format!(
             "An extension codec with id '{id}' is already installed on this session. Two \
@@ -1780,11 +1782,7 @@ fn resolve_codec_id(
     Ok(id)
 }
 
-fn derive_codec_id(
-    codec: &Bound<'_, PyAny>,
-    explicit: Option<String>,
-    installed: usize,
-) -> PyResult<String> {
+fn derive_codec_id(codec: &Bound<'_, PyAny>, explicit: Option<String>) -> PyResult<String> {
     if let Some(id) = explicit {
         return Ok(id);
     }
@@ -1794,7 +1792,12 @@ fn derive_codec_id(
         return declared.extract::<String>();
     }
     if codec.is_instance_of::<PyCapsule>() {
-        return Ok(format!("{ANONYMOUS_CODEC_ID_PREFIX}{installed}"));
+        return Ok(format!(
+            "{ANONYMOUS_CODEC_ID_PREFIX}{}",
+            Uuid::new_v4()
+                .simple()
+                .encode_lower(&mut Uuid::encode_buffer())
+        ));
     }
     let ty = codec.get_type();
     let module = ty

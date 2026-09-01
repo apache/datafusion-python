@@ -79,7 +79,7 @@ def test_ffi_physical_codec_roundtrip():
 
 
 def test_ffi_physical_codec_composes_with_later_install():
-    """Codecs compose: a second install prepends to the chain instead
+    """Codecs compose: a second install appends to the chain instead
     of replacing the first codec. The second codec here (default-backed
     export from a fresh session) encodes UDFs by name without writing
     bytes, which the chain treats as "no opinion" — so the user codec
