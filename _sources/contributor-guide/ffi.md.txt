@@ -248,10 +248,96 @@ foreign planner. This lets the planner decode provider-owned objects and lets
 process-local tokens to demonstrate ownership; production codecs should serialize
 durable metadata instead.
 
-The current Python API has one external logical codec and one external physical codec.
-Installing another codec replaces the prior codec rather than composing a registry.
-The example therefore has one external codec owner, and the planner uses built-in
-physical nodes. Install the provider codecs before the planner where possible.
+### Composable codecs
+
+Extension codecs compose. Each call to `with_logical_extension_codec` or
+`with_physical_extension_codec` appends the codec to the session's codec chain
+rather than replacing prior codecs.
+
+**Nothing is asked of the codec itself.** Implement `LogicalExtensionCodec` or
+`PhysicalExtensionCodec` exactly as you would for a session that installs only
+yours. When your codec writes bytes into a serialized plan, datafusion-python
+records which codec wrote them, and strips that record off again before handing the
+bytes back. So your codec receives, byte for byte, the payload it wrote, and is
+never offered a payload another codec wrote.
+
+A codec that also ships to hosts which dispatch differently may still want its own
+guard against foreign payloads. Keeping one is fine; it is simply not needed for the
+datafusion-python path.
+
+That record is the codec's **id**: a short string stored inside the plan, naming the
+codec that wrote each payload. Because plans are decoded in another process — or
+another program — the id has to name the same codec there as it did where the plan
+was written.
+
+Ids are assigned for you. A codec's id is normally its exporting class's import
+path, such as `my_library.Codec`, which is what you will see in
+`logical_extension_codec_ids()` and in decode errors. You choose one yourself in
+three cases:
+
+- **Two instances of one class.** Both get the same id, so the second install
+  raises `ValueError`. Pass `codec_id=` to tell them apart.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from, so it gets an
+  id private to the session that installed it. Plans it encodes fail with a clear
+  error on any other session, rather than being decoded by the wrong codec. Pass
+  `codec_id=` if those plans have to cross sessions.
+- **A class you intend to rename.** The id follows the class name, so renaming stops
+  older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
+  object to pin an id that survives the rename.
+
+`SessionContext.logical_extension_codec_ids()` and its physical counterpart list the
+ids installed on a session, which is also what a decode failure names.
+
+Installing one context's codec stack on another session composes the two sessions
+rather than copying codecs out of one: the imported codecs resolve their task context
+against the original and stop working when it is dropped — see
+[One session, one `Arc<SessionContext>`](#one-session-one-arcsessioncontext). Pass
+the context itself rather than the capsule it exports, so its codecs get an id that
+other sessions can decode.
+
+Because decoding keys off the id rather than install position, registration order
+between independent libraries does not affect decoding at all. It is visible only
+on encoding, where codecs are consulted in install order and the first to claim an
+object wins — so installing a library can claim objects nothing else claimed, but
+never takes over an object an earlier codec was already encoding. Two libraries
+that each own tables, functions, and a planner register like this:
+
+```python
+ctx = SessionContext(config)
+
+# Codecs from both libraries. Order between libraries does not matter.
+ctx = ctx.with_logical_extension_codec(lib_a.codec())
+ctx = ctx.with_logical_extension_codec(lib_b.codec())
+ctx = ctx.with_physical_extension_codec(lib_a.physical_codec())
+ctx = ctx.with_physical_extension_codec(lib_b.physical_codec())
+
+# A session holds one planner, so layering is explicit delegation. Install the
+# codecs first: the fallback captured here keeps the codecs it was exported
+# with. See "Rebinding a planner's codecs is one level deep" below.
+ctx.set_query_planner(lib_a.Planner())
+ctx.set_query_planner(lib_b.Planner(fallback=ctx.__datafusion_query_planner__()))
+
+# Tables and functions — any time before the first query.
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
+
+A codec may own functions that need no payload at all, where the name is the whole
+encoding: `try_encode_udf` writes nothing and `try_decode_udf` rebuilds the function
+from `name`. That is supported and needs no id, because an `Ok` with an empty
+buffer is read as "no opinion" and passes the object to the next codec.
+`NameOnlyUdfCodec` in the FFI example is the worked case. Anything no installed
+codec claims falls through to `Default{Logical,Physical}ExtensionCodec`.
+
+This is the one case where your decoder is consulted about something you may not
+own, because an empty payload has no id to route on. `try_decode_udf` and
+its aggregate and window siblings can therefore be called with an empty `buf` and a
+`name` belonging to another library. Decide from `name` and return an error if it is
+not yours; do not assume `buf` is non-empty.
+
+The framing itself — how an id is stored alongside a payload and routed back, and the two cases
+that stay unframed — is internal to datafusion-python and documented in
+`crates/core/src/codec.rs` for anyone changing it.
 
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
@@ -347,7 +433,7 @@ side is visible to both.
 so it is a property of the session rather than of a handle on it, and installing one is
 visible to every context sharing that session — including ones a `with_*` call returned
 earlier. Installing a codec on a session that already has a foreign planner rebuilds
-that planner against the new codec for the same reason: there is one planner, and it has
+that planner against the new chain for the same reason: there is one planner, and it has
 to carry the codecs currently in force. This happens on the shared session, so it takes
 effect even if the returned context is discarded — `ctx.with_python_udf_inlining(...)`
 whose result is thrown away still leaves the session's planner carrying the codecs of
@@ -361,15 +447,17 @@ that surprises people:
 > installed one. Every other path — `Expr.to_bytes(ctx)`, `ExecutionPlan.to_bytes(ctx)`,
 > registering a provider — uses the codecs of the handle you call it on.
 
-Those can be different handles, and then one session has two codecs in effect at once:
+Those can be different handles, and then one session has two codec chains in effect at
+once:
 
 ```python
 ctx = ctx.with_logical_extension_codec(codec_a)
 ctx.set_query_planner(planner)
 ctx.with_logical_extension_codec(codec_b)  # discarded
 
-Expr.to_bytes(expr, ctx)   # encodes with codec_a -- ctx's own field
-ctx.sql(...).collect()     # plans with codec_b -- installed via the discarded handle
+Expr.to_bytes(expr, ctx)   # encodes with [codec_a, default] -- ctx's own field
+ctx.sql(...).collect()     # plans with [codec_b, codec_a, default] -- the discarded
+                           # handle's chain, installed on the shared session
 ```
 
 Chaining `ctx = ctx.with_...(...)`, as the example below does, keeps the two in step.

@@ -814,6 +814,16 @@ passed to the constructor (which is ignored on the FFI path).</p>
 is being installed on. Take the task context provider from it rather than
 building a session of your own, so the decode callbacks resolve names
 against the session that runs the query.</p>
+<p>Implement the codec itself exactly as you would for a session that installs
+only yours. A session may hold several codecs, but each payload records the
+codec that wrote it and is only ever handed back to that codec, so there is
+no need to recognise or reject another library’s payloads.</p>
+<p>A serialized plan records which codec wrote each payload, as a short id
+taken from your class’s module and qualified name. An optional
+<code class="docutils literal notranslate"><span class="pre">__datafusion_codec_id__</span></code> attribute pins that id instead. It is not part
+of this protocol and is rarely needed: declare it when renaming your class
+must not stop older plans from decoding, or when one library installs two
+instances that own disjoint slices of the wire format.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__">
 <span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__" title="Link to this definition">#</a></dt>
@@ -826,7 +836,9 @@ against the session that runs the query.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">PhysicalExtensionCodecExportable</span></span><a class="headerlink" href="#datafusion.user_defined.PhysicalExtensionCodecExportable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code>.</p>
-<p>See <a class="reference internal" href="#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
+<p>See <a class="reference internal" href="#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>, for why a
+codec need not recognise other libraries’ payloads, and for
+<code class="docutils literal notranslate"><span class="pre">__datafusion_codec_id__</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__">
 <span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.user_defined.PhysicalExtensionCodecExportable.__datafusion_physical_extension_codec__" title="Link to this definition">#</a></dt>

@@ -703,13 +703,90 @@ foreign planner. This lets the planner decode provider-owned objects and lets
 <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> decode the physical plan returned by the planner. The examples use
 process-local tokens to demonstrate ownership; production codecs should serialize
 durable metadata instead.</p>
-<p>The current Python API has one external logical codec and one external physical codec.
-Installing another codec replaces the prior codec rather than composing a registry.
-The example therefore has one external codec owner, and the planner uses built-in
-physical nodes. Install the provider codecs before the planner where possible.</p>
+<section id="composable-codecs">
+<h3>Composable codecs<a class="headerlink" href="#composable-codecs" title="Link to this heading">#</a></h3>
+<p>Extension codecs compose. Each call to <code class="docutils literal notranslate"><span class="pre">with_logical_extension_codec</span></code> or
+<code class="docutils literal notranslate"><span class="pre">with_physical_extension_codec</span></code> appends the codec to the session’s codec chain
+rather than replacing prior codecs.</p>
+<p><strong>Nothing is asked of the codec itself.</strong> Implement <code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> or
+<code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodec</span></code> exactly as you would for a session that installs only
+yours. When your codec writes bytes into a serialized plan, datafusion-python
+records which codec wrote them, and strips that record off again before handing the
+bytes back. So your codec receives, byte for byte, the payload it wrote, and is
+never offered a payload another codec wrote.</p>
+<p>A codec that also ships to hosts which dispatch differently may still want its own
+guard against foreign payloads. Keeping one is fine; it is simply not needed for the
+datafusion-python path.</p>
+<p>That record is the codec’s <strong>id</strong>: a short string stored inside the plan, naming the
+codec that wrote each payload. Because plans are decoded in another process — or
+another program — the id has to name the same codec there as it did where the plan
+was written.</p>
+<p>Ids are assigned for you. A codec’s id is normally its exporting class’s import
+path, such as <code class="docutils literal notranslate"><span class="pre">my_library.Codec</span></code>, which is what you will see in
+<code class="docutils literal notranslate"><span class="pre">logical_extension_codec_ids()</span></code> and in decode errors. You choose one yourself in
+three cases:</p>
+<ul class="simple">
+<li><p><strong>Two instances of one class.</strong> Both get the same id, so the second install
+raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Pass <code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> to tell them apart.</p></li>
+<li><p><strong>A bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>.</strong> A capsule has no class to take a name from, so it gets an
+id private to the session that installed it. Plans it encodes fail with a clear
+error on any other session, rather than being decoded by the wrong codec. Pass
+<code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> if those plans have to cross sessions.</p></li>
+<li><p><strong>A class you intend to rename.</strong> The id follows the class name, so renaming stops
+older plans from decoding. Declare <code class="docutils literal notranslate"><span class="pre">__datafusion_codec_id__</span></code> on the exporting
+object to pin an id that survives the rename.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext.logical_extension_codec_ids()</span></code> and its physical counterpart list the
+ids installed on a session, which is also what a decode failure names.</p>
+<p>Installing one context’s codec stack on another session composes the two sessions
+rather than copying codecs out of one: the imported codecs resolve their task context
+against the original and stop working when it is dropped — see
+<a class="reference internal" href="#one-session-one-arc-sessioncontext">One session, one <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code></a>. Pass
+the context itself rather than the capsule it exports, so its codecs get an id that
+other sessions can decode.</p>
+<p>Because decoding keys off the id rather than install position, registration order
+between independent libraries does not affect decoding at all. It is visible only
+on encoding, where codecs are consulted in install order and the first to claim an
+object wins — so installing a library can claim objects nothing else claimed, but
+never takes over an object an earlier codec was already encoding. Two libraries
+that each own tables, functions, and a planner register like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+<span class="c1"># Codecs from both libraries. Order between libraries does not matter.</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">physical_codec</span><span class="p">())</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">physical_codec</span><span class="p">())</span>
+
+<span class="c1"># A session holds one planner, so layering is explicit delegation. Install the</span>
+<span class="c1"># codecs first: the fallback captured here keeps the codecs it was exported</span>
+<span class="c1"># with. See &quot;Rebinding a planner&#39;s codecs is one level deep&quot; below.</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Planner</span><span class="p">())</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">Planner</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">()))</span>
+
+<span class="c1"># Tables and functions — any time before the first query.</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">lib_a</span><span class="o">.</span><span class="n">TableProvider</span><span class="p">())</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">udf</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">SomeUDF</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p>A codec may own functions that need no payload at all, where the name is the whole
+encoding: <code class="docutils literal notranslate"><span class="pre">try_encode_udf</span></code> writes nothing and <code class="docutils literal notranslate"><span class="pre">try_decode_udf</span></code> rebuilds the function
+from <code class="docutils literal notranslate"><span class="pre">name</span></code>. That is supported and needs no id, because an <code class="docutils literal notranslate"><span class="pre">Ok</span></code> with an empty
+buffer is read as “no opinion” and passes the object to the next codec.
+<code class="docutils literal notranslate"><span class="pre">NameOnlyUdfCodec</span></code> in the FFI example is the worked case. Anything no installed
+codec claims falls through to <code class="docutils literal notranslate"><span class="pre">Default{Logical,Physical}ExtensionCodec</span></code>.</p>
+<p>This is the one case where your decoder is consulted about something you may not
+own, because an empty payload has no id to route on. <code class="docutils literal notranslate"><span class="pre">try_decode_udf</span></code> and
+its aggregate and window siblings can therefore be called with an empty <code class="docutils literal notranslate"><span class="pre">buf</span></code> and a
+<code class="docutils literal notranslate"><span class="pre">name</span></code> belonging to another library. Decide from <code class="docutils literal notranslate"><span class="pre">name</span></code> and return an error if it is
+not yours; do not assume <code class="docutils literal notranslate"><span class="pre">buf</span></code> is non-empty.</p>
+<p>The framing itself — how an id is stored alongside a payload and routed back, and the two cases
+that stay unframed — is internal to datafusion-python and documented in
+<code class="docutils literal notranslate"><span class="pre">crates/core/src/codec.rs</span></code> for anyone changing it.</p>
 <p>The current FFI logical codec supports providers and UDFs but not arbitrary custom
 <code class="docutils literal notranslate"><span class="pre">LogicalPlan::Extension</span></code> nodes. See both example READMEs for the supported flow and
 local build commands.</p>
+</section>
 <section id="capsule-getters-receive-the-session-they-are-installed-on">
 <h3>Capsule getters receive the session they are installed on<a class="headerlink" href="#capsule-getters-receive-the-session-they-are-installed-on" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code>, <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>, and
@@ -791,7 +868,7 @@ side is visible to both.</p>
 so it is a property of the session rather than of a handle on it, and installing one is
 visible to every context sharing that session — including ones a <code class="docutils literal notranslate"><span class="pre">with_*</span></code> call returned
 earlier. Installing a codec on a session that already has a foreign planner rebuilds
-that planner against the new codec for the same reason: there is one planner, and it has
+that planner against the new chain for the same reason: there is one planner, and it has
 to carry the codecs currently in force. This happens on the shared session, so it takes
 effect even if the returned context is discarded — <code class="docutils literal notranslate"><span class="pre">ctx.with_python_udf_inlining(...)</span></code>
 whose result is thrown away still leaves the session’s planner carrying the codecs of
@@ -804,13 +881,15 @@ that surprises people:</p>
 installed one. Every other path — <code class="docutils literal notranslate"><span class="pre">Expr.to_bytes(ctx)</span></code>, <code class="docutils literal notranslate"><span class="pre">ExecutionPlan.to_bytes(ctx)</span></code>,
 registering a provider — uses the codecs of the handle you call it on.</p>
 </div></blockquote>
-<p>Those can be different handles, and then one session has two codecs in effect at once:</p>
+<p>Those can be different handles, and then one session has two codec chains in effect at
+once:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">codec_a</span><span class="p">)</span>
 <span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">planner</span><span class="p">)</span>
 <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">codec_b</span><span class="p">)</span>  <span class="c1"># discarded</span>
 
-<span class="n">Expr</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>   <span class="c1"># encodes with codec_a -- ctx&#39;s own field</span>
-<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>     <span class="c1"># plans with codec_b -- installed via the discarded handle</span>
+<span class="n">Expr</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>   <span class="c1"># encodes with [codec_a, default] -- ctx&#39;s own field</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>     <span class="c1"># plans with [codec_b, codec_a, default] -- the discarded</span>
+                           <span class="c1"># handle&#39;s chain, installed on the shared session</span>
 </pre></div>
 </div>
 <p>Chaining <code class="docutils literal notranslate"><span class="pre">ctx</span> <span class="pre">=</span> <span class="pre">ctx.with_...(...)</span></code>, as the example below does, keeps the two in step.
@@ -942,6 +1021,7 @@ the latest status, we recommend reviewing the code in the <a class="reference ex
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-details">Implementation Details</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyo3-class-mutability-guidelines">PyO3 class mutability guidelines</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#query-planners-across-multiple-libraries">Query Planners Across Multiple Libraries</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#composable-codecs">Composable codecs</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#capsule-getters-receive-the-session-they-are-installed-on">Capsule getters receive the session they are installed on</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-codec-decodes-against-the-session-that-is-running-the-query">A codec decodes against the session that is running the query</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#one-session-one-arc-sessioncontext">One session, one <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code></a></li>

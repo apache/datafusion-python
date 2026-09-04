@@ -577,6 +577,46 @@ clear message rather than undefined behaviour on first use.</p>
 <p><code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>, <code class="docutils literal notranslate"><span class="pre">FFI_TableProviderFactory</span></code>, and <code class="docutils literal notranslate"><span class="pre">FFI_ExtensionOptions</span></code>
 carry no version field, so objects of those types cannot be checked.</p>
 </section>
+<section id="extension-codecs-compose-instead-of-replacing">
+<h3>Extension codecs compose instead of replacing<a class="headerlink" href="#extension-codecs-compose-instead-of-replacing" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec</span></code> and
+<code class="docutils literal notranslate"><span class="pre">with_physical_extension_codec</span></code> previously replaced whichever codec was already
+installed, so a session could only ever have one. Installing a second codec
+silently discarded the first, and plans failed later with a confusing decode
+error. Both methods now append to a chain, and a session can carry codecs from
+several independent libraries at once.</p>
+<p><strong>No change is required in an extension codec.</strong> Keep implementing
+<code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> or <code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodec</span></code> exactly as before. Your codec
+is still handed back exactly the bytes it wrote, and is never handed a payload
+another library’s codec wrote.</p>
+<p>Callers relying on replacement semantics — installing a codec in order to remove
+a previous one — are affected. There is no way to remove an installed codec.</p>
+<p>A serialized plan now records which codec wrote each payload, as a short id taken
+from the codec’s class. Two behaviours follow from that:</p>
+<ul class="simple">
+<li><p>Installing two instances of one class raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, because both would
+claim the same id. Pass <code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> to tell them apart.</p></li>
+<li><p>A codec installed from a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> has no class to take an id from, so it
+gets one private to the session that installed it. It works normally on that
+session, but a plan it encodes cannot be decoded on an unrelated one. Pass
+<code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> if those plans have to cross sessions.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>  <span class="c1"># no longer discards lib_a</span>
+
+<span class="c1"># Two instances of one class need distinct ids.</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Codec</span><span class="p">(),</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;lib_a.reader&quot;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Codec</span><span class="p">(),</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;lib_a.writer&quot;</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Serialized plans change shape once an extension codec is installed, because each
+payload now records which codec wrote it. A session with no extension codecs
+installed produces the same bytes as before, as do functions encoded by name.
+Regenerate any plan you serialized with an earlier release and stored for later
+use, if it was produced by a session with an extension codec installed.</p>
+</section>
 <section id="changes-to-the-datafusion-python-util-crate">
 <h3>Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate<a class="headerlink" href="#changes-to-the-datafusion-python-util-crate" title="Link to this heading">#</a></h3>
 <p>Extension libraries written in Rust usually depend on the
@@ -785,6 +825,7 @@ using the specific datafusion project crates.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
 </ul>
 </li>
