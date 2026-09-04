@@ -690,10 +690,15 @@ def test_query_planner_rejects_invalid_config(max_rows: str):
 
 def test_composed_codecs_with_query_planner():
     """A second pair of codecs installed on top of the provider codecs
-    composes with them instead of replacing them. The extra codecs
-    (default-backed exports from a fresh session) decline everything,
-    so planner-driven encode/decode falls through to the provider
-    codecs and the query still succeeds end to end."""
+    composes with them instead of replacing them.
+
+    The provider codecs are installed first, so encoding consults them
+    first and they claim this library's tables and plans before the
+    extra codecs (default-backed exports from a fresh session) get a
+    turn; decoding goes straight to whichever codec wrote the bytes.
+    The extra pair therefore changes nothing observable here, which is
+    the assertion: under replace semantics it would have discarded the
+    provider codecs and the planner-driven round trip would fail."""
     ctx, logical_codec, physical_codec = configured_context(max_rows=2)
     other = SessionContext()
     ctx = ctx.with_logical_extension_codec(
