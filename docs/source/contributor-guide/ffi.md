@@ -345,21 +345,19 @@ local build commands.
 
 ### Extension bundles: `with_extensions`
 
-The chaining above works, but it makes the caller responsible for two things that are
-easy to get wrong: keeping every intermediate context alive, and installing the codecs
-before the planner. Every codec and planner capsule carries an
-`FFI_TaskContextProvider` holding a *weak* reference to the context it was built
-against, so a component bound to a `with_*` result that is then discarded fails at
-query time with `TaskContextProvider went out of scope over FFI boundary`.
+The chaining above works, but it makes the caller responsible for ordering: the codecs
+have to be installed before the planner, because a planner is built against whatever
+codec chains exist when it is installed, and a codec added afterwards rebinds it. Get
+that wrong and the planner encodes through a chain that is missing a library.
 
-`SessionContext.with_extensions` removes both hazards. An extension library exposes a
-bundle object implementing `__datafusion_session_extension__`:
+`SessionContext.with_extensions` removes the ordering question. An extension library
+exposes a bundle object implementing `__datafusion_session_extension__`:
 
 ```python
 class MyEngineExtension:
     def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
         # Create fresh components bound to `ctx` on every call. `ctx` is the
-        # exact context the host will return from with_extensions.
+        # session the components will run on.
         return SessionExtensionComponents(
             logical_extension_codecs=(self._make_logical_codec(ctx),),
             physical_extension_codecs=(self._make_physical_codec(ctx),),
@@ -367,9 +365,9 @@ class MyEngineExtension:
         )
 ```
 
-The host creates one destination context, passes it to every factory, installs all the
-codecs, binds the planner against the final codec chains, and returns that context in
-a single step:
+The host passes the context to every factory, installs all the codecs, binds the
+planner against the final codec chains, and returns a handle on that session in a
+single step:
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
@@ -379,20 +377,25 @@ ctx.register_udf(udf(lib_b.SomeUDF()))
 
 Extensions are processed left to right and their codecs are appended to the chain in
 that order. As above, order affects only encoding — decoding routes by id. At most one
-extension per call may supply a query planner. If any factory raises, the source
-context is left exactly as it was.
+extension per call may supply a query planner.
 
-Bundle objects must be configuration-only: create fresh components on each call, never
-cache bound components, and do not retain the context passed in. Catalogs are shared
-with the source context, so registrations made during binding are not rolled back on
-failure.
+Nothing is written to the session until every factory has returned and every capsule
+has been validated, so a factory that raises leaves the session exactly as it was. A
+factory that mutates the context it is handed — registering a table, say — is not
+rolled back, which is why bundle objects must be configuration-only: create fresh
+components on each call, never cache bound components, and do not retain the context
+passed in.
 
-The returned context is the strong owner of every installed component's task-context
-provider, and dependent objects do not extend its lifetime. A `DataFrame`, logical
-plan, or capsule can outlive the context, but any operation that reaches an FFI codec
-after the context is collected fails with `TaskContextProvider went out of scope over
-FFI boundary`. Keep the context alive for as long as objects derived from it are in
-use.
+Like every other derivation, the returned context is a handle on the *same* session as
+the receiver — see [What a derived context shares](#what-a-derived-context-shares).
+Only the Python-side codec chains belong to the returned handle; the planner is
+installed on the shared session and takes effect even if that handle is discarded.
+
+The session owns every installed component's task-context provider, and dependent
+objects do not extend its lifetime. A `DataFrame`, logical plan, or capsule can outlive
+every context on the session, but any operation that reaches an FFI codec after the
+last one is collected fails with `TaskContextProvider went out of scope over FFI
+boundary`. Keep a context alive for as long as objects derived from it are in use.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
 implementation of the protocol, including taking the task-context provider off the
@@ -474,15 +477,24 @@ registered straight back into that same session, which would close the cycle
 
 `SessionContext.enable_url_table` is the one exception. It clones the underlying
 `SessionContext`, so the returned context has an allocation of its own and must not
-outlive the receiver.
+outlive the receiver. It also forks the session's state while keeping its id, so two
+handles report one `session_id()` with divergent configuration. That is a bug rather
+than a design, tracked in
+[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708);
+do not copy the pattern.
 
 ### What a derived context shares
 
-`with_logical_extension_codec`, `with_physical_extension_codec`, and
-`with_python_udf_inlining` return a new `SessionContext` wrapping the *same* underlying
-session. Only the Python-side codec settings differ; catalogs, tables, registered
-functions, and configuration are the one shared session, so a registration on either
-side is visible to both.
+`with_logical_extension_codec`, `with_physical_extension_codec`,
+`with_python_udf_inlining`, and `with_extensions` return a new `SessionContext` wrapping
+the *same* underlying session. Only the Python-side codec settings differ; catalogs,
+tables, registered functions, and configuration are the one shared session, so a
+registration on either side is visible to both.
+
+There is one `Arc<SessionContext>` per session, which is what makes the weak
+`FFI_TaskContextProvider` scheme work: a component bound through any handle stays valid
+while *any* handle on that session is alive, so there is no way to bind a component to
+an intermediate handle and have it dangle when that handle is dropped.
 
 `set_query_planner` does not return anything. The query planner lives in `SessionState`,
 so it is a property of the session rather than of a handle on it, and installing one is

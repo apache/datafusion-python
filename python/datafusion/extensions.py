@@ -28,9 +28,10 @@ installed with :py:meth:`~datafusion.context.SessionContext.with_extensions`::
 
 Installing through ``with_extensions`` rather than by chaining the individual
 ``with_*`` methods matters for components that hold a task-context provider:
-the extension is handed the destination context so every component binds to
-the session that is actually returned. See the FFI extensions guide in the
-contributor documentation for the full rationale.
+the extension is handed the session its components will run on, and every
+codec is installed before the query planner is bound against them, so no
+planner is left carrying a codec chain that has since grown. See the FFI
+extensions guide in the contributor documentation for the full rationale.
 """
 
 from __future__ import annotations
@@ -75,8 +76,26 @@ class SessionExtensionComponents:
     and consumed by
     :py:meth:`~datafusion.context.SessionContext.with_extensions`. Every
     component must be created against the context passed to that method;
-    components bound to any other context hold a task-context provider for the
-    wrong session and cannot be rebound.
+    components bound to a different session hold a task-context provider for
+    that other session and cannot be rebound.
+
+    Examples:
+        A bundle that contributes nothing is valid, and is what the defaults
+        describe:
+
+        >>> from datafusion import SessionExtensionComponents
+        >>> components = SessionExtensionComponents()
+        >>> components.logical_extension_codecs
+        ()
+        >>> components.query_planner is None
+        True
+
+        A bundle that contributes one kind of component names it, leaving
+        the rest empty:
+
+        >>> components = SessionExtensionComponents(
+        ...     query_planner=my_library.make_planner(ctx)
+        ... )  # doctest: +SKIP
     """
 
     logical_extension_codecs: tuple[
@@ -101,12 +120,13 @@ class SessionExtensionComponents:
 class SessionExtensionExportable(Protocol):
     """Type hint for extension bundles installable via ``with_extensions``.
 
-    Implementations are reusable configuration objects: they must not retain a
-    :py:class:`~datafusion.context.SessionContext` and must create fresh
+    Implementations are reusable configuration objects: they must create fresh
     components on every call using the context supplied by
-    :py:meth:`~datafusion.context.SessionContext.with_extensions`. They should
-    also avoid mutating global state during binding, since a failed
-    installation discards the destination context.
+    :py:meth:`~datafusion.context.SessionContext.with_extensions`, and must not
+    retain that context or cache the components they bound to it, since the
+    next call may install onto a different session. They should also avoid
+    mutating the context they are handed — a registration made during binding
+    is not rolled back if a later extension fails.
     """
 
     def __datafusion_session_extension__(  # noqa: D105

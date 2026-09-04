@@ -788,33 +788,45 @@ def test_with_extensions_three_library_query():
     assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
 
 
-def test_with_extensions_provider_targets_returned_context():
-    """The bundle's task-context provider reads current state from the
-    returned context, not the source it was derived from."""
+def test_with_extensions_shares_the_session_with_the_source():
+    """``with_extensions`` returns a handle on the source's session, and the
+    bundle's task-context provider resolves against that one session.
+
+    There is one ``Arc<SessionContext>`` per session, so a component bound
+    during installation cannot be left pointing at a handle that is dropped
+    later. A `SET` issued through the *source* after installation is therefore
+    visible to the provider the bundle bound, which is what a codec's decode
+    callback resolves through.
+    """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     source = SessionContext(config)
-    source.register_table("numbers", MyTableProvider(1, 6, 1))
     planner_ext = MyPlannerExtension()
     result = source.with_extensions(ProviderCodecsExtension(), planner_ext)
 
-    # Diverge the two live contexts. Config state is copied at derivation,
-    # so after these statements source and result disagree.
-    source.sql("SET ffi_query_planner.max_rows = 5").collect()
-    result.sql("SET ffi_query_planner.max_rows = 2").collect()
+    assert result.session_id() == source.session_id()
+
+    # Registrations and config changes go through the source handle only.
+    source.register_table("numbers", MyTableProvider(1, 6, 1))
+    source.sql("SET ffi_query_planner.max_rows = 2").collect()
 
     batches = result.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
     assert batches[0].column(0).to_pylist() == [0, 1]
     assert planner_ext.last_max_rows() == 2
-
-    # Resolving the provider bound during with_extensions is what a codec's
-    # decode callback does. Seeing 2 (never 5) proves the provider targets the
-    # returned context rather than the source.
     assert planner_ext.max_rows_through_provider() == 2
+
+    # Symmetrically, the codec chains installed on the shared session are in
+    # force for the source handle too.
+    batches = source.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
 
 
 def test_with_extensions_survives_dropping_source_and_bundles():
-    """Neither the source context nor the bundle objects are needed to keep
-    the installed components' task-context provider alive."""
+    """The returned handle alone keeps the installed components alive.
+
+    The context ``with_extensions`` was called on is a temporary here, and the
+    bundle objects are dropped with it. Both share their allocation with the
+    returned handle, so the components' task-context provider stays valid.
+    """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
     ctx = SessionContext(config).with_extensions(
         ProviderCodecsExtension(), MyPlannerExtension()

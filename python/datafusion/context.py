@@ -1818,31 +1818,37 @@ class SessionContext:
         This is the preferred way to install FFI extensions that need a
         task-context provider (extension codecs and query planners). Each
         extension's ``__datafusion_session_extension__`` method is called with
-        the destination context so it can bind its components to that exact
-        context, then all components are installed in one step. This avoids
-        the pitfalls of chaining :py:meth:`with_logical_extension_codec`,
+        this context so it can bind its components to the session they will
+        run on, then all components are installed in one step. This avoids the
+        pitfalls of chaining :py:meth:`with_logical_extension_codec`,
         :py:meth:`with_physical_extension_codec`, and
-        :py:meth:`set_query_planner` by hand, where components can end up
-        bound to an intermediate context that is later garbage collected.
+        :py:meth:`set_query_planner` by hand, where the codecs a planner was
+        built against can end up stale.
 
         Codecs compose with the existing chain and with each other: extensions
         are processed left to right and their codecs are appended to the chain
         in that order. Decoding routes by codec id, so the order matters only
         for encoding. At most one extension may supply a query planner. If none
-        does, an existing FFI planner on the source context is rebound to the
-        final codec chains.
+        does, an existing FFI planner is rebound to the final codec chains.
 
-        If any extension raises or returns invalid components, the source
-        context's state is left unchanged and the partially built destination
-        is discarded. Extension factories must treat the context they receive
-        as configuration-only: catalogs are shared with the source context, so
-        registering tables or otherwise mutating the context during binding is
-        not rolled back on failure.
+        Like the individual ``with_*`` methods, the returned context shares its
+        session with this one: catalogs, tables, registered functions, and
+        configuration are the one session, so a registration on either side is
+        visible to both, and the planner is installed on that shared session
+        even if the returned context is discarded. Only the Python-side codec
+        chains are specific to the returned handle.
 
-        The returned context is the strong owner of the installed components'
-        task-context providers. Keep it alive for as long as DataFrames or
-        plans derived from it are in use; FFI operations after the context is
-        collected raise an error.
+        No state is written until every extension has run and every capsule has
+        been validated, so an extension that raises or returns invalid
+        components leaves the session as it was. The exception is an extension
+        that mutates the context it is handed — registering a table, say —
+        which is not rolled back. Extension factories should treat that context
+        as configuration-only.
+
+        The session owns the installed components' task-context providers, and
+        dependent objects do not extend its lifetime. Keep a context on the
+        session alive for as long as DataFrames or plans derived from it are in
+        use; FFI operations after the last one is collected raise an error.
 
         Args:
             extensions: Extension bundles to install, in the order their
@@ -1889,17 +1895,16 @@ class SessionContext:
                 )
                 raise TypeError(msg)
 
-        # Single destination context. Every component the extensions create
-        # must bind to this context; _install_extensions later mutates its
-        # state in place so those bindings stay valid.
-        destination = SessionContext.__new__(SessionContext)
-        destination.ctx = self.ctx._derive_for_extensions()
-
+        # Bind every component against this context, not a context derived from
+        # it. There is one `Arc<SessionContext>` per session, so a component
+        # bound here holds a task-context provider that the returned handle
+        # keeps alive, and `_install_extensions` writes the final state through
+        # that same session.
         logical_codecs: list[LogicalExtensionCodecExportable | _PyCapsule] = []
         physical_codecs: list[PhysicalExtensionCodecExportable | _PyCapsule] = []
         planner: QueryPlannerExportable | _PyCapsule | None = None
         for extension in extensions:
-            components = extension.__datafusion_session_extension__(destination)
+            components = extension.__datafusion_session_extension__(self)
             if not isinstance(components, SessionExtensionComponents):
                 msg = (
                     "__datafusion_session_extension__ must return "
@@ -1920,9 +1925,7 @@ class SessionContext:
                 planner = components.query_planner
 
         new = SessionContext.__new__(SessionContext)
-        new.ctx = destination.ctx._install_extensions(
-            logical_codecs, physical_codecs, planner
-        )
+        new.ctx = self.ctx._install_extensions(logical_codecs, physical_codecs, planner)
         return new
 
     def table_provider(self, name: str) -> Table:
@@ -2354,9 +2357,11 @@ class SessionContext:
         written through one will not be decoded by the other.
 
         Contexts derived from the same session — including the ones returned by
-        :py:meth:`with_logical_extension_codec` and
-        :py:meth:`with_python_udf_inlining` — report the same id, so only one of
-        them can be installed on a given session.
+        :py:meth:`with_logical_extension_codec`,
+        :py:meth:`with_python_udf_inlining`, and :py:meth:`with_extensions` —
+        report the same id, so only one of them can be installed on a given
+        session. That is the intended answer: they are one session, so their
+        payloads would be indistinguishable on decode.
 
         Examples:
             >>> from datafusion import SessionContext

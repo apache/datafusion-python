@@ -56,7 +56,7 @@ type ObservedMaxRows = Arc<Mutex<Vec<usize>>>;
 
 /// The task-context provider handed to this bundle's components, if it has been
 /// installed. `FFI_TaskContextProvider` holds its session weakly, so keeping one
-/// here does not keep the destination context alive.
+/// here does not keep that session alive.
 type BoundProvider = Arc<Mutex<Option<FFI_TaskContextProvider>>>;
 
 fn record_task_ctx(observed: &ObservedMaxRows, ctx: &TaskContext) {
@@ -244,9 +244,10 @@ impl MyPlannerExtension {
         py: Python<'py>,
         ctx: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyAny>> {
-        // Bind every component to the destination context supplied by the
-        // host. Components must not be cached across calls: each installation
-        // targets a different context.
+        // Bind every component to the context supplied by the host, which is
+        // the session the components will run on. Components must not be
+        // cached across calls: each installation may target a different
+        // session.
         //
         // The task-context provider comes off that context rather than from a
         // `SessionContext` built here, so the codecs' decode callbacks resolve

@@ -51,10 +51,10 @@ ctx.register_udf(provider_udf)
 ```
 
 `MyPlannerExtension` implements the `__datafusion_session_extension__` protocol: it
-receives the destination context, binds fresh codec and planner components to that
-context's task-context provider, and returns them as `SessionExtensionComponents`.
-The host installs everything in one step, so no component can end up bound to an
-intermediate context that is later collected.
+receives the session it is being installed on, binds fresh codec and planner
+components to that session's task-context provider, and returns them as
+`SessionExtensionComponents`. The host installs every codec before it binds the
+planner, so the planner cannot be left carrying a chain that has since grown.
 
 The integration tests also cover the low-level chaining setup:
 

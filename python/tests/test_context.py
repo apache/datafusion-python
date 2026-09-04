@@ -901,7 +901,7 @@ class _CodecOnlyExtension:
 
 
 class _PlannerExtension:
-    """Contributes the destination context's own exported planner."""
+    """Contributes the receiving session's own exported planner."""
 
     def __datafusion_session_extension__(self, ctx):
         return SessionExtensionComponents(
@@ -961,13 +961,18 @@ def test_with_extensions_installs_codecs_and_planner(ctx):
     assert batches[0].column(0) == pa.array([1])
 
 
-def test_with_extensions_binds_to_returned_context(ctx):
+def test_with_extensions_binds_to_the_receiving_session(ctx):
     extension = _CodecOnlyExtension()
     result = ctx.with_extensions(extension)
 
-    # The context passed to the factory shares the same underlying session
-    # as the returned context: registrations made through it are visible.
-    extension.bound_ctx.register_record_batches(
+    # Factories are handed the receiver itself, so a component bound during
+    # installation targets the session the returned handle also wraps. There
+    # is no intermediate context that could be collected out from under it.
+    assert extension.bound_ctx is ctx
+    assert result.session_id() == ctx.session_id()
+
+    # One session: a registration through either handle is visible to both.
+    ctx.register_record_batches(
         "bound_test",
         [[pa.RecordBatch.from_pydict({"value": [1]})]],
     )

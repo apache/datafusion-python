@@ -424,10 +424,12 @@ impl PySessionContext {
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
         // Pre-existing caveat, unrelated to query planners: this is the one
-        // method that mints a second `Arc<SessionContext>` for a session. Any
-        // weak `FFI_TaskContextProvider` handed out by the receiver stays bound
-        // to the receiver, so the returned context must not outlive it. See
+        // method that mints a second `Arc<SessionContext>` for a session, and
+        // it also forks the session's state while keeping its id. Any weak
+        // `FFI_TaskContextProvider` handed out by the receiver stays bound to
+        // the receiver, so the returned context must not outlive it. See
         // `set_session_query_planner` for why everything else mutates in place.
+        // Tracked as a bug in <https://github.com/apache/datafusion-python/issues/1708>.
         Ok(PySessionContext {
             ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
             logical_codec: Arc::clone(&self.logical_codec),
@@ -1433,10 +1435,13 @@ impl PySessionContext {
     /// decode. See [`SESSION_CODEC_ID_PREFIX`].
     ///
     /// Handles derived from one session — `with_python_udf_inlining`,
-    /// `with_logical_extension_codec` — report the same id even though their
-    /// codec chains differ, so installing two of them on one target is
-    /// refused. That is the intended answer: their payloads would be
-    /// indistinguishable on decode.
+    /// `with_logical_extension_codec`, `_install_extensions` — report the same
+    /// id even though their codec chains differ, so installing two of them on
+    /// one target is refused. That is the intended answer: they share a
+    /// `state_ref`, so their payloads would resolve against the same session
+    /// and are indistinguishable on decode. Every derivation shares the
+    /// session for exactly this reason; `enable_url_table` is the one that does
+    /// not, and it is tracked as a bug.
     #[getter]
     pub fn __datafusion_codec_id__(&self) -> String {
         format!("{SESSION_CODEC_ID_PREFIX}{}", self.ctx.session_id())
@@ -1609,29 +1614,16 @@ impl PySessionContext {
         derived
     }
 
-    /// Create the destination context for a `with_extensions` transaction.
-    ///
-    /// Private support method for `SessionContext.with_extensions`. The
-    /// returned context is the single `Arc<SessionContext>` that every FFI
-    /// task-context provider created during the transaction must target;
-    /// `_install_extensions` later mutates its state in place rather than
-    /// deriving a new context.
-    pub fn _derive_for_extensions(&self) -> Self {
-        Self {
-            ctx: Arc::new(SessionContext::new_with_state(self.ctx.state())),
-            logical_codec: Arc::clone(&self.logical_codec),
-            physical_codec: Arc::clone(&self.physical_codec),
-        }
-    }
-
     /// Commit a `with_extensions` transaction onto this context.
     ///
-    /// Private support method for `SessionContext.with_extensions`; `self`
-    /// must be a context produced by `_derive_for_extensions`. Codec capsules
-    /// are imported and validated before any state change, so a failure
-    /// leaves the context untouched. The final state is written through this
-    /// context's own `state_ref()`, never a derived context, so FFI
-    /// task-context providers bound to it stay valid.
+    /// Private support method for `SessionContext.with_extensions`. `self` is
+    /// the context the extensions bound their components against, and is also
+    /// the `Arc<SessionContext>` every FFI task-context provider they created
+    /// targets, so the returned handle shares it rather than deriving a new
+    /// one. Codec capsules are imported and validated before any state change,
+    /// so a failure leaves the session untouched. The final state is written
+    /// through this context's own `state_ref()`, so those providers stay
+    /// valid.
     #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
     pub fn _install_extensions<'py>(
         slf: &Bound<'py, Self>,
@@ -1670,18 +1662,18 @@ impl PySessionContext {
             .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
             .transpose()?;
 
-        let derived = Self {
+        let installed = Self {
             ctx: Arc::clone(&slf.borrow().ctx),
             logical_codec,
             physical_codec,
         };
         // Bind the planner only once the codec chains are final, and through
-        // the derived handle so it carries them. Passing `None` still rebuilds
+        // the new handle so it carries them. Passing `None` still rebuilds
         // whichever planner the session already holds against the new chains,
         // exactly as `with_logical_extension_codec` does.
-        derived.set_session_query_planner(planner);
+        installed.set_session_query_planner(planner);
 
-        Ok(derived)
+        Ok(installed)
     }
 }
 
