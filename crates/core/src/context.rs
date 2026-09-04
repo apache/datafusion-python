@@ -1620,9 +1620,15 @@ impl PySessionContext {
     /// the context the extensions bound their components against, and is also
     /// the `Arc<SessionContext>` every FFI task-context provider they created
     /// targets, so the returned handle shares it rather than deriving a new
-    /// one. Codec capsules are imported and validated before any state change,
-    /// so a failure leaves the session untouched. The final state is written
-    /// through this context's own `state_ref()`, so those providers stay
+    /// one. Codec capsules are imported and validated before anything is
+    /// committed, so a failure leaves the session untouched.
+    ///
+    /// The codec chains belong to the returned handle rather than to
+    /// `SessionState`, so a codec-only install onto a session with no FFI
+    /// planner writes no state at all. The session is written only when there
+    /// is a planner to bind — one a bundle supplied, or one already installed
+    /// that has to be rebuilt against the new chains — and that write goes
+    /// through this context's own `state_ref()`, so providers bound to it stay
     /// valid.
     #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
     pub fn _install_extensions<'py>(
