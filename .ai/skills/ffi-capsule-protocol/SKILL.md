@@ -62,6 +62,19 @@ library reaches things only the session has.
 session satisfies the protocol too — `ctx.__datafusion_query_planner__()` and
 `ctx.__datafusion_query_planner__(ctx)` are both valid.
 
+A *codec* must always be handed over as an object implementing its getter, never
+as the bare capsule the getter returns; `with_extensions` refuses a capsule.
+A codec's wire id — the string a payload names on decode, which has to mean the
+same thing in whichever process decodes — is read off the object it arrives as,
+and a capsule has no type to read one from. Deriving the id from the bundle that
+contributed the capsule is not the fix: the bundle is whatever object the caller
+passed, so an application packaging your library inside a bundle of its own
+would re-tag your payloads and they would stop decoding where they are read. If
+the object's class name is not the identity you want on the wire, declare
+`__datafusion_codec_id__` on it. `BundledLogicalCodec` in
+`examples/datafusion-ffi-query-planner-example/src/extension.rs` is the shape.
+This applies only to codecs — a query planner carries no wire id.
+
 ## Rule 3 — never construct a `SessionContext` in an extension library
 
 The FFI constructors ask for things a library does not have:

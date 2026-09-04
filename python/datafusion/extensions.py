@@ -79,12 +79,12 @@ class SessionExtensionComponents:
     components bound to a different session hold a task-context provider for
     that other session and cannot be rebound.
 
-    Codecs may be handed over either as objects exposing the capsule getters or
-    as bare ``PyCapsule`` objects. A bare capsule carries no class to take a
-    codec id from, so it is named after the extension that contributed it. An
-    extension contributing two bare capsules of the same kind therefore has to
-    name at least one of them itself, by wrapping it in an object declaring
-    ``__datafusion_codec_id__``.
+    Codecs must be objects exposing the capsule getters, never bare
+    ``PyCapsule`` objects: a codec's id is read off the object it is handed
+    over as, and a capsule has no type to read. A library holding a raw capsule
+    wraps it in an object, which is also what gives the codec an identity of
+    its own — one that does not change when the codec is contributed through a
+    different extension.
 
     Examples:
         A bundle that contributes nothing is valid, and is what the defaults
@@ -97,22 +97,33 @@ class SessionExtensionComponents:
         >>> components.query_planner is None
         True
 
-        A bundle that contributes one kind of component names it, leaving
-        the rest empty:
+        A bundle that contributes one kind of component names it, leaving the
+        rest empty. Here the codec is a capsule wrapped in an object that
+        declares the id its payloads will carry:
 
+        >>> from datafusion import SessionContext
+        >>> class NamedCodec:
+        ...     __datafusion_codec_id__ = "my_library.v1"
+        ...
+        ...     def __init__(self, capsule):
+        ...         self._capsule = capsule
+        ...
+        ...     def __datafusion_logical_extension_codec__(self, session=None):
+        ...         return self._capsule
+        >>> capsule = SessionContext().__datafusion_logical_extension_codec__()
         >>> components = SessionExtensionComponents(
-        ...     query_planner=my_library.make_planner(ctx)
-        ... )  # doctest: +SKIP
+        ...     logical_extension_codecs=(NamedCodec(capsule),)
+        ... )
+        >>> components.logical_extension_codecs[0].__datafusion_codec_id__
+        'my_library.v1'
+        >>> components.physical_extension_codecs
+        ()
     """
 
-    logical_extension_codecs: tuple[
-        LogicalExtensionCodecExportable | _PyCapsule, ...
-    ] = ()
+    logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = ()
     """Logical codecs to add to the session's codec chain, in declaration order."""
 
-    physical_extension_codecs: tuple[
-        PhysicalExtensionCodecExportable | _PyCapsule, ...
-    ] = ()
+    physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = ()
     """Physical codecs to add to the session's codec chain, in declaration order."""
 
     query_planner: QueryPlannerExportable | _PyCapsule | None = None

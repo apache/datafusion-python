@@ -1831,14 +1831,18 @@ class SessionContext:
         for encoding. At most one extension may supply a query planner. If none
         does, an existing FFI planner is rebound to the final codec chains.
 
-        Each codec is named after its exporting class, as
-        :py:meth:`with_logical_extension_codec` describes. A codec handed over
-        as a bare ``PyCapsule`` has no class to take a name from, so it is
-        named after the extension that contributed it — the extension's import
-        path is library-owned and stable across processes, so plans it writes
-        stay decodable elsewhere. Declare ``__datafusion_codec_id__`` on the
-        extension to pin that name against a later class rename, or on the
-        object handed over to name a codec directly.
+        Codecs must be handed over as objects exposing the capsule getter, not
+        as bare ``PyCapsule`` objects, and are named after their exporting
+        class as :py:meth:`with_logical_extension_codec` describes. Declare
+        ``__datafusion_codec_id__`` on the object to pin an id that survives a
+        later class rename. A capsule carries no type of its own, so there
+        would be nothing to name the codec by, and this method takes no
+        ``codec_id=``; wrap it in an object instead. That also keeps a codec's
+        wire identity independent of the extension that ships it, so an
+        extension composed inside another one still writes the same ids.
+
+        The planner is exempt — it carries no wire id, so it may be an object
+        or a capsule.
 
         Like the individual ``with_*`` methods, the returned context shares its
         session with this one: catalogs, tables, registered functions, and
@@ -1867,17 +1871,17 @@ class SessionContext:
             A new context with all extension components installed.
 
         Raises:
-            TypeError: If an argument does not implement the protocol or
-                returns something other than a
-                :py:class:`SessionExtensionComponents`.
+            TypeError: If an argument does not implement the protocol, returns
+                something other than a
+                :py:class:`SessionExtensionComponents`, or contributes a codec
+                as a bare ``PyCapsule``.
             ValueError: If no extensions are given, more than one extension
                 supplies a query planner, or two codecs claim the same id. An
-                extension that contributes two instances of one codec class,
-                or two bare capsules of the same kind, must declare
-                ``__datafusion_codec_id__`` on at least one of them; the
-                collision is refused rather than resolved by position, because
-                a positional id would break stored plans the first time the
-                extension reordered what it returns.
+                extension that contributes two instances of one codec class
+                must declare ``__datafusion_codec_id__`` on at least one of
+                them; the collision is refused rather than resolved by
+                position, because a positional id would break stored plans the
+                first time the extension reordered what it returns.
 
         Examples:
             The example is skipped here because it needs a built FFI
@@ -1911,16 +1915,8 @@ class SessionContext:
         # bound here holds a task-context provider that the returned handle
         # keeps alive, and `_install_extensions` writes the final state through
         # that same session.
-        #
-        # Each codec is paired with the extension that contributed it. A codec
-        # handed over as a bare capsule has no class to take an id from, so it
-        # is named after that extension rather than randomized.
-        logical_codecs: list[
-            tuple[LogicalExtensionCodecExportable | _PyCapsule, object]
-        ] = []
-        physical_codecs: list[
-            tuple[PhysicalExtensionCodecExportable | _PyCapsule, object]
-        ] = []
+        logical_codecs: list[LogicalExtensionCodecExportable] = []
+        physical_codecs: list[PhysicalExtensionCodecExportable] = []
         planner: QueryPlannerExportable | _PyCapsule | None = None
         for extension in extensions:
             components = extension.__datafusion_session_extension__(self)
@@ -1931,12 +1927,8 @@ class SessionContext:
                     f"{type(components).__name__} from {extension!r}"
                 )
                 raise TypeError(msg)
-            logical_codecs.extend(
-                (codec, extension) for codec in components.logical_extension_codecs
-            )
-            physical_codecs.extend(
-                (codec, extension) for codec in components.physical_extension_codecs
-            )
+            logical_codecs.extend(components.logical_extension_codecs)
+            physical_codecs.extend(components.physical_extension_codecs)
             if components.query_planner is not None:
                 if planner is not None:
                     msg = (

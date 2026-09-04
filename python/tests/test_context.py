@@ -881,6 +881,25 @@ def test_contexts_sharing_a_session_share_the_planner(ctx):
     assert sibling.session_id() == ctx.session_id()
 
 
+class _NamedCodec:
+    """Wraps a codec capsule in an object that can name itself.
+
+    ``with_extensions`` requires objects rather than bare capsules, because a
+    codec's wire id is read off the object it is handed over as. This is the
+    shape a library holding a raw capsule hands over.
+    """
+
+    def __init__(self, capsule, codec_id):
+        self._capsule = capsule
+        self.__datafusion_codec_id__ = codec_id
+
+    def __datafusion_logical_extension_codec__(self, session=None):
+        return self._capsule
+
+    def __datafusion_physical_extension_codec__(self, session=None):
+        return self._capsule
+
+
 class _CodecOnlyExtension:
     """Contributes decline-all codecs exported from an unrelated session.
 
@@ -890,18 +909,25 @@ class _CodecOnlyExtension:
     context the factory was handed.
     """
 
-    def __init__(self):
+    def __init__(self, prefix="my_library"):
         self.exporter = SessionContext()
+        self.prefix = prefix
         self.bound_ctx = None
 
     def __datafusion_session_extension__(self, ctx):
         self.bound_ctx = ctx
         return SessionExtensionComponents(
             logical_extension_codecs=(
-                self.exporter.__datafusion_logical_extension_codec__(),
+                _NamedCodec(
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                    f"{self.prefix}.logical",
+                ),
             ),
             physical_extension_codecs=(
-                self.exporter.__datafusion_physical_extension_codec__(),
+                _NamedCodec(
+                    self.exporter.__datafusion_physical_extension_codec__(),
+                    f"{self.prefix}.physical",
+                ),
             ),
         )
 
@@ -940,10 +966,15 @@ def test_with_extensions_rejects_multiple_planners(ctx):
 
 
 def test_with_extensions_rejects_bad_codec_capsule(ctx):
+    """A correctly shaped object still has to return the right capsule."""
+
     class BadCodecExtension:
         def __datafusion_session_extension__(self, ctx):
+            wrong_capsule = ctx.__datafusion_task_context_provider__()
             return SessionExtensionComponents(
-                logical_extension_codecs=(ctx.__datafusion_task_context_provider__(),),
+                logical_extension_codecs=(
+                    _NamedCodec(wrong_capsule, "my_library.logical"),
+                ),
             )
 
     with pytest.raises(
@@ -952,45 +983,88 @@ def test_with_extensions_rejects_bad_codec_capsule(ctx):
         ctx.with_extensions(BadCodecExtension())
 
 
-def test_with_extensions_names_bare_capsules_after_the_extension(ctx):
-    """A capsule has no class to take a codec id from, so it is named after
-    the extension that contributed it.
+def test_with_extensions_rejects_a_bare_capsule_codec(ctx):
+    """A codec must be an object that can name itself, not a bare capsule.
 
-    The extension's import path is library-owned and stable across processes,
-    so plans written through the codec stay decodable on another session — a
-    session-private random id would not be.
-    """
-    result = ctx.with_extensions(_CodecOnlyExtension())
-
-    expected = f"{_CodecOnlyExtension.__module__}._CodecOnlyExtension"
-    assert result.logical_extension_codec_ids() == [expected]
-    assert result.physical_extension_codec_ids() == [expected]
-
-
-def test_with_extensions_extension_can_pin_its_codec_id(ctx):
-    """``__datafusion_codec_id__`` on the extension survives a class rename."""
-
-    class PinnedExtension(_CodecOnlyExtension):
-        __datafusion_codec_id__ = "my_library.v1"
-
-    result = ctx.with_extensions(PinnedExtension())
-    assert result.logical_extension_codec_ids() == ["my_library.v1"]
-
-
-def test_with_extensions_codec_id_on_the_codec_beats_the_extension(ctx):
-    """Naming the handed-over object wins over the extension's name.
-
-    This is how an extension contributing more than one bare capsule of a kind
-    tells them apart.
+    An id is read off the object a codec is handed over as, and a capsule has
+    no type to read one from. ``with_extensions`` takes no ``codec_id=``, so
+    the capsule is refused here rather than given an id derived from something
+    that is not the codec.
     """
 
-    class NamedCapsule:
-        def __init__(self, capsule, codec_id):
-            self._capsule = capsule
-            self.__datafusion_codec_id__ = codec_id
+    class BareCapsuleExtension:
+        def __init__(self):
+            self.exporter = SessionContext()
 
-        def __datafusion_logical_extension_codec__(self, session=None):
-            return self._capsule
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                ),
+            )
+
+    with pytest.raises(
+        TypeError,
+        match="must be an object exposing `__datafusion_logical_extension_codec__`",
+    ):
+        ctx.with_extensions(BareCapsuleExtension())
+
+
+def test_with_extensions_rejects_a_bare_physical_capsule_codec(ctx):
+    """The physical getter is named in its own diagnostic."""
+
+    class BareCapsuleExtension:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(
+                physical_extension_codecs=(
+                    self.exporter.__datafusion_physical_extension_codec__(),
+                ),
+            )
+
+    with pytest.raises(
+        TypeError,
+        match="must be an object exposing `__datafusion_physical_extension_codec__`",
+    ):
+        ctx.with_extensions(BareCapsuleExtension())
+
+
+def test_with_extensions_codec_ids_survive_composition(ctx):
+    """A codec keeps its id when its extension is nested inside another one.
+
+    Wire ids have to mean the same thing in whichever process decodes, so
+    packaging one extension inside another — the natural way for an
+    application to present several libraries as one — must not re-tag the
+    inner library's payloads. Reading the id off the handed-over object rather
+    than off the contributing extension is what guarantees that.
+    """
+
+    class ComposedExtension:
+        """Presents another extension's components as its own."""
+
+        def __init__(self, inner):
+            self.inner = inner
+
+        def __datafusion_session_extension__(self, ctx):
+            return self.inner.__datafusion_session_extension__(ctx)
+
+    direct = ctx.with_extensions(_CodecOnlyExtension())
+    wrapped = SessionContext().with_extensions(ComposedExtension(_CodecOnlyExtension()))
+
+    assert direct.logical_extension_codec_ids() == ["my_library.logical"]
+    assert wrapped.logical_extension_codec_ids() == ["my_library.logical"]
+    assert direct.physical_extension_codec_ids() == ["my_library.physical"]
+    assert wrapped.physical_extension_codec_ids() == ["my_library.physical"]
+
+
+def test_with_extensions_uses_ids_declared_on_the_codec(ctx):
+    """``__datafusion_codec_id__`` on the handed-over object names the codec.
+
+    This is how an extension contributing more than one codec of a kind tells
+    them apart.
+    """
 
     class TwoNamedCodecs:
         def __init__(self):
@@ -999,11 +1073,11 @@ def test_with_extensions_codec_id_on_the_codec_beats_the_extension(ctx):
         def __datafusion_session_extension__(self, ctx):
             return SessionExtensionComponents(
                 logical_extension_codecs=(
-                    NamedCapsule(
+                    _NamedCodec(
                         self.exporter.__datafusion_logical_extension_codec__(),
                         "my_library.first",
                     ),
-                    NamedCapsule(
+                    _NamedCodec(
                         self.exporter.__datafusion_logical_extension_codec__(),
                         "my_library.second",
                     ),
@@ -1017,36 +1091,40 @@ def test_with_extensions_codec_id_on_the_codec_beats_the_extension(ctx):
     ]
 
 
-def test_with_extensions_rejects_two_bare_capsules_from_one_extension(ctx):
-    """Both capsules resolve to the one extension's id, so they collide.
+def test_with_extensions_rejects_two_codecs_of_one_class(ctx):
+    """Two wrappers of one class claim one class-derived id, so they collide.
 
     Numbering them by position would be an id another library can mint the
     same value from, and would break stored plans the first time the extension
     reordered what it returns, so the ambiguity is refused instead.
     """
 
-    class TwoCapsuleExtension:
+    class UnnamedCodec:
+        def __init__(self, capsule):
+            self._capsule = capsule
+
+        def __datafusion_logical_extension_codec__(self, session=None):
+            return self._capsule
+
+    class TwoUnnamedCodecs:
         def __init__(self):
             self.exporter = SessionContext()
 
         def __datafusion_session_extension__(self, ctx):
+            capsule = self.exporter.__datafusion_logical_extension_codec__
             return SessionExtensionComponents(
                 logical_extension_codecs=(
-                    self.exporter.__datafusion_logical_extension_codec__(),
-                    self.exporter.__datafusion_logical_extension_codec__(),
+                    UnnamedCodec(capsule()),
+                    UnnamedCodec(capsule()),
                 ),
             )
 
     with pytest.raises(ValueError, match="__datafusion_codec_id__"):
-        ctx.with_extensions(TwoCapsuleExtension())
+        ctx.with_extensions(TwoUnnamedCodecs())
 
 
 def test_with_extensions_leaves_an_exporting_object_its_own_id(ctx):
-    """A codec handed over as an object keeps its own identity.
-
-    The extension's name is a fallback for capsules only; it never overrides
-    an id the codec itself carries.
-    """
+    """A codec handed over as an object keeps the identity it declares."""
     exporter = SessionContext()
 
     class ObjectCodecExtension:

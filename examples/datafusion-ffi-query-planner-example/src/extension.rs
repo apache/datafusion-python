@@ -40,7 +40,7 @@ use datafusion_python_util::{
 };
 use datafusion_session::QueryPlanner;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyCapsule, PyDict};
 
 use crate::planner::{DistributedQueryPlanner, PlannerObservations, planner_config_from_options};
 
@@ -156,6 +156,84 @@ impl PhysicalExtensionCodec for ObservingPhysicalExtensionCodec {
     }
 }
 
+/// Wire id this library's logical codec claims, pinned so that renaming the
+/// Rust or Python types does not invalidate plans already encoded.
+const LOGICAL_CODEC_ID: &str = "datafusion_ffi_query_planner_example.logical.v1";
+
+/// Physical companion to [`LOGICAL_CODEC_ID`].
+const PHYSICAL_CODEC_ID: &str = "datafusion_ffi_query_planner_example.physical.v1";
+
+/// Carries this bundle's logical codec as an object rather than a bare capsule.
+///
+/// `with_extensions` requires an object: a codec's wire id is read off the
+/// thing it is handed over as, and a capsule has no type to read one from.
+/// Wrapping is also what keeps the id *this library's*. An id derived from the
+/// contributing bundle would follow whichever object the caller passed to
+/// `with_extensions`, so an application that packages this library inside a
+/// bundle of its own would silently re-tag these payloads and they would stop
+/// decoding in the process that reads them. The wrapper travels with the codec;
+/// the bundle does not.
+///
+/// Declaring `__datafusion_codec_id__` is optional — the class's
+/// `module.QualName` would serve — but a library whose plans leave the process
+/// should pin the id rather than let a refactor move it.
+#[pyclass(
+    name = "BundledLogicalCodec",
+    module = "datafusion_ffi_query_planner_example"
+)]
+pub(crate) struct BundledLogicalCodec {
+    codec: FFI_LogicalExtensionCodec,
+}
+
+#[pymethods]
+impl BundledLogicalCodec {
+    #[getter]
+    fn __datafusion_codec_id__(&self) -> &'static str {
+        LOGICAL_CODEC_ID
+    }
+
+    /// `session` is unused: the codec was bound to its task-context provider
+    /// when the bundle was installed, which is the whole reason the bundle
+    /// receives the context.
+    #[pyo3(signature = (session=None))]
+    fn __datafusion_logical_extension_codec__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
+        create_logical_extension_capsule(py, &self.codec)
+    }
+}
+
+/// Physical companion to [`BundledLogicalCodec`].
+#[pyclass(
+    name = "BundledPhysicalCodec",
+    module = "datafusion_ffi_query_planner_example"
+)]
+pub(crate) struct BundledPhysicalCodec {
+    codec: FFI_PhysicalExtensionCodec,
+}
+
+#[pymethods]
+impl BundledPhysicalCodec {
+    #[getter]
+    fn __datafusion_codec_id__(&self) -> &'static str {
+        PHYSICAL_CODEC_ID
+    }
+
+    /// See [`BundledLogicalCodec::__datafusion_logical_extension_codec__`].
+    #[pyo3(signature = (session=None))]
+    fn __datafusion_physical_extension_codec__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
+        create_physical_extension_capsule(py, &self.codec)
+    }
+}
+
 /// Extension bundle for `SessionContext.with_extensions`.
 ///
 /// Mirrors how a distributed engine such as Ballista packages its session
@@ -264,7 +342,9 @@ impl MyPlannerExtension {
         });
         let ffi_logical =
             FFI_LogicalExtensionCodec::new(logical, Some(runtime.clone()), provider.clone());
-        let logical_capsule = create_logical_extension_capsule(py, &ffi_logical)?;
+        // Handed over as an object, not a capsule, so the codec carries an id
+        // of its own. See `BundledLogicalCodec`.
+        let logical_codec = Py::new(py, BundledLogicalCodec { codec: ffi_logical })?;
 
         let physical: Arc<dyn PhysicalExtensionCodec + Send> =
             Arc::new(ObservingPhysicalExtensionCodec {
@@ -273,7 +353,12 @@ impl MyPlannerExtension {
             });
         let ffi_physical =
             FFI_PhysicalExtensionCodec::new(physical, Some(runtime), provider.clone());
-        let physical_capsule = create_physical_extension_capsule(py, &ffi_physical)?;
+        let physical_codec = Py::new(
+            py,
+            BundledPhysicalCodec {
+                codec: ffi_physical,
+            },
+        )?;
 
         let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
             observations: Arc::clone(&self.observations),
@@ -292,8 +377,8 @@ impl MyPlannerExtension {
             .import("datafusion")?
             .getattr("SessionExtensionComponents")?;
         let kwargs = PyDict::new(py);
-        kwargs.set_item("logical_extension_codecs", (logical_capsule,))?;
-        kwargs.set_item("physical_extension_codecs", (physical_capsule,))?;
+        kwargs.set_item("logical_extension_codecs", (logical_codec,))?;
+        kwargs.set_item("physical_extension_codecs", (physical_codec,))?;
         kwargs.set_item("query_planner", planner_capsule)?;
         components.call((), Some(&kwargs))
     }

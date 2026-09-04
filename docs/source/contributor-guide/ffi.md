@@ -277,20 +277,15 @@ three cases:
 
 - **Two instances of one class.** Both get the same id, so the second install
   raises `ValueError`. Pass `codec_id=` to tell them apart.
-- **A bare `PyCapsule`.** A capsule has no class to take a name from. Installed
-  through `with_extensions`, it is named after the extension that contributed it —
-  an extension is a plain object, so its import path is library-owned and just as
-  stable across processes as a codec class's. Installed directly through
-  `with_logical_extension_codec` or `with_physical_extension_codec` there is nothing
-  to fall back on, so it gets an id private to the session that installed it; plans
-  it encodes fail with a clear error on any other session rather than being decoded
-  by the wrong codec. Pass `codec_id=` if those plans have to cross sessions.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from, so installing
+  one through `with_logical_extension_codec` or `with_physical_extension_codec` gives
+  it an id private to the session that installed it; plans it encodes fail with a
+  clear error on any other session rather than being decoded by the wrong codec. Pass
+  `codec_id=` if those plans have to cross sessions.
 
-  One extension contributing two bare capsules of the same kind is refused, because
-  both resolve to that one extension's id. Numbering them by position would be an id
-  another library can mint the same value from, and would break stored plans the
-  first time the extension reordered what it returns — so name one of them by
-  wrapping it in an object declaring `__datafusion_codec_id__`.
+  `with_extensions` takes no `codec_id=`, so it refuses a bare capsule outright and
+  tells you to wrap it. See
+  [Extension bundles: `with_extensions`](#extension-bundles-with_extensions).
 - **A class you intend to rename.** The id follows the class name, so renaming stops
   older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
   object to pin an id that survives the rename.
@@ -387,7 +382,42 @@ ctx.register_udf(udf(lib_b.SomeUDF()))
 
 Extensions are processed left to right and their codecs are appended to the chain in
 that order. As above, order affects only encoding — decoding routes by id. At most one
-extension per call may supply a query planner.
+extension per call may supply a query planner. Supplying one replaces whatever planner
+the session already has; to layer instead, capture the existing planner from
+`__datafusion_query_planner__` first and have yours fall back to it.
+
+#### Codecs are objects, not capsules
+
+`with_extensions` requires each codec to be an object exposing the capsule getter, and
+refuses a bare `PyCapsule`. A codec's id is read off the object it is handed over as,
+and a capsule has no type to read one from; since this method takes no `codec_id=`,
+there would be nothing left to name it by. A library holding a raw capsule — which is
+what a Rust implementation has — wraps it:
+
+```python
+class MyLogicalCodec:
+    # Optional. Without it the id is this class's import path, which is already
+    # stable; declare it if you may rename the class and need old plans to decode.
+    __datafusion_codec_id__ = "my_library.logical.v1"
+
+    def __init__(self, capsule):
+        self._capsule = capsule
+
+    def __datafusion_logical_extension_codec__(self, session=None):
+        return self._capsule
+```
+
+Wrapping is not just bookkeeping. It ties the id to the codec rather than to the bundle
+that contributed it, and that difference is load-bearing: an application commonly
+presents several libraries as one bundle of its own, and the id has to survive that.
+Were the id taken from the contributing bundle, wrapping `my_engine.Extension` inside
+`my_app.Extension` would silently re-tag the engine's payloads, and a scheduler that
+installs the engine's codec by its documented id would fail to decode plans from
+composed clients while succeeding for direct ones. The wrapper travels with the codec;
+the bundle does not.
+
+The query planner is exempt — it carries no wire id, so it may be an object or a
+capsule.
 
 Nothing is written to the session until every factory has returned and every capsule
 has been validated, so a factory that raises leaves the session exactly as it was. A
@@ -409,7 +439,8 @@ boundary`. Keep a context alive for as long as objects derived from it are in us
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
 implementation of the protocol, including taking the task-context provider off the
-supplied context and constructing a Python `SessionExtensionComponents`.
+supplied context, wrapping its codecs in `BundledLogicalCodec` / `BundledPhysicalCodec`
+so they carry declared ids, and constructing a Python `SessionExtensionComponents`.
 
 ### Capsule getters receive the session they are installed on
 

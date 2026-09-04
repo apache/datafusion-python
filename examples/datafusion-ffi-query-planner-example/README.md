@@ -56,6 +56,12 @@ components to that session's task-context provider, and returns them as
 `SessionExtensionComponents`. The host installs every codec before it binds the
 planner, so the planner cannot be left carrying a chain that has since grown.
 
+Its codecs are handed over as `BundledLogicalCodec` and `BundledPhysicalCodec` rather
+than as bare capsules. `with_extensions` requires an object, because a codec's wire id
+is read off the object it arrives as and a capsule has no type to read one from. Each
+wrapper declares `__datafusion_codec_id__`, so the id belongs to this library and does
+not change when the bundle is nested inside an application's own bundle.
+
 The integration tests also cover the low-level chaining setup:
 
 ```python

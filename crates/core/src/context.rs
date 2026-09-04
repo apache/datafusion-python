@@ -66,7 +66,7 @@ use datafusion_python_util::{
 };
 use object_store::ObjectStore;
 use pyo3::IntoPyObjectExt;
-use pyo3::exceptions::{PyKeyError, PyRuntimeError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use url::Url;
@@ -1490,7 +1490,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let id = {
             let this = slf.borrow();
-            resolve_codec_id(&codec, codec_id, None, &this.logical_codec.codec_ids())?
+            resolve_codec_id(&codec, codec_id, &this.logical_codec.codec_ids())?
         };
         let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
@@ -1555,7 +1555,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let id = {
             let this = slf.borrow();
-            resolve_codec_id(&codec, codec_id, None, &this.physical_codec.codec_ids())?
+            resolve_codec_id(&codec, codec_id, &this.physical_codec.codec_ids())?
         };
         let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
@@ -1630,11 +1630,15 @@ impl PySessionContext {
     /// that has to be rebuilt against the new chains — and that write goes
     /// through this context's own `state_ref()`, so providers bound to it stay
     /// valid.
+    ///
+    /// Codecs must arrive as objects exposing the capsule getter, never as
+    /// bare capsules — see [`resolve_bundle_codec_id`]. The planner has no
+    /// wire id, so it may still be a capsule.
     #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
     pub fn _install_extensions<'py>(
         slf: &Bound<'py, Self>,
-        logical_codecs: Vec<(Bound<'py, PyAny>, Bound<'py, PyAny>)>,
-        physical_codecs: Vec<(Bound<'py, PyAny>, Bound<'py, PyAny>)>,
+        logical_codecs: Vec<Bound<'py, PyAny>>,
+        physical_codecs: Vec<Bound<'py, PyAny>>,
         planner: Option<Bound<'py, PyAny>>,
     ) -> PyDataFusionResult<Self> {
         // Chains are built as local values, so a codec that fails to import --
@@ -1648,21 +1652,24 @@ impl PySessionContext {
             )
         };
 
-        // Each codec arrives paired with the bundle that contributed it. A
-        // bundle is a plain object, so its identity is as stable across
-        // processes as an exporting codec class's, which is what lets a bare
-        // capsule from a bundle be named instead of randomized. See
-        // `resolve_codec_id`.
-        for (codec, bundle) in logical_codecs {
-            let id = resolve_codec_id(&codec, None, Some(&bundle), &logical_codec.codec_ids())?;
+        for codec in logical_codecs {
+            let id = resolve_bundle_codec_id(
+                &codec,
+                "__datafusion_logical_extension_codec__",
+                &logical_codec.codec_ids(),
+            )?;
             let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
             let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
             logical_codec = logical_codec.with_additional_codec(id, inner);
         }
         let logical_codec = Arc::new(logical_codec);
 
-        for (codec, bundle) in physical_codecs {
-            let id = resolve_codec_id(&codec, None, Some(&bundle), &physical_codec.codec_ids())?;
+        for codec in physical_codecs {
+            let id = resolve_bundle_codec_id(
+                &codec,
+                "__datafusion_physical_extension_codec__",
+                &physical_codec.codec_ids(),
+            )?;
             let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
             let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
             physical_codec = physical_codec.with_additional_codec(id, inner);
@@ -1854,21 +1861,17 @@ impl PySessionContext {
 /// 3. The exporting object's `module.QualName`, which is the library's own
 ///    import path and therefore already stable across processes. This is the
 ///    common case and asks nothing of existing extension libraries.
-/// 4. For a bare `PyCapsule` contributed through `with_extensions`, the
-///    identity of the bundle that contributed it, resolved by arms 2 and 3
-///    above. A bundle is a plain object, so its import path is library-owned
-///    and exactly as stable as an exporting codec class's — the capsule was
-///    only unnameable because a capsule carries no type of its own, not
-///    because nothing stable was in reach.
-/// 5. For a bare `PyCapsule` with no bundle behind it there is nothing stable
-///    to read — every capsule reports the same type — so mint a fresh random
-///    id. Payloads tagged this way decode correctly within the session lineage
-///    that installed the codec, because the chain is cloned along with the id,
-///    and fail with a pointed error everywhere else. Randomness is the point:
-///    an id drawn from a namespace another session can mint the same value
-///    from — a counter, a chain position — would let an unrelated codec answer
-///    for these bytes. That is also why arm 4 does not disambiguate two
-///    capsules from one bundle by position; it lets them collide instead.
+/// 4. For a bare `PyCapsule` there is nothing stable to read — every capsule
+///    reports the same type — so mint a fresh random id. Payloads tagged this
+///    way decode correctly within the session lineage that installed the
+///    codec, because the chain is cloned along with the id, and fail with a
+///    pointed error everywhere else. Randomness is the point: an id drawn from
+///    a namespace another session can mint the same value from — a counter, a
+///    chain position — would let an unrelated codec answer for these bytes.
+///    Reachable only from `with_logical_extension_codec` and
+///    `with_physical_extension_codec`, where `codec_id=` is the way out;
+///    `with_extensions` refuses bare capsules outright rather than naming them
+///    after something that is not the codec. See [`resolve_bundle_codec_id`].
 ///
 /// An id already in use is rejected rather than shadowed. Two codecs sharing an
 /// id are indistinguishable on decode, and the API cannot tell whether two
@@ -1878,10 +1881,9 @@ impl PySessionContext {
 fn resolve_codec_id(
     codec: &Bound<'_, PyAny>,
     explicit: Option<String>,
-    bundle: Option<&Bound<'_, PyAny>>,
     existing: &[&str],
 ) -> PyResult<String> {
-    let id = derive_codec_id(codec, explicit, bundle)?;
+    let id = derive_codec_id(codec, explicit)?;
     if existing.contains(&id.as_str()) {
         return Err(PyValueError::new_err(format!(
             "An extension codec with id '{id}' is already installed on this session. Two \
@@ -1895,11 +1897,45 @@ fn resolve_codec_id(
     Ok(id)
 }
 
-fn derive_codec_id(
+/// Resolve the wire id for a codec contributed through `with_extensions`,
+/// requiring an object that can name itself.
+///
+/// `with_extensions` takes no `codec_id=`, so the only naming channels are the
+/// ones [`derive_codec_id`] reads off the handed-over object: a declared
+/// `__datafusion_codec_id__`, or its class's `module.QualName`. A bare capsule
+/// has neither. Naming it after the bundle that contributed it looks like an
+/// answer and is not one: the bundle is whatever object the caller passed to
+/// `with_extensions`, so a bundle that wraps another library's bundle — the
+/// natural way for an application to package several libraries as one — would
+/// stamp its own identity onto the inner library's codecs and silently change
+/// the wire format. The inner library cannot defend against that no matter what
+/// it declares, and the mismatch does not surface until a plan fails to decode
+/// in another process.
+///
+/// So the capsule is refused here, where the author can fix it by wrapping it
+/// in an object. Wrapping also decouples the codec's wire identity from the
+/// bundle's Python class name, which is the whole point of
+/// `__datafusion_codec_id__`.
+fn resolve_bundle_codec_id(
     codec: &Bound<'_, PyAny>,
-    explicit: Option<String>,
-    bundle: Option<&Bound<'_, PyAny>>,
+    getter: &str,
+    existing: &[&str],
 ) -> PyResult<String> {
+    if codec.is_instance_of::<PyCapsule>() {
+        return Err(PyTypeError::new_err(format!(
+            "A codec contributed through `with_extensions` must be an object exposing \
+             `{getter}`, not a bare PyCapsule. A capsule carries no type of its own, so \
+             there is nothing to name the codec by, and a payload names its codec by id \
+             when it is decoded — an id that has to mean the same thing in whichever \
+             process decodes. Wrap the capsule in an object that exposes `{getter}` and, \
+             if the class name is not the identity you want on the wire, declares \
+             `__datafusion_codec_id__`."
+        )));
+    }
+    resolve_codec_id(codec, None, existing)
+}
+
+fn derive_codec_id(codec: &Bound<'_, PyAny>, explicit: Option<String>) -> PyResult<String> {
     if let Some(id) = explicit {
         return Ok(id);
     }
@@ -1909,14 +1945,6 @@ fn derive_codec_id(
         return declared.extract::<String>();
     }
     if codec.is_instance_of::<PyCapsule>() {
-        // Name the capsule after whoever handed it over, if anyone did. The
-        // bundle goes through the same resolution, so a bundle that declares
-        // `__datafusion_codec_id__` pins an id that survives renaming its
-        // class, exactly as an exporting codec can. A bundle is never itself a
-        // capsule, so this cannot recurse into the random arm below.
-        if let Some(bundle) = bundle {
-            return derive_codec_id(bundle, None, None);
-        }
         return Ok(format!(
             "{ANONYMOUS_CODEC_ID_PREFIX}{}",
             Uuid::new_v4()

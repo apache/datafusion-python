@@ -704,6 +704,14 @@ def test_query_planner_rejects_invalid_config(max_rows: str):
         ctx.sql(f"SET ffi_query_planner.max_rows = '{max_rows}'").collect()
 
 
+# Ids `MyPlannerExtension`'s codec wrappers declare, mirroring
+# `LOGICAL_CODEC_ID` / `PHYSICAL_CODEC_ID` in the crate's `extension.rs`. A
+# scheduler decoding this library's plans installs codecs under these names, so
+# they are part of its wire format rather than an implementation detail.
+LOGICAL_CODEC_ID = "datafusion_ffi_query_planner_example.logical.v1"
+PHYSICAL_CODEC_ID = "datafusion_ffi_query_planner_example.physical.v1"
+
+
 class ProviderCodecsExtension:
     """Bundles the provider library's codecs for ``with_extensions``.
 
@@ -788,27 +796,25 @@ def test_with_extensions_three_library_query():
     assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
 
 
-def test_with_extensions_names_a_rust_bundles_capsules_after_the_bundle():
-    """A Rust bundle hands its codecs over as bare capsules, and they are
-    named after the bundle's own import path.
+def test_with_extensions_names_a_rust_bundles_codecs_by_their_declared_id():
+    """A Rust bundle wraps each codec in an object that declares its own id.
 
     This is the identity that has to survive leaving the process: a plan a
     distributed engine writes here is decoded by its scheduler, which installs
     a codec under the same id. A session-private random id — what a bare
-    capsule gets when installed directly — would make the plan undecodable
-    there.
+    capsule would get if `with_extensions` accepted one — would make the plan
+    undecodable there, which is why bare capsules are refused.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     ctx = SessionContext(config).with_extensions(
         ProviderCodecsExtension(), MyPlannerExtension()
     )
 
-    bundle_id = "datafusion_ffi_query_planner_example.MyPlannerExtension"
-    assert bundle_id in ctx.logical_extension_codec_ids()
-    assert bundle_id in ctx.physical_extension_codec_ids()
+    assert LOGICAL_CODEC_ID in ctx.logical_extension_codec_ids()
+    assert PHYSICAL_CODEC_ID in ctx.physical_extension_codec_ids()
 
-    # The provider bundle hands over objects, so those keep their own class
-    # names rather than picking up the bundle's.
+    # The provider bundle's codecs declare no id, so they fall back to their
+    # own class names — never to the bundle's.
     assert (
         "datafusion_ffi_example.MyLogicalExtensionCodec"
         in ctx.logical_extension_codec_ids()
@@ -816,6 +822,55 @@ def test_with_extensions_names_a_rust_bundles_capsules_after_the_bundle():
     assert not any(
         codec_id.startswith("anon:") for codec_id in ctx.logical_extension_codec_ids()
     )
+
+
+def test_with_extensions_rejects_a_rust_bundles_bare_capsule():
+    """A bundle handing over a raw capsule is refused, with the fix named.
+
+    This is the shape a Rust library reaches for first — `MyPlannerExtension`
+    wraps its capsules precisely to avoid it.
+    """
+
+    class BareCapsuleExtension:
+        def __datafusion_session_extension__(
+            self, ctx: SessionContext
+        ) -> SessionExtensionComponents:
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    ctx.__datafusion_logical_extension_codec__(),
+                ),
+            )
+
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    with pytest.raises(TypeError, match="must be an object exposing"):
+        SessionContext(config).with_extensions(BareCapsuleExtension())
+
+
+def test_with_extensions_codec_ids_survive_bundle_composition():
+    """Nesting a bundle inside another does not re-tag its codecs.
+
+    An application that presents several libraries as one bundle is the
+    natural shape, and it must not change what the inner libraries write on
+    the wire — a scheduler installing `MyPlannerExtension`'s codec by id has
+    no idea which application wrapper the client used. Reading the id off the
+    handed-over object rather than off the contributing bundle is what makes
+    that hold.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    direct = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+    composed = SessionContext(config).with_extensions(
+        _DocstringExampleExtension("scheduler:50050")
+    )
+
+    assert composed.logical_extension_codec_ids() == (
+        direct.logical_extension_codec_ids()
+    )
+    assert composed.physical_extension_codec_ids() == (
+        direct.physical_extension_codec_ids()
+    )
+    assert LOGICAL_CODEC_ID in composed.logical_extension_codec_ids()
 
 
 def test_with_extensions_shares_the_session_with_the_source():
