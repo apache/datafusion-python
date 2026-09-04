@@ -17,7 +17,12 @@
 
 from __future__ import annotations
 
+import doctest
 import gc
+import inspect
+import io
+import sys
+import types
 
 import pyarrow as pa
 import pytest
@@ -994,3 +999,81 @@ def test_composed_codecs_with_query_planner():
     assert logical_codec.table_provider_encode_calls() > 0
     assert logical_codec.table_provider_decode_calls() > 0
     assert physical_codec.execution_plan_decode_calls() > 0
+
+
+class _DocstringExampleExtension:
+    """Stand-in for the ``my_extension`` bundle named in the docstring.
+
+    The docstring shows a single engine bundle taking a scheduler address,
+    which is what a real distributed engine ships: one object contributing a
+    planner *and* the codecs that carry its plans. Here that is assembled from
+    this repository's two example libraries. The address is accepted and
+    ignored; everything else the example touches is the real API.
+    """
+
+    def __init__(self, endpoint: str) -> None:
+        self.endpoint = endpoint
+        self._codecs = ProviderCodecsExtension()
+        self._planner = MyPlannerExtension()
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        codecs = self._codecs.__datafusion_session_extension__(ctx)
+        planner = self._planner.__datafusion_session_extension__(ctx)
+        return SessionExtensionComponents(
+            logical_extension_codecs=(
+                *codecs.logical_extension_codecs,
+                *planner.logical_extension_codecs,
+            ),
+            physical_extension_codecs=(
+                *codecs.physical_extension_codecs,
+                *planner.physical_extension_codecs,
+            ),
+            query_planner=planner.query_planner,
+        )
+
+
+def test_with_extensions_docstring_example_still_runs():
+    """Run the ``with_extensions`` docstring example verbatim.
+
+    The example is marked ``+SKIP`` because the main suite has no built FFI
+    extension to import, which is exactly how such an example rots. Here the
+    statements are parsed out of the live docstring, the skip is dropped, and
+    each one is executed and its output compared.
+
+    Only names are redirected: ``my_extension`` resolves to the bundle above,
+    and ``SessionContext`` supplies the config this library's planner reads.
+    A renamed method, a changed signature, or a wrong expected output in the
+    docstring fails here.
+    """
+    examples = doctest.DocTestParser().get_examples(
+        inspect.getdoc(SessionContext.with_extensions)
+    )
+    assert examples, "with_extensions docstring has no examples to check"
+    for example in examples:
+        example.options.pop(doctest.SKIP, None)
+
+    module = types.ModuleType("my_extension")
+    module.DistributedEngineExtension = _DocstringExampleExtension
+
+    def make_context() -> SessionContext:
+        return SessionContext(
+            SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+        )
+
+    test = doctest.DocTest(
+        examples,
+        {"SessionContext": make_context},
+        "SessionContext.with_extensions",
+        None,
+        None,
+        None,
+    )
+    output = io.StringIO()
+    sys.modules["my_extension"] = module
+    try:
+        results = doctest.DocTestRunner().run(test, out=output.write)
+    finally:
+        del sys.modules["my_extension"]
+    assert results.failed == 0, output.getvalue()

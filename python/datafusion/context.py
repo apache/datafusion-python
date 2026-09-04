@@ -1845,9 +1845,8 @@ class SessionContext:
         collected raise an error.
 
         Args:
-            extensions: One or more objects implementing
-                ``__datafusion_session_extension__`` (see
-                :py:class:`SessionExtensionExportable`).
+            extensions: Extension bundles to install, in the order their
+                codecs join the chain.
 
         Returns:
             A new context with all extension components installed.
@@ -1864,11 +1863,20 @@ class SessionContext:
                 least one of them.
 
         Examples:
+            The example is skipped here because it needs a built FFI
+            extension library, which this package does not ship. It is run
+            verbatim against a real one by
+            ``test_with_extensions_docstring_example_still_runs`` in
+            ``examples/datafusion-ffi-query-planner-example``, so it cannot
+            drift from the API.
+
             >>> from my_extension import DistributedEngineExtension  # doctest: +SKIP
             >>> ctx = SessionContext().with_extensions(
             ...     DistributedEngineExtension("scheduler:50050")
             ... )  # doctest: +SKIP
-            >>> ctx.sql("SELECT 1").collect()  # doctest: +SKIP
+            >>> batches = ctx.sql("SELECT 1 AS n").collect()  # doctest: +SKIP
+            >>> batches[0].column(0).to_pylist()  # doctest: +SKIP
+            [1]
         """
         if not extensions:
             msg = "with_extensions requires at least one extension"
