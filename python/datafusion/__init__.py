@@ -92,6 +92,10 @@ from .dataframe import (
 )
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
+from .extensions import (
+    SessionExtensionComponents,
+    SessionExtensionExportable,
+)
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
 from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
@@ -134,6 +138,8 @@ __all__ = [
     "ScalarUDF",
     "SessionConfig",
     "SessionContext",
+    "SessionExtensionComponents",
+    "SessionExtensionExportable",
     "Table",
     "TableFunction",
     "TableProviderFactory",
@@ -146,6 +152,7 @@ __all__ = [
     "common",
     "configure_formatter",
     "expr",
+    "extensions",
     "functions",
     "ipc",
     "lit",

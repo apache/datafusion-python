@@ -424,10 +424,12 @@ impl PySessionContext {
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
         // Pre-existing caveat, unrelated to query planners: this is the one
-        // method that mints a second `Arc<SessionContext>` for a session. Any
-        // weak `FFI_TaskContextProvider` handed out by the receiver stays bound
-        // to the receiver, so the returned context must not outlive it. See
+        // method that mints a second `Arc<SessionContext>` for a session, and
+        // it also forks the session's state while keeping its id. Any weak
+        // `FFI_TaskContextProvider` handed out by the receiver stays bound to
+        // the receiver, so the returned context must not outlive it. See
         // `set_session_query_planner` for why everything else mutates in place.
+        // Tracked as a bug in <https://github.com/apache/datafusion-python/issues/1708>.
         Ok(PySessionContext {
             ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
             logical_codec: Arc::clone(&self.logical_codec),
@@ -1433,10 +1435,13 @@ impl PySessionContext {
     /// decode. See [`SESSION_CODEC_ID_PREFIX`].
     ///
     /// Handles derived from one session — `with_python_udf_inlining`,
-    /// `with_logical_extension_codec` — report the same id even though their
-    /// codec chains differ, so installing two of them on one target is
-    /// refused. That is the intended answer: their payloads would be
-    /// indistinguishable on decode.
+    /// `with_logical_extension_codec`, `_install_extensions` — report the same
+    /// id even though their codec chains differ, so installing two of them on
+    /// one target is refused. That is the intended answer: they share a
+    /// `state_ref`, so their payloads would resolve against the same session
+    /// and are indistinguishable on decode. Every derivation shares the
+    /// session for exactly this reason; `enable_url_table` is the one that does
+    /// not, and it is tracked as a bug.
     #[getter]
     pub fn __datafusion_codec_id__(&self) -> String {
         format!("{SESSION_CODEC_ID_PREFIX}{}", self.ctx.session_id())
@@ -1485,7 +1490,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let id = {
             let this = slf.borrow();
-            resolve_codec_id(&codec, codec_id, &this.logical_codec.codec_ids())?
+            resolve_codec_id(&codec, codec_id, None, &this.logical_codec.codec_ids())?
         };
         let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
@@ -1550,7 +1555,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<Self> {
         let id = {
             let this = slf.borrow();
-            resolve_codec_id(&codec, codec_id, &this.physical_codec.codec_ids())?
+            resolve_codec_id(&codec, codec_id, None, &this.physical_codec.codec_ids())?
         };
         let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
@@ -1607,6 +1612,79 @@ impl PySessionContext {
         // See `with_logical_extension_codec`.
         derived.set_session_query_planner(None);
         derived
+    }
+
+    /// Commit a `with_extensions` transaction onto this context.
+    ///
+    /// Private support method for `SessionContext.with_extensions`. `self` is
+    /// the context the extensions bound their components against, and is also
+    /// the `Arc<SessionContext>` every FFI task-context provider they created
+    /// targets, so the returned handle shares it rather than deriving a new
+    /// one. Codec capsules are imported and validated before anything is
+    /// committed, so a failure leaves the session untouched.
+    ///
+    /// The codec chains belong to the returned handle rather than to
+    /// `SessionState`, so a codec-only install onto a session with no FFI
+    /// planner writes no state at all. The session is written only when there
+    /// is a planner to bind — one a bundle supplied, or one already installed
+    /// that has to be rebuilt against the new chains — and that write goes
+    /// through this context's own `state_ref()`, so providers bound to it stay
+    /// valid.
+    #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
+    pub fn _install_extensions<'py>(
+        slf: &Bound<'py, Self>,
+        logical_codecs: Vec<(Bound<'py, PyAny>, Bound<'py, PyAny>)>,
+        physical_codecs: Vec<(Bound<'py, PyAny>, Bound<'py, PyAny>)>,
+        planner: Option<Bound<'py, PyAny>>,
+    ) -> PyDataFusionResult<Self> {
+        // Chains are built as local values, so a codec that fails to import --
+        // or that collides with an id already installed -- leaves the session
+        // untouched. Nothing is borrowed across a call back into Python.
+        let (mut logical_codec, mut physical_codec) = {
+            let this = slf.borrow();
+            (
+                this.logical_codec.as_ref().clone(),
+                this.physical_codec.as_ref().clone(),
+            )
+        };
+
+        // Each codec arrives paired with the bundle that contributed it. A
+        // bundle is a plain object, so its identity is as stable across
+        // processes as an exporting codec class's, which is what lets a bare
+        // capsule from a bundle be named instead of randomized. See
+        // `resolve_codec_id`.
+        for (codec, bundle) in logical_codecs {
+            let id = resolve_codec_id(&codec, None, Some(&bundle), &logical_codec.codec_ids())?;
+            let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+            let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
+            logical_codec = logical_codec.with_additional_codec(id, inner);
+        }
+        let logical_codec = Arc::new(logical_codec);
+
+        for (codec, bundle) in physical_codecs {
+            let id = resolve_codec_id(&codec, None, Some(&bundle), &physical_codec.codec_ids())?;
+            let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
+            let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
+            physical_codec = physical_codec.with_additional_codec(id, inner);
+        }
+        let physical_codec = Arc::new(physical_codec);
+
+        let planner = planner
+            .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
+            .transpose()?;
+
+        let installed = Self {
+            ctx: Arc::clone(&slf.borrow().ctx),
+            logical_codec,
+            physical_codec,
+        };
+        // Bind the planner only once the codec chains are final, and through
+        // the new handle so it carries them. Passing `None` still rebuilds
+        // whichever planner the session already holds against the new chains,
+        // exactly as `with_logical_extension_codec` does.
+        installed.set_session_query_planner(planner);
+
+        Ok(installed)
     }
 }
 
@@ -1776,13 +1854,21 @@ impl PySessionContext {
 /// 3. The exporting object's `module.QualName`, which is the library's own
 ///    import path and therefore already stable across processes. This is the
 ///    common case and asks nothing of existing extension libraries.
-/// 4. For a bare `PyCapsule` there is nothing stable to read — every capsule
-///    reports the same type — so mint a fresh random id. Payloads tagged this
-///    way decode correctly within the session lineage that installed the
-///    codec, because the chain is cloned along with the id, and fail with a
-///    pointed error everywhere else. Randomness is the point: an id drawn from
-///    a namespace another session can mint the same value from — a counter, a
-///    chain position — would let an unrelated codec answer for these bytes.
+/// 4. For a bare `PyCapsule` contributed through `with_extensions`, the
+///    identity of the bundle that contributed it, resolved by arms 2 and 3
+///    above. A bundle is a plain object, so its import path is library-owned
+///    and exactly as stable as an exporting codec class's — the capsule was
+///    only unnameable because a capsule carries no type of its own, not
+///    because nothing stable was in reach.
+/// 5. For a bare `PyCapsule` with no bundle behind it there is nothing stable
+///    to read — every capsule reports the same type — so mint a fresh random
+///    id. Payloads tagged this way decode correctly within the session lineage
+///    that installed the codec, because the chain is cloned along with the id,
+///    and fail with a pointed error everywhere else. Randomness is the point:
+///    an id drawn from a namespace another session can mint the same value
+///    from — a counter, a chain position — would let an unrelated codec answer
+///    for these bytes. That is also why arm 4 does not disambiguate two
+///    capsules from one bundle by position; it lets them collide instead.
 ///
 /// An id already in use is rejected rather than shadowed. Two codecs sharing an
 /// id are indistinguishable on decode, and the API cannot tell whether two
@@ -1792,20 +1878,28 @@ impl PySessionContext {
 fn resolve_codec_id(
     codec: &Bound<'_, PyAny>,
     explicit: Option<String>,
+    bundle: Option<&Bound<'_, PyAny>>,
     existing: &[&str],
 ) -> PyResult<String> {
-    let id = derive_codec_id(codec, explicit)?;
+    let id = derive_codec_id(codec, explicit, bundle)?;
     if existing.contains(&id.as_str()) {
         return Err(PyValueError::new_err(format!(
             "An extension codec with id '{id}' is already installed on this session. Two \
              codecs cannot share an id, because a payload names its codec by id when it is \
-             decoded. Pass `codec_id=` to give this one a distinct identity."
+             decoded. Give this one a distinct identity: declare \
+             `__datafusion_codec_id__` on the object being installed, or pass `codec_id=` \
+             if you are calling `with_logical_extension_codec` or \
+             `with_physical_extension_codec` directly."
         )));
     }
     Ok(id)
 }
 
-fn derive_codec_id(codec: &Bound<'_, PyAny>, explicit: Option<String>) -> PyResult<String> {
+fn derive_codec_id(
+    codec: &Bound<'_, PyAny>,
+    explicit: Option<String>,
+    bundle: Option<&Bound<'_, PyAny>>,
+) -> PyResult<String> {
     if let Some(id) = explicit {
         return Ok(id);
     }
@@ -1815,6 +1909,14 @@ fn derive_codec_id(codec: &Bound<'_, PyAny>, explicit: Option<String>) -> PyResu
         return declared.extract::<String>();
     }
     if codec.is_instance_of::<PyCapsule>() {
+        // Name the capsule after whoever handed it over, if anyone did. The
+        // bundle goes through the same resolution, so a bundle that declares
+        // `__datafusion_codec_id__` pins an id that survives renaming its
+        // class, exactly as an exporting codec can. A bundle is never itself a
+        // capsule, so this cannot recurse into the random arm below.
+        if let Some(bundle) = bundle {
+            return derive_codec_id(bundle, None, None);
+        }
         return Ok(format!(
             "{ANONYMOUS_CODEC_ID_PREFIX}{}",
             Uuid::new_v4()

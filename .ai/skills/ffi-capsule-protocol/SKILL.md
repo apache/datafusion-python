@@ -154,8 +154,19 @@ guards this. Its `WHERE` clause is load-bearing: filter pushdown upgrades the
 weak handle during logical optimization, before plan serialization could fail
 first for an unrelated reason.
 
+`SessionContext.with_extensions` is where this rule is easiest to get wrong,
+because "bind the components to the context you are about to return" reads like
+an instruction to derive one first. It is not: the factories are handed the
+receiver, and the returned handle shares its allocation. There is nothing to
+keep alive separately and nothing to garbage-collect out from under a provider.
+
 `SessionContext.enable_url_table` is the one method that mints a second
-allocation for a session. Its result must not outlive the receiver.
+allocation for a session. Its result must not outlive the receiver, and it also
+forks the session's `SessionState` while keeping its id, so two handles report
+one `session_id()` with divergent configuration. That is a bug rather than a
+design — tracked in
+[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708)
+— so do not cite it as precedent for deriving a replacement context.
 
 ## Rule 7 — installing a planner mutates the session, and says so
 

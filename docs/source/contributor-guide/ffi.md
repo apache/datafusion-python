@@ -277,10 +277,20 @@ three cases:
 
 - **Two instances of one class.** Both get the same id, so the second install
   raises `ValueError`. Pass `codec_id=` to tell them apart.
-- **A bare `PyCapsule`.** A capsule has no class to take a name from, so it gets an
-  id private to the session that installed it. Plans it encodes fail with a clear
-  error on any other session, rather than being decoded by the wrong codec. Pass
-  `codec_id=` if those plans have to cross sessions.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from. Installed
+  through `with_extensions`, it is named after the extension that contributed it —
+  an extension is a plain object, so its import path is library-owned and just as
+  stable across processes as a codec class's. Installed directly through
+  `with_logical_extension_codec` or `with_physical_extension_codec` there is nothing
+  to fall back on, so it gets an id private to the session that installed it; plans
+  it encodes fail with a clear error on any other session rather than being decoded
+  by the wrong codec. Pass `codec_id=` if those plans have to cross sessions.
+
+  One extension contributing two bare capsules of the same kind is refused, because
+  both resolve to that one extension's id. Numbering them by position would be an id
+  another library can mint the same value from, and would break stored plans the
+  first time the extension reordered what it returns — so name one of them by
+  wrapping it in an object declaring `__datafusion_codec_id__`.
 - **A class you intend to rename.** The id follows the class name, so renaming stops
   older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
   object to pin an id that survives the rename.
@@ -342,6 +352,64 @@ that stay unframed — is internal to datafusion-python and documented in
 The current FFI logical codec supports providers and UDFs but not arbitrary custom
 `LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
 local build commands.
+
+### Extension bundles: `with_extensions`
+
+The chaining above works, but it makes the caller responsible for ordering: the codecs
+have to be installed before the planner, because a planner is built against whatever
+codec chains exist when it is installed, and a codec added afterwards rebinds it. Get
+that wrong and the planner encodes through a chain that is missing a library.
+
+`SessionContext.with_extensions` removes the ordering question. An extension library
+exposes a bundle object implementing `__datafusion_session_extension__`:
+
+```python
+class MyEngineExtension:
+    def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
+        # Create fresh components bound to `ctx` on every call. `ctx` is the
+        # session the components will run on.
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self._make_logical_codec(ctx),),
+            physical_extension_codecs=(self._make_physical_codec(ctx),),
+            query_planner=self._make_planner(ctx),
+        )
+```
+
+The host passes the context to every factory, installs all the codecs, binds the
+planner against the final codec chains, and returns a handle on that session in a
+single step:
+
+```python
+ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
+
+Extensions are processed left to right and their codecs are appended to the chain in
+that order. As above, order affects only encoding — decoding routes by id. At most one
+extension per call may supply a query planner.
+
+Nothing is written to the session until every factory has returned and every capsule
+has been validated, so a factory that raises leaves the session exactly as it was. A
+factory that mutates the context it is handed — registering a table, say — is not
+rolled back, which is why bundle objects must be configuration-only: create fresh
+components on each call, never cache bound components, and do not retain the context
+passed in.
+
+Like every other derivation, the returned context is a handle on the *same* session as
+the receiver — see [What a derived context shares](#what-a-derived-context-shares).
+Only the Python-side codec chains belong to the returned handle; the planner is
+installed on the shared session and takes effect even if that handle is discarded.
+
+The session owns every installed component's task-context provider, and dependent
+objects do not extend its lifetime. A `DataFrame`, logical plan, or capsule can outlive
+every context on the session, but any operation that reaches an FFI codec after the
+last one is collected fails with `TaskContextProvider went out of scope over FFI
+boundary`. Keep a context alive for as long as objects derived from it are in use.
+
+`MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete Rust
+implementation of the protocol, including taking the task-context provider off the
+supplied context and constructing a Python `SessionExtensionComponents`.
 
 ### Capsule getters receive the session they are installed on
 
@@ -419,15 +487,24 @@ registered straight back into that same session, which would close the cycle
 
 `SessionContext.enable_url_table` is the one exception. It clones the underlying
 `SessionContext`, so the returned context has an allocation of its own and must not
-outlive the receiver.
+outlive the receiver. It also forks the session's state while keeping its id, so two
+handles report one `session_id()` with divergent configuration. That is a bug rather
+than a design, tracked in
+[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708);
+do not copy the pattern.
 
 ### What a derived context shares
 
-`with_logical_extension_codec`, `with_physical_extension_codec`, and
-`with_python_udf_inlining` return a new `SessionContext` wrapping the *same* underlying
-session. Only the Python-side codec settings differ; catalogs, tables, registered
-functions, and configuration are the one shared session, so a registration on either
-side is visible to both.
+`with_logical_extension_codec`, `with_physical_extension_codec`,
+`with_python_udf_inlining`, and `with_extensions` return a new `SessionContext` wrapping
+the *same* underlying session. Only the Python-side codec settings differ; catalogs,
+tables, registered functions, and configuration are the one shared session, so a
+registration on either side is visible to both.
+
+There is one `Arc<SessionContext>` per session, which is what makes the weak
+`FFI_TaskContextProvider` scheme work: a component bound through any handle stays valid
+while *any* handle on that session is alive, so there is no way to bind a component to
+an intermediate handle and have it dangle when that handle is dropped.
 
 `set_query_planner` does not return anything. The query planner lives in `SessionState`,
 so it is a property of the session rather than of a handle on it, and installing one is
@@ -515,6 +592,9 @@ its getter, which re-imports the fallback against that handle's codecs. Re-insta
 the original handle rebinds the session's planner back to the original handle's codecs
 instead, which is the trap
 `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs` pins.
+
+`with_extensions` sidesteps the ordering question entirely: it installs every codec
+before it binds the planner, so there is no "afterwards" for a bundle's own planner.
 
 ## Alternative Approach
 

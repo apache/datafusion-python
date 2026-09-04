@@ -17,11 +17,23 @@
 
 from __future__ import annotations
 
+import doctest
 import gc
+import inspect
+import io
+import sys
+import types
 
 import pyarrow as pa
 import pytest
-from datafusion import Expr, SessionConfig, SessionContext, col, udf
+from datafusion import (
+    Expr,
+    SessionConfig,
+    SessionContext,
+    SessionExtensionComponents,
+    col,
+    udf,
+)
 from datafusion_ffi_example import (
     IsNullUDF,
     MyCatalogProvider,
@@ -30,7 +42,11 @@ from datafusion_ffi_example import (
     MyPhysicalOptimizerRule,
     MyTableProvider,
 )
-from datafusion_ffi_query_planner_example import MyPlannerConfig, MyQueryPlanner
+from datafusion_ffi_query_planner_example import (
+    MyPlannerConfig,
+    MyPlannerExtension,
+    MyQueryPlanner,
+)
 
 
 def configured_context(max_rows: int):
@@ -688,6 +704,317 @@ def test_query_planner_rejects_invalid_config(max_rows: str):
         ctx.sql(f"SET ffi_query_planner.max_rows = '{max_rows}'").collect()
 
 
+class ProviderCodecsExtension:
+    """Bundles the provider library's codecs for ``with_extensions``.
+
+    These codecs keep their own private task-context provider, so they only
+    need to be created once; the bundle can hand out the same exporters on
+    every call.
+    """
+
+    def __init__(self) -> None:
+        self.logical_codec = MyLogicalExtensionCodec()
+        self.physical_codec = MyPhysicalExtensionCodec()
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self.logical_codec,),
+            physical_extension_codecs=(self.physical_codec,),
+        )
+
+
+class _NamedCodec:
+    """Forwards a codec's capsule getters under a declared id.
+
+    ``with_extensions`` takes no ``codec_id=``, so an extension that ships a
+    codec class another extension also ships declares
+    ``__datafusion_codec_id__`` on the object it hands over. Both getters are
+    forwarded because one wrapper stands in for whichever kind it wraps.
+    """
+
+    def __init__(self, codec: object, codec_id: str) -> None:
+        self._codec = codec
+        self.__datafusion_codec_id__ = codec_id
+
+    def __datafusion_logical_extension_codec__(self, session: object = None) -> object:
+        return self._codec.__datafusion_logical_extension_codec__(session)
+
+    def __datafusion_physical_extension_codec__(self, session: object = None) -> object:
+        return self._codec.__datafusion_physical_extension_codec__(session)
+
+
+class IdentifiedProviderCodecsExtension(ProviderCodecsExtension):
+    """``ProviderCodecsExtension`` whose codecs carry ids of their own."""
+
+    def __init__(self, prefix: str) -> None:
+        super().__init__()
+        self.logical = _NamedCodec(self.logical_codec, f"{prefix}.logical")
+        self.physical = _NamedCodec(self.physical_codec, f"{prefix}.physical")
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return SessionExtensionComponents(
+            logical_extension_codecs=(self.logical,),
+            physical_extension_codecs=(self.physical,),
+        )
+
+
+def test_with_extensions_three_library_query():
+    """One with_extensions call installs provider codecs and a planner bundle,
+    and a real non-empty plan flows across the three libraries."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    provider_ext = ProviderCodecsExtension()
+    planner_ext = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(provider_ext, planner_ext)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.register_udf(udf(IsNullUDF()))
+
+    batches = ctx.sql(
+        'SELECT "A", my_custom_is_null("A") AS is_null FROM numbers ORDER BY "A"'
+    ).collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert batches[0].column(1).to_pylist() == [False, False, False]
+    assert planner_ext.plan_calls() >= 1
+    assert planner_ext.last_max_rows() == 3
+    assert planner_ext.foreign_session_observed()
+    assert planner_ext.foreign_provider_observed()
+    assert planner_ext.foreign_plan_observed()
+    assert provider_ext.logical_codec.table_provider_encode_calls() > 0
+    assert provider_ext.logical_codec.table_provider_decode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_encode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_with_extensions_names_a_rust_bundles_capsules_after_the_bundle():
+    """A Rust bundle hands its codecs over as bare capsules, and they are
+    named after the bundle's own import path.
+
+    This is the identity that has to survive leaving the process: a plan a
+    distributed engine writes here is decoded by its scheduler, which installs
+    a codec under the same id. A session-private random id — what a bare
+    capsule gets when installed directly — would make the plan undecodable
+    there.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+
+    bundle_id = "datafusion_ffi_query_planner_example.MyPlannerExtension"
+    assert bundle_id in ctx.logical_extension_codec_ids()
+    assert bundle_id in ctx.physical_extension_codec_ids()
+
+    # The provider bundle hands over objects, so those keep their own class
+    # names rather than picking up the bundle's.
+    assert (
+        "datafusion_ffi_example.MyLogicalExtensionCodec"
+        in ctx.logical_extension_codec_ids()
+    )
+    assert not any(
+        codec_id.startswith("anon:") for codec_id in ctx.logical_extension_codec_ids()
+    )
+
+
+def test_with_extensions_shares_the_session_with_the_source():
+    """``with_extensions`` returns a handle on the source's session, and the
+    bundle's task-context provider resolves against that one session.
+
+    There is one ``Arc<SessionContext>`` per session, so a component bound
+    during installation cannot be left pointing at a handle that is dropped
+    later. A `SET` issued through the *source* after installation is therefore
+    visible to the provider the bundle bound, which is what a codec's decode
+    callback resolves through.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    source = SessionContext(config)
+    planner_ext = MyPlannerExtension()
+    result = source.with_extensions(ProviderCodecsExtension(), planner_ext)
+
+    assert result.session_id() == source.session_id()
+
+    # Registrations and config changes go through the source handle only.
+    source.register_table("numbers", MyTableProvider(1, 6, 1))
+    source.sql("SET ffi_query_planner.max_rows = 2").collect()
+
+    batches = result.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+    assert planner_ext.max_rows_through_provider() == 2
+
+    # Symmetrically, the codec chains installed on the shared session are in
+    # force for the source handle too.
+    batches = source.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+
+def test_with_extensions_survives_dropping_source_and_bundles():
+    """The returned handle alone keeps the installed components alive.
+
+    The context ``with_extensions`` was called on is a temporary here, and the
+    bundle objects are dropped with it. Both share their allocation with the
+    returned handle, so the components' task-context provider stays valid.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    gc.collect()
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+
+def test_with_extensions_sees_state_changes_after_install():
+    """Tables, UDFs, and config changes made after installation are visible
+    to the planner and to provider callbacks."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=4))
+    planner_ext = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(ProviderCodecsExtension(), planner_ext)
+
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    ctx.register_udf(udf(IsNullUDF()))
+    ctx.sql("SET ffi_query_planner.max_rows = 2").collect()
+
+    batches = ctx.sql(
+        'SELECT "A", my_custom_is_null("A") AS is_null FROM numbers ORDER BY "A"'
+    ).collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+    assert planner_ext.max_rows_through_provider() == 2
+
+
+def test_with_extensions_bundle_is_reusable():
+    """Installing the same bundle into two contexts binds fresh components to
+    each destination."""
+    planner_ext = MyPlannerExtension()
+
+    config_a = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ctx_a = SessionContext(config_a).with_extensions(
+        ProviderCodecsExtension(), planner_ext
+    )
+    ctx_a.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    config_b = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    ctx_b = SessionContext(config_b).with_extensions(
+        ProviderCodecsExtension(), planner_ext
+    )
+    ctx_b.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx_a.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner_ext.last_max_rows() == 2
+
+    batches = ctx_b.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+    assert planner_ext.last_max_rows() == 3
+
+
+def test_with_extensions_failure_leaves_source_usable():
+    """A failing factory after a successful one leaves the source context
+    fully functional."""
+
+    class BoomExtension:
+        def __datafusion_session_extension__(
+            self, ctx: SessionContext
+        ) -> SessionExtensionComponents:
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    source = SessionContext(config)
+    source.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    with pytest.raises(RuntimeError, match="boom"):
+        source.with_extensions(MyPlannerExtension(), BoomExtension())
+
+    # No planner was installed, so the default planner runs unrestricted.
+    batches = source.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2, 3, 4, 5]
+
+
+def test_with_extensions_rebinds_existing_planner():
+    """Codec-only bundles installed on a context that already has an FFI
+    planner rebind that planner to the new codec chains."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    planner = MyQueryPlanner()
+    ctx = SessionContext(config)
+    ctx.set_query_planner(planner)
+    provider_ext = ProviderCodecsExtension()
+    ctx = ctx.with_extensions(provider_ext)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert planner.last_max_rows() == 2
+    # The planner only sees these codecs if it was rebound to the chains
+    # built during with_extensions.
+    assert provider_ext.logical_codec.table_provider_decode_calls() > 0
+    assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
+
+
+def test_with_extensions_rejects_two_bundles_of_the_same_codec_class():
+    """Two bundles contributing the same codec class collide on id.
+
+    Ids are derived from the exporting class, so two instances of one class
+    claim the same id. A payload names its codec by id when it is decoded, so
+    the ambiguity is refused at install time rather than resolved by position.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    with pytest.raises(ValueError, match="is already installed on this session"):
+        SessionContext(config).with_extensions(
+            ProviderCodecsExtension(), ProviderCodecsExtension(), MyPlannerExtension()
+        )
+
+
+def test_with_extensions_accepts_distinct_codec_ids():
+    """Declaring ``__datafusion_codec_id__`` resolves the collision above.
+
+    Both codec pairs then install, and the query still runs end to end: only
+    the codec that wrote a payload is asked to decode it, so the second pair
+    is simply never consulted.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ext_a = ProviderCodecsExtension()
+    ext_b = IdentifiedProviderCodecsExtension("second")
+    ctx = SessionContext(config).with_extensions(ext_a, ext_b, MyPlannerExtension())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+
+    ids = ctx.logical_extension_codec_ids()
+    assert "datafusion_ffi_example.MyLogicalExtensionCodec" in ids
+    assert "second.logical" in ids
+
+    # The first pair wrote the payloads, so decoding routes back to it alone.
+    assert ext_a.logical_codec.table_provider_encode_calls() > 0
+    assert ext_a.logical_codec.table_provider_decode_calls() > 0
+    assert ext_b.logical_codec.table_provider_decode_calls() == 0
+
+
+def test_dataframe_outliving_context_fails_cleanly():
+    """A DataFrame does not keep its SessionContext alive. FFI components
+    resolve the task context through a weak reference, so using the
+    DataFrame after dropping the context raises a clean error instead of
+    crashing. This locks in the documented ownership contract: the context
+    must outlive DataFrames that depend on FFI codecs."""
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+    df = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"')
+    del ctx
+    gc.collect()
+
+    with pytest.raises(Exception, match="went out of scope"):
+        df.collect()
+
+
 def test_composed_codecs_with_query_planner():
     """A second pair of codecs installed on top of the provider codecs
     composes with them instead of replacing them.
@@ -714,3 +1041,83 @@ def test_composed_codecs_with_query_planner():
     assert logical_codec.table_provider_encode_calls() > 0
     assert logical_codec.table_provider_decode_calls() > 0
     assert physical_codec.execution_plan_decode_calls() > 0
+
+
+class _DocstringExampleExtension:
+    """Stand-in for the ``my_extension`` bundle named in the docstring.
+
+    The docstring shows a single engine bundle taking a scheduler address,
+    which is what a real distributed engine ships: one object contributing a
+    planner *and* the codecs that carry its plans. Here that is assembled from
+    this repository's two example libraries. The address is accepted and
+    ignored; everything else the example touches is the real API.
+    """
+
+    def __init__(self, endpoint: str) -> None:
+        self.endpoint = endpoint
+        self._codecs = ProviderCodecsExtension()
+        self._planner = MyPlannerExtension()
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        codecs = self._codecs.__datafusion_session_extension__(ctx)
+        planner = self._planner.__datafusion_session_extension__(ctx)
+        return SessionExtensionComponents(
+            logical_extension_codecs=(
+                *codecs.logical_extension_codecs,
+                *planner.logical_extension_codecs,
+            ),
+            physical_extension_codecs=(
+                *codecs.physical_extension_codecs,
+                *planner.physical_extension_codecs,
+            ),
+            query_planner=planner.query_planner,
+        )
+
+
+def test_with_extensions_docstring_example_still_runs():
+    """Run the ``with_extensions`` docstring example verbatim.
+
+    The example is marked ``+SKIP`` because the main suite has no built FFI
+    extension to import, which is exactly how such an example rots. Here the
+    statements are parsed out of the live docstring, the skip is dropped, and
+    each one is executed and its output compared.
+
+    Only names are redirected: ``my_extension`` resolves to the bundle above,
+    and ``SessionContext`` supplies the config this library's planner reads.
+    A renamed method, a changed signature, or a wrong expected output in the
+    docstring fails here.
+    """
+    examples = doctest.DocTestParser().get_examples(
+        inspect.getdoc(SessionContext.with_extensions)
+    )
+    assert examples, "with_extensions docstring has no examples to check"
+    for example in examples:
+        example.options.pop(doctest.SKIP, None)
+
+    module = types.ModuleType("my_extension")
+    module.DistributedEngineExtension = _DocstringExampleExtension
+
+    def make_context(config: SessionConfig | None = None) -> SessionContext:
+        # Accept a config so the example is free to pass one. Supplying it
+        # positionally the way the real constructor does keeps a docstring
+        # edit failing as a doctest diff rather than as a TypeError in here.
+        config = SessionConfig() if config is None else config
+        return SessionContext(config.with_extension(MyPlannerConfig(max_rows=3)))
+
+    test = doctest.DocTest(
+        examples,
+        {"SessionContext": make_context},
+        "SessionContext.with_extensions",
+        None,
+        None,
+        None,
+    )
+    output = io.StringIO()
+    sys.modules["my_extension"] = module
+    try:
+        results = doctest.DocTestRunner().run(test, out=output.write)
+    finally:
+        del sys.modules["my_extension"]
+    assert results.failed == 0, output.getvalue()

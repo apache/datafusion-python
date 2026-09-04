@@ -41,7 +41,22 @@ uv run pytest \
   examples/datafusion-ffi-query-planner-example/python/tests/_test*.py
 ```
 
-The integration test follows this setup:
+The preferred setup uses `SessionContext.with_extensions` with extension bundles:
+
+```python
+config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+ctx = SessionContext(config).with_extensions(provider_bundle, MyPlannerExtension())
+ctx.register_table("numbers", provider)
+ctx.register_udf(provider_udf)
+```
+
+`MyPlannerExtension` implements the `__datafusion_session_extension__` protocol: it
+receives the session it is being installed on, binds fresh codec and planner
+components to that session's task-context provider, and returns them as
+`SessionExtensionComponents`. The host installs every codec before it binds the
+planner, so the planner cannot be left carrying a chain that has since grown.
+
+The integration tests also cover the low-level chaining setup:
 
 ```python
 config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))

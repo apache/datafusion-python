@@ -28,6 +28,17 @@ except ImportError:
     from enum import EnumMeta as EnumType
 
 
+# Internal methods a wrapper calls but does not re-export. Add to this only
+# when the method exists to serve a public wrapper, never to silence a genuine
+# gap in coverage.
+PRIVATE_SUPPORT_METHODS = frozenset(
+    {
+        # Support method for SessionContext.with_extensions.
+        "_install_extensions",
+    }
+)
+
+
 def _check_enum_exports(internal_obj, wrapped_obj) -> None:
     """Check that all enum values are present in wrapped object."""
     expected_values = [v for v in dir(internal_obj) if not v.startswith("__")]
@@ -67,6 +78,14 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         pytest.fail(f"Missing __repr__: {internal_obj.__name__}")
 
     for internal_attr_name in dir(internal_obj):
+        # Private support methods that exist only for a wrapper to call, so
+        # they are not part of the public surface and need no wrapper of their
+        # own. Listed rather than matched by leading underscore, which would
+        # also excuse names like `_repr_html_` that a wrapper does have to
+        # provide.
+        if internal_attr_name in PRIVATE_SUPPORT_METHODS:
+            continue
+
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")
 
         assert wrapped_attr_name in dir(wrapped_obj)

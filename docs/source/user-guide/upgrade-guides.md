@@ -83,6 +83,13 @@ way `add_physical_optimizer_rule` does and returns nothing — the query planner
 lives in `SessionState`, so it belongs to the session rather than to a
 particular handle on it. See the {ref}`ffi` guide for the full protocol.
 
+If a library ships codecs *and* a planner, prefer
+`SessionContext.with_extensions(bundle)` over installing each piece by hand. It
+installs every codec before it binds the planner, so the planner cannot end up
+carrying a chain that a later `with_logical_extension_codec` call has grown.
+The library exposes a bundle object implementing
+`__datafusion_session_extension__`; see the {ref}`ffi` guide.
+
 ### Mismatched extension libraries now fail loudly
 
 Objects imported through the capsule protocol are checked against the major
