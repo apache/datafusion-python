@@ -75,7 +75,9 @@ use uuid::Uuid;
 use crate::catalog::{
     PyCatalog, PyCatalogList, RustWrappedPyCatalogProvider, RustWrappedPyCatalogProviderList,
 };
-use crate::codec::{PythonLogicalCodec, PythonPhysicalCodec};
+use crate::codec::{
+    ANONYMOUS_CODEC_ID_PREFIX, PythonLogicalCodec, PythonPhysicalCodec, SESSION_CODEC_ID_PREFIX,
+};
 use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
 use crate::dataframe::PyDataFrame;
@@ -1422,6 +1424,24 @@ impl PySessionContext {
         PyCapsule::new_with_value(py, ffi_ctx_provider, cr"datafusion_task_context_provider")
     }
 
+    /// Identity this session's codec stack carries when it is itself installed
+    /// as an extension codec on another session.
+    ///
+    /// Without it the id would be derived from the class, which every session
+    /// shares: two sessions installed on one target would collide at install
+    /// time, and a payload written through one would resolve to the other on
+    /// decode. See [`SESSION_CODEC_ID_PREFIX`].
+    ///
+    /// Handles derived from one session — `with_python_udf_inlining`,
+    /// `with_logical_extension_codec` — report the same id even though their
+    /// codec chains differ, so installing two of them on one target is
+    /// refused. That is the intended answer: their payloads would be
+    /// indistinguishable on decode.
+    #[getter]
+    pub fn __datafusion_codec_id__(&self) -> String {
+        format!("{SESSION_CODEC_ID_PREFIX}{}", self.ctx.session_id())
+    }
+
     /// `session` exists so this matches the protocol an extension library
     /// implements, where the argument is how the library reaches the session
     /// it is being installed on. A session already is one, so it is ignored.
@@ -1457,22 +1477,28 @@ impl PySessionContext {
         create_query_planner_capsule(py, &ffi)
     }
 
+    #[pyo3(signature = (codec, codec_id=None))]
     pub fn with_logical_extension_codec<'py>(
         slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
+        codec_id: Option<String>,
     ) -> PyDataFusionResult<Self> {
+        let id = {
+            let this = slf.borrow();
+            resolve_codec_id(&codec, codec_id, &this.logical_codec.codec_ids())?
+        };
         let inner_ffi = ffi_logical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn LogicalExtensionCodec> = (&inner_ffi).into();
 
         let this = slf.borrow();
-        // Carry the receiver's inlining setting over. `PythonLogicalCodec::new`
-        // defaults it to on, so building the replacement without this would
-        // silently re-enable inline Python UDF encoding on a context that had
-        // opted out with `with_python_udf_inlining(enabled=False)`.
-        let logical_codec = Arc::new(
-            PythonLogicalCodec::new(inner)
-                .with_python_udf_inlining(this.logical_codec.python_udf_inlining()),
-        );
+        // Append rather than replace: previously installed codecs stay active,
+        // and every payload this one writes is tagged with `id` so decoding
+        // reaches it directly rather than by trying codecs in turn. Appending
+        // also carries the receiver's inlining setting over, which a fresh
+        // `PythonLogicalCodec::new` would not — it defaults inlining to on, and
+        // would silently re-enable inline Python UDF encoding on a context that
+        // had opted out with `with_python_udf_inlining(enabled=False)`.
+        let logical_codec = Arc::new(this.logical_codec.with_additional_codec(id, inner));
         let derived = Self {
             ctx: Arc::clone(&this.ctx),
             logical_codec,
@@ -1482,6 +1508,27 @@ impl PySessionContext {
         // codecs it was built with, so it has to be rebuilt against this one.
         derived.set_session_query_planner(None);
         Ok(derived)
+    }
+
+    /// Ids of the logical extension codecs installed on this session, in
+    /// install order — the same order encoding consults them in, and the keys
+    /// a payload names when it is decoded.
+    pub fn logical_extension_codec_ids(&self) -> Vec<String> {
+        self.logical_codec
+            .codec_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// Ids of the physical extension codecs installed on this session.
+    /// See [`Self::logical_extension_codec_ids`].
+    pub fn physical_extension_codec_ids(&self) -> Vec<String> {
+        self.physical_codec
+            .codec_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect()
     }
 
     /// See [`Self::__datafusion_logical_extension_codec__`] for `session`.
@@ -1495,19 +1542,23 @@ impl PySessionContext {
         create_physical_extension_capsule(py, self.ffi_physical_codec().as_ref())
     }
 
+    #[pyo3(signature = (codec, codec_id=None))]
     pub fn with_physical_extension_codec<'py>(
         slf: &Bound<'py, Self>,
         codec: Bound<'py, PyAny>,
+        codec_id: Option<String>,
     ) -> PyDataFusionResult<Self> {
+        let id = {
+            let this = slf.borrow();
+            resolve_codec_id(&codec, codec_id, &this.physical_codec.codec_ids())?
+        };
         let inner_ffi = ffi_physical_codec_from_pycapsule(codec, Some(slf.as_any()))?;
         let inner: Arc<dyn PhysicalExtensionCodec> = (&inner_ffi).into();
 
         let this = slf.borrow();
-        // See `with_logical_extension_codec` for why the flag is carried over.
-        let physical_codec = Arc::new(
-            PythonPhysicalCodec::new(inner)
-                .with_python_udf_inlining(this.physical_codec.python_udf_inlining()),
-        );
+        // See `with_logical_extension_codec` for why this appends rather than
+        // replaces, and why that is also what carries the inlining flag over.
+        let physical_codec = Arc::new(this.physical_codec.with_additional_codec(id, inner));
         let derived = Self {
             ctx: Arc::clone(&this.ctx),
             logical_codec: Arc::clone(&this.logical_codec),
@@ -1525,7 +1576,7 @@ impl PySessionContext {
         // already inlines would otherwise rebind the session's planner to this
         // handle's codecs, and callers routinely discard the result. Returning
         // the codecs as-is is observationally equivalent to the rebuild below,
-        // which wraps the same inner codec in a fresh `Python*Codec`.
+        // which clones the same codec chain and only flips the flag.
         if self.logical_codec.python_udf_inlining() == enabled
             && self.physical_codec.python_udf_inlining() == enabled
         {
@@ -1537,11 +1588,15 @@ impl PySessionContext {
         }
 
         let logical_codec = Arc::new(
-            PythonLogicalCodec::new(Arc::clone(self.logical_codec.inner()))
+            self.logical_codec
+                .as_ref()
+                .clone()
                 .with_python_udf_inlining(enabled),
         );
         let physical_codec = Arc::new(
-            PythonPhysicalCodec::new(Arc::clone(self.physical_codec.inner()))
+            self.physical_codec
+                .as_ref()
+                .clone()
                 .with_python_udf_inlining(enabled),
         );
         let derived = Self {
@@ -1703,6 +1758,80 @@ impl PySessionContext {
             &self.physical_codec,
         ))
     }
+}
+
+/// Determine the wire identity to tag an installed codec's payloads with.
+///
+/// Every payload a chained codec writes carries this string, and decoding
+/// dispatches on it, so it has to name the same codec in the process that
+/// decodes as it did in the process that encoded. Resolution order:
+///
+/// 1. An explicit `codec_id` argument.
+/// 2. `codec.__datafusion_codec_id__`, letting a library pin its own identity
+///    so a class rename does not invalidate previously encoded plans, and so
+///    two instances of one class can own disjoint slices of the wire format.
+///    `SessionContext` pins its own through this arm — see
+///    [`PySessionContext::__datafusion_codec_id__`] — because the class-derived
+///    id below would name every session at once.
+/// 3. The exporting object's `module.QualName`, which is the library's own
+///    import path and therefore already stable across processes. This is the
+///    common case and asks nothing of existing extension libraries.
+/// 4. For a bare `PyCapsule` there is nothing stable to read — every capsule
+///    reports the same type — so mint a fresh random id. Payloads tagged this
+///    way decode correctly within the session lineage that installed the
+///    codec, because the chain is cloned along with the id, and fail with a
+///    pointed error everywhere else. Randomness is the point: an id drawn from
+///    a namespace another session can mint the same value from — a counter, a
+///    chain position — would let an unrelated codec answer for these bytes.
+///
+/// An id already in use is rejected rather than shadowed. Two codecs sharing an
+/// id are indistinguishable on decode, and the API cannot tell whether two
+/// instances of one class write the same wire format — so the ambiguity is
+/// surfaced at install time, where the caller can resolve it, instead of at
+/// decode time, where it would pick whichever entry came first.
+fn resolve_codec_id(
+    codec: &Bound<'_, PyAny>,
+    explicit: Option<String>,
+    existing: &[&str],
+) -> PyResult<String> {
+    let id = derive_codec_id(codec, explicit)?;
+    if existing.contains(&id.as_str()) {
+        return Err(PyValueError::new_err(format!(
+            "An extension codec with id '{id}' is already installed on this session. Two \
+             codecs cannot share an id, because a payload names its codec by id when it is \
+             decoded. Pass `codec_id=` to give this one a distinct identity."
+        )));
+    }
+    Ok(id)
+}
+
+fn derive_codec_id(codec: &Bound<'_, PyAny>, explicit: Option<String>) -> PyResult<String> {
+    if let Some(id) = explicit {
+        return Ok(id);
+    }
+    if let Ok(declared) = codec.getattr("__datafusion_codec_id__")
+        && !declared.is_none()
+    {
+        return declared.extract::<String>();
+    }
+    if codec.is_instance_of::<PyCapsule>() {
+        return Ok(format!(
+            "{ANONYMOUS_CODEC_ID_PREFIX}{}",
+            Uuid::new_v4()
+                .simple()
+                .encode_lower(&mut Uuid::encode_buffer())
+        ));
+    }
+    let ty = codec.get_type();
+    let module = ty
+        .getattr("__module__")
+        .and_then(|m| m.extract::<String>())
+        .unwrap_or_else(|_| "<unknown>".to_string());
+    let qualname = ty
+        .getattr("__qualname__")
+        .and_then(|q| q.extract::<String>())
+        .or_else(|_| ty.name().and_then(|n| n.extract::<String>()))?;
+    Ok(format!("{module}.{qualname}"))
 }
 
 pub fn parse_file_compression_type(

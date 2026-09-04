@@ -120,6 +120,18 @@ class LogicalExtensionCodecExportable(Protocol):
     is being installed on. Take the task context provider from it rather than
     building a session of your own, so the decode callbacks resolve names
     against the session that runs the query.
+
+    Implement the codec itself exactly as you would for a session that installs
+    only yours. A session may hold several codecs, but each payload records the
+    codec that wrote it and is only ever handed back to that codec, so there is
+    no need to recognise or reject another library's payloads.
+
+    A serialized plan records which codec wrote each payload, as a short id
+    taken from your class's module and qualified name. An optional
+    ``__datafusion_codec_id__`` attribute pins that id instead. It is not part
+    of this protocol and is rarely needed: declare it when renaming your class
+    must not stop older plans from decoding, or when one library installs two
+    instances that own disjoint slices of the wire format.
     """
 
     def __datafusion_logical_extension_codec__(  # noqa: D105
@@ -130,7 +142,9 @@ class LogicalExtensionCodecExportable(Protocol):
 class PhysicalExtensionCodecExportable(Protocol):
     """Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
 
-    See :py:class:`LogicalExtensionCodecExportable` for ``session``.
+    See :py:class:`LogicalExtensionCodecExportable` for ``session``, for why a
+    codec need not recognise other libraries' payloads, and for
+    ``__datafusion_codec_id__``.
     """
 
     def __datafusion_physical_extension_codec__(  # noqa: D105

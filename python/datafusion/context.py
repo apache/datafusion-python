@@ -1793,7 +1793,8 @@ class SessionContext:
         fallback inside it, which keeps the codecs it was imported with. Note
         also that the planner is built against the codecs of the context this
         method is called on, so installing the same planner again on a different
-        handle rebinds the session's planner to *that* handle's codecs.
+        handle rebinds the session's planner to *that* handle's codecs. See the
+        FFI extensions guide for the full multi-library registration recipe.
 
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` (see
@@ -2235,6 +2236,30 @@ class SessionContext:
         """Access the PyCapsule FFI_TaskContextProvider."""
         return self.ctx.__datafusion_task_context_provider__()
 
+    @property
+    def __datafusion_codec_id__(self) -> str:
+        """Identity this context carries when installed as an extension codec.
+
+        A context can be installed on another session as an extension codec,
+        which tags the payloads it writes with this string. It is unique per
+        session, so two contexts can be installed on one session and a plan
+        written through one will not be decoded by the other.
+
+        Contexts derived from the same session — including the ones returned by
+        :py:meth:`with_logical_extension_codec` and
+        :py:meth:`with_python_udf_inlining` — report the same id, so only one of
+        them can be installed on a given session.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.__datafusion_codec_id__.startswith("session:")
+            True
+            >>> ctx.__datafusion_codec_id__ == SessionContext().__datafusion_codec_id__
+            False
+        """
+        return self.ctx.__datafusion_codec_id__
+
     def __datafusion_logical_extension_codec__(self, session: Any = None) -> Any:
         """Access the PyCapsule FFI_LogicalExtensionCodec.
 
@@ -2253,25 +2278,78 @@ class SessionContext:
         return self.ctx.__datafusion_query_planner__(session)
 
     def with_logical_extension_codec(
-        self, codec: LogicalExtensionCodecExportable | _PyCapsule
+        self,
+        codec: LogicalExtensionCodecExportable | _PyCapsule,
+        codec_id: str | None = None,
     ) -> SessionContext:
-        """Create a new session context with specified codec.
+        """Create a new session context with an additional logical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_logical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.LogicalExtensionCodecExportable`).
 
+        Codecs compose: each call appends the codec rather than replacing
+        codecs installed earlier, so one session can carry codecs from several
+        independent libraries and the order they are installed in does not
+        affect decoding.
+
+        A serialized plan records which codec wrote each payload, as a short id
+        taken from the codec's class. ``codec_id`` overrides that id and is
+        normally unnecessary. Pass it when installing from a bare ``PyCapsule``,
+        which has no class to take an id from, or when installing two instances
+        of one class, which otherwise claim the same id and raise ``ValueError``.
+
         The returned context shares its session state with the original, so a
-        later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new codec on the shared
-        session, so the original context plans with the new codec too. This
-        happens on the shared session, so it takes effect even if the returned
-        context is discarded.
+        later registration on either is visible to both, and an installed query
+        planner is rebound on the shared session even if the returned context is
+        discarded.
+
+        See :ref:`ffi` in the online documentation for how ids are assigned,
+        what an extension codec has to implement, and a worked multi-library
+        registration recipe.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     my_library.Codec()
+            ... )  # doctest: +SKIP
+
+            Installing from a bare capsule, pinning the id so encoded
+            plans remain decodable on another session:
+
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     capsule, codec_id="my_library.Codec"
+            ... )  # doctest: +SKIP
         """
-        new_internal = self.ctx.with_logical_extension_codec(codec)
+        new_internal = self.ctx.with_logical_extension_codec(codec, codec_id)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new
+
+    def logical_extension_codec_ids(self) -> list[str]:
+        """List the logical extension codecs installed on this session.
+
+        Returns the identity of each installed codec, in install order. Those
+        identities are what encoding stamps onto a payload and what decoding
+        dispatches on, so this is how to check which library owns a plan and
+        whether a session is able to decode one.
+
+        DataFusion's own default codec is not listed. It handles whatever no
+        installed codec claims, and it carries no identity to list.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.logical_extension_codec_ids()
+            []
+            >>> ctx = ctx.with_logical_extension_codec(
+            ...     my_library.Codec()
+            ... )  # doctest: +SKIP
+            >>> ctx.logical_extension_codec_ids()  # doctest: +SKIP
+            ['my_library.Codec']
+        """
+        return self.ctx.logical_extension_codec_ids()
 
     def __datafusion_physical_extension_codec__(self, session: Any = None) -> Any:
         """Access the PyCapsule FFI_PhysicalExtensionCodec.
@@ -2280,23 +2358,46 @@ class SessionContext:
         """
         return self.ctx.__datafusion_physical_extension_codec__(session)
 
+    def physical_extension_codec_ids(self) -> list[str]:
+        """List the physical extension codecs installed on this session.
+
+        See :py:meth:`logical_extension_codec_ids`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx.physical_extension_codec_ids()
+            []
+        """
+        return self.ctx.physical_extension_codec_ids()
+
     def with_physical_extension_codec(
-        self, codec: PhysicalExtensionCodecExportable | _PyCapsule
+        self,
+        codec: PhysicalExtensionCodecExportable | _PyCapsule,
+        codec_id: str | None = None,
     ) -> SessionContext:
-        """Create a new session context with the specified physical codec.
+        """Create a new session context with an additional physical codec.
 
         Only FFI codecs are supported. Pass any object implementing
         ``__datafusion_physical_extension_codec__`` (see
         :py:class:`~datafusion.user_defined.PhysicalExtensionCodecExportable`).
 
-        The returned context shares its session state with the original, so a
-        later registration on either is visible to both. If a custom query
-        planner is installed, it is rebuilt against the new codec on the shared
-        session, so the original context plans with the new codec too. This
-        happens on the shared session, so it takes effect even if the returned
-        context is discarded.
+        Composes and assigns an id exactly as
+        :py:meth:`with_logical_extension_codec` does, including when to pass
+        ``codec_id`` and what the returned context shares. See that method.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> ctx = ctx.with_physical_extension_codec(
+            ...     my_library.PhysicalCodec()
+            ... )  # doctest: +SKIP
+
+            >>> ctx = ctx.with_physical_extension_codec(
+            ...     capsule, codec_id="my_library.PhysicalCodec"
+            ... )  # doctest: +SKIP
         """
-        new_internal = self.ctx.with_physical_extension_codec(codec)
+        new_internal = self.ctx.with_physical_extension_codec(codec, codec_id)
         new = SessionContext.__new__(SessionContext)
         new.ctx = new_internal
         return new

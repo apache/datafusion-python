@@ -116,6 +116,12 @@ one of them, and the failure is a bare `TypeError` from a `call1`. So:
   `python/datafusion/user_defined.py`, where the `Protocol` type hints for
   these methods live.
 
+Changing what a codec puts *on the wire* is equally breaking, and easier to
+miss because no signature moves and nothing fails to compile. Serialized plans
+outlive the process that wrote them, so the same checklist applies: upgrade
+guide, `api change` label, and a statement of exactly which sessions produce
+different bytes.
+
 ## Rule 6 — a session keeps one `Arc<SessionContext>` for life
 
 `FFI_TaskContextProvider` holds its provider **weakly**, and every codec handed
@@ -181,8 +187,11 @@ pins that; changing it should be deliberate.
 
 - `docs/source/contributor-guide/ffi.md` — the protocol, the fork caveat.
 - `docs/source/user-guide/upgrade-guides.md` — every past migration.
+- `crates/core/src/codec.rs` — the codec chain: the envelope, identity dispatch,
+  and the two unframed cases from Rule 8.
 - `examples/datafusion-ffi-example/src/` — provider, catalog, function, codec
-  getters, all in current form.
+  getters, all in current form. `name_only_codec.rs` is the codec that encodes
+  nothing.
 - `examples/datafusion-ffi-query-planner-example/src/planner.rs` — planner
   getter.
 - `examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`

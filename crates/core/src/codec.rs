@@ -29,16 +29,18 @@
 //!
 //! [`PythonLogicalCodec`] is the [`LogicalExtensionCodec`] that
 //! datafusion-python parks on every `SessionContext`. It wraps a
-//! user-supplied (or default) inner codec and adds Python-aware
-//! in-band encoding on top: when the encoder sees a Python-defined
-//! UDF, the codec cloudpickles the callable + signature into the
-//! `fun_definition` proto field; when the decoder sees a payload it
-//! produced, it reconstructs the UDF from the bytes alone — no
-//! pre-registration on the receiver. UDFs the codec does not
-//! recognise are delegated to `inner`, which is typically
-//! `DefaultLogicalExtensionCodec` but may be a downstream-supplied
-//! FFI codec installed via
-//! `SessionContext.with_logical_extension_codec(...)`.
+//! chain of composable codecs and adds Python-aware in-band encoding
+//! on top: when the encoder sees a Python-defined UDF, the codec
+//! cloudpickles the callable + signature into the `fun_definition`
+//! proto field; when the decoder sees a payload it produced, it
+//! reconstructs the UDF from the bytes alone — no pre-registration on
+//! the receiver. Everything the codec does not recognise is delegated
+//! to the chain: each downstream FFI codec installed via
+//! `SessionContext.with_logical_extension_codec(...)` is appended, and
+//! encoding consults them in install order with
+//! `DefaultLogicalExtensionCodec` as the terminal fallback. Decoding
+//! does not walk the chain at all — a payload names the codec that
+//! wrote it. See [`PythonLogicalCodec`].
 //!
 //! [`PythonPhysicalCodec`] is the symmetric wrapper around
 //! [`PhysicalExtensionCodec`]. Logical and physical layers each have
@@ -58,7 +60,7 @@
 //! actionable error instead of an opaque `marshal` failure on load
 //! (cloudpickle payloads are not portable across Python minor
 //! versions). Dispatch precedence on decode: **family match +
-//! supported version + matching Python version → `inner` codec →
+//! supported version + matching Python version → codec chain →
 //! caller's `FunctionRegistry` fallback.**
 //!
 //! ## Wire-format family registry
@@ -81,10 +83,18 @@
 //! for an older shape.
 //!
 //! Downstream FFI codecs should pick non-colliding family prefixes
-//! (use a `DF` namespace plus a crate-specific suffix). The codec
-//! implementations in this module currently delegate every method to
-//! `inner`; the encoder/decoder hooks for each kind are added as the
-//! corresponding Python-side type becomes serializable.
+//! (use a `DF` namespace plus a crate-specific suffix) and return an
+//! error for *objects* they do not own — on encode, that error is the
+//! chain's "not mine" signal, letting the next codec take a turn. A
+//! codec that answers `Ok` for objects outside its family claims them
+//! ahead of every codec installed after it.
+//!
+//! Rejecting foreign *payloads* is not asked of a codec, because a
+//! payload is only ever handed to the codec whose id it carries. A
+//! codec is free to check for a marker of its own anyway — that costs
+//! nothing here and is worth keeping for hosts that dispatch by
+//! position or by trial — but dispatch never depends on it. See
+//! [`PythonLogicalCodec`].
 
 use std::sync::Arc;
 
@@ -167,7 +177,7 @@ fn write_wire_header(buf: &mut Vec<u8>, family: &[u8], py_version: (u8, u8)) {
 /// Inspect the framing on `buf`.
 ///
 /// * `Ok(None)` — `buf` does not carry `family`. The caller should
-///   delegate to its `inner` codec.
+///   delegate to its codec chain.
 /// * `Ok(Some(payload))` — `buf` carries `family` at a version this
 ///   build accepts and a Python `(major, minor)` matching
 ///   `expected_py`; `payload` is the cloudpickle blob.
@@ -223,12 +233,345 @@ fn strip_wire_header<'a>(
     Ok(Some(&buf[py_minor_idx + 1..]))
 }
 
+/// Family prefix for the envelope wrapping a chained codec's payload.
+///
+/// A distinct magic is what makes "is this framed?" a definite test
+/// rather than a speculative decode. Probing by attempting to parse the
+/// envelope would reintroduce exactly the protobuf ambiguity this
+/// framing exists to remove: prost skips unknown fields and defaults
+/// missing ones, so a foreign payload can parse cleanly as an envelope.
+pub(crate) const CHAINED_PAYLOAD_FAMILY: &[u8] = b"DFPYCHN";
+
+/// Wire-format version for the chained-payload envelope. Independent of
+/// [`WIRE_VERSION_CURRENT`], which versions the cloudpickle framing.
+pub(crate) const CHAIN_WIRE_VERSION_CURRENT: u8 = 1;
+
+/// Oldest chained-payload envelope version this build decodes.
+pub(crate) const CHAIN_WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
+
+/// Prefix for the id given to a codec installed from a bare
+/// `PyCapsule`.
+///
+/// Every capsule reports the same type, so there is nothing on it to
+/// derive an id from. The rest of the id is a fresh UUID, minted when
+/// the codec is installed. Plans it encodes decode on the session that
+/// installed it, and on sessions cloned from that one, because cloning
+/// copies the chain along with its ids. On any other session the id is
+/// simply missing, and decoding says so.
+///
+/// Numbering the capsules instead — `anon:0`, `anon:1` — would be
+/// worse. Every session starts counting at zero, so one session's
+/// `anon:0` would be accepted by another session and decoded with
+/// whatever codec happened to be its own first capsule.
+pub(crate) const ANONYMOUS_CODEC_ID_PREFIX: &str = "anon:";
+
+/// Prefix for the id a `SessionContext` reports when its own codec stack
+/// is installed as an extension codec on another session.
+///
+/// An ordinary codec object takes its id from its class, which is the
+/// library's import path. That does not work for a session: every
+/// session is an instance of the same class, so they would all report
+/// the same id. Installing two sessions as codecs on one target would
+/// then collide, and a plan encoded by one would be decoded by the
+/// other. A session id is unique per session and stable, so the rest
+/// of the id carries that.
+pub(crate) const SESSION_CODEC_ID_PREFIX: &str = "session:";
+
+/// One installed codec plus the identity its payloads are tagged with.
+///
+/// The id is what makes dispatch order-independent. Keying on position
+/// in the chain — as `ComposedPhysicalExtensionCodec` does upstream —
+/// is sound only when both ends assemble the same list in the same
+/// order. That holds for the consumers upstream was written for, whose
+/// lists structurally cannot disagree: Ballista's is a compile-time
+/// constant, and `datafusion-distributed` pins its own codec at index 0
+/// and appends user codecs rebuilt from the same startup code on every
+/// node. It does not hold here. A chain is assembled by user Python,
+/// and `Expr.to_bytes(ctx1)` / `Expr.from_bytes(ctx2)` puts two
+/// independently configured sessions on either end of one payload, so
+/// an index would name a different codec in the decoder as soon as
+/// install order differed.
+struct ChainEntry<C: ?Sized> {
+    id: Arc<str>,
+    codec: Arc<C>,
+}
+
+impl<C: ?Sized> Clone for ChainEntry<C> {
+    fn clone(&self) -> Self {
+        Self {
+            id: Arc::clone(&self.id),
+            codec: Arc::clone(&self.codec),
+        }
+    }
+}
+
+impl<C: ?Sized + std::fmt::Debug> std::fmt::Debug for ChainEntry<C> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChainEntry")
+            .field("id", &self.id)
+            .field("codec", &self.codec)
+            .finish()
+    }
+}
+
+/// Wrap `blob` in the envelope identifying the codec that produced it.
+///
+/// Layout: `DFPYCHN | version: u8 | id_len: u32 (LE) | id | blob`.
+fn write_chained_payload(buf: &mut Vec<u8>, codec_id: &str, blob: &[u8]) {
+    buf.extend_from_slice(CHAINED_PAYLOAD_FAMILY);
+    buf.push(CHAIN_WIRE_VERSION_CURRENT);
+    buf.extend_from_slice(&(codec_id.len() as u32).to_le_bytes());
+    buf.extend_from_slice(codec_id.as_bytes());
+    buf.extend_from_slice(blob);
+}
+
+/// Inspect the chained-payload envelope on `buf`.
+///
+/// * `Ok(None)` — no envelope. The payload came from the terminal
+///   codec, which writes unframed so a session with no extension
+///   codecs installed produces bytes identical to a build without
+///   codec chaining.
+/// * `Ok(Some((codec_id, blob)))` — the owning codec's id and its
+///   original bytes, byte-for-byte as it wrote them.
+fn read_chained_payload(buf: &[u8]) -> Result<Option<(&str, &[u8])>> {
+    if !buf.starts_with(CHAINED_PAYLOAD_FAMILY) {
+        return Ok(None);
+    }
+    let mut idx = CHAINED_PAYLOAD_FAMILY.len();
+    let Some(&version) = buf.get(idx) else {
+        return Err(datafusion::error::DataFusionError::Execution(
+            "Truncated extension codec payload: missing envelope version byte".to_string(),
+        ));
+    };
+    if !(CHAIN_WIRE_VERSION_MIN_SUPPORTED..=CHAIN_WIRE_VERSION_CURRENT).contains(&version) {
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "Extension codec payload envelope version v{version}; this build supports \
+             v{CHAIN_WIRE_VERSION_MIN_SUPPORTED}..=v{CHAIN_WIRE_VERSION_CURRENT}. \
+             Align datafusion-python versions on sender and receiver."
+        )));
+    }
+    idx += 1;
+    let Some(len_bytes) = buf.get(idx..idx + 4) else {
+        return Err(datafusion::error::DataFusionError::Execution(
+            "Truncated extension codec payload: missing codec id length".to_string(),
+        ));
+    };
+    let id_len = u32::from_le_bytes(len_bytes.try_into().expect("4 bytes")) as usize;
+    idx += 4;
+    let Some(id_bytes) = buf.get(idx..idx + id_len) else {
+        return Err(datafusion::error::DataFusionError::Execution(
+            "Truncated extension codec payload: codec id shorter than its declared length"
+                .to_string(),
+        ));
+    };
+    let codec_id = std::str::from_utf8(id_bytes).map_err(|err| {
+        datafusion::error::DataFusionError::Execution(format!(
+            "Extension codec payload carries a non-UTF-8 codec id: {err}"
+        ))
+    })?;
+    Ok(Some((codec_id, &buf[idx + id_len..])))
+}
+
+/// Decode `buf` with the single codec that encoded it.
+///
+/// Three cases:
+///
+/// * **Empty `buf`** — nothing was encoded, so there is no tag to
+///   dispatch on and every codec is offered the empty buffer in install
+///   order. See [`chain_resolve_by_name`] for why that is sound here and
+///   why the case exists at all.
+/// * **Framed `buf`** — the envelope names its author, so exactly one
+///   codec is consulted and its error surfaces verbatim.
+/// * **Unframed non-empty `buf`** — the terminal codec wrote it.
+///
+/// Outside the empty case nothing is ever offered to a codec that did
+/// not write it, which is what stops a structurally similar prost
+/// message from decoding in the wrong library.
+///
+/// Do not replace this with a walk that hands `buf` to each codec until
+/// one returns `Ok`. That looks simpler and removes the envelope, and it
+/// is unsound: protobuf carries no type identity, so a `prost` message
+/// decodes cleanly from an unrelated message's bytes whenever their
+/// leading field numbers and wire types line up, and an all-defaults
+/// message encodes to zero bytes that decode as anything. Requiring
+/// each codec to check a marker of its own does not fix it either: the
+/// codecs come from libraries this crate does not control, the natural
+/// implementation is `MyMessage::decode(buf)`, which has no marker to
+/// check and cannot decline, and one library skipping the convention is
+/// enough to lose someone else's payload. Upstream shipped that design
+/// and reverted it after a Parquet payload decoded as CSV —
+/// apache/datafusion#16980, fixed in #16986.
+fn chain_decode<C: ?Sized, R>(
+    chain: &[ChainEntry<C>],
+    terminal: &Arc<C>,
+    buf: &[u8],
+    what: &str,
+    f: impl Fn(&C, &[u8]) -> Result<R>,
+) -> Result<R> {
+    if buf.is_empty() {
+        return chain_resolve_by_name(chain, terminal, what, |codec| f(codec, buf));
+    }
+    let Some((codec_id, blob)) = read_chained_payload(buf)? else {
+        return f(terminal.as_ref(), buf);
+    };
+    let Some(entry) = chain.iter().find(|entry| &*entry.id == codec_id) else {
+        let installed = if chain.is_empty() {
+            "no extension codecs are installed on this session".to_string()
+        } else {
+            format!(
+                "installed: {}",
+                chain
+                    .iter()
+                    .map(|entry| entry.id.as_ref())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        let hint = if codec_id.starts_with(ANONYMOUS_CODEC_ID_PREFIX) {
+            ". This payload was written by a codec installed from a bare PyCapsule, which \
+             carries no portable identity. Pass `codec_id=` when installing it if plans must \
+             cross sessions."
+        } else {
+            ""
+        };
+        return Err(datafusion::error::DataFusionError::Execution(format!(
+            "{what} was encoded by extension codec '{codec_id}', which is not installed on \
+             this session ({installed}){hint}"
+        )));
+    };
+    f(entry.codec.as_ref(), blob)
+}
+
+/// Resolve an object carrying no payload, by consulting each codec.
+///
+/// Used only where DataFusion encodes by name: `try_encode_udf` and its
+/// aggregate/window siblings return `Ok` writing nothing, and the
+/// decoder then tries the `FunctionRegistry` first and the codec second
+/// (`from_proto.rs`, the `None => ctx.udf(..).or_else(..)` arm). A codec
+/// whose functions are reconstructible from the name alone is reached
+/// through that arm and must still be offered the empty buffer.
+///
+/// This is the one place dispatch cannot be tagged — there are no bytes
+/// to tag. It is not the hazard that tagging exists to remove: the
+/// question asked here is "do you own the function named `x`", which is
+/// name-scoped and answerable, not "do these bytes happen to parse as
+/// your message type". Two codecs disagreeing requires them to claim
+/// the same function name, which already collides in the registry.
+fn chain_resolve_by_name<C: ?Sized, R>(
+    chain: &[ChainEntry<C>],
+    terminal: &Arc<C>,
+    what: &str,
+    f: impl Fn(&C) -> Result<R>,
+) -> Result<R> {
+    let mut errors: Vec<datafusion::error::DataFusionError> = Vec::new();
+    for entry in chain {
+        match f(entry.codec.as_ref()) {
+            Ok(value) => return Ok(value),
+            Err(err) => errors.push(err),
+        }
+    }
+    match f(terminal.as_ref()) {
+        Ok(value) => Ok(value),
+        Err(err) => {
+            errors.push(err);
+            Err(aggregate_chain_errors(what, errors))
+        }
+    }
+}
+
+/// Collapse per-codec failures into one error. A single failure is
+/// returned as-is so a session with no extension codecs behaves exactly
+/// like a build without codec chaining.
+fn aggregate_chain_errors(
+    what: &str,
+    mut errors: Vec<datafusion::error::DataFusionError>,
+) -> datafusion::error::DataFusionError {
+    match errors.len() {
+        0 => datafusion::error::DataFusionError::Internal(format!(
+            "Empty extension codec chain while handling {what}"
+        )),
+        1 => errors.swap_remove(0),
+        _ => {
+            let joined = errors
+                .iter()
+                .map(|err| err.to_string())
+                .collect::<Vec<_>>()
+                .join("; ");
+            datafusion::error::DataFusionError::Execution(format!(
+                "No installed extension codec handled {what}: {joined}"
+            ))
+        }
+    }
+}
+
+/// Encode through the chain, tagging the payload with its author.
+///
+/// Entries are consulted in install order and the first one to write
+/// bytes wins, so installing a codec can only claim objects no
+/// earlier codec claimed. Adding a library therefore never changes how
+/// an already-installed library's objects encode.
+///
+/// Each codec encodes into a scratch buffer so a failed attempt cannot
+/// leave partial bytes behind. `Ok` with an empty buffer is "no
+/// opinion" rather than a claim, so the walk continues; if nothing
+/// writes bytes the result is `Ok` with nothing written, which is
+/// DataFusion's encode-by-name signal. Framing that empty result would
+/// set `fun_definition` and permanently skip the registry lookup the
+/// decoder does first.
+///
+/// The terminal codec writes unframed, so a session with no extension
+/// codecs is byte-compatible with a build predating the chain.
+fn chain_encode<C: ?Sized>(
+    chain: &[ChainEntry<C>],
+    terminal: &Arc<C>,
+    buf: &mut Vec<u8>,
+    what: &str,
+    f: impl Fn(&C, &mut Vec<u8>) -> Result<()>,
+) -> Result<()> {
+    let mut saw_empty_ok = false;
+    let mut errors: Vec<datafusion::error::DataFusionError> = Vec::new();
+    for entry in chain {
+        let mut scratch = Vec::new();
+        match f(entry.codec.as_ref(), &mut scratch) {
+            Ok(()) if !scratch.is_empty() => {
+                write_chained_payload(buf, &entry.id, &scratch);
+                return Ok(());
+            }
+            Ok(()) => saw_empty_ok = true,
+            Err(err) => errors.push(err),
+        }
+    }
+    let mut scratch = Vec::new();
+    match f(terminal.as_ref(), &mut scratch) {
+        Ok(()) if !scratch.is_empty() => {
+            buf.extend_from_slice(&scratch);
+            return Ok(());
+        }
+        Ok(()) => saw_empty_ok = true,
+        Err(err) => errors.push(err),
+    }
+    if saw_empty_ok {
+        return Ok(());
+    }
+    Err(aggregate_chain_errors(what, errors))
+}
+
 /// `LogicalExtensionCodec` parked on every `SessionContext`. Holds
 /// the Python-aware encoding hooks for logical-layer types
 /// (`LogicalPlan`, `Expr`) and delegates everything it does not
-/// handle to the composable `inner` codec — typically
-/// `DefaultLogicalExtensionCodec`, or a downstream FFI codec
-/// installed via `SessionContext.with_logical_extension_codec(...)`.
+/// handle to a chain of composable codecs. Each downstream FFI codec
+/// installed via `SessionContext.with_logical_extension_codec(...)` is
+/// appended to the chain, and `terminal` — normally
+/// `DefaultLogicalExtensionCodec` — handles whatever no installed codec
+/// claims.
+///
+/// Every payload an installed codec writes is wrapped in an envelope
+/// naming that codec (see [`write_chained_payload`]), so decoding
+/// consults exactly the codec that encoded it. Dispatch does not depend
+/// on a codec recognizing and rejecting foreign payloads, which is not
+/// something a codec can reliably do: a prost message decodes cleanly
+/// from another message's bytes whenever their leading field numbers and
+/// wire types line up.
 ///
 /// Sitting at the top of the session's logical codec stack means
 /// every serializer that reads `session.logical_codec()` automatically
@@ -241,22 +584,71 @@ fn strip_wire_header<'a>(
 /// the weak `FFI_TaskContextProvider` valid is instead a matter of never
 /// replacing the session's `Arc<SessionContext>`; see
 /// `PySessionContext::set_session_query_planner`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PythonLogicalCodec {
-    inner: Arc<dyn LogicalExtensionCodec>,
+    chain: Vec<ChainEntry<dyn LogicalExtensionCodec>>,
+    terminal: Arc<dyn LogicalExtensionCodec>,
     python_udf_inlining: bool,
 }
 
 impl PythonLogicalCodec {
+    /// Build a codec with no installed extension codecs and `inner` as
+    /// the terminal fallback. `inner` is not part of the keyed chain and
+    /// its payloads are written unframed, so a context built this way
+    /// serializes byte-identically to one with no chaining at all.
     pub fn new(inner: Arc<dyn LogicalExtensionCodec>) -> Self {
         Self {
-            inner,
+            chain: Vec::new(),
+            terminal: inner,
             python_udf_inlining: true,
         }
     }
 
-    pub fn inner(&self) -> &Arc<dyn LogicalExtensionCodec> {
-        &self.inner
+    /// Return a copy of this codec with `codec` appended to the chain
+    /// under `id`, preserving the Python-UDF-inlining setting.
+    ///
+    /// Appending rather than prepending keeps the operation additive:
+    /// the new codec is consulted for encoding only after every codec
+    /// already installed, so it can claim objects nothing else claimed
+    /// but cannot take over an existing library's objects.
+    pub fn with_additional_codec(
+        &self,
+        id: impl Into<Arc<str>>,
+        codec: Arc<dyn LogicalExtensionCodec>,
+    ) -> Self {
+        let mut chain = self.chain.clone();
+        chain.push(ChainEntry {
+            id: id.into(),
+            codec,
+        });
+        Self {
+            chain,
+            terminal: Arc::clone(&self.terminal),
+            python_udf_inlining: self.python_udf_inlining,
+        }
+    }
+
+    /// Ids of the installed extension codecs, in install order.
+    ///
+    /// The terminal codec is not listed: it is not addressable by id
+    /// because its payloads are written unframed.
+    pub fn codec_ids(&self) -> Vec<&str> {
+        self.chain.iter().map(|entry| entry.id.as_ref()).collect()
+    }
+
+    /// Installed extension codecs paired with their ids, in install
+    /// order. Restores the inspection that the removed `inner()`
+    /// accessor provided, and exposes the id dispatch keys along with it.
+    pub fn codecs(&self) -> Vec<(&str, &Arc<dyn LogicalExtensionCodec>)> {
+        self.chain
+            .iter()
+            .map(|entry| (entry.id.as_ref(), &entry.codec))
+            .collect()
+    }
+
+    /// Terminal codec consulted when no installed codec claims an object.
+    pub fn terminal(&self) -> &Arc<dyn LogicalExtensionCodec> {
+        &self.terminal
     }
 
     /// Toggle inline encoding of Python UDFs. See
@@ -297,11 +689,23 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         inputs: &[LogicalPlan],
         ctx: &TaskContext,
     ) -> Result<Extension> {
-        self.inner.try_decode(buf, inputs, ctx)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an extension logical plan node",
+            |codec, buf| codec.try_decode(buf, inputs, ctx),
+        )
     }
 
     fn try_encode(&self, node: &Extension, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an extension logical plan node",
+            |codec, buf| codec.try_encode(node, buf),
+        )
     }
 
     fn try_decode_table_provider(
@@ -311,8 +715,13 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         schema: SchemaRef,
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
-        self.inner
-            .try_decode_table_provider(buf, table_ref, schema, ctx)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a table provider",
+            |codec, buf| codec.try_decode_table_provider(buf, table_ref, Arc::clone(&schema), ctx),
+        )
     }
 
     fn try_encode_table_provider(
@@ -321,7 +730,13 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         node: Arc<dyn TableProvider>,
         buf: &mut Vec<u8>,
     ) -> Result<()> {
-        self.inner.try_encode_table_provider(table_ref, node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a table provider",
+            |codec, buf| codec.try_encode_table_provider(table_ref, Arc::clone(&node), buf),
+        )
     }
 
     fn try_decode_file_format(
@@ -329,7 +744,13 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         buf: &[u8],
         ctx: &TaskContext,
     ) -> Result<Arc<dyn FileFormatFactory>> {
-        self.inner.try_decode_file_format(buf, ctx)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a file format",
+            |codec, buf| codec.try_decode_file_format(buf, ctx),
+        )
     }
 
     fn try_encode_file_format(
@@ -337,14 +758,26 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         buf: &mut Vec<u8>,
         node: Arc<dyn FileFormatFactory>,
     ) -> Result<()> {
-        self.inner.try_encode_file_format(buf, node)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a file format",
+            |codec, buf| codec.try_encode_file_format(buf, Arc::clone(&node)),
+        )
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a scalar UDF",
+            |codec, buf| codec.try_encode_udf(node, buf),
+        )
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
@@ -355,14 +788,26 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
-        self.inner.try_decode_udf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a scalar UDF",
+            |codec, buf| codec.try_decode_udf(name, buf),
+        )
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udaf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an aggregate UDF",
+            |codec, buf| codec.try_encode_udaf(node, buf),
+        )
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
@@ -373,14 +818,26 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
-        self.inner.try_decode_udaf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an aggregate UDF",
+            |codec, buf| codec.try_decode_udaf(name, buf),
+        )
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udwf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a window UDF",
+            |codec, buf| codec.try_encode_udwf(node, buf),
+        )
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
@@ -391,13 +848,19 @@ impl LogicalExtensionCodec for PythonLogicalCodec {
         } else {
             refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
-        self.inner.try_decode_udwf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a window UDF",
+            |codec, buf| codec.try_decode_udwf(name, buf),
+        )
     }
 }
 
 /// Strict-mode gate: if `buf` is a well-framed inline payload for
 /// `family`, return the strict-refusal error; otherwise return
-/// `Ok(())` so the caller can delegate to its `inner` codec.
+/// `Ok(())` so the caller can delegate to its codec chain.
 ///
 /// Routing through [`read_framed_payload`] (rather than a bare
 /// `starts_with` probe) means malformed inline bytes — wrong
@@ -442,7 +905,8 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 /// `PhysicalExtensionCodec` mirror of [`PythonLogicalCodec`] parked
 /// on the same `SessionContext`. Carries the Python-aware encoding
 /// hooks for physical-layer types (`ExecutionPlan`, `PhysicalExpr`)
-/// and delegates the rest to `inner`.
+/// and delegates the rest to the composable codec chain (see
+/// [`PythonLogicalCodec`] for chain ordering and dispatch rules).
 ///
 /// The `PhysicalExtensionCodec` trait has its own `try_encode_udf`
 /// / `try_decode_udf` pair distinct from the logical one, so a
@@ -454,22 +918,59 @@ fn refuse_inline_payload(kind: &str, name: &str) -> datafusion::error::DataFusio
 ///
 /// Like [`PythonLogicalCodec`], this does not retain the session it was built
 /// from; see that type for why.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PythonPhysicalCodec {
-    inner: Arc<dyn PhysicalExtensionCodec>,
+    chain: Vec<ChainEntry<dyn PhysicalExtensionCodec>>,
+    terminal: Arc<dyn PhysicalExtensionCodec>,
     python_udf_inlining: bool,
 }
 
 impl PythonPhysicalCodec {
+    /// See [`PythonLogicalCodec::new`]; `inner` is the terminal codec
+    /// rather than a chain entry.
     pub fn new(inner: Arc<dyn PhysicalExtensionCodec>) -> Self {
         Self {
-            inner,
+            chain: Vec::new(),
+            terminal: inner,
             python_udf_inlining: true,
         }
     }
 
-    pub fn inner(&self) -> &Arc<dyn PhysicalExtensionCodec> {
-        &self.inner
+    /// Return a copy of this codec with `codec` appended to the chain
+    /// under `id`. See [`PythonLogicalCodec::with_additional_codec`].
+    pub fn with_additional_codec(
+        &self,
+        id: impl Into<Arc<str>>,
+        codec: Arc<dyn PhysicalExtensionCodec>,
+    ) -> Self {
+        let mut chain = self.chain.clone();
+        chain.push(ChainEntry {
+            id: id.into(),
+            codec,
+        });
+        Self {
+            chain,
+            terminal: Arc::clone(&self.terminal),
+            python_udf_inlining: self.python_udf_inlining,
+        }
+    }
+
+    /// Ids of the installed extension codecs, in install order.
+    pub fn codec_ids(&self) -> Vec<&str> {
+        self.chain.iter().map(|entry| entry.id.as_ref()).collect()
+    }
+
+    /// Installed extension codecs paired with their ids, in install order.
+    pub fn codecs(&self) -> Vec<(&str, &Arc<dyn PhysicalExtensionCodec>)> {
+        self.chain
+            .iter()
+            .map(|entry| (entry.id.as_ref(), &entry.codec))
+            .collect()
+    }
+
+    /// Terminal codec consulted when no installed codec claims an object.
+    pub fn terminal(&self) -> &Arc<dyn PhysicalExtensionCodec> {
+        &self.terminal
     }
 
     /// Toggle inline encoding of Python UDFs on this physical codec.
@@ -500,7 +1001,13 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         ctx: &TaskContext,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
-        self.inner.try_decode(buf, inputs, ctx, proto_converter)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an execution plan",
+            |codec, buf| codec.try_decode(buf, inputs, ctx, proto_converter),
+        )
     }
 
     fn try_encode(
@@ -509,14 +1016,26 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
-        self.inner.try_encode(node, buf, proto_converter)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an execution plan",
+            |codec, buf| codec.try_encode(Arc::clone(&node), buf, proto_converter),
+        )
     }
 
     fn try_encode_udf(&self, node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_scalar_udf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a scalar UDF",
+            |codec, buf| codec.try_encode_udf(node, buf),
+        )
     }
 
     fn try_decode_udf(&self, name: &str, buf: &[u8]) -> Result<Arc<ScalarUDF>> {
@@ -527,7 +1046,13 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", name)?;
         }
-        self.inner.try_decode_udf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a scalar UDF",
+            |codec, buf| codec.try_decode_udf(name, buf),
+        )
     }
 
     fn try_encode_expr(
@@ -536,7 +1061,13 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         buf: &mut Vec<u8>,
         ctx: &PhysicalExprEncodeCtx<'_>,
     ) -> Result<()> {
-        self.inner.try_encode_expr(node, buf, ctx)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a physical expression",
+            |codec, buf| codec.try_encode_expr(node, buf, ctx),
+        )
     }
 
     fn try_decode_expr(
@@ -545,14 +1076,26 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         inputs: &[Arc<dyn PhysicalExpr>],
         ctx: &PhysicalExprDecodeCtx<'_>,
     ) -> Result<Arc<dyn PhysicalExpr>> {
-        self.inner.try_decode_expr(buf, inputs, ctx)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a physical expression",
+            |codec, buf| codec.try_decode_expr(buf, inputs, ctx),
+        )
     }
 
     fn try_encode_udaf(&self, node: &AggregateUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udaf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udaf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an aggregate UDF",
+            |codec, buf| codec.try_encode_udaf(node, buf),
+        )
     }
 
     fn try_decode_udaf(&self, name: &str, buf: &[u8]) -> Result<Arc<AggregateUDF>> {
@@ -563,14 +1106,26 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_AGG_UDF_FAMILY, "aggregate UDF", name)?;
         }
-        self.inner.try_decode_udaf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "an aggregate UDF",
+            |codec, buf| codec.try_decode_udaf(name, buf),
+        )
     }
 
     fn try_encode_udwf(&self, node: &WindowUDF, buf: &mut Vec<u8>) -> Result<()> {
         if self.python_udf_inlining && try_encode_python_udwf(node, buf)? {
             return Ok(());
         }
-        self.inner.try_encode_udwf(node, buf)
+        chain_encode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a window UDF",
+            |codec, buf| codec.try_encode_udwf(node, buf),
+        )
     }
 
     fn try_decode_udwf(&self, name: &str, buf: &[u8]) -> Result<Arc<WindowUDF>> {
@@ -581,7 +1136,13 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
         } else {
             refuse_if_inline(buf, PY_WINDOW_UDF_FAMILY, "window UDF", name)?;
         }
-        self.inner.try_decode_udwf(name, buf)
+        chain_decode(
+            &self.chain,
+            &self.terminal,
+            buf,
+            "a window UDF",
+            |codec, buf| codec.try_decode_udwf(name, buf),
+        )
     }
 }
 
@@ -598,7 +1159,7 @@ impl PhysicalExtensionCodec for PythonPhysicalCodec {
 /// `Ok(true)` when the payload (`DFPYUDF` family prefix, version byte,
 /// cloudpickled tuple) was written and the caller should skip its
 /// inner codec. Returns `Ok(false)` for any non-Python UDF, signalling
-/// the caller to delegate to its `inner`.
+/// the caller to delegate to its codec chain.
 pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) -> Result<bool> {
     let Some(py_udf) = node.inner().downcast_ref::<PythonFunctionScalarUDF>() else {
         return Ok(false);
@@ -613,7 +1174,7 @@ pub(crate) fn try_encode_python_scalar_udf(node: &ScalarUDF, buf: &mut Vec<u8>) 
 
 /// Decode an inline Python scalar UDF payload. Returns `Ok(None)`
 /// when `buf` does not carry the `DFPYUDF` family prefix, signalling
-/// the caller to delegate to its `inner` codec (and eventually the
+/// the caller to delegate to its codec chain (and eventually the
 /// `FunctionRegistry`).
 pub(crate) fn try_decode_python_scalar_udf(buf: &[u8]) -> Result<Option<Arc<ScalarUDF>>> {
     if !buf.starts_with(PY_SCALAR_UDF_FAMILY) {
@@ -1038,138 +1599,4 @@ fn decode_python_udaf(py: Python<'_>, payload: &[u8]) -> PyResult<PythonFunction
         state_fields,
         volatility,
     ))
-}
-
-#[cfg(test)]
-mod wire_header_tests {
-    use super::*;
-
-    const TEST_PY: (u8, u8) = (3, 12);
-
-    #[test]
-    fn strip_returns_none_when_family_absent() {
-        let buf = b"OTHER_PAYLOAD";
-        assert!(matches!(
-            strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY),
-            Ok(None)
-        ));
-    }
-
-    #[test]
-    fn strip_errors_on_truncated_version_byte() {
-        let buf = PY_SCALAR_UDF_FAMILY;
-        let err = strip_wire_header(buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
-        assert!(format!("{err}").contains("missing wire-format version byte"));
-    }
-
-    #[test]
-    fn strip_errors_on_too_new_version() {
-        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
-        buf.push(WIRE_VERSION_CURRENT.saturating_add(1));
-        buf.push(TEST_PY.0);
-        buf.push(TEST_PY.1);
-        buf.extend_from_slice(b"payload");
-        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
-        let msg = format!("{err}");
-        assert!(msg.contains("wire-format version v"));
-        assert!(msg.contains("supports"));
-        assert!(msg.contains("Align datafusion-python versions"));
-    }
-
-    #[test]
-    fn strip_errors_on_too_old_version() {
-        if WIRE_VERSION_MIN_SUPPORTED == 0 {
-            return;
-        }
-        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
-        buf.push(WIRE_VERSION_MIN_SUPPORTED - 1);
-        buf.push(TEST_PY.0);
-        buf.push(TEST_PY.1);
-        buf.extend_from_slice(b"payload");
-        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).is_err());
-    }
-
-    #[test]
-    fn strip_errors_on_truncated_py_major() {
-        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
-        buf.push(WIRE_VERSION_CURRENT);
-        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
-        assert!(format!("{err}").contains("missing Python major version byte"));
-    }
-
-    #[test]
-    fn strip_errors_on_truncated_py_minor() {
-        let mut buf = PY_SCALAR_UDF_FAMILY.to_vec();
-        buf.push(WIRE_VERSION_CURRENT);
-        buf.push(TEST_PY.0);
-        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY).unwrap_err();
-        assert!(format!("{err}").contains("missing Python minor version byte"));
-    }
-
-    #[test]
-    fn strip_errors_on_py_minor_mismatch() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, (3, 11));
-        buf.extend_from_slice(b"payload");
-        let err = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", (3, 12)).unwrap_err();
-        let msg = format!("{err}");
-        assert!(msg.contains("Python 3.11"));
-        assert!(msg.contains("Python 3.12"));
-        assert!(msg.contains("not portable across Python minor versions"));
-    }
-
-    #[test]
-    fn strip_errors_on_py_major_mismatch() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, (3, 12));
-        buf.extend_from_slice(b"payload");
-        assert!(strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", (4, 0)).is_err());
-    }
-
-    #[test]
-    fn write_then_strip_round_trips_scalar_payload() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, TEST_PY);
-        buf.extend_from_slice(b"scalar-payload");
-
-        let payload = strip_wire_header(&buf, PY_SCALAR_UDF_FAMILY, "scalar UDF", TEST_PY)
-            .unwrap()
-            .unwrap();
-        assert_eq!(payload, b"scalar-payload");
-    }
-
-    #[test]
-    fn write_then_strip_round_trips_agg_payload() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_AGG_UDF_FAMILY, TEST_PY);
-        buf.extend_from_slice(b"agg-payload");
-
-        let payload = strip_wire_header(&buf, PY_AGG_UDF_FAMILY, "aggregate UDF", TEST_PY)
-            .unwrap()
-            .unwrap();
-        assert_eq!(payload, b"agg-payload");
-    }
-
-    #[test]
-    fn write_then_strip_round_trips_window_payload() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_WINDOW_UDF_FAMILY, TEST_PY);
-        buf.extend_from_slice(b"window-payload");
-
-        let payload = strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF", TEST_PY)
-            .unwrap()
-            .unwrap();
-        assert_eq!(payload, b"window-payload");
-    }
-
-    #[test]
-    fn strip_does_not_match_a_different_family() {
-        let mut buf = Vec::new();
-        write_wire_header(&mut buf, PY_SCALAR_UDF_FAMILY, TEST_PY);
-        buf.extend_from_slice(b"payload");
-        assert!(matches!(
-            strip_wire_header(&buf, PY_WINDOW_UDF_FAMILY, "window UDF", TEST_PY),
-            Ok(None)
-        ));
-    }
 }

@@ -90,6 +90,9 @@ struct CountingLogicalExtensionCodec {
     /// Scalar function every table-provider decode must resolve from the
     /// `TaskContext` it is handed. See [`crate::required_udf`].
     required_udf: Option<String>,
+    /// Byte prefix identifying providers this codec owns. Distinct tokens let a
+    /// test install several instances and observe which one the chain picks.
+    token: Arc<[u8]>,
 }
 
 impl fmt::Debug for CountingLogicalExtensionCodec {
@@ -124,7 +127,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
         resolve_required_udf(self.required_udf.as_deref(), ctx, &self.counters.task_ctx)?;
-        if let Some(id) = token_id(buf, TABLE_PROVIDER_TOKEN) {
+        if let Some(id) = token_id(buf, &self.token) {
             self.counters
                 .decode_table_provider
                 .fetch_add(1, Ordering::SeqCst);
@@ -157,7 +160,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
                 .lock()
                 .map_err(|err| DataFusionError::Internal(err.to_string()))?
                 .insert(id, node);
-            buf.extend_from_slice(TABLE_PROVIDER_TOKEN);
+            buf.extend_from_slice(&self.token);
             buf.extend_from_slice(&id.to_le_bytes());
             return Ok(());
         }
@@ -185,6 +188,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
     required_udf: Option<String>,
+    token: Arc<[u8]>,
 }
 
 #[pymethods]
@@ -195,12 +199,22 @@ impl MyLogicalExtensionCodec {
     /// provider decode must find in the `TaskContext` it is handed. Leave it
     /// unset for the ordinary behaviour; set it to observe *which* session's
     /// registry the FFI decode callback actually receives.
+    ///
+    /// `provider_prefix` overrides [`TABLE_PROVIDER_TOKEN`], the byte prefix
+    /// stamped on encoded table providers. Two instances built with different
+    /// prefixes each own a disjoint slice of the wire format, which is what
+    /// lets a test install both and tell from the decoded bytes which one the
+    /// session's codec chain consulted.
     #[new]
-    #[pyo3(signature = (require_udf_on_decode=None))]
-    fn new(require_udf_on_decode: Option<String>) -> Self {
+    #[pyo3(signature = (require_udf_on_decode=None, provider_prefix=None))]
+    fn new(require_udf_on_decode: Option<String>, provider_prefix: Option<&str>) -> Self {
         Self {
             counters: Arc::new(CallCounters::default()),
             required_udf: require_udf_on_decode,
+            token: provider_prefix.map_or_else(
+                || Arc::from(TABLE_PROVIDER_TOKEN),
+                |prefix| Arc::from(prefix.as_bytes()),
+            ),
         }
     }
 
@@ -245,6 +259,7 @@ impl MyLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
             required_udf: self.required_udf.clone(),
+            token: Arc::clone(&self.token),
         });
 
         let runtime = get_tokio_runtime().handle().clone();

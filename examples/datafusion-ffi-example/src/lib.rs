@@ -21,6 +21,7 @@ use crate::aggregate_udf::MySumUDF;
 use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider, MyCatalogProviderList};
 use crate::config::MyConfig;
 use crate::logical_extension_codec::MyLogicalExtensionCodec;
+use crate::name_only_codec::{NameOnlyFunction, NameOnlyUdfCodec};
 use crate::physical_extension_codec::MyPhysicalExtensionCodec;
 use crate::physical_optimizer::MyPhysicalOptimizerRule;
 use crate::scalar_udf::IsNullUDF;
@@ -33,6 +34,7 @@ pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
 pub(crate) mod config;
 pub(crate) mod logical_extension_codec;
+pub(crate) mod name_only_codec;
 pub(crate) mod physical_extension_codec;
 pub(crate) mod physical_optimizer;
 pub(crate) mod required_udf;
@@ -57,6 +59,8 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyRankUDF>()?;
     m.add_class::<MyConfig>()?;
     m.add_class::<MyLogicalExtensionCodec>()?;
+    m.add_class::<NameOnlyUdfCodec>()?;
+    m.add_class::<NameOnlyFunction>()?;
     m.add_class::<MyPhysicalExtensionCodec>()?;
     m.add_class::<MyPhysicalOptimizerRule>()?;
     Ok(())
