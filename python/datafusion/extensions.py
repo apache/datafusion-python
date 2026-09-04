@@ -37,7 +37,7 @@ extensions guide in the contributor documentation for the full rationale.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
@@ -124,8 +124,14 @@ class SessionExtensionComponents:
     """
 
 
+@runtime_checkable
 class SessionExtensionExportable(Protocol):
     """Type hint for extension bundles installable via ``with_extensions``.
+
+    Runtime-checkable, so ``isinstance`` answers whether an object implements
+    the protocol. Only the presence of the method is checked, which is the same
+    question :py:meth:`~datafusion.context.SessionContext.with_extensions` asks
+    before calling it.
 
     Implementations are reusable configuration objects: they must create fresh
     components on every call using the context supplied by
@@ -134,6 +140,19 @@ class SessionExtensionExportable(Protocol):
     next call may install onto a different session. They should also avoid
     mutating the context they are handed — a registration made during binding
     is not rolled back if a later extension fails.
+
+    Examples:
+        >>> from datafusion import (
+        ...     SessionExtensionComponents,
+        ...     SessionExtensionExportable,
+        ... )
+        >>> class MyLibraryExtension:
+        ...     def __datafusion_session_extension__(self, ctx):
+        ...         return SessionExtensionComponents()
+        >>> isinstance(MyLibraryExtension(), SessionExtensionExportable)
+        True
+        >>> isinstance(object(), SessionExtensionExportable)
+        False
     """
 
     def __datafusion_session_extension__(  # noqa: D105

@@ -1099,10 +1099,12 @@ def test_with_extensions_docstring_example_still_runs():
     module = types.ModuleType("my_extension")
     module.DistributedEngineExtension = _DocstringExampleExtension
 
-    def make_context() -> SessionContext:
-        return SessionContext(
-            SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
-        )
+    def make_context(config: SessionConfig | None = None) -> SessionContext:
+        # Accept a config so the example is free to pass one. Supplying it
+        # positionally the way the real constructor does keeps a docstring
+        # edit failing as a doctest diff rather than as a TypeError in here.
+        config = SessionConfig() if config is None else config
+        return SessionContext(config.with_extension(MyPlannerConfig(max_rows=3)))
 
     test = doctest.DocTest(
         examples,

@@ -882,7 +882,13 @@ def test_contexts_sharing_a_session_share_the_planner(ctx):
 
 
 class _CodecOnlyExtension:
-    """Contributes decline-all codecs exported from an unrelated session."""
+    """Contributes decline-all codecs exported from an unrelated session.
+
+    Retaining ``ctx`` is what the protocol tells real extensions not to do —
+    a bundle is reusable, so a cached context belongs to whichever session it
+    was last installed on. It is kept here only so a test can assert *which*
+    context the factory was handed.
+    """
 
     def __init__(self):
         self.exporter = SessionContext()

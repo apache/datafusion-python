@@ -1899,7 +1899,7 @@ class SessionContext:
             msg = "with_extensions requires at least one extension"
             raise ValueError(msg)
         for extension in extensions:
-            if not hasattr(extension, "__datafusion_session_extension__"):
+            if not isinstance(extension, SessionExtensionExportable):
                 msg = (
                     "Extension does not implement __datafusion_session_extension__: "
                     f"{extension!r}"
