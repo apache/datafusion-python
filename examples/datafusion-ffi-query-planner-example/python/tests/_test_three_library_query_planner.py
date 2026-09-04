@@ -788,6 +788,36 @@ def test_with_extensions_three_library_query():
     assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
 
 
+def test_with_extensions_names_a_rust_bundles_capsules_after_the_bundle():
+    """A Rust bundle hands its codecs over as bare capsules, and they are
+    named after the bundle's own import path.
+
+    This is the identity that has to survive leaving the process: a plan a
+    distributed engine writes here is decoded by its scheduler, which installs
+    a codec under the same id. A session-private random id — what a bare
+    capsule gets when installed directly — would make the plan undecodable
+    there.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    ctx = SessionContext(config).with_extensions(
+        ProviderCodecsExtension(), MyPlannerExtension()
+    )
+
+    bundle_id = "datafusion_ffi_query_planner_example.MyPlannerExtension"
+    assert bundle_id in ctx.logical_extension_codec_ids()
+    assert bundle_id in ctx.physical_extension_codec_ids()
+
+    # The provider bundle hands over objects, so those keep their own class
+    # names rather than picking up the bundle's.
+    assert (
+        "datafusion_ffi_example.MyLogicalExtensionCodec"
+        in ctx.logical_extension_codec_ids()
+    )
+    assert not any(
+        codec_id.startswith("anon:") for codec_id in ctx.logical_extension_codec_ids()
+    )
+
+
 def test_with_extensions_shares_the_session_with_the_source():
     """``with_extensions`` returns a handle on the source's session, and the
     bundle's task-context provider resolves against that one session.

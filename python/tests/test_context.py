@@ -946,6 +946,111 @@ def test_with_extensions_rejects_bad_codec_capsule(ctx):
         ctx.with_extensions(BadCodecExtension())
 
 
+def test_with_extensions_names_bare_capsules_after_the_extension(ctx):
+    """A capsule has no class to take a codec id from, so it is named after
+    the extension that contributed it.
+
+    The extension's import path is library-owned and stable across processes,
+    so plans written through the codec stay decodable on another session — a
+    session-private random id would not be.
+    """
+    result = ctx.with_extensions(_CodecOnlyExtension())
+
+    expected = f"{_CodecOnlyExtension.__module__}._CodecOnlyExtension"
+    assert result.logical_extension_codec_ids() == [expected]
+    assert result.physical_extension_codec_ids() == [expected]
+
+
+def test_with_extensions_extension_can_pin_its_codec_id(ctx):
+    """``__datafusion_codec_id__`` on the extension survives a class rename."""
+
+    class PinnedExtension(_CodecOnlyExtension):
+        __datafusion_codec_id__ = "my_library.v1"
+
+    result = ctx.with_extensions(PinnedExtension())
+    assert result.logical_extension_codec_ids() == ["my_library.v1"]
+
+
+def test_with_extensions_codec_id_on_the_codec_beats_the_extension(ctx):
+    """Naming the handed-over object wins over the extension's name.
+
+    This is how an extension contributing more than one bare capsule of a kind
+    tells them apart.
+    """
+
+    class NamedCapsule:
+        def __init__(self, capsule, codec_id):
+            self._capsule = capsule
+            self.__datafusion_codec_id__ = codec_id
+
+        def __datafusion_logical_extension_codec__(self, session=None):
+            return self._capsule
+
+    class TwoNamedCodecs:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    NamedCapsule(
+                        self.exporter.__datafusion_logical_extension_codec__(),
+                        "my_library.first",
+                    ),
+                    NamedCapsule(
+                        self.exporter.__datafusion_logical_extension_codec__(),
+                        "my_library.second",
+                    ),
+                ),
+            )
+
+    result = ctx.with_extensions(TwoNamedCodecs())
+    assert result.logical_extension_codec_ids() == [
+        "my_library.first",
+        "my_library.second",
+    ]
+
+
+def test_with_extensions_rejects_two_bare_capsules_from_one_extension(ctx):
+    """Both capsules resolve to the one extension's id, so they collide.
+
+    Numbering them by position would be an id another library can mint the
+    same value from, and would break stored plans the first time the extension
+    reordered what it returns, so the ambiguity is refused instead.
+    """
+
+    class TwoCapsuleExtension:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                ),
+            )
+
+    with pytest.raises(ValueError, match="__datafusion_codec_id__"):
+        ctx.with_extensions(TwoCapsuleExtension())
+
+
+def test_with_extensions_leaves_an_exporting_object_its_own_id(ctx):
+    """A codec handed over as an object keeps its own identity.
+
+    The extension's name is a fallback for capsules only; it never overrides
+    an id the codec itself carries.
+    """
+    exporter = SessionContext()
+
+    class ObjectCodecExtension:
+        def __datafusion_session_extension__(self, ctx):
+            return SessionExtensionComponents(logical_extension_codecs=(exporter,))
+
+    result = ctx.with_extensions(ObjectCodecExtension())
+    assert result.logical_extension_codec_ids() == [exporter.__datafusion_codec_id__]
+
+
 def test_with_extensions_installs_codecs_and_planner(ctx):
     ctx.register_record_batches(
         "extensions_test",

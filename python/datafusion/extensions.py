@@ -79,6 +79,13 @@ class SessionExtensionComponents:
     components bound to a different session hold a task-context provider for
     that other session and cannot be rebound.
 
+    Codecs may be handed over either as objects exposing the capsule getters or
+    as bare ``PyCapsule`` objects. A bare capsule carries no class to take a
+    codec id from, so it is named after the extension that contributed it. An
+    extension contributing two bare capsules of the same kind therefore has to
+    name at least one of them itself, by wrapping it in an object declaring
+    ``__datafusion_codec_id__``.
+
     Examples:
         A bundle that contributes nothing is valid, and is what the defaults
         describe:

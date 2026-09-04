@@ -277,10 +277,20 @@ three cases:
 
 - **Two instances of one class.** Both get the same id, so the second install
   raises `ValueError`. Pass `codec_id=` to tell them apart.
-- **A bare `PyCapsule`.** A capsule has no class to take a name from, so it gets an
-  id private to the session that installed it. Plans it encodes fail with a clear
-  error on any other session, rather than being decoded by the wrong codec. Pass
-  `codec_id=` if those plans have to cross sessions.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from. Installed
+  through `with_extensions`, it is named after the extension that contributed it —
+  an extension is a plain object, so its import path is library-owned and just as
+  stable across processes as a codec class's. Installed directly through
+  `with_logical_extension_codec` or `with_physical_extension_codec` there is nothing
+  to fall back on, so it gets an id private to the session that installed it; plans
+  it encodes fail with a clear error on any other session rather than being decoded
+  by the wrong codec. Pass `codec_id=` if those plans have to cross sessions.
+
+  One extension contributing two bare capsules of the same kind is refused, because
+  both resolve to that one extension's id. Numbering them by position would be an id
+  another library can mint the same value from, and would break stored plans the
+  first time the extension reordered what it returns — so name one of them by
+  wrapping it in an object declaring `__datafusion_codec_id__`.
 - **A class you intend to rename.** The id follows the class name, so renaming stops
   older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
   object to pin an id that survives the rename.
