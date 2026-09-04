@@ -249,26 +249,32 @@ pub(crate) const CHAIN_WIRE_VERSION_CURRENT: u8 = 1;
 /// Oldest chained-payload envelope version this build decodes.
 pub(crate) const CHAIN_WIRE_VERSION_MIN_SUPPORTED: u8 = 1;
 
-/// Prefix for the synthetic id given to a codec installed from a bare
-/// PyCapsule, which exposes nothing stable to derive an identity from.
-/// The rest of the id is random per install, so no other session can
-/// mint it: a payload carrying one decodes within the installing
-/// session's lineage, which clones the id along with the chain, and
-/// fails with a pointed error anywhere else rather than resolving to a
-/// different codec. A counter or a chain position would not do — every
-/// session numbers from the same end, so the first bare capsule
-/// installed anywhere would answer for every other session's first.
+/// Prefix for the id given to a codec installed from a bare
+/// `PyCapsule`.
+///
+/// Every capsule reports the same type, so there is nothing on it to
+/// derive an id from. The rest of the id is a fresh UUID, minted when
+/// the codec is installed. Plans it encodes decode on the session that
+/// installed it, and on sessions cloned from that one, because cloning
+/// copies the chain along with its ids. On any other session the id is
+/// simply missing, and decoding says so.
+///
+/// Numbering the capsules instead — `anon:0`, `anon:1` — would be
+/// worse. Every session starts counting at zero, so one session's
+/// `anon:0` would be accepted by another session and decoded with
+/// whatever codec happened to be its own first capsule.
 pub(crate) const ANONYMOUS_CODEC_ID_PREFIX: &str = "anon:";
 
 /// Prefix for the id a `SessionContext` reports when its own codec stack
 /// is installed as an extension codec on another session.
 ///
-/// Deriving that id from the class, as an ordinary codec object's is,
-/// would name every session at once: they all share one class. Two
-/// sessions installed as codecs on one target would collide, and a
-/// payload written by one would resolve to the other on decode. The
-/// session id is per session and already stable, so it is what the
-/// remainder of this id carries.
+/// An ordinary codec object takes its id from its class, which is the
+/// library's import path. That does not work for a session: every
+/// session is an instance of the same class, so they would all report
+/// the same id. Installing two sessions as codecs on one target would
+/// then collide, and a plan encoded by one would be decoded by the
+/// other. A session id is unique per session and stable, so the rest
+/// of the id carries that.
 pub(crate) const SESSION_CODEC_ID_PREFIX: &str = "session:";
 
 /// One installed codec plus the identity its payloads are tagged with.
