@@ -126,7 +126,12 @@ def test_ffi_logical_codec_composes_with_later_install():
     codec here (a default-backed codec exported from a fresh session)
     cannot encode this library's table provider, so the first codec
     still claims it. Under replace semantics this test fails with
-    `LogicalExtensionCodec is not provided`."""
+    `LogicalExtensionCodec is not provided`.
+
+    Both directions are counted. Asserting only the round-trip result
+    would pass if decoding resolved the table some other way; the
+    decode count pins that the bytes went back to the codec that wrote
+    them."""
     ctx, codec = _setup_session_with_codec()
     ctx = ctx.with_logical_extension_codec(
         SessionContext().__datafusion_logical_extension_codec__()
@@ -136,11 +141,14 @@ def test_ffi_logical_codec_composes_with_later_install():
     df = ctx.sql('SELECT "A" FROM numbers')
     plan = df.logical_plan()
 
-    before = codec.table_provider_encode_calls()
+    encode_before = codec.table_provider_encode_calls()
+    decode_before = codec.table_provider_decode_calls()
     blob = plan.to_bytes(ctx)
-    assert codec.table_provider_encode_calls() > before
+    assert codec.table_provider_encode_calls() > encode_before
 
     restored = LogicalPlan.from_bytes(ctx, blob)
+    assert codec.table_provider_decode_calls() > decode_before
+
     df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
     assert df.collect() == df_round_trip.collect()
 
