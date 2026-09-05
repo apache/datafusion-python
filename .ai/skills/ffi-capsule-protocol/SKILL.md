@@ -62,6 +62,14 @@ library reaches things only the session has.
 session satisfies the protocol too — `ctx.__datafusion_query_planner__()` and
 `ctx.__datafusion_query_planner__(ctx)` are both valid.
 
+`__datafusion_session_planner__(ctx, fallback)` is the exception to the shape
+above: it takes a second argument, the planner assembled so far. A session has
+one planner slot, so planners compose by nesting rather than by chaining, and
+the host hands each bundle the previous layer instead of letting it capture one.
+Wrap `fallback` and delegate to it; returning a planner that ignores it discards
+every layer beneath, including one the session already had. It runs after every
+bundle's codecs are installed, so `ctx` carries the final chains.
+
 A *codec* must always be handed over as an object implementing its getter, never
 as the bare capsule the getter returns; `with_extensions` refuses a capsule.
 A codec's wire id — the string a payload names on decode, which has to mean the

@@ -33,8 +33,12 @@ except ImportError:
 # gap in coverage.
 PRIVATE_SUPPORT_METHODS = frozenset(
     {
-        # Support method for SessionContext.with_extensions.
-        "_install_extensions",
+        # The three phases of SessionContext.with_extensions: install the
+        # codecs, normalize each planner hook's return value, commit the
+        # planner.
+        "_install_extension_codecs",
+        "_rebind_query_planner",
+        "_install_extension_planner",
     }
 )
 

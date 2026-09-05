@@ -846,6 +846,70 @@ def test_with_extensions_rejects_a_rust_bundles_bare_capsule():
         SessionContext(config).with_extensions(BareCapsuleExtension())
 
 
+class PlannerOnlyExtension:
+    """A library that ships a planner and no codecs.
+
+    Implements only the planner hook — there is nothing to contribute in phase
+    one, and the protocol should not make it say so.
+    """
+
+    def __init__(self) -> None:
+        self.planner = None
+
+    def __datafusion_session_planner__(
+        self, ctx: SessionContext, fallback: object
+    ) -> object:
+        self.planner = MyQueryPlanner(fallback=fallback)
+        return self.planner
+
+
+def test_with_extensions_nests_planners_in_argument_order():
+    """Two planner-shipping libraries compose instead of displacing each other.
+
+    This is the four-library case: A and C contribute codecs, B an optimizing
+    planner, D a distributed one that should sit outside B. Both planners run
+    for one query, which is only possible if D delegates to B rather than
+    replacing it — a session holds exactly one planner, so the nesting is the
+    only way both are reachable.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+    codecs = ProviderCodecsExtension()
+    inner = PlannerOnlyExtension()
+    outer = PlannerOnlyExtension()
+    ctx = SessionContext(config).with_extensions(codecs, inner, outer)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1, 2]
+
+    assert inner.planner.plan_calls() >= 1
+    assert outer.planner.plan_calls() >= 1
+    # The last extension listed is outermost, so it is the one that had to
+    # delegate. The inner planner is the fallback, and reaches the session's
+    # original planner through its own.
+    assert outer.planner.used_fallback()
+
+
+def test_with_extensions_planner_sees_every_bundles_codecs():
+    """Phase two runs after phase one, for every bundle.
+
+    A planner contributed by an early argument is still built against codecs a
+    later argument installed — the ordering trap that chaining the low-level
+    methods by hand leaves to the caller.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    planner_first = PlannerOnlyExtension()
+    codecs_last = ProviderCodecsExtension()
+    ctx = SessionContext(config).with_extensions(planner_first, codecs_last)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    # The provider codecs were installed after the planner was listed, and the
+    # query still round-trips its table provider through them.
+    assert codecs_last.logical_codec.table_provider_decode_calls() > 0
+
+
 def test_with_extensions_codec_ids_survive_bundle_composition():
     """Nesting a bundle inside another does not re-tag its codecs.
 
@@ -1127,8 +1191,12 @@ class _DocstringExampleExtension:
                 *codecs.physical_extension_codecs,
                 *planner.physical_extension_codecs,
             ),
-            query_planner=planner.query_planner,
         )
+
+    def __datafusion_session_planner__(
+        self, ctx: SessionContext, fallback: object
+    ) -> object:
+        return self._planner.__datafusion_session_planner__(ctx, fallback)
 
 
 def test_with_extensions_docstring_example_still_runs():

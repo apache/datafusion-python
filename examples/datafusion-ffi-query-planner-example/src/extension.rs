@@ -36,7 +36,8 @@ use datafusion_proto::physical_plan::{
 use datafusion_python_util::{
     create_logical_extension_capsule, create_physical_extension_capsule,
     create_query_planner_capsule, ffi_logical_codec_from_pycapsule,
-    ffi_physical_codec_from_pycapsule, ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
+    ffi_physical_codec_from_pycapsule, ffi_query_planner_from_pycapsule,
+    ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
 };
 use datafusion_session::QueryPlanner;
 use pyo3::prelude::*;
@@ -360,26 +361,42 @@ impl MyPlannerExtension {
             },
         )?;
 
-        let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
-            observations: Arc::clone(&self.observations),
-            fallback: None,
-        });
-        // The planner takes the host's codecs, not ones built here. Installing
-        // the codecs above rebuilds the planner against them anyway, and this
-        // library has no business minting a provider of its own.
-        let host_logical = ffi_logical_codec_from_pycapsule(ctx.clone(), None)?;
-        let host_physical = ffi_physical_codec_from_pycapsule(ctx, None)?;
-        let ffi_planner =
-            FFI_QueryPlanner::new_with_ffi_codecs(planner, host_logical, host_physical);
-        let planner_capsule = create_query_planner_capsule(py, &ffi_planner)?;
-
         let components = py
             .import("datafusion")?
             .getattr("SessionExtensionComponents")?;
         let kwargs = PyDict::new(py);
         kwargs.set_item("logical_extension_codecs", (logical_codec,))?;
         kwargs.set_item("physical_extension_codecs", (physical_codec,))?;
-        kwargs.set_item("query_planner", planner_capsule)?;
         components.call((), Some(&kwargs))
+    }
+
+    /// Contribute this library's planner, nesting it on whatever came before.
+    ///
+    /// Runs in the host's second phase, after every bundle's codecs are
+    /// installed, so `ctx` carries the final chains and the planner this
+    /// builds is not left encoding through a partial set. `fallback` is the
+    /// planner assembled so far — the session's existing one for the first
+    /// bundle, the previous bundle's for the rest — and delegating to it is
+    /// what makes several planner-shipping libraries composable. Returning a
+    /// planner that ignored it would discard every layer beneath.
+    fn __datafusion_session_planner__<'py>(
+        &self,
+        py: Python<'py>,
+        ctx: Bound<'py, PyAny>,
+        fallback: Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let fallback = ffi_query_planner_from_pycapsule(&fallback, Some(&ctx))?;
+        let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
+            observations: Arc::clone(&self.observations),
+            fallback: Some((&fallback).into()),
+        });
+        // The planner takes the host's codecs, not ones built here. By now
+        // those are the final chains, and this library has no business minting
+        // a provider of its own.
+        let host_logical = ffi_logical_codec_from_pycapsule(ctx.clone(), None)?;
+        let host_physical = ffi_physical_codec_from_pycapsule(ctx, None)?;
+        let ffi_planner =
+            FFI_QueryPlanner::new_with_ffi_codecs(planner, host_logical, host_physical);
+        create_query_planner_capsule(py, &ffi_planner)
     }
 }

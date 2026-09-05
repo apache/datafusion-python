@@ -1614,32 +1614,29 @@ impl PySessionContext {
         derived
     }
 
-    /// Commit a `with_extensions` transaction onto this context.
+    /// Build the codec chains for a `with_extensions` call.
     ///
-    /// Private support method for `SessionContext.with_extensions`. `self` is
-    /// the context the extensions bound their components against, and is also
-    /// the `Arc<SessionContext>` every FFI task-context provider they created
+    /// Private support method for `SessionContext.with_extensions`, and the
+    /// first of the two phases that method runs. `self` is the context the
+    /// extensions bound their components against, and is also the
+    /// `Arc<SessionContext>` every FFI task-context provider they created
     /// targets, so the returned handle shares it rather than deriving a new
-    /// one. Codec capsules are imported and validated before anything is
-    /// committed, so a failure leaves the session untouched.
+    /// one.
     ///
-    /// The codec chains belong to the returned handle rather than to
-    /// `SessionState`, so a codec-only install onto a session with no FFI
-    /// planner writes no state at all. The session is written only when there
-    /// is a planner to bind — one a bundle supplied, or one already installed
-    /// that has to be rebuilt against the new chains — and that write goes
-    /// through this context's own `state_ref()`, so providers bound to it stay
-    /// valid.
+    /// **Writes nothing.** The codec chains belong to the returned handle
+    /// rather than to `SessionState`, so this phase is transactional for free:
+    /// a codec that fails to import, or that collides with an installed id,
+    /// leaves the caller's context exactly as it was. Binding the planner is
+    /// the only step that touches the session, and it is deferred to
+    /// [`Self::_install_extension_planner`] so the planner hooks can run
+    /// against the final chains.
     ///
     /// Codecs must arrive as objects exposing the capsule getter, never as
-    /// bare capsules — see [`resolve_bundle_codec_id`]. The planner has no
-    /// wire id, so it may still be a capsule.
-    #[pyo3(signature = (logical_codecs, physical_codecs, planner=None))]
-    pub fn _install_extensions<'py>(
+    /// bare capsules — see [`resolve_bundle_codec_id`].
+    pub fn _install_extension_codecs<'py>(
         slf: &Bound<'py, Self>,
         logical_codecs: Vec<Bound<'py, PyAny>>,
         physical_codecs: Vec<Bound<'py, PyAny>>,
-        planner: Option<Bound<'py, PyAny>>,
     ) -> PyDataFusionResult<Self> {
         // Chains are built as local values, so a codec that fails to import --
         // or that collides with an id already installed -- leaves the session
@@ -1676,22 +1673,51 @@ impl PySessionContext {
         }
         let physical_codec = Arc::new(physical_codec);
 
-        let planner = planner
-            .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
-            .transpose()?;
-
-        let installed = Self {
+        Ok(Self {
             ctx: Arc::clone(&slf.borrow().ctx),
             logical_codec,
             physical_codec,
-        };
-        // Bind the planner only once the codec chains are final, and through
-        // the new handle so it carries them. Passing `None` still rebuilds
-        // whichever planner the session already holds against the new chains,
-        // exactly as `with_logical_extension_codec` does.
-        installed.set_session_query_planner(planner);
+        })
+    }
 
-        Ok(installed)
+    /// Re-export a planner a `__datafusion_session_planner__` hook returned as
+    /// a capsule, so the next hook in the chain receives one either way.
+    ///
+    /// A hook may hand back an object exposing `__datafusion_query_planner__`
+    /// or a raw capsule; the next hook wraps whatever it is given and should
+    /// not have to branch on which. Importing here also surfaces a malformed
+    /// planner at the hook that produced it rather than at the final install.
+    /// Writes nothing.
+    pub fn _rebind_query_planner<'py>(
+        slf: &Bound<'py, Self>,
+        planner: Bound<'py, PyAny>,
+    ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
+        let ffi = ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any()))?;
+        Ok(create_query_planner_capsule(slf.py(), &ffi)?)
+    }
+
+    /// Commit the query planner for a `with_extensions` call.
+    ///
+    /// The second phase, run once every codec is installed and every planner
+    /// hook has returned, so the planner is bound against the final chains.
+    /// This is the one call in `with_extensions` that writes to the session,
+    /// and it goes through this context's own `state_ref()`, so providers
+    /// bound to it stay valid.
+    ///
+    /// `None` means no bundle supplied a planner. That still rebuilds
+    /// whichever planner the session already holds against the new chains,
+    /// exactly as `with_logical_extension_codec` does, and writes nothing at
+    /// all if the session has no FFI planner to rebuild.
+    #[pyo3(signature = (planner=None))]
+    pub fn _install_extension_planner<'py>(
+        slf: &Bound<'py, Self>,
+        planner: Option<Bound<'py, PyAny>>,
+    ) -> PyDataFusionResult<()> {
+        let planner = planner
+            .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
+            .transpose()?;
+        slf.borrow().set_session_query_planner(planner);
+        Ok(())
     }
 }
 

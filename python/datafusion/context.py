@@ -73,6 +73,7 @@ from datafusion.extensions import (
     QueryPlannerExportable,
     SessionExtensionComponents,
     SessionExtensionExportable,
+    SessionPlannerExportable,
 )
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
@@ -1816,20 +1817,36 @@ class SessionContext:
         """Create a new session context with the given extension bundles.
 
         This is the preferred way to install FFI extensions that need a
-        task-context provider (extension codecs and query planners). Each
-        extension's ``__datafusion_session_extension__`` method is called with
-        this context so it can bind its components to the session they will
-        run on, then all components are installed in one step. This avoids the
-        pitfalls of chaining :py:meth:`with_logical_extension_codec`,
+        task-context provider (extension codecs and query planners). It avoids
+        the pitfalls of chaining :py:meth:`with_logical_extension_codec`,
         :py:meth:`with_physical_extension_codec`, and
         :py:meth:`set_query_planner` by hand, where the codecs a planner was
         built against can end up stale.
 
-        Codecs compose with the existing chain and with each other: extensions
-        are processed left to right and their codecs are appended to the chain
-        in that order. Decoding routes by codec id, so the order matters only
-        for encoding. At most one extension may supply a query planner. If none
-        does, an existing FFI planner is rebound to the final codec chains.
+        Installation runs in two phases, because codecs and planners compose
+        differently:
+
+        1. Every extension's ``__datafusion_session_extension__`` is called
+           with this context and its codecs are collected, then all of them are
+           installed at once. A session chains many codecs and dispatches
+           between them by id, so they merely accumulate; order affects
+           encoding only.
+        2. Every extension's ``__datafusion_session_planner__`` is then called,
+           **in argument order**, each receiving the planner built so far. A
+           session holds exactly one planner, so planners compose by *nesting*:
+           each wraps the previous one and delegates to it. The last extension
+           listed ends up outermost and is consulted first.
+
+        An extension implements either hook or both. Phase two runs after every
+        codec is installed and receives a context carrying the final chains, so
+        a nested planner is never left encoding through a chain a later
+        extension has grown.
+
+        If no extension supplies a planner, an existing FFI planner is rebound
+        to the final codec chains and the session's planner is otherwise left
+        alone. An extension that ignores the ``fallback`` it is handed replaces
+        the planners before it instead of nesting on them, including any the
+        session already had.
 
         Codecs must be handed over as objects exposing the capsule getter, not
         as bare ``PyCapsule`` objects, and are named after their exporting
@@ -1841,8 +1858,8 @@ class SessionContext:
         wire identity independent of the extension that ships it, so an
         extension composed inside another one still writes the same ids.
 
-        The planner is exempt — it carries no wire id, so it may be an object
-        or a capsule.
+        Planners are exempt — a planner carries no wire id, so a hook may
+        return an object or a capsule.
 
         Like the individual ``with_*`` methods, the returned context shares its
         session with this one: catalogs, tables, registered functions, and
@@ -1852,11 +1869,13 @@ class SessionContext:
         chains are specific to the returned handle.
 
         No state is written until every extension has run and every capsule has
-        been validated, so an extension that raises or returns invalid
-        components leaves the session as it was. The exception is an extension
-        that mutates the context it is handed — registering a table, say —
-        which is not rolled back. Extension factories should treat that context
-        as configuration-only.
+        been validated, so an extension that raises or returns something
+        invalid — in either phase — leaves the session as it was. Codec chains
+        belong to the returned handle, and the single session write happens
+        after the last planner hook returns. The exception is an extension that
+        mutates the context it is handed — registering a table, say — which is
+        not rolled back. Extension factories should treat that context as
+        configuration-only.
 
         The session owns the installed components' task-context providers, and
         dependent objects do not extend its lifetime. Keep a context on the
@@ -1864,24 +1883,25 @@ class SessionContext:
         use; FFI operations after the last one is collected raise an error.
 
         Args:
-            extensions: Extension bundles to install, in the order their
-                codecs join the chain.
+            extensions: Extension bundles to install. Order is irrelevant for
+                codecs and significant for planners, which nest in this order
+                with the last one outermost.
 
         Returns:
             A new context with all extension components installed.
 
         Raises:
-            TypeError: If an argument does not implement the protocol, returns
-                something other than a
-                :py:class:`SessionExtensionComponents`, or contributes a codec
-                as a bare ``PyCapsule``.
-            ValueError: If no extensions are given, more than one extension
-                supplies a query planner, or two codecs claim the same id. An
-                extension that contributes two instances of one codec class
-                must declare ``__datafusion_codec_id__`` on at least one of
-                them; the collision is refused rather than resolved by
-                position, because a positional id would break stored plans the
-                first time the extension reordered what it returns.
+            TypeError: If an argument implements neither hook, if
+                ``__datafusion_session_extension__`` returns something other
+                than a :py:class:`SessionExtensionComponents`, or if an
+                extension contributes a codec as a bare ``PyCapsule``.
+            ValueError: If no extensions are given, or two codecs claim the
+                same id. An extension that contributes two instances of one
+                codec class must declare ``__datafusion_codec_id__`` on at
+                least one of them; the collision is refused rather than
+                resolved by position, because a positional id would break
+                stored plans the first time the extension reordered what it
+                returns.
 
         Examples:
             The example is skipped here because it needs a built FFI
@@ -1903,22 +1923,25 @@ class SessionContext:
             msg = "with_extensions requires at least one extension"
             raise ValueError(msg)
         for extension in extensions:
-            if not isinstance(extension, SessionExtensionExportable):
+            if not isinstance(
+                extension, (SessionExtensionExportable, SessionPlannerExportable)
+            ):
                 msg = (
-                    "Extension does not implement __datafusion_session_extension__: "
-                    f"{extension!r}"
+                    "Extension implements neither "
+                    "__datafusion_session_extension__ nor "
+                    f"__datafusion_session_planner__: {extension!r}"
                 )
                 raise TypeError(msg)
 
-        # Bind every component against this context, not a context derived from
-        # it. There is one `Arc<SessionContext>` per session, so a component
-        # bound here holds a task-context provider that the returned handle
-        # keeps alive, and `_install_extensions` writes the final state through
-        # that same session.
+        # Phase one: collect every bundle's codecs. Components are bound
+        # against this context, not a context derived from it. There is one
+        # `Arc<SessionContext>` per session, so a component bound here holds a
+        # task-context provider that the returned handle keeps alive.
         logical_codecs: list[LogicalExtensionCodecExportable] = []
         physical_codecs: list[PhysicalExtensionCodecExportable] = []
-        planner: QueryPlannerExportable | _PyCapsule | None = None
         for extension in extensions:
+            if not isinstance(extension, SessionExtensionExportable):
+                continue
             components = extension.__datafusion_session_extension__(self)
             if not isinstance(components, SessionExtensionComponents):
                 msg = (
@@ -1929,18 +1952,32 @@ class SessionContext:
                 raise TypeError(msg)
             logical_codecs.extend(components.logical_extension_codecs)
             physical_codecs.extend(components.physical_extension_codecs)
-            if components.query_planner is not None:
-                if planner is not None:
-                    msg = (
-                        "Multiple extensions supplied a query planner; a "
-                        "session context has exactly one. Layer planners "
-                        "explicitly instead."
-                    )
-                    raise ValueError(msg)
-                planner = components.query_planner
 
+        # Writes nothing: the chains belong to the new handle, so a failure
+        # above or below leaves this context as it was.
         new = SessionContext.__new__(SessionContext)
-        new.ctx = self.ctx._install_extensions(logical_codecs, physical_codecs, planner)
+        new.ctx = self.ctx._install_extension_codecs(logical_codecs, physical_codecs)
+
+        # Phase two: nest the planners, outermost last. Each hook runs against
+        # `new`, which carries the final chains, so a planner captured here
+        # never sees a partial codec set. `planner` stays None when no bundle
+        # supplies one, which leaves an already-installed planner in place
+        # rather than wrapping the session's default in an FFI hop.
+        planner: _PyCapsule | None = None
+        for extension in extensions:
+            if not isinstance(extension, SessionPlannerExportable):
+                continue
+            fallback = (
+                planner
+                if planner is not None
+                else new.ctx.__datafusion_query_planner__()
+            )
+            supplied = extension.__datafusion_session_planner__(new, fallback)
+            if supplied is None:
+                continue
+            planner = new.ctx._rebind_query_planner(supplied)
+
+        new.ctx._install_extension_planner(planner)
         return new
 
     def table_provider(self, name: str) -> Table:

@@ -50,11 +50,13 @@ ctx.register_table("numbers", provider)
 ctx.register_udf(provider_udf)
 ```
 
-`MyPlannerExtension` implements the `__datafusion_session_extension__` protocol: it
-receives the session it is being installed on, binds fresh codec and planner
-components to that session's task-context provider, and returns them as
-`SessionExtensionComponents`. The host installs every codec before it binds the
-planner, so the planner cannot be left carrying a chain that has since grown.
+`MyPlannerExtension` implements both extension hooks. `__datafusion_session_extension__`
+receives the session it is being installed on, binds fresh codecs to that session's
+task-context provider, and returns them as `SessionExtensionComponents`.
+`__datafusion_session_planner__` then runs in the host's second phase, after every
+bundle's codecs are installed, and builds a planner that delegates to the `fallback` it
+is handed — so several libraries that each ship a planner nest instead of displacing one
+another, and no planner is left carrying a chain that has since grown.
 
 Its codecs are handed over as `BundledLogicalCodec` and `BundledPhysicalCodec` rather
 than as bare capsules. `with_extensions` requires an object, because a codec's wire id

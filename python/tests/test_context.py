@@ -933,12 +933,21 @@ class _CodecOnlyExtension:
 
 
 class _PlannerExtension:
-    """Contributes the receiving session's own exported planner."""
+    """Contributes a planner, recording the fallback it was handed.
 
-    def __datafusion_session_extension__(self, ctx):
-        return SessionExtensionComponents(
-            query_planner=ctx.__datafusion_query_planner__()
-        )
+    Passing ``fallback`` straight back through is the degenerate wrap: the
+    resulting session plans exactly as it did before, which is what lets a
+    pure-Python test assert the threading without a real layering planner.
+    """
+
+    def __init__(self):
+        self.fallbacks = []
+        self.planner_ctx = None
+
+    def __datafusion_session_planner__(self, ctx, fallback):
+        self.planner_ctx = ctx
+        self.fallbacks.append(fallback)
+        return fallback
 
 
 def test_with_extensions_requires_an_extension(ctx):
@@ -947,7 +956,7 @@ def test_with_extensions_requires_an_extension(ctx):
 
 
 def test_with_extensions_rejects_non_extension(ctx):
-    with pytest.raises(TypeError, match="__datafusion_session_extension__"):
+    with pytest.raises(TypeError, match="__datafusion_session_planner__"):
         ctx.with_extensions(object())
 
 
@@ -960,9 +969,63 @@ def test_with_extensions_rejects_bad_components(ctx):
         ctx.with_extensions(BadExtension())
 
 
-def test_with_extensions_rejects_multiple_planners(ctx):
-    with pytest.raises(ValueError, match="query planner"):
-        ctx.with_extensions(_PlannerExtension(), _PlannerExtension())
+def test_with_extensions_accepts_a_planner_only_extension(ctx):
+    """An extension may implement the planner hook alone.
+
+    A library that ships an optimizing planner and no codecs — nothing to
+    contribute in phase one — should not have to return empty components.
+    """
+    extension = _PlannerExtension()
+    result = ctx.with_extensions(extension)
+
+    assert len(extension.fallbacks) == 1
+    assert result.session_id() == ctx.session_id()
+
+
+def test_with_extensions_threads_the_planner_through_in_order(ctx):
+    """Each planner hook receives what the previous one returned.
+
+    Planners nest rather than chain, so the host hands each bundle the planner
+    built so far. Argument order is nesting order, last one outermost.
+    """
+    first, second = _PlannerExtension(), _PlannerExtension()
+    ctx.with_extensions(first, second)
+
+    assert len(first.fallbacks) == 1
+    assert len(second.fallbacks) == 1
+    # `first` returned its fallback unchanged, and the host normalizes each
+    # hook's return value before passing it on, so `second` sees a capsule
+    # standing for the same planner rather than the session's original.
+    assert second.fallbacks[0] is not None
+
+
+def test_with_extensions_planner_hook_sees_the_new_handle(ctx):
+    """Phase two runs against the handle carrying the final codec chains.
+
+    A planner captured against the pre-install handle would encode through a
+    chain missing every codec this call installed.
+    """
+    codecs = _CodecOnlyExtension()
+    planner = _PlannerExtension()
+    result = ctx.with_extensions(codecs, planner)
+
+    assert planner.planner_ctx.logical_extension_codec_ids() == ["my_library.logical"]
+    assert result.logical_extension_codec_ids() == ["my_library.logical"]
+
+
+def test_with_extensions_skips_a_planner_hook_returning_none(ctx):
+    """Returning ``None`` contributes no planner and keeps the fallback."""
+
+    class NoPlanner:
+        def __datafusion_session_planner__(self, ctx, fallback):
+            return None
+
+    downstream = _PlannerExtension()
+    ctx.with_extensions(NoPlanner(), downstream)
+
+    # The skipped hook did not become `downstream`'s fallback; it got the
+    # session's own planner instead.
+    assert len(downstream.fallbacks) == 1
 
 
 def test_with_extensions_rejects_bad_codec_capsule(ctx):

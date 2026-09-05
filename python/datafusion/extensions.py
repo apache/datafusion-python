@@ -29,9 +29,21 @@ installed with :py:meth:`~datafusion.context.SessionContext.with_extensions`::
 Installing through ``with_extensions`` rather than by chaining the individual
 ``with_*`` methods matters for components that hold a task-context provider:
 the extension is handed the session its components will run on, and every
-codec is installed before the query planner is bound against them, so no
+codec is installed before any query planner is bound against them, so no
 planner is left carrying a codec chain that has since grown. See the FFI
 extensions guide in the contributor documentation for the full rationale.
+
+Codecs and planners install in two phases, because they compose differently. A
+session's codec chain holds many codecs and dispatches between them by id, so
+codecs merely accumulate and their order does not affect decoding. A session
+holds exactly *one* query planner, so planners compose by nesting: each wraps
+the one before it. Phase one collects every bundle's codecs through
+:py:class:`SessionExtensionExportable` and installs them; phase two runs
+:py:class:`SessionPlannerExportable` once per bundle, in argument order,
+handing each the planner built so far.
+
+That split is what lets several libraries that each ship a planner coexist. It
+also means bundle order is significant for planners and irrelevant for codecs.
 """
 
 from __future__ import annotations
@@ -52,6 +64,7 @@ __all__ = [
     "QueryPlannerExportable",
     "SessionExtensionComponents",
     "SessionExtensionExportable",
+    "SessionPlannerExportable",
 ]
 
 
@@ -79,6 +92,9 @@ class SessionExtensionComponents:
     components bound to a different session hold a task-context provider for
     that other session and cannot be rebound.
 
+    Query planners are not listed here. They install in a second phase so each
+    can wrap the one before it — see :py:class:`SessionPlannerExportable`.
+
     Codecs must be objects exposing the capsule getters, never bare
     ``PyCapsule`` objects: a codec's id is read off the object it is handed
     over as, and a capsule has no type to read. A library holding a raw capsule
@@ -87,15 +103,15 @@ class SessionExtensionComponents:
     different extension.
 
     Examples:
-        A bundle that contributes nothing is valid, and is what the defaults
-        describe:
+        A bundle that contributes no codecs is valid — a planner-only library
+        returns this, or omits the hook entirely:
 
         >>> from datafusion import SessionExtensionComponents
         >>> components = SessionExtensionComponents()
         >>> components.logical_extension_codecs
         ()
-        >>> components.query_planner is None
-        True
+        >>> components.physical_extension_codecs
+        ()
 
         A bundle that contributes one kind of component names it, leaving the
         rest empty. Here the codec is a capsule wrapped in an object that
@@ -126,14 +142,6 @@ class SessionExtensionComponents:
     physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = ()
     """Physical codecs to add to the session's codec chain, in declaration order."""
 
-    query_planner: QueryPlannerExportable | _PyCapsule | None = None
-    """Optional query planner.
-
-    At most one extension per
-    :py:meth:`~datafusion.context.SessionContext.with_extensions` call may
-    supply one.
-    """
-
 
 @runtime_checkable
 class SessionExtensionExportable(Protocol):
@@ -152,6 +160,11 @@ class SessionExtensionExportable(Protocol):
     mutating the context they are handed — a registration made during binding
     is not rolled back if a later extension fails.
 
+    A bundle that also contributes a query planner implements
+    :py:class:`SessionPlannerExportable` alongside this protocol. Planners are
+    installed in a second phase, so they are not part of the components
+    returned here.
+
     Examples:
         >>> from datafusion import (
         ...     SessionExtensionComponents,
@@ -169,3 +182,53 @@ class SessionExtensionExportable(Protocol):
     def __datafusion_session_extension__(  # noqa: D105
         self, ctx: SessionContext
     ) -> SessionExtensionComponents: ...
+
+
+@runtime_checkable
+class SessionPlannerExportable(Protocol):
+    """Type hint for extension bundles that contribute a query planner.
+
+    A session holds exactly one query planner, so planners compose by nesting
+    rather than by chaining: each wraps the one before it and delegates to it
+    for the work it does not handle.
+    :py:meth:`~datafusion.context.SessionContext.with_extensions` runs this
+    hook once per bundle that implements it, **in argument order**, handing
+    each the planner built so far. Returning a planner that wraps ``fallback``
+    puts this bundle *outside* the previous one, so the last bundle listed ends
+    up outermost and is consulted first.
+
+    The hook runs after every codec from every bundle is installed, and ``ctx``
+    is the context carrying those final chains. That ordering is the point: a
+    planner captured here sees the complete codec set, so a nested planner is
+    not left encoding through a chain that a later bundle has grown.
+
+    Return ``None`` to contribute no planner and leave ``fallback`` in place.
+    Ignoring ``fallback`` and returning a planner that does not delegate to it
+    is legal and means "replace" — but it discards every planner listed before
+    this one, including any the session already had.
+
+    Args:
+        ctx: The session the planner will run on, carrying the final codec
+            chains.
+        fallback: The planner built so far, as a ``PyCapsule``. For the first
+            bundle this is the session's existing planner, which is the
+            DataFusion default unless one was installed earlier.
+
+    Examples:
+        >>> from datafusion import SessionPlannerExportable
+        >>> class MyEngineExtension:
+        ...     def __datafusion_session_planner__(self, ctx, fallback):
+        ...         # A real library returns its own planner wrapping
+        ...         # `fallback`, e.g. ``my_library.Planner(fallback=fallback)``.
+        ...         # Handing it straight back is the degenerate wrap: valid,
+        ...         # and contributes nothing.
+        ...         return fallback
+        >>> isinstance(MyEngineExtension(), SessionPlannerExportable)
+        True
+        >>> isinstance(object(), SessionPlannerExportable)
+        False
+    """
+
+    def __datafusion_session_planner__(  # noqa: D105
+        self, ctx: SessionContext, fallback: _PyCapsule
+    ) -> QueryPlannerExportable | _PyCapsule | None: ...

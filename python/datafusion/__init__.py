@@ -95,6 +95,7 @@ from .expr import Expr, WindowFrame
 from .extensions import (
     SessionExtensionComponents,
     SessionExtensionExportable,
+    SessionPlannerExportable,
 )
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
@@ -140,6 +141,7 @@ __all__ = [
     "SessionContext",
     "SessionExtensionComponents",
     "SessionExtensionExportable",
+    "SessionPlannerExportable",
     "Table",
     "TableFunction",
     "TableProviderFactory",

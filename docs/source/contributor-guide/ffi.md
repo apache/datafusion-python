@@ -356,23 +356,26 @@ codec chains exist when it is installed, and a codec added afterwards rebinds it
 that wrong and the planner encodes through a chain that is missing a library.
 
 `SessionContext.with_extensions` removes the ordering question. An extension library
-exposes a bundle object implementing `__datafusion_session_extension__`:
+exposes a bundle object implementing one or both of two hooks:
 
 ```python
 class MyEngineExtension:
     def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
-        # Create fresh components bound to `ctx` on every call. `ctx` is the
-        # session the components will run on.
+        # Phase one. Create fresh components bound to `ctx` on every call.
         return SessionExtensionComponents(
             logical_extension_codecs=(self._make_logical_codec(ctx),),
             physical_extension_codecs=(self._make_physical_codec(ctx),),
-            query_planner=self._make_planner(ctx),
         )
+
+    def __datafusion_session_planner__(self, ctx: SessionContext, fallback):
+        # Phase two. `ctx` now carries every bundle's codecs, and `fallback` is
+        # the planner built so far. Wrapping it is what makes this library
+        # compose with the other planners in the call.
+        return self._make_planner(ctx, fallback=fallback)
 ```
 
-The host passes the context to every factory, installs all the codecs, binds the
-planner against the final codec chains, and returns a handle on that session in a
-single step:
+Implement whichever apply: a codec-only library defines the first, a library that ships
+only an optimizing planner defines the second.
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
@@ -380,11 +383,44 @@ ctx.register_table("t", lib_a.TableProvider())
 ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
 
-Extensions are processed left to right and their codecs are appended to the chain in
-that order. As above, order affects only encoding — decoding routes by id. At most one
-extension per call may supply a query planner. Supplying one replaces whatever planner
-the session already has; to layer instead, capture the existing planner from
-`__datafusion_query_planner__` first and have yours fall back to it.
+#### Two phases, because codecs and planners compose differently
+
+A session chains **many** codecs and dispatches between them by id. Codecs therefore
+just accumulate: order affects encoding only, and decoding always routes to the codec
+that wrote the payload. A session holds exactly **one** query planner, so planners
+cannot accumulate — they compose by *nesting*, each wrapping the one before it and
+delegating to it for work it does not handle.
+
+So `with_extensions` runs every `__datafusion_session_extension__` and installs all the
+codecs, and only then runs each `__datafusion_session_planner__`, in argument order,
+handing each the planner built so far. Two consequences worth holding onto:
+
+- **Bundle order is irrelevant for codecs and significant for planners.** The last
+  extension listed ends up outermost and is consulted first.
+- **A planner is always built against the complete codec set**, including codecs from
+  bundles listed after it. This is what the low-level chaining cannot give you, and it
+  matters most for a nested planner: the rebuild that follows a later codec install
+  reaches only the outermost layer (see [Rebinding a planner's codecs is one level
+  deep](#rebinding-a-planners-codecs-is-one-level-deep)), so a fallback captured before
+  the codecs were complete would stay stale forever.
+
+An extension that ignores `fallback` and returns an unrelated planner replaces every
+layer beneath it, including any planner the session already had. That is legal — a
+library that must be the only planner does it deliberately — but it is not composable,
+and nothing detects it. Returning `None` contributes no planner and leaves `fallback`
+in place.
+
+Three libraries that each ship a planner therefore install like this, with the
+outermost last:
+
+```python
+ctx = SessionContext(config).with_extensions(
+    tables.Extension(),        # codecs only
+    functions.Extension(),     # codecs only
+    optimizer.Extension(),     # planner, wrapping the session default
+    distributed.Extension(),   # planner, wrapping the optimizer
+)
+```
 
 #### Codecs are objects, not capsules
 
@@ -624,8 +660,11 @@ the original handle rebinds the session's planner back to the original handle's 
 instead, which is the trap
 `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs` pins.
 
-`with_extensions` sidesteps the ordering question entirely: it installs every codec
-before it binds the planner, so there is no "afterwards" for a bundle's own planner.
+`with_extensions` sidesteps this entirely, and for nested planners too: every codec from
+every bundle is installed before the first planner hook runs, so no layer — outer or
+fallback — is ever captured against a partial chain. There is no "afterwards" within a
+call. Prefer it over hand-layering whenever the planners you are composing all ship as
+bundles.
 
 ## Alternative Approach
 
