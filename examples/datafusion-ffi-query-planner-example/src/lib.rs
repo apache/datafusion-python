@@ -22,6 +22,7 @@ use crate::extension::{BundledLogicalCodec, BundledPhysicalCodec, MyPlannerExten
 use crate::planner::MyQueryPlanner;
 
 mod config;
+mod distributed_exec;
 mod extension;
 mod planner;
 

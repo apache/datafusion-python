@@ -1848,6 +1848,17 @@ class SessionContext:
         the planners before it instead of nesting on them, including any the
         session already had.
 
+        Codec order never affects decoding, which routes by codec id. It
+        affects encoding only when two codecs would claim the same node: the
+        chain stops at the first that does, so a codec claiming a broad
+        category can take nodes belonging to a library installed after it. The
+        query still succeeds, but the plan is written by the wrong library and
+        may not decode elsewhere. If an extension needs to be early for its
+        codec and late for its planner, contribute each half at its own
+        position rather than reordering — the two hooks are independent, so a
+        small adapter implementing one of them and delegating is enough. The
+        FFI extensions guide shows the pattern.
+
         Codecs must be handed over as objects exposing the capsule getter, not
         as bare ``PyCapsule`` objects, and are named after their exporting
         class as :py:meth:`with_logical_extension_codec` describes. Declare

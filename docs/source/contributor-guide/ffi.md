@@ -395,8 +395,10 @@ So `with_extensions` runs every `__datafusion_session_extension__` and installs 
 codecs, and only then runs each `__datafusion_session_planner__`, in argument order,
 handing each the planner built so far. Two consequences worth holding onto:
 
-- **Bundle order is irrelevant for codecs and significant for planners.** The last
-  extension listed ends up outermost and is consulted first.
+- **Bundle order matters differently for each.** For planners it sets the nesting: the
+  last extension listed ends up outermost and is consulted first. For codecs it never
+  affects decoding, and affects encoding only when two codecs would claim the same node
+  — see [When codec order does matter](#when-codec-order-does-matter).
 - **A planner is always built against the complete codec set**, including codecs from
   bundles listed after it. This is what the low-level chaining cannot give you, and it
   matters most for a nested planner: the rebuild that follows a later codec install
@@ -421,6 +423,82 @@ ctx = SessionContext(config).with_extensions(
     distributed.Extension(),   # planner, wrapping the optimizer
 )
 ```
+
+#### When codec order does matter
+
+Decoding is never order-dependent: a payload names its codec by id and the chain
+dispatches straight to it. Encoding walks the chain in install order and stops at the
+first codec that claims the node. Most of the time that is invisible, because libraries
+claim disjoint things — one owns its table providers, another its UDFs, a third its own
+execution plan nodes.
+
+It stops being invisible when a codec claims *broadly*. A node that came from another
+library arrives as an opaque `ForeignExecutionPlan`, and a codec that claims any of
+those will take nodes it does not own from any library installed after it. The query
+still succeeds. What changes is which library wrote the bytes — so a plan that has to
+decode in another process now needs whichever library happened to win, not the one whose
+node it is. `MyPhysicalExtensionCodec` in the provider example claims this way, and
+`test_a_greedy_codec_installed_first_claims_another_librarys_node` pins the consequence.
+
+Two rules of thumb:
+
+- **Writing a codec, claim narrowly.** Downcast to your own types. Claiming a broad
+  category makes your library order-sensitive for everyone downstream of it.
+- **Shipping plans out of the process, verify.** Do not assume your node reached your
+  codec just because both are installed. Round-trip a plan through
+  `ExecutionPlan.to_bytes` / `from_bytes` in a test and assert your codec did the work.
+
+#### When the two orders conflict
+
+Because codec position and planner position both come from one argument list, a library
+can in principle need to be early for one and late for the other: its codec must precede
+a broad claimer, while its planner must nest outside that library's planner.
+
+Do not try to satisfy both by reordering — contribute each half at its own position. The
+two hooks are independent, so a three-line adapter each is enough:
+
+```python
+class CodecsOf:
+    """Contribute only the codec half of a bundle, at this position."""
+    def __init__(self, inner):
+        self.inner = inner
+
+    def __datafusion_session_extension__(self, ctx):
+        return self.inner.__datafusion_session_extension__(ctx)
+
+
+class PlannerOf:
+    """Contribute only the planner half of a bundle, at this position."""
+    def __init__(self, inner):
+        self.inner = inner
+
+    def __datafusion_session_planner__(self, ctx, fallback):
+        return self.inner.__datafusion_session_planner__(ctx, fallback)
+
+
+ctx = SessionContext(config).with_extensions(
+    CodecsOf(engine), CodecsOf(tables),   # engine's codec first
+    PlannerOf(tables), PlannerOf(engine), # engine's planner outermost
+)
+```
+
+This keeps everything `with_extensions` guarantees: one transaction, codecs complete
+before any planner is built, codec ids untouched — an id is read off the codec object,
+not off the extension that contributed it, so splitting a bundle cannot re-tag its
+payloads. A library that expects to be composed this way should expose the halves itself
+rather than make callers write the adapters.
+
+Falling back to the low-level `with_logical_extension_codec` /
+`with_physical_extension_codec` / `set_query_planner` sequence also works, and it is the
+right answer when the pieces do not come as bundles at all. But it is a real downgrade,
+not just a more verbose spelling: you take back responsibility for installing every
+codec before every planner, and a planner you layer by hand keeps the codecs it captured
+— the [one-level rebind](#rebinding-a-planners-codecs-is-one-level-deep) does not reach
+inside it. Reach for it last.
+
+There is no attempt here to make every permutation expressible from one call. Two
+positions per bundle covers the cases that arise; anything stranger is a sign the
+libraries disagree about what they own, which is better fixed there.
 
 #### Codecs are objects, not capsules
 

@@ -34,6 +34,7 @@ from datafusion import (
     col,
     udf,
 )
+from datafusion.plan import ExecutionPlan
 from datafusion_ffi_example import (
     IsNullUDF,
     MyCatalogProvider,
@@ -844,6 +845,133 @@ def test_with_extensions_rejects_a_rust_bundles_bare_capsule():
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     with pytest.raises(TypeError, match="must be an object exposing"):
         SessionContext(config).with_extensions(BareCapsuleExtension())
+
+
+def test_bundle_codec_carries_its_own_planners_node():
+    """The two halves of a bundle meet: its codec serializes its planner's node.
+
+    ``DistributedQueryPlanner`` emits a ``DistributedExec``, a type private to
+    this library. No other codec in the session knows it, so the planner is
+    only useful alongside the codec that carries it — which is why the two ship
+    as one bundle, and why ``with_extensions`` installs every codec before it
+    binds any planner.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    bundle = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(bundle, ProviderCodecsExtension())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    assert bundle.distributed_exec_encode_calls() > 0
+    assert bundle.distributed_exec_decode_calls() > 0
+    # Reaching the session config from inside those decode callbacks is what
+    # shows the provider bound at installation resolves against this session.
+    assert bundle.decode_max_rows_seen() == [2] * len(bundle.decode_max_rows_seen())
+    assert bundle.decode_max_rows_seen()
+
+
+def test_bundle_planners_node_survives_a_plan_round_trip():
+    """A plan carrying the node serializes and comes back intact.
+
+    This is the path a distributed engine takes to ship a plan to a remote
+    executor, and the reason its node's id has to mean the same thing there.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    bundle = MyPlannerExtension()
+    ctx = SessionContext(config).with_extensions(bundle, ProviderCodecsExtension())
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    plan = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').execution_plan()
+    assert "DistributedExec" in plan.display()
+
+    before = bundle.distributed_exec_encode_calls()
+    restored = ExecutionPlan.from_bytes(ctx, plan.to_bytes(ctx))
+
+    assert bundle.distributed_exec_encode_calls() > before
+    assert "DistributedExec" in restored.display()
+
+
+def test_a_greedy_codec_installed_first_claims_another_librarys_node():
+    """Encode order decides *which* library serializes a node.
+
+    Decoding routes by id, so codec order never affects it. Encoding walks the
+    chain in install order and stops at the first codec that claims the node —
+    and a codec may claim broadly. ``MyPhysicalExtensionCodec`` claims any
+    ``ForeignExecutionPlan``, which is what a node from another library looks
+    like once it crosses the boundary, so installing it ahead of this bundle
+    takes the bundle's own node away from it.
+
+    Nothing detects this. A library whose plans must decode elsewhere should
+    not assume its node reached its own codec just because both are installed.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    bundle = MyPlannerExtension()
+    # Provider codecs first, so their broad claim wins.
+    ctx = SessionContext(config).with_extensions(ProviderCodecsExtension(), bundle)
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    # The query still runs — the node was carried, just not by its own library.
+    assert bundle.distributed_exec_encode_calls() == 0
+
+
+class CodecsOf:
+    """Contribute only the codec half of a bundle, at this position."""
+
+    def __init__(self, inner: object) -> None:
+        self.inner = inner
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return self.inner.__datafusion_session_extension__(ctx)
+
+
+class PlannerOf:
+    """Contribute only the planner half of a bundle, at this position."""
+
+    def __init__(self, inner: object) -> None:
+        self.inner = inner
+
+    def __datafusion_session_planner__(
+        self, ctx: SessionContext, fallback: object
+    ) -> object:
+        return self.inner.__datafusion_session_planner__(ctx, fallback)
+
+
+def test_splitting_a_bundle_resolves_conflicting_orders():
+    """A bundle can take one position for its codec and another for its planner.
+
+    Codec position and planner position both come from one argument list, so a
+    library can need to be early for one and late for the other: here the
+    bundle's codec must precede the provider's broad claim, while its planner
+    must stay outermost. Splitting the halves satisfies both without giving up
+    what ``with_extensions`` guarantees.
+    """
+    config = SessionConfig().with_extension(MyPlannerConfig(max_rows=2))
+    bundle = MyPlannerExtension()
+    provider = ProviderCodecsExtension()
+    ctx = SessionContext(config).with_extensions(
+        CodecsOf(bundle),
+        CodecsOf(provider),
+        PlannerOf(bundle),
+    )
+    ctx.register_table("numbers", MyTableProvider(1, 6, 1))
+
+    batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert batches[0].column(0).to_pylist() == [0, 1]
+    # Its codec ran ahead of the provider's broad claim, so the bundle kept its
+    # own node...
+    assert bundle.distributed_exec_encode_calls() > 0
+    # ...and splitting did not re-tag anything: an id is read off the codec
+    # object, never off the extension that contributed it.
+    assert PHYSICAL_CODEC_ID in ctx.physical_extension_codec_ids()
+    assert (
+        "datafusion_ffi_example.MyPhysicalExtensionCodec"
+        in ctx.physical_extension_codec_ids()
+    )
 
 
 class PlannerOnlyExtension:

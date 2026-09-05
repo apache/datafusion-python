@@ -40,6 +40,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
 use crate::config::MyPlannerConfig;
+use crate::distributed_exec::DistributedExec;
 
 /// What the planner saw, accumulated across every call rather than reset each
 /// time.
@@ -205,11 +206,14 @@ impl QueryPlanner for DistributedQueryPlanner {
             .foreign_plan
             .fetch_or(physical_plan_has_foreign_plan(&plan), Ordering::SeqCst);
 
-        Ok(Arc::new(GlobalLimitExec::new(
-            plan,
-            0,
-            Some(config.max_rows),
-        )))
+        // Wrap the result in a node this library owns. Nothing else in the
+        // process can serialize a `DistributedExec`, so a session that installs
+        // this planner without the matching physical codec cannot round-trip
+        // the plans it produces -- which is the reason the two ship as one
+        // bundle. See `ObservingPhysicalExtensionCodec`.
+        Ok(Arc::new(DistributedExec::new(Arc::new(
+            GlobalLimitExec::new(plan, 0, Some(config.max_rows)),
+        ))))
     }
 }
 

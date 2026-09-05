@@ -16,11 +16,11 @@
 // under the License.
 
 use std::fmt;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use datafusion::arrow::datatypes::SchemaRef;
-use datafusion::common::{Result, TableReference};
+use datafusion::common::{Result, TableReference, internal_err};
 use datafusion::datasource::TableProvider;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::{Extension, LogicalPlan};
@@ -43,16 +43,16 @@ use datafusion_session::QueryPlanner;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict};
 
+use crate::distributed_exec::DistributedExec;
 use crate::planner::{DistributedQueryPlanner, PlannerObservations, planner_config_from_options};
 
 /// Values of `ffi_query_planner.max_rows` observed through the task-context
 /// provider bound at installation time.
 ///
-/// Only populated when a codec in this bundle is actually consulted. The host
-/// dispatches a framed payload straight to the codec whose id it names, so a
-/// decline-all codec like the ones here is normally never asked to decode. The
-/// binding itself is proved by [`MyPlannerExtension::max_rows_through_provider`],
-/// which reads the provider directly rather than waiting for a callback.
+/// Recorded on every decode call the chain makes to this bundle's codecs,
+/// including ones they decline. Reaching the session config from inside a
+/// decode callback is what proves the provider bound at installation resolves
+/// against the session running the query.
 type ObservedMaxRows = Arc<Mutex<Vec<usize>>>;
 
 /// The task-context provider handed to this bundle's components, if it has been
@@ -121,11 +121,38 @@ impl LogicalExtensionCodec for ObservingLogicalExtensionCodec {
     }
 }
 
-/// Physical companion to [`ObservingLogicalExtensionCodec`].
+/// Carries this library's own [`DistributedExec`] nodes.
+///
+/// This is the codec half of the bundle, and the reason the bundle ships both.
+/// `DistributedQueryPlanner` emits a `DistributedExec`; no other codec in the
+/// session knows the type, so without this one the plans that planner produces
+/// cannot be serialized at all. Anything else is declined by delegating to the
+/// default codec, so the host's chain falls through to whichever library owns
+/// the node.
+///
+/// The payload is a marker rather than a serialized node. `DistributedExec` is
+/// pass-through and its child arrives already decoded in `inputs`, so there is
+/// nothing else to write down; a node with state of its own would encode that
+/// state here.
 struct ObservingPhysicalExtensionCodec {
     inner: DefaultPhysicalExtensionCodec,
     observed: ObservedMaxRows,
+    claims: Arc<DistributedExecClaims>,
 }
+
+/// How often this bundle's codec claimed one of its own nodes.
+///
+/// Distinct from [`ObservedMaxRows`], which counts every call the chain made,
+/// including ones this codec declined.
+#[derive(Default, Debug)]
+pub(crate) struct DistributedExecClaims {
+    encoded: AtomicUsize,
+    decoded: AtomicUsize,
+}
+
+/// Payload written for a [`DistributedExec`]. See
+/// [`ObservingPhysicalExtensionCodec`].
+const DISTRIBUTED_EXEC_MARKER: &[u8] = b"datafusion_ffi_query_planner_example:DistributedExec";
 
 impl fmt::Debug for ObservingPhysicalExtensionCodec {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -143,7 +170,21 @@ impl PhysicalExtensionCodec for ObservingPhysicalExtensionCodec {
         ctx: &TaskContext,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
+        // Reading the config through `ctx` is what proves the task-context
+        // provider bound at installation resolves against the session running
+        // the query. It happens on the real decode path now, not a synthetic
+        // one.
         record_task_ctx(&self.observed, ctx);
+        if buf == DISTRIBUTED_EXEC_MARKER {
+            let [input] = inputs else {
+                return internal_err!(
+                    "DistributedExec expects exactly one input, got {}",
+                    inputs.len()
+                );
+            };
+            self.claims.decoded.fetch_add(1, Ordering::SeqCst);
+            return Ok(Arc::new(DistributedExec::new(Arc::clone(input))));
+        }
         self.inner.try_decode(buf, inputs, ctx, proto_converter)
     }
 
@@ -153,6 +194,11 @@ impl PhysicalExtensionCodec for ObservingPhysicalExtensionCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
+        if node.is::<DistributedExec>() {
+            self.claims.encoded.fetch_add(1, Ordering::SeqCst);
+            buf.extend_from_slice(DISTRIBUTED_EXEC_MARKER);
+            return Ok(());
+        }
         self.inner.try_encode(node, buf, proto_converter)
     }
 }
@@ -251,6 +297,7 @@ impl BundledPhysicalCodec {
 pub(crate) struct MyPlannerExtension {
     observations: Arc<PlannerObservations>,
     observed_max_rows: ObservedMaxRows,
+    claims: Arc<DistributedExecClaims>,
     bound_provider: BoundProvider,
 }
 
@@ -293,13 +340,31 @@ impl MyPlannerExtension {
     /// `ffi_query_planner.max_rows` values seen through the bound
     /// task-context provider during codec decode calls.
     ///
-    /// Usually empty: the host routes a framed payload to the codec named in
-    /// it, so codecs that own nothing are not consulted.
+    /// One entry per decode call the chain routed to this bundle, so a query
+    /// whose plan carries a `DistributedExec` leaves several.
     fn decode_max_rows_seen(&self) -> Vec<usize> {
         self.observed_max_rows
             .lock()
             .map(|observed| observed.clone())
             .unwrap_or_default()
+    }
+
+    /// How often this bundle's physical codec encoded one of the
+    /// `DistributedExec` nodes its own planner produced.
+    ///
+    /// Non-zero only when the plan was actually serialized — running a query
+    /// does not do that, because an FFI planner hands its result back as an
+    /// opaque plan handle. A distributed engine shipping the plan to a remote
+    /// executor does, which is the case the pairing exists for; in this
+    /// repository `ExecutionPlan.to_bytes` stands in for it.
+    fn distributed_exec_encode_calls(&self) -> usize {
+        self.claims.encoded.load(Ordering::SeqCst)
+    }
+
+    /// Companion to [`Self::distributed_exec_encode_calls`], counting the
+    /// nodes rebuilt on the way back in.
+    fn distributed_exec_decode_calls(&self) -> usize {
+        self.claims.decoded.load(Ordering::SeqCst)
     }
 
     /// `ffi_query_planner.max_rows` read through the task-context provider
@@ -351,6 +416,7 @@ impl MyPlannerExtension {
             Arc::new(ObservingPhysicalExtensionCodec {
                 inner: DefaultPhysicalExtensionCodec {},
                 observed: Arc::clone(&self.observed_max_rows),
+                claims: Arc::clone(&self.claims),
             });
         let ffi_physical =
             FFI_PhysicalExtensionCodec::new(physical, Some(runtime), provider.clone());
