@@ -27,8 +27,11 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
+use datafusion::catalog::{
+    CatalogProvider, CatalogProviderList, DynamicFileCatalog, TableProviderFactory, UrlTableFactory,
+};
 use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_err};
+use datafusion::datasource::dynamic_file::DynamicListTableFactory;
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -423,15 +426,29 @@ impl PySessionContext {
     }
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
-        // Pre-existing caveat, unrelated to query planners: this is the one
-        // method that mints a second `Arc<SessionContext>` for a session, and
-        // it also forks the session's state while keeping its id. Any weak
-        // `FFI_TaskContextProvider` handed out by the receiver stays bound to
-        // the receiver, so the returned context must not outlive it. See
-        // `set_session_query_planner` for why everything else mutates in place.
-        // Tracked as a bug in <https://github.com/apache/datafusion-python/issues/1708>.
+        let state_ref = self.ctx.state_ref();
+        {
+            // Check and replace under one lock so concurrent calls cannot nest
+            // wrappers or overwrite a newer catalog list.
+            let mut state = state_ref.write();
+            if !state.catalog_list().is::<DynamicFileCatalog>() {
+                let factory = Arc::new(DynamicListTableFactory::default());
+                // Bind before publishing the catalog: a reader must never see
+                // a factory whose session store has not been initialized.
+                factory
+                    .session_store()
+                    .with_state(self.ctx.state_weak_ref());
+                let catalog_list = Arc::new(DynamicFileCatalog::new(
+                    Arc::clone(state.catalog_list()),
+                    factory as Arc<dyn UrlTableFactory>,
+                ));
+                // Only the catalog changes. In particular, preserve the state
+                // and context allocations targeted by weak FFI providers.
+                state.register_catalog_list(catalog_list);
+            }
+        }
         Ok(PySessionContext {
-            ctx: Arc::new(self.ctx.as_ref().clone().enable_url_table()),
+            ctx: Arc::clone(&self.ctx),
             logical_codec: Arc::clone(&self.logical_codec),
             physical_codec: Arc::clone(&self.physical_codec),
         })
@@ -1434,14 +1451,13 @@ impl PySessionContext {
     /// time, and a payload written through one would resolve to the other on
     /// decode. See [`SESSION_CODEC_ID_PREFIX`].
     ///
-    /// Handles derived from one session — `with_python_udf_inlining`,
-    /// `with_logical_extension_codec`, [`Self::_install_extension_codecs`] —
-    /// report the same id even though their codec chains differ, so installing
-    /// two of them on one target is refused. That is the intended answer: they
-    /// share a `state_ref`, so their payloads would resolve against the same
-    /// session and are indistinguishable on decode. Every derivation shares the
-    /// session for exactly this reason; `enable_url_table` is the one that does
-    /// not, and it is tracked as a bug.
+    /// Handles derived from one session — `enable_url_table`,
+    /// `with_python_udf_inlining`, `with_logical_extension_codec`,
+    /// [`Self::_install_extension_codecs`] — report the same id even though
+    /// their codec chains may differ, so installing two of them on one target
+    /// is refused. That is the intended answer: they share a `state_ref`, so
+    /// their payloads would resolve against the same session and are
+    /// indistinguishable on decode.
     #[getter]
     pub fn __datafusion_codec_id__(&self) -> String {
         format!("{SESSION_CODEC_ID_PREFIX}{}", self.ctx.session_id())
