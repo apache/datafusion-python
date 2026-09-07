@@ -119,7 +119,12 @@ jobs:
           # free-threaded build and re-pick the system 3.12 (see install step).
           uv run --python "$PWD/.venv/bin/python" --no-project pytest -v --import-mode=importlib
 
-      # FFI + TPC-H examples only need to run once; gate to abi3 entries.
+      # User, FFI, and TPC-H examples only need to run once; gate to abi3 entries.
+      - name: Run hermetic user examples
+        if: matrix.wheel-tag == 'abi3'
+        run: |
+          uv run --python "$PWD/.venv/bin/python" --no-project pytest examples/_tests.py
+
       - name: FFI unit tests
         if: matrix.wheel-tag == 'abi3'
         run: |
