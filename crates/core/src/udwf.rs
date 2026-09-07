@@ -30,7 +30,7 @@ use datafusion::logical_expr::{
 };
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
-use datafusion_python_util::parse_volatility;
+use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
@@ -262,11 +262,8 @@ impl PyWindowUDF {
 
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        let capsule = if func.hasattr("__datafusion_window_udf__")? {
-            func.getattr("__datafusion_window_udf__")?.call0()?
-        } else {
-            func
-        };
+        let capsule =
+            call_capsule_getter(func, "__datafusion_window_udf__", CapsuleGetterArg::None)?;
 
         let capsule = capsule.cast::<PyCapsule>().map_err(to_datafusion_err)?;
         let data: NonNull<FFI_WindowUDF> = capsule

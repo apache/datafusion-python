@@ -1,3 +1,9 @@
+---
+name: check-upstream
+description: Check if upstream Apache DataFusion features (functions, DataFrame ops, SessionContext methods, FFI types) are exposed in this Python project. Use when adding missing functions, auditing API coverage, or ensuring parity with upstream.
+argument-hint: [area] (e.g., "scalar functions", "aggregate functions", "window functions", "dataframe", "session context", "ffi types", "all")
+---
+
 <!---
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -16,12 +22,6 @@
   specific language governing permissions and limitations
   under the License.
 -->
-
----
-name: check-upstream
-description: Check if upstream Apache DataFusion features (functions, DataFrame ops, SessionContext methods, FFI types) are exposed in this Python project. Use when adding missing functions, auditing API coverage, or ensuring parity with upstream.
-argument-hint: [area] (e.g., "scalar functions", "aggregate functions", "window functions", "dataframe", "session context", "ffi types", "all")
----
 
 # Check Upstream DataFusion Feature Coverage
 

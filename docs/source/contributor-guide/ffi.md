@@ -232,6 +232,290 @@ extension that has been written using this approach and the most thoroughly impl
 As we continue to expose more of the DataFusion features, we intend to follow this same
 design pattern.
 
+## Query Planners Across Multiple Libraries
+
+A query can involve three independent native libraries: `datafusion-python`, a library
+that owns table providers or functions, and a library that owns the query planner. The
+examples use two separate extension crates so each role has a distinct shared-library
+identity:
+
+- [`datafusion-ffi-example`] owns providers, functions, and their codecs.
+- [`datafusion-ffi-query-planner-example`] owns the planner and its configuration.
+
+The `SessionContext` owns the codecs used for the exchange and supplies them to the
+foreign planner. This lets the planner decode provider-owned objects and lets
+`datafusion-python` decode the physical plan returned by the planner. The examples use
+process-local tokens to demonstrate ownership; production codecs should serialize
+durable metadata instead.
+
+### Composable codecs
+
+Extension codecs compose. Each call to `with_logical_extension_codec` or
+`with_physical_extension_codec` appends the codec to the session's codec chain
+rather than replacing prior codecs.
+
+**Nothing is asked of the codec itself.** Implement `LogicalExtensionCodec` or
+`PhysicalExtensionCodec` exactly as you would for a session that installs only
+yours. When your codec writes bytes into a serialized plan, datafusion-python
+records which codec wrote them, and strips that record off again before handing the
+bytes back. So your codec receives, byte for byte, the payload it wrote, and is
+never offered a payload another codec wrote.
+
+A codec that also ships to hosts which dispatch differently may still want its own
+guard against foreign payloads. Keeping one is fine; it is simply not needed for the
+datafusion-python path.
+
+That record is the codec's **id**: a short string stored inside the plan, naming the
+codec that wrote each payload. Because plans are decoded in another process — or
+another program — the id has to name the same codec there as it did where the plan
+was written.
+
+Ids are assigned for you. A codec's id is normally its exporting class's import
+path, such as `my_library.Codec`, which is what you will see in
+`logical_extension_codec_ids()` and in decode errors. You choose one yourself in
+three cases:
+
+- **Two instances of one class.** Both get the same id, so the second install
+  raises `ValueError`. Pass `codec_id=` to tell them apart.
+- **A bare `PyCapsule`.** A capsule has no class to take a name from, so it gets an
+  id private to the session that installed it. Plans it encodes fail with a clear
+  error on any other session, rather than being decoded by the wrong codec. Pass
+  `codec_id=` if those plans have to cross sessions.
+- **A class you intend to rename.** The id follows the class name, so renaming stops
+  older plans from decoding. Declare `__datafusion_codec_id__` on the exporting
+  object to pin an id that survives the rename.
+
+`SessionContext.logical_extension_codec_ids()` and its physical counterpart list the
+ids installed on a session, which is also what a decode failure names.
+
+Installing one context's codec stack on another session composes the two sessions
+rather than copying codecs out of one: the imported codecs resolve their task context
+against the original and stop working when it is dropped — see
+[One session, one `Arc<SessionContext>`](#one-session-one-arcsessioncontext). Pass
+the context itself rather than the capsule it exports, so its codecs get an id that
+other sessions can decode.
+
+Because decoding keys off the id rather than install position, registration order
+between independent libraries does not affect decoding at all. It is visible only
+on encoding, where codecs are consulted in install order and the first to claim an
+object wins — so installing a library can claim objects nothing else claimed, but
+never takes over an object an earlier codec was already encoding. Two libraries
+that each own tables, functions, and a planner register like this:
+
+```python
+ctx = SessionContext(config)
+
+# Codecs from both libraries. Order between libraries does not matter.
+ctx = ctx.with_logical_extension_codec(lib_a.codec())
+ctx = ctx.with_logical_extension_codec(lib_b.codec())
+ctx = ctx.with_physical_extension_codec(lib_a.physical_codec())
+ctx = ctx.with_physical_extension_codec(lib_b.physical_codec())
+
+# A session holds one planner, so layering is explicit delegation. Install the
+# codecs first: the fallback captured here keeps the codecs it was exported
+# with. See "Rebinding a planner's codecs is one level deep" below.
+ctx.set_query_planner(lib_a.Planner())
+ctx.set_query_planner(lib_b.Planner(fallback=ctx.__datafusion_query_planner__()))
+
+# Tables and functions — any time before the first query.
+ctx.register_table("t", lib_a.TableProvider())
+ctx.register_udf(udf(lib_b.SomeUDF()))
+```
+
+A codec may own functions that need no payload at all, where the name is the whole
+encoding: `try_encode_udf` writes nothing and `try_decode_udf` rebuilds the function
+from `name`. That is supported and needs no id, because an `Ok` with an empty
+buffer is read as "no opinion" and passes the object to the next codec.
+`NameOnlyUdfCodec` in the FFI example is the worked case. Anything no installed
+codec claims falls through to `Default{Logical,Physical}ExtensionCodec`.
+
+This is the one case where your decoder is consulted about something you may not
+own, because an empty payload has no id to route on. `try_decode_udf` and
+its aggregate and window siblings can therefore be called with an empty `buf` and a
+`name` belonging to another library. Decide from `name` and return an error if it is
+not yours; do not assume `buf` is non-empty.
+
+The framing itself — how an id is stored alongside a payload and routed back, and the two cases
+that stay unframed — is internal to datafusion-python and documented in
+`crates/core/src/codec.rs` for anyone changing it.
+
+The current FFI logical codec supports providers and UDFs but not arbitrary custom
+`LogicalPlan::Extension` nodes. See both example READMEs for the supported flow and
+local build commands.
+
+### Capsule getters receive the session they are installed on
+
+`__datafusion_query_planner__`, `__datafusion_logical_extension_codec__`, and
+`__datafusion_physical_extension_codec__` all take the `SessionContext` the object is
+being installed on, the same way `__datafusion_table_provider__` does:
+
+```rust
+fn __datafusion_physical_extension_codec__<'py>(
+    &self,
+    py: Python<'py>,
+    session: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyCapsule>> {
+    let runtime = get_tokio_runtime().handle().clone();
+    let ctx_provider = ffi_task_context_provider_from_pycapsule(&session)?;
+    let ffi = FFI_PhysicalExtensionCodec::new(inner, Some(runtime), ctx_provider);
+    PyCapsule::new_with_value(py, ffi, cr"datafusion_physical_extension_codec")
+}
+```
+
+This exists because the FFI constructors need things an extension library does not
+have. `FFI_{Logical,Physical}ExtensionCodec::new` needs a `TaskContextProvider` for the
+decode callbacks the codec will receive, and `FFI_QueryPlanner::new` needs both codecs
+on top of that. Taking them from the session is what keeps a library from constructing
+a `SessionContext` purely to satisfy a parameter — an empty one resolves nothing, and
+`FFI_TaskContextProvider` holds it weakly, so a context built inline in the getter is
+already dropped by the time the capsule is used.
+
+A planner uses `FFI_QueryPlanner::new_with_ffi_codecs` with the two codecs it takes off
+the session, and never touches a provider directly. That also matches what installation
+does anyway: `set_query_planner` builds the planner against the codecs of the session
+that will run the query.
+
+`SessionContext` accepts the argument on all three getters and ignores it, so a session
+satisfies the same protocol an extension library implements. When you export the current
+planner to wrap it, `ctx.__datafusion_query_planner__()` and
+`ctx.__datafusion_query_planner__(ctx)` are both fine.
+
+### A codec decodes against the session that is running the query
+
+Because the provider comes from the host, a decode callback running inside an extension
+library resolves names against the session running the query. A function registered with
+`ctx.register_udf(...)` is visible to a foreign codec decoding a node that references it
+by name, and the handle is live rather than a snapshot, so a registration made after the
+codec is installed is visible too.
+
+This is covered in
+`examples/datafusion-ffi-query-planner-example/python/tests/_test_three_library_query_planner.py`,
+where the example codecs take a `require_udf_on_decode` name and resolve it out of the
+task context they are handed.
+
+### One session, one `Arc<SessionContext>`
+
+Every codec handed to a foreign object carries an `FFI_TaskContextProvider`, and that
+type holds its provider **weakly**. A registered catalog provider upgrades the handle on
+every `supports_filters_pushdown` and every `scan`. Those handles are bound to one
+particular `Arc<SessionContext>` allocation, not to the logical session, so anything that
+replaces the allocation orphans all of them and the next query fails with
+`TaskContextProvider went out of scope over FFI boundary`.
+
+So a `PySessionContext` keeps the `Arc<SessionContext>` it was created with for its whole
+life. Installing a query planner writes the new `SessionState` back through
+`state_ref()`, exactly as `add_physical_optimizer_rule` does, rather than deriving a
+replacement context. The session id is carried across that rewrite — `SessionStateBuilder`
+mints a fresh one otherwise — so `session_id()` and every `TaskContext` the session hands
+out keep agreeing.
+
+Repairing the damage instead of avoiding it does not work in general. A context can
+rebuild the codecs it holds in its own fields, but a codec already embedded in a
+registered `FFI_CatalogProvider` — and in every `FFI_SchemaProvider` and
+`FFI_TableProvider` minted from it — is not reachable from Python at all. Nor can the
+codec simply retain the session that built it: a codec handed to a provider is routinely
+registered straight back into that same session, which would close the cycle
+`SessionContext -> catalog -> FFI provider -> FFI codec -> SessionContext` and leak it.
+
+`SessionContext.enable_url_table` is the one exception. It clones the underlying
+`SessionContext`, so the returned context has an allocation of its own and must not
+outlive the receiver.
+
+### What a derived context shares
+
+`with_logical_extension_codec`, `with_physical_extension_codec`, and
+`with_python_udf_inlining` return a new `SessionContext` wrapping the *same* underlying
+session. Only the Python-side codec settings differ; catalogs, tables, registered
+functions, and configuration are the one shared session, so a registration on either
+side is visible to both.
+
+`set_query_planner` does not return anything. The query planner lives in `SessionState`,
+so it is a property of the session rather than of a handle on it, and installing one is
+visible to every context sharing that session — including ones a `with_*` call returned
+earlier. Installing a codec on a session that already has a foreign planner rebuilds
+that planner against the new chain for the same reason: there is one planner, and it has
+to carry the codecs currently in force. This happens on the shared session, so it takes
+effect even if the returned context is discarded — `ctx.with_python_udf_inlining(...)`
+whose result is thrown away still leaves the session's planner carrying the codecs of
+that discarded handle. A call that changes nothing is exempt: asking for the inlining
+setting a context already has returns a handle without touching the session.
+
+The rule that falls out of this is worth stating on its own, because it is the one thing
+that surprises people:
+
+> The session's query planner carries the codecs of the handle that most recently
+> installed one. Every other path — `Expr.to_bytes(ctx)`, `ExecutionPlan.to_bytes(ctx)`,
+> registering a provider — uses the codecs of the handle you call it on.
+
+Those can be different handles, and then one session has two codec chains in effect at
+once:
+
+```python
+ctx = ctx.with_logical_extension_codec(codec_a)
+ctx.set_query_planner(planner)
+ctx.with_logical_extension_codec(codec_b)  # discarded
+
+Expr.to_bytes(expr, ctx)   # encodes with [codec_a, default] -- ctx's own field
+ctx.sql(...).collect()     # plans with [codec_b, codec_a, default] -- the discarded
+                           # handle's chain, installed on the shared session
+```
+
+Chaining `ctx = ctx.with_...(...)`, as the example below does, keeps the two in step.
+`test_the_planner_and_the_handle_can_hold_different_codecs` pins the divergence.
+
+```python
+ctx = SessionContext(config)
+ctx = ctx.with_logical_extension_codec(provider_logical_codec)
+ctx = ctx.with_physical_extension_codec(provider_physical_codec)
+ctx.set_query_planner(planner)
+ctx.register_udf(my_udf)
+```
+
+Order is a readability preference rather than a requirement — installing a codec after a
+planner rebuilds the planner against it.
+
+A session holds exactly one query planner. Calling `set_query_planner` again replaces the
+installed planner instead of layering another one. To chain planners, have the new
+planner wrap the capsule returned by `SessionContext.__datafusion_query_planner__()`,
+captured before the new planner is installed, and delegate to it explicitly.
+
+### Rebinding a planner's codecs is one level deep
+
+The rebuild above swaps the codecs on the installed `ForeignQueryPlanner` handle, and
+only that handle. A planner that wraps a fallback resolved that fallback when *it* was
+installed, and holds the result inside its own library's private data — behind a
+`create_physical_plan` function pointer, with no Python-side handle. A codec installed
+afterwards therefore reaches the outer planner and not the fallback, which keeps
+whichever codecs were in force when it was imported.
+
+Neither side can repair that:
+
+- **The host cannot reach it.** `FFI_QueryPlanner::new_with_ffi_codecs` unwraps exactly
+  one `ForeignQueryPlanner` layer. There is no deeper handle to unwrap — the same
+  situation as a codec embedded in a registered `FFI_CatalogProvider`.
+- **The planner library cannot re-derive it.** `FFI_QueryPlanner` holds its codecs by
+  value, and `Session` exposes no accessor for the ones the host currently has, so
+  `create_physical_plan` cannot pick them up from the session it is handed. The rebuild
+  has to be eager, and an eager rebuild only sees the top layer.
+
+A fix has to come from upstream, and is tracked in
+[apache/datafusion#24762](https://github.com/apache/datafusion/issues/24762).
+
+The stale codecs stay usable rather than dangling — they hold weak handles to the one
+`Arc<SessionContext>` that Rule 6 keeps alive — so the effect is a fallback hop
+serializing with an older codec, not a failure. It is also invisible to the examples
+here, which use one fallback in the same cdylib as its wrapper; `datafusion-ffi`
+short-circuits a same-library hop rather than serializing, so no codec runs. A fallback
+in a *different* library would serialize, and would do it with the codecs it was
+imported with.
+
+So install the codecs before a layered planner. If a codec has to go in afterwards,
+install the outer planner again *on the handle that holds the new codec* — that re-runs
+its getter, which re-imports the fallback against that handle's codecs. Re-installing on
+the original handle rebinds the session's planner back to the original handle's codecs
+instead, which is the trap
+`test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs` pins.
+
 ## Alternative Approach
 
 Suppose you needed to expose some other features of DataFusion and you could not wait
@@ -257,3 +541,5 @@ At the time of this writing, the FFI features are under active development. To s
 the latest status, we recommend reviewing the code in the [datafusion-ffi] crate.
 
 [datafusion-ffi]: https://crates.io/crates/datafusion-ffi
+[`datafusion-ffi-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example
+[`datafusion-ffi-query-planner-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example

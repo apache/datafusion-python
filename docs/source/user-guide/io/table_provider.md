@@ -29,6 +29,11 @@ via [PyCapsule](https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule).
 
 A complete example can be found in the [examples folder](https://github.com/apache/datafusion-python/tree/main/examples).
 
+The method takes the `SessionContext` it is being registered on. Take whatever
+the FFI constructor needs from that session — here the logical extension codec —
+rather than building one inside your library. See the {ref}`ffi` guide for the
+full capsule protocol.
+
 ```rust
 #[pymethods]
 impl MyTableProvider {
@@ -36,13 +41,13 @@ impl MyTableProvider {
     fn __datafusion_table_provider__<'py>(
         &self,
         py: Python<'py>,
+        session: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_table_provider".into();
-
         let provider = Arc::new(self.clone());
-        let provider = FFI_TableProvider::new(provider, false, None);
+        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
+        let provider = FFI_TableProvider::new_with_ffi_codec(provider, false, None, codec);
 
-        PyCapsule::new_bound(py, provider, Some(name.clone()))
+        PyCapsule::new_with_value(py, provider, cr"datafusion_table_provider")
     }
 }
 ```

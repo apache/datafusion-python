@@ -103,7 +103,7 @@ impl MyTableProvider {
             .create_table()
             .map_err(|e: DataFusionError| PyRuntimeError::new_err(e.to_string()))?;
 
-        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
         let provider =
             FFI_TableProvider::new_with_ffi_codec(Arc::new(provider), false, None, codec);
 

@@ -115,6 +115,8 @@ def test_limit(test_ctx):
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
     assert "Skip: None" in str(plan)
+    assert plan.skip() is None
+    assert plan.fetch().python_value().as_py() == 10
 
     df = test_ctx.sql("select c1 from test LIMIT 10 OFFSET 5")
     plan = df.logical_plan()
@@ -122,6 +124,8 @@ def test_limit(test_ctx):
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
     assert "Skip: Some(Literal(Int64(5), None))" in str(plan)
+    assert plan.skip().python_value().as_py() == 5
+    assert plan.fetch().python_value().as_py() == 10
 
 
 def test_aggregate_query(test_ctx):

@@ -49,6 +49,15 @@ Here is a direct link to the file used in the examples:
 - [Fan out distinct expressions to a multiprocessing pool](./multiprocessing_pickle_expr.py)
 - [Distribute expression evaluation across Ray actors](./ray_pickle_expr.py)
 
+### Rust FFI Extensions
+
+- [Table providers, functions, and codecs](./datafusion-ffi-example/)
+- [Independent query planner and planner configuration](./datafusion-ffi-query-planner-example/)
+
+These two crates form a three-library interoperability example with
+`datafusion-python`. They are separate shared libraries so the tests exercise real FFI
+type and codec boundaries rather than same-library Rust downcasts.
+
 ### Substrait Support
 
 - [Serialize query plans using Substrait](./substrait.py)

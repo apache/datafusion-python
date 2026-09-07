@@ -15,20 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "datafusion-python-util"
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
-description.workspace = true
-homepage.workspace = true
-repository.workspace = true
+from __future__ import annotations
 
-[dependencies]
-tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
-pyo3 = { workspace = true }
-datafusion = { workspace = true }
-datafusion-ffi = { workspace = true }
-arrow = { workspace = true }
-prost = { workspace = true }
+import logging
+from typing import TYPE_CHECKING
+
+import pytest
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from typing import Any
+
+
+class _FailOnWarning(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        if record.levelno >= logging.WARNING:
+            err = f"Unexpected log warning from '{record.name}': {self.format(record)}"
+            raise AssertionError(err)
+
+
+@pytest.fixture(autouse=True)
+def fail_on_log_warnings() -> Generator[None, Any, None]:
+    handler = _FailOnWarning()
+    logging.root.addHandler(handler)
+    yield
+    logging.root.removeHandler(handler)

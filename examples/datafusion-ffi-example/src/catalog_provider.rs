@@ -94,7 +94,7 @@ impl FixedSchemaProvider {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let provider = Arc::clone(&self.inner) as Arc<dyn SchemaProvider + Send>;
 
-        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
         let provider = FFI_SchemaProvider::new_with_ffi_codec(provider, None, codec);
 
         PyCapsule::new_with_value(py, provider, cr"datafusion_schema_provider")
@@ -186,7 +186,7 @@ impl MyCatalogProvider {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProvider + Send>;
 
-        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
         let provider = FFI_CatalogProvider::new_with_ffi_codec(provider, None, codec);
 
         PyCapsule::new_with_value(py, provider, cr"datafusion_catalog_provider")
@@ -245,7 +245,7 @@ impl MyCatalogProviderList {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let provider = Arc::clone(&self.inner) as Arc<dyn CatalogProviderList + Send>;
 
-        let codec = ffi_logical_codec_from_pycapsule(session)?;
+        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
         let provider = FFI_CatalogProviderList::new_with_ffi_codec(provider, None, codec);
 
         PyCapsule::new_with_value(py, provider, cr"datafusion_catalog_provider_list")

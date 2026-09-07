@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import ctypes
 import datetime as dt
 import gzip
 import pathlib
@@ -731,6 +732,153 @@ def test_remove_optimizer_rule(ctx):
     assert ctx.remove_optimizer_rule("nonexistent_rule") is False
 
 
+def test_set_query_planner_rejects_wrong_capsule(ctx):
+    with pytest.raises(ValueError, match="datafusion_query_planner"):
+        ctx.set_query_planner(ctx.__datafusion_task_context_provider__())
+
+
+def test_with_extension_rejects_wrong_capsule(ctx):
+    """The extension options hook names the capsule it was handed.
+
+    Like the rest of the capsule family, this reports which capsule turned up
+    rather than CPython's fixed "called with incorrect name" string.
+    """
+
+    class WrongCapsule:
+        def __datafusion_extension_options__(self):
+            return ctx.__datafusion_task_context_provider__()
+
+    with pytest.raises(ValueError, match="datafusion_extension_options"):
+        SessionConfig().with_extension(WrongCapsule())
+
+
+def test_pre_55_codec_signature_reports_an_upgrade(ctx):
+    """A getter that refuses the session is named, not left as a bare TypeError.
+
+    Extension libraries implement these getters, so the pre-55.0.0 signature
+    is what an out-of-date one still has. The original error stays reachable
+    as ``__cause__`` rather than being replaced outright.
+    """
+
+    class PreSessionCodec:
+        def __datafusion_logical_extension_codec__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_logical_extension_codec__"):
+        ctx.with_logical_extension_codec(PreSessionCodec())
+
+    with pytest.raises(ImportError) as excinfo:
+        ctx.with_logical_extension_codec(PreSessionCodec())
+    assert isinstance(excinfo.value.__cause__, TypeError)
+    assert "positional argument" in str(excinfo.value.__cause__)
+
+
+def test_type_error_inside_a_getter_is_not_reported_as_an_upgrade(ctx):
+    """A correctly-signed getter's own TypeError must survive unchanged.
+
+    Only the call machinery's arity error means the library is out of date.
+    Rewriting every TypeError would send an author debugging their own getter
+    off to upgrade a library that is already correct.
+    """
+
+    class RaisesTypeError:
+        def __datafusion_logical_extension_codec__(self, session):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.with_logical_extension_codec(RaisesTypeError())
+
+
+def test_non_type_errors_from_a_getter_propagate(ctx):
+    """Anything that is not a TypeError was never a signature problem."""
+
+    class RaisesValueError:
+        def __datafusion_logical_extension_codec__(self, session):
+            msg = "something else entirely"
+            raise ValueError(msg)
+
+    with pytest.raises(ValueError, match="something else entirely"):
+        ctx.with_logical_extension_codec(RaisesValueError())
+
+
+def test_set_query_planner_capsule(ctx):
+    capsule = ctx.__datafusion_query_planner__()
+    get_name = ctypes.pythonapi.PyCapsule_GetName
+    get_name.argtypes = [ctypes.py_object]
+    get_name.restype = ctypes.c_char_p
+    assert get_name(capsule) == b"datafusion_query_planner"
+
+    ctx.register_record_batches(
+        "query_planner_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+    ctx.set_query_planner(capsule)
+    assert ctx.table_exist("query_planner_test")
+    batches = ctx.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_installing_a_planner_leaves_the_session_intact(ctx):
+    """The planner is written into the existing session, not a copy of it.
+
+    Registrations made before the install are still visible afterwards, and
+    ones made after are visible too -- there is a single session throughout,
+    so neither the catalogs nor the function registry are snapshotted.
+    """
+    ctx.register_record_batches(
+        "registered_before",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    before = udf(
+        lambda arr: arr,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="registered_before",
+    )
+    ctx.register_udf(before)
+
+    ctx.set_query_planner(ctx.__datafusion_query_planner__())
+
+    ctx.register_record_batches(
+        "registered_after",
+        [[pa.RecordBatch.from_pydict({"value": [2]})]],
+    )
+    after = udf(
+        lambda arr: arr,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="registered_after",
+    )
+    ctx.register_udf(after)
+
+    assert ctx.table_exist("registered_before")
+    assert ctx.table_exist("registered_after")
+    assert ctx.sql("SELECT registered_before(1)").collect()
+    assert ctx.sql("SELECT registered_after(1)").collect()
+
+
+def test_contexts_sharing_a_session_share_the_planner(ctx):
+    """A context derived before the install still plans through the planner.
+
+    ``with_python_udf_inlining`` returns a handle on the same session, and the
+    query planner lives in that session's state.
+    """
+    sibling = ctx.with_python_udf_inlining(enabled=False)
+    ctx.register_record_batches(
+        "shared_planner_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+
+    ctx.set_query_planner(ctx.__datafusion_query_planner__())
+
+    assert sibling.table_exist("shared_planner_test")
+    assert sibling.session_id() == ctx.session_id()
+
+
 def test_table_provider(ctx):
     batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
     ctx.register_record_batches("provider_test", [[batch]])
@@ -1149,3 +1297,68 @@ def test_read_csv_with_options(tmp_path, as_read, global_ctx):
     read_csv_with_options_inner(
         tmp_path, csv_content, options, expected, as_read, global_ctx
     )
+
+
+def test_pre_52_table_provider_signature_reports_an_upgrade(ctx):
+    """The table provider hook reports an upgrade the same way codecs do.
+
+    The 52.0.0 signature change added the session argument. This path had its
+    own copy of the error mapping and so missed later corrections to it.
+    """
+
+    class PreSessionProvider:
+        def __datafusion_table_provider__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_table_provider__") as excinfo:
+        ctx.register_table("old_sig", PreSessionProvider())
+    assert isinstance(excinfo.value.__cause__, TypeError)
+
+
+def test_catalog_provider_getter_arity_error_names_the_codec(ctx):
+    """A getter refusing the codec capsule is diagnosed, not left as a TypeError.
+
+    `__datafusion_catalog_provider__` is handed the host's logical extension
+    codec, not the session. It used to call `getattr(...).call1(...)` directly
+    and so produced a bare `TypeError` for an out-of-date library; it now routes
+    through `call_capsule_getter` like the rest of the family.
+
+    The message has to name the codec rather than the SessionContext, or it
+    would send the author to change the wrong parameter.
+    """
+
+    class PreCodecCatalogProvider:
+        def __datafusion_catalog_provider__(self):
+            msg = "should never be called"
+            raise AssertionError(msg)
+
+    with pytest.raises(ImportError, match="__datafusion_catalog_provider__") as excinfo:
+        ctx.register_catalog_provider("old_sig", PreCodecCatalogProvider())
+    assert "logical extension codec" in str(excinfo.value)
+    assert "SessionContext" not in str(excinfo.value)
+    assert isinstance(excinfo.value.__cause__, TypeError)
+
+
+def test_type_error_inside_a_catalog_provider_getter_propagates(ctx):
+    """A correctly-signed catalog getter's own TypeError survives unchanged."""
+
+    class RaisesTypeError:
+        def __datafusion_catalog_provider__(self, codec):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.register_catalog_provider("raises", RaisesTypeError())
+
+
+def test_type_error_inside_a_table_provider_getter_propagates(ctx):
+    """A correctly-signed provider getter's own TypeError survives unchanged."""
+
+    class RaisesTypeError:
+        def __datafusion_table_provider__(self, session):
+            msg = "bad cast inside the getter"
+            raise TypeError(msg)
+
+    with pytest.raises(TypeError, match="bad cast inside the getter"):
+        ctx.register_table("raises", RaisesTypeError())

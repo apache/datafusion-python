@@ -24,10 +24,10 @@ use datafusion::execution::context::SessionContext;
 use datafusion::execution::session_state::SessionState;
 use datafusion::logical_expr::Expr;
 use datafusion_ffi::udtf::FFI_TableFunction;
+use datafusion_python_util::call_capsule_getter;
 use pyo3::IntoPyObjectExt;
-use pyo3::exceptions::{PyImportError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyDict, PyTuple, PyType};
+use pyo3::types::{PyCapsule, PyDict, PyTuple};
 
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
@@ -76,15 +76,11 @@ impl PyTableFunction {
                 Some(session) => session,
                 None => PySessionContext::global_ctx()?.into_bound_py_any(py)?,
             };
-            let capsule = func
-                .getattr("__datafusion_table_function__")?
-                .call1((session,)).map_err(|err| {
-                if err.get_type(py).is(PyType::new::<PyTypeError>(py)) {
-                    PyImportError::new_err("Incompatible libraries. DataFusion 52.0.0 introduced an incompatible signature change for table functions. Either downgrade DataFusion or upgrade your function library.")
-                } else {
-                    err
-                }
-            })?;
+            let capsule = call_capsule_getter(
+                func.clone(),
+                "__datafusion_table_function__",
+                Some(&session),
+            )?;
             let capsule = capsule.cast::<PyCapsule>()?;
             let data: NonNull<FFI_TableFunction> = capsule
                 .pointer_checked(Some(c"datafusion_table_function"))?
