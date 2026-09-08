@@ -1792,7 +1792,7 @@ class SessionContext:
 
         Args:
             planner: Object exposing ``__datafusion_query_planner__`` (see
-                :class:`QueryPlannerExportable`) or a raw
+                :py:class:`~datafusion.extensions.QueryPlannerExportable`) or a raw
                 ``datafusion_query_planner`` PyCapsule.
 
         Examples:
@@ -1896,7 +1896,9 @@ class SessionContext:
         Args:
             extensions: Extension bundles to install. Order is irrelevant for
                 codecs and significant for planners, which nest in this order
-                with the last one outermost.
+                with the last one outermost. Passing none installs nothing and
+                returns a handle on this session, so a caller assembling the
+                list at runtime need not special-case it being empty.
 
         Returns:
             A new context with all extension components installed.
@@ -1904,15 +1906,15 @@ class SessionContext:
         Raises:
             TypeError: If an argument implements neither hook, if
                 ``__datafusion_session_extension__`` returns something other
-                than a :py:class:`SessionExtensionComponents`, or if an
-                extension contributes a codec as a bare ``PyCapsule``.
-            ValueError: If no extensions are given, or two codecs claim the
-                same id. An extension that contributes two instances of one
-                codec class must declare ``__datafusion_codec_id__`` on at
-                least one of them; the collision is refused rather than
-                resolved by position, because a positional id would break
-                stored plans the first time the extension reordered what it
-                returns.
+                than a
+                :py:class:`~datafusion.extensions.SessionExtensionComponents`,
+                or if an extension contributes a codec as a bare ``PyCapsule``.
+            ValueError: If two codecs claim the same id. An extension that
+                contributes two instances of one codec class must declare
+                ``__datafusion_codec_id__`` on at least one of them; the
+                collision is refused rather than resolved by position, because
+                a positional id would break stored plans the first time the
+                extension reordered what it returns.
 
         Examples:
             The example is skipped here because it needs a built FFI
@@ -1930,9 +1932,6 @@ class SessionContext:
             >>> batches[0].column(0).to_pylist()  # doctest: +SKIP
             [1]
         """
-        if not extensions:
-            msg = "with_extensions requires at least one extension"
-            raise ValueError(msg)
         for extension in extensions:
             if not isinstance(
                 extension, (SessionExtensionExportable, SessionPlannerExportable)

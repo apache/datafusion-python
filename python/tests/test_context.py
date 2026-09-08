@@ -950,9 +950,41 @@ class _PlannerExtension:
         return fallback
 
 
-def test_with_extensions_requires_an_extension(ctx):
-    with pytest.raises(ValueError, match="at least one extension"):
-        ctx.with_extensions()
+def test_with_extensions_accepts_no_extensions(ctx):
+    """No extensions installs nothing and returns a handle on this session.
+
+    A caller assembling the list at runtime — from a plugin registry, say —
+    should not have to special-case it being empty, and every sibling varargs
+    method on ``DataFrame`` accepts zero arguments the same way.
+    """
+    ctx.register_record_batches(
+        "empty_extensions_test",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    result = ctx.with_extensions()
+
+    assert result.session_id() == ctx.session_id()
+    assert result.table_exist("empty_extensions_test")
+    assert result.logical_extension_codec_ids() == ctx.logical_extension_codec_ids()
+
+
+def test_with_extensions_no_extensions_keeps_an_installed_planner(ctx):
+    """The empty case must not disturb a planner the session already has.
+
+    Phase two still runs with nothing to install, which rebinds an existing
+    FFI planner to the codec chains — unchanged here, so the planner has to
+    come through intact.
+    """
+    extension = _CodecOnlyExtension()
+    installed = ctx.with_extensions(extension, _PlannerExtension())
+
+    result = installed.with_extensions()
+
+    assert result.logical_extension_codec_ids() == (
+        installed.logical_extension_codec_ids()
+    )
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
 
 
 def test_with_extensions_rejects_non_extension(ctx):

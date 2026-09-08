@@ -93,6 +93,7 @@ from .dataframe import (
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .extensions import (
+    QueryPlannerExportable,
     SessionExtensionComponents,
     SessionExtensionExportable,
     SessionPlannerExportable,
@@ -132,6 +133,7 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
+    "QueryPlannerExportable",
     "RecordBatch",
     "RecordBatchStream",
     "RuntimeEnvBuilder",

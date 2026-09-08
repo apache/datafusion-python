@@ -94,6 +94,24 @@ def test_datafusion_python_version():
     assert datafusion.__version__ is not None
 
 
+def test_extension_protocols_are_exported_together():
+    """The extension protocol family is reachable from the package root.
+
+    ``QueryPlannerExportable`` types the planner a
+    ``__datafusion_session_planner__`` hook returns, so a bundle author needs
+    it exactly as much as the other three; leaving it in the submodule made
+    one member of one family import differently from the rest.
+    """
+    for name in [
+        "QueryPlannerExportable",
+        "SessionExtensionComponents",
+        "SessionExtensionExportable",
+        "SessionPlannerExportable",
+    ]:
+        assert name in datafusion.__all__, f"{name} missing from datafusion.__all__"
+        assert getattr(datafusion, name) is getattr(datafusion.extensions, name)
+
+
 def test_class_module_is_datafusion():
     # context
     for klass in [
