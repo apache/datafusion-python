@@ -37,10 +37,11 @@ Codecs and planners install in two phases, because they compose differently. A
 session's codec chain holds many codecs and dispatches between them by id, so
 codecs merely accumulate and their order does not affect decoding. A session
 holds exactly *one* query planner, so planners compose by nesting: each wraps
-the one before it. Phase one collects every bundle's codecs through
+the one before it. Phase one collects the codecs of every bundle implementing
 :py:class:`SessionExtensionExportable` and installs them; phase two runs
-:py:class:`SessionPlannerExportable` once per bundle, in argument order,
-handing each the planner built so far.
+:py:class:`SessionPlannerExportable` once for each bundle that implements it,
+in argument order, handing each the planner built so far. A bundle implements
+either hook or both, and one it does not implement is simply not called.
 
 That split is what lets several libraries that each ship a planner coexist. It
 also means bundle order is significant for planners and irrelevant for codecs.
@@ -72,10 +73,20 @@ class QueryPlannerExportable(Protocol):
     """Type hint for object that has a __datafusion_query_planner__ PyCapsule.
 
     The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
-    produced by a separate compiled extension. ``session`` is the
-    :py:class:`~datafusion.context.SessionContext` the planner is being
-    installed on; take the extension codecs from it rather than building your
-    own.
+    produced by a separate compiled extension. ``session`` is a handle on the
+    session the planner is being installed on; take the extension codecs from
+    it rather than building your own.
+
+    Duck-type that handle rather than checking its type. It is the PyO3
+    context from ``datafusion._internal``, not the
+    :py:class:`~datafusion.context.SessionContext` wrapper, so it exposes every
+    capsule getter and ``__datafusion_codec_id__`` — which is all the protocol
+    asks of it — but ``isinstance(session, SessionContext)`` is ``False`` even
+    though its ``repr`` reads ``datafusion.SessionContext``. The same is true
+    of the codec getters in :py:mod:`datafusion.user_defined`. The two bundle
+    hooks are the exception: :py:class:`SessionExtensionExportable` and
+    :py:class:`SessionPlannerExportable` are dispatched from Python and receive
+    the wrapper.
     """
 
     def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105

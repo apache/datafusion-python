@@ -602,6 +602,14 @@ the session, and never touches a provider directly. That also matches what insta
 does anyway: `set_query_planner` builds the planner against the codecs of the session
 that will run the query.
 
+Duck-type `session`, and do not check its type. It is the PyO3 context the binding
+installs through, not the `datafusion.context.SessionContext` wrapper, so it carries
+every capsule getter and `__datafusion_codec_id__` — everything the protocol asks of it
+— but `isinstance(session, SessionContext)` is `False` in Python even though its `repr`
+reads `datafusion.SessionContext`. The two bundle hooks
+`__datafusion_session_extension__` and `__datafusion_session_planner__` are the
+exception: `with_extensions` dispatches them from Python and hands them the wrapper.
+
 `SessionContext` accepts the argument on all three getters and ignores it, so a session
 satisfies the same protocol an extension library implements. When you export the current
 planner to wrap it, `ctx.__datafusion_query_planner__()` and

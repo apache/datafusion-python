@@ -1915,7 +1915,11 @@ class SessionContext:
                 ``__datafusion_codec_id__`` on at least one of them; the
                 collision is refused rather than resolved by position, because
                 a positional id would break stored plans the first time the
-                extension reordered what it returns.
+                extension reordered what it returns. Also if a capsule getter
+                returns a capsule of the wrong kind — a physical codec handed
+                over under ``__datafusion_logical_extension_codec__``, say —
+                which is reported against the name the getter should have
+                produced.
 
         Examples:
             The example is skipped here because it needs a built FFI
