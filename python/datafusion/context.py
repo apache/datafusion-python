@@ -1986,7 +1986,7 @@ class SessionContext:
             supplied = extension.__datafusion_session_planner__(new, fallback)
             if supplied is None:
                 continue
-            planner = new.ctx._rebind_query_planner(supplied)
+            planner = new.ctx._export_query_planner(supplied)
 
         # Rebinding the session's planner is a side effect on state shared with
         # every other handle, so do not pay it for a call that installs nothing

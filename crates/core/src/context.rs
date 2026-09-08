@@ -1688,7 +1688,7 @@ impl PySessionContext {
     /// not have to branch on which. Importing here also surfaces a malformed
     /// planner at the hook that produced it rather than at the final install.
     /// Writes nothing.
-    pub fn _rebind_query_planner<'py>(
+    pub fn _export_query_planner<'py>(
         slf: &Bound<'py, Self>,
         planner: Bound<'py, PyAny>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
