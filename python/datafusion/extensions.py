@@ -48,7 +48,7 @@ also means bundle order is significant for planners and irrelevant for codecs.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
@@ -135,7 +135,15 @@ class SessionExtensionComponents:
         ...
         ...     def __datafusion_logical_extension_codec__(self, session=None):
         ...         return self._capsule
-        >>> capsule = SessionContext().__datafusion_logical_extension_codec__()
+
+        The context stays in scope for as long as the codec does. An
+        ``FFI_LogicalExtensionCodec`` holds its task-context provider *weakly*,
+        so a capsule taken off a throwaway ``SessionContext()`` names a session
+        that is already gone and fails on first use with ``TaskContextProvider
+        went out of scope over FFI boundary``:
+
+        >>> ctx = SessionContext()
+        >>> capsule = ctx.__datafusion_logical_extension_codec__()
         >>> components = SessionExtensionComponents(
         ...     logical_extension_codecs=(NamedCodec(capsule),)
         ... )
@@ -183,8 +191,17 @@ class SessionExtensionComponents:
         and the class is frozen, so a list left in place would be a mutable
         member of an immutable value, and a generator would be exhausted by
         the first read.
+
+        Driven off :py:func:`dataclasses.fields` rather than a written-out
+        list, so a codec field added later is normalized without anyone
+        remembering to name it here. The ``_codecs`` suffix is what marks a
+        field as one of them, leaving room for a future field that is not a
+        codec collection and must not be turned into a tuple.
         """
-        for name in ("logical_extension_codecs", "physical_extension_codecs"):
+        for field in fields(self):
+            name = field.name
+            if not name.endswith("_codecs"):
+                continue
             value = getattr(self, name)
             # A str is iterable, so it would otherwise normalize into a tuple
             # of characters and fail much later as that many bogus codecs.
@@ -257,6 +274,12 @@ class SessionPlannerExportable(Protocol):
     not left encoding through a chain that a later bundle has grown.
 
     Return ``None`` to contribute no planner and leave ``fallback`` in place.
+    That is the no-op, and it is not the same as returning ``fallback``: the
+    capsule the first bundle receives wraps the session's planner for export, so
+    handing it back installs it as a foreign planner and every later plan crosses
+    an FFI boundary that was not there before. A bundle with nothing to
+    contribute returns ``None``.
+
     Ignoring ``fallback`` and returning a planner that does not delegate to it
     is legal and means "replace" — but it discards every planner listed before
     this one, including any the session already had.
@@ -274,8 +297,9 @@ class SessionPlannerExportable(Protocol):
         ...     def __datafusion_session_planner__(self, ctx, fallback):
         ...         # A real library returns its own planner wrapping
         ...         # `fallback`, e.g. ``my_library.Planner(fallback=fallback)``.
-        ...         # Handing it straight back is the degenerate wrap: valid,
-        ...         # and contributes nothing.
+        ...         # Handing it straight back is the degenerate wrap: legal,
+        ...         # but it still installs `fallback` as a foreign planner.
+        ...         # Return None instead to contribute nothing.
         ...         return fallback
         >>> isinstance(MyEngineExtension(), SessionPlannerExportable)
         True

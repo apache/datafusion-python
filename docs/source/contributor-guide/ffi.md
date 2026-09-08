@@ -412,6 +412,11 @@ library that must be the only planner does it deliberately — but it is not com
 and nothing detects it. Returning `None` contributes no planner and leaves `fallback`
 in place.
 
+`None` is the no-op, not `fallback`. The capsule handed to the first bundle wraps the
+session's planner for export, so returning it unchanged installs that planner as a
+foreign one and every plan built afterwards crosses an FFI boundary it did not before.
+A bundle that decides at runtime it has nothing to contribute returns `None`.
+
 Three libraries that each ship a planner therefore install like this, with the
 outermost last:
 

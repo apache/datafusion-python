@@ -935,9 +935,11 @@ class _CodecOnlyExtension:
 class _PlannerExtension:
     """Contributes a planner, recording the fallback it was handed.
 
-    Passing ``fallback`` straight back through is the degenerate wrap: the
-    resulting session plans exactly as it did before, which is what lets a
-    pure-Python test assert the threading without a real layering planner.
+    Passing ``fallback`` straight back through is the degenerate wrap: it plans
+    the same queries to the same plans, which is what lets a pure-Python test
+    assert the threading without a real layering planner. It is not a no-op —
+    the capsule gets installed, so the session ends up planning through a
+    foreign planner — but nothing here depends on that either way.
     """
 
     def __init__(self):
