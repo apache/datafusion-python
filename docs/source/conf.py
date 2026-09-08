@@ -199,8 +199,10 @@ html_sidebars = {
     "**": ["sidebar-globaltoc.html"],
 }
 
-# tell myst_parser to auto-generate anchor links for headers h1, h2, h3
-myst_heading_anchors = 3
+# tell myst_parser to auto-generate anchor links for headers h1 through h4.
+# h4 is included because the FFI guide cross-references its own `####`
+# subsections; without an anchor those links render but resolve nowhere.
+myst_heading_anchors = 4
 
 # MyST extensions:
 # - tasklist: GitHub-style `- [x]` checkboxes
