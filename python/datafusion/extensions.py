@@ -81,6 +81,15 @@ class QueryPlannerExportable(Protocol):
     def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
 
 
+def _not_a_codec_iterable(field: str, value: object) -> str:
+    """Message for a codec field that cannot be read as a collection."""
+    return (
+        f"{field} must be an iterable of codec objects, not a single "
+        f"{type(value).__name__}. A lone codec is written as a one-element "
+        f"tuple — {field}=(codec,) — and the trailing comma is what makes it one."
+    )
+
+
 @dataclass(frozen=True)
 class SessionExtensionComponents:
     """Components an extension contributes to a session context.
@@ -134,6 +143,23 @@ class SessionExtensionComponents:
         'my_library.v1'
         >>> components.physical_extension_codecs
         ()
+
+        Any iterable is accepted and stored as a tuple, so a bundle that builds
+        its codecs with a list comprehension does not have to convert:
+
+        >>> components = SessionExtensionComponents(
+        ...     logical_extension_codecs=[NamedCodec(capsule)]
+        ... )
+        >>> type(components.logical_extension_codecs).__name__
+        'tuple'
+
+        A single codec is not an iterable of codecs, and forgetting the
+        trailing comma is the easy way to write one by accident:
+
+        >>> SessionExtensionComponents(logical_extension_codecs=NamedCodec(capsule))
+        Traceback (most recent call last):
+            ...
+        TypeError: logical_extension_codecs must be an iterable of codec objects...
     """
 
     logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = ()
@@ -141,6 +167,34 @@ class SessionExtensionComponents:
 
     physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = ()
     """Physical codecs to add to the session's codec chain, in declaration order."""
+
+    def __post_init__(self) -> None:
+        """Normalize each field to a tuple, rejecting what cannot become one.
+
+        A bundle that writes ``logical_extension_codecs=codec`` instead of
+        ``(codec,)`` is contributing one codec, not an iterable of them.
+        Without this, the mistake surfaces inside
+        :py:meth:`~datafusion.context.SessionContext.with_extensions` as
+        ``'MyCodec' object is not iterable``, which names neither the field
+        nor the hook that built it. Checking here puts the error in the
+        extension library's own frame.
+
+        Normalizing is worth doing on its own: the declared type is a tuple
+        and the class is frozen, so a list left in place would be a mutable
+        member of an immutable value, and a generator would be exhausted by
+        the first read.
+        """
+        for name in ("logical_extension_codecs", "physical_extension_codecs"):
+            value = getattr(self, name)
+            # A str is iterable, so it would otherwise normalize into a tuple
+            # of characters and fail much later as that many bogus codecs.
+            if isinstance(value, (str, bytes)):
+                raise TypeError(_not_a_codec_iterable(name, value))
+            try:
+                codecs = tuple(value)
+            except TypeError:
+                raise TypeError(_not_a_codec_iterable(name, value)) from None
+            object.__setattr__(self, name, codecs)
 
 
 @runtime_checkable

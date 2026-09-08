@@ -1001,6 +1001,37 @@ def test_with_extensions_rejects_bad_components(ctx):
         ctx.with_extensions(BadExtension())
 
 
+@pytest.mark.parametrize(
+    "field", ["logical_extension_codecs", "physical_extension_codecs"]
+)
+def test_session_extension_components_rejects_a_single_codec(field):
+    """A lone codec is not an iterable of codecs.
+
+    Dropping the trailing comma is the easy way to write one by accident. The
+    check lives on the value type so the error lands in the extension
+    library's own frame, naming the field it got wrong, rather than surfacing
+    later inside ``with_extensions`` as ``'_NamedCodec' object is not
+    iterable``.
+    """
+    codec = _NamedCodec(
+        SessionContext().__datafusion_logical_extension_codec__(),
+        "my_library.logical",
+    )
+
+    with pytest.raises(TypeError, match=r"must be an iterable of codec objects"):
+        SessionExtensionComponents(**{field: codec})
+
+
+def test_session_extension_components_rejects_a_string():
+    """A str is iterable, so it needs refusing on its own.
+
+    Left alone it would normalize into a tuple of characters and fail much
+    later as that many bogus codecs.
+    """
+    with pytest.raises(TypeError, match=r"not a single str"):
+        SessionExtensionComponents(logical_extension_codecs="my_library.logical")
+
+
 def test_with_extensions_accepts_a_planner_only_extension(ctx):
     """An extension may implement the planner hook alone.
 
