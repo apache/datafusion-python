@@ -971,9 +971,9 @@ def test_with_extensions_accepts_no_extensions(ctx):
 def test_with_extensions_no_extensions_keeps_an_installed_planner(ctx):
     """The empty case must not disturb a planner the session already has.
 
-    Phase two still runs with nothing to install, which rebinds an existing
-    FFI planner to the codec chains — unchanged here, so the planner has to
-    come through intact.
+    A call that installs no codec and no planner skips the planner commit
+    entirely, so the installed planner keeps the chains it was bound to and the
+    session still plans through it.
     """
     extension = _CodecOnlyExtension()
     installed = ctx.with_extensions(extension, _PlannerExtension())

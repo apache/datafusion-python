@@ -1812,7 +1812,7 @@ class SessionContext:
         self.ctx.set_query_planner(planner)
 
     def with_extensions(
-        self, *extensions: SessionExtensionExportable
+        self, *extensions: SessionExtensionExportable | SessionPlannerExportable
     ) -> SessionContext:
         """Create a new session context with the given extension bundles.
 

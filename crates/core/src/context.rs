@@ -1435,11 +1435,11 @@ impl PySessionContext {
     /// decode. See [`SESSION_CODEC_ID_PREFIX`].
     ///
     /// Handles derived from one session — `with_python_udf_inlining`,
-    /// `with_logical_extension_codec`, `_install_extensions` — report the same
-    /// id even though their codec chains differ, so installing two of them on
-    /// one target is refused. That is the intended answer: they share a
-    /// `state_ref`, so their payloads would resolve against the same session
-    /// and are indistinguishable on decode. Every derivation shares the
+    /// `with_logical_extension_codec`, [`Self::_install_extension_codecs`] —
+    /// report the same id even though their codec chains differ, so installing
+    /// two of them on one target is refused. That is the intended answer: they
+    /// share a `state_ref`, so their payloads would resolve against the same
+    /// session and are indistinguishable on decode. Every derivation shares the
     /// session for exactly this reason; `enable_url_table` is the one that does
     /// not, and it is tracked as a bug.
     #[getter]
