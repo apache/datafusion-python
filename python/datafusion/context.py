@@ -1842,10 +1842,11 @@ class SessionContext:
         a nested planner is never left encoding through a chain a later
         extension has grown.
 
-        If no extension supplies a planner, an existing FFI planner is rebound
-        to the final codec chains and the session's planner is otherwise left
-        alone. An extension that ignores the ``fallback`` it is handed replaces
-        the planners before it instead of nesting on them, including any the
+        If no extension supplies a planner but codecs were installed, an
+        existing FFI planner is rebound to the final chains; if the call
+        installed nothing at all, the session's planner is not touched. An
+        extension that ignores the ``fallback`` it is handed replaces the
+        planners before it instead of nesting on them, including any the
         session already had.
 
         Codec order never affects decoding, which routes by codec id. It
@@ -1987,7 +1988,15 @@ class SessionContext:
                 continue
             planner = new.ctx._rebind_query_planner(supplied)
 
-        new.ctx._install_extension_planner(planner)
+        # Rebinding the session's planner is a side effect on state shared with
+        # every other handle, so do not pay it for a call that installs nothing
+        # -- the same guard `with_python_udf_inlining` carries. With no codec
+        # installed the chains the planner would be rebuilt against are the ones
+        # it already holds, so the rebuild is unobservable except in the one case
+        # where it does harm: a planner sitting on some *other* handle's codecs
+        # gets dragged onto this handle's, silently undoing that install.
+        if planner is not None or logical_codecs or physical_codecs:
+            new.ctx._install_extension_planner(planner)
         return new
 
     def table_provider(self, name: str) -> Table:

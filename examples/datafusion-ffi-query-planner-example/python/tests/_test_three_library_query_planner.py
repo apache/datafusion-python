@@ -1203,6 +1203,57 @@ def test_with_extensions_rebinds_existing_planner():
     assert provider_ext.physical_codec.execution_plan_decode_calls() > 0
 
 
+class NoOpExtension:
+    """A bundle that turns out to contribute nothing.
+
+    A plugin that finds no work to do -- an engine pointed at no scheduler, a
+    codec pack for a feature the session did not enable -- still gets listed,
+    and both its hooks answer empty rather than the caller having to filter it
+    out.
+    """
+
+    def __datafusion_session_extension__(
+        self, ctx: SessionContext
+    ) -> SessionExtensionComponents:
+        return SessionExtensionComponents()
+
+    def __datafusion_session_planner__(
+        self, ctx: SessionContext, fallback: object
+    ) -> object:
+        return None
+
+
+@pytest.mark.parametrize("bundles", [(), (NoOpExtension(),)], ids=["empty", "no_op"])
+def test_with_extensions_installing_nothing_leaves_the_planner_alone(bundles):
+    """A call that installs nothing must not rebind the session's planner.
+
+    The sibling of ``test_an_unchanged_inlining_setting_leaves_the_planner_alone``,
+    and the same hazard: committing the planner rebuilds ``SessionState`` to
+    rebind an existing FFI planner to *this handle's* chains. When no codec was
+    installed there is nothing to rebind against, so the rebuild buys nothing
+    and can only do harm.
+
+    Observable only once the planner holds some *other* handle's codec, which
+    is what the discarded ``with_logical_extension_codec`` below arranges.
+    Without the guard the no-op call drags the planner back onto ``ctx``'s
+    codecs -- and ``ctx`` has no logical codec, so the planner is left with an
+    empty chain and the query fails outright instead of quietly using the wrong
+    codec.
+    """
+    ctx, _physical_codec = physical_only_context()
+    ctx.set_query_planner(MyQueryPlanner())
+
+    planner_codec = MyLogicalExtensionCodec()
+    ctx.with_logical_extension_codec(planner_codec)  # discarded; planner keeps it
+    gc.collect()
+
+    ctx.with_extensions(*bundles)
+    gc.collect()
+
+    ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
+    assert planner_codec.table_provider_encode_calls() > 0
+
+
 def test_with_extensions_rejects_two_bundles_of_the_same_codec_class():
     """Two bundles contributing the same codec class collide on id.
 

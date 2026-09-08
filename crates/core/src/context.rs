@@ -1708,6 +1708,12 @@ impl PySessionContext {
     /// whichever planner the session already holds against the new chains,
     /// exactly as `with_logical_extension_codec` does, and writes nothing at
     /// all if the session has no FFI planner to rebuild.
+    ///
+    /// The caller skips this step entirely when the call installed no codec
+    /// and no planner, the same way [`Self::with_python_udf_inlining`] returns
+    /// early for a no-op toggle: there is nothing to rebind against, and the
+    /// rebuild would drag a planner sitting on another handle's codecs onto
+    /// this one's.
     #[pyo3(signature = (planner=None))]
     pub fn _install_extension_planner<'py>(
         slf: &Bound<'py, Self>,
