@@ -406,6 +406,15 @@ handing each the planner built so far. Two consequences worth holding onto:
   deep](#rebinding-a-planners-codecs-is-one-level-deep)), so a fallback captured before
   the codecs were complete would stay stale forever.
 
+The two hooks therefore see the same session through different chains. Both receive a
+handle on the one session, so the task-context provider taken off either is the same and
+stays valid — but the `ctx` in phase one still carries the chains the receiver had, since
+nothing is installed yet, while the `ctx` in phase two carries every bundle's codecs. A
+bundle that reads the host's codec chains — `MyPlannerExtension` does, to give its
+planner the host's codecs rather than minting its own — must do that in the planner hook.
+Reading them in phase one gets the chains from before the call, missing even the bundle's
+own codecs.
+
 An extension that ignores `fallback` and returns an unrelated planner replaces every
 layer beneath it, including any planner the session already had. That is legal — a
 library that must be the only planner does it deliberately — but it is not composable,

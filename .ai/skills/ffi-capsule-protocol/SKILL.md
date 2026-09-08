@@ -70,6 +70,12 @@ Wrap `fallback` and delegate to it; returning a planner that ignores it discards
 every layer beneath, including one the session already had. It runs after every
 bundle's codecs are installed, so `ctx` carries the final chains.
 
+That is also the only hook where it does. `__datafusion_session_extension__`
+runs before anything is installed, so its `ctx` still carries the chains the
+receiver had — the same session, and the same task-context provider, but not
+this call's codecs, not even your own. Read the host's codec chains in the
+planner hook, never in the extension hook.
+
 A *codec* must always be handed over as an object implementing its getter, never
 as the bare capsule the getter returns; `with_extensions` refuses a capsule.
 A codec's wire id — the string a payload names on decode, which has to mean the

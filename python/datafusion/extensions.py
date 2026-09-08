@@ -231,6 +231,15 @@ class SessionExtensionExportable(Protocol):
     mutating the context they are handed — a registration made during binding
     is not rolled back if a later extension fails.
 
+    ``ctx`` is the right session but not yet the final codec chains: this hook
+    runs before anything is installed, so ``ctx`` still carries whatever chains
+    the receiver had. Take the task-context provider off it — that is bound to
+    the session and is what the components need — but do not read its codec
+    chains expecting to find this call's codecs, including your own.
+    :py:class:`SessionPlannerExportable` is the hook that sees the completed
+    chains, which is why a planner that wraps the host's codecs builds them
+    there rather than here.
+
     A bundle that also contributes a query planner implements
     :py:class:`SessionPlannerExportable` alongside this protocol. Planners are
     installed in a second phase, so they are not part of the components
