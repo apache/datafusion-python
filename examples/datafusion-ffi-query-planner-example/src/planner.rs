@@ -59,8 +59,10 @@ pub(crate) struct PlannerObservations {
     pub(crate) foreign_session: AtomicBool,
     pub(crate) foreign_provider: AtomicBool,
     pub(crate) foreign_plan: AtomicBool,
-    /// Only ever set to `true`, so it is already cumulative.
-    pub(crate) used_fallback: AtomicBool,
+    /// Only ever set to `true`, so it is already cumulative. Read only through
+    /// `MyQueryPlanner::used_fallback` in this module, so unlike its
+    /// neighbours it needs no wider visibility.
+    used_fallback: AtomicBool,
 }
 
 impl fmt::Debug for PlannerObservations {

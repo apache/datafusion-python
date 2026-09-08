@@ -19,11 +19,8 @@ use std::fmt;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use datafusion::arrow::datatypes::SchemaRef;
-use datafusion::common::{Result, TableReference, internal_err};
-use datafusion::datasource::TableProvider;
+use datafusion::common::{Result, internal_err};
 use datafusion::execution::TaskContext;
-use datafusion::logical_expr::{Extension, LogicalPlan};
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_ffi::execution::FFI_TaskContextProvider;
 use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
@@ -49,10 +46,10 @@ use crate::planner::{DistributedQueryPlanner, PlannerObservations, planner_confi
 /// Values of `ffi_query_planner.max_rows` observed through the task-context
 /// provider bound at installation time.
 ///
-/// Recorded on every decode call the chain makes to this bundle's codecs,
-/// including ones they decline. Reaching the session config from inside a
-/// decode callback is what proves the provider bound at installation resolves
-/// against the session running the query.
+/// Recorded on every decode call the chain routes to this bundle's physical
+/// codec, including ones it declines. Reaching the session config from inside
+/// a decode callback is what proves the provider bound at installation
+/// resolves against the session running the query.
 type ObservedMaxRows = Arc<Mutex<Vec<usize>>>;
 
 /// The task-context provider handed to this bundle's components, if it has been
@@ -65,59 +62,6 @@ fn record_task_ctx(observed: &ObservedMaxRows, ctx: &TaskContext) {
         && let Ok(mut observed) = observed.lock()
     {
         observed.push(config.max_rows);
-    }
-}
-
-/// Records the task context resolved by the FFI wrapper, then declines by
-/// delegating to the default codec so the host's codec chain falls through to
-/// the codec that owns the payload.
-struct ObservingLogicalExtensionCodec {
-    inner: DefaultLogicalExtensionCodec,
-    observed: ObservedMaxRows,
-}
-
-impl fmt::Debug for ObservingLogicalExtensionCodec {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("ObservingLogicalExtensionCodec")
-            .finish_non_exhaustive()
-    }
-}
-
-impl LogicalExtensionCodec for ObservingLogicalExtensionCodec {
-    fn try_decode(
-        &self,
-        buf: &[u8],
-        inputs: &[LogicalPlan],
-        ctx: &TaskContext,
-    ) -> Result<Extension> {
-        record_task_ctx(&self.observed, ctx);
-        self.inner.try_decode(buf, inputs, ctx)
-    }
-
-    fn try_encode(&self, node: &Extension, buf: &mut Vec<u8>) -> Result<()> {
-        self.inner.try_encode(node, buf)
-    }
-
-    fn try_decode_table_provider(
-        &self,
-        buf: &[u8],
-        table_ref: &TableReference,
-        schema: SchemaRef,
-        ctx: &TaskContext,
-    ) -> Result<Arc<dyn TableProvider>> {
-        record_task_ctx(&self.observed, ctx);
-        self.inner
-            .try_decode_table_provider(buf, table_ref, schema, ctx)
-    }
-
-    fn try_encode_table_provider(
-        &self,
-        table_ref: &TableReference,
-        node: Arc<dyn TableProvider>,
-        buf: &mut Vec<u8>,
-    ) -> Result<()> {
-        self.inner.try_encode_table_provider(table_ref, node, buf)
     }
 }
 
@@ -402,10 +346,11 @@ impl MyPlannerExtension {
         }
         let runtime = get_tokio_runtime().handle().clone();
 
-        let logical: Arc<dyn LogicalExtensionCodec> = Arc::new(ObservingLogicalExtensionCodec {
-            inner: DefaultLogicalExtensionCodec {},
-            observed: Arc::clone(&self.observed_max_rows),
-        });
+        // Plain default: this library defines no logical extension node, so
+        // there is nothing for a logical codec of its own to claim. It is still
+        // contributed so the bundle carries both codec kinds under ids it
+        // declares -- see `BundledLogicalCodec`.
+        let logical: Arc<dyn LogicalExtensionCodec> = Arc::new(DefaultLogicalExtensionCodec {});
         let ffi_logical =
             FFI_LogicalExtensionCodec::new(logical, Some(runtime.clone()), provider.clone());
         // Handed over as an object, not a capsule, so the codec carries an id
