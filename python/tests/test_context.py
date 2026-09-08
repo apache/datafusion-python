@@ -942,11 +942,15 @@ class _PlannerExtension:
     foreign planner — but nothing here depends on that either way.
     """
 
-    def __init__(self):
+    def __init__(self, calls=None):
         self.fallbacks = []
         self.planner_ctx = None
+        # Shared list the hooks append themselves to, so a test can assert the
+        # order they ran in rather than only that each ran.
+        self.calls = [] if calls is None else calls
 
     def __datafusion_session_planner__(self, ctx, fallback):
+        self.calls.append(self)
         self.planner_ctx = ctx
         self.fallbacks.append(fallback)
         return fallback
@@ -1053,15 +1057,25 @@ def test_with_extensions_threads_the_planner_through_in_order(ctx):
     Planners nest rather than chain, so the host hands each bundle the planner
     built so far. Argument order is nesting order, last one outermost.
     """
-    first, second = _PlannerExtension(), _PlannerExtension()
+    calls = []
+    first, second = _PlannerExtension(calls), _PlannerExtension(calls)
     ctx.with_extensions(first, second)
 
-    assert len(first.fallbacks) == 1
-    assert len(second.fallbacks) == 1
-    # `first` returned its fallback unchanged, and the host normalizes each
-    # hook's return value before passing it on, so `second` sees a capsule
-    # standing for the same planner rather than the session's original.
-    assert second.fallbacks[0] is not None
+    # Argument order, once each. Nothing else pins the order: both hooks
+    # return capsules, and a host that ran them backwards would still leave
+    # each with one fallback recorded.
+    assert calls == [first, second]
+
+    # `first` returned its fallback unchanged, but the host re-exports every
+    # hook's return value before handing it on, so `second` receives a capsule
+    # of its own rather than the object `first` was handed.
+    assert second.fallbacks[0] is not first.fallbacks[0]
+
+    # That is as far as pure Python reaches: a capsule is opaque, so this
+    # cannot tell a re-export of `first`'s planner from a fresh read of the
+    # session's. `test_with_extensions_nests_planners_in_argument_order` in
+    # examples/datafusion-ffi-query-planner-example is what pins the nesting,
+    # by asserting the outer planner delegated to the inner one.
 
 
 def test_with_extensions_planner_hook_sees_the_new_handle(ctx):
@@ -1079,18 +1093,38 @@ def test_with_extensions_planner_hook_sees_the_new_handle(ctx):
 
 
 def test_with_extensions_skips_a_planner_hook_returning_none(ctx):
-    """Returning ``None`` contributes no planner and keeps the fallback."""
+    """Returning ``None`` contributes no planner and keeps the fallback.
+
+    The skip is what lets the call succeed at all: a host that treated the
+    ``None`` as a contribution would hand it to the export step and fail with
+    ``'None' is not an instance of 'PyCapsule'`` before ``downstream`` ran.
+    """
 
     class NoPlanner:
+        def __init__(self):
+            self.fallbacks = []
+
         def __datafusion_session_planner__(self, ctx, fallback):
-            return None
+            self.fallbacks.append(fallback)
+            # Spelled out rather than left to fall off the end: `None` is the
+            # protocol's "contribute no planner", which is what this test is
+            # about, and an implicit one would read as an oversight.
+            return None  # noqa: RET501, PLR1711
 
+    skipped = NoPlanner()
     downstream = _PlannerExtension()
-    ctx.with_extensions(NoPlanner(), downstream)
+    result = ctx.with_extensions(skipped, downstream)
 
-    # The skipped hook did not become `downstream`'s fallback; it got the
-    # session's own planner instead.
+    # Both hooks ran, and `downstream` was handed a planner rather than the
+    # `None` in front of it. It is a fresh read of the session's planner, not
+    # the object `skipped` was given, so a host that fell back by reusing the
+    # previous hook's *input* is ruled out too.
+    assert len(skipped.fallbacks) == 1
     assert len(downstream.fallbacks) == 1
+    assert downstream.fallbacks[0] is not skipped.fallbacks[0]
+
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
 
 
 def test_with_extensions_rejects_bad_codec_capsule(ctx):
