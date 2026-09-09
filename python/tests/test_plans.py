@@ -24,14 +24,15 @@ from datafusion import (
     LogicalPlan,
     Metric,
     MetricsSet,
+    SessionConfig,
     SessionContext,
     col,
     udf,
 )
 
 
-# Note: We must use CSV because memory tables are currently not supported for
-# conversion to/from protobuf.
+# Note: CSV because a *logical* plan cannot carry a memory table. The physical
+# layer can — see `test_execution_plan_over_memory_batches_round_trips`.
 @pytest.fixture
 def df():
     ctx = SessionContext()
@@ -93,6 +94,83 @@ def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:
     restored = LogicalPlan.from_bytes(ctx, blob)
     df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
     assert df.collect() == df_round_trip.collect()
+
+
+def test_execution_plan_over_memory_batches_round_trips() -> None:
+    """A physical plan reading record batches decodes on an unrelated session.
+
+    Only the *logical* layer cannot carry a memory table: its
+    `try_encode_table_provider` has no arm for one. The physical scan inlines
+    the batches, so it needs neither a shared session nor an extension codec —
+    which is what lets a worker process execute a plan the driver encoded.
+    """
+    ctx = SessionContext()
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    plan_bytes = ctx.sql("select a from t").execution_plan().to_bytes(ctx)
+
+    # A session that shares nothing with the encoder: no codecs, no tables.
+    fresh = SessionContext()
+    decoded = ExecutionPlan.from_bytes(fresh, plan_bytes)
+    rows = sum(
+        batch.to_pyarrow().num_rows
+        for partition in range(decoded.partition_count)
+        for batch in fresh.execute(decoded, partition)
+    )
+    assert rows == 6
+
+
+def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
+    """`output_partitioning` distinguishes hash-distributed output from counted."""
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+
+    scan = ctx.sql("select a from t").execution_plan()
+    assert scan.output_partitioning.scheme == "UnknownPartitioning"
+    assert scan.output_partitioning.hash_expressions is None
+    # Agrees with the count-only accessor it supplements.
+    assert scan.output_partitioning.partition_count == scan.partition_count
+
+    grouped = ctx.sql("select a, count(*) from t group by a").execution_plan()
+    partitioning = grouped.output_partitioning
+    assert partitioning.scheme == "Hash"
+    assert partitioning.hash_expressions == ["a@0"]
+    assert partitioning.partition_count == 4
+    assert repr(partitioning) == "Hash([a@0], 4)"
+
+
+def test_execute_rejects_an_out_of_range_partition() -> None:
+    """An out-of-range partition index raises instead of panicking.
+
+    The leaves index their partition vector directly, so without this check a
+    bad index surfaces as a `JoinError::Panic` carrying `index out of bounds`
+    and naming neither the plan nor the index requested.
+    """
+    ctx = SessionContext()
+    ctx.register_record_batches("t", [[pa.record_batch({"a": [1, 2, 3]})]])
+    plan = ctx.sql("select a from t").execution_plan()
+    assert plan.partition_count == 1
+
+    with pytest.raises(ValueError, match="Partition index 5 is out of range"):
+        ctx.execute(plan, 5)
+
+
+def test_session_config_set_rejects_an_unknown_namespace() -> None:
+    """A bad config key raises rather than aborting through a Rust panic.
+
+    `datafusion.runtime.*` appears in `information_schema.df_settings` but has
+    no `ConfigOptions` namespace, so it is the key a naive "read the settings
+    back and replay them on the worker" loop hits first.
+    """
+    with pytest.raises(Exception, match="runtime") as excinfo:
+        SessionConfig().set("datafusion.runtime.memory_limit", "unlimited")
+    # A panic would arrive as BaseException, escaping `except Exception`.
+    assert isinstance(excinfo.value, Exception)
 
 
 def test_installing_a_physical_codec_preserves_strict_mode() -> None:

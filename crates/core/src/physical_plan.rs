@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+use datafusion::physical_expr::Partitioning;
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
 use datafusion_proto::physical_plan::AsExecutionPlan;
 use prost::Message;
@@ -125,6 +126,82 @@ impl PyExecutionPlan {
     #[getter]
     pub fn partition_count(&self) -> usize {
         self.plan.output_partitioning().partition_count()
+    }
+
+    #[getter]
+    pub fn output_partitioning(&self) -> PyPhysicalPartitioning {
+        self.plan.output_partitioning().clone().into()
+    }
+}
+
+/// How a physical plan's output rows are spread across its partitions.
+///
+/// Distinct from `datafusion.expr.Partitioning`, which is the *logical*
+/// partitioning `DataFrame.repartition` takes as a request. This one reports
+/// what a built plan actually does.
+#[pyclass(
+    from_py_object,
+    frozen,
+    name = "PhysicalPartitioning",
+    module = "datafusion",
+    subclass
+)]
+#[derive(Debug, Clone)]
+pub struct PyPhysicalPartitioning {
+    partitioning: Partitioning,
+}
+
+#[pymethods]
+impl PyPhysicalPartitioning {
+    /// Which partitioning scheme this is.
+    ///
+    /// One of `RoundRobinBatch`, `Hash`, `Range`, or `UnknownPartitioning`.
+    /// `UnknownPartitioning` is what a plan reports when it knows how many
+    /// partitions it has but nothing about how rows are distributed between
+    /// them, which is the common case for a file scan.
+    #[getter]
+    pub fn scheme(&self) -> &'static str {
+        match self.partitioning {
+            Partitioning::RoundRobinBatch(_) => "RoundRobinBatch",
+            Partitioning::Hash(_, _) => "Hash",
+            Partitioning::Range(_) => "Range",
+            Partitioning::UnknownPartitioning(_) => "UnknownPartitioning",
+        }
+    }
+
+    #[getter]
+    pub fn partition_count(&self) -> usize {
+        self.partitioning.partition_count()
+    }
+
+    /// The expressions rows are hashed on, or `None` for other schemes.
+    ///
+    /// These are physical expressions, which have no Python representation, so
+    /// they are returned in their displayed form.
+    #[getter]
+    pub fn hash_expressions(&self) -> Option<Vec<String>> {
+        match &self.partitioning {
+            Partitioning::Hash(exprs, _) => {
+                Some(exprs.iter().map(|expr| format!("{expr}")).collect())
+            }
+            _ => None,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self.partitioning)
+    }
+}
+
+impl From<Partitioning> for PyPhysicalPartitioning {
+    fn from(partitioning: Partitioning) -> Self {
+        Self { partitioning }
+    }
+}
+
+impl From<PyPhysicalPartitioning> for Partitioning {
+    fn from(partitioning: PyPhysicalPartitioning) -> Self {
+        partitioning.partitioning
     }
 }
 

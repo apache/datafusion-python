@@ -169,6 +169,41 @@ installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.
 
+### Physical plans report their partitioning scheme
+
+{py:attr}`~datafusion.ExecutionPlan.output_partitioning` is new, and reports
+what {py:attr}`~datafusion.ExecutionPlan.partition_count` leaves out: whether
+the rows in those partitions are hash-distributed on known keys, spread
+round-robin, or merely counted. It returns a
+{py:class}`~datafusion.PhysicalPartitioning`.
+
+```python
+partitioning = df.execution_plan().output_partitioning
+partitioning.scheme  # 'Hash', 'RoundRobinBatch', 'Range', 'UnknownPartitioning'
+partitioning.partition_count
+partitioning.hash_expressions  # display strings, or None
+```
+
+This is additive; `partition_count` keeps working and agrees with
+`output_partitioning.partition_count`. Note that
+{py:class}`datafusion.expr.Partitioning` is a different type: that one is the
+*logical* partitioning {py:meth}`~datafusion.DataFrame.repartition_by_hash`
+takes as a request, while this one is what a built plan actually does.
+
+### Two error paths that used to abort the interpreter
+
+{py:meth}`~datafusion.SessionContext.execute` now raises `ValueError` for a
+partition index that is out of range. Previously the plan's leaves indexed
+their partitions directly and the resulting Rust panic surfaced as an error
+naming neither the plan nor the index.
+
+{py:meth}`~datafusion.SessionConfig.set` now raises for a key whose namespace
+does not exist -- `datafusion.runtime.*`, or a config extension that has not
+been installed yet. Previously it aborted with a `PanicException`, which
+derives from `BaseException` and so escaped `except Exception`. This matters
+when replaying settings read back from `information_schema.df_settings`, which
+lists keys in both of those categories.
+
 ### Changes to the `datafusion-python-util` crate
 
 Extension libraries written in Rust usually depend on the

@@ -44,6 +44,7 @@ use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::physical_plan::ExecutionPlanProperties;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -193,8 +194,17 @@ impl PySessionConfig {
         Self::from(self.config.clone().with_parquet_pruning(enabled))
     }
 
-    fn set(&self, key: &str, value: &str) -> Self {
-        Self::from(self.config.clone().set_str(key, value))
+    /// Set a config option by key.
+    ///
+    /// Not routed through `SessionConfig::set_str`, which unwraps the result:
+    /// an unknown namespace -- `datafusion.runtime.*`, or a config extension
+    /// that has not been installed yet -- would abort as a `PanicException`
+    /// rather than raise. `information_schema.df_settings` lists keys in both
+    /// of those categories, so replaying it is otherwise unsafe.
+    fn set(&self, key: &str, value: &str) -> PyDataFusionResult<Self> {
+        let mut config = self.config.clone();
+        config.options_mut().set(key, value)?;
+        Ok(Self::from(config))
     }
 
     pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
@@ -1412,6 +1422,18 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyRecordBatchStream> {
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let plan = plan.plan.clone();
+        // Checked here because the leaves index their partitions directly: a
+        // `MemorySourceConfig` panics with a bare `index out of bounds`, which
+        // surfaces as a `JoinError::Panic` naming neither the plan nor the
+        // partition the caller asked for.
+        let partition_count = plan.output_partitioning().partition_count();
+        if part >= partition_count {
+            return Err(PyValueError::new_err(format!(
+                "Partition index {part} is out of range for a plan with \
+                 {partition_count} partition(s)"
+            ))
+            .into());
+        }
         let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }

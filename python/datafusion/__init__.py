@@ -100,7 +100,13 @@ from .extensions import (
 )
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
-from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
+from .plan import (
+    ExecutionPlan,
+    LogicalPlan,
+    Metric,
+    MetricsSet,
+    PhysicalPartitioning,
+)
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
@@ -133,6 +139,7 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
+    "PhysicalPartitioning",
     "QueryPlannerExportable",
     "RecordBatch",
     "RecordBatchStream",
