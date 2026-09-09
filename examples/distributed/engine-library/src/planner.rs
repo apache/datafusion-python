@@ -71,6 +71,13 @@ pub(crate) fn shuffle_dir_from_options(options: &ConfigOptions) -> Option<String
         .into_iter()
         .find(|entry| entry.key == SHUFFLE_DIR_KEY || entry.key == FFI_SHUFFLE_DIR_KEY)
         .and_then(|entry| entry.value)
+        // A registered config extension always *has* an entry, so an unset
+        // directory arrives as `Some("")` rather than `None`. Treating that as
+        // configured inserts a stage whose paths are relative to whatever the
+        // process's working directory happens to be -- which silently writes
+        // shuffle files next to the caller and then reads another query's
+        // leftovers back out of them.
+        .filter(|shuffle_dir| !shuffle_dir.is_empty())
 }
 
 /// Wrap the partial aggregate, or the whole plan if there is not one.
