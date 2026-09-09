@@ -44,9 +44,25 @@ REPO_ROOT = PACKAGE_ROOT.parents[1]
 # The hook reference in the extension guide is a hand-written table of every
 # `__datafusion_*__` name. Nothing about adding a hook forces it to be updated,
 # so the table is compared against the names the package actually dispatches.
+#
+# "Dispatches" means a *site*, not an occurrence: the name spelled where the
+# host looks the hook up or defines its own, not everywhere the name is
+# written. Scanning raw text would make the table's contents depend on prose —
+# a doc-comment contrasting a hook with one that was removed, or naming a
+# hypothetical, would have to be either deleted or added to the table, and
+# neither is right. Structure answers the question text cannot.
 HOOK_REFERENCE = REPO_ROOT / "docs" / "source" / "extension-guide" / "index.md"
-HOOK_NAME = re.compile(r"__datafusion_[a-z_]+__")
+HOOK_NAME = re.compile(r"^__datafusion_[a-z_]+__$")
 HOOK_TABLE_ROW = re.compile(r"^\| `(__datafusion_[a-z_]+__)`")
+
+# A Rust dispatch site is a string literal holding nothing but the hook name —
+# what `hasattr`, `getattr`, and `call_capsule_getter` are handed — or a `fn`
+# of that name, which is a hook the host itself implements. An error message
+# that merely embeds the name (`"__datafusion_scalar_udf__ does not exist"`)
+# is prose and does not count; every such message sits beside a real lookup.
+RUST_HOOK_SITE = re.compile(
+    r'"(__datafusion_[a-z_]+__)"|\bfn\s+(__datafusion_[a-z_]+__)\b'
+)
 
 # Above this, a docstring has stopped being a contract and become a
 # narrative. Move the argument to a guide page under `docs/source/` and leave
@@ -139,18 +155,46 @@ def test_extension_api_has_a_doctest(name: str, obj: object) -> None:
     )
 
 
+def _rust_hook_sites() -> set[str]:
+    """Hook names Rust looks up or defines. See :data:`RUST_HOOK_SITE`."""
+    found: set[str] = set()
+    for path in sorted((REPO_ROOT / "crates").rglob("*.rs")):
+        for match in RUST_HOOK_SITE.finditer(path.read_text()):
+            found.add(match.group(1) or match.group(2))
+    return found
+
+
+def _python_hook_sites() -> set[str]:
+    """Hook names the Python wrappers call, declare, or look up by string.
+
+    Read off the syntax tree rather than the text, so a name is counted when
+    it is an attribute being accessed (``extension.__datafusion_x__(ctx)``), a
+    method being defined (the protocol stubs), or a string standing alone (a
+    ``getattr`` argument) — and not when it merely appears inside a docstring.
+    """
+    found: set[str] = set()
+    for path in sorted(PACKAGE_ROOT.rglob("*.py")):
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                name = node.name
+            elif isinstance(node, ast.Attribute):
+                name = node.attr
+            elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+                name = node.value
+            else:
+                continue
+            if HOOK_NAME.match(name):
+                found.add(name)
+    return found
+
+
 def test_hook_reference_table_lists_every_hook() -> None:
     """The guide's hook table matches the hooks the package dispatches."""
     if not HOOK_REFERENCE.is_file():
         pytest.skip("running against an installed wheel, without docs/ or crates/")
 
-    dispatched: set[str] = set()
-    for directory, suffix in (
-        (REPO_ROOT / "crates", "*.rs"),
-        (PACKAGE_ROOT, "*.py"),
-    ):
-        for path in sorted(directory.rglob(suffix)):
-            dispatched.update(HOOK_NAME.findall(path.read_text()))
+    dispatched = _rust_hook_sites() | _python_hook_sites()
 
     documented = {
         match.group(1)
@@ -162,12 +206,16 @@ def test_hook_reference_table_lists_every_hook() -> None:
         f"  dispatched but not in the table: {name}"
         for name in sorted(dispatched - documented)
     ] + [
-        f"  in the table but nowhere in the source: {name}"
+        f"  in the table but dispatched from nowhere: {name}"
         for name in sorted(documented - dispatched)
     ]
     assert not problems, (
         f"{HOOK_REFERENCE.relative_to(REPO_ROOT)} is out of sync with the "
-        "hooks in crates/ and python/datafusion/:\n" + "\n".join(problems)
+        "hooks in crates/ and python/datafusion/:\n"
+        + "\n".join(problems)
+        + "\n\nOnly dispatch sites count — a name looked up by string, an "
+        "attribute accessed, or a method defined. Naming a hook in prose does "
+        "not put it in this set, and does not belong in the table either."
     )
 
 
