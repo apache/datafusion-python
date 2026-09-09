@@ -36,3 +36,4 @@ docs/mdbook/book
 
 .pyo3_build_config
 
+examples/distributed/*/.venv/

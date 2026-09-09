@@ -1,0 +1,226 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+//! A physical codec that writes durable metadata.
+//!
+//! The other example crates in this repository park the live object in a
+//! process-global `HashMap` and encode an integer token into it. That makes
+//! Rust type identity observable in a test, and it is explicitly not a
+//! pattern: the token means the same bytes cannot be decoded twice, one plan
+//! cannot fan out to several readers, and a plan that never reaches a decoder
+//! leaks. None of that is acceptable for a plan that leaves the process.
+//!
+//! This codec writes down what a fresh [`PartitionedParquetExec`] can be built
+//! from -- the file paths and sizes, the projection, the row limit, and the
+//! schema -- so decoding needs nothing from the encoding process. Sending the
+//! same bytes to ten workers works, and so does sending them tomorrow.
+//!
+//! # Wire format
+//!
+//! ```text
+//! DFXSTOR1 | json_len: u32 (LE) | json | arrow ipc schema
+//! ```
+//!
+//! The magic is checked before anything else is read, and the trailing `1` is
+//! a version this codec refuses to guess at. JSON carries the small scalar
+//! fields because a human debugging a worker can read it; the schema is Arrow
+//! IPC because that is the only encoding guaranteed to round-trip every Arrow
+//! type, including extension types and field metadata.
+
+use std::fmt;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+use arrow::datatypes::Schema;
+use arrow::ipc::reader::StreamReader;
+use arrow::ipc::writer::StreamWriter;
+use datafusion::common::{Result, internal_datafusion_err, internal_err};
+use datafusion::execution::TaskContext;
+use datafusion::physical_plan::ExecutionPlan;
+use datafusion_proto::physical_plan::{
+    DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
+};
+
+use crate::exec::{FileSlice, PartitionedParquetExec};
+
+/// Framing magic. The trailing digit is the payload version.
+const MAGIC: &[u8; 8] = b"DFXSTOR1";
+
+/// How often this codec claimed one of its own nodes.
+///
+/// Exposed to Python so a test can assert that *this* codec carried the node,
+/// rather than inferring it from a query that merely succeeded. Both codecs
+/// being installed does not mean yours saw the node -- see
+/// `extension_codec_order`.
+#[derive(Default, Debug)]
+pub(crate) struct CodecCounters {
+    pub(crate) encoded: AtomicUsize,
+    pub(crate) decoded: AtomicUsize,
+    pub(crate) declined: AtomicUsize,
+}
+
+pub(crate) struct DfxStoragePhysicalCodec {
+    /// Anything this library does not own is handed to the default codec,
+    /// whose error is the chain's "not mine" signal.
+    inner: DefaultPhysicalExtensionCodec,
+    pub(crate) counters: Arc<CodecCounters>,
+}
+
+impl DfxStoragePhysicalCodec {
+    pub(crate) fn new(counters: Arc<CodecCounters>) -> Self {
+        Self {
+            inner: DefaultPhysicalExtensionCodec {},
+            counters,
+        }
+    }
+}
+
+impl fmt::Debug for DfxStoragePhysicalCodec {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DfxStoragePhysicalCodec")
+            .finish_non_exhaustive()
+    }
+}
+
+fn schema_to_ipc_bytes(schema: &Schema) -> Result<Vec<u8>> {
+    let mut buf: Vec<u8> = Vec::new();
+    {
+        let mut writer = StreamWriter::try_new(&mut buf, schema)
+            .map_err(|err| internal_datafusion_err!("dfx_storage: writing schema: {err}"))?;
+        writer
+            .finish()
+            .map_err(|err| internal_datafusion_err!("dfx_storage: writing schema: {err}"))?;
+    }
+    Ok(buf)
+}
+
+fn schema_from_ipc_bytes(bytes: &[u8]) -> Result<Schema> {
+    let reader = StreamReader::try_new(std::io::Cursor::new(bytes), None)
+        .map_err(|err| internal_datafusion_err!("dfx_storage: reading schema: {err}"))?;
+    Ok(reader.schema().as_ref().clone())
+}
+
+impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
+    fn try_encode(
+        &self,
+        node: Arc<dyn ExecutionPlan>,
+        buf: &mut Vec<u8>,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
+    ) -> Result<()> {
+        // Downcast to our own concrete type. Claiming a broad category --
+        // `ForeignExecutionPlan`, say -- would take nodes from every library
+        // installed after this one, and the query would still succeed, so
+        // nothing would point at the codec that stole them.
+        let Some(exec) = node.downcast_ref::<PartitionedParquetExec>() else {
+            self.counters.declined.fetch_add(1, Ordering::SeqCst);
+            return self.inner.try_encode(node, buf, proto_converter);
+        };
+
+        let descriptor = serde_json::json!({
+            "files": exec.files.iter().map(|file| {
+                serde_json::json!({ "path": file.path, "size": file.size })
+            }).collect::<Vec<_>>(),
+            "projection": exec.projection,
+            "limit": exec.limit,
+        });
+        let json = serde_json::to_vec(&descriptor)
+            .map_err(|err| internal_datafusion_err!("dfx_storage: encoding descriptor: {err}"))?;
+        let schema = schema_to_ipc_bytes(&exec.table_schema)?;
+
+        buf.extend_from_slice(MAGIC);
+        let json_len = u32::try_from(json.len())
+            .map_err(|_| internal_datafusion_err!("dfx_storage: descriptor too large to encode"))?;
+        buf.extend_from_slice(&json_len.to_le_bytes());
+        buf.extend_from_slice(&json);
+        buf.extend_from_slice(&schema);
+
+        self.counters.encoded.fetch_add(1, Ordering::SeqCst);
+        Ok(())
+    }
+
+    fn try_decode(
+        &self,
+        buf: &[u8],
+        inputs: &[Arc<dyn ExecutionPlan>],
+        ctx: &TaskContext,
+        proto_converter: &dyn PhysicalProtoConverterExtension,
+    ) -> Result<Arc<dyn ExecutionPlan>> {
+        // The chain routes a framed payload by id, so reaching this codec
+        // already means the payload is ours. Checking the magic anyway is
+        // cheap and turns a version skew into a clear error instead of a
+        // misparse.
+        let Some(rest) = buf.strip_prefix(MAGIC) else {
+            self.counters.declined.fetch_add(1, Ordering::SeqCst);
+            return self.inner.try_decode(buf, inputs, ctx, proto_converter);
+        };
+        if !inputs.is_empty() {
+            return internal_err!(
+                "PartitionedParquetExec is a leaf, got {} input(s)",
+                inputs.len()
+            );
+        }
+
+        let (len_bytes, rest) = rest.split_at_checked(4).ok_or_else(|| {
+            internal_datafusion_err!("dfx_storage: payload truncated before descriptor length")
+        })?;
+        let json_len = u32::from_le_bytes(
+            len_bytes
+                .try_into()
+                .map_err(|_| internal_datafusion_err!("dfx_storage: bad descriptor length"))?,
+        ) as usize;
+        let (json, schema_bytes) = rest.split_at_checked(json_len).ok_or_else(|| {
+            internal_datafusion_err!(
+                "dfx_storage: descriptor claims {json_len} bytes, {} remain",
+                rest.len()
+            )
+        })?;
+
+        let descriptor: serde_json::Value = serde_json::from_slice(json)
+            .map_err(|err| internal_datafusion_err!("dfx_storage: bad descriptor: {err}"))?;
+        let files = descriptor["files"]
+            .as_array()
+            .ok_or_else(|| internal_datafusion_err!("dfx_storage: descriptor has no file list"))?
+            .iter()
+            .map(|file| {
+                let path = file["path"].as_str().ok_or_else(|| {
+                    internal_datafusion_err!("dfx_storage: file entry has no path")
+                })?;
+                let size = file["size"].as_u64().ok_or_else(|| {
+                    internal_datafusion_err!("dfx_storage: file entry {path} has no size")
+                })?;
+                Ok(FileSlice {
+                    path: path.to_string(),
+                    size,
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let projection = descriptor["projection"].as_array().map(|indices| {
+            indices
+                .iter()
+                .filter_map(|index| index.as_u64().map(|index| index as usize))
+                .collect::<Vec<_>>()
+        });
+        let limit = descriptor["limit"].as_u64().map(|limit| limit as usize);
+        let schema = Arc::new(schema_from_ipc_bytes(schema_bytes)?);
+
+        self.counters.decoded.fetch_add(1, Ordering::SeqCst);
+        Ok(Arc::new(PartitionedParquetExec::new(
+            files, schema, projection, limit,
+        )?))
+    }
+}

@@ -1667,6 +1667,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "dfx-storage"
+version = "54.0.0"
+dependencies = [
+ "arrow",
+ "async-trait",
+ "datafusion",
+ "datafusion-catalog",
+ "datafusion-common",
+ "datafusion-ffi",
+ "datafusion-proto",
+ "datafusion-python-util",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+ "serde_json",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
