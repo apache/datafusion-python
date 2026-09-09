@@ -26,15 +26,18 @@ use std::fmt;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
+use datafusion_ffi::proto::logical_extension_codec::FFI_LogicalExtensionCodec;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
+use datafusion_proto::logical_plan::LogicalExtensionCodec;
 use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
-    create_physical_extension_capsule, ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
+    create_logical_extension_capsule, create_physical_extension_capsule,
+    ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
 };
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyDict};
 
-use crate::codec::{CodecCounters, DfxStoragePhysicalCodec};
+use crate::codec::{CodecCounters, DfxStorageLogicalCodec, DfxStoragePhysicalCodec};
 
 /// Wire id this codec's payloads carry.
 ///
@@ -44,6 +47,33 @@ use crate::codec::{CodecCounters, DfxStoragePhysicalCodec};
 /// imports it under any other name would otherwise disagree about the id and
 /// every decode would fail.
 const PHYSICAL_CODEC_ID: &str = "dfx_storage.physical.v1";
+
+/// Logical companion to [`PHYSICAL_CODEC_ID`].
+const LOGICAL_CODEC_ID: &str = "dfx_storage.logical.v1";
+
+/// Carries this library's logical codec. See [`BundledPhysicalCodec`].
+#[pyclass(name = "BundledLogicalCodec", module = "dfx_storage")]
+pub(crate) struct BundledLogicalCodec {
+    codec: FFI_LogicalExtensionCodec,
+}
+
+#[pymethods]
+impl BundledLogicalCodec {
+    #[getter]
+    fn __datafusion_codec_id__(&self) -> &'static str {
+        LOGICAL_CODEC_ID
+    }
+
+    #[pyo3(signature = (session=None))]
+    fn __datafusion_logical_extension_codec__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Option<Bound<'py, PyAny>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let _ = session;
+        create_logical_extension_capsule(py, &self.codec)
+    }
+}
 
 /// Carries this library's physical codec as an object rather than a capsule.
 ///
@@ -141,15 +171,24 @@ impl DfxStorageExtension {
 
         let codec: Arc<dyn PhysicalExtensionCodec + Send> =
             Arc::new(DfxStoragePhysicalCodec::new(Arc::clone(&self.counters)));
-        let ffi = FFI_PhysicalExtensionCodec::new(codec, Some(runtime), provider);
+        let ffi = FFI_PhysicalExtensionCodec::new(codec, Some(runtime.clone()), provider.clone());
         let physical = Py::new(py, BundledPhysicalCodec { codec: ffi })?;
 
-        // No logical codec: this library defines no logical extension node.
-        // Its table provider crosses FFI as a provider, not as a plan node.
+        // The logical codec is not optional, even though this library defines
+        // no logical extension *node*. Its table provider is held in the
+        // logical plan, and any installed query planner receives that plan as
+        // protobuf -- so without this the session fails to plan at all. See
+        // `DfxStorageLogicalCodec`.
+        let logical: Arc<dyn LogicalExtensionCodec> =
+            Arc::new(DfxStorageLogicalCodec::new(Arc::clone(&self.counters)));
+        let ffi_logical = FFI_LogicalExtensionCodec::new(logical, Some(runtime), provider);
+        let logical = Py::new(py, BundledLogicalCodec { codec: ffi_logical })?;
+
         let components = py
             .import("datafusion")?
             .getattr("SessionExtensionComponents")?;
         let kwargs = PyDict::new(py);
+        kwargs.set_item("logical_extension_codecs", (logical,))?;
         kwargs.set_item("physical_extension_codecs", (physical,))?;
         components.call((), Some(&kwargs))
     }

@@ -45,6 +45,10 @@ use crate::exec::{FileSlice, PartitionedParquetExec};
 /// Scans `*.parquet` under `directory`, one partition per file.
 #[derive(Debug)]
 pub(crate) struct PartitionedParquetTable {
+    /// Kept so the logical codec can write it down. Everything else here is
+    /// derived from the directory, so the path is the whole encoding -- see
+    /// [`crate::codec::DfxStorageLogicalCodec`].
+    pub(crate) directory: String,
     files: Vec<FileSlice>,
     schema: SchemaRef,
 }
@@ -86,6 +90,7 @@ impl PartitionedParquetTable {
 
         let schema = Self::read_schema(&paths[0])?;
         Ok(Self {
+            directory: directory.to_string_lossy().into_owned(),
             files,
             schema: Arc::new(schema),
         })
