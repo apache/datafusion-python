@@ -16,6 +16,14 @@
 - [Common operations](https://datafusion.apache.org/python/user-guide/common-operations/index.html): select, filter, join, aggregate, window, expressions, and functions.
 - [SQL](https://datafusion.apache.org/python/user-guide/sql.html): running SQL against registered tables.
 - [Configuration](https://datafusion.apache.org/python/user-guide/configuration.html): session and runtime options.
+- [Using extension libraries](https://datafusion.apache.org/python/user-guide/extensions.html): installing a compiled extension and registering its tables, functions, or execution backend with `SessionContext.with_extensions`.
+
+## Extensions and distribution
+
+- [Using extension libraries](https://datafusion.apache.org/python/user-guide/extensions.html): which extensions register directly and which need `with_extensions`, plus the two failure modes (a collected context, a version mismatch).
+- [Distributing work](https://datafusion.apache.org/python/user-guide/distributing-work/index.html): choosing between shipping expressions to a worker pool and installing a distributed query engine.
+- [Shipping expressions to workers](https://datafusion.apache.org/python/user-guide/distributing-work/expressions.html): pickling `Expr` to `multiprocessing` or Ray, what travels inline vs by name, `datafusion.ipc` worker/sender contexts, and the security model.
+- [Extension Guide](https://datafusion.apache.org/python/extension-guide/index.html): the PyCapsule protocol for shipping table providers, catalogs, functions, extension codecs, and query planners from a Rust cdylib. Includes the full `__datafusion_*__` hook reference (18 hooks) and an author checklist.
 
 ## DataFrame API reference
 
@@ -23,14 +31,18 @@
 - [`datafusion.expr`](https://datafusion.apache.org/python/autoapi/datafusion/expr/index.html): expression tree nodes (`Expr`, `Window`, `WindowFrame`, `GroupingSet`).
 - [`datafusion.functions`](https://datafusion.apache.org/python/autoapi/datafusion/functions/index.html): 290+ scalar, aggregate, and window functions.
 - [`datafusion.context.SessionContext`](https://datafusion.apache.org/python/autoapi/datafusion/context/index.html): session entry point, data loading, SQL execution.
+- [`datafusion.extensions`](https://datafusion.apache.org/python/autoapi/datafusion/extensions/index.html): `SessionExtensionComponents`, `SessionExtensionExportable`, `SessionPlannerExportable`, `QueryPlannerExportable` — the extension-bundle protocol.
+- [`datafusion.ipc`](https://datafusion.apache.org/python/autoapi/datafusion/ipc/index.html): worker and sender context slots for shipping expressions between processes.
 
 ## Examples
 
 - [TPC-H queries (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples/tpch): canonical translations of TPC-H Q01–Q22 to idiomatic DataFrame code, each with reference SQL embedded in the module docstring.
 - [Other examples (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples): UDF/UDAF/UDWF, Substrait, Pandas/Polars interop, S3 reads.
+- [FFI extension example (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example): a Rust cdylib exporting table providers, catalogs, functions, and extension codecs. Has build commands in its README.
+- [FFI query planner example (GitHub)](https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example): a Rust cdylib exporting a query planner and a complete extension bundle.
 
 ## Optional
 
-- [Contributor guide](https://datafusion.apache.org/python/contributor-guide/introduction.html): building from source, extending the Python bindings.
+- [Contributor guide](https://datafusion.apache.org/python/contributor-guide/index.html): building from source and changing datafusion-python itself.
 - [Upgrade guides](https://datafusion.apache.org/python/user-guide/upgrade-guides.html): migration notes between releases.
 - [Upstream Rust `DataFusion`](https://datafusion.apache.org/): the underlying query engine.

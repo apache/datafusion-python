@@ -223,7 +223,12 @@ pins that; changing it should be deliberate.
 
 ## Where the truth is
 
-- `docs/source/contributor-guide/ffi.md` — the protocol, the fork caveat.
+- `docs/source/extension-guide/` — the protocol, for the library author.
+  `capsule-protocol.md` has the hook convention and what the getter argument
+  actually is; `codecs.md`, `bundles.md`, and `query-planners.md` have the
+  per-component rules; `index.md` lists all 18 hooks.
+- `docs/source/contributor-guide/ffi-internals.md` — why the framing is shaped
+  this way, including the weak-`Arc` scheme and the one-level rebind.
 - `docs/source/user-guide/upgrade-guides.md` — every past migration.
 - `crates/core/src/codec.rs` — the codec chain: the envelope, identity dispatch,
   and the two unframed cases from Rule 8.
