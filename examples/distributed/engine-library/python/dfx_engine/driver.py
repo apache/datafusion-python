@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     import pyarrow as pa
     from datafusion import DataFrame, SessionContext
     from datafusion.plan import ExecutionPlan
+    from datafusion.user_defined import ScalarUDF
 
 __all__ = ["DistributedResult", "find_stage", "run_distributed"]
 
@@ -116,17 +117,27 @@ def _dispatch(
     )
 
 
-def run_distributed(sql: str, spec: SessionSpec) -> DistributedResult:
+def run_distributed(
+    sql: str, spec: SessionSpec, extra_udfs: list[ScalarUDF] | None = None
+) -> DistributedResult:
     """Run `sql`, executing its leaf stage in one worker process per partition.
 
     Requires ``spec.shuffle_dir``: without it the planner inserts no stage and
     there is nothing to distribute.
+
+    ``extra_udfs`` are registered on the driver only. They have to be here for
+    the query to *plan*, but not on the worker: a Python UDF is cloudpickled
+    into the plan and travels by value, unlike the Rust functions in
+    :func:`~dfx_engine.session.build_session`, which travel by name and so
+    have to exist on both sides.
     """
     if not spec.shuffle_dir:
         message = "run_distributed needs a shuffle_dir; build_session got none"
         raise ValueError(message)
 
     ctx, engine, _storage = build_session(spec)
+    for function in extra_udfs or []:
+        ctx.register_udf(function)
     plan = ctx.sql(sql).execution_plan()
 
     stage = find_stage(plan)
@@ -184,11 +195,14 @@ def run_distributed(sql: str, spec: SessionSpec) -> DistributedResult:
     return DistributedResult(batches, partitions, worker_rows)
 
 
-def run_local(sql: str, spec: SessionSpec) -> list[pa.RecordBatch]:
+def run_local(
+    sql: str, spec: SessionSpec, extra_udfs: list[ScalarUDF] | None = None
+) -> list[pa.RecordBatch]:
     """Run `sql` in this process, for comparison.
 
     Uses the same session factory with no shuffle directory, so the only
-    difference from :func:`run_distributed` is where the work happened.
+    difference from :func:`run_distributed` is where the work happened. Any
+    disagreement between the two is a bug in the split.
     """
     ctx, _engine, _storage = build_session(
         SessionSpec(
@@ -197,6 +211,8 @@ def run_local(sql: str, spec: SessionSpec) -> list[pa.RecordBatch]:
             target_partitions=spec.target_partitions,
         )
     )
+    for function in extra_udfs or []:
+        ctx.register_udf(function)
     return ctx.sql(sql).collect()
 
 
