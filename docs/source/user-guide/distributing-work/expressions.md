@@ -119,14 +119,30 @@ requirements on the worker environment:
   stamps the sender's `(major, minor)`; mismatches raise a clear
   error naming both versions. Align the Python version on driver and
   workers.
-- **Imported modules must be importable on the worker.** cloudpickle
-  captures the callable *by value* (bytecode and closure cells travel
-  whole), but names resolved through `import` are captured *by
-  reference* — module path only. A UDF doing
-  `from mylib import transform` requires `mylib` installed on the
-  worker. Same applies to bound methods of imported classes.
-  Self-contained UDFs (no imports beyond what the worker already has,
-  e.g. `pyarrow`) avoid this entirely.
+- **Anything the callable names must be reachable on the worker.**
+  cloudpickle captures the function's own body *by value* — bytecode and
+  closure cells travel whole — but every global it refers to is captured *by
+  reference* if cloudpickle can resolve it to an importable
+  `module.qualname`. The worker then imports it by that path.
+
+  So the rule is not "imports are bad", it is **whether the name has an
+  importable home**:
+
+  | The callable refers to | Travels as | Worker needs |
+  | --- | --- | --- |
+  | a nested or `__main__`-level function | the function itself | nothing |
+  | a module, including a submodule like `pyarrow.compute` | an import of that module | the module installed |
+  | a function in an importable module of yours | a pointer to `yourmod.helper` | **your code installed** |
+
+  The third row is the one that surprises people, and the size difference
+  makes it concrete: one small function is around 1 kB pickled from
+  `__main__` and around 30 bytes from an importable module, because the
+  second is only a pointer. Moving a helper out of a script and into a
+  package silently changes what gets shipped.
+
+  It fails on the worker as a bare
+  `ModuleNotFoundError: No module named 'yourmod'`, raised while the plan is
+  being decoded, with nothing in the message about UDFs or serialization.
 
 ## Registering shared UDFs on workers
 
