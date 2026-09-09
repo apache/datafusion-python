@@ -105,7 +105,7 @@ def test_extension_protocols_are_exported_together():
     for name in [
         "QueryPlannerExportable",
         "SessionExtensionComponents",
-        "SessionExtensionExportable",
+        "SessionComponentsExportable",
         "SessionPlannerExportable",
     ]:
         assert name in datafusion.__all__, f"{name} missing from datafusion.__all__"

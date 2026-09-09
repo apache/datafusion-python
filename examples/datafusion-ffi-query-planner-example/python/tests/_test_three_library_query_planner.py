@@ -725,7 +725,7 @@ class ProviderCodecsExtension:
         self.logical_codec = MyLogicalExtensionCodec()
         self.physical_codec = MyPhysicalExtensionCodec()
 
-    def __datafusion_session_extension__(
+    def __datafusion_session_components__(
         self, ctx: SessionContext
     ) -> SessionExtensionComponents:
         return SessionExtensionComponents(
@@ -762,7 +762,7 @@ class IdentifiedProviderCodecsExtension(ProviderCodecsExtension):
         self.logical = _NamedCodec(self.logical_codec, f"{prefix}.logical")
         self.physical = _NamedCodec(self.physical_codec, f"{prefix}.physical")
 
-    def __datafusion_session_extension__(
+    def __datafusion_session_components__(
         self, ctx: SessionContext
     ) -> SessionExtensionComponents:
         return SessionExtensionComponents(
@@ -833,7 +833,7 @@ def test_with_extensions_rejects_a_rust_bundles_bare_capsule():
     """
 
     class BareCapsuleExtension:
-        def __datafusion_session_extension__(
+        def __datafusion_session_components__(
             self, ctx: SessionContext
         ) -> SessionExtensionComponents:
             return SessionExtensionComponents(
@@ -923,10 +923,10 @@ class CodecsOf:
     def __init__(self, inner: object) -> None:
         self.inner = inner
 
-    def __datafusion_session_extension__(
+    def __datafusion_session_components__(
         self, ctx: SessionContext
     ) -> SessionExtensionComponents:
-        return self.inner.__datafusion_session_extension__(ctx)
+        return self.inner.__datafusion_session_components__(ctx)
 
 
 class PlannerOf:
@@ -1165,7 +1165,7 @@ def test_with_extensions_failure_leaves_source_usable():
     fully functional."""
 
     class BoomExtension:
-        def __datafusion_session_extension__(
+        def __datafusion_session_components__(
             self, ctx: SessionContext
         ) -> SessionExtensionComponents:
             msg = "boom"
@@ -1212,7 +1212,7 @@ class NoOpExtension:
     out.
     """
 
-    def __datafusion_session_extension__(
+    def __datafusion_session_components__(
         self, ctx: SessionContext
     ) -> SessionExtensionComponents:
         return SessionExtensionComponents()
@@ -1356,11 +1356,11 @@ class _DocstringExampleExtension:
         self._codecs = ProviderCodecsExtension()
         self._planner = MyPlannerExtension()
 
-    def __datafusion_session_extension__(
+    def __datafusion_session_components__(
         self, ctx: SessionContext
     ) -> SessionExtensionComponents:
-        codecs = self._codecs.__datafusion_session_extension__(ctx)
-        planner = self._planner.__datafusion_session_extension__(ctx)
+        codecs = self._codecs.__datafusion_session_components__(ctx)
+        planner = self._planner.__datafusion_session_components__(ctx)
         return SessionExtensionComponents(
             logical_extension_codecs=(
                 *codecs.logical_extension_codecs,

@@ -148,7 +148,7 @@ class LogicalExtensionCodecExportable(Protocol):
             ``ffi_logical_codec_from_pycapsule``, which handles both.
 
             The two bundle hooks are the exception:
-            :py:class:`~datafusion.extensions.SessionExtensionExportable` and
+            :py:class:`~datafusion.extensions.SessionComponentsExportable` and
             :py:class:`~datafusion.extensions.SessionPlannerExportable` are
             dispatched from Python and receive the wrapper. See
             :ref:`extension_getter_argument`.

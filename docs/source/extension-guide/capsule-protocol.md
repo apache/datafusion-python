@@ -35,12 +35,17 @@ review the code and documentation in the [datafusion-ffi] crate.
 
 Our FFI implementation is narrowly focused on sharing data and functions with
 Rust backed libraries. This allows us to use the
-[abi_stable crate](https://crates.io/crates/abi_stable). This is an excellent
-crate that allows for easy conversion between Rust native types and FFI-safe
-alternatives. For example, if you needed to pass a `Vec<String>` via FFI, you
-can simply convert it to an `RVec<RString>` in an intuitive manner. It also
-supports features like `RResult` and `ROption` that do not have an obvious
-translation to a C equivalent.
+[stabby crate](https://crates.io/crates/stabby), which converts between Rust
+native types and FFI-safe alternatives. For example, if you needed to pass a
+`Vec<String>` via FFI, you can convert it to a
+`stabby::vec::Vec<stabby::string::String>` — the crate's own examples alias
+these as `SVec` and `SString`, which is the convention [datafusion-ffi] follows
+too.
+
+For `Option` and `Result`, [datafusion-ffi] defines its own `FFI_Option<T>` and
+`FFI_Result<T>` rather than using stabby's. Stabby's versions require
+`T: IStable` for niche optimization, and many of the `FFI_*` structs hold
+self-referential function pointers that cannot implement it.
 
 ## `FFI_` on the provider, `Foreign` on the receiver
 
@@ -51,17 +56,19 @@ defined a custom
 and you want to create a sharable FFI counterpart, you could write:
 
 ```rust
-let my_provider = MyTableProvider::default();
-let ffi_provider = FFI_TableProvider::new(Arc::new(my_provider), false, None);
+let my_provider = Arc::new(MyTableProvider::default());
+let ffi_provider = FFI_TableProvider::new_with_ffi_codec(my_provider, false, None, codec);
 ```
 
+where `codec` is the host's logical codec, read off the argument your getter
+was handed — see {ref}`extension_getter_argument`.
+
 If you were interfacing with a library that provided the above
-`FFI_TableProvider` and you needed to turn it back into a `TableProvider`, you
-can turn it into a `ForeignTableProvider`, which implements the `TableProvider`
-trait:
+`FFI_TableProvider` and you needed a usable `TableProvider` back, you convert
+it into an `Arc<dyn TableProvider>`:
 
 ```rust
-let foreign_provider: ForeignTableProvider = ffi_provider.into();
+let provider: Arc<dyn TableProvider> = (&ffi_provider).into();
 ```
 
 If you review the code in [datafusion-ffi] you will find that each of the
@@ -74,6 +81,13 @@ example we're showing, this means the code that has written the underlying
 structures with the `Foreign` prefix are to be used by the receiver. In this
 case, it is the `datafusion-python` library.
 
+Convert to the trait object rather than naming `ForeignTableProvider` yourself.
+The conversion compares the provider's library marker against the receiver's:
+when both sides turn out to be the same shared library it hands back the
+original `Arc` and skips the boundary entirely, and only otherwise wraps it in
+a `ForeignTableProvider`. Which one you get is an implementation detail, and
+both implement `TableProvider`.
+
 ## Wrapping it in a capsule
 
 In order to share these FFI structures, we need to wrap them in some kind of
@@ -82,20 +96,20 @@ described in {ref}`extension_why_ffi`, we use `PyCapsule`. We can create a
 `PyCapsule` for our provider thusly:
 
 ```rust
-let name = CString::new("datafusion_table_provider")?;
-let my_capsule = PyCapsule::new_bound(py, provider, Some(name))?;
+PyCapsule::new_with_value(py, ffi_provider, cr"datafusion_table_provider")
 ```
 
-On the receiving side, turn this pycapsule object into the
-`FFI_TableProvider`, which can then be turned into a `ForeignTableProvider`;
-the associated code is:
+On the receiving side, read the `FFI_TableProvider` back out of the capsule and
+convert it, which is what `table_provider_from_pycapsule` in `crates/util` does:
 
 ```rust
-let capsule = capsule.cast::<PyCapsule>()?;
+validate_pycapsule(capsule, "datafusion_table_provider")?;
 let data: NonNull<FFI_TableProvider> = capsule
-    .pointer_checked(Some(name))?
+    .pointer_checked(Some(c"datafusion_table_provider"))?
     .cast();
-let codec = unsafe { data.as_ref() };
+let ffi_provider = unsafe { data.as_ref() };
+check_ffi_version("table provider", unsafe { (ffi_provider.version)() })?;
+let provider: Arc<dyn TableProvider> = ffi_provider.into();
 ```
 
 ## The naming rule
@@ -112,7 +126,7 @@ must return a capsule named `datafusion_table_provider`. Return a capsule with
 the wrong name and the import fails with an error naming both the name found
 and the name expected, rather than reading the pointer as the wrong type.
 
-The full list of hooks and their capsule names is in the
+The full list of hooks is in the
 {ref}`hook reference <extension_guide>`. `TableProvider` was the first
 extension written this way and is the most thoroughly implemented; every hook
 added since follows the same pattern.
@@ -196,7 +210,7 @@ getter and `__datafusion_codec_id__` — everything the protocol asks of it — 
 `isinstance(session, SessionContext)` is `False` in Python even though its
 `repr` reads `datafusion.SessionContext`.
 
-The two bundle hooks are the exception: `__datafusion_session_extension__` and
+The two bundle hooks are the exception: `__datafusion_session_components__` and
 `__datafusion_session_planner__` are dispatched from Python by
 {py:meth}`~datafusion.SessionContext.with_extensions`, so they receive the
 wrapper. See {doc}`bundles`.

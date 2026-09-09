@@ -93,7 +93,7 @@ publish. Each links to the page that explains it.
 - [ ] **Your production codec serializes durable metadata**, not a
       process-local token. The examples in this repository use tokens to make
       ownership observable; that is a demonstration, not a pattern.
-      → {ref}`extension_guide`
+      → {ref}`extension_codec_durable_metadata`
 - [ ] **You have integration tests across a real FFI boundary.** The two
       example crates in this repository are the pattern: build the cdylib,
       install the wheel, then exercise it from Python.

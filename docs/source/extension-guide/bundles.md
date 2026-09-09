@@ -40,7 +40,7 @@ bundle object implementing one or both of two hooks:
 
 ```python
 class MyEngineExtension:
-    def __datafusion_session_extension__(self, ctx: SessionContext) -> SessionExtensionComponents:
+    def __datafusion_session_components__(self, ctx: SessionContext) -> SessionExtensionComponents:
         # Phase one. Create fresh components bound to `ctx` on every call.
         return SessionExtensionComponents(
             logical_extension_codecs=(self._make_logical_codec(ctx),),
@@ -95,7 +95,7 @@ class Bundle:
     def __init__(self, codec_id):
         self.codec_id = codec_id
 
-    def __datafusion_session_extension__(self, ctx):
+    def __datafusion_session_components__(self, ctx):
         # Fresh components on every call, bound to the `ctx` handed in.
         # Never cache these, and never retain `ctx`.
         return SessionExtensionComponents(
@@ -133,7 +133,7 @@ routes to the codec that wrote the payload. A session holds exactly **one**
 query planner, so planners cannot accumulate — they compose by *nesting*, each
 wrapping the one before it and delegating to it for work it does not handle.
 
-So `with_extensions` runs every `__datafusion_session_extension__` and installs
+So `with_extensions` runs every `__datafusion_session_components__` and installs
 all the codecs, and only then runs each `__datafusion_session_planner__`, in
 argument order, handing each the planner built so far. Two consequences worth
 holding onto:
@@ -204,8 +204,8 @@ class CodecsOf:
     def __init__(self, inner):
         self.inner = inner
 
-    def __datafusion_session_extension__(self, ctx):
-        return self.inner.__datafusion_session_extension__(ctx)
+    def __datafusion_session_components__(self, ctx):
+        return self.inner.__datafusion_session_components__(ctx)
 
 
 class PlannerOf:

@@ -71,8 +71,8 @@ from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.extensions import (
     QueryPlannerExportable,
+    SessionComponentsExportable,
     SessionExtensionComponents,
-    SessionExtensionExportable,
     SessionPlannerExportable,
 )
 from datafusion.options import (
@@ -1848,7 +1848,7 @@ class SessionContext:
         self.ctx.set_query_planner(planner)
 
     def with_extensions(
-        self, *extensions: SessionExtensionExportable | SessionPlannerExportable
+        self, *extensions: SessionComponentsExportable | SessionPlannerExportable
     ) -> SessionContext:
         """Create a new session context with the given extension bundles.
 
@@ -1858,7 +1858,7 @@ class SessionContext:
 
         Each argument is called twice, in two phases:
 
-        1. ``__datafusion_session_extension__(ctx)`` on every extension, then
+        1. ``__datafusion_session_components__(ctx)`` on every extension, then
            all the returned codecs are installed at once.
         2. ``__datafusion_session_planner__(ctx, fallback)`` on every
            extension, **in argument order**, each handed the planner built so
@@ -1932,11 +1932,11 @@ class SessionContext:
         """
         for extension in extensions:
             if not isinstance(
-                extension, (SessionExtensionExportable, SessionPlannerExportable)
+                extension, (SessionComponentsExportable, SessionPlannerExportable)
             ):
                 msg = (
                     "Extension implements neither "
-                    "__datafusion_session_extension__ nor "
+                    "__datafusion_session_components__ nor "
                     f"__datafusion_session_planner__: {extension!r}"
                 )
                 raise TypeError(msg)
@@ -1948,12 +1948,12 @@ class SessionContext:
         logical_codecs: list[LogicalExtensionCodecExportable] = []
         physical_codecs: list[PhysicalExtensionCodecExportable] = []
         for extension in extensions:
-            if not isinstance(extension, SessionExtensionExportable):
+            if not isinstance(extension, SessionComponentsExportable):
                 continue
-            components = extension.__datafusion_session_extension__(self)
+            components = extension.__datafusion_session_components__(self)
             if not isinstance(components, SessionExtensionComponents):
                 msg = (
-                    "__datafusion_session_extension__ must return "
+                    "__datafusion_session_components__ must return "
                     "SessionExtensionComponents, got "
                     f"{type(components).__name__} from {extension!r}"
                 )

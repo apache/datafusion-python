@@ -69,11 +69,6 @@ The session owns the codecs used for the exchange and supplies them to the
 foreign planner. That is what lets the planner decode provider-owned objects,
 and lets datafusion-python decode the physical plan the planner returns.
 
-:::{note}
-The example codecs use process-local tokens to demonstrate ownership.
-A production codec should serialize durable metadata instead.
-:::
-
 ## Hook reference
 
 Every integration point is a dunder method named `__datafusion_*__`. The
@@ -83,35 +78,44 @@ FFI-safe struct. See {doc}`capsule-protocol` for what that means and
 {ref}`extension_getter_argument` for the argument every getter in the middle
 group receives.
 
-| Hook | Capsule name | Argument | Documented on |
-| --- | --- | --- | --- |
-| `__datafusion_table_provider__` | `datafusion_table_provider` | codec source | {doc}`table-providers` |
-| `__datafusion_table_provider_factory__` | `datafusion_table_provider_factory` | codec source | {doc}`table-providers` |
-| `__datafusion_catalog_provider__` | `datafusion_catalog_provider` | codec source | {doc}`table-providers` |
-| `__datafusion_catalog_provider_list__` | `datafusion_catalog_provider_list` | codec source | {doc}`table-providers` |
-| `__datafusion_schema_provider__` | `datafusion_schema_provider` | codec source | {doc}`table-providers` |
-| `__datafusion_table_function__` | `datafusion_table_function` | session | {doc}`functions` |
-| `__datafusion_scalar_udf__` | `datafusion_scalar_udf` | none | {doc}`functions` |
-| `__datafusion_aggregate_udf__` | `datafusion_aggregate_udf` | none | {doc}`functions` |
-| `__datafusion_window_udf__` | `datafusion_window_udf` | none | {doc}`functions` |
-| `__datafusion_logical_extension_codec__` | `datafusion_logical_extension_codec` | session | {doc}`codecs` |
-| `__datafusion_physical_extension_codec__` | `datafusion_physical_extension_codec` | session | {doc}`codecs` |
-| `__datafusion_codec_id__` | *not a capsule — a string attribute* | — | {doc}`codecs` |
-| `__datafusion_query_planner__` | `datafusion_query_planner` | session | {doc}`query-planners` |
-| `__datafusion_session_extension__` | *not a capsule — returns components* | `ctx` | {doc}`bundles` |
-| `__datafusion_session_planner__` | `datafusion_query_planner`, or `None` | `ctx`, `fallback` | {doc}`bundles` |
-| `__datafusion_physical_optimizer_rule__` | `datafusion_physical_optimizer_rule` | none | {ref}`extension_other_hooks` |
-| `__datafusion_extension_options__` | `datafusion_extension_options` | none | {ref}`extension_other_hooks` |
-| `__datafusion_task_context_provider__` | `datafusion_task_context_provider` | none | {ref}`extension_task_context_provider` |
+Each hook's capsule name follows from its own name by
+{ref}`the naming rule <extension_capsule_protocol>`, so it is not repeated
+here.
 
-Two rows are not like the others. `__datafusion_task_context_provider__` is
+| Hook | Contributes | Argument | Documented on |
+| --- | --- | --- | --- |
+| `__datafusion_table_provider__` | one table | codec source | {doc}`table-providers` |
+| `__datafusion_table_provider_factory__` | tables built by `CREATE EXTERNAL TABLE` | codec source | {doc}`table-providers` |
+| `__datafusion_catalog_provider__` | a named set of schemas | codec source | {doc}`table-providers` |
+| `__datafusion_catalog_provider_list__` | the whole catalog namespace | codec source | {doc}`table-providers` |
+| `__datafusion_schema_provider__` | a named set of tables | codec source | {doc}`table-providers` |
+| `__datafusion_table_function__` | a table-valued function | session | {doc}`functions` |
+| `__datafusion_scalar_udf__` | a scalar function | none | {doc}`functions` |
+| `__datafusion_aggregate_udf__` | an aggregate function | none | {doc}`functions` |
+| `__datafusion_window_udf__` | a window function | none | {doc}`functions` |
+| `__datafusion_logical_extension_codec__` | a logical codec | session | {doc}`codecs` |
+| `__datafusion_physical_extension_codec__` | a physical codec | session | {doc}`codecs` |
+| `__datafusion_codec_id__` | the wire id a codec's payloads carry | — | {ref}`extension_codec_ids` |
+| `__datafusion_query_planner__` | a query planner | session | {doc}`query-planners` |
+| `__datafusion_session_components__` | a bundle's codecs | `ctx` | {doc}`bundles` |
+| `__datafusion_session_planner__` | a bundle's planner, wrapping `fallback` | `ctx`, `fallback` | {doc}`bundles` |
+| `__datafusion_physical_optimizer_rule__` | a physical optimizer rule | none | {ref}`extension_other_hooks` |
+| `__datafusion_extension_options__` | typed entries in the session config | none | {ref}`extension_other_hooks` |
+| `__datafusion_task_context_provider__` | the host's task context | none | {ref}`extension_task_context_provider` |
+
+Three rows are not like the others. `__datafusion_task_context_provider__` is
 implemented by the **host**, not by your library — you read it off the session
-you are handed. And `__datafusion_codec_id__` is a plain string attribute
-rather than a method returning a capsule.
+you are handed. `__datafusion_codec_id__` is a plain string attribute rather
+than a method returning a capsule. And the two `session_` hooks are dispatched
+from Python and return objects rather than capsules.
 
 "codec source" in the argument column means the value is something you can
 read the host's logical extension codec off, which is not always a session.
 {ref}`extension_getter_argument` explains why, and what to do with it.
+
+`python/tests/test_docstrings.py` compares this table against the hook names
+the package actually dispatches, so a hook added or renamed without touching
+this page fails the suite.
 
 ```{toctree}
 :maxdepth: 2
@@ -123,6 +127,7 @@ functions
 codecs
 bundles
 query-planners
+other-components
 sessions
 checklist
 ```

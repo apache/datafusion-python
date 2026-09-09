@@ -39,6 +39,14 @@ import pytest
 from datafusion import SessionContext, extensions
 
 PACKAGE_ROOT = pathlib.Path(datafusion.__file__).parent
+REPO_ROOT = PACKAGE_ROOT.parents[1]
+
+# The hook reference in the extension guide is a hand-written table of every
+# `__datafusion_*__` name. Nothing about adding a hook forces it to be updated,
+# so the table is compared against the names the package actually dispatches.
+HOOK_REFERENCE = REPO_ROOT / "docs" / "source" / "extension-guide" / "index.md"
+HOOK_NAME = re.compile(r"__datafusion_[a-z_]+__")
+HOOK_TABLE_ROW = re.compile(r"^\| `(__datafusion_[a-z_]+__)`")
 
 # Above this, a docstring has stopped being a contract and become a
 # narrative. Move the argument to a guide page under `docs/source/` and leave
@@ -128,6 +136,38 @@ def test_extension_api_has_a_doctest(name: str, obj: object) -> None:
         "protocol needs one, even if the realistic usage has to be marked "
         "+SKIP — in which case a runnable example goes above it. See "
         "'Examples that need a compiled extension' in AGENTS.md."
+    )
+
+
+def test_hook_reference_table_lists_every_hook() -> None:
+    """The guide's hook table matches the hooks the package dispatches."""
+    if not HOOK_REFERENCE.is_file():
+        pytest.skip("running against an installed wheel, without docs/ or crates/")
+
+    dispatched: set[str] = set()
+    for directory, suffix in (
+        (REPO_ROOT / "crates", "*.rs"),
+        (PACKAGE_ROOT, "*.py"),
+    ):
+        for path in sorted(directory.rglob(suffix)):
+            dispatched.update(HOOK_NAME.findall(path.read_text()))
+
+    documented = {
+        match.group(1)
+        for line in HOOK_REFERENCE.read_text().splitlines()
+        if (match := HOOK_TABLE_ROW.match(line))
+    }
+
+    problems = [
+        f"  dispatched but not in the table: {name}"
+        for name in sorted(dispatched - documented)
+    ] + [
+        f"  in the table but nowhere in the source: {name}"
+        for name in sorted(documented - dispatched)
+    ]
+    assert not problems, (
+        f"{HOOK_REFERENCE.relative_to(REPO_ROOT)} is out of sync with the "
+        "hooks in crates/ and python/datafusion/:\n" + "\n".join(problems)
     )
 
 

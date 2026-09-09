@@ -101,7 +101,7 @@ If a library ships codecs *and* a planner, prefer
 installs every codec before it binds any planner, so a planner cannot end up
 carrying a chain that a later `with_logical_extension_codec` call has grown.
 The library exposes a bundle object implementing
-`__datafusion_session_extension__` for its codecs and
+`__datafusion_session_components__` for its codecs and
 `__datafusion_session_planner__` for its planner — the latter is handed the
 planner installed so far, so several libraries that each ship one nest instead
 of displacing each other. See {ref}`extension_bundles`.

@@ -94,8 +94,8 @@ from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .extensions import (
     QueryPlannerExportable,
+    SessionComponentsExportable,
     SessionExtensionComponents,
-    SessionExtensionExportable,
     SessionPlannerExportable,
 )
 from .io import read_avro, read_csv, read_json, read_parquet
@@ -139,10 +139,10 @@ __all__ = [
     "RuntimeEnvBuilder",
     "SQLOptions",
     "ScalarUDF",
+    "SessionComponentsExportable",
     "SessionConfig",
     "SessionContext",
     "SessionExtensionComponents",
-    "SessionExtensionExportable",
     "SessionPlannerExportable",
     "Table",
     "TableFunction",

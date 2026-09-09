@@ -229,7 +229,7 @@ impl BundledPhysicalCodec {
 ///
 /// Mirrors how a distributed engine such as Ballista packages its session
 /// extensions: the object itself is reusable configuration, and every
-/// `__datafusion_session_extension__` call creates fresh codec and planner
+/// `__datafusion_session_components__` call creates fresh codec and planner
 /// components bound to the task-context provider of the context it receives.
 #[pyclass(
     from_py_object,
@@ -327,7 +327,7 @@ impl MyPlannerExtension {
             .map(|config| config.max_rows)
     }
 
-    fn __datafusion_session_extension__<'py>(
+    fn __datafusion_session_components__<'py>(
         &self,
         py: Python<'py>,
         ctx: Bound<'py, PyAny>,

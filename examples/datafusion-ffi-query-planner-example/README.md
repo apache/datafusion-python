@@ -50,7 +50,7 @@ ctx.register_table("numbers", provider)
 ctx.register_udf(provider_udf)
 ```
 
-`MyPlannerExtension` implements both extension hooks. `__datafusion_session_extension__`
+`MyPlannerExtension` implements both extension hooks. `__datafusion_session_components__`
 receives the session it is being installed on, binds fresh codecs to that session's
 task-context provider, and returns them as `SessionExtensionComponents`.
 `__datafusion_session_planner__` then runs in the host's second phase, after every

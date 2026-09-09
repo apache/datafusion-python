@@ -914,7 +914,7 @@ class _CodecOnlyExtension:
         self.prefix = prefix
         self.bound_ctx = None
 
-    def __datafusion_session_extension__(self, ctx):
+    def __datafusion_session_components__(self, ctx):
         self.bound_ctx = ctx
         return SessionExtensionComponents(
             logical_extension_codecs=(
@@ -1000,7 +1000,7 @@ def test_with_extensions_rejects_non_extension(ctx):
 
 def test_with_extensions_rejects_bad_components(ctx):
     class BadExtension:
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             return 42
 
     with pytest.raises(TypeError, match="SessionExtensionComponents"):
@@ -1131,7 +1131,7 @@ def test_with_extensions_rejects_bad_codec_capsule(ctx):
     """A correctly shaped object still has to return the right capsule."""
 
     class BadCodecExtension:
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             wrong_capsule = ctx.__datafusion_task_context_provider__()
             return SessionExtensionComponents(
                 logical_extension_codecs=(
@@ -1158,7 +1158,7 @@ def test_with_extensions_rejects_a_bare_capsule_codec(ctx):
         def __init__(self):
             self.exporter = SessionContext()
 
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             return SessionExtensionComponents(
                 logical_extension_codecs=(
                     self.exporter.__datafusion_logical_extension_codec__(),
@@ -1179,7 +1179,7 @@ def test_with_extensions_rejects_a_bare_physical_capsule_codec(ctx):
         def __init__(self):
             self.exporter = SessionContext()
 
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             return SessionExtensionComponents(
                 physical_extension_codecs=(
                     self.exporter.__datafusion_physical_extension_codec__(),
@@ -1209,8 +1209,8 @@ def test_with_extensions_codec_ids_survive_composition(ctx):
         def __init__(self, inner):
             self.inner = inner
 
-        def __datafusion_session_extension__(self, ctx):
-            return self.inner.__datafusion_session_extension__(ctx)
+        def __datafusion_session_components__(self, ctx):
+            return self.inner.__datafusion_session_components__(ctx)
 
     direct = ctx.with_extensions(_CodecOnlyExtension())
     wrapped = SessionContext().with_extensions(ComposedExtension(_CodecOnlyExtension()))
@@ -1232,7 +1232,7 @@ def test_with_extensions_uses_ids_declared_on_the_codec(ctx):
         def __init__(self):
             self.exporter = SessionContext()
 
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             return SessionExtensionComponents(
                 logical_extension_codecs=(
                     _NamedCodec(
@@ -1272,7 +1272,7 @@ def test_with_extensions_rejects_two_codecs_of_one_class(ctx):
         def __init__(self):
             self.exporter = SessionContext()
 
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             capsule = self.exporter.__datafusion_logical_extension_codec__
             return SessionExtensionComponents(
                 logical_extension_codecs=(
@@ -1290,7 +1290,7 @@ def test_with_extensions_leaves_an_exporting_object_its_own_id(ctx):
     exporter = SessionContext()
 
     class ObjectCodecExtension:
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             return SessionExtensionComponents(logical_extension_codecs=(exporter,))
 
     result = ctx.with_extensions(ObjectCodecExtension())
@@ -1341,7 +1341,7 @@ def test_with_extensions_survives_source_collection():
 
 def test_with_extensions_failure_leaves_source_usable(ctx):
     class BoomExtension:
-        def __datafusion_session_extension__(self, ctx):
+        def __datafusion_session_components__(self, ctx):
             msg = "boom"
             raise RuntimeError(msg)
 

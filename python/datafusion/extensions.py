@@ -20,14 +20,14 @@
 An *extension* is a reusable configuration object — typically shipped by a
 separate compiled library — that contributes components to a
 :py:class:`~datafusion.context.SessionContext`. It implements
-:py:class:`SessionExtensionExportable` by returning a
+:py:class:`SessionComponentsExportable` by returning a
 :py:class:`SessionExtensionComponents` describing what it contributes, and is
 installed with :py:meth:`~datafusion.context.SessionContext.with_extensions`::
 
     ctx = SessionContext().with_extensions(MyLibraryExtension())
 
 Codecs and planners install in two phases: every
-:py:class:`SessionExtensionExportable` runs first and its codecs are installed,
+:py:class:`SessionComponentsExportable` runs first and its codecs are installed,
 then every :py:class:`SessionPlannerExportable` runs in argument order. A bundle
 implements either hook or both. Bundle order is significant for planners, which
 nest, and irrelevant for codecs, which accumulate.
@@ -58,8 +58,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "QueryPlannerExportable",
+    "SessionComponentsExportable",
     "SessionExtensionComponents",
-    "SessionExtensionExportable",
     "SessionPlannerExportable",
 ]
 
@@ -114,7 +114,7 @@ def _not_a_codec_iterable(field: str, value: object) -> str:
 class SessionExtensionComponents:
     """Components an extension contributes to a session context.
 
-    Returned by :py:meth:`SessionExtensionExportable.__datafusion_session_extension__`
+    Returned by :py:meth:`SessionComponentsExportable.__datafusion_session_components__`
     and consumed by
     :py:meth:`~datafusion.context.SessionContext.with_extensions`. Every
     component must be created against the context passed to that method;
@@ -219,7 +219,7 @@ class SessionExtensionComponents:
 
 
 @runtime_checkable
-class SessionExtensionExportable(Protocol):
+class SessionComponentsExportable(Protocol):
     """Type hint for extension bundles installable via ``with_extensions``.
 
     Runtime-checkable, so ``isinstance`` answers whether an object implements
@@ -252,18 +252,18 @@ class SessionExtensionExportable(Protocol):
     Examples:
         >>> from datafusion import (
         ...     SessionExtensionComponents,
-        ...     SessionExtensionExportable,
+        ...     SessionComponentsExportable,
         ... )
         >>> class MyLibraryExtension:
-        ...     def __datafusion_session_extension__(self, ctx):
+        ...     def __datafusion_session_components__(self, ctx):
         ...         return SessionExtensionComponents()
-        >>> isinstance(MyLibraryExtension(), SessionExtensionExportable)
+        >>> isinstance(MyLibraryExtension(), SessionComponentsExportable)
         True
-        >>> isinstance(object(), SessionExtensionExportable)
+        >>> isinstance(object(), SessionComponentsExportable)
         False
     """
 
-    def __datafusion_session_extension__(  # noqa: D105
+    def __datafusion_session_components__(  # noqa: D105
         self, ctx: SessionContext
     ) -> SessionExtensionComponents: ...
 

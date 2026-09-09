@@ -47,8 +47,7 @@ ctx.sql(...).collect()     # plans with [codec_b, codec_a, default] -- the disca
 ```
 
 Chaining `ctx = ctx.with_...(...)` keeps the two in step, which is why every
-example in this guide does.
-`test_the_planner_and_the_handle_can_hold_different_codecs` pins the
+example in this guide does. The query-planner example's test suite pins the
 divergence.
 
 ## What a derived context shares

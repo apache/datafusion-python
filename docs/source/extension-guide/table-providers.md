@@ -28,11 +28,16 @@ argument. Every one of them is implemented in [`datafusion-ffi-example`].
 
 | Hook | Exposes | Registered with |
 | --- | --- | --- |
-| `__datafusion_table_provider__` | one table | {py:meth}`~datafusion.SessionContext.register_table` |
-| `__datafusion_table_provider_factory__` | a factory that builds tables from `CREATE EXTERNAL TABLE` | {py:meth}`~datafusion.SessionContext.register_table_factory` |
-| `__datafusion_schema_provider__` | a named set of tables | {py:meth}`datafusion.catalog.Catalog.register_schema` |
-| `__datafusion_catalog_provider__` | a named set of schemas | {py:meth}`~datafusion.SessionContext.register_catalog_provider` |
-| `__datafusion_catalog_provider_list__` | the whole catalog namespace | {py:meth}`~datafusion.SessionContext.register_catalog_provider_list` |
+| `__datafusion_table_provider__` | one table | {py:meth}`SessionContext.register_table <datafusion.SessionContext.register_table>` |
+| `__datafusion_table_provider_factory__` | a factory that builds tables from `CREATE EXTERNAL TABLE` | {py:meth}`SessionContext.register_table_factory <datafusion.SessionContext.register_table_factory>` |
+| `__datafusion_schema_provider__` | a named set of tables | {py:meth}`Catalog.register_schema <datafusion.catalog.Catalog.register_schema>` |
+| `__datafusion_catalog_provider__` | a named set of schemas | {py:meth}`SessionContext.register_catalog_provider <datafusion.SessionContext.register_catalog_provider>` |
+| `__datafusion_catalog_provider_list__` | the whole catalog namespace | {py:meth}`SessionContext.register_catalog_provider_list <datafusion.SessionContext.register_catalog_provider_list>` |
+
+A schema provider is the one that does not register on the session: you reach a
+{py:class}`~datafusion.catalog.Catalog` first, with
+{py:meth}`SessionContext.catalog <datafusion.SessionContext.catalog>`, and
+register the schema on that.
 
 Start with a table provider. Reach for the schema and catalog levels when your
 data source has its own namespace that should be browsable rather than

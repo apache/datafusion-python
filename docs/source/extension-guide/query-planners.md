@@ -90,9 +90,7 @@ So, three rules:
   handle that holds the new codec* — that re-runs its getter, which re-imports
   the fallback against that handle's codecs. Re-installing on the original
   handle rebinds the session's planner back to the original handle's codecs
-  instead, which is the trap
-  `test_reinstalling_a_planner_rebinds_the_session_to_that_handles_codecs`
-  pins.
+  instead, which is the trap the query-planner example's test suite pins.
 - Better, use {ref}`extension_bundles`, where there is no "afterwards" within a
   call.
 

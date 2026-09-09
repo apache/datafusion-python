@@ -31,7 +31,7 @@
 - [`datafusion.expr`](https://datafusion.apache.org/python/autoapi/datafusion/expr/index.html): expression tree nodes (`Expr`, `Window`, `WindowFrame`, `GroupingSet`).
 - [`datafusion.functions`](https://datafusion.apache.org/python/autoapi/datafusion/functions/index.html): 290+ scalar, aggregate, and window functions.
 - [`datafusion.context.SessionContext`](https://datafusion.apache.org/python/autoapi/datafusion/context/index.html): session entry point, data loading, SQL execution.
-- [`datafusion.extensions`](https://datafusion.apache.org/python/autoapi/datafusion/extensions/index.html): `SessionExtensionComponents`, `SessionExtensionExportable`, `SessionPlannerExportable`, `QueryPlannerExportable` — the extension-bundle protocol.
+- [`datafusion.extensions`](https://datafusion.apache.org/python/autoapi/datafusion/extensions/index.html): `SessionExtensionComponents`, `SessionComponentsExportable`, `SessionPlannerExportable`, `QueryPlannerExportable` — the extension-bundle protocol.
 - [`datafusion.ipc`](https://datafusion.apache.org/python/autoapi/datafusion/ipc/index.html): worker and sender context slots for shipping expressions between processes.
 
 ## Examples
