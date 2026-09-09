@@ -66,6 +66,7 @@ extensions = [
 # gone, or Sphinx builds the real page and the stub is never written.
 redirects = {
     "user-guide/distributing-work": "distributing-work/index.html",
+    "contributor-guide/ffi": "../extension-guide/index.html",
 }
 
 # NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
