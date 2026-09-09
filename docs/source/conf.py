@@ -103,6 +103,11 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# `autoapi_options` is deliberately left at the default. In particular
+# `special-members` is load-bearing: it is what publishes the
+# `__datafusion_*__` capsule getters, which are the public protocol an
+# extension library implements against. Dropping it would delete that
+# reference surface along with `DataFrame.__init__` and the Arrow dunders.
 autoapi_dirs = ["../../python"]
 autoapi_ignore = ["*tests*"]
 autoapi_member_order = "groupwise"
@@ -116,6 +121,10 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Re-exports
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
+        ("class", "datafusion.QueryPlannerExportable"),
+        ("class", "datafusion.SessionExtensionComponents"),
+        ("class", "datafusion.SessionExtensionExportable"),
+        ("class", "datafusion.SessionPlannerExportable"),
         ("module", "datafusion.common"),
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),

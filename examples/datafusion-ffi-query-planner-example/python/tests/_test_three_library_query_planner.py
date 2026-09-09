@@ -1386,17 +1386,24 @@ def test_with_extensions_docstring_example_still_runs():
     statements are parsed out of the live docstring, the skip is dropped, and
     each one is executed and its output compared.
 
+    Only the ``+SKIP`` statements are taken. The docstring also carries a
+    runnable example above them, which the main suite already executes under
+    ``--doctest-modules``; running it again here would need its own namespace
+    and prove nothing.
+
     Only names are redirected: ``my_extension`` resolves to the bundle above,
     and ``SessionContext`` supplies the config this library's planner reads.
     A renamed method, a changed signature, or a wrong expected output in the
     docstring fails here.
     """
-    examples = doctest.DocTestParser().get_examples(
-        inspect.getdoc(SessionContext.with_extensions)
-    )
-    assert examples, "with_extensions docstring has no examples to check"
-    for example in examples:
-        example.options.pop(doctest.SKIP, None)
+    examples = [
+        example
+        for example in doctest.DocTestParser().get_examples(
+            inspect.getdoc(SessionContext.with_extensions)
+        )
+        if example.options.pop(doctest.SKIP, False)
+    ]
+    assert examples, "with_extensions docstring has no skipped examples to check"
 
     module = types.ModuleType("my_extension")
     module.DistributedEngineExtension = _DocstringExampleExtension

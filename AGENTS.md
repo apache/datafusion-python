@@ -133,6 +133,47 @@ Every Python function must include a docstring with usage examples.
   `array_sort`) only need a one-line description and a `See Also` reference to the
   primary function. They do not need their own examples.
 
+### One canonical home per claim
+
+A claim lives where the reader already is when they need it — **exactly once**.
+
+- A property of one callable's arguments, return value, or errors → that
+  callable's docstring.
+- A property of a *type* that several callables share → the class docstring.
+  (Session sharing and context lifetime live on `SessionContext`, not on each
+  of the five `with_*` methods.)
+- **Why** the API is shaped this way, a multi-library recipe, Rust-side code, a
+  trade-off, or a limitation with an upstream issue → the narrative guide under
+  `docs/source/`.
+
+Everywhere else: one sentence plus one Sphinx role. A docstring may *state* a
+claim the guide also makes; it must not *argue* it — no "because", no "the
+reason is", no counter-argument.
+
+**The test:** if a paragraph would survive being moved into the guide unchanged,
+move it. `python/tests/test_docstrings.py` enforces a length ceiling, which is
+the symptom this rule treats.
+
+When you point at the guide, use a real `:ref:` to a specific label. Prose
+saying "see the extensions guide" with no role is a dead end in the rendered
+HTML.
+
+### Examples that need a compiled extension
+
+Some APIs cannot be demonstrated without a built FFI extension library, which
+this package does not ship. The convention is:
+
+1. A **runnable** example block first, using only the wheel. A `SessionContext`
+   satisfies the capsule-getter protocols, so its own exported capsule stands in
+   for a real library's in a doctest.
+2. Then a `# doctest: +SKIP` block showing real usage, at most a few lines, with
+   one line of prose naming the test that runs it for real.
+3. Every `+SKIP` block needs that mirror. See
+   `test_with_extensions_docstring_example_still_runs` in
+   `examples/datafusion-ffi-query-planner-example`, which parses the live
+   docstring, drops the skip, and executes it — so a renamed method or a wrong
+   expected output fails there.
+
 ## Aggregate and Window Function Documentation
 
 When adding or updating an aggregate or window function, ensure the corresponding

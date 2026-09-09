@@ -70,6 +70,59 @@ off the supplied context, wrapping its codecs in `BundledLogicalCodec` /
 `BundledPhysicalCodec` so they carry declared ids, and constructing a Python
 {py:class}`~datafusion.SessionExtensionComponents`.
 
+## A bundle you can run
+
+Before wiring up a cdylib, it is worth seeing the protocol work end to end in
+pure Python. This runs against the plain wheel — the codec here re-exports the
+host session's own capsule, where a real one would return its library's:
+
+```python
+from datafusion import SessionContext, SessionExtensionComponents
+
+
+class Codec:
+    """Wraps a capsule so it carries an id. A Rust library ships this shape."""
+
+    def __init__(self, codec_id, capsule):
+        self.__datafusion_codec_id__ = codec_id
+        self._capsule = capsule
+
+    def __datafusion_logical_extension_codec__(self, session=None):
+        return self._capsule
+
+
+class Bundle:
+    def __init__(self, codec_id):
+        self.codec_id = codec_id
+
+    def __datafusion_session_extension__(self, ctx):
+        # Fresh components on every call, bound to the `ctx` handed in.
+        # Never cache these, and never retain `ctx`.
+        return SessionExtensionComponents(
+            logical_extension_codecs=(
+                Codec(self.codec_id, ctx.__datafusion_logical_extension_codec__()),
+            )
+        )
+
+
+ctx = SessionContext().with_extensions(Bundle("tables.v1"), Bundle("engine.v1"))
+ctx.logical_extension_codec_ids()
+# ['tables.v1', 'engine.v1']
+```
+
+Three things this makes observable, each pinned by a test in
+`python/tests/test_context.py`:
+
+- **Ids accumulate in bundle order.** Decoding does not depend on that order;
+  only encoding does. See {ref}`extension_codec_order`.
+- **Two bundles claiming one id are refused**, with a `ValueError` naming the
+  id — not resolved by position, since a positional id would break stored plans
+  the first time a bundle reordered what it returns.
+- **A hook that raises leaves the receiving session untouched.** Add a bundle
+  whose hook raises and the source context's
+  {py:meth}`~datafusion.SessionContext.logical_extension_codec_ids` is still
+  empty afterwards.
+
 (extension_bundles_two_phases)=
 
 ## Two phases, because codecs and planners compose differently
