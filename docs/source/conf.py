@@ -54,7 +54,19 @@ extensions = [
     # raises an extension conflict.
     "myst_nb",
     "autoapi.extension",
+    # Emits a meta-refresh stub at each old docname listed in `redirects`
+    # below, so inbound links to pages that have moved keep working.
+    "sphinx_reredirects",
 ]
+
+# Old page URLs that have moved. The site is single-version (each release
+# overwrites asf-site wholesale), so these exist purely for inbound external
+# links — issue comments, release blog posts, and README links that pinned a
+# heading anchor. Keys are docnames without a suffix; the source file must be
+# gone, or Sphinx builds the real page and the stub is never written.
+redirects = {
+    "user-guide/distributing-work": "distributing-work/index.html",
+}
 
 # NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
 # under autoapi/ and Sphinx needs the suffix to parse it. The human-

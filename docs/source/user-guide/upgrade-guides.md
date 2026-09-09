@@ -93,6 +93,8 @@ The library exposes a bundle object implementing
 planner installed so far, so several libraries that each ship one nest instead
 of displacing each other. See the {ref}`ffi` guide.
 
+(extension_version_mismatch)=
+
 ### Mismatched extension libraries now fail loudly
 
 Objects imported through the capsule protocol are checked against the major
