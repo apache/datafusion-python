@@ -32,6 +32,7 @@ members = [
   "crates/util",
   "examples/datafusion-ffi-example",
   "examples/datafusion-ffi-query-planner-example",
+  "examples/distributed/storage-library",
 ]
 resolver = "3"
 
