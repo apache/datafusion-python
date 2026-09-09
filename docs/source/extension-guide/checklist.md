@@ -56,6 +56,14 @@ publish. Each links to the page that explains it.
 - [ ] **You round-trip a plan in a test and assert *your* codec did the work.**
       Both being installed does not mean your node reached you.
       → {ref}`extension_codec_order`
+- [ ] **You ship a logical codec too, if you contribute a table provider.** A
+      physical codec is not enough: an installed query planner receives the
+      logical plan, which holds your provider, and the session fails to plan
+      without one. → {ref}`extension_codec_provider_logical`
+- [ ] **You decode in a *different process* in at least one test.** A codec
+      that parks the object in a process-global map passes every in-process
+      round trip and fails the first real one.
+      → {ref}`extension_codec_durable_metadata`
 
 ## Bundles and planners
 
@@ -94,6 +102,8 @@ publish. Each links to the page that explains it.
       process-local token. The examples in this repository use tokens to make
       ownership observable; that is a demonstration, not a pattern.
       → {ref}`extension_codec_durable_metadata`
-- [ ] **You have integration tests across a real FFI boundary.** The two
-      example crates in this repository are the pattern: build the cdylib,
-      install the wheel, then exercise it from Python.
+- [ ] **You have integration tests across a real FFI boundary.** The example
+      trees in this repository are the pattern: build the cdylib, install the
+      wheel, then exercise it from Python. `examples/distributed` additionally
+      spawns worker processes, which is the only way to catch a codec that
+      only works in the process that wrote it.
