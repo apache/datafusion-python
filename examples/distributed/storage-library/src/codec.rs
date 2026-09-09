@@ -42,20 +42,24 @@
 //! type, including extension types and field metadata.
 
 use std::fmt;
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use arrow::datatypes::Schema;
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
-use datafusion::common::{Result, internal_datafusion_err, internal_err};
+use datafusion::catalog::TableProvider;
+use datafusion::common::{Result, TableReference, internal_datafusion_err, internal_err};
 use datafusion::execution::TaskContext;
 use datafusion::physical_plan::ExecutionPlan;
+use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
 use datafusion_proto::physical_plan::{
     DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
 };
 
 use crate::exec::{FileSlice, PartitionedParquetExec};
+use crate::table_provider::PartitionedParquetTable;
 
 /// Framing magic. The trailing digit is the payload version.
 const MAGIC: &[u8; 8] = b"DFXSTOR1";
@@ -71,6 +75,8 @@ pub(crate) struct CodecCounters {
     pub(crate) encoded: AtomicUsize,
     pub(crate) decoded: AtomicUsize,
     pub(crate) declined: AtomicUsize,
+    pub(crate) provider_encoded: AtomicUsize,
+    pub(crate) provider_decoded: AtomicUsize,
 }
 
 pub(crate) struct DfxStoragePhysicalCodec {
@@ -222,5 +228,107 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
         Ok(Arc::new(PartitionedParquetExec::new(
             files, schema, projection, limit,
         )?))
+    }
+}
+
+/// Framing magic for the logical payload; the digit is its version.
+const LOGICAL_MAGIC: &[u8; 8] = b"DFXSTOL1";
+
+/// Carries this library's *table provider*, which a query planner forces.
+///
+/// A provider library might reasonably think a physical codec is enough --
+/// its scan node is a physical node, after all. It is not. Installing any FFI
+/// query planner means the session hands that planner the **logical** plan as
+/// protobuf, and a logical plan holds its tables as `Arc<dyn TableProvider>`.
+/// Encoding one is `try_encode_table_provider`, and the default codec has no
+/// implementation, so without this codec a session that has *both* this
+/// provider and any engine installed fails at `execution_plan()` with
+/// "Error serializing custom table".
+///
+/// The payload is the directory, because everything else this provider holds
+/// -- the file list, their sizes, the schema -- is read back from the
+/// directory when it is rebuilt. Durable metadata again, for the same reason:
+/// the process that decodes this has never seen the table registered.
+pub(crate) struct DfxStorageLogicalCodec {
+    inner: DefaultLogicalExtensionCodec,
+    pub(crate) counters: Arc<CodecCounters>,
+}
+
+impl DfxStorageLogicalCodec {
+    pub(crate) fn new(counters: Arc<CodecCounters>) -> Self {
+        Self {
+            inner: DefaultLogicalExtensionCodec {},
+            counters,
+        }
+    }
+}
+
+impl fmt::Debug for DfxStorageLogicalCodec {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DfxStorageLogicalCodec")
+            .finish_non_exhaustive()
+    }
+}
+
+impl LogicalExtensionCodec for DfxStorageLogicalCodec {
+    fn try_decode(
+        &self,
+        buf: &[u8],
+        inputs: &[datafusion::logical_expr::LogicalPlan],
+        ctx: &TaskContext,
+    ) -> Result<datafusion::logical_expr::Extension> {
+        // This library defines no logical extension node.
+        self.inner.try_decode(buf, inputs, ctx)
+    }
+
+    fn try_encode(
+        &self,
+        node: &datafusion::logical_expr::Extension,
+        buf: &mut Vec<u8>,
+    ) -> Result<()> {
+        self.inner.try_encode(node, buf)
+    }
+
+    fn try_encode_table_provider(
+        &self,
+        table_ref: &TableReference,
+        node: Arc<dyn TableProvider>,
+        buf: &mut Vec<u8>,
+    ) -> Result<()> {
+        let Some(table) = node.downcast_ref::<PartitionedParquetTable>() else {
+            self.counters.declined.fetch_add(1, Ordering::SeqCst);
+            return self.inner.try_encode_table_provider(table_ref, node, buf);
+        };
+        buf.extend_from_slice(LOGICAL_MAGIC);
+        buf.extend_from_slice(table.directory.as_bytes());
+        self.counters
+            .provider_encoded
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(())
+    }
+
+    fn try_decode_table_provider(
+        &self,
+        buf: &[u8],
+        table_ref: &TableReference,
+        schema: arrow::datatypes::SchemaRef,
+        ctx: &TaskContext,
+    ) -> Result<Arc<dyn TableProvider>> {
+        let Some(directory) = buf.strip_prefix(LOGICAL_MAGIC) else {
+            self.counters.declined.fetch_add(1, Ordering::SeqCst);
+            return self
+                .inner
+                .try_decode_table_provider(buf, table_ref, schema, ctx);
+        };
+        let directory = std::str::from_utf8(directory).map_err(|err| {
+            internal_datafusion_err!("dfx_storage: bad directory in payload: {err}")
+        })?;
+        self.counters
+            .provider_decoded
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(Arc::new(PartitionedParquetTable::try_new(Path::new(
+            directory,
+        ))?))
     }
 }
