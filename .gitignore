@@ -3,6 +3,7 @@ target
 .idea
 /docs/temp
 /docs/build
+/docs/ipython
 .DS_Store
 .vscode
 
