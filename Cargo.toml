@@ -33,6 +33,7 @@ members = [
   "examples/datafusion-ffi-example",
   "examples/datafusion-ffi-query-planner-example",
   "examples/distributed/storage-library",
+  "examples/distributed/udf-library",
 ]
 resolver = "3"
 
