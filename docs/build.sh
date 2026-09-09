@@ -34,8 +34,25 @@ fi
 
 rm -rf build 2> /dev/null
 rm -rf temp 2> /dev/null
+rm -rf ipython 2> /dev/null
 mkdir temp
 cp -rf source/* temp/
+
+# Give the notebook kernels a writable IPython profile of our own, and put
+# `ipython_kernel_config.py` in it. Two reasons, both about build output:
+#
+#   * Without a writable IPYTHONDIR, IPython warns "IPython parent '<home>' is
+#     not a writable location, using a temp directory" once per kernel start.
+#   * The config file filters ipykernel's unencrypted-TCP notice, which
+#     otherwise repeats once per executed page. See the comments in it.
+#
+# `IPKernelApp` reads the IPython profile directory rather than the Jupyter
+# config path, so this has to be an IPYTHONDIR profile and not a
+# `JUPYTER_CONFIG_PATH` entry. Kept out of temp/, which is the Sphinx source
+# directory for this build.
+export IPYTHONDIR="$script_dir/ipython"
+mkdir -p "$IPYTHONDIR/profile_default"
+cp ipython_kernel_config.py "$IPYTHONDIR/profile_default/"
 
 # myst-nb executes each page as a notebook from the directory that page
 # lives in, so the example data files must sit alongside every page that
