@@ -127,6 +127,15 @@ jobs:
           uv run --no-project pytest python/tests/_test*.py
           cd ../datafusion-ffi-query-planner-example
           uv run --no-project pytest python/tests/_test*.py
+          # The distributed example. Its tests spawn worker processes with
+          # `sys.executable`, so they need the same interpreter the wheels
+          # were installed into -- which `uv run` gives them.
+          cd ../distributed/storage-library
+          uv run --no-project pytest python/tests/_test*.py
+          cd ../udf-library
+          uv run --no-project pytest python/tests/_test*.py
+          cd ../engine-library
+          uv run --no-project pytest python/tests/_test*.py
 
       - name: Run tpchgen-cli to create 1 Gb dataset
         if: matrix.wheel-tag == 'abi3'

@@ -206,6 +206,38 @@ jobs:
           args: --out dist
           rustup-components: rust-std
 
+      # The three libraries of the distributed example. Built in dependency
+      # order for readability only; they are independent cdylibs.
+      - name: Build distributed example storage library
+        if: matrix.python-tag == 'abi3'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/distributed/storage-library
+          args: --out dist
+          rustup-components: rust-std
+
+      - name: Build distributed example UDF library
+        if: matrix.python-tag == 'abi3'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/distributed/udf-library
+          args: --out dist
+          rustup-components: rust-std
+
+      - name: Build distributed example engine library
+        if: matrix.python-tag == 'abi3'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          manylinux: "2_28"
+          working-directory: examples/distributed/engine-library
+          args: --out dist
+          rustup-components: rust-std
+
       - name: Archive wheels
         uses: actions/upload-artifact@v7
         with:
@@ -220,6 +252,9 @@ jobs:
           path: |
             examples/datafusion-ffi-example/dist/*
             examples/datafusion-ffi-query-planner-example/dist/*
+            examples/distributed/storage-library/dist/*
+            examples/distributed/udf-library/dist/*
+            examples/distributed/engine-library/dist/*
 
   # ============================================
   # Build - Linux ARM64
