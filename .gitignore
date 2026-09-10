@@ -37,3 +37,6 @@ docs/mdbook/book
 .pyo3_build_config
 
 examples/distributed/*/.venv/
+# Left behind by the `uv` commands in examples/distributed/README.md. The
+# example projects are not locked -- only the root project is.
+examples/distributed/*/uv.lock

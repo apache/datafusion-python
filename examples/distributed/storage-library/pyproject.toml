@@ -30,3 +30,17 @@ dynamic = ["version"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+
+# Here so pytest's rootdir search stops in this directory. With no config file
+# of its own, the search walks up to the repository root, and this suite then
+# runs under the root's pytest settings and its `conftest.py` -- which exists
+# to inject a doctest namespace for `datafusion` and imports numpy. Running
+# these tests would need a package the example has no use for, and would warn
+# about pytest-asyncio options this environment has no reason to install.
+#
+# `python_files` is the underscore convention the test files already follow, so
+# a bare `pytest` finds them; the leading underscore is what keeps a run from
+# the repository root out of here.
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+python_files = ["_test_*.py"]
