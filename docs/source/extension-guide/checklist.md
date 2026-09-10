@@ -78,8 +78,15 @@ publish. Each links to the page that explains it.
       `with_extensions` refuses a capsule, because there would be nothing to
       name the codec by. → {ref}`extension_bundles_codecs_are_objects`
 - [ ] **Your planner hook wraps `fallback` and delegates to it.** Ignoring it
-      replaces every layer beneath you, which is legal but not composable.
+      replaces every layer beneath you, which is legal but not composable —
+      unless your planner rewrites the plan, as in the next item.
       → {ref}`extension_bundles`
+- [ ] **Your planner plans for itself if it rewrites the plan**, leaving
+      `fallback` unused. The two are exclusive: delegating hands planning back
+      to the host and returns nodes you can neither downcast nor split.
+      Planning for yourself then means supplying your *own* optimizer rules,
+      because a session that arrived over FFI carries the host's.
+      → {ref}`planner_host_optimizer_rules`
 - [ ] **Your planner hook returns `None`, not `fallback`, when it has nothing
       to contribute.** Returning `fallback` installs the session's own planner
       as a foreign one and adds an FFI hop that was not there.
@@ -107,3 +114,8 @@ publish. Each links to the page that explains it.
       wheel, then exercise it from Python. `examples/distributed` additionally
       spawns worker processes, which is the only way to catch a codec that
       only works in the process that wrote it.
+- [ ] **If you ship an engine, say which worker-parity items you handle** and
+      which you leave to your users. A `SessionContext` cannot be snapshotted
+      and restored elsewhere, so every one of them is somebody's job, and your
+      users cannot tell whose from the outside.
+      → {ref}`distributed_worker_parity`
