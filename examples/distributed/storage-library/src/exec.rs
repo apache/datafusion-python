@@ -105,6 +105,9 @@ impl PartitionedParquetExec {
     /// exists to own the *description* of the scan across a process boundary,
     /// not to reimplement Parquet.
     fn scan_for(&self, partition: usize) -> Result<Arc<DataSourceExec>> {
+        // `Internal`: `execute` is only ever called with a partition this node
+        // said it had, so an out-of-range one is a caller's bug rather than
+        // bad data. Contrast the payload errors in [`crate::codec`].
         let slice = self.files.get(partition).ok_or_else(|| {
             datafusion::common::internal_datafusion_err!(
                 "PartitionedParquetExec has {} partition(s), asked for {partition}",

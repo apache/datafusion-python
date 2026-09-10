@@ -35,7 +35,7 @@ use std::fmt;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use datafusion::common::{Result, internal_datafusion_err, internal_err};
+use datafusion::common::{Result, exec_datafusion_err, exec_err};
 use datafusion::execution::TaskContext;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::physical_plan::{
@@ -107,20 +107,20 @@ impl PhysicalExtensionCodec for DfxEnginePhysicalCodec {
             return self.inner.try_decode(buf, inputs, ctx, proto_converter);
         };
 
-        let (stage_id, shuffle_dir) = rest.split_at_checked(4).ok_or_else(|| {
-            internal_datafusion_err!("dfx_engine: payload truncated before stage id")
-        })?;
+        let (stage_id, shuffle_dir) = rest
+            .split_at_checked(4)
+            .ok_or_else(|| exec_datafusion_err!("dfx_engine: payload truncated before stage id"))?;
         let stage_id = u32::from_le_bytes(
             stage_id
                 .try_into()
-                .map_err(|_| internal_datafusion_err!("dfx_engine: bad stage id"))?,
+                .map_err(|_| exec_datafusion_err!("dfx_engine: bad stage id"))?,
         );
         let shuffle_dir = std::str::from_utf8(shuffle_dir)
-            .map_err(|err| internal_datafusion_err!("dfx_engine: bad shuffle dir: {err}"))?;
+            .map_err(|err| exec_datafusion_err!("dfx_engine: bad shuffle dir: {err}"))?;
 
         // The child arrives already decoded, by the host's chain.
         let [input] = inputs else {
-            return internal_err!(
+            return exec_err!(
                 "ShuffleStageExec expects exactly one input, got {}",
                 inputs.len()
             );

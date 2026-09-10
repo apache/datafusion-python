@@ -184,8 +184,15 @@ def test_a_malformed_projection_is_refused_not_dropped(
     mangled = blob.replace(b'"projection":[0,1]', b'"projection":[1e1]')
     assert len(mangled) == len(blob), "the edit has to preserve the protobuf framing"
 
-    with pytest.raises(Exception, match="is not a column number"):
+    with pytest.raises(Exception, match="is not a column number") as excinfo:
         ExecutionPlan.from_bytes(ctx, mangled)
+
+    # A bad payload is `Execution`, not `Internal`. DataFusion appends a
+    # "please file a bug report" line to every internal error, and sending
+    # someone to DataFusion's issue tracker over a corrupt payload of ours
+    # wastes their time and the maintainers'.
+    assert "bug report" not in str(excinfo.value)
+    assert "Internal error" not in str(excinfo.value)
 
 
 def test_the_logical_codec_carries_the_provider(readings_dir: pathlib.Path) -> None:

@@ -45,7 +45,7 @@ use std::{fmt, fs};
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
 use datafusion::common::tree_node::TreeNodeRecursion;
-use datafusion::common::{DataFusionError, Result, internal_datafusion_err, internal_err};
+use datafusion::common::{DataFusionError, Result, exec_datafusion_err, internal_err};
 use datafusion::execution::{SendableRecordBatchStream, TaskContext};
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::memory::MemoryStream;
@@ -133,26 +133,25 @@ impl ShuffleStageExec {
                 batches.push(batch?);
             }
 
-            fs::create_dir_all(&shuffle_dir).map_err(|err| {
-                internal_datafusion_err!("dfx_engine: creating {shuffle_dir}: {err}")
-            })?;
+            fs::create_dir_all(&shuffle_dir)
+                .map_err(|err| exec_datafusion_err!("dfx_engine: creating {shuffle_dir}: {err}"))?;
             {
                 let file = fs::File::create(&temp_path).map_err(|err| {
-                    internal_datafusion_err!("dfx_engine: creating {}: {err}", temp_path.display())
+                    exec_datafusion_err!("dfx_engine: creating {}: {err}", temp_path.display())
                 })?;
                 let mut writer = StreamWriter::try_new(file, stream.schema().as_ref())
-                    .map_err(|err| internal_datafusion_err!("dfx_engine: ipc writer: {err}"))?;
+                    .map_err(|err| exec_datafusion_err!("dfx_engine: ipc writer: {err}"))?;
                 for batch in &batches {
-                    writer.write(batch).map_err(|err| {
-                        internal_datafusion_err!("dfx_engine: writing batch: {err}")
-                    })?;
+                    writer
+                        .write(batch)
+                        .map_err(|err| exec_datafusion_err!("dfx_engine: writing batch: {err}"))?;
                 }
                 writer
                     .finish()
-                    .map_err(|err| internal_datafusion_err!("dfx_engine: ipc finish: {err}"))?;
+                    .map_err(|err| exec_datafusion_err!("dfx_engine: ipc finish: {err}"))?;
             }
             fs::rename(&temp_path, &final_path).map_err(|err| {
-                internal_datafusion_err!("dfx_engine: publishing {}: {err}", final_path.display())
+                exec_datafusion_err!("dfx_engine: publishing {}: {err}", final_path.display())
             })?;
 
             Ok::<_, DataFusionError>(batches)
@@ -171,18 +170,14 @@ impl ShuffleStageExec {
 
     fn read_partition(&self, partition: usize) -> Result<SendableRecordBatchStream> {
         let path = partition_path(&self.shuffle_dir, self.stage_id, partition);
-        let file = fs::File::open(&path).map_err(|err| {
-            internal_datafusion_err!("dfx_engine: opening {}: {err}", path.display())
-        })?;
-        let reader = StreamReader::try_new(file, None).map_err(|err| {
-            internal_datafusion_err!("dfx_engine: reading {}: {err}", path.display())
-        })?;
+        let file = fs::File::open(&path)
+            .map_err(|err| exec_datafusion_err!("dfx_engine: opening {}: {err}", path.display()))?;
+        let reader = StreamReader::try_new(file, None)
+            .map_err(|err| exec_datafusion_err!("dfx_engine: reading {}: {err}", path.display()))?;
         let schema = reader.schema();
         let batches = reader
             .collect::<arrow::error::Result<Vec<_>>>()
-            .map_err(|err| {
-                internal_datafusion_err!("dfx_engine: reading {}: {err}", path.display())
-            })?;
+            .map_err(|err| exec_datafusion_err!("dfx_engine: reading {}: {err}", path.display()))?;
         Ok(Box::pin(MemoryStream::try_new(batches, schema, None)?))
     }
 }
@@ -218,6 +213,11 @@ impl ExecutionPlan for ShuffleStageExec {
         self: Arc<Self>,
         mut children: Vec<Arc<dyn ExecutionPlan>>,
     ) -> Result<Arc<dyn ExecutionPlan>> {
+        // The one `Internal` in this file, and the reason the rest are not:
+        // children here come from an optimizer rule, not from a payload. No
+        // input a user supplies can reach this, so if it fires the caller has
+        // a bug and a bug report is the right advice. Everything driven by
+        // bytes or by the filesystem is `Execution`.
         if children.len() != 1 {
             return internal_err!(
                 "ShuffleStageExec expects exactly one child, got {}",
