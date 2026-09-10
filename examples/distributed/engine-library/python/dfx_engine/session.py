@@ -97,14 +97,22 @@ class SessionSpec:
 def expected_codec_ids() -> list[str]:
     """The physical codec ids a correctly-built session carries.
 
-    Read from the libraries rather than written out here, so adding a library
-    to :func:`build_session` and forgetting this list is not possible.
+    Read from the libraries rather than written out here. A copy of an id in
+    this file would go stale on a version bump, and the failure would be
+    :func:`build_session` accusing a session that was in fact correct.
+
+    The third one looks different because ``dfx_udfs`` ships no bundle, so
+    there is no bundle class to hang a ``physical_codec_id()`` on. Its id
+    comes off a throwaway codec instead: ``__datafusion_codec_id__`` is a
+    property of the codec object, which is where the protocol puts it, and the
+    two static methods above are a convenience their bundles need only because
+    a bundle is not itself a codec.
     """
     return sorted(
         [
             dfx_storage.DfxStorageExtension.physical_codec_id(),
             _internal.DfxEngineExtension.physical_codec_id(),
-            "dfx_udfs.physical.v1",
+            dfx_udfs.CodecObservations().physical_codec().__datafusion_codec_id__,
         ]
     )
 
