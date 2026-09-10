@@ -40,6 +40,23 @@
 //! fields because a human debugging a worker can read it; the schema is Arrow
 //! IPC because that is the only encoding guaranteed to round-trip every Arrow
 //! type, including extension types and field metadata.
+//!
+//! # Which error to raise
+//!
+//! Two classes appear below, and the split is DataFusion's own rule rather
+//! than a preference. `DataFusionError::Internal` is documented as "due to
+//! bugs in DataFusion", it appends *"please help us to resolve this by filing
+//! a bug report"* to every message, and "a user should not be able to trigger
+//! internal errors under normal circumstances by feeding in malformed
+//! queries, bad data, etc."
+//!
+//! A codec reads bytes from somewhere else, so almost everything that can go
+//! wrong here is bad data: a truncated payload, a version skew, a projection
+//! index that is not a number. Those are `Execution`, because the person
+//! reading the message needs to look at the payload, not at DataFusion's
+//! issue tracker. `Internal` is left for the two things that really would be
+//! this library's fault -- failing to encode an object it holds in memory,
+//! and being handed a plan node that violates its own contract.
 
 use std::fmt;
 use std::path::Path;
@@ -50,7 +67,9 @@ use arrow::datatypes::Schema;
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
 use datafusion::catalog::TableProvider;
-use datafusion::common::{Result, TableReference, internal_datafusion_err, internal_err};
+use datafusion::common::{
+    Result, TableReference, exec_datafusion_err, exec_err, internal_datafusion_err,
+};
 use datafusion::execution::TaskContext;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_proto::logical_plan::{DefaultLogicalExtensionCodec, LogicalExtensionCodec};
@@ -103,6 +122,8 @@ impl fmt::Debug for DfxStoragePhysicalCodec {
     }
 }
 
+/// `Internal` on purpose: the schema being written is one this process is
+/// already holding, so a failure here is this library's bug and not bad input.
 fn schema_to_ipc_bytes(schema: &Schema) -> Result<Vec<u8>> {
     let mut buf: Vec<u8> = Vec::new();
     {
@@ -117,7 +138,7 @@ fn schema_to_ipc_bytes(schema: &Schema) -> Result<Vec<u8>> {
 
 fn schema_from_ipc_bytes(bytes: &[u8]) -> Result<Schema> {
     let reader = StreamReader::try_new(std::io::Cursor::new(bytes), None)
-        .map_err(|err| internal_datafusion_err!("dfx_storage: reading schema: {err}"))?;
+        .map_err(|err| exec_datafusion_err!("dfx_storage: reading schema: {err}"))?;
     Ok(reader.schema().as_ref().clone())
 }
 
@@ -144,13 +165,15 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
             "projection": exec.projection,
             "limit": exec.limit,
         });
+        // `Internal`, like `schema_to_ipc_bytes`: serializing a value built
+        // two lines up cannot fail on anything but a bug here.
         let json = serde_json::to_vec(&descriptor)
             .map_err(|err| internal_datafusion_err!("dfx_storage: encoding descriptor: {err}"))?;
         let schema = schema_to_ipc_bytes(&exec.table_schema)?;
 
         buf.extend_from_slice(MAGIC);
         let json_len = u32::try_from(json.len())
-            .map_err(|_| internal_datafusion_err!("dfx_storage: descriptor too large to encode"))?;
+            .map_err(|_| exec_datafusion_err!("dfx_storage: descriptor too large to encode"))?;
         buf.extend_from_slice(&json_len.to_le_bytes());
         buf.extend_from_slice(&json);
         buf.extend_from_slice(&schema);
@@ -175,39 +198,39 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
             return self.inner.try_decode(buf, inputs, ctx, proto_converter);
         };
         if !inputs.is_empty() {
-            return internal_err!(
+            return exec_err!(
                 "PartitionedParquetExec is a leaf, got {} input(s)",
                 inputs.len()
             );
         }
 
         let (len_bytes, rest) = rest.split_at_checked(4).ok_or_else(|| {
-            internal_datafusion_err!("dfx_storage: payload truncated before descriptor length")
+            exec_datafusion_err!("dfx_storage: payload truncated before descriptor length")
         })?;
         let json_len = u32::from_le_bytes(
             len_bytes
                 .try_into()
-                .map_err(|_| internal_datafusion_err!("dfx_storage: bad descriptor length"))?,
+                .map_err(|_| exec_datafusion_err!("dfx_storage: bad descriptor length"))?,
         ) as usize;
         let (json, schema_bytes) = rest.split_at_checked(json_len).ok_or_else(|| {
-            internal_datafusion_err!(
+            exec_datafusion_err!(
                 "dfx_storage: descriptor claims {json_len} bytes, {} remain",
                 rest.len()
             )
         })?;
 
         let descriptor: serde_json::Value = serde_json::from_slice(json)
-            .map_err(|err| internal_datafusion_err!("dfx_storage: bad descriptor: {err}"))?;
+            .map_err(|err| exec_datafusion_err!("dfx_storage: bad descriptor: {err}"))?;
         let files = descriptor["files"]
             .as_array()
-            .ok_or_else(|| internal_datafusion_err!("dfx_storage: descriptor has no file list"))?
+            .ok_or_else(|| exec_datafusion_err!("dfx_storage: descriptor has no file list"))?
             .iter()
             .map(|file| {
-                let path = file["path"].as_str().ok_or_else(|| {
-                    internal_datafusion_err!("dfx_storage: file entry has no path")
-                })?;
+                let path = file["path"]
+                    .as_str()
+                    .ok_or_else(|| exec_datafusion_err!("dfx_storage: file entry has no path"))?;
                 let size = file["size"].as_u64().ok_or_else(|| {
-                    internal_datafusion_err!("dfx_storage: file entry {path} has no size")
+                    exec_datafusion_err!("dfx_storage: file entry {path} has no size")
                 })?;
                 Ok(FileSlice {
                     path: path.to_string(),
@@ -233,7 +256,7 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
                             .as_u64()
                             .and_then(|index| usize::try_from(index).ok())
                             .ok_or_else(|| {
-                                internal_datafusion_err!(
+                                exec_datafusion_err!(
                                     "dfx_storage: projection index {index} is not a column number"
                                 )
                             })
@@ -241,7 +264,7 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
                     .collect::<Result<Vec<_>>>()?,
             ),
             other => {
-                return internal_err!(
+                return exec_err!(
                     "dfx_storage: projection must be a list of column numbers or null, got {other}"
                 );
             }
@@ -253,7 +276,7 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
                     .as_u64()
                     .and_then(|limit| usize::try_from(limit).ok())
                     .ok_or_else(|| {
-                        internal_datafusion_err!("dfx_storage: limit {value} is not a row count")
+                        exec_datafusion_err!("dfx_storage: limit {value} is not a row count")
                     })?,
             ),
         };
@@ -356,9 +379,8 @@ impl LogicalExtensionCodec for DfxStorageLogicalCodec {
                 .inner
                 .try_decode_table_provider(buf, table_ref, schema, ctx);
         };
-        let directory = std::str::from_utf8(directory).map_err(|err| {
-            internal_datafusion_err!("dfx_storage: bad directory in payload: {err}")
-        })?;
+        let directory = std::str::from_utf8(directory)
+            .map_err(|err| exec_datafusion_err!("dfx_storage: bad directory in payload: {err}"))?;
         self.counters
             .provider_decoded
             .fetch_add(1, Ordering::SeqCst);
