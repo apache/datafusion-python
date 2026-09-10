@@ -158,10 +158,16 @@ pub struct PyPhysicalPartitioning {
 impl PyPhysicalPartitioning {
     /// Which partitioning scheme this is.
     ///
-    /// One of `RoundRobinBatch`, `Hash`, `Range`, or `UnknownPartitioning`.
     /// `UnknownPartitioning` is what a plan reports when it knows how many
     /// partitions it has but nothing about how rows are distributed between
-    /// them, which is the common case for a file scan.
+    /// them, which is the common case for a file scan. `RoundRobinBatch` and
+    /// `Hash` come from a `RepartitionExec`.
+    ///
+    /// `Range` is in the upstream enum but no plan reports it yet: optimizer
+    /// and execution support is deliberately unimplemented, per
+    /// <https://github.com/apache/datafusion/issues/22395>. The arm is here so
+    /// this getter keeps compiling when that lands, not because it is
+    /// reachable today.
     #[getter]
     pub fn scheme(&self) -> &'static str {
         match self.partitioning {

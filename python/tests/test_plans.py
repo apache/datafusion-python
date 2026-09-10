@@ -18,6 +18,7 @@
 import datetime
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     ExecutionPlan,
@@ -142,6 +143,32 @@ def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
     assert partitioning.hash_expressions == ["a@0"]
     assert partitioning.partition_count == 4
     assert repr(partitioning) == "Hash([a@0], 4)"
+
+
+def test_output_partitioning_reports_round_robin(tmp_path) -> None:
+    """A round-robin repartition reports `RoundRobinBatch`.
+
+    The optimizer only inserts one above a source with fewer partitions than
+    `target_partitions` and CPU work above it to parallelize, and it never
+    survives at the root, so reach it by walking `children`.
+    """
+    path = tmp_path / "rr.parquet"
+    pq.write_table(pa.table({"a": list(range(2000)), "b": [1] * 2000}), path)
+
+    ctx = SessionContext(SessionConfig().with_target_partitions(8))
+    ctx.register_parquet("t", str(path))
+    plan = ctx.sql("select a, sum(b) from t where a > 5 group by a").execution_plan()
+
+    schemes = set()
+    stack = [plan]
+    while stack:
+        node = stack.pop()
+        schemes.add(node.output_partitioning.scheme)
+        stack.extend(node.children())
+
+    # The single-file scan, the round-robin above it, and the hash repartition
+    # for the grouping are all in one tree.
+    assert schemes == {"UnknownPartitioning", "RoundRobinBatch", "Hash"}
 
 
 def test_execute_rejects_an_out_of_range_partition() -> None:

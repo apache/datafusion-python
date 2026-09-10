@@ -346,10 +346,11 @@ class PhysicalPartitioning:
     def scheme(self) -> str:
         """Which partitioning scheme this is.
 
-        One of ``"RoundRobinBatch"``, ``"Hash"``, ``"Range"``, or
-        ``"UnknownPartitioning"``. A plan reports ``"UnknownPartitioning"``
-        when it knows how many partitions it has but nothing about how rows
-        are distributed between them, which is the usual case for a file scan.
+        ``"UnknownPartitioning"`` means the plan knows how many partitions it
+        has but nothing about how rows are distributed between them, which is
+        the usual case for a file scan. ``"RoundRobinBatch"`` and ``"Hash"``
+        come from a repartition the optimizer inserted. ``"Range"`` is defined
+        upstream but no plan reports it yet.
 
         Examples:
             >>> from datafusion import SessionContext
