@@ -96,16 +96,6 @@ way `add_physical_optimizer_rule` does and returns nothing — the query planner
 lives in `SessionState`, so it belongs to the session rather than to a
 particular handle on it. See {ref}`extension_planners` for the full protocol.
 
-If a library ships codecs *and* a planner, prefer
-`SessionContext.with_extensions(bundle)` over installing each piece by hand. It
-installs every codec before it binds any planner, so a planner cannot end up
-carrying a chain that a later `with_logical_extension_codec` call has grown.
-The library exposes a bundle object implementing
-`__datafusion_session_components__` for its codecs and
-`__datafusion_session_planner__` for its planner — the latter is handed the
-planner installed so far, so several libraries that each ship one nest instead
-of displacing each other. See {ref}`extension_bundles`.
-
 (extension_version_mismatch)=
 
 ### Mismatched extension libraries now fail loudly
@@ -169,40 +159,16 @@ installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.
 
-### Physical plans report their partitioning scheme
+### `SessionContext.execute` renamed its second parameter
 
-{py:attr}`~datafusion.ExecutionPlan.output_partitioning` is new, and reports
-what {py:attr}`~datafusion.ExecutionPlan.partition_count` leaves out: whether
-the rows in those partitions are hash-distributed on known keys, spread
-round-robin, or merely counted. It returns a
-{py:class}`~datafusion.PhysicalPartitioning`.
+The parameter is a single partition index, not a count, and is now named
+`partition` rather than `partitions`. Positional calls are unaffected; update
+any call passing it by keyword.
 
 ```python
-partitioning = df.execution_plan().output_partitioning
-partitioning.scheme  # 'Hash', 'RoundRobinBatch', 'Range', 'UnknownPartitioning'
-partitioning.partition_count
-partitioning.hash_expressions  # display strings, or None
+ctx.execute(plan, partitions=0)  # before
+ctx.execute(plan, partition=0)  # after
 ```
-
-This is additive; `partition_count` keeps working and agrees with
-`output_partitioning.partition_count`. Note that
-{py:class}`datafusion.expr.Partitioning` is a different type: that one is the
-*logical* partitioning {py:meth}`~datafusion.DataFrame.repartition_by_hash`
-takes as a request, while this one is what a built plan actually does.
-
-### Two error paths that used to abort the interpreter
-
-{py:meth}`~datafusion.SessionContext.execute` now raises `ValueError` for a
-partition index that is out of range. Previously the plan's leaves indexed
-their partitions directly and the resulting Rust panic surfaced as an error
-naming neither the plan nor the index.
-
-{py:meth}`~datafusion.SessionConfig.set` now raises for a key whose namespace
-does not exist -- `datafusion.runtime.*`, or a config extension that has not
-been installed yet. Previously it aborted with a `PanicException`, which
-derives from `BaseException` and so escaped `except Exception`. This matters
-when replaying settings read back from `information_schema.df_settings`, which
-lists keys in both of those categories.
 
 ### Changes to the `datafusion-python-util` crate
 

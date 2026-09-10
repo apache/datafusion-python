@@ -2351,9 +2351,42 @@ class SessionContext:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table."""
         return DataFrame(self.ctx.read_table(table))
 
-    def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
-        """Execute the ``plan`` and return the results."""
-        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+    def execute(self, plan: ExecutionPlan, partition: int) -> RecordBatchStream:
+        """Execute a single partition of ``plan`` and stream its batches.
+
+        Args:
+            plan: The physical plan to execute.
+            partition: Index of the partition to execute, in
+                ``range(plan.partition_count)``.
+
+        Returns:
+            A stream over the record batches that partition produces.
+
+        Raises:
+            ValueError: If ``partition`` is not a valid index for ``plan``.
+
+        Example usage:
+
+        >>> import pyarrow as pa
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.register_record_batches(
+        ...     "t", [[pa.record_batch({"a": [1, 2]})], [pa.record_batch({"a": [3]})]]
+        ... )
+        >>> plan = ctx.sql("select a from t").execution_plan()
+        >>> plan.partition_count
+        2
+        >>> sum(
+        ...     batch.to_pyarrow().num_rows
+        ...     for p in range(plan.partition_count)
+        ...     for batch in ctx.execute(plan, p)
+        ... )
+        3
+        >>> ctx.execute(plan, 2)
+        Traceback (most recent call last):
+        ValueError: Partition index 2 is out of range for a plan with 2 partition(s)
+        """
+        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partition))
 
     @staticmethod
     def _convert_file_sort_order(

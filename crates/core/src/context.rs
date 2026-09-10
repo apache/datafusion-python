@@ -1422,10 +1422,6 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyRecordBatchStream> {
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let plan = plan.plan.clone();
-        // Checked here because the leaves index their partitions directly: a
-        // `MemorySourceConfig` panics with a bare `index out of bounds`, which
-        // surfaces as a `JoinError::Panic` naming neither the plan nor the
-        // partition the caller asked for.
         let partition_count = plan.output_partitioning().partition_count();
         if part >= partition_count {
             return Err(PyValueError::new_err(format!(

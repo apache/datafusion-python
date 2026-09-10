@@ -145,12 +145,7 @@ def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
 
 
 def test_execute_rejects_an_out_of_range_partition() -> None:
-    """An out-of-range partition index raises instead of panicking.
-
-    The leaves index their partition vector directly, so without this check a
-    bad index surfaces as a `JoinError::Panic` carrying `index out of bounds`
-    and naming neither the plan nor the index requested.
-    """
+    """An out-of-range partition index raises instead of panicking."""
     ctx = SessionContext()
     ctx.register_record_batches("t", [[pa.record_batch({"a": [1, 2, 3]})]])
     plan = ctx.sql("select a from t").execution_plan()
