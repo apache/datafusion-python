@@ -151,6 +151,22 @@ impl DfxStorageExtension {
         self.counters.declined.load(Ordering::SeqCst)
     }
 
+    /// How often the *logical* codec wrote this library's table provider.
+    ///
+    /// Separate from [`Self::encode_calls`] because the two halves are reached
+    /// by different callers: the physical codec carries the scan node, and
+    /// this one carries the provider held in the logical plan. A library that
+    /// shipped only the physical half would report activity here of zero and
+    /// fail the moment a query planner was installed.
+    fn provider_encode_calls(&self) -> usize {
+        self.counters.provider_encoded.load(Ordering::SeqCst)
+    }
+
+    /// How often it rebuilt the provider, which is the half a worker runs.
+    fn provider_decode_calls(&self) -> usize {
+        self.counters.provider_decoded.load(Ordering::SeqCst)
+    }
+
     /// The wire id, so a driver can put it in a worker's task envelope and
     /// the worker can check it before decoding anything.
     #[staticmethod]

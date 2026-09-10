@@ -327,8 +327,13 @@ impl LogicalExtensionCodec for DfxStorageLogicalCodec {
         self.counters
             .provider_decoded
             .fetch_add(1, Ordering::SeqCst);
-        Ok(Arc::new(PartitionedParquetTable::try_new(Path::new(
-            directory,
-        ))?))
+        // `schema` is the table schema recorded in the plan, and it is the one
+        // the plan's projection indices were resolved against -- so it is the
+        // schema this provider has to report, not one re-read from a file that
+        // may have changed since. See `try_new_with_schema`.
+        Ok(Arc::new(PartitionedParquetTable::try_new_with_schema(
+            Path::new(directory),
+            schema,
+        )?))
     }
 }

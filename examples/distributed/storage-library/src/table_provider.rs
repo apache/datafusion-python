@@ -45,9 +45,10 @@ use crate::exec::{FileSlice, PartitionedParquetExec};
 /// Scans `*.parquet` under `directory`, one partition per file.
 #[derive(Debug)]
 pub(crate) struct PartitionedParquetTable {
-    /// Kept so the logical codec can write it down. Everything else here is
-    /// derived from the directory, so the path is the whole encoding -- see
-    /// [`crate::codec::DfxStorageLogicalCodec`].
+    /// Kept so the logical codec can write it down. The file list is derived
+    /// from the directory, so the path is the whole encoding -- see
+    /// [`crate::codec::DfxStorageLogicalCodec`]. The schema is not derived on
+    /// the decode path; see [`Self::try_new_with_schema`].
     pub(crate) directory: String,
     files: Vec<FileSlice>,
     schema: SchemaRef,
@@ -56,11 +57,32 @@ pub(crate) struct PartitionedParquetTable {
 impl PartitionedParquetTable {
     /// Read the directory listing and the first file's schema, once.
     ///
+    /// For the registration path, where nobody has told us the schema yet.
+    pub(crate) fn try_new(directory: &Path) -> Result<Self> {
+        Self::open(directory, None)
+    }
+
+    /// Open with the schema the plan was built against, rather than re-reading
+    /// it from a file.
+    ///
+    /// This is the decode path, and taking the caller's schema is not an
+    /// optimisation. A serialized `CustomScan` carries the table schema and
+    /// its projection as *column names*; the decoder turns those names into
+    /// indices against the encoded schema and then applies them to whatever
+    /// this provider reports. Re-reading a footer here would let the two
+    /// drift, and the indices are applied without a bounds check -- so a
+    /// column added to the directory since the plan was written silently
+    /// selects the wrong one, and a column removed panics inside DataFusion.
+    /// Neither is reachable if the schema in the plan is the schema used.
+    pub(crate) fn try_new_with_schema(directory: &Path, schema: SchemaRef) -> Result<Self> {
+        Self::open(directory, Some(schema))
+    }
+
     /// Sorted by path so that partition `i` means the same file in every
     /// process that opens the same directory. Directory iteration order is
     /// not specified, and a worker that disagreed with the driver about which
     /// file is partition 3 would silently produce wrong answers.
-    pub(crate) fn try_new(directory: &Path) -> Result<Self> {
+    fn open(directory: &Path, schema: Option<SchemaRef>) -> Result<Self> {
         let mut paths: Vec<_> = fs::read_dir(directory)
             .map_err(|err| DataFusionError::External(Box::new(err)))?
             .collect::<std::io::Result<Vec<_>>>()
@@ -88,11 +110,14 @@ impl PartitionedParquetTable {
             });
         }
 
-        let schema = Self::read_schema(&paths[0])?;
+        let schema = match schema {
+            Some(schema) => schema,
+            None => Arc::new(Self::read_schema(&paths[0])?),
+        };
         Ok(Self {
             directory: directory.to_string_lossy().into_owned(),
             files,
-            schema: Arc::new(schema),
+            schema,
         })
     }
 
