@@ -185,58 +185,75 @@ jobs:
           features: "protoc,substrait"
           manylinux: "2_28"
 
+      # The example libraries below are test fixtures, not release artifacts:
+      # the `test-ffi-manylinux-x86_64` artifact they feed is consumed only by
+      # test.yml, which installs them on a runner like this one. They therefore
+      # build on the host (`container: off`) rather than in the manylinux
+      # container, which drops a container start and an in-container rustup
+      # install per library and lets the Swatinem/rust-cache above cover them.
+      #
+      # None of them pass `target`, so their artifacts land in `target/debug`
+      # alongside the priming build's. Naming a target would move them under
+      # `target/<triple>/debug` and the priming build would be wasted.
+      #
+      # maturin runs one `cargo rustc` per library and cargo resolves features
+      # per package, so five separate invocations each rebuild the shared
+      # datafusion crates under their own feature union -- measured at over a
+      # minute for a single transition between two of these libraries. One
+      # build spanning all five resolves that union once; afterwards each
+      # maturin step only compiles its own leaf crate.
+      - name: Prime example crate dependencies
+        if: matrix.python-tag == 'abi3'
+        run: >
+          cargo build --lib
+          -p datafusion-ffi-example
+          -p datafusion-ffi-query-planner-example
+          -p dfx-storage
+          -p dfx-udfs
+          -p dfx-engine
+
       # FFI test wheel only needs to be built once per platform; gate to abi3.
       - name: Build FFI provider test library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
+          container: "off"
           working-directory: examples/datafusion-ffi-example
           args: --out dist
-          rustup-components: rust-std
 
       - name: Build FFI query planner test library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
+          container: "off"
           working-directory: examples/datafusion-ffi-query-planner-example
           args: --out dist
-          rustup-components: rust-std
 
-      # The three libraries of the distributed example. Built in dependency
+      # The three libraries of the distributed example. Listed in dependency
       # order for readability only; they are independent cdylibs.
       - name: Build distributed example storage library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
+          container: "off"
           working-directory: examples/distributed/storage-library
           args: --out dist
-          rustup-components: rust-std
 
       - name: Build distributed example UDF library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
+          container: "off"
           working-directory: examples/distributed/udf-library
           args: --out dist
-          rustup-components: rust-std
 
       - name: Build distributed example engine library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64-unknown-linux-gnu
-          manylinux: "2_28"
+          container: "off"
           working-directory: examples/distributed/engine-library
           args: --out dist
-          rustup-components: rust-std
 
       - name: Archive wheels
         uses: actions/upload-artifact@v7
