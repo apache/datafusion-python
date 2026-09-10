@@ -32,9 +32,11 @@ import sys
 import textwrap
 from typing import TYPE_CHECKING
 
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import SessionContext
-from datafusion.plan import ExecutionPlan
+from datafusion.plan import ExecutionPlan, LogicalPlan
 from dfx_storage import DfxStorageExtension, PartitionedParquetTable
 
 if TYPE_CHECKING:
@@ -155,6 +157,67 @@ def test_stock_nodes_never_reach_this_codec(readings_dir: pathlib.Path) -> None:
     # Exactly one node in that plan is ours, and nothing else was offered.
     assert bundle.encode_calls() == 1
     assert bundle.declined_calls() == 0
+
+
+def test_the_logical_codec_carries_the_provider(readings_dir: pathlib.Path) -> None:
+    """The provider is held in the logical plan, so it needs its own codec.
+
+    A physical codec is not enough. Nothing here installs a query planner, so
+    this is the only test that reaches the logical half directly -- but any
+    session with an engine installed takes this path on every query, which is
+    what makes a provider library shipping only a physical codec fail as soon
+    as it meets one.
+    """
+    ctx, bundle = _configured(readings_dir)
+    plan = ctx.sql("select sensor_id from readings").logical_plan()
+    assert bundle.provider_encode_calls() == 0
+
+    blob = plan.to_bytes(ctx)
+    assert bundle.provider_encode_calls() == 1
+    # The directory, under the logical payload's own magic.
+    assert b"DFXSTOL1" in blob
+    assert str(readings_dir).encode() in blob
+
+    LogicalPlan.from_bytes(ctx, blob)
+    assert bundle.provider_decode_calls() == 1
+
+
+def test_a_decoded_provider_reports_the_schema_from_the_plan(
+    readings_dir: pathlib.Path,
+) -> None:
+    """The decoder takes the plan's schema rather than re-reading a footer.
+
+    A serialized scan carries its projection as column *names*, which the
+    decoder resolves to indices against the schema in the plan and then
+    applies to whatever this provider reports -- without a bounds check. So
+    the two have to be the same schema.
+
+    Here the directory gains a column in front of the others after the plan
+    was written. Re-reading the footer on decode would make index 0 mean
+    `label` while the plan means `sensor_id`, and the query would quietly
+    return the wrong column.
+    """
+    ctx, _ = _configured(readings_dir)
+    blob = ctx.sql("select sensor_id from readings").logical_plan().to_bytes(ctx)
+
+    pq.write_table(
+        pa.table(
+            {
+                "label": ["a", "b", "c"],
+                "sensor_id": [0, 1, 2],
+                "reading": [1.5, 2.5, 3.5],
+            }
+        ),
+        readings_dir / "part-0.parquet",
+    )
+
+    restored = LogicalPlan.from_bytes(ctx, blob)
+
+    # Still the schema the plan was built against: `label` is not in it, and
+    # the projected column is the one that was asked for.
+    schema_text = restored.display_indent_schema()
+    assert "sensor_id" in schema_text
+    assert "label" not in schema_text
 
 
 WORKER = textwrap.dedent(
