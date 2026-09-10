@@ -142,6 +142,30 @@ def _dispatch(
     )
 
 
+def _report(task: tuple[int, int], stdout: str) -> int:
+    """Read a worker's row count off its last line of output.
+
+    The last line, not the whole stream: a worker's stdout is shared with
+    everything loaded into it, and one stray `print` from a library -- or a
+    warning some future dependency decides to write there -- would turn
+    `json.loads` on the whole buffer into a confusing failure a long way from
+    its cause.
+    """
+    stage_id, partition = task
+    lines = [line for line in stdout.splitlines() if line.strip()]
+    if not lines:
+        message = f"stage {stage_id} partition {partition} printed no report"
+        raise RuntimeError(message)
+    try:
+        return json.loads(lines[-1])["rows"]
+    except (ValueError, KeyError) as err:
+        message = (
+            f"stage {stage_id} partition {partition} printed an unreadable "
+            f"report {lines[-1]!r}"
+        )
+        raise RuntimeError(message) from err
+
+
 def run_distributed(
     sql: str, spec: SessionSpec, extra_udfs: list[ScalarUDF] | None = None
 ) -> DistributedResult:
@@ -216,7 +240,7 @@ def run_distributed(
             stage_id, partition = task
             failures.append(f"stage {stage_id} partition {partition} failed:\n{stderr}")
             continue
-        task_rows[task] = json.loads(stdout)["rows"]
+        task_rows[task] = _report(task, stdout)
 
     if failures:
         raise RuntimeError("\n".join(failures))

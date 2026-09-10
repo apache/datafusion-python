@@ -22,7 +22,7 @@
 
 use pyo3::prelude::*;
 
-use crate::extension::{BundledPhysicalCodec, DfxStorageExtension};
+use crate::extension::{BundledLogicalCodec, BundledPhysicalCodec, DfxStorageExtension};
 use crate::table_provider::PyPartitionedParquetTable;
 
 mod codec;
@@ -33,6 +33,9 @@ mod table_provider;
 #[pymodule]
 fn dfx_storage(m: &Bound<'_, PyModule>) -> PyResult<()> {
     pyo3_log::init();
+    // Both bundled codecs, so that `module = "dfx_storage"` on each is true
+    // and a caller inspecting a session's codecs sees a type it can look up.
+    m.add_class::<BundledLogicalCodec>()?;
     m.add_class::<BundledPhysicalCodec>()?;
     m.add_class::<DfxStorageExtension>()?;
     m.add_class::<PyPartitionedParquetTable>()?;
