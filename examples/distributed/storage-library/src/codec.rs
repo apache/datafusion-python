@@ -215,13 +215,48 @@ impl PhysicalExtensionCodec for DfxStoragePhysicalCodec {
                 })
             })
             .collect::<Result<Vec<_>>>()?;
-        let projection = descriptor["projection"].as_array().map(|indices| {
-            indices
-                .iter()
-                .filter_map(|index| index.as_u64().map(|index| index as usize))
-                .collect::<Vec<_>>()
-        });
-        let limit = descriptor["limit"].as_u64().map(|limit| limit as usize);
+        // Every element has to parse. `filter_map` here would drop the ones
+        // that did not and hand back a *shorter* projection, which is not a
+        // degraded answer but a different query: the indices are positional,
+        // so losing one silently reads the wrong columns, and losing all of
+        // them reads none. A codec is the last place that can tell a
+        // malformed payload from a valid one, because everything downstream
+        // sees a well-formed plan.
+        let projection = match &descriptor["projection"] {
+            // Absent and null both mean "every column".
+            serde_json::Value::Null => None,
+            serde_json::Value::Array(indices) => Some(
+                indices
+                    .iter()
+                    .map(|index| {
+                        index
+                            .as_u64()
+                            .and_then(|index| usize::try_from(index).ok())
+                            .ok_or_else(|| {
+                                internal_datafusion_err!(
+                                    "dfx_storage: projection index {index} is not a column number"
+                                )
+                            })
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+            ),
+            other => {
+                return internal_err!(
+                    "dfx_storage: projection must be a list of column numbers or null, got {other}"
+                );
+            }
+        };
+        let limit = match &descriptor["limit"] {
+            serde_json::Value::Null => None,
+            value => Some(
+                value
+                    .as_u64()
+                    .and_then(|limit| usize::try_from(limit).ok())
+                    .ok_or_else(|| {
+                        internal_datafusion_err!("dfx_storage: limit {value} is not a row count")
+                    })?,
+            ),
+        };
         let schema = Arc::new(schema_from_ipc_bytes(schema_bytes)?);
 
         self.counters.decoded.fetch_add(1, Ordering::SeqCst);
