@@ -2364,6 +2364,8 @@ class SessionContext:
 
         Raises:
             ValueError: If ``partition`` is not a valid index for ``plan``.
+            OverflowError: If ``partition`` is negative, or too large to fit a
+                platform-sized unsigned integer.
 
         Example usage:
 
@@ -2382,9 +2384,6 @@ class SessionContext:
         ...     for batch in ctx.execute(plan, p)
         ... )
         3
-        >>> ctx.execute(plan, 2)
-        Traceback (most recent call last):
-        ValueError: Partition index 2 is out of range for a plan with 2 partition(s)
         """
         return RecordBatchStream(self.ctx.execute(plan._raw_plan, partition))
 

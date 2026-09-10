@@ -140,6 +140,13 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         //
         // A library whose planner controls its own physical optimizer rules
         // never sees a foreign node and needs no such arm.
+        //
+        // Both halves are upstream defects, tracked together in
+        // https://github.com/apache/datafusion/issues/25152: `FFI_PlanProperties`
+        // carries no `scheduling_type`, so `EnsureCooperative` reads every
+        // foreign leaf as non-cooperative and wraps it, and the resulting
+        // `ForeignExecutionPlan` then has no way to serialize itself. Fixing
+        // either one retires this arm.
         if node.is::<DataSourceExec>() || node.is::<ForeignExecutionPlan>() {
             self.counters
                 .encode_execution_plan
