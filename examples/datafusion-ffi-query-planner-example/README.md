@@ -41,7 +41,30 @@ uv run pytest \
   examples/datafusion-ffi-query-planner-example/python/tests/_test*.py
 ```
 
-The integration test follows this setup:
+The preferred setup uses `SessionContext.with_extensions` with extension bundles:
+
+```python
+config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
+ctx = SessionContext(config).with_extensions(provider_bundle, MyPlannerExtension())
+ctx.register_table("numbers", provider)
+ctx.register_udf(provider_udf)
+```
+
+`MyPlannerExtension` implements both extension hooks. `__datafusion_session_components__`
+receives the session it is being installed on, binds fresh codecs to that session's
+task-context provider, and returns them as `SessionExtensionComponents`.
+`__datafusion_session_planner__` then runs in the host's second phase, after every
+bundle's codecs are installed, and builds a planner that delegates to the `fallback` it
+is handed — so several libraries that each ship a planner nest instead of displacing one
+another, and no planner is left carrying a chain that has since grown.
+
+Its codecs are handed over as `BundledLogicalCodec` and `BundledPhysicalCodec` rather
+than as bare capsules. `with_extensions` requires an object, because a codec's wire id
+is read off the object it arrives as and a capsule has no type to read one from. Each
+wrapper declares `__datafusion_codec_id__`, so the id belongs to this library and does
+not change when the bundle is nested inside an application's own bundle.
+
+The integration tests also cover the low-level chaining setup:
 
 ```python
 config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
@@ -55,6 +78,6 @@ ctx.set_query_planner(MyQueryPlanner())
 
 `MyPlannerConfig` is transferred through the foreign session. `MyQueryPlanner` reads `ffi_query_planner.max_rows`, creates the plan with `DefaultPhysicalPlanner`, and adds a built-in `GlobalLimitExec`. The test changes the setting with `SET` and verifies the new row limit.
 
-The provider's codec chain is attached to the planner when it is installed and is also used to decode the returned physical plan in `datafusion-python`. Extension codecs compose: each `with_logical_extension_codec` / `with_physical_extension_codec` call appends to the session's codec chain, and each payload records which codec wrote it, so several libraries can install codecs on the same session and the order between them does not affect decoding. This planner owns no serializable types of its own and deliberately uses only built-in physical nodes. Install the codecs before the planner where possible; installing a codec afterwards rebuilds the planner against the new chain, but planner-last order is easier to audit. That rebuild is one level deep — a planner constructed with `fallback=` keeps the codecs its fallback was imported with — so codecs-first is a requirement rather than a preference once planners are layered. See [Rebinding a planner's codecs is one level deep](../../docs/source/contributor-guide/ffi.md#rebinding-a-planners-codecs-is-one-level-deep).
+The provider's codec chain is attached to the planner when it is installed and is also used to decode the returned physical plan in `datafusion-python`. Extension codecs compose: each `with_logical_extension_codec` / `with_physical_extension_codec` call appends to the session's codec chain, and each payload records which codec wrote it, so several libraries can install codecs on the same session and the order between them does not affect decoding. This planner owns no serializable types of its own and deliberately uses only built-in physical nodes. Install the codecs before the planner where possible; installing a codec afterwards rebuilds the planner against the new chain, but planner-last order is easier to audit. That rebuild is one level deep — a planner constructed with `fallback=` keeps the codecs its fallback was imported with — so codecs-first is a requirement rather than a preference once planners are layered. See [Rebinding a planner's codecs is one level deep](https://datafusion.apache.org/python/extension-guide/query-planners.html#install-codecs-before-a-layered-planner).
 
-For the limits behind that choice — how the codec chain dispatches, which node kinds survive the boundary, and what a derived context shares with the context it came from — see [Query Planners Across Multiple Libraries](../../docs/source/contributor-guide/ffi.md#query-planners-across-multiple-libraries) in the contributor guide.
+For the limits behind that choice — how the codec chain dispatches, which node kinds survive the boundary, and what a derived context shares with the context it came from — see the [Extension Guide](https://datafusion.apache.org/python/extension-guide/index.html).

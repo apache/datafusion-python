@@ -62,6 +62,33 @@ library reaches things only the session has.
 session satisfies the protocol too — `ctx.__datafusion_query_planner__()` and
 `ctx.__datafusion_query_planner__(ctx)` are both valid.
 
+`__datafusion_session_planner__(ctx, fallback)` is the exception to the shape
+above: it takes a second argument, the planner assembled so far. A session has
+one planner slot, so planners compose by nesting rather than by chaining, and
+the host hands each bundle the previous layer instead of letting it capture one.
+Wrap `fallback` and delegate to it; returning a planner that ignores it discards
+every layer beneath, including one the session already had. It runs after every
+bundle's codecs are installed, so `ctx` carries the final chains.
+
+That is also the only hook where it does. `__datafusion_session_components__`
+runs before anything is installed, so its `ctx` still carries the chains the
+receiver had — the same session, and the same task-context provider, but not
+this call's codecs, not even your own. Read the host's codec chains in the
+planner hook, never in the extension hook.
+
+A *codec* must always be handed over as an object implementing its getter, never
+as the bare capsule the getter returns; `with_extensions` refuses a capsule.
+A codec's wire id — the string a payload names on decode, which has to mean the
+same thing in whichever process decodes — is read off the object it arrives as,
+and a capsule has no type to read one from. Deriving the id from the bundle that
+contributed the capsule is not the fix: the bundle is whatever object the caller
+passed, so an application packaging your library inside a bundle of its own
+would re-tag your payloads and they would stop decoding where they are read. If
+the object's class name is not the identity you want on the wire, declare
+`__datafusion_codec_id__` on it. `BundledLogicalCodec` in
+`examples/datafusion-ffi-query-planner-example/src/extension.rs` is the shape.
+This applies only to codecs — a query planner carries no wire id.
+
 ## Rule 3 — never construct a `SessionContext` in an extension library
 
 The FFI constructors ask for things a library does not have:
@@ -154,8 +181,19 @@ guards this. Its `WHERE` clause is load-bearing: filter pushdown upgrades the
 weak handle during logical optimization, before plan serialization could fail
 first for an unrelated reason.
 
+`SessionContext.with_extensions` is where this rule is easiest to get wrong,
+because "bind the components to the context you are about to return" reads like
+an instruction to derive one first. It is not: the factories are handed the
+receiver, and the returned handle shares its allocation. There is nothing to
+keep alive separately and nothing to garbage-collect out from under a provider.
+
 `SessionContext.enable_url_table` is the one method that mints a second
-allocation for a session. Its result must not outlive the receiver.
+allocation for a session. Its result must not outlive the receiver, and it also
+forks the session's `SessionState` while keeping its id, so two handles report
+one `session_id()` with divergent configuration. That is a bug rather than a
+design — tracked in
+[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708)
+— so do not cite it as precedent for deriving a replacement context.
 
 ## Rule 7 — installing a planner mutates the session, and says so
 
@@ -185,7 +223,12 @@ pins that; changing it should be deliberate.
 
 ## Where the truth is
 
-- `docs/source/contributor-guide/ffi.md` — the protocol, the fork caveat.
+- `docs/source/extension-guide/` — the protocol, for the library author.
+  `capsule-protocol.md` has the hook convention and what the getter argument
+  actually is; `codecs.md`, `bundles.md`, and `query-planners.md` have the
+  per-component rules; `index.md` lists all 18 hooks.
+- `docs/source/contributor-guide/ffi-internals.md` — why the framing is shaped
+  this way, including the weak-`Arc` scheme and the one-level rebind.
 - `docs/source/user-guide/upgrade-guides.md` — every past migration.
 - `crates/core/src/codec.rs` — the codec chain: the envelope, identity dispatch,
   and the two unframed cases from Rule 8.

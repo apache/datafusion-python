@@ -576,6 +576,13 @@ class Expr:  # noqa: PLW1641
         (sufficient for built-ins and Python UDFs, plus any UDFs
         registered on the global context).
 
+        Note that the global context carries no extension codecs, so
+        falling back to it cannot decode a payload written by one. A
+        worker that must decode extension-codec payloads has to install a
+        context carrying those codecs — see
+        :func:`datafusion.ipc.set_worker_ctx` and
+        :meth:`SessionContext.with_extensions`.
+
         .. warning:: Security
             Decoding may invoke ``cloudpickle.loads`` on bytes embedded
             in the payload, which executes arbitrary Python code. Treat
@@ -627,19 +634,19 @@ class Expr:  # noqa: PLW1641
             portable across minor versions. See :meth:`to_bytes` for
             details on what travels by value vs. by reference.
 
-        Examples:
-            >>> import pickle
-            >>> from datafusion import col, lit
-            >>> e = col("a") * lit(2)
-            >>> pickle.loads(pickle.dumps(e)).canonical_name()
-            'a * Int64(2)'
-
         The encoding side honors a driver-side sender context installed
         via :func:`datafusion.ipc.set_sender_ctx` — that is how
         :meth:`SessionContext.with_python_udf_inlining` propagates
         through ``pickle.dumps``. The sender context is read by
         ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
         — which also go through ``__reduce__`` — pick it up too.
+
+        Examples:
+            >>> import pickle
+            >>> from datafusion import col, lit
+            >>> e = col("a") * lit(2)
+            >>> pickle.loads(pickle.dumps(e)).canonical_name()
+            'a * Int64(2)'
         """
         return (Expr._reconstruct, (self.to_bytes(get_sender_ctx()),))
 

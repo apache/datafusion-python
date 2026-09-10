@@ -59,11 +59,22 @@ df.show()
 
 ```
 
+## Where to go next
+
+- **[User Guide](user-guide/index)** — reading data, building queries, tuning
+  execution, and distributing work.
+- **[Extension Guide](extension-guide/index)** — writing a library that plugs
+  into DataFusion in Python: table providers, functions, extension codecs, and
+  query planners.
+- **[Contributor Guide](contributor-guide/index)** — changing
+  datafusion-python itself.
+
 ```{toctree}
 :hidden: true
 :maxdepth: 1
 
 user-guide/index
+extension-guide/index
 contributor-guide/index
 API Reference <autoapi/index>
 links

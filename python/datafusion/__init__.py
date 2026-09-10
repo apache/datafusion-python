@@ -92,6 +92,12 @@ from .dataframe import (
 )
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
+from .extensions import (
+    QueryPlannerExportable,
+    SessionComponentsExportable,
+    SessionExtensionComponents,
+    SessionPlannerExportable,
+)
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
 from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
@@ -127,13 +133,17 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
+    "QueryPlannerExportable",
     "RecordBatch",
     "RecordBatchStream",
     "RuntimeEnvBuilder",
     "SQLOptions",
     "ScalarUDF",
+    "SessionComponentsExportable",
     "SessionConfig",
     "SessionContext",
+    "SessionExtensionComponents",
+    "SessionPlannerExportable",
     "Table",
     "TableFunction",
     "TableProviderFactory",
@@ -146,6 +156,7 @@ __all__ = [
     "common",
     "configure_formatter",
     "expr",
+    "extensions",
     "functions",
     "ipc",
     "lit",

@@ -391,7 +391,8 @@ df.select("a", exp_smooth(col("a")).alias("smooth_a")).show()
 User Defined Table Functions are slightly different than the other functions
 described here. These functions take any number of `Expr` arguments, but only
 literal expressions are supported. Table functions must return a Table
-Provider as described in the ref:`_io_custom_table_provider` page.
+Provider as described in the {ref}`Custom Table Provider <io_custom_table_provider>`
+page.
 
 Once you have a table function, you can register it with the session context
 by using {py:func}`datafusion.context.SessionContext.register_udtf`.
