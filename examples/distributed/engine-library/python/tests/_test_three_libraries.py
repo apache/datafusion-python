@@ -389,16 +389,46 @@ def test_a_worker_whose_codecs_disagree_refuses_the_plan(spec: SessionSpec) -> N
         run_task(envelope)
 
 
-def test_a_session_missing_a_library_is_rejected_at_build() -> None:
-    """`build_session` checks its own work, so a partial session cannot ship.
+def test_a_bare_session_carries_none_of_the_three_libraries() -> None:
+    """Nothing about a `SessionContext` is installed by default.
 
-    The check is what turns "a worker was built slightly differently" from a
-    decode failure deep in a query into an error naming the codec ids.
+    Every codec in :func:`expected_codec_ids` is there because
+    :func:`build_session` put it there, which is why that function is the only
+    supported way to build a driver or a worker.
     """
     ctx = SessionContext()
     installed = sorted(ctx.physical_extension_codec_ids())
-    assert installed != expected_codec_ids()
     assert installed == []
+    assert expected_codec_ids() != installed
+
+
+def test_build_session_rejects_a_session_it_built_wrong(
+    spec: SessionSpec, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`build_session` checks its own work before handing the session over.
+
+    The check is what turns "a worker was built slightly differently" from a
+    decode failure deep in a query into an error naming the codec ids.
+
+    Induced by patching the expectation, because no argument can produce the
+    mismatch from the other side: *which* libraries get installed is written
+    into :func:`build_session`, not taken from the spec. That is what the
+    check guards -- this module being edited inconsistently, a library added
+    to one list and not the other -- rather than anything a caller passes.
+    Its counterpart for a genuinely mismatched peer is
+    `test_a_worker_whose_codecs_disagree_refuses_the_plan`, which compares a
+    worker's session against the driver's envelope.
+    """
+    with_a_fourth = sorted([*expected_codec_ids(), "dfx_absent.physical.v1"])
+    monkeypatch.setattr("dfx_engine.session.expected_codec_ids", lambda: with_a_fourth)
+
+    with pytest.raises(RuntimeError, match="do not match the expected") as excinfo:
+        build_session(spec)
+
+    # The message names both sides and says what breaks, so the reader does
+    # not have to guess which list is wrong.
+    assert "dfx_absent.physical.v1" in str(excinfo.value)
+    assert "will fail to decode" in str(excinfo.value)
 
 
 def test_a_plan_encoded_without_a_context_cannot_be_encoded(
