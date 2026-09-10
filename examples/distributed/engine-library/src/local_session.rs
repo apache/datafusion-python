@@ -23,8 +23,11 @@
 //! `CooperativeExec` produced that way has no reachable `try_to_proto`, so a
 //! planner that must serialize its result -- and `FFI_QueryPlanner` always
 //! must, it returns proto bytes rather than a handle -- fails on a node that
-//! is perfectly serializable in the process that made it. See the "Known gaps"
-//! section of the extension guide.
+//! is perfectly serializable in the process that made it. The guide spells
+//! this out, with the error it produces, under [Plan against your own
+//! optimizer rules](https://datafusion.apache.org/python/extension-guide/query-planners.html#plan-against-your-own-optimizer-rules)
+//! -- which names this type as the worked example, so the two are meant to be
+//! read together.
 //!
 //! Wrapping the session with a locally-owned copy of the same rule set keeps
 //! every rewrite inside this library, where the nodes stay concrete. That is
