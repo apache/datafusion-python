@@ -144,6 +144,12 @@ requirements on the worker environment:
   `ModuleNotFoundError: No module named 'yourmod'`, raised while the plan is
   being decoded, with nothing in the message about UDFs or serialization.
 
+Both requirements above are entries on a longer list. A worker has to
+reproduce more than the environment its UDFs need — codec ids, object stores,
+config extensions, `target_partitions` — and none of it can be copied off a
+running session, so each one is something you build the same way twice. See
+{ref}`distributed_worker_parity`.
+
 ## Registering shared UDFs on workers
 
 When an expression references an FFI capsule UDF (or any UDF the
