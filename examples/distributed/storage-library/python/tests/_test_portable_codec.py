@@ -159,6 +159,35 @@ def test_stock_nodes_never_reach_this_codec(readings_dir: pathlib.Path) -> None:
     assert bundle.declined_calls() == 0
 
 
+def test_a_malformed_projection_is_refused_not_dropped(
+    readings_dir: pathlib.Path,
+) -> None:
+    """A projection index that will not parse has to be an error.
+
+    Dropping it instead would hand back a shorter projection, and because the
+    indices are positional that is a different query rather than a degraded
+    one -- losing one reads the wrong columns and losing all of them reads
+    none, with a well-formed plan either way. A codec is the last place that
+    can tell a malformed payload from a valid one.
+
+    The payload is edited in place, keeping its length: the JSON sits inside a
+    length-delimited protobuf field, so `[1,2]` is replaced by the same-width
+    `[1e1]`, which is a valid JSON *float* and so not a column number. Writing
+    a shorter or longer payload would corrupt the protobuf instead and test
+    the wrong thing.
+    """
+    ctx, _ = _configured(readings_dir)
+    plan = ctx.sql("select sensor_id, reading from readings").execution_plan()
+    blob = plan.to_bytes(ctx)
+    assert b'"projection":[0,1]' in blob
+
+    mangled = blob.replace(b'"projection":[0,1]', b'"projection":[1e1]')
+    assert len(mangled) == len(blob), "the edit has to preserve the protobuf framing"
+
+    with pytest.raises(Exception, match="is not a column number"):
+        ExecutionPlan.from_bytes(ctx, mangled)
+
+
 def test_the_logical_codec_carries_the_provider(readings_dir: pathlib.Path) -> None:
     """The provider is held in the logical plan, so it needs its own codec.
 
