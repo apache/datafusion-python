@@ -1428,7 +1428,6 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyDataFusionResult<PyRecordBatchStream> {
-        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let plan = plan.plan.clone();
         let partition_count = plan.output_partitioning().partition_count();
         if part >= partition_count {
@@ -1438,6 +1437,7 @@ impl PySessionContext {
             ))
             .into());
         }
+        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }

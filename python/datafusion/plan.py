@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import datafusion._internal as df_internal
 
@@ -343,7 +343,9 @@ class PhysicalPartitioning:
         self._raw_partitioning = partitioning
 
     @property
-    def scheme(self) -> str:
+    def scheme(
+        self,
+    ) -> Literal["RoundRobinBatch", "Hash", "Range", "UnknownPartitioning"]:
         """Which partitioning scheme this is.
 
         ``"UnknownPartitioning"`` means the plan knows how many partitions it

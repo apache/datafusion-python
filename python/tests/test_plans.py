@@ -132,10 +132,11 @@ def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
     )
 
     scan = ctx.sql("select a from t").execution_plan()
-    assert scan.output_partitioning.scheme == "UnknownPartitioning"
-    assert scan.output_partitioning.hash_expressions is None
+    scanned = scan.output_partitioning
+    assert scanned.scheme == "UnknownPartitioning"
+    assert scanned.hash_expressions is None
     # Agrees with the count-only accessor it supplements.
-    assert scan.output_partitioning.partition_count == scan.partition_count
+    assert scanned.partition_count == scan.partition_count
 
     grouped = ctx.sql("select a, count(*) from t group by a").execution_plan()
     partitioning = grouped.output_partitioning
