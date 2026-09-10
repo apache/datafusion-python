@@ -59,6 +59,33 @@ jobs:
       - name: Check formatting
         run: cargo +nightly fmt --all -- --check
 
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "27.4"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      # Select core explicitly: the FFI example workspace members enable
+      # pyo3/extension-module, which prevents executables from linking libpython.
+      - name: Run Rust tests, including the downstream linking smoke test
+        run: cargo test --locked -p datafusion-python --no-default-features --features substrait
+
   lint-python:
     runs-on: ubuntu-latest
     steps:
