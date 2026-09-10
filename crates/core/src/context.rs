@@ -1436,20 +1436,20 @@ impl PySessionContext {
     pub fn execute(
         &self,
         plan: PyExecutionPlan,
-        part: usize,
+        partition: usize,
         py: Python,
     ) -> PyDataFusionResult<PyRecordBatchStream> {
         let plan = plan.plan.clone();
         let partition_count = plan.output_partitioning().partition_count();
-        if part >= partition_count {
+        if partition >= partition_count {
             return Err(PyValueError::new_err(format!(
-                "Partition index {part} is out of range for a plan with \
+                "Partition index {partition} is out of range for a plan with \
                  {partition_count} partition(s)"
             ))
             .into());
         }
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
-        let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
+        let stream = spawn_future(py, async move { plan.execute(partition, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 

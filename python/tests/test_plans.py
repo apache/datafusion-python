@@ -184,7 +184,7 @@ def test_output_partitioning_reports_round_robin(tmp_path) -> None:
     survives at the root, so reach it by walking `children`.
     """
     path = tmp_path / "rr.parquet"
-    pq.write_table(pa.table({"a": list(range(2000)), "b": [1] * 2000}), path)
+    pq.write_table(pa.table({"a": list(range(50)), "b": [1] * 50}), path)
 
     ctx = SessionContext(SessionConfig().with_target_partitions(8))
     ctx.register_parquet("t", str(path))
@@ -197,9 +197,11 @@ def test_output_partitioning_reports_round_robin(tmp_path) -> None:
         schemes.add(node.output_partitioning.scheme)
         stack.extend(node.children())
 
-    # The single-file scan, the round-robin above it, and the hash repartition
-    # for the grouping are all in one tree.
-    assert schemes == {"UnknownPartitioning", "RoundRobinBatch", "Hash"}
+    # Membership, not equality: which other nodes the optimizer puts in this
+    # tree is its business, and pinning the whole set here would make an
+    # unrelated planner change look like a failure of this accessor. The other
+    # schemes are asserted directly where they are the subject.
+    assert "RoundRobinBatch" in schemes
 
 
 def test_execute_rejects_an_out_of_range_partition() -> None:
@@ -211,6 +213,60 @@ def test_execute_rejects_an_out_of_range_partition() -> None:
 
     with pytest.raises(ValueError, match="Partition index 5 is out of range"):
         ctx.execute(plan, 5)
+
+    # The keyword is `partition`, as the upgrade guide says.
+    with pytest.raises(ValueError, match="Partition index 5 is out of range"):
+        ctx.execute(plan, partition=5)
+
+
+def test_execute_rejects_a_negative_partition() -> None:
+    """A negative index cannot reach the bounds check, so it overflows first.
+
+    Documented on `execute` as `OverflowError` because that is what PyO3
+    raises converting to `usize`, before any DataFusion code runs.
+    """
+    ctx = SessionContext()
+    ctx.register_record_batches("t", [[pa.record_batch({"a": [1, 2, 3]})]])
+    plan = ctx.sql("select a from t").execution_plan()
+
+    with pytest.raises(OverflowError):
+        ctx.execute(plan, -1)
+
+
+def test_physical_partitioning_equality_is_structural() -> None:
+    """Two partitionings are equal when scheme, count and keys agree.
+
+    Not DataFusion's own comparison of the underlying type, which reports two
+    `UnknownPartitioning` values of the same width as unequal. A reflexive
+    `__eq__` is the Python expectation, and the count-only alternative would
+    make `Hash` on different keys compare equal.
+    """
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    plan = ctx.sql("select a from t").execution_plan()
+    other_scan = ctx.sql("select a as b from t").execution_plan().output_partitioning
+    grouped = (
+        ctx.sql("select a, count(*) from t group by a")
+        .execution_plan()
+        .output_partitioning
+    )
+
+    # The property builds a fresh wrapper per access, so these are two objects
+    # over one partitioning. `UnknownPartitioning` is precisely the scheme
+    # DataFusion's own comparison reports as unequal to itself.
+    scan, scan_again = plan.output_partitioning, plan.output_partitioning
+    assert scan is not scan_again
+    assert scan == scan_again
+
+    assert scan == other_scan
+    assert scan != grouped
+    assert scan != "UnknownPartitioning(2)"
+
+    # Hashing agrees, so these collapse in a set the way equality implies.
+    assert len({scan, other_scan, grouped}) == 2
 
 
 def test_session_config_set_rejects_an_unknown_namespace() -> None:

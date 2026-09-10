@@ -231,6 +231,9 @@ class ExecutionPlan:
 
         Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
         positional, and there is no fallback to a worker or global context.
+        ``ctx`` need share nothing with the session that encoded the plan: a
+        scan over a table registered from record batches decodes here, because
+        the batches travel inside the encoded scan.
 
         See Also:
             :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
@@ -415,6 +418,44 @@ class PhysicalPartitioning:
             'UnknownPartitioning(1)'
         """
         return self._raw_partitioning.__repr__()
+
+    def _key(self) -> tuple[str, int, tuple[str, ...] | None]:
+        exprs = self.hash_expressions
+        return (self.scheme, self.partition_count, tuple(exprs) if exprs else None)
+
+    def __eq__(self, other: object) -> bool:
+        """Compare two partitionings by scheme, count and hash expressions.
+
+        Equality is structural, and does not mirror DataFusion's own
+        comparison of the underlying type, under which two
+        ``UnknownPartitioning`` values of the same width are unequal.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+            >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+            >>> a.output_partitioning == b.output_partitioning
+            True
+            >>> a.output_partitioning == "UnknownPartitioning(1)"
+            False
+        """
+        if not isinstance(other, PhysicalPartitioning):
+            return NotImplemented
+        return self._key() == other._key()
+
+    def __hash__(self) -> int:
+        """Hash the partitioning, consistently with :py:meth:`__eq__`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+            >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+            >>> len({a.output_partitioning, b.output_partitioning})
+            1
+        """
+        return hash(self._key())
 
 
 class MetricsSet:

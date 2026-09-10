@@ -60,10 +60,6 @@ or an unparsable value raises rather than being silently ignored:
 config = SessionConfig().set("datafusion.execution.batch_size", "1024")
 ```
 
-Every method above modifies the config in place and returns it, which is what makes the
-chained style work — the object you started with is the object you end up passing to
-`SessionContext`.
-
 A whole dictionary of options can be applied at once by passing it to the
 {py:class}`~datafusion.SessionConfig` constructor, which is the shape a replayed set of
 settings usually arrives in:
