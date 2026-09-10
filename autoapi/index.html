@@ -50,7 +50,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="datafusion" href="datafusion/index.html" />
-    <link rel="prev" title="Python Extensions" href="../contributor-guide/ffi.html" />
+    <link rel="prev" title="FFI framing internals" href="../contributor-guide/ffi-internals.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -138,6 +138,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../user-guide/index.html">
     User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../extension-guide/index.html">
+    Extension Guide
   </a>
 </li>
 
@@ -267,6 +274,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -376,15 +390,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -394,6 +427,7 @@
 <li class="toctree-l3"><a class="reference internal" href="datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -491,6 +525,7 @@
 <li class="toctree-l2"><a class="reference internal" href="datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datafusion/functions/index.html">datafusion.functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -532,12 +567,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../contributor-guide/ffi.html"
+       href="../contributor-guide/ffi-internals.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Python Extensions</p>
+        <p class="prev-next-title">FFI framing internals</p>
       </div>
     </a>
     <a class="right-next"

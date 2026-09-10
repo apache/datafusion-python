@@ -1,0 +1,886 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Extension bundles &#8212; Apache DataFusion in Python  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'extension-guide/bundles';</script>
+    <script src="../_static/toc-toggle.js?v=36375f01"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Query planners" href="query-planners.html" />
+    <link rel="prev" title="Extension codecs" href="codecs.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/functions.html">Functions</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codecs.html">Extension codecs</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/datafusion/index.html">datafusion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Extension Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Extension bundles</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="extension-bundles">
+<span id="id1"></span><h1>Extension bundles<a class="headerlink" href="#extension-bundles" title="Link to this heading">#</a></h1>
+<p>If your library ships codecs, or a query planner, or both, expose a <strong>bundle</strong>
+and let callers install it with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code>. This is the recommended
+way to package an extension, and the rest of this page explains what the
+bundle protocol asks of you and why.</p>
+<section id="why-not-have-callers-install-the-pieces">
+<h2>Why not have callers install the pieces<a class="headerlink" href="#why-not-have-callers-install-the-pieces" title="Link to this heading">#</a></h2>
+<p>Installing the pieces by hand works, but it makes the caller responsible for
+ordering: the codecs have to be installed before the planner, because a planner
+is built against whatever codec chains exist when it is installed, and a codec
+added afterwards rebinds it. Get that wrong and the planner encodes through a
+chain that is missing a library.</p>
+<p><code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> removes the ordering question. An extension library exposes a
+bundle object implementing one or both of two hooks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyEngineExtension</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_components__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">SessionContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionExtensionComponents</span><span class="p">:</span>
+        <span class="c1"># Phase one. Create fresh components bound to `ctx` on every call.</span>
+        <span class="k">return</span> <span class="n">SessionExtensionComponents</span><span class="p">(</span>
+            <span class="n">logical_extension_codecs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_logical_codec</span><span class="p">(</span><span class="n">ctx</span><span class="p">),),</span>
+            <span class="n">physical_extension_codecs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_physical_codec</span><span class="p">(</span><span class="n">ctx</span><span class="p">),),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_planner__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+        <span class="c1"># Phase two. `ctx` now carries every bundle&#39;s codecs, and `fallback` is</span>
+        <span class="c1"># the planner built so far. Wrapping it is what makes this library</span>
+        <span class="c1"># compose with the other planners in the call.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_planner</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Implement whichever apply: a codec-only library defines the first, a library
+that ships only an optimizing planner defines the second. The caller then
+writes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Extension</span><span class="p">(),</span> <span class="n">lib_b</span><span class="o">.</span><span class="n">Extension</span><span class="p">())</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">lib_a</span><span class="o">.</span><span class="n">TableProvider</span><span class="p">())</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">udf</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">SomeUDF</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">MyPlannerExtension</span></code> in <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example"><code class="docutils literal notranslate"><span class="pre">datafusion-ffi-query-planner-example</span></code></a> is a complete
+Rust implementation of the protocol, including taking the task-context provider
+off the supplied context, wrapping its codecs in <code class="docutils literal notranslate"><span class="pre">BundledLogicalCodec</span></code> /
+<code class="docutils literal notranslate"><span class="pre">BundledPhysicalCodec</span></code> so they carry declared ids, and constructing a Python
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code>.</p>
+</section>
+<section id="a-bundle-you-can-run">
+<h2>A bundle you can run<a class="headerlink" href="#a-bundle-you-can-run" title="Link to this heading">#</a></h2>
+<p>Before wiring up a cdylib, it is worth seeing the protocol work end to end in
+pure Python. This runs against the plain wheel — the codec here re-exports the
+host session’s own capsule, where a real one would return its library’s:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">SessionExtensionComponents</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Codec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a capsule so it carries an id. A Rust library ships this shape.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codec_id</span><span class="p">,</span> <span class="n">capsule</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__datafusion_codec_id__</span> <span class="o">=</span> <span class="n">codec_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span> <span class="o">=</span> <span class="n">capsule</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_logical_extension_codec__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Bundle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codec_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">codec_id</span> <span class="o">=</span> <span class="n">codec_id</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_components__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="c1"># Fresh components on every call, bound to the `ctx` handed in.</span>
+        <span class="c1"># Never cache these, and never retain `ctx`.</span>
+        <span class="k">return</span> <span class="n">SessionExtensionComponents</span><span class="p">(</span>
+            <span class="n">logical_extension_codecs</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">Codec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">codec_id</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">()),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span><span class="n">Bundle</span><span class="p">(</span><span class="s2">&quot;tables.v1&quot;</span><span class="p">),</span> <span class="n">Bundle</span><span class="p">(</span><span class="s2">&quot;engine.v1&quot;</span><span class="p">))</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+<span class="c1"># [&#39;tables.v1&#39;, &#39;engine.v1&#39;]</span>
+</pre></div>
+</div>
+<p>Three things this makes observable, each pinned by a test in
+<code class="docutils literal notranslate"><span class="pre">python/tests/test_context.py</span></code>:</p>
+<ul class="simple">
+<li><p><strong>Ids accumulate in bundle order.</strong> Decoding does not depend on that order;
+only encoding does. See <a class="reference internal" href="codecs.html#extension-codec-order"><span class="std std-ref">When codec order matters</span></a>.</p></li>
+<li><p><strong>Two bundles claiming one id are refused</strong>, with a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> naming the
+id — not resolved by position, since a positional id would break stored plans
+the first time a bundle reordered what it returns.</p></li>
+<li><p><strong>A hook that raises leaves the receiving session untouched.</strong> Add a bundle
+whose hook raises and the source context’s
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">logical_extension_codec_ids()</span></code> is still
+empty afterwards.</p></li>
+</ul>
+</section>
+<section id="two-phases-because-codecs-and-planners-compose-differently">
+<span id="extension-bundles-two-phases"></span><h2>Two phases, because codecs and planners compose differently<a class="headerlink" href="#two-phases-because-codecs-and-planners-compose-differently" title="Link to this heading">#</a></h2>
+<p>A session chains <strong>many</strong> codecs and dispatches between them by id. Codecs
+therefore just accumulate: order affects encoding only, and decoding always
+routes to the codec that wrote the payload. A session holds exactly <strong>one</strong>
+query planner, so planners cannot accumulate — they compose by <em>nesting</em>, each
+wrapping the one before it and delegating to it for work it does not handle.</p>
+<p>So <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> runs every <code class="docutils literal notranslate"><span class="pre">__datafusion_session_components__</span></code> and installs
+all the codecs, and only then runs each <code class="docutils literal notranslate"><span class="pre">__datafusion_session_planner__</span></code>, in
+argument order, handing each the planner built so far. Two consequences worth
+holding onto:</p>
+<ul class="simple">
+<li><p><strong>Bundle order matters differently for each.</strong> For planners it sets the
+nesting: the last extension listed ends up outermost and is consulted first.
+For codecs it never affects decoding, and affects encoding only when two
+codecs would claim the same node — see <a class="reference internal" href="codecs.html#extension-codec-order"><span class="std std-ref">When codec order matters</span></a>.</p></li>
+<li><p><strong>A planner is always built against the complete codec set</strong>, including
+codecs from bundles listed after it. This is what the low-level chaining
+cannot give you, and it matters most for a nested planner: the rebuild that
+follows a later codec install reaches only the outermost layer (see
+<a class="reference internal" href="query-planners.html#planner-codec-rebinding"><span class="std std-ref">Install codecs before a layered planner</span></a>), so a fallback captured before the codecs
+were complete would stay stale forever.</p></li>
+</ul>
+<p>The two hooks therefore see the same session through different chains. Both
+receive a handle on the one session, so the task-context provider taken off
+either is the same and stays valid — but the <code class="docutils literal notranslate"><span class="pre">ctx</span></code> in phase one still carries
+the chains the receiver had, since nothing is installed yet, while the <code class="docutils literal notranslate"><span class="pre">ctx</span></code> in
+phase two carries every bundle’s codecs. A bundle that reads the host’s codec
+chains — <code class="docutils literal notranslate"><span class="pre">MyPlannerExtension</span></code> does, to give its planner the host’s codecs
+rather than minting its own — must do that in the planner hook. Reading them in
+phase one gets the chains from before the call, missing even the bundle’s own
+codecs.</p>
+</section>
+<section id="returning-a-planner-or-not">
+<h2>Returning a planner, or not<a class="headerlink" href="#returning-a-planner-or-not" title="Link to this heading">#</a></h2>
+<p>An extension that ignores <code class="docutils literal notranslate"><span class="pre">fallback</span></code> and returns an unrelated planner replaces
+every layer beneath it, including any planner the session already had. That is
+legal — a library that must be the only planner does it deliberately — but it
+is not composable, and nothing detects it. Returning <code class="docutils literal notranslate"><span class="pre">None</span></code> contributes no
+planner and leaves <code class="docutils literal notranslate"><span class="pre">fallback</span></code> in place.</p>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> is the no-op, not <code class="docutils literal notranslate"><span class="pre">fallback</span></code>. The capsule handed to the first bundle
+wraps the session’s planner for export, so returning it unchanged installs that
+planner as a foreign one and every plan built afterwards crosses an FFI
+boundary it did not before. A bundle that decides at runtime it has nothing to
+contribute returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Three libraries that each ship a planner therefore install like this, with the
+outermost last:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span>
+    <span class="n">tables</span><span class="o">.</span><span class="n">Extension</span><span class="p">(),</span>        <span class="c1"># codecs only</span>
+    <span class="n">functions</span><span class="o">.</span><span class="n">Extension</span><span class="p">(),</span>     <span class="c1"># codecs only</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">Extension</span><span class="p">(),</span>     <span class="c1"># planner, wrapping the session default</span>
+    <span class="n">distributed</span><span class="o">.</span><span class="n">Extension</span><span class="p">(),</span>   <span class="c1"># planner, wrapping the optimizer</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="when-the-two-orders-conflict">
+<span id="extension-bundles-order-conflict"></span><h2>When the two orders conflict<a class="headerlink" href="#when-the-two-orders-conflict" title="Link to this heading">#</a></h2>
+<p>Because codec position and planner position both come from one argument list, a
+library can in principle need to be early for one and late for the other: its
+codec must precede a broad claimer, while its planner must nest outside that
+library’s planner.</p>
+<p>Do not try to satisfy both by reordering — contribute each half at its own
+position. The two hooks are independent, so a three-line adapter each is
+enough:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CodecsOf</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute only the codec half of a bundle, at this position.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner</span> <span class="o">=</span> <span class="n">inner</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_components__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="o">.</span><span class="n">__datafusion_session_components__</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlannerOf</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute only the planner half of a bundle, at this position.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner</span> <span class="o">=</span> <span class="n">inner</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_planner__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="o">.</span><span class="n">__datafusion_session_planner__</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="p">)</span>
+
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span>
+    <span class="n">CodecsOf</span><span class="p">(</span><span class="n">engine</span><span class="p">),</span> <span class="n">CodecsOf</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span>   <span class="c1"># engine&#39;s codec first</span>
+    <span class="n">PlannerOf</span><span class="p">(</span><span class="n">tables</span><span class="p">),</span> <span class="n">PlannerOf</span><span class="p">(</span><span class="n">engine</span><span class="p">),</span> <span class="c1"># engine&#39;s planner outermost</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This keeps everything <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> guarantees: one transaction, codecs
+complete before any planner is built, codec ids untouched — an id is read off
+the codec object, not off the extension that contributed it, so splitting a
+bundle cannot re-tag its payloads. A library that expects to be composed this
+way should expose the halves itself rather than make callers write the
+adapters.</p>
+<p>There is no attempt here to make every permutation expressible from one call.
+Two positions per bundle covers the cases that arise; anything stranger is a
+sign the libraries disagree about what they own, which is better fixed there.</p>
+<p>The low-level
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code> /
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code> /
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">set_query_planner()</span></code> sequence also works,
+and it is the right answer when the pieces do not come as bundles at all. But
+it is a real downgrade, not just a more verbose spelling: you take back
+responsibility for installing every codec before every planner, and a planner
+you layer by hand keeps the codecs it captured — the
+<a class="reference internal" href="query-planners.html#planner-codec-rebinding"><span class="std std-ref">one-level rebind</span></a> does not reach inside it.
+Reach for it last.</p>
+</section>
+<section id="codecs-are-objects-not-capsules">
+<span id="extension-bundles-codecs-are-objects"></span><h2>Codecs are objects, not capsules<a class="headerlink" href="#codecs-are-objects-not-capsules" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> requires each codec to be an object exposing the capsule
+getter, and refuses a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>. A codec’s id is read off the object it
+is handed over as, and a capsule has no type to read one from; since this
+method takes no <code class="docutils literal notranslate"><span class="pre">codec_id=</span></code>, there would be nothing left to name it by. A
+library holding a raw capsule — which is what a Rust implementation has —
+wraps it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyLogicalCodec</span><span class="p">:</span>
+    <span class="c1"># Optional. Without it the id is this class&#39;s import path, which is already</span>
+    <span class="c1"># stable; declare it if you may rename the class and need old plans to decode.</span>
+    <span class="n">__datafusion_codec_id__</span> <span class="o">=</span> <span class="s2">&quot;my_library.logical.v1&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capsule</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span> <span class="o">=</span> <span class="n">capsule</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_logical_extension_codec__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span>
+</pre></div>
+</div>
+<p>Wrapping is not just bookkeeping. It ties the id to the codec rather than to
+the bundle that contributed it, and that difference is load-bearing: an
+application commonly presents several libraries as one bundle of its own, and
+the id has to survive that. Were the id taken from the contributing bundle,
+wrapping <code class="docutils literal notranslate"><span class="pre">my_engine.Extension</span></code> inside <code class="docutils literal notranslate"><span class="pre">my_app.Extension</span></code> would silently re-tag
+the engine’s payloads, and a scheduler that installs the engine’s codec by its
+documented id would fail to decode plans from composed clients while succeeding
+for direct ones. The wrapper travels with the codec; the bundle does not.</p>
+<p>The query planner is exempt — it carries no wire id, so it may be an object or
+a capsule.</p>
+</section>
+<section id="failure-and-rollback">
+<h2>Failure and rollback<a class="headerlink" href="#failure-and-rollback" title="Link to this heading">#</a></h2>
+<p>Nothing is written to the session until every factory has returned and every
+capsule has been validated, so a factory that raises leaves the session exactly
+as it was. A factory that mutates the context it is handed — registering a
+table, say — is <strong>not</strong> rolled back, which is why bundle objects must be
+configuration-only: create fresh components on each call, never cache bound
+components, and do not retain the context passed in.</p>
+<p>Like every other derivation, the returned context is a handle on the <em>same</em>
+session as the receiver — see <a class="reference internal" href="sessions.html#extension-sessions"><span class="std std-ref">Sessions, handles, and lifetimes</span></a>. Only the Python-side
+codec chains belong to the returned handle; the planner is installed on the
+shared session and takes effect even if that handle is discarded.</p>
+<p><code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> sidesteps the <a class="reference internal" href="query-planners.html#planner-codec-rebinding"><span class="std std-ref">one-level rebind</span></a>
+entirely, and for nested planners too: every codec from every bundle is
+installed before the first planner hook runs, so no layer — outer or fallback —
+is ever captured against a partial chain. There is no “afterwards” within a
+call. Prefer it over hand-layering whenever the planners you are composing all
+ship as bundles.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="codecs.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Extension codecs</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="query-planners.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Query planners</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-not-have-callers-install-the-pieces">Why not have callers install the pieces</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-bundle-you-can-run">A bundle you can run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#two-phases-because-codecs-and-planners-compose-differently">Two phases, because codecs and planners compose differently</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#returning-a-planner-or-not">Returning a planner, or not</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-the-two-orders-conflict">When the two orders conflict</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#codecs-are-objects-not-capsules">Codecs are objects, not capsules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-and-rollback">Failure and rollback</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

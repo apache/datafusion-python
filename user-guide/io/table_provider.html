@@ -143,6 +143,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -267,6 +274,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -376,15 +390,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -394,6 +427,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -511,28 +545,9 @@ implementing the <a class="reference external" href="https://datafusion.apache.o
 interface in Rust and then exposing it in Python. To do so,
 you must use DataFusion 43.0.0 or later and expose a <a class="reference external" href="https://crates.io/crates/datafusion-ffi">FFI_TableProvider</a>
 via <a class="reference external" href="https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule">PyCapsule</a>.</p>
-<p>A complete example can be found in the <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">examples folder</a>.</p>
-<p>The method takes the <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> it is being registered on. Take whatever
-the FFI constructor needs from that session — here the logical extension codec —
-rather than building one inside your library. See the <a class="reference internal" href="../../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> guide for the
-full capsule protocol.</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pymethods]</span>
-<span class="k">impl</span><span class="w"> </span><span class="n">MyTableProvider</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_table_provider__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
-<span class="w">        </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">        </span><span class="n">session</span><span class="p">:</span><span class="w"> </span><span class="nc">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyAny</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">());</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new_with_ffi_codec</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span><span class="w"> </span><span class="n">codec</span><span class="p">);</span>
-
-<span class="w">        </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
+<p>A complete example can be found in the <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">examples folder</a>.
+For how to write one — the getter, what it receives, and how to serialize what
+it exposes — see <a class="reference internal" href="../../extension-guide/table-providers.html#extension-providers"><span class="std std-ref">Providers and catalogs</span></a> in the Extension Guide.</p>
 <p>Once you have this library available, you can construct a
 <a class="reference internal" href="../../autoapi/datafusion/index.html#datafusion.Table" title="datafusion.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> in Python and register it with the
 <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>

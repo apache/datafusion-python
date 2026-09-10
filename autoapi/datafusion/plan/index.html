@@ -143,6 +143,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -271,6 +278,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +394,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -398,6 +431,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -529,7 +563,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.children">
 <span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">ExecutionPlan</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.children" title="Link to this definition">#</a></dt>
-<dd><p>Get a list of children <cite>ExecutionPlan</cite> that act as inputs to this plan.</p>
+<dd><p>Get a list of children <code class="docutils literal notranslate"><span class="pre">ExecutionPlan</span></code> that act as inputs to this plan.</p>
 <p>The returned list will be empty for leaf nodes such as scans, will contain a
 single value for unary nodes, or two values for binary nodes (such as joins).</p>
 </dd></dl>
@@ -578,9 +612,16 @@ DataFrame has been executed.</p>
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.from_bytes">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.from_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Create an ExecutionPlan from serialized protobuf bytes.</p>
-<p>Decoding routes through the session’s installed
-<cite>PhysicalExtensionCodec</cite>. Tables created in memory from record
-batches are currently not supported.</p>
+<p>Decoding routes through the codecs installed on <code class="docutils literal notranslate"><span class="pre">ctx</span></code> with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code>.
+Tables created in memory from record batches are currently not
+supported.</p>
+<p>Unlike <a class="reference internal" href="../index.html#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>, <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is required and
+positional, and there is no fallback to a worker or global context.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.plan.ExecutionPlan.to_bytes" title="datafusion.plan.ExecutionPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.plan.LogicalPlan.from_bytes" title="datafusion.plan.LogicalPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">LogicalPlan.from_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -603,9 +644,19 @@ meaningful after the DataFrame has been executed.</p>
 <dt class="sig sig-object py" id="datafusion.plan.ExecutionPlan.to_bytes">
 <span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.ExecutionPlan.to_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Convert an ExecutionPlan into serialized protobuf bytes.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
-installed <cite>PhysicalExtensionCodec</cite>. Tables created in memory
-from record batches are currently not supported.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the codecs
+installed on it with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code>.
+Tables created in memory from record batches are currently not
+supported.</p>
+<p>Round-tripping through this method and <a class="reference internal" href="#datafusion.plan.ExecutionPlan.from_bytes" title="datafusion.plan.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> is how
+an extension library checks that its own codec claimed its nodes,
+rather than a codec installed earlier in the chain — see
+<a class="reference internal" href="../../../extension-guide/codecs.html#extension-codec-order"><span class="std std-ref">When codec order matters</span></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.plan.ExecutionPlan.from_bytes" title="datafusion.plan.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.plan.LogicalPlan.to_bytes" title="datafusion.plan.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">LogicalPlan.to_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -661,9 +712,9 @@ or programmatically (for example custom query languages).</p>
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.display_graphviz">
 <span class="sig-name descname"><span class="pre">display_graphviz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.display_graphviz" title="Link to this definition">#</a></dt>
 <dd><p>Print the graph visualization of the logical plan.</p>
-<p>Returns a <cite>format`able structure that produces lines meant for graphical display
-using the `DOT</cite> language. This format can be visualized using software from
-[<cite>graphviz</cite>](<a class="reference external" href="https://graphviz.org/">https://graphviz.org/</a>)</p>
+<p>Returns a formattable structure that produces lines meant for graphical
+display using the <code class="docutils literal notranslate"><span class="pre">DOT</span></code> language. This format can be visualized using
+software from <a class="reference external" href="https://graphviz.org/">graphviz</a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -682,9 +733,17 @@ using the `DOT</cite> language. This format can be visualized using software fro
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.from_bytes">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.from_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Create a LogicalPlan from serialized protobuf bytes.</p>
-<p>Decoding routes through the session’s installed
-<cite>LogicalExtensionCodec</cite>. Tables created in memory from record
-batches are currently not supported.</p>
+<p>Decoding routes through the codecs installed on <code class="docutils literal notranslate"><span class="pre">ctx</span></code> with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code>.
+Tables created in memory from record batches are currently not
+supported.</p>
+<p>Unlike <a class="reference internal" href="../index.html#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>, <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is required and
+positional, and there is no fallback to a worker or global context.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.plan.LogicalPlan.to_bytes" title="datafusion.plan.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.plan.ExecutionPlan.from_bytes" title="datafusion.plan.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExecutionPlan.from_bytes()</span></code></a>,
+<a class="reference internal" href="../index.html#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -703,12 +762,17 @@ batches are currently not supported.</p>
 <dt class="sig sig-object py" id="datafusion.plan.LogicalPlan.to_bytes">
 <span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.plan.LogicalPlan.to_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Convert a LogicalPlan to serialized protobuf bytes.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
-installed <cite>LogicalExtensionCodec</cite> so user FFI codecs (registered
-via <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec()</span></code>) see
-the encode path. With <code class="docutils literal notranslate"><span class="pre">ctx=None</span></code> a default codec is used.
-Tables created in memory from record batches are currently not
-supported.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the codecs
+installed on it with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code>,
+so extension codecs see the encode path. With <code class="docutils literal notranslate"><span class="pre">ctx=None</span></code> a
+default codec is used. Tables created in memory from record
+batches are currently not supported.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.plan.LogicalPlan.from_bytes" title="datafusion.plan.LogicalPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.plan.ExecutionPlan.to_bytes" title="datafusion.plan.ExecutionPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExecutionPlan.to_bytes()</span></code></a>,
+<a class="reference internal" href="../index.html#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.to_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">

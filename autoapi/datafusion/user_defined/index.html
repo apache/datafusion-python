@@ -143,6 +143,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -271,6 +278,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +394,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -398,6 +431,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -810,10 +844,6 @@ passed to the constructor (which is ignored on the FFI path).</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">LogicalExtensionCodecExportable</span></span><a class="headerlink" href="#datafusion.user_defined.LogicalExtensionCodecExportable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Type hint for objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">session</span></code> is the <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> the codec
-is being installed on. Take the task context provider from it rather than
-building a session of your own, so the decode callbacks resolve names
-against the session that runs the query.</p>
 <p>Implement the codec itself exactly as you would for a session that installs
 only yours. A session may hold several codecs, but each payload records the
 codec that wrote it and is only ever handed back to that codec, so there is
@@ -824,6 +854,44 @@ taken from your class’s module and qualified name. An optional
 of this protocol and is rarely needed: declare it when renaming your class
 must not stop older plans from decoding, or when one library installs two
 instances that own disjoint slices of the wire format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> – <p>A handle on the session this codec is being installed on. Take
+the task context provider from it rather than building a session of
+your own, so the decode callbacks resolve names against the session
+that runs the query.</p>
+<p><strong>Duck-type it; do not check its type.</strong> This argument is the
+reference for every capsule getter in the protocol, and across them
+it is not always a session at all: the provider and catalog getters
+receive the host’s logical codec as a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>. Even when
+it <em>is</em> a session it is the PyO3 context from
+<code class="docutils literal notranslate"><span class="pre">datafusion._internal</span></code>, not the
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> wrapper, so it
+exposes every capsule getter and <code class="docutils literal notranslate"><span class="pre">__datafusion_codec_id__</span></code> —
+everything the protocol asks of it — but
+<code class="docutils literal notranslate"><span class="pre">isinstance(session,</span> <span class="pre">SessionContext)</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> even though its
+<code class="docutils literal notranslate"><span class="pre">repr</span></code> reads <code class="docutils literal notranslate"><span class="pre">datafusion.SessionContext</span></code>. Pass it to
+<code class="docutils literal notranslate"><span class="pre">ffi_logical_codec_from_pycapsule</span></code>, which handles both.</p>
+<p>The two bundle hooks are the exception:
+<a class="reference internal" href="../extensions/index.html#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a> and
+<a class="reference internal" href="../extensions/index.html#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> are
+dispatched from Python and receive the wrapper. See
+<a class="reference internal" href="../../../extension-guide/capsule-protocol.html#extension-getter-argument"><span class="std std-ref">What your getter receives</span></a>.</p>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">datafusion_logical_extension_codec</span></code> PyCapsule.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>A <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> satisfies this
+protocol, which is how you obtain a real capsule to test against:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__">
 <span class="sig-name descname"><span class="pre">__datafusion_logical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.user_defined.LogicalExtensionCodecExportable.__datafusion_logical_extension_codec__" title="Link to this definition">#</a></dt>

@@ -49,7 +49,7 @@
     <link rel="icon" href="../../../_static/favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.functions" href="../functions/index.html" />
+    <link rel="next" title="datafusion.extensions" href="../extensions/index.html" />
     <link rel="prev" title="datafusion.dataframe_formatter" href="../dataframe_formatter/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -138,6 +138,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../user-guide/index.html">
     User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
   </a>
 </li>
 
@@ -271,6 +278,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +394,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -398,6 +431,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -1004,6 +1038,12 @@ Sender and receiver must run the same Python
 portable across minor versions. See <a class="reference internal" href="#datafusion.expr.Expr.to_bytes" title="datafusion.expr.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> for
 details on what travels by value vs. by reference.</p>
 </div>
+<p>The encoding side honors a driver-side sender context installed
+via <a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> — that is how
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> propagates
+through <code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>. The sender context is read by
+<code class="docutils literal notranslate"><span class="pre">__reduce__</span></code>, so <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code>
+— which also go through <code class="docutils literal notranslate"><span class="pre">__reduce__</span></code> — pick it up too.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
@@ -1012,12 +1052,6 @@ details on what travels by value vs. by reference.</p>
 <span class="go">&#39;a * Int64(2)&#39;</span>
 </pre></div>
 </div>
-<p>The encoding side honors a driver-side sender context installed
-via <a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> — that is how
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> propagates
-through <code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>. The sender context is read by
-<code class="docutils literal notranslate"><span class="pre">__reduce__</span></code>, so <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code>
-— which also go through <code class="docutils literal notranslate"><span class="pre">__reduce__</span></code> — pick it up too.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1371,6 +1405,12 @@ Python UDFs sent with inlining disabled via
 context is installed, the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> is used
 (sufficient for built-ins and Python UDFs, plus any UDFs
 registered on the global context).</p>
+<p>Note that the global context carries no extension codecs, so
+falling back to it cannot decode a payload written by one. A
+worker that must decode extension-codec payloads has to install a
+context carrying those codecs — see
+<a class="reference internal" href="../ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_extensions()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Security
@@ -2741,11 +2781,11 @@ values as literals instead of rejecting them.</p>
       </div>
     </a>
     <a class="right-next"
-       href="../functions/index.html"
+       href="../extensions/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.functions</p>
+        <p class="prev-next-title">datafusion.extensions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

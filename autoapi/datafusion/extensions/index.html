@@ -1,0 +1,923 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>datafusion.extensions &#8212; Apache DataFusion in Python  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=4af573bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/extensions/index';</script>
+    <script src="../../../_static/toc-toggle.js?v=36375f01"></script>
+    <link rel="icon" href="../../../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="datafusion.functions" href="../functions/index.html" />
+    <link rel="prev" title="datafusion.expr" href="../expr/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../../../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/functions.html">Functions</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">datafusion</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">datafusion.extensions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">datafusion</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">datafusion.extensions</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-datafusion.extensions">
+<span id="datafusion-extensions"></span><h1>datafusion.extensions<a class="headerlink" href="#module-datafusion.extensions" title="Link to this heading">#</a></h1>
+<p>Protocols and value types for installing extensions on a session context.</p>
+<p>An <em>extension</em> is a reusable configuration object — typically shipped by a
+separate compiled library — that contributes components to a
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>. It implements
+<a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a> by returning a
+<a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents" title="datafusion.extensions.SessionExtensionComponents"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code></a> describing what it contributes, and is
+installed with <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span><span class="n">MyLibraryExtension</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Codecs and planners install in two phases: every
+<a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a> runs first and its codecs are installed,
+then every <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> runs in argument order. A bundle
+implements either hook or both. Bundle order is significant for planners, which
+nest, and irrelevant for codecs, which accumulate.</p>
+<p>Of the four names here, only the two bundle hooks are <code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>,
+because <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>
+dispatches on them from Python. <a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a> is a type
+hint only, matching the other capsule-getter protocols in
+<a class="reference internal" href="../user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> and <a class="reference internal" href="../catalog/index.html#module-datafusion.catalog" title="datafusion.catalog"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.catalog</span></code></a>.</p>
+<p>See <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a> in the online documentation for why the phases are
+split and for a worked implementation.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a></p></td>
+<td><p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a></p></td>
+<td><p>Type hint for extension bundles installable via <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents" title="datafusion.extensions.SessionExtensionComponents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code></a></p></td>
+<td><p>Components an extension contributes to a session context.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a></p></td>
+<td><p>Type hint for extension bundles that contribute a query planner.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.extensions.QueryPlannerExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">QueryPlannerExportable</span></span><a class="headerlink" href="#datafusion.extensions.QueryPlannerExportable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p>
+<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code>, typically
+produced by a separate compiled extension. <code class="docutils literal notranslate"><span class="pre">session</span></code> is a handle on the
+session the planner is being installed on; take the extension codecs from
+it rather than building your own, and duck-type it — see
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a> for
+<code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
+<p>Unlike the two bundle hooks in this module, this protocol is a type hint
+only: it is not <code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>, so <code class="docutils literal notranslate"><span class="pre">isinstance</span></code> against it raises
+<code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+<p class="rubric">Examples</p>
+<p>A <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> satisfies this
+protocol, which is what lets a foreign planner wrap the one a session
+already has:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
+<p>The protocol itself is not runtime-checkable:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryPlannerExportable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">QueryPlannerExportable</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;runtime_checkable&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.extensions.QueryPlannerExportable.__datafusion_query_planner__">
+<span class="sig-name descname"><span class="pre">__datafusion_query_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.extensions.QueryPlannerExportable.__datafusion_query_planner__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionComponentsExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">SessionComponentsExportable</span></span><a class="headerlink" href="#datafusion.extensions.SessionComponentsExportable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for extension bundles installable via <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code>.</p>
+<p>Runtime-checkable, so <code class="docutils literal notranslate"><span class="pre">isinstance</span></code> answers whether an object implements
+the protocol. Only the presence of the method is checked, which is the same
+question <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a> asks
+before calling it.</p>
+<p>Implementations are reusable configuration objects: they must create fresh
+components on every call using the context supplied by
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>, and must not
+retain that context or cache the components they bound to it, since the
+next call may install onto a different session. They should also avoid
+mutating the context they are handed — a registration made during binding
+is not rolled back if a later extension fails.</p>
+<p>A bundle that also contributes a query planner implements
+<a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> alongside this protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ctx</strong> – The session the components will run on. Take the task-context
+provider off it. Do <strong>not</strong> read its codec chains expecting to find
+this call’s codecs, including your own: this hook runs before
+anything is installed, so <code class="docutils literal notranslate"><span class="pre">ctx</span></code> still carries whatever chains the
+receiver had. <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> is the hook that
+sees the completed chains — see <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles-two-phases"><span class="std std-ref">Two phases, because codecs and planners compose differently</span></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The codecs this bundle contributes.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">SessionExtensionComponents</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">SessionComponentsExportable</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyLibraryExtension</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_components__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">SessionExtensionComponents</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">MyLibraryExtension</span><span class="p">(),</span> <span class="n">SessionComponentsExportable</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">object</span><span class="p">(),</span> <span class="n">SessionComponentsExportable</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__">
+<span class="sig-name descname"><span class="pre">__datafusion_session_components__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents" title="datafusion.extensions.SessionExtensionComponents"><span class="pre">SessionExtensionComponents</span></a></span></span><a class="headerlink" href="#datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionExtensionComponents">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">SessionExtensionComponents</span></span><a class="headerlink" href="#datafusion.extensions.SessionExtensionComponents" title="Link to this definition">#</a></dt>
+<dd><p>Components an extension contributes to a session context.</p>
+<p>Returned by <a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__" title="datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionComponentsExportable.__datafusion_session_components__()</span></code></a>
+and consumed by
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>. Every
+component must be created against the context passed to that method;
+components bound to a different session hold a task-context provider for
+that other session and cannot be rebound.</p>
+<p>Query planners are not listed here. They install in a second phase so each
+can wrap the one before it — see <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<p>A bundle that contributes no codecs is valid — a planner-only library
+returns this, or omits the hook entirely:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionExtensionComponents</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span> <span class="o">=</span> <span class="n">SessionExtensionComponents</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span><span class="o">.</span><span class="n">logical_extension_codecs</span>
+<span class="go">()</span>
+</pre></div>
+</div>
+<p>A bundle that contributes one kind of component names it, leaving the
+rest empty. Here the codec is a capsule wrapped in an object that
+declares the id its payloads will carry:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">NamedCodec</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">__datafusion_codec_id__</span> <span class="o">=</span> <span class="s2">&quot;my_library.v1&quot;</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capsule</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span> <span class="o">=</span> <span class="n">capsule</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_logical_extension_codec__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capsule</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span> <span class="o">=</span> <span class="n">SessionExtensionComponents</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">logical_extension_codecs</span><span class="o">=</span><span class="p">(</span><span class="n">NamedCodec</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="p">),)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span><span class="o">.</span><span class="n">logical_extension_codecs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__datafusion_codec_id__</span>
+<span class="go">&#39;my_library.v1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span><span class="o">.</span><span class="n">physical_extension_codecs</span>
+<span class="go">()</span>
+</pre></div>
+</div>
+<p>A single codec is not an iterable of codecs, and forgetting the
+trailing comma is the easy way to write one by accident:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SessionExtensionComponents</span><span class="p">(</span><span class="n">logical_extension_codecs</span><span class="o">=</span><span class="n">NamedCodec</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">TypeError</span>: <span class="n">logical_extension_codecs must be an iterable of codec objects...</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionExtensionComponents.__post_init__">
+<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.extensions.SessionExtensionComponents.__post_init__" title="Link to this definition">#</a></dt>
+<dd><p>Normalize each codec field to a tuple, rejecting what cannot become one.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionExtensionComponents.logical_extension_codecs">
+<span class="sig-name descname"><span class="pre">logical_extension_codecs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><span class="pre">datafusion.user_defined.LogicalExtensionCodecExportable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#datafusion.extensions.SessionExtensionComponents.logical_extension_codecs" title="Link to this definition">#</a></dt>
+<dd><p>Logical codecs to add to the session’s codec chain, in declaration order.</p>
+<p>Objects exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>, never bare
+<code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> objects — a codec’s id is read off the object it is handed
+over as. Any iterable is accepted and stored as a tuple. See
+<a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles-codecs-are-objects"><span class="std std-ref">Codecs are objects, not capsules</span></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionExtensionComponents.physical_extension_codecs">
+<span class="sig-name descname"><span class="pre">physical_extension_codecs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable" title="datafusion.user_defined.PhysicalExtensionCodecExportable"><span class="pre">datafusion.user_defined.PhysicalExtensionCodecExportable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#datafusion.extensions.SessionExtensionComponents.physical_extension_codecs" title="Link to this definition">#</a></dt>
+<dd><p>Physical codecs to add to the session’s codec chain, in declaration order.</p>
+<p>As <a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents.logical_extension_codecs" title="datafusion.extensions.SessionExtensionComponents.logical_extension_codecs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logical_extension_codecs</span></code></a>, for
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionPlannerExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">SessionPlannerExportable</span></span><a class="headerlink" href="#datafusion.extensions.SessionPlannerExportable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for extension bundles that contribute a query planner.</p>
+<p>A session holds exactly one query planner, so planners compose by nesting
+rather than by chaining: each wraps the one before it and delegates to it
+for the work it does not handle.
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a> runs this
+hook once per bundle that implements it, <strong>in argument order</strong>, handing
+each the planner built so far. Returning a planner that wraps <code class="docutils literal notranslate"><span class="pre">fallback</span></code>
+puts this bundle <em>outside</em> the previous one, so the last bundle listed ends
+up outermost and is consulted first.</p>
+<p>The hook runs after every codec from every bundle is installed, and <code class="docutils literal notranslate"><span class="pre">ctx</span></code>
+is the context carrying those final chains. That ordering is the point: a
+planner captured here sees the complete codec set, so a nested planner is
+not left encoding through a chain that a later bundle has grown. See
+<a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles-two-phases"><span class="std std-ref">Two phases, because codecs and planners compose differently</span></a>.</p>
+<p><strong>Return ``None`` to contribute no planner</strong>, leaving <code class="docutils literal notranslate"><span class="pre">fallback</span></code> in
+place. That is the no-op, and it is not the same as returning <code class="docutils literal notranslate"><span class="pre">fallback</span></code>:
+the capsule the first bundle receives wraps the session’s planner for
+export, so handing it back installs that planner as a foreign one and every
+later plan crosses an FFI boundary that was not there before. A bundle that
+decides at runtime it has nothing to contribute returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Ignoring <code class="docutils literal notranslate"><span class="pre">fallback</span></code> and returning a planner that does not delegate to it
+is legal and means “replace” — but it discards every planner listed before
+this one, including any the session already had.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> – The session the planner will run on, carrying the final codec
+chains.</p></li>
+<li><p><strong>fallback</strong> – The planner built so far, as a <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>. For the first
+bundle this is the session’s existing planner, which is the
+DataFusion default unless one was installed earlier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A planner wrapping <code class="docutils literal notranslate"><span class="pre">fallback</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to contribute none.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>A real library returns its own planner wrapping <code class="docutils literal notranslate"><span class="pre">fallback</span></code>, e.g.
+<code class="docutils literal notranslate"><span class="pre">my_library.Planner(fallback=fallback)</span></code>. The two degenerate cases are
+worth contrasting, because both plan queries successfully and only one
+of them is the no-op:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">SessionPlannerExportable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Contributes</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_planner__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># the no-op: session keeps its own planner</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Replaces</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_planner__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">fallback</span>  <span class="c1"># installs it as a *foreign* planner</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">bundle</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Contributes</span><span class="p">(),</span> <span class="n">Replaces</span><span class="p">()):</span>
+<span class="gp">... </span>    <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span><span class="n">bundle</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 AS n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()</span>
+<span class="go">[1]</span>
+<span class="go">[1]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Contributes</span><span class="p">(),</span> <span class="n">SessionPlannerExportable</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">object</span><span class="p">(),</span> <span class="n">SessionPlannerExportable</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.extensions.SessionPlannerExportable.__datafusion_session_planner__">
+<span class="sig-name descname"><span class="pre">__datafusion_session_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><span class="pre">QueryPlannerExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.extensions.SessionPlannerExportable.__datafusion_session_planner__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../expr/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">datafusion.expr</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../functions/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">datafusion.functions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.QueryPlannerExportable"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.QueryPlannerExportable.__datafusion_query_planner__"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable.__datafusion_query_planner__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionComponentsExportable"><code class="docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__"><code class="docutils literal notranslate"><span class="pre">SessionComponentsExportable.__datafusion_session_components__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionExtensionComponents"><code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionExtensionComponents.__post_init__"><code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents.__post_init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionExtensionComponents.logical_extension_codecs"><code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents.logical_extension_codecs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionExtensionComponents.physical_extension_codecs"><code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents.physical_extension_codecs</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionPlannerExportable"><code class="docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.SessionPlannerExportable.__datafusion_session_planner__"><code class="docutils literal notranslate"><span class="pre">SessionPlannerExportable.__datafusion_session_planner__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

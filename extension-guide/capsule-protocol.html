@@ -1,0 +1,823 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="auto">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>The capsule protocol &#8212; Apache DataFusion in Python  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "auto";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "auto";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'extension-guide/capsule-protocol';</script>
+    <script src="../_static/toc-toggle.js?v=36375f01"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Providers and catalogs" href="table-providers.html" />
+    <link rel="prev" title="Why FFI" href="why-ffi.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/original.svg" class="logo__image only-light" alt="Apache DataFusion in Python"/>
+    <img src="../_static/original_dark.svg" class="logo__image only-dark pst-js-only" alt="Apache DataFusion in Python"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user-guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributor-guide/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../autoapi/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../links.html">
+    Links
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/datafusion-python" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://docs.rs/datafusion/latest/datafusion/" title="Rust API docs (docs.rs)" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-rust fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Rust API docs (docs.rs)</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links" aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav">
+    <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../user-guide/index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/basics.html">Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/data-sources.html">Data Sources</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/dataframe/index.html">DataFrames</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/dataframe/rendering.html">DataFrame Rendering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/dataframe/execution-metrics.html">Execution Metrics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/common-operations/index.html">Common Operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/views.html">Registering Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/basic-info.html">Basic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">Column Selections</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/expressions.html">Expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/joins.html">Joins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/functions.html">Functions</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/spark-functions.html">Spark-Compatible Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/aggregations.html">Aggregation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/windows.html">Window Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">User-Defined Functions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/io/index.html">IO</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/arrow.html">Arrow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/avro.html">Avro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/csv.html">CSV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/json.html">JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/parquet.html">Parquet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/io/table_provider.html">Custom Table Provider</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/configuration.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/sql.html">SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/datafusion/index.html">datafusion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/context/index.html">datafusion.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/datafusion/input/index.html">datafusion.input</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/input/base/index.html">datafusion.input.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/input/location/index.html">datafusion.input.location</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/io/index.html">datafusion.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/ipc/index.html">datafusion.ipc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/options/index.html">datafusion.options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/plan/index.html">datafusion.plan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/unparser/index.html">datafusion.unparser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/user_defined/index.html">datafusion.user_defined</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../links.html">Links</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python">GitHub and Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">Rust API Docs</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">Examples</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Extension Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">The capsule protocol</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section id="the-capsule-protocol">
+<span id="extension-capsule-protocol"></span><h1>The capsule protocol<a class="headerlink" href="#the-capsule-protocol" title="Link to this heading">#</a></h1>
+<p>Every integration point in this section works the same way. Your library
+exposes a dunder method, datafusion-python calls it, and it hands back a
+<code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> wrapping an FFI-safe struct. This page describes that mechanism
+once; the pages after it describe what goes inside the capsule for each kind
+of component.</p>
+<p>The bulk of the code necessary to perform our FFI operations is in the
+upstream <a class="reference external" href="https://datafusion.apache.org/">DataFusion</a> core repository. You can
+review the code and documentation in the <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> crate.</p>
+<section id="ffi-safe-types">
+<h2>FFI-safe types<a class="headerlink" href="#ffi-safe-types" title="Link to this heading">#</a></h2>
+<p>Our FFI implementation is narrowly focused on sharing data and functions with
+Rust backed libraries. This allows us to use the
+<a class="reference external" href="https://crates.io/crates/stabby">stabby crate</a>, which converts between Rust
+native types and FFI-safe alternatives. For example, if you needed to pass a
+<code class="docutils literal notranslate"><span class="pre">Vec&lt;String&gt;</span></code> via FFI, you can convert it to a
+<code class="docutils literal notranslate"><span class="pre">stabby::vec::Vec&lt;stabby::string::String&gt;</span></code> — the crate’s own examples alias
+these as <code class="docutils literal notranslate"><span class="pre">SVec</span></code> and <code class="docutils literal notranslate"><span class="pre">SString</span></code>, which is the convention <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> follows
+too.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">Option</span></code> and <code class="docutils literal notranslate"><span class="pre">Result</span></code>, <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> defines its own <code class="docutils literal notranslate"><span class="pre">FFI_Option&lt;T&gt;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">FFI_Result&lt;T&gt;</span></code> rather than using stabby’s. Stabby’s versions require
+<code class="docutils literal notranslate"><span class="pre">T:</span> <span class="pre">IStable</span></code> for niche optimization, and many of the <code class="docutils literal notranslate"><span class="pre">FFI_*</span></code> structs hold
+self-referential function pointers that cannot implement it.</p>
+</section>
+<section id="ffi-on-the-provider-foreign-on-the-receiver">
+<h2><code class="docutils literal notranslate"><span class="pre">FFI_</span></code> on the provider, <code class="docutils literal notranslate"><span class="pre">Foreign</span></code> on the receiver<a class="headerlink" href="#ffi-on-the-provider-foreign-on-the-receiver" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> crate has been designed to make it easy to convert from
+DataFusion traits into their FFI counterparts. For example, if you have
+defined a custom
+<a class="reference external" href="https://docs.rs/datafusion/45.0.0/datafusion/catalog/trait.TableProvider.html">TableProvider</a>
+and you want to create a sharable FFI counterpart, you could write:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">my_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">MyTableProvider</span><span class="p">::</span><span class="n">default</span><span class="p">());</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">ffi_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new_with_ffi_codec</span><span class="p">(</span><span class="n">my_provider</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span><span class="w"> </span><span class="n">codec</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">codec</span></code> is the host’s logical codec, read off the argument your getter
+was handed — see <a class="reference internal" href="#extension-getter-argument"><span class="std std-ref">What your getter receives</span></a>.</p>
+<p>If you were interfacing with a library that provided the above
+<code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code> and you needed a usable <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> back, you convert
+it into an <code class="docutils literal notranslate"><span class="pre">Arc&lt;dyn</span> <span class="pre">TableProvider&gt;</span></code>:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">TableProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">ffi_provider</span><span class="p">).</span><span class="n">into</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>If you review the code in <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> you will find that each of the
+traits we share across the boundary has two portions, one with an <code class="docutils literal notranslate"><span class="pre">FFI_</span></code>
+prefix and one with a <code class="docutils literal notranslate"><span class="pre">Foreign</span></code> prefix. This is used to distinguish which side
+of the FFI boundary that struct is designed to be used on. The structures with
+the <code class="docutils literal notranslate"><span class="pre">FFI_</span></code> prefix are to be used on the <strong>provider</strong> of the structure. In the
+example we’re showing, this means the code that has written the underlying
+<code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> implementation to access your custom data source. The
+structures with the <code class="docutils literal notranslate"><span class="pre">Foreign</span></code> prefix are to be used by the receiver. In this
+case, it is the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> library.</p>
+<p>Convert to the trait object rather than naming <code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code> yourself.
+The conversion compares the provider’s library marker against the receiver’s:
+when both sides turn out to be the same shared library it hands back the
+original <code class="docutils literal notranslate"><span class="pre">Arc</span></code> and skips the boundary entirely, and only otherwise wraps it in
+a <code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code>. Which one you get is an implementation detail, and
+both implement <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code>.</p>
+</section>
+<section id="wrapping-it-in-a-capsule">
+<h2>Wrapping it in a capsule<a class="headerlink" href="#wrapping-it-in-a-capsule" title="Link to this heading">#</a></h2>
+<p>In order to share these FFI structures, we need to wrap them in some kind of
+Python object that can be used to interface from one package to another. As
+described in <a class="reference internal" href="why-ffi.html#extension-why-ffi"><span class="std std-ref">Why FFI</span></a>, we use <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>. We can create a
+<code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> for our provider thusly:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi_provider</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>On the receiving side, read the <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code> back out of the capsule and
+convert it, which is what <code class="docutils literal notranslate"><span class="pre">table_provider_from_pycapsule</span></code> in <code class="docutils literal notranslate"><span class="pre">crates/util</span></code> does:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="n">validate_pycapsule</span><span class="p">(</span><span class="n">capsule</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">data</span><span class="p">:</span><span class="w"> </span><span class="nc">NonNull</span><span class="o">&lt;</span><span class="n">FFI_TableProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span>
+<span class="w">    </span><span class="p">.</span><span class="n">pointer_checked</span><span class="p">(</span><span class="nb">Some</span><span class="p">(</span><span class="n">c</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">))</span><span class="o">?</span>
+<span class="w">    </span><span class="p">.</span><span class="n">cast</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">ffi_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">as_ref</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<span class="n">check_ffi_version</span><span class="p">(</span><span class="s">&quot;table provider&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">(</span><span class="n">ffi_provider</span><span class="p">.</span><span class="n">version</span><span class="p">)()</span><span class="w"> </span><span class="p">})</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">TableProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_provider</span><span class="p">.</span><span class="n">into</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="the-naming-rule">
+<h2>The naming rule<a class="headerlink" href="#the-naming-rule" title="Link to this heading">#</a></h2>
+<p>The getter’s name and the capsule’s name are both fixed by the protocol, and
+they follow one rule with no exceptions:</p>
+<ul class="simple">
+<li><p>The method is <code class="docutils literal notranslate"><span class="pre">__datafusion_&lt;thing&gt;__</span></code>.</p></li>
+<li><p>The capsule it returns is named <code class="docutils literal notranslate"><span class="pre">datafusion_&lt;thing&gt;</span></code> — the same string
+without the underscores.</p></li>
+</ul>
+<p>So a table provider is reached by calling <code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code> and
+must return a capsule named <code class="docutils literal notranslate"><span class="pre">datafusion_table_provider</span></code>. Return a capsule with
+the wrong name and the import fails with an error naming both the name found
+and the name expected, rather than reading the pointer as the wrong type.</p>
+<p>The full list of hooks is in the
+<a class="reference internal" href="index.html#extension-guide"><span class="std std-ref">hook reference</span></a>. <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> was the first
+extension written this way and is the most thoroughly implemented; every hook
+added since follows the same pattern.</p>
+</section>
+<section id="version-checking">
+<h2>Version checking<a class="headerlink" href="#version-checking" title="Link to this heading">#</a></h2>
+<p>Objects imported through this protocol are checked against the major version of
+<code class="docutils literal notranslate"><span class="pre">datafusion-ffi</span></code> that datafusion-python was built with. A component produced by
+a library built against a different DataFusion major version raises an
+<code class="docutils literal notranslate"><span class="pre">ImportError</span></code> naming the version found and the version expected.</p>
+<p>This is a diagnostic rather than a soundness guarantee — reading the version
+out of the struct already assumes the local field layout — but it turns the
+common “extension library built against the wrong DataFusion” mistake into a
+clear message rather than undefined behaviour on first use. See
+<a class="reference internal" href="../user-guide/upgrade-guides.html#extension-version-mismatch"><span class="std std-ref">Mismatched extension libraries now fail loudly</span></a>.</p>
+<p>Three FFI structs carry no version field and so cannot be checked:
+<code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>, <code class="docutils literal notranslate"><span class="pre">FFI_TableProviderFactory</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">FFI_ExtensionOptions</span></code>.</p>
+</section>
+<section id="what-your-getter-receives">
+<span id="extension-getter-argument"></span><h2>What your getter receives<a class="headerlink" href="#what-your-getter-receives" title="Link to this heading">#</a></h2>
+<p>Most getters take one positional argument beyond <code class="docutils literal notranslate"><span class="pre">py</span></code>. The
+<a class="reference internal" href="index.html#extension-guide"><span class="std std-ref">hook reference</span></a> says which, and the group that does
+looks like this:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">session</span><span class="p">:</span><span class="w"> </span><span class="nc">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyAny</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">runtime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_tokio_runtime</span><span class="p">().</span><span class="n">handle</span><span class="p">().</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_task_context_provider_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">session</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This exists because the FFI constructors need things an extension library does
+not have. <code class="docutils literal notranslate"><span class="pre">FFI_{Logical,Physical}ExtensionCodec::new</span></code> needs a
+<code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> for the decode callbacks the codec will receive, and
+<code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner::new</span></code> needs both codecs on top of that. Taking them from the
+argument is what keeps a library from constructing a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> purely to
+satisfy a parameter — an empty one resolves nothing, and
+<code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code> holds it weakly, so a context built inline in the
+getter is already dropped by the time the capsule is used.</p>
+<section id="it-is-not-always-a-session">
+<h3>It is not always a session<a class="headerlink" href="#it-is-not-always-a-session" title="Link to this heading">#</a></h3>
+<p>The parameter is conventionally named <code class="docutils literal notranslate"><span class="pre">session</span></code>, and for the codec and planner
+hooks it genuinely is one. For the provider and catalog hooks it may instead be
+a bare <code class="docutils literal notranslate"><span class="pre">datafusion_logical_extension_codec</span></code> capsule: <code class="docutils literal notranslate"><span class="pre">SessionContext.register_table</span></code>
+passes the session, while <code class="docutils literal notranslate"><span class="pre">Schema.register_table</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SessionContext.register_catalog_provider</span></code>, <code class="docutils literal notranslate"><span class="pre">register_catalog_provider_list</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">register_table_factory</span></code> pass the host’s codec directly.</p>
+<p>This is why the helpers accept either. <code class="docutils literal notranslate"><span class="pre">ffi_logical_codec_from_pycapsule</span></code>
+calls the codec getter if the object has one and returns the object untouched
+if it does not, so the same line works in both cases:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">session</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>The rule to hold onto is therefore about capability rather than type: <strong>the
+argument is something you can read the host’s logical extension codec off.</strong>
+The hooks that need more than a codec — the two extension codecs and the query
+planner, which need a task-context provider — are exactly the hooks that are
+always handed a real session.</p>
+</section>
+<section id="duck-type-it">
+<h3>Duck-type it<a class="headerlink" href="#duck-type-it" title="Link to this heading">#</a></h3>
+<p>Do not check the argument’s type. Beyond the codec-capsule case above, even
+when it <em>is</em> a session it is the PyO3 context the binding installs through, not
+the <code class="docutils literal notranslate"><span class="pre">datafusion.context.SessionContext</span></code> wrapper. It carries every capsule
+getter and <code class="docutils literal notranslate"><span class="pre">__datafusion_codec_id__</span></code> — everything the protocol asks of it — but
+<code class="docutils literal notranslate"><span class="pre">isinstance(session,</span> <span class="pre">SessionContext)</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> in Python even though its
+<code class="docutils literal notranslate"><span class="pre">repr</span></code> reads <code class="docutils literal notranslate"><span class="pre">datafusion.SessionContext</span></code>.</p>
+<p>The two bundle hooks are the exception: <code class="docutils literal notranslate"><span class="pre">__datafusion_session_components__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">__datafusion_session_planner__</span></code> are dispatched from Python by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code>, so they receive the
+wrapper. See <a class="reference internal" href="bundles.html"><span class="doc">Extension bundles</span></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> accepts the argument on its own codec and planner getters and
+ignores it, so a session satisfies the same protocol an extension library
+implements. When you export the current planner in order to wrap it,
+<code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_query_planner__()</span></code> and <code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_query_planner__(ctx)</span></code>
+are both fine.</p>
+</section>
+</section>
+<section id="datafusion-task-context-provider">
+<span id="extension-task-context-provider"></span><h2><code class="docutils literal notranslate"><span class="pre">__datafusion_task_context_provider__</span></code><a class="headerlink" href="#datafusion-task-context-provider" title="Link to this heading">#</a></h2>
+<p>This is the one hook implemented by the <strong>host</strong> rather than by your library.
+You never define it; you read it off the session you were handed, which is what
+<code class="docutils literal notranslate"><span class="pre">ffi_task_context_provider_from_pycapsule</span></code> does. Nothing in datafusion-python
+calls it on a foreign object.</p>
+<p>Taking the host’s provider means your decode callbacks resolve names against
+the session that is actually running the query — see
+<a class="reference internal" href="codecs.html#extension-codec-decode-session"><span class="std std-ref">A codec decodes against the session running the query</span></a> — and it removes any need for your
+library to construct a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> of its own.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="why-ffi.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Why FFI</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="table-providers.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Providers and catalogs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ffi-safe-types">FFI-safe types</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ffi-on-the-provider-foreign-on-the-receiver"><code class="docutils literal notranslate"><span class="pre">FFI_</span></code> on the provider, <code class="docutils literal notranslate"><span class="pre">Foreign</span></code> on the receiver</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wrapping-it-in-a-capsule">Wrapping it in a capsule</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-naming-rule">The naming rule</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-checking">Version checking</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-your-getter-receives">What your getter receives</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#it-is-not-always-a-session">It is not always a session</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#duck-type-it">Duck-type it</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-task-context-provider"><code class="docutils literal notranslate"><span class="pre">__datafusion_task_context_provider__</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

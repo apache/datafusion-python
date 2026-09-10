@@ -214,7 +214,7 @@ Features that are available in PyIceberg but not yet in Iceberg Rust will not be
 ## Custom Table Provider
 
 You can implement a custom Data Provider in Rust and expose it to DataFusion through the
-the interface as describe in the {ref}`Custom Table Provider <io_custom_table_provider>`
+interface described in the {ref}`Custom Table Provider <io_custom_table_provider>`
 section. This is an advanced topic, but a
 [user example](https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example)
 is provided in the DataFusion repository.

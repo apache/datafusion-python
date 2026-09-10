@@ -143,6 +143,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -271,6 +278,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +394,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -398,6 +431,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -528,22 +562,19 @@ execution model.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a></p></td>
-<td><p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -588,22 +619,6 @@ typically produced by a separate compiled extension.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
 <span class="sig-name descname"><span class="pre">__datafusion_physical_optimizer_rule__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="datafusion.context.QueryPlannerExportable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">QueryPlannerExportable</span></span><a class="headerlink" href="#datafusion.context.QueryPlannerExportable" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p>
-<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code>, typically
-produced by a separate compiled extension. <code class="docutils literal notranslate"><span class="pre">session</span></code> is the
-<a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> the planner is being installed on; take the
-extension codecs from it rather than building your own.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.QueryPlannerExportable.__datafusion_query_planner__">
-<span class="sig-name descname"><span class="pre">__datafusion_query_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.QueryPlannerExportable.__datafusion_query_planner__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1043,6 +1058,24 @@ automatically created.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">SessionContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.context.SessionContext" title="Link to this definition">#</a></dt>
 <dd><p>This is the main interface for executing queries and creating DataFrames.</p>
 <p>See <a class="reference internal" href="../../../user-guide/basics.html#user-guide-concepts"><span class="std std-ref">Concepts</span></a> in the online documentation for more information.</p>
+<p><strong>A context is a handle on a session, not the session itself.</strong> The
+<code class="docutils literal notranslate"><span class="pre">with_*</span></code> methods — <a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a>,
+<a class="reference internal" href="#datafusion.context.SessionContext.with_physical_extension_codec" title="datafusion.context.SessionContext.with_physical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code></a>,
+<a class="reference internal" href="#datafusion.context.SessionContext.with_python_udf_inlining" title="datafusion.context.SessionContext.with_python_udf_inlining"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_python_udf_inlining()</span></code></a>, and <a class="reference internal" href="#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a> —
+return a new context wrapping the <em>same</em> underlying session. Only the
+Python-side codec settings differ; catalogs, tables, registered functions,
+and configuration are the one shared session, so a registration through
+either handle is visible to both.</p>
+<p>A few things therefore belong to the session rather than to a handle, and
+take effect even if the handle that set them is discarded: the query
+planner (see <a class="reference internal" href="#datafusion.context.SessionContext.set_query_planner" title="datafusion.context.SessionContext.set_query_planner"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_query_planner()</span></code></a>), and the rebuild of an installed
+foreign planner that follows installing a codec. <a class="reference internal" href="../../../extension-guide/sessions.html#extension-sessions"><span class="std std-ref">Sessions, handles, and lifetimes</span></a>
+in the online documentation works through when that matters.</p>
+<p><strong>Keep a context alive for as long as anything derived from it is in use.</strong>
+A <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>, logical plan, or exported capsule does
+not extend the session’s lifetime. Once the last context on a session is
+collected, any operation that reaches an extension codec fails with
+<code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span> <span class="pre">went</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">scope</span> <span class="pre">over</span> <span class="pre">FFI</span> <span class="pre">boundary</span></code>.</p>
 <p>Main interface for executing queries with DataFusion.</p>
 <p>Maintains the state of the connection between a user and an instance
 of the connection between a user and an instance of the DataFusion
@@ -1070,8 +1103,24 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dd><p>Access the PyCapsule FFI_LogicalExtensionCodec.</p>
 <p><code class="docutils literal notranslate"><span class="pre">session</span></code> is accepted so a context satisfies the same protocol an
 extension library implements, where the argument is how the library
-reaches the session it is being installed on. A context already is one,
-so the argument is ignored.</p>
+reaches the host’s codec. A context already carries one, so the
+argument is ignored. See
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a>
+for what an extension library does with it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> – Accepted and ignored.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">datafusion_logical_extension_codec</span></code> PyCapsule.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">())</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1079,13 +1128,53 @@ so the argument is ignored.</p>
 <span class="sig-name descname"><span class="pre">__datafusion_physical_extension_codec__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_physical_extension_codec__" title="Link to this definition">#</a></dt>
 <dd><p>Access the PyCapsule FFI_PhysicalExtensionCodec.</p>
 <p>See <a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__()</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> – Accepted and ignored.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">datafusion_physical_extension_codec</span></code> PyCapsule.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_physical_extension_codec__</span><span class="p">())</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.__datafusion_query_planner__">
 <span class="sig-name descname"><span class="pre">__datafusion_query_planner__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__datafusion_query_planner__" title="Link to this definition">#</a></dt>
 <dd><p>Access the <code class="docutils literal notranslate"><span class="pre">FFI_QueryPlanner</span></code> PyCapsule for the current planner.</p>
-<p>See <a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__()</span></code></a> for <code class="docutils literal notranslate"><span class="pre">session</span></code>.</p>
+<p>This is how you capture the planner a session already has in order to
+wrap it. Capture it <em>before</em> installing the new one, since
+<a class="reference internal" href="#datafusion.context.SessionContext.set_query_planner" title="datafusion.context.SessionContext.set_query_planner"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_query_planner()</span></code></a> replaces rather than layers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> – Accepted and ignored. See
+<a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_logical_extension_codec__" title="datafusion.context.SessionContext.__datafusion_logical_extension_codec__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">datafusion_query_planner</span></code> PyCapsule wrapping the session’s
+current planner, exported for a foreign planner to delegate to.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fallback</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">fallback</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
+<p>Both spellings work, since the argument is ignored:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1481,15 +1570,22 @@ dispatches on, so this is how to check which library owns a plan and
 whether a session is able to decode one.</p>
 <p>DataFusion’s own default codec is not listed. It handles whatever no
 installed codec claims, and it carries no identity to list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The installed codec ids, in install order. Empty if none are
+installed.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
 <span class="go">[]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">my_library</span><span class="o">.</span><span class="n">Codec</span><span class="p">()</span>
-<span class="gp">... </span><span class="p">)</span>  
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">capsule</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">capsule</span><span class="p">,</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;my_library.Codec&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
 <span class="go">[&#39;my_library.Codec&#39;]</span>
 </pre></div>
 </div>
@@ -1547,11 +1643,23 @@ limit belongs to. Use this helper when constructing a
 <span class="sig-name descname"><span class="pre">physical_extension_codec_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.physical_extension_codec_ids" title="Link to this definition">#</a></dt>
 <dd><p>List the physical extension codecs installed on this session.</p>
 <p>See <a class="reference internal" href="#datafusion.context.SessionContext.logical_extension_codec_ids" title="datafusion.context.SessionContext.logical_extension_codec_ids"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logical_extension_codec_ids()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The installed codec ids, in install order. Empty if none are
+installed.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">physical_extension_codec_ids</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span><span class="o">.</span><span class="n">physical_extension_codec_ids</span><span class="p">()</span>
 <span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">capsule</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">__datafusion_physical_extension_codec__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">capsule</span><span class="p">,</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;my_library.PhysicalCodec&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">physical_extension_codec_ids</span><span class="p">()</span>
+<span class="go">[&#39;my_library.PhysicalCodec&#39;]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2286,47 +2394,50 @@ against this context.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.set_query_planner">
-<span class="sig-name descname"><span class="pre">set_query_planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">planner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><span class="pre">QueryPlannerExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.set_query_planner" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_query_planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">planner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../extensions/index.html#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><span class="pre">datafusion.extensions.QueryPlannerExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.set_query_planner" title="Link to this definition">#</a></dt>
 <dd><p>Install a custom query planner on this session.</p>
 <p>The planner is imported through its <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code>
-PyCapsule and installed on this context, in the same way
-<a class="reference internal" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="datafusion.context.SessionContext.add_physical_optimizer_rule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_physical_optimizer_rule()</span></code></a> installs a rule.
-The query planner is part of the session state, so it applies to this
-context and to every context sharing its session — including ones
-already returned by
-<a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a> and friends.</p>
-<p>A session holds exactly one planner, so calling this again replaces the
-previous one rather than layering. To chain planners, have the new
+PyCapsule, in the same way
+<a class="reference internal" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="datafusion.context.SessionContext.add_physical_optimizer_rule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_physical_optimizer_rule()</span></code></a> installs a rule.</p>
+<p>Returns nothing, because the planner lives in the session rather than
+in a handle on it — installing one is visible to every context sharing
+that session, including ones an earlier <code class="docutils literal notranslate"><span class="pre">with_*</span></code> call returned. See
+<a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
+<p>A session holds exactly one planner, so calling this again <strong>replaces</strong>
+the previous one rather than layering. To chain planners, have the new
 planner wrap the capsule from
-<a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_query_planner__" title="datafusion.context.SessionContext.__datafusion_query_planner__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_query_planner__()</span></code></a>, captured
-<em>before</em> the new planner is installed.</p>
-<p>Install any extension codecs before a layered planner. Installing a
-codec afterwards rebuilds the installed planner against it, but not the
-fallback inside it, which keeps the codecs it was imported with. Note
-also that the planner is built against the codecs of the context this
-method is called on, so installing the same planner again on a different
-handle rebinds the session’s planner to <em>that</em> handle’s codecs. See the
-FFI extensions guide for the full multi-library registration recipe.</p>
+<a class="reference internal" href="#datafusion.context.SessionContext.__datafusion_query_planner__" title="datafusion.context.SessionContext.__datafusion_query_planner__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__datafusion_query_planner__()</span></code></a>, captured <em>before</em>
+the new planner is installed.</p>
+<p>Install any extension codecs before a layered planner; the rebuild that
+follows a later codec install does not reach the fallback inside one.
+See <a class="reference internal" href="../../../extension-guide/query-planners.html#planner-codec-rebinding"><span class="std std-ref">Install codecs before a layered planner</span></a>, or prefer
+<a class="reference internal" href="#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>, which cannot capture a partial chain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>planner</strong> – Object exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code> (see
-<a class="reference internal" href="#datafusion.context.QueryPlannerExportable" title="datafusion.context.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a>) or a raw
+<a class="reference internal" href="../extensions/index.html#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a>) or a raw
 <code class="docutils literal notranslate"><span class="pre">datafusion_query_planner</span></code> PyCapsule.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the capsule is not named <code class="docutils literal notranslate"><span class="pre">datafusion_query_planner</span></code>.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">my_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedQueryPlanner</span>  
+<p>A session exports its own planner, which is what you capture to
+wrap:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span><span class="n">DistributedQueryPlanner</span><span class="p">())</span>  
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM remote_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fallback</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">fallback</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;PyCapsule&#39;</span>
 </pre></div>
 </div>
-<p>Layer a planner on top of the one already installed by capturing
-the existing planner first:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fallback</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">__datafusion_query_planner__</span><span class="p">()</span>  
+<p>Skipped here (needs a built extension library):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">my_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedQueryPlanner</span>  
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">set_query_planner</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">DistributedQueryPlanner</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM remote_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  
 </pre></div>
 </div>
 </dd></dl>
@@ -2562,6 +2673,88 @@ functions.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.with_extensions">
+<span class="sig-name descname"><span class="pre">with_extensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">extensions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../extensions/index.html#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><span class="pre">datafusion.extensions.SessionComponentsExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../extensions/index.html#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><span class="pre">datafusion.extensions.SessionPlannerExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_extensions" title="Link to this definition">#</a></dt>
+<dd><p>Create a new session context with the given extension bundles.</p>
+<p>This is the preferred way to install extension codecs and query
+planners, because it removes the ordering question that installing them
+by hand creates.</p>
+<p>Each argument is called twice, in two phases:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">__datafusion_session_components__(ctx)</span></code> on every extension, then
+all the returned codecs are installed at once.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__datafusion_session_planner__(ctx,</span> <span class="pre">fallback)</span></code> on every
+extension, <strong>in argument order</strong>, each handed the planner built so
+far and the context carrying every bundle’s codecs. The last
+extension listed ends up outermost.</p></li>
+</ol>
+<p>An extension implements either hook or both. Return <code class="docutils literal notranslate"><span class="pre">None</span></code> from the
+planner hook to contribute no planner; see
+<a class="reference internal" href="../extensions/index.html#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a>.</p>
+<p>Nothing is written to the session until every hook has returned and
+every capsule has been validated, so a hook that raises leaves the
+session as it was. A hook that <em>mutates</em> the context it is handed —
+registering a table, say — is not rolled back, which is why bundle
+objects must be configuration-only.</p>
+<p>Shares its session with this context — see <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
+<p>See <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a> in the online documentation for why the
+phases are split, how to contribute a bundle’s two halves at different
+positions, and a worked Rust implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>extensions</strong> – Extension bundles to install. Order is irrelevant for
+codecs and significant for planners, which nest in this order
+with the last one outermost. Passing none installs nothing and
+returns a handle on this session, so a caller assembling the
+list at runtime need not special-case it being empty.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new context with all extension components installed.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – If an argument implements neither hook, if a hook
+returns the wrong type, or if a codec is contributed as a bare
+<code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> rather than an object exposing the getter.</p></li>
+<li><p><strong>ValueError</strong> – If two codecs claim the same id, or a getter returns a
+capsule of the wrong kind. See
+<a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a> for how ids are
+assigned.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>The returned handle is a different object sharing one session, and
+an empty call is legal:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">derived</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">derived</span> <span class="ow">is</span> <span class="n">ctx</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>  
+<span class="go">DataFrame()...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">derived</span><span class="o">.</span><span class="n">table_exist</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">derived</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>A runnable multi-bundle example, showing what a bundle returns and
+how its codec ids accumulate, is in <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a>.</p>
+<p>Real usage. Skipped here (needs a built extension library); run
+verbatim by <code class="docutils literal notranslate"><span class="pre">test_with_extensions_docstring_example_still_runs</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">my_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedEngineExtension</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_extensions</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">DistributedEngineExtension</span><span class="p">(</span><span class="s2">&quot;scheduler:50050&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batches</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 AS n&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()</span>  
+<span class="go">[1]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.with_logical_extension_codec">
 <span class="sig-name descname"><span class="pre">with_logical_extension_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><span class="pre">datafusion.user_defined.LogicalExtensionCodecExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_typeshed.CapsuleType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="Link to this definition">#</a></dt>
 <dd><p>Create a new session context with an additional logical codec.</p>
@@ -2573,30 +2766,54 @@ codecs installed earlier, so one session can carry codecs from several
 independent libraries and the order they are installed in does not
 affect decoding.</p>
 <p>A serialized plan records which codec wrote each payload, as a short id
-taken from the codec’s class. <code class="docutils literal notranslate"><span class="pre">codec_id</span></code> overrides that id and is
-normally unnecessary. Pass it when installing from a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>,
-which has no class to take an id from, or when installing two instances
-of one class, which otherwise claim the same id and raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
-<p>The returned context shares its session state with the original, so a
-later registration on either is visible to both, and an installed query
-planner is rebound on the shared session even if the returned context is
-discarded.</p>
-<p>See <a class="reference internal" href="../../../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> in the online documentation for how ids are assigned,
-what an extension codec has to implement, and a worked multi-library
-registration recipe.</p>
+taken from the codec’s class.</p>
+<p>Shares its session with this context — see <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
+<p>See <a class="reference internal" href="../../../extension-guide/codecs.html#extension-codec-ids"><span class="std std-ref">Codec ids</span></a> in the online documentation for how ids
+are assigned and what an extension codec has to implement, and
+<a class="reference internal" href="#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a> for installing a library’s codecs and planner
+together.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>codec</strong> – Object implementing <code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code>
+(see
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a>),
+or a raw <code class="docutils literal notranslate"><span class="pre">datafusion_logical_extension_codec</span></code> PyCapsule.</p></li>
+<li><p><strong>codec_id</strong> – Overrides the id the codec’s payloads are tagged with.
+Normally unnecessary. Pass it when installing two instances of
+one class, which otherwise claim the same id, and when
+installing a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>: a capsule has no class to take
+an id from, so it is given a random <code class="docutils literal notranslate"><span class="pre">anon:</span></code> id that differs on
+every install, and plans it encodes can never be decoded
+elsewhere.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new context carrying this codec in addition to any already
+installed.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the resolved id is already installed on this session.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
+<p>A context exports its own codec, which stands in here for a real
+library’s:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">my_library</span><span class="o">.</span><span class="n">Codec</span><span class="p">()</span>
-<span class="gp">... </span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">capsule</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">__datafusion_logical_extension_codec__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">capsule</span><span class="p">,</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;my_library.Codec&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+<span class="go">[&#39;my_library.Codec&#39;]</span>
 </pre></div>
 </div>
-<p>Installing from a bare capsule, pinning the id so encoded
-plans remain decodable on another session:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">capsule</span><span class="p">,</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;my_library.Codec&quot;</span>
-<span class="gp">... </span><span class="p">)</span>  
+<p>Without <code class="docutils literal notranslate"><span class="pre">codec_id</span></code> a bare capsule gets an anonymous id, which is
+fine only if its plans never leave this session:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">capsule</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;anon:&quot;</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2611,17 +2828,31 @@ plans remain decodable on another session:</p>
 <p>Composes and assigns an id exactly as
 <a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a> does, including when to pass
 <code class="docutils literal notranslate"><span class="pre">codec_id</span></code> and what the returned context shares. See that method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>codec</strong> – As <a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a>, for the physical
+getter.</p></li>
+<li><p><strong>codec_id</strong> – As <a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new context carrying this codec in addition to any already
+installed.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the resolved id is already installed on this session.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">my_library</span><span class="o">.</span><span class="n">PhysicalCodec</span><span class="p">()</span>
-<span class="gp">... </span><span class="p">)</span>  
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">capsule</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">__datafusion_physical_extension_codec__</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span><span class="o">.</span><span class="n">with_physical_extension_codec</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">capsule</span><span class="p">,</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;my_library.PhysicalCodec&quot;</span>
-<span class="gp">... </span><span class="p">)</span>  
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">physical_extension_codec_ids</span><span class="p">()</span>
+<span class="go">[&#39;my_library.PhysicalCodec&#39;]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2630,9 +2861,6 @@ plans remain decodable on another session:</p>
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.with_python_udf_inlining">
 <span class="sig-name descname"><span class="pre">with_python_udf_inlining</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.with_python_udf_inlining" title="Link to this definition">#</a></dt>
 <dd><p>Control whether Python UDFs are embedded in serialized expressions.</p>
-<p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> is keyword-only and required: callers must pick a
-mode explicitly. Fresh sessions inline UDFs (<code class="docutils literal notranslate"><span class="pre">enabled=True</span></code>
-behavior) until this method overrides the toggle.</p>
 <p>With <code class="docutils literal notranslate"><span class="pre">enabled=True</span></code>, serialized expressions carry the Python
 code for any scalar, aggregate, or window UDFs they reference.
 The receiver rebuilds the UDFs from those bytes and does not
@@ -2661,14 +2889,20 @@ This setting narrows only <code class="xref py py-meth docutils literal notransl
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pickle.loads()</span></code> on untrusted bytes remains unsafe
 regardless of the toggle.</p>
 </div>
-<p>Returns a new <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> with the toggle applied;
-the original context’s own codec settings are unchanged. The
-returned context shares its session state with the original, so
-a later registration on either is visible to both. If a custom
-query planner is installed, it is rebuilt against the new codecs
-on the shared session, so the original context plans with them
-too. This happens on the shared session, so it takes effect even
-if the returned context is discarded.</p>
+<p>Shares its session with this context — see
+<a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>. The original context’s own codec
+settings are unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to embed Python UDFs in serialized
+expressions. Keyword-only and required, so callers must
+pick a mode explicitly. Fresh sessions behave as
+<code class="docutils literal notranslate"><span class="pre">enabled=True</span></code> until this method overrides the toggle.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> with the toggle applied.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">udf</span>
@@ -2695,10 +2929,10 @@ if the returned context is discarded.</p>
 which tags the payloads it writes with this string. It is unique per
 session, so two contexts can be installed on one session and a plan
 written through one will not be decoded by the other.</p>
-<p>Contexts derived from the same session — including the ones returned by
-<a class="reference internal" href="#datafusion.context.SessionContext.with_logical_extension_codec" title="datafusion.context.SessionContext.with_logical_extension_codec"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code></a> and
-<a class="reference internal" href="#datafusion.context.SessionContext.with_python_udf_inlining" title="datafusion.context.SessionContext.with_python_udf_inlining"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_python_udf_inlining()</span></code></a> — report the same id, so only one of
-them can be installed on a given session.</p>
+<p>Contexts derived from the same session report the same id, so only one
+of them can be installed on a given session. That is the intended
+answer: they are one session — see <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> — so
+their payloads would be indistinguishable on decode.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
@@ -2722,7 +2956,19 @@ them can be installed on a given session.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">TableProviderExportable</span></span><a class="headerlink" href="#datafusion.context.TableProviderExportable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p>
-<p><a class="reference external" href="https://datafusion.apache.org/python/user-guide/io/table_provider.html">https://datafusion.apache.org/python/user-guide/io/table_provider.html</a></p>
+<p>See <a class="reference internal" href="../../../user-guide/io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a> for registering one, and
+<a class="reference internal" href="../../../extension-guide/table-providers.html#extension-providers"><span class="std std-ref">Providers and catalogs</span></a> for writing one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> – See
+<a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable" title="datafusion.user_defined.LogicalExtensionCodecExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogicalExtensionCodecExportable</span></code></a>.
+For this getter it is a session when the provider is registered
+through <a class="reference internal" href="#datafusion.context.SessionContext.register_table" title="datafusion.context.SessionContext.register_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.register_table()</span></code></a> and the host’s
+logical codec when it goes through
+<a class="reference internal" href="../catalog/index.html#datafusion.catalog.Schema.register_table" title="datafusion.catalog.Schema.register_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.catalog.Schema.register_table()</span></code></a>, so
+duck-typing it is not optional.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.TableProviderExportable.__datafusion_table_provider__">
 <span class="sig-name descname"><span class="pre">__datafusion_table_provider__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.TableProviderExportable.__datafusion_table_provider__" title="Link to this definition">#</a></dt>
@@ -2792,10 +3038,6 @@ them can be installed on a given session.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.QueryPlannerExportable"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.QueryPlannerExportable.__datafusion_query_planner__"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable.__datafusion_query_planner__()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a><ul class="nav section-nav flex-column">
@@ -2916,6 +3158,7 @@ them can be installed on a given session.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udfs"><code class="docutils literal notranslate"><span class="pre">SessionContext.udfs()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwf"><code class="docutils literal notranslate"><span class="pre">SessionContext.udwf()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.udwfs"><code class="docutils literal notranslate"><span class="pre">SessionContext.udwfs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_extensions"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_extensions()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_logical_extension_codec"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_physical_extension_codec"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_physical_extension_codec()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.SessionContext.with_python_udf_inlining"><code class="docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code></a></li>

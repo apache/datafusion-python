@@ -292,11 +292,6 @@ Module Contents
 
    Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
 
-   ``session`` is the :py:class:`~datafusion.context.SessionContext` the codec
-   is being installed on. Take the task context provider from it rather than
-   building a session of your own, so the decode callbacks resolve names
-   against the session that runs the query.
-
    Implement the codec itself exactly as you would for a session that installs
    only yours. A session may hold several codecs, but each payload records the
    codec that wrote it and is only ever handed back to that codec, so there is
@@ -308,6 +303,42 @@ Module Contents
    of this protocol and is rarely needed: declare it when renaming your class
    must not stop older plans from decoding, or when one library installs two
    instances that own disjoint slices of the wire format.
+
+   :param session: A handle on the session this codec is being installed on. Take
+                   the task context provider from it rather than building a session of
+                   your own, so the decode callbacks resolve names against the session
+                   that runs the query.
+
+                   **Duck-type it; do not check its type.** This argument is the
+                   reference for every capsule getter in the protocol, and across them
+                   it is not always a session at all: the provider and catalog getters
+                   receive the host's logical codec as a bare ``PyCapsule``. Even when
+                   it *is* a session it is the PyO3 context from
+                   ``datafusion._internal``, not the
+                   :py:class:`~datafusion.context.SessionContext` wrapper, so it
+                   exposes every capsule getter and ``__datafusion_codec_id__`` —
+                   everything the protocol asks of it — but
+                   ``isinstance(session, SessionContext)`` is ``False`` even though its
+                   ``repr`` reads ``datafusion.SessionContext``. Pass it to
+                   ``ffi_logical_codec_from_pycapsule``, which handles both.
+
+                   The two bundle hooks are the exception:
+                   :py:class:`~datafusion.extensions.SessionComponentsExportable` and
+                   :py:class:`~datafusion.extensions.SessionPlannerExportable` are
+                   dispatched from Python and receive the wrapper. See
+                   :ref:`extension_getter_argument`.
+
+   :returns: A ``datafusion_logical_extension_codec`` PyCapsule.
+
+   .. rubric:: Examples
+
+   A :py:class:`~datafusion.context.SessionContext` satisfies this
+   protocol, which is how you obtain a real capsule to test against:
+
+   >>> from datafusion import SessionContext
+   >>> ctx = SessionContext()
+   >>> type(ctx.__datafusion_logical_extension_codec__(ctx)).__name__
+   'PyCapsule'
 
 
    .. py:method:: __datafusion_logical_extension_codec__(session: Any) -> object

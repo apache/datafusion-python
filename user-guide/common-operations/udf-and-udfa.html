@@ -143,6 +143,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -271,6 +278,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +394,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -398,6 +431,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -675,7 +709,7 @@ over column references and literals, so the optimizer can analyze it:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand@1 = A AND qty@2 &gt;= 150
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmp1efnatbl/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
+    DataSourceExec: file_groups={1 group: [[tmp/tmp7efe9xjf/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand@1 = A AND qty@2 &gt;= 150, pruning_predicate=brand_null_count@2 != row_count@3 AND brand_min@0 &lt;= A AND A &lt;= brand_max@1 AND qty_null_count@5 != row_count@3 AND qty_max@4 &gt;= 150, required_guarantees=[brand in (A)]
 </pre></div>
 </div>
 </div>
@@ -711,7 +745,7 @@ bloom filter or dictionary is available to skip pages.</p></li>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FilterExec: brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
   RepartitionExec: partitioning=RoundRobinBatch(4), input_partitions=1
-    DataSourceExec: file_groups={1 group: [[tmp/tmp1efnatbl/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
+    DataSourceExec: file_groups={1 group: [[tmp/tmp7efe9xjf/items.parquet]]}, projection=[id, brand, qty], file_type=parquet, predicate=brand_qty_filter(CAST(brand@1 AS Utf8), qty@2)
 </pre></div>
 </div>
 </div>
@@ -930,7 +964,8 @@ information.</p></li>
 <p>User Defined Table Functions are slightly different than the other functions
 described here. These functions take any number of <code class="docutils literal notranslate"><span class="pre">Expr</span></code> arguments, but only
 literal expressions are supported. Table functions must return a Table
-Provider as described in the ref:<code class="docutils literal notranslate"><span class="pre">_io_custom_table_provider</span></code> page.</p>
+Provider as described in the <a class="reference internal" href="../io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a>
+page.</p>
 <p>Once you have a table function, you can register it with the session context
 by using <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udtf" title="datafusion.context.SessionContext.register_udtf"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.context.SessionContext.register_udtf()</span></code></a>.</p>
 <p>There are examples of both rust backed and python based table functions in the

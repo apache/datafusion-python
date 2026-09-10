@@ -19,11 +19,17 @@
 
 # Contributor Guide
 
-Guides for contributors to the DataFusion in Python project.
+Guides for contributors to the DataFusion in Python project — people changing
+this repository itself.
+
+If you are writing a separate library that plugs into datafusion-python, you
+want the {ref}`Extension Guide <extension_guide>` instead. If you are using
+one, see {ref}`user_guide_extensions`.
 
 ```{toctree}
 :maxdepth: 2
 
 introduction
-ffi
+pyo3-guidelines
+ffi-internals
 ```

@@ -57,6 +57,7 @@ Submodules
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/dataframe_formatter/index
    /autoapi/datafusion/expr/index
+   /autoapi/datafusion/extensions/index
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
@@ -656,7 +657,7 @@ Package Contents
 
    .. py:method:: children() -> list[ExecutionPlan]
 
-      Get a list of children `ExecutionPlan` that act as inputs to this plan.
+      Get a list of children ``ExecutionPlan`` that act as inputs to this plan.
 
       The returned list will be empty for leaf nodes such as scans, will contain a
       single value for unary nodes, or two values for binary nodes (such as joins).
@@ -708,9 +709,15 @@ Package Contents
 
       Create an ExecutionPlan from serialized protobuf bytes.
 
-      Decoding routes through the session's installed
-      `PhysicalExtensionCodec`. Tables created in memory from record
-      batches are currently not supported.
+      Decoding routes through the codecs installed on ``ctx`` with
+      :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+      Tables created in memory from record batches are currently not
+      supported.
+
+      Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+      positional, and there is no fallback to a worker or global context.
+
+      .. seealso:: :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
 
 
 
@@ -737,9 +744,18 @@ Package Contents
 
       Convert an ExecutionPlan into serialized protobuf bytes.
 
-      When ``ctx`` is supplied, encoding routes through the session's
-      installed `PhysicalExtensionCodec`. Tables created in memory
-      from record batches are currently not supported.
+      When ``ctx`` is supplied, encoding routes through the codecs
+      installed on it with
+      :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+      Tables created in memory from record batches are currently not
+      supported.
+
+      Round-tripping through this method and :py:meth:`from_bytes` is how
+      an extension library checks that its own codec claimed its nodes,
+      rather than a codec installed earlier in the chain — see
+      :ref:`extension_codec_order`.
+
+      .. seealso:: :py:meth:`from_bytes`, :py:meth:`LogicalPlan.to_bytes`.
 
 
 
@@ -938,6 +954,13 @@ Package Contents
           portable across minor versions. See :meth:`to_bytes` for
           details on what travels by value vs. by reference.
 
+      The encoding side honors a driver-side sender context installed
+      via :func:`datafusion.ipc.set_sender_ctx` — that is how
+      :meth:`SessionContext.with_python_udf_inlining` propagates
+      through ``pickle.dumps``. The sender context is read by
+      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+      — which also go through ``__reduce__`` — pick it up too.
+
       .. rubric:: Examples
 
       >>> import pickle
@@ -945,13 +968,6 @@ Package Contents
       >>> e = col("a") * lit(2)
       >>> pickle.loads(pickle.dumps(e)).canonical_name()
       'a * Int64(2)'
-
-      The encoding side honors a driver-side sender context installed
-      via :func:`datafusion.ipc.set_sender_ctx` — that is how
-      :meth:`SessionContext.with_python_udf_inlining` propagates
-      through ``pickle.dumps``. The sender context is read by
-      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
-      — which also go through ``__reduce__`` — pick it up too.
 
 
 
@@ -1301,6 +1317,13 @@ Package Contents
       context is installed, the global :class:`SessionContext` is used
       (sufficient for built-ins and Python UDFs, plus any UDFs
       registered on the global context).
+
+      Note that the global context carries no extension codecs, so
+      falling back to it cannot decode a payload written by one. A
+      worker that must decode extension-codec payloads has to install a
+      context carrying those codecs — see
+      :func:`datafusion.ipc.set_worker_ctx` and
+      :meth:`SessionContext.with_extensions`.
 
       .. warning:: Security
           Decoding may invoke ``cloudpickle.loads`` on bytes embedded
@@ -1907,9 +1930,9 @@ Package Contents
 
       Print the graph visualization of the logical plan.
 
-      Returns a `format`able structure that produces lines meant for graphical display
-      using the `DOT` language. This format can be visualized using software from
-      [`graphviz`](https://graphviz.org/)
+      Returns a formattable structure that produces lines meant for graphical
+      display using the ``DOT`` language. This format can be visualized using
+      software from `graphviz <https://graphviz.org/>`_.
 
 
 
@@ -1931,9 +1954,18 @@ Package Contents
 
       Create a LogicalPlan from serialized protobuf bytes.
 
-      Decoding routes through the session's installed
-      `LogicalExtensionCodec`. Tables created in memory from record
-      batches are currently not supported.
+      Decoding routes through the codecs installed on ``ctx`` with
+      :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`.
+      Tables created in memory from record batches are currently not
+      supported.
+
+      Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+      positional, and there is no fallback to a worker or global context.
+
+      .. seealso::
+
+         :py:meth:`to_bytes`, :py:meth:`ExecutionPlan.from_bytes`,
+         :py:meth:`datafusion.Expr.from_bytes`.
 
 
 
@@ -1955,12 +1987,17 @@ Package Contents
 
       Convert a LogicalPlan to serialized protobuf bytes.
 
-      When ``ctx`` is supplied, encoding routes through the session's
-      installed `LogicalExtensionCodec` so user FFI codecs (registered
-      via :py:meth:`SessionContext.with_logical_extension_codec`) see
-      the encode path. With ``ctx=None`` a default codec is used.
-      Tables created in memory from record batches are currently not
-      supported.
+      When ``ctx`` is supplied, encoding routes through the codecs
+      installed on it with
+      :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`,
+      so extension codecs see the encode path. With ``ctx=None`` a
+      default codec is used. Tables created in memory from record
+      batches are currently not supported.
+
+      .. seealso::
+
+         :py:meth:`from_bytes`, :py:meth:`ExecutionPlan.to_bytes`,
+         :py:meth:`datafusion.Expr.to_bytes`.
 
 
 

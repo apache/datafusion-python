@@ -140,6 +140,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -266,6 +273,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -375,15 +389,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -393,6 +426,7 @@
 <li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -568,13 +602,17 @@
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">__datafusion_physical_optimizer_rule__() (datafusion.context.PhysicalOptimizerRuleExportable method)</a>
 </li>
-      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.QueryPlannerExportable.__datafusion_query_planner__">__datafusion_query_planner__() (datafusion.context.QueryPlannerExportable method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__datafusion_query_planner__">__datafusion_query_planner__() (datafusion.context.SessionContext method)</a>
 
       <ul>
-        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__datafusion_query_planner__">(datafusion.context.SessionContext method)</a>
+        <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.QueryPlannerExportable.__datafusion_query_planner__">(datafusion.extensions.QueryPlannerExportable method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDFExportable.__datafusion_scalar_udf__">__datafusion_scalar_udf__() (datafusion.user_defined.ScalarUDFExportable method)</a>
+</li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionComponentsExportable.__datafusion_session_components__">__datafusion_session_components__() (datafusion.extensions.SessionComponentsExportable method)</a>
+</li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionPlannerExportable.__datafusion_session_planner__">__datafusion_session_planner__() (datafusion.extensions.SessionPlannerExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable.__datafusion_table_provider__">__datafusion_table_provider__() (datafusion.context.TableProviderExportable method)</a>
 </li>
@@ -670,6 +708,8 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__or__">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionExtensionComponents.__post_init__">__post_init__() (datafusion.extensions.SessionExtensionComponents method)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__radd__">__radd__ (datafusion.Expr attribute)</a>
 
       <ul>
@@ -1829,6 +1869,13 @@
 </li>
       </ul></li>
       <li>
+    datafusion.extensions
+
+      <ul>
+        <li><a href="autoapi/datafusion/extensions/index.html#module-datafusion.extensions">module</a>
+</li>
+      </ul></li>
+      <li>
     datafusion.functions
 
       <ul>
@@ -1950,10 +1997,10 @@
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datepart">datepart() (in module datafusion.functions)</a>
 </li>
-      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Deallocate">Deallocate (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
@@ -2910,6 +2957,8 @@
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.logical_extension_codec_ids">logical_extension_codec_ids() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionExtensionComponents.logical_extension_codecs">logical_extension_codecs (datafusion.extensions.SessionExtensionComponents attribute)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.logical_plan">logical_plan() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.LogicalExtensionCodecExportable">LogicalExtensionCodecExportable (class in datafusion.user_defined)</a>
@@ -3032,14 +3081,14 @@
       </ul></li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.memory_schema">memory_schema() (datafusion.catalog.Schema static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.merge">merge() (datafusion.Accumulator method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator.merge">(datafusion.user_defined.Accumulator method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Metric">Metric (class in datafusion)</a>
 
       <ul>
@@ -3085,6 +3134,8 @@
         <li><a href="autoapi/datafusion/dataframe_formatter/index.html#module-datafusion.dataframe_formatter">datafusion.dataframe_formatter</a>
 </li>
         <li><a href="autoapi/datafusion/expr/index.html#module-datafusion.expr">datafusion.expr</a>
+</li>
+        <li><a href="autoapi/datafusion/extensions/index.html#module-datafusion.extensions">datafusion.extensions</a>
 </li>
         <li><a href="autoapi/datafusion/functions/index.html#module-datafusion.functions">datafusion.functions</a>
 </li>
@@ -3325,6 +3376,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.physical_extension_codec_ids">physical_extension_codec_ids() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionExtensionComponents.physical_extension_codecs">physical_extension_codecs (datafusion.extensions.SessionExtensionComponents attribute)</a>
+</li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.PhysicalExtensionCodecExportable">PhysicalExtensionCodecExportable (class in datafusion.user_defined)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.PhysicalOptimizerRuleExportable">PhysicalOptimizerRuleExportable (class in datafusion.context)</a>
@@ -3369,7 +3422,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont">quantile_cont() (in module datafusion.functions)</a>
 </li>
-      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.QueryPlannerExportable">QueryPlannerExportable (class in datafusion.context)</a>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.QueryPlannerExportable">QueryPlannerExportable (class in datafusion.extensions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -3725,6 +3778,8 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.session_start_time">session_start_time() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionComponentsExportable">SessionComponentsExportable (class in datafusion.extensions)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig">SessionConfig (class in datafusion)</a>
 
       <ul>
@@ -3732,6 +3787,10 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext">SessionContext (class in datafusion.context)</a>
+</li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionExtensionComponents">SessionExtensionComponents (class in datafusion.extensions)</a>
+</li>
+      <li><a href="autoapi/datafusion/extensions/index.html#datafusion.extensions.SessionPlannerExportable">SessionPlannerExportable (class in datafusion.extensions)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.set">set() (datafusion.context.SessionConfig method)</a>
 
@@ -3813,10 +3872,10 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.signum">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SimilarTo">SimilarTo (in module datafusion.expr)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SimilarTo">SimilarTo (in module datafusion.expr)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sin">sin() (datafusion.Expr method)</a>
 
       <ul>
@@ -4529,6 +4588,8 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_extension">(datafusion.SessionConfig method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.with_extensions">with_extensions() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool">with_fair_spill_pool() (datafusion.context.RuntimeEnvBuilder method)</a>
 
       <ul>
@@ -4553,14 +4614,14 @@
         <li><a href="autoapi/datafusion/options/index.html#datafusion.options.CsvReadOptions.with_file_sort_order">(datafusion.options.CsvReadOptions method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool">with_greedy_memory_pool() (datafusion.context.RuntimeEnvBuilder method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeEnvBuilder.with_greedy_memory_pool">(datafusion.RuntimeEnvBuilder method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.CsvReadOptions.with_has_header">with_has_header() (datafusion.CsvReadOptions method)</a>
 
       <ul>
