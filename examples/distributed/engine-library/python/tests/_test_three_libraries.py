@@ -34,7 +34,7 @@ import pyarrow.compute as pc
 import pytest
 from datafusion import SessionContext, udf
 from dfx_engine import _internal
-from dfx_engine.driver import find_stage, run_distributed, run_local
+from dfx_engine.driver import find_stage, find_stages, run_distributed, run_local
 from dfx_engine.session import SessionSpec, build_session, expected_codec_ids
 from dfx_engine.worker import run_task
 
@@ -83,7 +83,8 @@ def test_distributed_aggregate_matches_single_process(spec: SessionSpec) -> None
     """Query 1: the baseline. Four input files, four workers, one answer."""
     result = run_distributed(Q1, spec)
 
-    assert result.partitions == [0, 1, 2, 3]
+    # One stage, so every task is a partition of stage 1.
+    assert result.tasks == [(1, 0), (1, 1), (1, 2), (1, 3)]
     assert _rows(result.batches) == _rows(run_local(Q1, spec))
     # Checked by hand against the fixture.
     assert _rows(result.batches) == [
@@ -211,11 +212,11 @@ def test_every_partition_ran_exactly_once(spec: SessionSpec) -> None:
     """Each worker got a different partition, and together they covered it."""
     result = run_distributed(Q1, spec)
 
-    assert sorted(result.partitions) == [0, 1, 2, 3]
-    assert len(set(result.partitions)) == len(result.partitions)
+    assert sorted(result.tasks) == [(1, 0), (1, 1), (1, 2), (1, 3)]
+    assert len(set(result.tasks)) == len(result.tasks)
     # Two rows per input file, so each worker saw two rows' worth of groups.
-    assert sum(result.worker_rows.values()) == 8
-    assert set(result.worker_rows) == set(result.partitions)
+    assert sum(result.task_rows.values()) == 8
+    assert set(result.task_rows) == set(result.tasks)
 
 
 def test_each_worker_published_its_own_file(spec: SessionSpec) -> None:
@@ -231,6 +232,8 @@ def test_each_worker_published_its_own_file(spec: SessionSpec) -> None:
         for partition in range(4)
     )
     assert produced == expected
+    # Nothing half-written: a temporary file is unique to its writer and is
+    # renamed away when the partition is complete.
     assert list(shuffle.glob("*.tmp")) == []
 
 
@@ -293,6 +296,63 @@ def test_the_plan_splits_at_the_partial_aggregate(spec: SessionSpec) -> None:
     # meaningful rather than a single remote call.
     assert stage.partition_count == 4
     assert stage.output_partitioning.scheme == "UnknownPartitioning"
+
+
+TWO_BRANCHES = """
+select l_returnflag as g, sum(l_quantity) as qty
+from lineitem group by l_returnflag
+union all
+select l_linestatus as g, sum(l_quantity) as qty
+from other group by l_linestatus
+"""
+
+
+def test_two_branches_get_two_separately_numbered_stages(
+    lineitem_dir: pathlib.Path, tmp_path: pathlib.Path
+) -> None:
+    """A partial aggregate in each branch is two stages, not one.
+
+    Both branches are independent subtrees and both want shipping, so the
+    planner wraps each. They must not share a stage id: a stage exchanges
+    results through paths built from that id, so two stages numbered alike
+    would write to the same files -- and because a union drives its branches
+    concurrently, they would do it at the same time. That fails outright
+    rather than quietly, but only because the schemas happen to differ.
+    """
+    spec = SessionSpec(
+        tables={"lineitem": str(lineitem_dir), "other": str(lineitem_dir)},
+        shuffle_dir=str(tmp_path / "shuffle"),
+        target_partitions=2,
+    )
+
+    ctx, engine, _storage = build_session(spec)
+    plan = ctx.sql(TWO_BRANCHES).execution_plan()
+
+    assert plan.display_indent().count("ShuffleStageExec") == 2
+    assert len(find_stages(plan)) == 2
+    assert engine.stages_inserted() == 2
+
+    result = run_distributed(TWO_BRANCHES, spec)
+
+    # Four partitions apiece, under two distinct stage ids.
+    assert sorted(result.tasks) == [
+        (stage, part) for stage in (1, 2) for part in range(4)
+    ]
+    # Sorted: a union has no ordering of its own, so the branches interleave
+    # differently from run to run.
+    assert sorted(_rows(result.batches)) == sorted(_rows(run_local(TWO_BRANCHES, spec)))
+
+    # Each stage published its own files, so neither read the other's.
+    produced = sorted(
+        path.name for path in pathlib.Path(spec.shuffle_dir).glob("*.arrow")
+    )
+    assert produced == sorted(
+        pathlib.Path(
+            _internal.partition_path(spec.shuffle_dir, _internal.stage_id(index), part)
+        ).name
+        for index in range(2)
+        for part in range(4)
+    )
 
 
 # --- the ways it goes wrong -------------------------------------------------

@@ -129,7 +129,9 @@ It holds one partition of results in memory before writing, because an Arrow
 IPC stream needs its schema up front. A production engine would stream to the
 file and track completion separately.
 
-It has one stage. A real engine chains them, and the interesting problems —
+It has one *level* of stages. A query with an aggregate in each branch of a
+union gets one stage per branch, and they run side by side — but no stage ever
+feeds another. A real engine chains them, and the interesting problems —
 scheduling, retries, straggler handling, memory limits — all live in the part
 this example replaces with `subprocess.Popen` and a `for` loop.
 

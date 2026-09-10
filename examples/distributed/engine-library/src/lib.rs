@@ -28,6 +28,7 @@
 //!
 //! One of three libraries in `examples/distributed`. This one owns execution.
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::config::DfxEngineConfig;
@@ -52,10 +53,19 @@ fn partition_path(shuffle_dir: &str, stage_id: u32, partition: usize) -> String 
         .into_owned()
 }
 
-/// The stage id this engine's planner produces.
+/// Id of the `index`th stage in a plan, counting in pre-order from the root.
+///
+/// Exported for the same reason as [`partition_path`]: a foreign node's
+/// one-line display is replaced by the FFI wrapper's, so Python cannot read a
+/// stage id back off a plan and has to agree with Rust about the numbering
+/// instead. Keeping the arithmetic here means the two cannot drift.
 #[pyfunction]
-fn stage_id() -> u32 {
-    planner::STAGE_ID
+#[pyo3(signature = (index=0))]
+fn stage_id(index: usize) -> PyResult<u32> {
+    u32::try_from(index)
+        .ok()
+        .and_then(|index| planner::FIRST_STAGE_ID.checked_add(index))
+        .ok_or_else(|| PyValueError::new_err(format!("stage index {index} is out of range")))
 }
 
 #[pymodule]

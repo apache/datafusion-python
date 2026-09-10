@@ -25,8 +25,15 @@
 //! [`ShuffleStageExec`] is the whole rewrite.
 //!
 //! A query with no aggregate gets its whole plan wrapped instead, so there is
-//! always exactly one stage and the orchestration in Python has one shape to
+//! always at least one stage and the orchestration in Python has one shape to
 //! deal with.
+//!
+//! There can be more than one. A `UNION ALL` of two `GROUP BY`s, or a join
+//! between two of them, puts a partial aggregate in each branch, and the
+//! branches are independent subtrees that both want shipping. Each stage
+//! therefore gets its own id, assigned in the order a pre-order walk finds
+//! them: stages exchange results through paths built from that id, so two
+//! stages sharing one would write to the same files and race each other.
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -54,9 +61,15 @@ pub(crate) const SHUFFLE_DIR_KEY: &str = "dfx_engine.shuffle_dir";
 /// every foreign config extension is namespaced under `datafusion_ffi`.
 const FFI_SHUFFLE_DIR_KEY: &str = "datafusion_ffi.dfx_engine.shuffle_dir";
 
-/// The one stage id this engine produces. A real engine would number a chain
-/// of them; one is enough to show the mechanism.
-pub(crate) const STAGE_ID: u32 = 1;
+/// Id of the first stage in a plan. Later ones count up from here.
+///
+/// Numbering is a *convention shared with Python*, which cannot read a stage
+/// id back off a plan: a foreign node's one-line display is replaced by the
+/// FFI wrapper's, so `ShuffleStageExec: stage=2` never reaches the driver.
+/// Both sides instead agree that the nth stage found in a pre-order walk has
+/// id `FIRST_STAGE_ID + n`, and [`crate::stage_id`] is the one place that
+/// arithmetic is written down.
+pub(crate) const FIRST_STAGE_ID: u32 = 1;
 
 /// What the planner did, so a test can assert it rather than infer it.
 #[derive(Default, Debug)]
@@ -80,37 +93,46 @@ pub(crate) fn shuffle_dir_from_options(options: &ConfigOptions) -> Option<String
         .filter(|shuffle_dir| !shuffle_dir.is_empty())
 }
 
-/// Wrap the partial aggregate, or the whole plan if there is not one.
+/// Wrap every topmost partial aggregate, numbering the stages as it goes.
 ///
-/// Returns the rewritten plan and whether a stage was inserted. Only the
-/// topmost partial aggregate is wrapped: an aggregate nested inside another
-/// stage's subtree already travels with it.
+/// Returns the rewritten plan and how many stages were inserted. Only the
+/// *topmost* partial aggregate on a branch is wrapped -- an aggregate nested
+/// inside another stage's subtree already travels with it -- so the stages
+/// this produces are always disjoint subtrees.
+///
+/// `next_id` is threaded through rather than being a global counter, because
+/// the driver plans the same query twice: once to ship the stages and once to
+/// read their results back. A pre-order walk of a deterministic plan assigns
+/// the same ids both times only if the numbering restarts per call.
 fn insert_stage(
     plan: Arc<dyn ExecutionPlan>,
     shuffle_dir: &str,
-) -> Result<(Arc<dyn ExecutionPlan>, bool)> {
+    next_id: &mut u32,
+) -> Result<(Arc<dyn ExecutionPlan>, usize)> {
     if let Some(aggregate) = plan.downcast_ref::<AggregateExec>()
         && matches!(aggregate.mode(), AggregateMode::Partial)
     {
-        let stage = ShuffleStageExec::new(STAGE_ID, shuffle_dir.to_string(), Arc::clone(&plan));
-        return Ok((Arc::new(stage), true));
+        let stage_id = *next_id;
+        *next_id += 1;
+        let stage = ShuffleStageExec::new(stage_id, shuffle_dir.to_string(), Arc::clone(&plan));
+        return Ok((Arc::new(stage), 1));
     }
 
-    let mut inserted = false;
+    let mut inserted = 0;
     let mut children = Vec::new();
     for child in plan.children() {
-        let (child, child_inserted) = insert_stage(Arc::clone(child), shuffle_dir)?;
-        inserted |= child_inserted;
+        let (child, child_inserted) = insert_stage(Arc::clone(child), shuffle_dir, next_id)?;
+        inserted += child_inserted;
         children.push(child);
     }
-    if !inserted {
-        return Ok((plan, false));
+    if inserted == 0 {
+        return Ok((plan, 0));
     }
     // `Keep`: the replacement is a `ShuffleStageExec` wrapping the node it
     // replaced, and that node takes its properties from its child, so the
     // parent's view of its children is unchanged.
     let options = ReplaceChildrenOptions::new(ChildrenPropertiesMode::Keep);
-    Ok((plan.replace_children(children, options)?, true))
+    Ok((plan.replace_children(children, options)?, inserted))
 }
 
 #[derive(Debug)]
@@ -160,18 +182,23 @@ impl QueryPlanner for DistributedQueryPlanner {
             return Ok(plan);
         };
 
-        let (plan, inserted) = insert_stage(plan, &shuffle_dir)?;
-        if inserted {
-            self.observations
-                .stages_inserted
-                .fetch_add(1, Ordering::SeqCst);
-            return Ok(plan);
-        }
+        let mut next_id = FIRST_STAGE_ID;
+        let (plan, inserted) = insert_stage(plan, &shuffle_dir, &mut next_id)?;
 
-        // Nothing to split at, so the whole plan is the stage.
+        // Nothing to split at, so the whole plan is the one stage. Counted
+        // the same way as the rewritten case, so `stages_inserted` is the
+        // number of stages a test can expect to find in the plan.
+        let (plan, inserted) = match inserted {
+            0 => (
+                Arc::new(ShuffleStageExec::new(FIRST_STAGE_ID, shuffle_dir, plan)) as _,
+                1,
+            ),
+            inserted => (plan, inserted),
+        };
+
         self.observations
             .stages_inserted
-            .fetch_add(1, Ordering::SeqCst);
-        Ok(Arc::new(ShuffleStageExec::new(STAGE_ID, shuffle_dir, plan)))
+            .fetch_add(inserted, Ordering::SeqCst);
+        Ok(plan)
     }
 }

@@ -136,8 +136,8 @@ def main(argv: list[str] | None = None) -> int:
         result = run_distributed(Q1, spec)
         distributed = time.monotonic() - start
         print(
-            f"distributed: {distributed:.2f}s across {len(result.partitions)} "
-            f"worker process(es); rows per worker {result.worker_rows}"
+            f"distributed: {distributed:.2f}s across {len(result.tasks)} "
+            f"worker process(es); rows per (stage, partition) {result.task_rows}"
         )
 
         start = time.monotonic()
