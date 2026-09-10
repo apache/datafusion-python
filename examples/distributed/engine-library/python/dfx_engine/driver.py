@@ -18,10 +18,10 @@
 """The driver: split a query into tasks, fan them out, collect the answer.
 
 The shape is deliberately boring, because the interesting part is not the
-scheduling. What matters is the four things the driver has to get right, each
+scheduling. What matters is the five things the driver has to get right, each
 of which is a way a real deployment goes wrong:
 
-1. It serializes the stage **with** its session. ``to_bytes(None)`` uses an
+1. It serializes each stage **with** its session. ``to_bytes(None)`` uses an
    empty codec chain and cannot encode any library's node.
 2. It ships the codec ids it used, so a worker can refuse a plan it would
    misread rather than decode it with the wrong codec.
@@ -30,6 +30,9 @@ of which is a way a real deployment goes wrong:
    cannot disagree.
 4. It waits for every worker before reading, because the stage node decides
    whether to read or recompute by looking at the filesystem.
+5. It ships *every* stage. A plan can hold more than one -- an aggregate in
+   each branch of a union, say -- and they are independent subtrees rather
+   than a chain.
 """
 
 from __future__ import annotations
@@ -49,7 +52,12 @@ if TYPE_CHECKING:
     from datafusion.plan import ExecutionPlan
     from datafusion.user_defined import ScalarUDF
 
-__all__ = ["DistributedResult", "find_stage", "run_distributed"]
+__all__ = [
+    "DistributedResult",
+    "find_stage",
+    "find_stages",
+    "run_distributed",
+]
 
 
 class DistributedResult:
@@ -58,21 +66,26 @@ class DistributedResult:
     def __init__(
         self,
         batches: list[pa.RecordBatch],
-        partitions: list[int],
-        worker_rows: dict[int, int],
+        tasks: list[tuple[int, int]],
+        task_rows: dict[tuple[int, int], int],
     ) -> None:
         self.batches = batches
-        self.partitions = partitions
-        """Partition indices that were dispatched, one per worker."""
-        self.worker_rows = worker_rows
-        """Rows each worker produced, keyed by partition index."""
+        self.tasks = tasks
+        """``(stage_id, partition)`` pairs that were dispatched, one per worker.
+
+        Keyed by both, not by partition alone: a query with an aggregate in
+        more than one branch has more than one stage, and partition 0 of each
+        is a different piece of work.
+        """
+        self.task_rows = task_rows
+        """Rows each worker produced, keyed as :attr:`tasks` is."""
 
 
 STAGE_NODE_NAME = "ShuffleStageExec"
 
 
-def find_stage(plan: ExecutionPlan) -> ExecutionPlan | None:
-    """Locate the stage node the planner inserted.
+def find_stages(plan: ExecutionPlan) -> list[ExecutionPlan]:
+    """Locate every stage node the planner inserted, in pre-order.
 
     Matched on the display string because a Python caller has no way to
     downcast a Rust plan node -- there is no ``isinstance`` across an FFI
@@ -87,27 +100,39 @@ def find_stage(plan: ExecutionPlan) -> ExecutionPlan | None:
     A foreign node reports its own name nested inside the wrapper's, which
     makes anchored matches on plan text quietly wrong -- the kind of thing
     that works in a single-library test and fails the moment a real extension
-    is involved.
+    is involved. It is also why the stage *id* has to be recomputed here
+    rather than read: the wrapper dropped it.
+
+    Pre-order is the contract with the planner, which numbers stages in the
+    same walk, so the nth node returned here has the id
+    ``_internal.stage_id(n)``. The recursion stops at a stage rather than
+    descending into it, because the planner never nests one inside another.
     """
     if STAGE_NODE_NAME in plan.display():
-        return plan
-    for child in plan.children():
-        found = find_stage(child)
-        if found is not None:
-            return found
-    return None
+        return [plan]
+    return [stage for child in plan.children() for stage in find_stages(child)]
+
+
+def find_stage(plan: ExecutionPlan) -> ExecutionPlan | None:
+    """The first stage in `plan`, or ``None``.
+
+    For tests and callers that only care whether the planner split at all.
+    See :func:`find_stages`.
+    """
+    stages = find_stages(plan)
+    return stages[0] if stages else None
 
 
 def _dispatch(
-    envelope: dict, envelope_dir: pathlib.Path, partition: int
+    envelope: dict, envelope_dir: pathlib.Path, stage_id: int, partition: int
 ) -> subprocess.Popen[str]:
-    """Start one worker for one partition.
+    """Start one worker for one ``(stage, partition)``.
 
     ``sys.executable``, not ``python``: a worker on a different Python minor
     version cannot load a cloudpickled inline UDF, and that failure is far
     from its cause.
     """
-    path = envelope_dir / f"task-{partition}.json"
+    path = envelope_dir / f"task-{stage_id}-{partition}.json"
     path.write_text(json.dumps(envelope))
     return subprocess.Popen(  # noqa: S603
         [sys.executable, "-m", "dfx_engine.worker", str(path)],
@@ -120,7 +145,7 @@ def _dispatch(
 def run_distributed(
     sql: str, spec: SessionSpec, extra_udfs: list[ScalarUDF] | None = None
 ) -> DistributedResult:
-    """Run `sql`, executing its leaf stage in one worker process per partition.
+    """Run `sql`, executing each stage partition in its own worker process.
 
     Requires ``spec.shuffle_dir``: without it the planner inserts no stage and
     there is nothing to distribute.
@@ -135,13 +160,13 @@ def run_distributed(
         message = "run_distributed needs a shuffle_dir; build_session got none"
         raise ValueError(message)
 
-    ctx, engine, _storage = build_session(spec)
+    ctx, _engine, _storage = build_session(spec)
     for function in extra_udfs or []:
         ctx.register_udf(function)
     plan = ctx.sql(sql).execution_plan()
 
-    stage = find_stage(plan)
-    if stage is None:
+    stages = find_stages(plan)
+    if not stages:
         message = (
             "no ShuffleStageExec in the plan; the engine's planner did not run, "
             "or its config extension was not registered"
@@ -151,48 +176,56 @@ def run_distributed(
     shuffle_dir = pathlib.Path(spec.shuffle_dir)
     shuffle_dir.mkdir(parents=True, exist_ok=True)
 
-    # Encode the stage subtree, through the session that owns the codecs.
-    plan_path = shuffle_dir / "stage.plan"
-    plan_path.write_bytes(stage.to_bytes(ctx))
+    # One task per (stage, partition). Every stage is shipped, not just the
+    # first: a query with an aggregate in two branches has two independent
+    # subtrees, and leaving one behind would have the driver compute it
+    # locally while the plan it shipped claimed otherwise.
+    tasks: list[tuple[int, int]] = []
+    envelopes = []
+    for index, stage in enumerate(stages):
+        # The id the planner gave this stage, recomputed from its position
+        # because the FFI wrapper's display does not carry it.
+        stage_id = _internal.stage_id(index)
+        # Encode the stage subtree, through the session that owns the codecs.
+        plan_path = shuffle_dir / f"stage-{stage_id}.plan"
+        plan_path.write_bytes(stage.to_bytes(ctx))
+        for partition in range(stage.partition_count):
+            tasks.append((stage_id, partition))
+            envelopes.append(
+                {
+                    "spec": spec.to_json(),
+                    "plan": str(plan_path),
+                    "stage_id": stage_id,
+                    "partition": partition,
+                }
+            )
 
-    stage_id = _internal.stage_id()
-    partitions = list(range(stage.partition_count))
-    envelopes = [
-        {
-            "spec": spec.to_json(),
-            "plan": str(plan_path),
-            "stage_id": stage_id,
-            "partition": partition,
-        }
-        for partition in partitions
-    ]
-
-    # One process per partition, all in flight together. This is the claim the
+    # One process per task, all in flight together. This is the claim the
     # example is making: each worker reads a different file and writes a
     # different result, so they need no coordination beyond the directory.
     workers = [
-        _dispatch(envelope, shuffle_dir, partition)
-        for envelope, partition in zip(envelopes, partitions, strict=True)
+        _dispatch(envelope, shuffle_dir, stage_id, partition)
+        for envelope, (stage_id, partition) in zip(envelopes, tasks, strict=True)
     ]
 
-    worker_rows: dict[int, int] = {}
+    task_rows: dict[tuple[int, int], int] = {}
     failures = []
-    for partition, worker in zip(partitions, workers, strict=True):
+    for task, worker in zip(tasks, workers, strict=True):
         stdout, stderr = worker.communicate()
         if worker.returncode != 0:
-            failures.append(f"partition {partition} failed:\n{stderr}")
+            stage_id, partition = task
+            failures.append(f"stage {stage_id} partition {partition} failed:\n{stderr}")
             continue
-        worker_rows[partition] = json.loads(stdout)["rows"]
+        task_rows[task] = json.loads(stdout)["rows"]
 
     if failures:
         raise RuntimeError("\n".join(failures))
 
     # Now run the whole query here. Every stage partition has a file, so the
-    # stage node streams them instead of recomputing -- the driver does only
+    # stage nodes stream them instead of recomputing -- the driver does only
     # the final merge.
     batches = ctx.sql(sql).collect()
-    _ = engine
-    return DistributedResult(batches, partitions, worker_rows)
+    return DistributedResult(batches, tasks, task_rows)
 
 
 def run_local(

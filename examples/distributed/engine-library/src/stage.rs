@@ -39,6 +39,7 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fmt, fs};
 
 use arrow::ipc::reader::StreamReader;
@@ -59,6 +60,24 @@ use futures::StreamExt;
 /// which partitions have been produced without having to know the layout.
 pub(crate) fn partition_path(shuffle_dir: &str, stage_id: u32, partition: usize) -> PathBuf {
     Path::new(shuffle_dir).join(format!("stage-{stage_id}-part-{partition}.arrow"))
+}
+
+/// Where a writer builds a partition before publishing it.
+///
+/// Unique per writer, not merely per partition. Deriving the temporary name
+/// from the final one alone would have two writers of the same partition
+/// interleave their batches into one file, and then have one of the renames
+/// fail because the other already consumed it -- so the rename that is
+/// supposed to make publishing atomic would instead be the thing that broke.
+/// The driver dispatches each partition once, but a node that is safe only
+/// because of how its caller schedules work is not safe.
+fn temp_partition_path(shuffle_dir: &str, stage_id: u32, partition: usize) -> PathBuf {
+    static NEXT: AtomicU64 = AtomicU64::new(0);
+    let unique = NEXT.fetch_add(1, Ordering::Relaxed);
+    Path::new(shuffle_dir).join(format!(
+        "stage-{stage_id}-part-{partition}.{}-{unique}.arrow.tmp",
+        std::process::id()
+    ))
 }
 
 /// Marks a subtree as one stage of a distributed query.
@@ -93,7 +112,9 @@ impl ShuffleStageExec {
     ///
     /// Published by rename, so a reader can never observe a half-written
     /// file. The driver waits for workers to exit before reading, but relying
-    /// on that alone would break for anyone who overlapped the two.
+    /// on that alone would break for anyone who overlapped the two. The
+    /// writer side of the same argument is why [`temp_partition_path`] is
+    /// unique per writer rather than per partition.
     fn write_partition(
         &self,
         partition: usize,
@@ -102,6 +123,7 @@ impl ShuffleStageExec {
         let input = Arc::clone(&self.input);
         let schema = input.schema();
         let final_path = partition_path(&self.shuffle_dir, self.stage_id, partition);
+        let temp_path = temp_partition_path(&self.shuffle_dir, self.stage_id, partition);
         let shuffle_dir = self.shuffle_dir.clone();
 
         let collected = async move {
@@ -114,7 +136,6 @@ impl ShuffleStageExec {
             fs::create_dir_all(&shuffle_dir).map_err(|err| {
                 internal_datafusion_err!("dfx_engine: creating {shuffle_dir}: {err}")
             })?;
-            let temp_path = final_path.with_extension("arrow.tmp");
             {
                 let file = fs::File::create(&temp_path).map_err(|err| {
                     internal_datafusion_err!("dfx_engine: creating {}: {err}", temp_path.display())
