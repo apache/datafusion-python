@@ -136,9 +136,14 @@ impl PyExecutionPlan {
 
 /// How a physical plan's output rows are spread across its partitions.
 ///
-/// Distinct from `datafusion.expr.Partitioning`, which is the *logical*
-/// partitioning `DataFrame.repartition` takes as a request. This one reports
-/// what a built plan actually does.
+/// Distinct from `datafusion.expr.Partitioning`, the *logical* partitioning
+/// recorded on a `Repartition` node and read back with
+/// `Repartition.partitioning_scheme()`. Neither is an argument to anything:
+/// `DataFrame.repartition` takes a count and `repartition_by_hash` takes
+/// expressions and a count. The logical one records the request; this one
+/// reports what the built plan does with it, and they disagree whenever the
+/// optimizer rewrites or drops the repartition. The two Rust enums differ
+/// too -- the logical one has `DistributeBy` and no `UnknownPartitioning`.
 // `skip_from_py_object` because this is a read-only report: nothing accepts a
 // partitioning as an argument, so there is no inbound direction to support.
 // Rust callers that need the `Partitioning` read it off the plan instead.

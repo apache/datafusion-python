@@ -333,9 +333,11 @@ class PhysicalPartitioning:
     """How a physical plan's output rows are spread across its partitions.
 
     Returned by :py:attr:`ExecutionPlan.output_partitioning`. This is the
-    partitioning a built plan *has*, which is different from
-    :py:class:`datafusion.expr.Partitioning` — the partitioning
-    :py:meth:`~datafusion.DataFrame.repartition_by_hash` *asks* for.
+    partitioning a built plan *has*. Distinct from
+    :py:class:`datafusion.expr.Partitioning`, the *logical* partitioning a
+    ``Repartition`` node records and hands back from
+    ``partitioning_scheme()`` — a request, which the plan need not honour. See
+    :ref:`checking_partitioning`.
     """
 
     def __init__(self, partitioning: df_internal.PhysicalPartitioning) -> None:

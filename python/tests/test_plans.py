@@ -25,11 +25,13 @@ from datafusion import (
     LogicalPlan,
     Metric,
     MetricsSet,
+    PhysicalPartitioning,
     SessionConfig,
     SessionContext,
     col,
     udf,
 )
+from datafusion.expr import Partitioning
 
 
 # Note: CSV because a *logical* plan cannot carry a memory table. The physical
@@ -144,6 +146,34 @@ def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
     assert partitioning.hash_expressions == ["a@0"]
     assert partitioning.partition_count == 4
     assert repr(partitioning) == "Hash([a@0], 4)"
+
+
+def test_a_requested_partitioning_and_the_resulting_one_disagree() -> None:
+    """The logical request and the physical result are different things.
+
+    `datafusion.expr.Partitioning` is what a `Repartition` node records — the
+    request. `PhysicalPartitioning` is what the built plan does. Here the
+    optimizer drops the repartition outright, because nothing above it needs
+    the rows redistributed, so the two do not even agree on the scheme.
+    """
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    df = ctx.table("t").repartition_by_hash(col("a"), num=8)
+
+    # The request survives on the logical plan, as an opaque object of the
+    # other Partitioning type.
+    requested = df.logical_plan().to_variant().partitioning_scheme()
+    assert isinstance(requested, Partitioning)
+    assert not isinstance(requested, PhysicalPartitioning)
+
+    # The result honours neither the scheme nor the count that was asked for.
+    resulting = df.execution_plan().output_partitioning
+    assert isinstance(resulting, PhysicalPartitioning)
+    assert resulting.scheme == "UnknownPartitioning"
+    assert resulting.partition_count == 2
 
 
 def test_output_partitioning_reports_round_robin(tmp_path) -> None:
