@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import datafusion._internal as df_internal
 
@@ -34,6 +34,7 @@ __all__ = [
     "LogicalPlan",
     "Metric",
     "MetricsSet",
+    "PhysicalPartitioning",
 ]
 
 
@@ -178,8 +179,48 @@ class ExecutionPlan:
 
     @property
     def partition_count(self) -> int:
-        """Returns the number of partitions in the physical plan."""
+        """Returns the number of partitions in the physical plan.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.execution_plan().partition_count
+            1
+        """
         return self._raw_plan.partition_count
+
+    @property
+    def output_partitioning(self) -> PhysicalPartitioning:
+        """Returns how this plan's output rows are spread across its partitions.
+
+        Where :py:attr:`partition_count` gives only the number of partitions,
+        this also reports the scheme, so a caller executing partitions
+        separately can tell whether they are hash-distributed on known keys or
+        merely counted. A plan does not necessarily partition the way it was
+        asked to; see :ref:`checking_partitioning`.
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> from datafusion import SessionConfig, SessionContext
+            >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+            >>> ctx.register_record_batches("t", [
+            ...     [pa.record_batch({"a": [1, 2, 3]})],
+            ...     [pa.record_batch({"a": [4, 5, 6]})],
+            ... ])
+            >>> ctx.sql("select a from t").execution_plan().output_partitioning
+            UnknownPartitioning(2)
+
+            A group-by redistributes rows, so the plan reports the keys:
+
+            >>> grouped = ctx.sql("select a, count(*) from t group by a")
+            >>> partitioning = grouped.execution_plan().output_partitioning
+            >>> partitioning.scheme
+            'Hash'
+            >>> partitioning.partition_count
+            4
+        """
+        return PhysicalPartitioning(self._raw_plan.output_partitioning)
 
     @staticmethod
     def from_bytes(ctx: SessionContext, data: bytes) -> ExecutionPlan:
@@ -187,11 +228,12 @@ class ExecutionPlan:
 
         Decoding routes through the codecs installed on ``ctx`` with
         :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
-        Tables created in memory from record batches are currently not
-        supported.
 
         Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
         positional, and there is no fallback to a worker or global context.
+        ``ctx`` need share nothing with the session that encoded the plan: a
+        scan over a table registered from record batches decodes here, because
+        the batches travel inside the encoded scan.
 
         See Also:
             :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
@@ -204,8 +246,10 @@ class ExecutionPlan:
         When ``ctx`` is supplied, encoding routes through the codecs
         installed on it with
         :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
-        Tables created in memory from record batches are currently not
-        supported.
+
+        Unlike :py:meth:`LogicalPlan.to_bytes`, a plan reading a table
+        registered from record batches does round-trip: the batches travel
+        inside the encoded scan.
 
         Round-tripping through this method and :py:meth:`from_bytes` is how
         an extension library checks that its own codec claimed its nodes,
@@ -286,6 +330,132 @@ class ExecutionPlan:
 
         _walk(self)
         return result
+
+
+class PhysicalPartitioning:
+    """How a physical plan's output rows are spread across its partitions.
+
+    Returned by :py:attr:`ExecutionPlan.output_partitioning`. This is the
+    partitioning a built plan *has*. Distinct from
+    :py:class:`datafusion.expr.Partitioning`, the *logical* partitioning a
+    ``Repartition`` node records and hands back from
+    ``partitioning_scheme()`` — a request, which the plan need not honour. See
+    :ref:`checking_partitioning`.
+    """
+
+    def __init__(self, partitioning: df_internal.PhysicalPartitioning) -> None:
+        """This constructor should not be called by the end user."""
+        self._raw_partitioning = partitioning
+
+    @property
+    def scheme(
+        self,
+    ) -> Literal["RoundRobinBatch", "Hash", "Range", "UnknownPartitioning"]:
+        """Which partitioning scheme this is.
+
+        ``"UnknownPartitioning"`` means the plan knows how many partitions it
+        has but nothing about how rows are distributed between them, which is
+        the usual case for a file scan. ``"RoundRobinBatch"`` and ``"Hash"``
+        come from a repartition the optimizer inserted. ``"Range"`` only
+        appears on a plan this package did not build; see
+        :ref:`checking_partitioning`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.execution_plan().output_partitioning.scheme
+            'UnknownPartitioning'
+        """
+        return self._raw_partitioning.scheme
+
+    @property
+    def partition_count(self) -> int:
+        """The number of partitions.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.execution_plan().output_partitioning.partition_count
+            1
+        """
+        return self._raw_partitioning.partition_count
+
+    @property
+    def hash_expressions(self) -> list[str] | None:
+        """The expressions rows are hashed on, or ``None`` for other schemes.
+
+        Physical expressions have no Python representation, so these are
+        returned in their displayed form. ``None`` covers ``"Range"`` as well,
+        whose ordering and split points this class does not expose.
+
+        Examples:
+            >>> import pyarrow as pa
+            >>> from datafusion import SessionConfig, SessionContext
+            >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+            >>> ctx.register_record_batches("t", [
+            ...     [pa.record_batch({"a": [1, 2, 3]})],
+            ...     [pa.record_batch({"a": [4, 5, 6]})],
+            ... ])
+            >>> scan = ctx.sql("select a from t").execution_plan()
+            >>> scan.output_partitioning.hash_expressions is None
+            True
+            >>> grouped = ctx.sql("select a, count(*) from t group by a")
+            >>> grouped.execution_plan().output_partitioning.hash_expressions
+            ['a@0']
+        """
+        return self._raw_partitioning.hash_expressions
+
+    def __repr__(self) -> str:
+        """Print a string representation of the partitioning.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> repr(df.execution_plan().output_partitioning)
+            'UnknownPartitioning(1)'
+        """
+        return self._raw_partitioning.__repr__()
+
+    def _key(self) -> tuple[str, int, tuple[str, ...] | None]:
+        exprs = self.hash_expressions
+        return (self.scheme, self.partition_count, tuple(exprs) if exprs else None)
+
+    def __eq__(self, other: object) -> bool:
+        """Compare two partitionings by scheme, count and hash expressions.
+
+        Equality is structural, and does not mirror DataFusion's own
+        comparison of the underlying type, under which two
+        ``UnknownPartitioning`` values of the same width are unequal.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+            >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+            >>> a.output_partitioning == b.output_partitioning
+            True
+            >>> a.output_partitioning == "UnknownPartitioning(1)"
+            False
+        """
+        if not isinstance(other, PhysicalPartitioning):
+            return NotImplemented
+        return self._key() == other._key()
+
+    def __hash__(self) -> int:
+        """Hash the partitioning, consistently with :py:meth:`__eq__`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+            >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+            >>> len({a.output_partitioning, b.output_partitioning})
+            1
+        """
+        return hash(self._key())
 
 
 class MetricsSet:

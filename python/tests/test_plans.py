@@ -18,20 +18,24 @@
 import datetime
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     ExecutionPlan,
     LogicalPlan,
     Metric,
     MetricsSet,
+    PhysicalPartitioning,
+    SessionConfig,
     SessionContext,
     col,
     udf,
 )
+from datafusion.expr import Partitioning
 
 
-# Note: We must use CSV because memory tables are currently not supported for
-# conversion to/from protobuf.
+# Note: CSV because a *logical* plan cannot carry a memory table. The physical
+# layer can — see `test_execution_plan_over_memory_batches_round_trips`.
 @pytest.fixture
 def df():
     ctx = SessionContext()
@@ -93,6 +97,176 @@ def test_session_with_logical_extension_codec_roundtrip(ctx, df) -> None:
     restored = LogicalPlan.from_bytes(ctx, blob)
     df_round_trip = ctx.create_dataframe_from_logical_plan(restored)
     assert df.collect() == df_round_trip.collect()
+
+
+def test_execution_plan_over_memory_batches_round_trips() -> None:
+    """A physical plan reading record batches decodes on an unrelated session.
+
+    Only the *logical* layer cannot carry a memory table: its
+    `try_encode_table_provider` has no arm for one. The physical scan inlines
+    the batches, so it needs neither a shared session nor an extension codec —
+    which is what lets a worker process execute a plan the driver encoded.
+    """
+    ctx = SessionContext()
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    plan_bytes = ctx.sql("select a from t").execution_plan().to_bytes(ctx)
+
+    # A session that shares nothing with the encoder: no codecs, no tables.
+    fresh = SessionContext()
+    decoded = ExecutionPlan.from_bytes(fresh, plan_bytes)
+    rows = sum(
+        batch.to_pyarrow().num_rows
+        for partition in range(decoded.partition_count)
+        for batch in fresh.execute(decoded, partition)
+    )
+    assert rows == 6
+
+
+def test_output_partitioning_reports_the_scheme_not_just_the_count() -> None:
+    """`output_partitioning` distinguishes hash-distributed output from counted."""
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+
+    scan = ctx.sql("select a from t").execution_plan()
+    scanned = scan.output_partitioning
+    assert scanned.scheme == "UnknownPartitioning"
+    assert scanned.hash_expressions is None
+    # Agrees with the count-only accessor it supplements.
+    assert scanned.partition_count == scan.partition_count
+
+    grouped = ctx.sql("select a, count(*) from t group by a").execution_plan()
+    partitioning = grouped.output_partitioning
+    assert partitioning.scheme == "Hash"
+    assert partitioning.hash_expressions == ["a@0"]
+    assert partitioning.partition_count == 4
+    assert repr(partitioning) == "Hash([a@0], 4)"
+
+
+def test_a_requested_partitioning_and_the_resulting_one_disagree() -> None:
+    """The logical request and the physical result are different things.
+
+    `datafusion.expr.Partitioning` is what a `Repartition` node records — the
+    request. `PhysicalPartitioning` is what the built plan does. Here the
+    optimizer drops the repartition outright, because nothing above it needs
+    the rows redistributed, so the two do not even agree on the scheme.
+    """
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    df = ctx.table("t").repartition_by_hash(col("a"), num=8)
+
+    # The request survives on the logical plan, as an opaque object of the
+    # other Partitioning type.
+    requested = df.logical_plan().to_variant().partitioning_scheme()
+    assert isinstance(requested, Partitioning)
+    assert not isinstance(requested, PhysicalPartitioning)
+
+    # The result honours neither the scheme nor the count that was asked for.
+    resulting = df.execution_plan().output_partitioning
+    assert isinstance(resulting, PhysicalPartitioning)
+    assert resulting.scheme == "UnknownPartitioning"
+    assert resulting.partition_count == 2
+
+
+def test_output_partitioning_reports_round_robin(tmp_path) -> None:
+    """A round-robin repartition reports `RoundRobinBatch`.
+
+    The optimizer only inserts one above a source with fewer partitions than
+    `target_partitions` and CPU work above it to parallelize, and it never
+    survives at the root, so reach it by walking `children`.
+    """
+    path = tmp_path / "rr.parquet"
+    pq.write_table(pa.table({"a": list(range(50)), "b": [1] * 50}), path)
+
+    ctx = SessionContext(SessionConfig().with_target_partitions(8))
+    ctx.register_parquet("t", str(path))
+    plan = ctx.sql("select a, sum(b) from t where a > 5 group by a").execution_plan()
+
+    schemes = set()
+    stack = [plan]
+    while stack:
+        node = stack.pop()
+        schemes.add(node.output_partitioning.scheme)
+        stack.extend(node.children())
+
+    # Membership, not equality: which other nodes the optimizer puts in this
+    # tree is its business, and pinning the whole set here would make an
+    # unrelated planner change look like a failure of this accessor. The other
+    # schemes are asserted directly where they are the subject.
+    assert "RoundRobinBatch" in schemes
+
+
+def test_execute_rejects_an_out_of_range_partition() -> None:
+    """An out-of-range partition index raises instead of panicking."""
+    ctx = SessionContext()
+    ctx.register_record_batches("t", [[pa.record_batch({"a": [1, 2, 3]})]])
+    plan = ctx.sql("select a from t").execution_plan()
+    assert plan.partition_count == 1
+
+    with pytest.raises(ValueError, match="Partition index 5 is out of range"):
+        ctx.execute(plan, 5)
+
+    # The keyword is `partition`, as the upgrade guide says.
+    with pytest.raises(ValueError, match="Partition index 5 is out of range"):
+        ctx.execute(plan, partition=5)
+
+
+def test_execute_rejects_a_negative_partition() -> None:
+    """A negative index cannot reach the bounds check, so it overflows first.
+
+    Documented on `execute` as `OverflowError` because that is what PyO3
+    raises converting to `usize`, before any DataFusion code runs.
+    """
+    ctx = SessionContext()
+    ctx.register_record_batches("t", [[pa.record_batch({"a": [1, 2, 3]})]])
+    plan = ctx.sql("select a from t").execution_plan()
+
+    with pytest.raises(OverflowError):
+        ctx.execute(plan, -1)
+
+
+def test_physical_partitioning_equality_is_structural() -> None:
+    """Two partitionings are equal when scheme, count and keys agree.
+
+    Not DataFusion's own comparison of the underlying type, which reports two
+    `UnknownPartitioning` values of the same width as unequal. A reflexive
+    `__eq__` is the Python expectation, and the count-only alternative would
+    make `Hash` on different keys compare equal.
+    """
+    ctx = SessionContext(SessionConfig().with_target_partitions(4))
+    ctx.register_record_batches(
+        "t",
+        [[pa.record_batch({"a": [1, 2, 3]})], [pa.record_batch({"a": [4, 5, 6]})]],
+    )
+    plan = ctx.sql("select a from t").execution_plan()
+    other_scan = ctx.sql("select a as b from t").execution_plan().output_partitioning
+    grouped = (
+        ctx.sql("select a, count(*) from t group by a")
+        .execution_plan()
+        .output_partitioning
+    )
+
+    # The property builds a fresh wrapper per access, so these are two objects
+    # over one partitioning. `UnknownPartitioning` is precisely the scheme
+    # DataFusion's own comparison reports as unequal to itself.
+    scan, scan_again = plan.output_partitioning, plan.output_partitioning
+    assert scan is not scan_again
+    assert scan == scan_again
+
+    assert scan == other_scan
+    assert scan != grouped
+    assert scan != "UnknownPartitioning(2)"
+
+    # Hashing agrees, so these collapse in a set the way equality implies.
+    assert len({scan, other_scan, grouped}) == 2
 
 
 def test_installing_a_physical_codec_preserves_strict_mode() -> None:

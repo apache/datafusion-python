@@ -96,16 +96,6 @@ way `add_physical_optimizer_rule` does and returns nothing — the query planner
 lives in `SessionState`, so it belongs to the session rather than to a
 particular handle on it. See {ref}`extension_planners` for the full protocol.
 
-If a library ships codecs *and* a planner, prefer
-`SessionContext.with_extensions(bundle)` over installing each piece by hand. It
-installs every codec before it binds any planner, so a planner cannot end up
-carrying a chain that a later `with_logical_extension_codec` call has grown.
-The library exposes a bundle object implementing
-`__datafusion_session_components__` for its codecs and
-`__datafusion_session_planner__` for its planner — the latter is handed the
-planner installed so far, so several libraries that each ship one nest instead
-of displacing each other. See {ref}`extension_bundles`.
-
 (extension_version_mismatch)=
 
 ### Mismatched extension libraries now fail loudly
@@ -168,6 +158,17 @@ payload now records which codec wrote it. A session with no extension codecs
 installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.
+
+### `SessionContext.execute` renamed its second parameter
+
+The parameter is a single partition index, not a count, and is now named
+`partition` rather than `partitions`. Positional calls are unaffected; update
+any call passing it by keyword.
+
+```python
+ctx.execute(plan, partitions=0)  # before
+ctx.execute(plan, partition=0)  # after
+```
 
 ### Changes to the `datafusion-python-util` crate
 

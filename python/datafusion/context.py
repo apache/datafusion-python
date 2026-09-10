@@ -167,8 +167,30 @@ class SessionConfig:
     def __init__(self, config_options: dict[str, str] | None = None) -> None:
         """Create a new :py:class:`SessionConfig` with the given configuration options.
 
+        Each entry is applied as though passed to :py:meth:`set`, so the same
+        keys are rejected. See :ref:`configuration`.
+
         Args:
-            config_options: Configuration options.
+            config_options: Options to apply, keyed by fully qualified name.
+
+        Raises:
+            ValueError: If a key names no known option, or a value does not
+                parse as that option's declared type. Which of several bad
+                entries is reported is not defined.
+
+        Example usage:
+
+        >>> from datafusion import SessionConfig
+        >>> ctx = SessionContext(SessionConfig())
+        >>> config = SessionConfig(
+        ...     config_options={"datafusion.execution.batch_size": "1024"}
+        ... )
+        >>> ctx = SessionContext(config.with_information_schema(True))
+        >>> ctx.sql(
+        ...     "select value from information_schema.df_settings"
+        ...     " where name = 'datafusion.execution.batch_size'"
+        ... ).collect()[0]["value"][0]
+        <pyarrow.StringScalar: '1024'>
         """
         self.config_internal = SessionConfigInternal(config_options)
 
@@ -341,14 +363,37 @@ class SessionConfig:
         return self
 
     def set(self, key: str, value: str) -> SessionConfig:
-        """Set a configuration option.
+        """Set a configuration option by its fully qualified key.
+
+        Not every key that ``information_schema.df_settings`` lists can be set
+        here: the ``datafusion.runtime.*`` entries come from the runtime
+        environment rather than from the session config. See
+        :ref:`configuration`.
 
         Args:
-        key: Option key.
-        value: Option value.
+            key: Option key including its namespace, such as
+                ``datafusion.execution.batch_size``.
+            value: Option value as a string, parsed according to the type the
+                option declares.
 
         Returns:
-            A new :py:class:`SessionConfig` object with the updated setting.
+            This :py:class:`SessionConfig`, modified in place, so that calls
+            chain.
+
+        Raises:
+            ValueError: If ``key`` names no known option, or if ``value`` does
+                not parse as that option's declared type.
+
+        Example usage:
+
+        >>> from datafusion import SessionConfig, SessionContext
+        >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+        >>> ctx = SessionContext(config.with_information_schema(True))
+        >>> ctx.sql(
+        ...     "select value from information_schema.df_settings"
+        ...     " where name = 'datafusion.execution.batch_size'"
+        ... ).collect()[0]["value"][0]
+        <pyarrow.StringScalar: '1024'>
         """
         self.config_internal = self.config_internal.set(key, value)
         return self
@@ -2351,9 +2396,41 @@ class SessionContext:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table."""
         return DataFrame(self.ctx.read_table(table))
 
-    def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
-        """Execute the ``plan`` and return the results."""
-        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+    def execute(self, plan: ExecutionPlan, partition: int) -> RecordBatchStream:
+        """Execute a single partition of ``plan`` and stream its batches.
+
+        Args:
+            plan: The physical plan to execute.
+            partition: Index of the partition to execute, in
+                ``range(plan.partition_count)``.
+
+        Returns:
+            A stream over the record batches that partition produces.
+
+        Raises:
+            ValueError: If ``partition`` is not a valid index for ``plan``.
+            OverflowError: If ``partition`` is negative, or too large to fit a
+                platform-sized unsigned integer.
+
+        Example usage:
+
+        >>> import pyarrow as pa
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.register_record_batches(
+        ...     "t", [[pa.record_batch({"a": [1, 2]})], [pa.record_batch({"a": [3]})]]
+        ... )
+        >>> plan = ctx.sql("select a from t").execution_plan()
+        >>> plan.partition_count
+        2
+        >>> sum(
+        ...     batch.to_pyarrow().num_rows
+        ...     for p in range(plan.partition_count)
+        ...     for batch in ctx.execute(plan, p)
+        ... )
+        3
+        """
+        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partition))
 
     @staticmethod
     def _convert_file_sort_order(

@@ -122,9 +122,31 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
-        // The provider owns DataSourceExec. A ForeignExecutionPlan can wrap a
-        // host-added execution decorator around that scan; retaining the opaque
-        // wrapper preserves its original library identity without downcasting it.
+        // `DataSourceExec` is this library's own node. The `ForeignExecutionPlan`
+        // arm is a workaround, not a pattern to copy, and it is load-bearing:
+        // a host physical optimizer rule that runs during a foreign planner's
+        // `create_physical_plan` -- `EnsureCooperative` always does -- hands the
+        // library back a `ForeignExecutionPlan` wrapping the host's
+        // `CooperativeExec`. That type has no reachable `try_to_proto`, so
+        // nothing can encode it natively and `FFI_QueryPlanner` must serialize
+        // the plan it returns. Claiming it here is what lets those plans
+        // round-trip at all.
+        //
+        // The cost is that this codec also claims every *other* library's
+        // nodes, since that is the type any node arrives as once it has crossed
+        // the boundary -- see `extension_codec_order`. Narrowing this to
+        // `DataSourceExec` alone makes 31 tests in
+        // `datafusion-ffi-query-planner-example` fail with the error above.
+        //
+        // A library whose planner controls its own physical optimizer rules
+        // never sees a foreign node and needs no such arm.
+        //
+        // Both halves are upstream defects, tracked together in
+        // https://github.com/apache/datafusion/issues/25152: `FFI_PlanProperties`
+        // carries no `scheduling_type`, so `EnsureCooperative` reads every
+        // foreign leaf as non-cooperative and wraps it, and the resulting
+        // `ForeignExecutionPlan` then has no way to serialize itself. Fixing
+        // either one retires this arm.
         if node.is::<DataSourceExec>() || node.is::<ForeignExecutionPlan>() {
             self.counters
                 .encode_execution_plan
