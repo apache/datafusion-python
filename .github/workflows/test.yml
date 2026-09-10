@@ -73,11 +73,11 @@ jobs:
           path: wheels/
 
       # FFI test wheel only built once (under the abi3 matrix entry in build.yml).
-      - name: Download pre-built FFI test wheel
+      - name: Download pre-built example test wheels
         if: matrix.wheel-tag == 'abi3'
         uses: actions/download-artifact@v8
         with:
-          name: test-ffi-manylinux-x86_64
+          name: test-example-wheels-x86_64
           path: wheels/
 
       - name: Install from pre-built wheels
@@ -93,9 +93,9 @@ jobs:
           uv venv --python "${{ steps.setup-python.outputs.python-path }}"
           VENV_PY="$PWD/.venv/bin/python"
           uv sync --python "$VENV_PY" --dev --no-install-package datafusion
-          # Search recursively: the FFI artifact bundles more than one
-          # project, so upload-artifact keeps a `<project>/dist/` prefix
-          # and the wheels are not all at the top of wheels/.
+          # Search recursively: the example artifact bundles five projects,
+          # so upload-artifact keeps a `<project>/dist/` prefix and the
+          # wheels are not all at the top of wheels/.
           WHEELS=$(find wheels/ -name "*.whl")
           if [ -n "$WHEELS" ]; then
             echo "Installing wheels:"

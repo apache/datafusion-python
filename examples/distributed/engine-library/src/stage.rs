@@ -125,6 +125,14 @@ impl ShuffleStageExec {
         let final_path = partition_path(&self.shuffle_dir, self.stage_id, partition);
         let temp_path = temp_partition_path(&self.shuffle_dir, self.stage_id, partition);
         let shuffle_dir = self.shuffle_dir.clone();
+        // The schema the file is written with is the one this stream declares,
+        // not the one the child's stream happens to report. They agree for any
+        // well-behaved child, and pinning it to the declaration is what makes
+        // a disagreement loud: `StreamWriter::write` rejects a batch whose
+        // schema differs, so a child that contradicts its own `schema()` fails
+        // here instead of publishing a file readers were told to expect
+        // something else from.
+        let written_schema = Arc::clone(&schema);
 
         let collected = async move {
             let mut stream = input.execute(partition, context)?;
@@ -139,7 +147,7 @@ impl ShuffleStageExec {
                 let file = fs::File::create(&temp_path).map_err(|err| {
                     exec_datafusion_err!("dfx_engine: creating {}: {err}", temp_path.display())
                 })?;
-                let mut writer = StreamWriter::try_new(file, stream.schema().as_ref())
+                let mut writer = StreamWriter::try_new(file, written_schema.as_ref())
                     .map_err(|err| exec_datafusion_err!("dfx_engine: ipc writer: {err}"))?;
                 for batch in &batches {
                     writer

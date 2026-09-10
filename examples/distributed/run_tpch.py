@@ -92,6 +92,39 @@ def reshard(
     return written
 
 
+def compare(table: pa.Table, reference: pa.Table) -> None:
+    """Raise unless `table` matches `reference`, floats to 1e-6 relative.
+
+    Floats get a tolerance rather than equality. Splitting a `sum` across
+    partitions changes the order the additions happen in, and floating point
+    addition is not associative, so the last bits of `sum_charge` legitimately
+    differ between the two runs. Every distributed engine has this property;
+    it is worth knowing before someone diffs two runs and concludes the split
+    is broken.
+    """
+    if table.column_names != reference.column_names:
+        message = (
+            f"column names differ: {table.column_names} vs {reference.column_names}"
+        )
+        raise ValueError(message)
+
+    for name in table.column_names:
+        got = table.column(name).to_pylist()
+        want = reference.column(name).to_pylist()
+        if len(got) != len(want):
+            message = f"{name}: {len(got)} rows distributed, {len(want)} local"
+            raise ValueError(message)
+        for lhs, rhs in zip(got, want, strict=True):
+            close = (
+                abs(lhs - rhs) <= 1e-6 * max(1.0, abs(rhs))
+                if isinstance(lhs, float)
+                else lhs == rhs
+            )
+            if not close:
+                message = f"{name}: {lhs!r} distributed, {rhs!r} local"
+                raise ValueError(message)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -150,24 +183,11 @@ def main(argv: list[str] | None = None) -> int:
         table = pa.Table.from_batches(result.batches)
         reference = pa.Table.from_batches(local)
 
-        # Compared with a tolerance, not for equality. Splitting a `sum` across
-        # partitions changes the order the additions happen in, and floating
-        # point addition is not associative -- so the last bits of `sum_charge`
-        # legitimately differ between the two runs. Any distributed engine has
-        # this property; it is worth knowing before someone diffs two runs and
-        # concludes the split is broken.
-        assert table.column_names == reference.column_names
-        for name in table.column_names:
-            got, want = (
-                table.column(name).to_pylist(),
-                reference.column(name).to_pylist(),
-            )
-            assert len(got) == len(want), name
-            for lhs, rhs in zip(got, want, strict=True):
-                if isinstance(lhs, float):
-                    assert abs(lhs - rhs) <= 1e-6 * max(1.0, abs(rhs)), (name, lhs, rhs)
-                else:
-                    assert lhs == rhs, (name, lhs, rhs)
+        # Raises rather than asserts. This comparison is the only thing that
+        # makes the script a check rather than a demo, and `python -O` removes
+        # an `assert` -- which would leave it printing a table it never
+        # verified.
+        compare(table, reference)
 
         print("\nsame answer both ways (floats to within 1e-6 relative):\n")
         names = table.column_names
