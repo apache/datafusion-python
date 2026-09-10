@@ -64,13 +64,26 @@ Every method above modifies the config in place and returns it, which is what ma
 chained style work — the object you started with is the object you end up passing to
 `SessionContext`.
 
+A whole dictionary of options can be applied at once by passing it to the
+{py:class}`~datafusion.SessionConfig` constructor, which is the shape a replayed set of
+settings usually arrives in:
+
+```python
+config = SessionConfig({"datafusion.execution.batch_size": "1024"})
+```
+
+Both routes reject the same keys, so which one you use does not change what is accepted. The
+constructor applies its entries in an unspecified order, so a dictionary with more than one
+bad key does not report a predictable one first.
+
 One trap is worth knowing about if you read settings back out of a session and replay them
 somewhere else, such as onto a worker process or into a test fixture. With
 `with_information_schema(True)`, the `information_schema.df_settings` table lists the
 `datafusion.runtime.*` keys alongside the rest, but those come from the runtime environment
-rather than from `ConfigOptions` and cannot be set with `set`. Feeding that table's rows
-back in verbatim will fail on the first such row. Configure the runtime through
-`RuntimeEnvBuilder` instead, and skip the `datafusion.runtime.` prefix when replaying.
+rather than from `ConfigOptions` and cannot be set this way. Feeding that table's rows back
+in verbatim will fail on the first such row, whichever route you use. Configure the runtime
+through `RuntimeEnvBuilder` instead, and skip the `datafusion.runtime.` prefix when
+replaying.
 
 ## Maximizing CPU Usage
 

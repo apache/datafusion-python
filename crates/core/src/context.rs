@@ -121,17 +121,28 @@ impl From<SessionConfig> for PySessionConfig {
 
 #[pymethods]
 impl PySessionConfig {
+    /// Build a config, optionally applying options by key.
+    ///
+    /// Each entry goes through the same fallible path as [`Self::set`] rather
+    /// than `SessionConfig::set`, which forwards to `set_str` and unwraps: an
+    /// unknown namespace would abort as a `PanicException` before any of the
+    /// remaining entries were applied. Replaying a settings dictionary is the
+    /// reason this constructor takes one, and
+    /// `information_schema.df_settings` lists keys it cannot accept.
     #[pyo3(signature = (config_options=None))]
     #[new]
-    fn new(config_options: Option<HashMap<String, String>>) -> Self {
+    fn new(config_options: Option<HashMap<String, String>>) -> PyResult<Self> {
         let mut config = SessionConfig::new();
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
-                config = config.set(k, &ScalarValue::Utf8(Some(v.clone())));
+                config
+                    .options_mut()
+                    .set(k, v)
+                    .map_err(from_datafusion_error)?;
             }
         }
 
-        Self { config }
+        Ok(Self { config })
     }
 
     fn with_create_default_catalog_and_schema(&self, enabled: bool) -> Self {
