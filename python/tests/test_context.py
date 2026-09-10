@@ -103,6 +103,26 @@ def test_create_context_with_all_valid_args():
         ctx.catalog("datafusion")
 
 
+def test_session_config_set_rejects_an_unknown_namespace():
+    """A bad config key raises rather than aborting through a Rust panic.
+
+    `datafusion.runtime.*` appears in `information_schema.df_settings` but has
+    no `ConfigOptions` namespace, so it is the key a naive "read the settings
+    back and replay them on the worker" loop hits first.
+    """
+    # `ValueError`, not a bare `Exception`: a panic would arrive as
+    # `PanicException`, which derives from `BaseException` and so would not be
+    # caught here at all. Both this and the constructor cases below rely on it.
+    with pytest.raises(ValueError, match="runtime"):
+        SessionConfig().set("datafusion.runtime.memory_limit", "unlimited")
+
+
+def test_session_config_set_rejects_an_unparsable_value():
+    """A well-known key with a value of the wrong type raises too."""
+    with pytest.raises(ValueError, match="batch_size"):
+        SessionConfig().set("datafusion.execution.batch_size", "not_an_int")
+
+
 def test_session_config_constructor_applies_options():
     """A dict passed to the constructor reaches the session's options."""
     config = SessionConfig(
@@ -130,9 +150,6 @@ def test_session_config_constructor_rejects_an_unknown_namespace():
 
     The same defect as `SessionConfig.set` had, reached through the argument
     that a replayed `information_schema.df_settings` dictionary arrives in.
-    `ValueError`, not a bare `Exception`: a panic would arrive as
-    `PanicException`, which derives from `BaseException` and so would not be
-    caught here at all.
     """
     with pytest.raises(ValueError, match="runtime"):
         SessionConfig({"datafusion.runtime.memory_limit": "unlimited"})

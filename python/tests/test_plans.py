@@ -269,26 +269,6 @@ def test_physical_partitioning_equality_is_structural() -> None:
     assert len({scan, other_scan, grouped}) == 2
 
 
-def test_session_config_set_rejects_an_unknown_namespace() -> None:
-    """A bad config key raises rather than aborting through a Rust panic.
-
-    `datafusion.runtime.*` appears in `information_schema.df_settings` but has
-    no `ConfigOptions` namespace, so it is the key a naive "read the settings
-    back and replay them on the worker" loop hits first.
-    """
-    # `ValueError`, not a bare `Exception`: a panic would arrive as
-    # `PanicException`, which derives from `BaseException` and so would not be
-    # caught here at all.
-    with pytest.raises(ValueError, match="runtime"):
-        SessionConfig().set("datafusion.runtime.memory_limit", "unlimited")
-
-
-def test_session_config_set_rejects_an_unparsable_value() -> None:
-    """A well-known key with a value of the wrong type raises too."""
-    with pytest.raises(ValueError, match="batch_size"):
-        SessionConfig().set("datafusion.execution.batch_size", "not_an_int")
-
-
 def test_installing_a_physical_codec_preserves_strict_mode() -> None:
     """Installing a physical extension codec must not re-enable inlining.
 
