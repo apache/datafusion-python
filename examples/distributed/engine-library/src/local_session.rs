@@ -153,9 +153,22 @@ impl Session for LocalOptimizerSession<'_> {
     }
 
     fn table_options_mut(&mut self) -> &mut TableOptions {
-        // The wrapper only borrows `inner`, so it cannot hand out a mutable
-        // reference. Physical planning never calls this; verified in the spike.
-        unimplemented!("LocalOptimizerSession does not support table_options_mut")
+        // Written because the trait requires it -- there is no default -- and
+        // unreachable by type rather than by luck: this takes `&mut self`,
+        // `create_physical_plan` takes `&dyn Session`, nothing in DataFusion
+        // asks for a `&mut dyn Session`, and `planner.rs` binds the wrapper
+        // immutably. A call here does not compile, so the guarantee is the
+        // borrow checker's rather than a comment's.
+        //
+        // Panicking is the answer on purpose, not an unfinished one. This type
+        // borrows the session it wraps and has no table options of its own to
+        // lend. Keeping a clone and returning `&mut` to that would compile and
+        // would be worse: a caller could set a Parquet option, watch it apply
+        // to nothing, and have no way to notice. Quietly dropping a mutation
+        // is not an improvement on refusing one.
+        unimplemented!(
+            "LocalOptimizerSession borrows its session and cannot lend out mutable table options"
+        )
     }
 
     fn task_ctx(&self) -> Arc<TaskContext> {
