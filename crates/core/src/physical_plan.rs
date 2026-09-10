@@ -139,8 +139,11 @@ impl PyExecutionPlan {
 /// Distinct from `datafusion.expr.Partitioning`, which is the *logical*
 /// partitioning `DataFrame.repartition` takes as a request. This one reports
 /// what a built plan actually does.
+// `skip_from_py_object` because this is a read-only report: nothing accepts a
+// partitioning as an argument, so there is no inbound direction to support.
+// Rust callers that need the `Partitioning` read it off the plan instead.
 #[pyclass(
-    from_py_object,
+    skip_from_py_object,
     frozen,
     name = "PhysicalPartitioning",
     module = "datafusion",
@@ -196,12 +199,6 @@ impl PyPhysicalPartitioning {
 impl From<Partitioning> for PyPhysicalPartitioning {
     fn from(partitioning: Partitioning) -> Self {
         Self { partitioning }
-    }
-}
-
-impl From<PyPhysicalPartitioning> for Partitioning {
-    fn from(partitioning: PyPhysicalPartitioning) -> Self {
-        partitioning.partitioning
     }
 }
 
