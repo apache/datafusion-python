@@ -135,16 +135,24 @@ fn insert_stage(
     Ok((plan.replace_children(children, options)?, inserted))
 }
 
+/// Holds no `fallback`, and that is the design rather than an omission.
+///
+/// A planner either delegates or rewrites. Delegating hands physical planning
+/// to whoever is underneath, including the host, and brings the plan back as
+/// opaque foreign nodes -- which cannot be split, and splitting is the only
+/// thing this library exists to do. So the hook is handed a fallback and
+/// leaves it alone; see `DfxEngineExtension::__datafusion_session_planner__`.
+///
+/// Two things worth knowing if you write the layering kind instead. Hold the
+/// fallback as an `Option<Arc<dyn QueryPlanner + Send + Sync>>` and call it
+/// directly: `Session::create_physical_plan` looks like the way to delegate
+/// and is not, because it dispatches through the session's *installed*
+/// planner, so calling it from inside that planner recurses until the stack
+/// overflows. And `datafusion-ffi-query-planner-example` is the crate that
+/// demonstrates layering for real, including how `fallback` nests.
 #[derive(Debug)]
 pub(crate) struct DistributedQueryPlanner {
     pub(crate) observations: Arc<PlannerObservations>,
-    /// Planner to layer on top of, if the session already had one.
-    ///
-    /// Held so several planner-shipping libraries compose. Note that
-    /// `Session::create_physical_plan` cannot be used for this: it dispatches
-    /// through the session's installed planner, so calling it from inside that
-    /// planner recurses until the stack overflows.
-    pub(crate) fallback: Option<Arc<dyn QueryPlanner + Send + Sync>>,
 }
 
 #[async_trait]
@@ -156,24 +164,15 @@ impl QueryPlanner for DistributedQueryPlanner {
     ) -> Result<Arc<dyn ExecutionPlan>> {
         self.observations.plan_calls.fetch_add(1, Ordering::SeqCst);
 
-        let plan = match self.fallback.as_ref() {
-            // Delegating hands physical planning to whoever is underneath,
-            // including the host. That is correct for composition, but it
-            // means the plan comes back as opaque foreign nodes this engine
-            // cannot split -- so a fallback and a split are exclusive, and
-            // the split is what this library is for.
-            Some(fallback) => return fallback.create_physical_plan(logical_plan, session).await,
-            None => {
-                // Plan against a session that owns the stock rule set locally
-                // instead of reaching back over FFI for the host's. Without
-                // this the plan contains `ForeignExecutionPlan` wrappers that
-                // cannot be serialized and cannot be rewritten.
-                let local = LocalOptimizerSession::new(session);
-                DefaultPhysicalPlanner::default()
-                    .create_physical_plan(logical_plan, &local)
-                    .await?
-            }
-        };
+        // Plan against a session that owns the stock rule set locally instead
+        // of reaching back over FFI for the host's. Without this the plan
+        // contains `ForeignExecutionPlan` wrappers that cannot be serialized
+        // and cannot be rewritten -- and rewriting is the next thing that
+        // happens here.
+        let local = LocalOptimizerSession::new(session);
+        let plan = DefaultPhysicalPlanner::default()
+            .create_physical_plan(logical_plan, &local)
+            .await?;
 
         let Some(shuffle_dir) = shuffle_dir_from_options(session.config_options()) else {
             // No shuffle directory configured: leave the plan alone and let it

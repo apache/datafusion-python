@@ -35,7 +35,7 @@ use datafusion_proto::physical_plan::PhysicalExtensionCodec;
 use datafusion_python_util::{
     create_physical_extension_capsule, create_query_planner_capsule,
     ffi_logical_codec_from_pycapsule, ffi_physical_codec_from_pycapsule,
-    ffi_query_planner_from_pycapsule, ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
+    ffi_task_context_provider_from_pycapsule, get_tokio_runtime,
 };
 use datafusion_session::QueryPlanner;
 use pyo3::prelude::*;
@@ -163,30 +163,34 @@ impl DfxEngineExtension {
         components.call((), Some(&kwargs))
     }
 
-    /// Contribute this engine's planner, nesting it on whatever came before.
+    /// Contribute this engine's planner, replacing whatever came before.
     ///
     /// Runs after every bundle's codecs are installed, so `ctx` carries the
     /// final chains and the planner is not left encoding through a partial
-    /// set. `fallback` is the planner assembled so far; delegating to it is
-    /// what makes several planner-shipping libraries composable, and
-    /// returning a planner that ignored it would discard every layer beneath.
+    /// set.
+    ///
+    /// `_fallback` is the planner assembled so far, and this engine does not
+    /// use it: delegating would hand physical planning to the host and bring
+    /// the plan back as opaque foreign nodes, which cannot be split, and
+    /// splitting is the whole point. A planner that only rearranged stock
+    /// nodes would keep it -- see [`DistributedQueryPlanner`].
+    ///
+    /// Not converted, either, which is worth saying because converting it and
+    /// dropping the result is an easy line to write. There is nothing for
+    /// this hook to validate: `SessionContext._export_query_planner` already
+    /// ran `ffi_query_planner_from_pycapsule` over whatever the previous hook
+    /// returned, precisely so a malformed planner surfaces at the hook that
+    /// produced it. Converting again would repeat a getter call, a capsule
+    /// check and an ABI check to reach a value this planner never calls.
     fn __datafusion_session_planner__<'py>(
         &self,
         py: Python<'py>,
         ctx: Bound<'py, PyAny>,
-        fallback: Bound<'py, PyAny>,
+        _fallback: Bound<'py, PyAny>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let fallback = ffi_query_planner_from_pycapsule(&fallback, Some(&ctx))?;
         let planner: Arc<dyn QueryPlanner + Send + Sync> = Arc::new(DistributedQueryPlanner {
             observations: Arc::clone(&self.observations),
-            // Deliberately not layered. Delegating would hand physical
-            // planning to the host and bring the plan back as opaque foreign
-            // nodes, which this engine cannot split -- so it plans for itself
-            // and the fallback goes unused. A planner that only rearranged
-            // stock nodes would keep it.
-            fallback: None,
         });
-        let _ = fallback;
 
         // The planner takes the *host's* codecs, not ones built here. By now
         // those are the final chains, and this library has no business
