@@ -351,8 +351,9 @@ class PhysicalPartitioning:
         ``"UnknownPartitioning"`` means the plan knows how many partitions it
         has but nothing about how rows are distributed between them, which is
         the usual case for a file scan. ``"RoundRobinBatch"`` and ``"Hash"``
-        come from a repartition the optimizer inserted. ``"Range"`` is defined
-        upstream but no plan reports it yet.
+        come from a repartition the optimizer inserted. ``"Range"`` only
+        appears on a plan this package did not build; see
+        :ref:`checking_partitioning`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -381,7 +382,8 @@ class PhysicalPartitioning:
         """The expressions rows are hashed on, or ``None`` for other schemes.
 
         Physical expressions have no Python representation, so these are
-        returned in their displayed form.
+        returned in their displayed form. ``None`` covers ``"Range"`` as well,
+        whose ordering and split points this class does not expose.
 
         Examples:
             >>> import pyarrow as pa

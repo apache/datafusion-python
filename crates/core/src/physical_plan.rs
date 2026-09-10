@@ -163,11 +163,13 @@ impl PyPhysicalPartitioning {
     /// them, which is the common case for a file scan. `RoundRobinBatch` and
     /// `Hash` come from a `RepartitionExec`.
     ///
-    /// `Range` is in the upstream enum but no plan reports it yet: optimizer
-    /// and execution support is deliberately unimplemented, per
-    /// <https://github.com/apache/datafusion/issues/22395>. The arm is here so
-    /// this getter keeps compiling when that lands, not because it is
-    /// reachable today.
+    /// `Range` is implemented upstream and reaches this getter, but never from
+    /// a plan this package built: `DataFrame.repartition` requests round-robin,
+    /// `repartition_by_hash` requests hash, and SQL has no range-repartition
+    /// syntax. It arrives on a plan built elsewhere -- decoded by
+    /// `ExecutionPlan.from_bytes`, or returned by an extension library's query
+    /// planner -- since `datafusion-proto` and `datafusion-ffi` both carry
+    /// `Partitioning::Range` faithfully.
     #[getter]
     pub fn scheme(&self) -> &'static str {
         match self.partitioning {
@@ -187,6 +189,9 @@ impl PyPhysicalPartitioning {
     ///
     /// These are physical expressions, which have no Python representation, so
     /// they are returned in their displayed form.
+    ///
+    /// `None` for `Range` too, whose ordering and split points this class does
+    /// not expose yet.
     #[getter]
     pub fn hash_expressions(&self) -> Option<Vec<String>> {
         match &self.partitioning {

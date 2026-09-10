@@ -169,6 +169,21 @@ rows are distributed across them, which is the ordinary case for a file scan.
 {py:attr}`~datafusion.ExecutionPlan.partition_count` gives the same count on its own when
 the scheme does not matter.
 
+Four schemes exist, but only three of them can come out of a plan you built here.
+`UnknownPartitioning` comes from a source, and `RoundRobinBatch` and `Hash` from a
+repartition — either one you asked for or one the optimizer inserted. `Range`, which spreads
+an ordered key space across partitions at chosen split points, has no request form in this
+package: `repartition` asks for round-robin, `repartition_by_hash` asks for hash, and SQL
+has no range-repartition syntax.
+
+It is still worth handling, because a plan does not have to have been built here. Both
+`datafusion-proto` and `datafusion-ffi` carry range partitioning faithfully, so
+{py:meth}`~datafusion.ExecutionPlan.from_bytes` can return a plan reporting it, as can an
+extension library whose query planner builds one — see {ref}`extension_planners`. Such a
+plan executes normally; only the split points are invisible, since
+{py:attr}`~datafusion.PhysicalPartitioning.hash_expressions` returns `None` for every scheme
+but `Hash`. Read {py:func}`repr` of the partitioning to see them.
+
 ### Benchmark Example
 
 The repository includes a benchmark script that demonstrates how to maximize CPU usage
