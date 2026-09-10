@@ -359,7 +359,7 @@ class SessionConfig:
             chain.
 
         Raises:
-            Exception: If ``key`` names no known option, or if ``value`` does
+            ValueError: If ``key`` names no known option, or if ``value`` does
                 not parse as that option's declared type.
 
         Example usage:

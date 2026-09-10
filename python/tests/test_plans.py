@@ -162,10 +162,17 @@ def test_session_config_set_rejects_an_unknown_namespace() -> None:
     no `ConfigOptions` namespace, so it is the key a naive "read the settings
     back and replay them on the worker" loop hits first.
     """
-    with pytest.raises(Exception, match="runtime") as excinfo:
+    # `ValueError`, not a bare `Exception`: a panic would arrive as
+    # `PanicException`, which derives from `BaseException` and so would not be
+    # caught here at all.
+    with pytest.raises(ValueError, match="runtime"):
         SessionConfig().set("datafusion.runtime.memory_limit", "unlimited")
-    # A panic would arrive as BaseException, escaping `except Exception`.
-    assert isinstance(excinfo.value, Exception)
+
+
+def test_session_config_set_rejects_an_unparsable_value() -> None:
+    """A well-known key with a value of the wrong type raises too."""
+    with pytest.raises(ValueError, match="batch_size"):
+        SessionConfig().set("datafusion.execution.batch_size", "not_an_int")
 
 
 def test_installing_a_physical_codec_preserves_strict_mode() -> None:

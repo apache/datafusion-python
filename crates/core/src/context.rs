@@ -201,9 +201,17 @@ impl PySessionConfig {
     /// that has not been installed yet -- would abort as a `PanicException`
     /// rather than raise. `information_schema.df_settings` lists keys in both
     /// of those categories, so replaying it is otherwise unsafe.
-    fn set(&self, key: &str, value: &str) -> PyDataFusionResult<Self> {
+    ///
+    /// Mapped with `from_datafusion_error` rather than propagated as a
+    /// `PyDataFusionError`, whose blanket conversion yields a bare `Exception`.
+    /// A rejected key or value is an argument error, so it raises `ValueError`
+    /// the way an out-of-range partition index does in `execute`.
+    fn set(&self, key: &str, value: &str) -> PyResult<Self> {
         let mut config = self.config.clone();
-        config.options_mut().set(key, value)?;
+        config
+            .options_mut()
+            .set(key, value)
+            .map_err(from_datafusion_error)?;
         Ok(Self::from(config))
     }
 
