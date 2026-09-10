@@ -119,6 +119,43 @@ df = df.repartition_by_hash(col("a"), num=16)
 result = df.collect()
 ```
 
+(checking_partitioning)=
+
+### Checking what the plan actually does
+
+`repartition` and `repartition_by_hash` are requests, not instructions. The optimizer is
+free to drop a repartition nothing downstream needs, to collapse partitions again for an
+operator that requires a single stream, or to substitute a repartition of its own sized by
+`target_partitions`. So the number you passed is not necessarily the number you get.
+
+{py:attr}`~datafusion.ExecutionPlan.output_partitioning` reports what the built plan does,
+as opposed to what was asked of it:
+
+```python
+from datafusion import SessionConfig, SessionContext, col, functions as f
+
+config = SessionConfig().with_target_partitions(16)
+ctx = SessionContext(config)
+
+df = ctx.read_parquet("data.parquet").repartition_by_hash(col("a"), num=8)
+plan = df.aggregate([col("a")], [f.sum(col("b"))]).execution_plan()
+
+partitioning = plan.output_partitioning
+print(partitioning.scheme)            # 'Hash'
+print(partitioning.partition_count)   # 16 -- target_partitions, not the 8 requested
+print(partitioning.hash_expressions)  # ['a@0']
+```
+
+The request for eight partitions did not survive: the optimizer inserted its own hash
+repartition at `target_partitions` instead. Had the aggregation been left off, the
+repartition would have been removed altogether and the plan would report
+`UnknownPartitioning` over the source's own partition count.
+
+`UnknownPartitioning` means the plan knows how many partitions it has but nothing about how
+rows are distributed across them, which is the ordinary case for a file scan.
+{py:attr}`~datafusion.ExecutionPlan.partition_count` gives the same count on its own when
+the scheme does not matter.
+
 ### Benchmark Example
 
 The repository includes a benchmark script that demonstrates how to maximize CPU usage

@@ -197,7 +197,8 @@ class ExecutionPlan:
         Where :py:attr:`partition_count` gives only the number of partitions,
         this also reports the scheme, so a caller executing partitions
         separately can tell whether they are hash-distributed on known keys or
-        merely counted. See :ref:`distributed_query_engines`.
+        merely counted. A plan does not necessarily partition the way it was
+        asked to; see :ref:`checking_partitioning`.
 
         Examples:
             >>> import pyarrow as pa
