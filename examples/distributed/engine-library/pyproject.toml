@@ -32,3 +32,10 @@ dynamic = ["version"]
 features = ["pyo3/extension-module"]
 python-source = "python"
 module-name = "dfx_engine._internal"
+
+# See the same block in `../storage-library/pyproject.toml`: this caps pytest's
+# rootdir search so the suite does not inherit the repository root's pytest
+# settings and its numpy-importing `conftest.py`.
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+python_files = ["_test_*.py"]

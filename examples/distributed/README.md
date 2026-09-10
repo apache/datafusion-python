@@ -47,10 +47,24 @@ setups are the normal case, and this example shows what one costs.
 
 ```console
 $ cd examples/distributed/engine-library
-$ uv venv && uv pip install pytest pyarrow ../.. ../storage-library ../udf-library
+$ uv venv
+$ uv pip install pytest maturin ../../.. ../storage-library ../udf-library
 $ uv run maturin develop
-$ uv run pytest python/tests/_test*.py
+$ uv run pytest
 ```
+
+`../../..` is the repository root. The example needs the `datafusion` built
+from this checkout rather than a released wheel, because an extension library
+and its host have to agree on the FFI ABI.
+
+The other two libraries are installed for a reason beyond running their own
+tests: `dfx_engine.session` imports both, so `import dfx_engine` fails without
+them. That first `uv pip install` builds three Rust libraries from source and
+is not quick; `maturin develop` then builds the fourth, this one, in place.
+
+Each library's tests can be run from its own directory the same way, without
+the sibling installs. `storage-library` and `udf-library` need only
+`pytest maturin ../../..`.
 
 Against the real TPC-H data — generate it as
 [`examples/tpch`](../tpch/README.md) describes, then:
