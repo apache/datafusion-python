@@ -341,14 +341,37 @@ class SessionConfig:
         return self
 
     def set(self, key: str, value: str) -> SessionConfig:
-        """Set a configuration option.
+        """Set a configuration option by its fully qualified key.
+
+        Not every key that ``information_schema.df_settings`` lists can be set
+        here: the ``datafusion.runtime.*`` entries come from the runtime
+        environment rather than from the session config. See
+        :ref:`configuration`.
 
         Args:
-        key: Option key.
-        value: Option value.
+            key: Option key including its namespace, such as
+                ``datafusion.execution.batch_size``.
+            value: Option value as a string, parsed according to the type the
+                option declares.
 
         Returns:
-            A new :py:class:`SessionConfig` object with the updated setting.
+            This :py:class:`SessionConfig`, modified in place, so that calls
+            chain.
+
+        Raises:
+            Exception: If ``key`` names no known option, or if ``value`` does
+                not parse as that option's declared type.
+
+        Example usage:
+
+        >>> from datafusion import SessionConfig, SessionContext
+        >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+        >>> ctx = SessionContext(config.with_information_schema(True))
+        >>> ctx.sql(
+        ...     "select value from information_schema.df_settings"
+        ...     " where name = 'datafusion.execution.batch_size'"
+        ... ).collect()[0]["value"][0]
+        <pyarrow.StringScalar: '1024'>
         """
         self.config_internal = self.config_internal.set(key, value)
         return self

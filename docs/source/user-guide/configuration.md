@@ -49,6 +49,29 @@ ctx = SessionContext(config, runtime)
 print(ctx)
 ```
 
+## Setting options by key
+
+The `with_*` methods cover the common options, but any option DataFusion declares can be
+set by its fully qualified key with {py:meth}`~datafusion.SessionConfig.set`. The value is
+always a string, and is parsed according to the type the option declares, so an unknown key
+or an unparsable value raises rather than being silently ignored:
+
+```python
+config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+```
+
+Every method above modifies the config in place and returns it, which is what makes the
+chained style work — the object you started with is the object you end up passing to
+`SessionContext`.
+
+One trap is worth knowing about if you read settings back out of a session and replay them
+somewhere else, such as onto a worker process or into a test fixture. With
+`with_information_schema(True)`, the `information_schema.df_settings` table lists the
+`datafusion.runtime.*` keys alongside the rest, but those come from the runtime environment
+rather than from `ConfigOptions` and cannot be set with `set`. Feeding that table's rows
+back in verbatim will fail on the first such row. Configure the runtime through
+`RuntimeEnvBuilder` instead, and skip the `datafusion.runtime.` prefix when replaying.
+
 ## Maximizing CPU Usage
 
 DataFusion uses partitions to parallelize work. For small queries the
