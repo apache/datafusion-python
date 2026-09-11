@@ -15,17 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::HashMap;
 use std::fmt;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
-use datafusion::common::{DataFusionError, Result};
-use datafusion::datasource::source::DataSourceExec;
+use datafusion::common::Result;
 use datafusion::execution::TaskContext;
 use datafusion::logical_expr::ScalarUDF;
 use datafusion::physical_plan::ExecutionPlan;
-use datafusion_ffi::execution_plan::ForeignExecutionPlan;
 use datafusion_ffi::proto::physical_extension_codec::FFI_PhysicalExtensionCodec;
 use datafusion_proto::physical_plan::{
     DefaultPhysicalExtensionCodec, PhysicalExtensionCodec, PhysicalProtoConverterExtension,
@@ -34,25 +31,8 @@ use datafusion_python_util::{ffi_task_context_provider_from_pycapsule, get_tokio
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 
+use crate::foreign_plan_workaround;
 use crate::required_udf::{TaskContextProbe, resolve_required_udf};
-
-const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
-static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
-static EXECUTION_PLANS: OnceLock<Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>>> = OnceLock::new();
-
-/// Execution-plan counterpart of the logical codec's provider registry, with
-/// the same lifecycle: encoding inserts, decoding removes, so a decode
-/// consumes its token and an encode that is never decoded leaks. See
-/// [`crate::logical_extension_codec`] for why that is acceptable here and not
-/// in a real codec.
-fn execution_plans() -> &'static Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>> {
-    EXECUTION_PLANS.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-fn token_id(buf: &[u8]) -> Option<u64> {
-    let id: [u8; 8] = buf.strip_prefix(EXECUTION_PLAN_TOKEN)?.try_into().ok()?;
-    Some(u64::from_le_bytes(id))
-}
 
 #[derive(Debug, Default)]
 pub(crate) struct PhysicalCallCounters {
@@ -99,19 +79,11 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<Arc<dyn ExecutionPlan>> {
         resolve_required_udf(self.required_udf.as_deref(), ctx, &self.counters.task_ctx)?;
-        if let Some(id) = token_id(buf) {
+        if let Some(plan) = foreign_plan_workaround::take(buf)? {
             self.counters
                 .decode_execution_plan
                 .fetch_add(1, Ordering::SeqCst);
-            return execution_plans()
-                .lock()
-                .map_err(|err| DataFusionError::Internal(err.to_string()))?
-                .remove(&id)
-                .ok_or_else(|| {
-                    DataFusionError::Internal(format!(
-                        "Unknown datafusion-ffi-example execution plan token {id}"
-                    ))
-                });
+            return Ok(plan);
         }
         self.inner.try_decode(buf, inputs, ctx, proto_converter)
     }
@@ -122,20 +94,11 @@ impl PhysicalExtensionCodec for CountingPhysicalExtensionCodec {
         buf: &mut Vec<u8>,
         proto_converter: &dyn PhysicalProtoConverterExtension,
     ) -> Result<()> {
-        // The provider owns DataSourceExec. A ForeignExecutionPlan can wrap a
-        // host-added execution decorator around that scan; retaining the opaque
-        // wrapper preserves its original library identity without downcasting it.
-        if node.is::<DataSourceExec>() || node.is::<ForeignExecutionPlan>() {
+        if foreign_plan_workaround::claims(&node) {
             self.counters
                 .encode_execution_plan
                 .fetch_add(1, Ordering::SeqCst);
-            let id = NEXT_EXECUTION_PLAN_ID.fetch_add(1, Ordering::SeqCst);
-            execution_plans()
-                .lock()
-                .map_err(|err| DataFusionError::Internal(err.to_string()))?
-                .insert(id, node);
-            buf.extend_from_slice(EXECUTION_PLAN_TOKEN);
-            buf.extend_from_slice(&id.to_le_bytes());
+            foreign_plan_workaround::park(node, buf)?;
             return Ok(());
         }
         self.inner.try_encode(node, buf, proto_converter)
