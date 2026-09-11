@@ -68,6 +68,7 @@ with tempfile.TemporaryDirectory() as tmp_dir:
         .with_newlines_in_values(True)  # noqa: FBT003
     )
     df = ctx.read_csv(str(csv_file), options=options)
+    df.show()
 
     # Example 4: Advanced options
     print("\nExample 4: Advanced options")
