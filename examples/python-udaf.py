@@ -64,6 +64,8 @@ my_udaf = udaf(
 
 df = df.aggregate([], [my_udaf(col("a"))])
 
+df.show()
+
 result = df.collect()[0]
 
 assert result.column(0) == pa.array([6.0])

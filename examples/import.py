@@ -28,6 +28,8 @@ ctx = datafusion.SessionContext()
 # represent column values
 df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
 assert type(df) is datafusion.DataFrame
+print("from_pydict:")
+df.show()
 # Dataframe:
 # +---+---+
 # | a | b |
@@ -40,18 +42,26 @@ assert type(df) is datafusion.DataFrame
 # Create a datafusion DataFrame from a Python list of rows
 df = ctx.from_pylist([{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}])
 assert type(df) is datafusion.DataFrame
+print("from_pylist:")
+df.show()
 
 # Convert pandas DataFrame to datafusion DataFrame
 pandas_df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
 df = ctx.from_pandas(pandas_df)
 assert type(df) is datafusion.DataFrame
+print("from_pandas:")
+df.show()
 
 # Convert polars DataFrame to datafusion DataFrame
 polars_df = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
 df = ctx.from_polars(polars_df)
 assert type(df) is datafusion.DataFrame
+print("from_polars:")
+df.show()
 
 # Convert Arrow Table to datafusion DataFrame
 arrow_table = pa.Table.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
 df = ctx.from_arrow(arrow_table)
 assert type(df) is datafusion.DataFrame
+print("from_arrow:")
+df.show()

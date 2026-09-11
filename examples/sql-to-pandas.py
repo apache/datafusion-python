@@ -34,9 +34,11 @@ df = ctx.sql(
 
 # convert to Pandas
 pandas_df = df.to_pandas()
+print(pandas_df)
 
 # create a chart
 fig = pandas_df.plot(
     kind="bar", title="Trip Count by Number of Passengers"
 ).get_figure()
 fig.savefig("chart.png")
+print("wrote chart.png")

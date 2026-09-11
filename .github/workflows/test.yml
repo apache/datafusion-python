@@ -141,3 +141,45 @@ jobs:
         run: |
           cd examples/tpch
           uv run --no-project pytest _tests.py
+
+      # The top-level examples/*.py are documentation users copy from, so they
+      # have to keep working. Every one of them is self-contained except the
+      # five skipped below; run them from the repository root, after the TPC-H
+      # data exists, against the wheel built above.
+      - name: Run Python examples
+        if: matrix.wheel-tag == 'abi3'
+        run: |
+          # pandas and polars are neither runtime nor dev dependencies, but the
+          # import and export examples demonstrate converting to and from them.
+          uv pip install --python "$PWD/.venv/bin/python" pandas polars
+          # Skipped, and why each one cannot run here:
+          #   dataframe-parquet.py, sql-parquet.py and sql-to-pandas.py need
+          #     yellow_tripdata_2021-01.parquet, a manual download documented
+          #     in examples/README.md
+          #   ray_pickle_expr.py needs a Ray cluster
+          #   sql-parquet-s3.py needs network access and AWS credentials
+          skipped="
+            dataframe-parquet.py
+            ray_pickle_expr.py
+            sql-parquet-s3.py
+            sql-parquet.py
+            sql-to-pandas.py
+          "
+          failed=""
+          for example in examples/*.py; do
+            name=$(basename "$example")
+            # shellcheck disable=SC2086  # intentional split on whitespace
+            if printf '%s\n' $skipped | grep -qx "$name"; then
+              echo "::notice title=Example skipped::$name"
+              continue
+            fi
+            echo "::group::$name"
+            if ! uv run --python "$PWD/.venv/bin/python" --no-project python "$example"; then
+              failed="$failed $name"
+            fi
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error title=Examples failed::$failed"
+            exit 1
+          fi
