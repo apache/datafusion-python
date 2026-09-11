@@ -190,6 +190,12 @@ def require_empty_shuffle(shuffle_dir: pathlib.Path) -> None:
     check belongs here rather than in the node: the node cannot tell a file
     this run's worker wrote from one last run's worker wrote, but the driver
     knows it has not dispatched anything yet.
+
+    Scoped to stage output, not to "is the directory empty". The two are the
+    same thing only because :func:`run_distributed` keeps its own scratch in
+    a ``tasks/`` subdirectory; a caller who points this at a directory of
+    their own should get an answer about the files that would actually be
+    read, not about the ones they put there.
     """
     stale = sorted(path.name for path in shuffle_dir.glob(_internal.partition_glob()))
     if stale:
@@ -238,7 +244,13 @@ def run_distributed(
         raise RuntimeError(message)
 
     shuffle_dir = pathlib.Path(spec.shuffle_dir)
-    shuffle_dir.mkdir(parents=True, exist_ok=True)
+    # The driver's scratch lives in a subdirectory rather than beside the
+    # results. The stage node owns the `stage-*-part-*.arrow` namespace in
+    # `shuffle_dir` and nothing else should write there, so that
+    # :func:`require_empty_shuffle` is asking about stage output rather than
+    # about whatever else the driver happens to have left lying around.
+    task_dir = shuffle_dir / "tasks"
+    task_dir.mkdir(parents=True, exist_ok=True)
 
     # One task per (stage, partition). Every stage is shipped, not just the
     # first: a query with an aggregate in two branches has two independent
@@ -251,7 +263,7 @@ def run_distributed(
         # because the FFI wrapper's display does not carry it.
         stage_id = _internal.stage_id(index)
         # Encode the stage subtree, through the session that owns the codecs.
-        plan_path = shuffle_dir / f"stage-{stage_id}.plan"
+        plan_path = task_dir / f"stage-{stage_id}.plan"
         plan_path.write_bytes(stage.to_bytes(ctx))
         for partition in range(stage.partition_count):
             tasks.append((stage_id, partition))
@@ -268,7 +280,7 @@ def run_distributed(
     # example is making: each worker reads a different file and writes a
     # different result, so they need no coordination beyond the directory.
     workers = [
-        _dispatch(envelope, shuffle_dir, stage_id, partition)
+        _dispatch(envelope, task_dir, stage_id, partition)
         for envelope, (stage_id, partition) in zip(envelopes, tasks, strict=True)
     ]
 
