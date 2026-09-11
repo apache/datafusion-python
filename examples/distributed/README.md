@@ -100,6 +100,12 @@ One node does both halves of that exchange, which is why nothing has to
 rewrite the plan in between. It also means a query run with no workers at all
 still gets the right answer; it just does the work itself.
 
+The cost of that trick is that the filesystem is the state, and stage ids
+restart at 1 for every plan — so a second query pointed at the same shuffle
+directory would find the first one's files and read them. The driver refuses
+a directory that already holds stage output rather than letting that through:
+one shuffle directory per query.
+
 ## The four things worth reading
 
 **`engine-library/python/dfx_engine/session.py`** is the point of the whole

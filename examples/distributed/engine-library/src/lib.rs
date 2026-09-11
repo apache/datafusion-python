@@ -53,6 +53,16 @@ fn partition_path(shuffle_dir: &str, stage_id: u32, partition: usize) -> String 
         .into_owned()
 }
 
+/// Glob matching every file [`partition_path`] can produce, for any stage.
+///
+/// Exported for the same reason: the driver refuses a shuffle directory that
+/// already holds stage output, and it has to ask that question with the same
+/// naming convention the node answers it with.
+#[pyfunction]
+fn partition_glob() -> &'static str {
+    stage::PARTITION_GLOB
+}
+
 /// Id of the `index`th stage in a plan, counting in pre-order from the root.
 ///
 /// Exported for the same reason as [`partition_path`]: a foreign node's
@@ -74,6 +84,7 @@ fn _internal(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<BundledPhysicalCodec>()?;
     m.add_class::<DfxEngineConfig>()?;
     m.add_class::<DfxEngineExtension>()?;
+    m.add_function(wrap_pyfunction!(partition_glob, m)?)?;
     m.add_function(wrap_pyfunction!(partition_path, m)?)?;
     m.add_function(wrap_pyfunction!(stage_id, m)?)?;
     Ok(())

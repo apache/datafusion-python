@@ -119,6 +119,16 @@ Two more that are about lifetime rather than configuration:
   easy to miss, because the failure only appears once an extension node is in
   the plan.
 
+And one that is about the engine rather than the session:
+
+- **Where stages exchange results, scoped to one query.** An engine that
+  publishes stage output to a location you name, and numbers its stages from
+  scratch per plan, will read a previous query's results back if you point two
+  queries at the same location. Ask your engine whether it isolates that for
+  you; if it does not, give each query its own. This one is worth confirming
+  rather than assuming, because when the two plans happen to agree on schema
+  the wrong answer arrives without an error.
+
 ## Available engines
 
 Query-level distribution is being built upstream. Neither project

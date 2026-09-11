@@ -377,6 +377,53 @@ def test_without_a_shuffle_dir_nothing_is_distributed(
     assert _rows(ctx.sql(Q1).collect())[0] == ("A", "F", 3, 10.0, 1000.0)
 
 
+def test_a_reused_shuffle_directory_is_refused(
+    spec: SessionSpec, tmp_path: pathlib.Path
+) -> None:
+    """A second query in one directory would read the first one's results.
+
+    Stage ids restart at 1 for every plan and a stage reads a partition file
+    if it finds one, so the files `Q1` leaves behind are exactly the files
+    `REVENUE`'s stage looks for. Nothing downstream can catch that: here the
+    two schemas differ so it would surface as an unrelated-looking error, but
+    re-running *the same* query over changed data would simply return the old
+    answer.
+    """
+    run_distributed(Q1, spec)
+
+    with pytest.raises(RuntimeError, match="already holds stage output") as excinfo:
+        run_distributed(REVENUE, spec)
+
+    # Names the files and the rule, so the reader does not have to work out
+    # why a directory that "looks fine" was rejected.
+    assert "stage-1-part-0.arrow" in str(excinfo.value)
+    assert "one shuffle directory per query" in str(excinfo.value)
+
+    # And a fresh directory is all it takes.
+    elsewhere = dataclasses.replace(spec, shuffle_dir=str(tmp_path / "second"))
+    assert _rows(run_distributed(REVENUE, elsewhere).batches) == _rows(
+        run_local(REVENUE, spec)
+    )
+
+
+def test_the_guard_is_scoped_to_stage_output(spec: SessionSpec) -> None:
+    """The driver's own scratch in the same directory is not stage output.
+
+    `run_distributed` writes each stage's encoded plan and each worker's task
+    envelope beside the results, so a check that rejected any non-empty
+    directory would reject every second call for the wrong reason -- and the
+    obvious fix, deleting what it found, would delete those too.
+    """
+    shuffle = pathlib.Path(spec.shuffle_dir)
+    shuffle.mkdir(parents=True)
+    (shuffle / "stage-1.plan").write_bytes(b"leftover")
+    (shuffle / "task-1-0.json").write_text("{}")
+
+    result = run_distributed(Q1, spec)
+
+    assert _rows(result.batches) == _rows(run_local(Q1, spec))
+
+
 def test_a_worker_whose_codecs_disagree_refuses_the_plan(spec: SessionSpec) -> None:
     """A codec-id mismatch is caught before any plan is decoded."""
     envelope = {
