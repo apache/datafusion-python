@@ -551,7 +551,8 @@ class SessionContext:
     See :ref:`user_guide_concepts` in the online documentation for more information.
 
     **A context is a handle on a session, not the session itself.** The
-    ``with_*`` methods — :py:meth:`with_logical_extension_codec`,
+    derivation methods — :py:meth:`enable_url_table`,
+    :py:meth:`with_logical_extension_codec`,
     :py:meth:`with_physical_extension_codec`,
     :py:meth:`with_python_udf_inlining`, and :py:meth:`with_extensions` —
     return a new context wrapping the *same* underlying session. Only the
@@ -560,10 +561,11 @@ class SessionContext:
     either handle is visible to both.
 
     A few things therefore belong to the session rather than to a handle, and
-    take effect even if the handle that set them is discarded: the query
-    planner (see :py:meth:`set_query_planner`), and the rebuild of an installed
-    foreign planner that follows installing a codec. :ref:`extension_sessions`
-    in the online documentation works through when that matters.
+    take effect even if the handle that set them is discarded: URL table
+    support, the query planner (see :py:meth:`set_query_planner`), and the
+    rebuild of an installed foreign planner that follows installing a codec.
+    :ref:`extension_sessions` in the online documentation works through when
+    that matters.
 
     **Keep a context alive for as long as anything derived from it is in use.**
     A :py:class:`~datafusion.DataFrame`, logical plan, or exported capsule does
@@ -619,10 +621,26 @@ class SessionContext:
         return wrapper
 
     def enable_url_table(self) -> SessionContext:
-        """Control if local files can be queried as tables.
+        """Enable querying local files as tables on the shared session.
+
+        The receiver and all handles sharing its session gain URL table support,
+        even if the returned handle is discarded. Repeated calls have no effect.
+        Registered catalogs, functions, configuration, and session identity are
+        preserved, as are FFI providers bound to the session.
 
         Returns:
-            A new :py:class:`SessionContext` object with url table enabled.
+            A new :py:class:`SessionContext` handle wrapping the same session.
+
+        Examples:
+            >>> ctx = SessionContext()
+            >>> enabled = ctx.enable_url_table()
+            >>> enabled.session_id() == ctx.session_id()
+            True
+            >>> ctx.sql("SET datafusion.execution.batch_size = 111").collect()
+            []
+            >>> batches = enabled.sql("SHOW datafusion.execution.batch_size").collect()
+            >>> batches[0].column(1).to_pylist()
+            ['111']
         """
         klass = self.__class__
         obj = klass.__new__(klass)

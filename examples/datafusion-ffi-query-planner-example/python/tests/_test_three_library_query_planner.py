@@ -93,6 +93,43 @@ def probe_context(
     return ctx, logical_codec, physical_codec
 
 
+@pytest.mark.parametrize("keep_returned", [False, True])
+def test_enable_url_table_preserves_ffi_providers(keep_returned):
+    """A catalog's unreachable weak codec remains valid through URL enabling."""
+    ctx, logical_codec, physical_codec = probe_context(
+        logical_requires=HOST_ONLY_UDF, physical_requires=HOST_ONLY_UDF, max_rows=100
+    )
+    ctx.register_catalog_provider("ffi_catalog", MyCatalogProvider())
+    session_id = ctx.session_id()
+    alias = ctx.with_python_udf_inlining(enabled=True)
+    if keep_returned:
+        ctx = alias.enable_url_table()
+    else:
+        alias.enable_url_table()
+    del alias
+    gc.collect()
+
+    for _ in range(2):
+        # Force filter pushdown through a real foreign catalog before planning.
+        batches = ctx.sql(
+            "SELECT units FROM ffi_catalog.my_schema.my_table WHERE units > 5"
+        ).collect()
+        assert sorted(v for b in batches for v in b.column(0).to_pylist()) == [
+            7,
+            10,
+            20,
+            30,
+        ]
+        assert logical_codec.table_provider_decode_calls() > 0
+        assert physical_codec.execution_plan_decode_calls() > 0
+        assert logical_codec.last_task_context_session_id() == session_id
+        assert physical_codec.last_task_context_session_id() == session_id
+        assert logical_codec.task_context_udf_resolutions() > 0
+        assert physical_codec.task_context_udf_resolutions() > 0
+        ctx = ctx.enable_url_table()
+        gc.collect()
+
+
 def test_logical_codec_resolves_a_host_registered_udf():
     """``try_decode_table_provider`` sees the host session's registry.
 
