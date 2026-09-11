@@ -28,9 +28,13 @@ with tempfile.TemporaryDirectory() as tmp_dir:
     tmp_path = Path(tmp_dir)
     csv_file = tmp_path / "data.csv"
     gz_file = tmp_path / "data.csv.gz"
+    builder_csv_file = tmp_path / "builder-data.csv"
 
     sample_csv = "id,name,value\n1,alice,100\n2,bob,200\n3,charlie,null\n"
     csv_file.write_text(sample_csv)
+
+    builder_csv = "id|name|value\n1|'alice'|100\n2|'bob'|200\n3|'charlie'|null\n"
+    builder_csv_file.write_text(builder_csv)
 
     with gzip.open(gz_file, "wt") as f:
         f.write(sample_csv)
@@ -67,7 +71,7 @@ with tempfile.TemporaryDirectory() as tmp_dir:
         .with_truncated_rows(False)  # noqa: FBT003
         .with_newlines_in_values(True)  # noqa: FBT003
     )
-    df = ctx.read_csv(str(csv_file), options=options)
+    df = ctx.read_csv(str(builder_csv_file), options=options)
     df.show()
 
     # Example 4: Advanced options
