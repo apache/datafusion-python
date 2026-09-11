@@ -18,7 +18,7 @@
 """The driver: split a query into tasks, fan them out, collect the answer.
 
 The shape is deliberately boring, because the interesting part is not the
-scheduling. What matters is the five things the driver has to get right, each
+scheduling. What matters is the six things the driver has to get right, each
 of which is a way a real deployment goes wrong:
 
 1. It serializes each stage **with** its session. ``to_bytes(None)`` uses an
@@ -33,6 +33,9 @@ of which is a way a real deployment goes wrong:
 5. It ships *every* stage. A plan can hold more than one -- an aggregate in
    each branch of a union, say -- and they are independent subtrees rather
    than a chain.
+6. It refuses a shuffle directory that already holds stage output. That same
+   "read it if it is there" rule is what makes a *second* query in the same
+   directory read the first one's results -- see :func:`require_empty_shuffle`.
 """
 
 from __future__ import annotations
@@ -54,9 +57,12 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DistributedResult",
+    "dataframe_for",
     "find_stage",
     "find_stages",
+    "require_empty_shuffle",
     "run_distributed",
+    "run_local",
 ]
 
 
@@ -166,13 +172,43 @@ def _report(task: tuple[int, int], stdout: str) -> int:
         raise RuntimeError(message) from err
 
 
+def require_empty_shuffle(shuffle_dir: pathlib.Path) -> None:
+    """Refuse a directory that already holds stage output.
+
+    A stage node reads partition `i` if the file for it exists and computes it
+    otherwise, which is what lets one node be both halves of the exchange. The
+    cost is that the filesystem *is* the state, and stage ids restart at
+    ``stage_id(0)`` for every plan -- so a second query in the same directory
+    finds files left by the first and reads them, having computed nothing.
+
+    Nothing downstream can catch that. If the two plans' stage schemas differ
+    the failure is an unrelated-looking schema error a long way from here, and
+    if they agree -- the same query over data that has since changed, say --
+    the answer is simply the old one, silently.
+
+    So the rule this enforces is **one shuffle directory per query**, and the
+    check belongs here rather than in the node: the node cannot tell a file
+    this run's worker wrote from one last run's worker wrote, but the driver
+    knows it has not dispatched anything yet.
+    """
+    stale = sorted(path.name for path in shuffle_dir.glob(_internal.partition_glob()))
+    if stale:
+        message = (
+            f"{shuffle_dir} already holds stage output {stale}; a stage reads "
+            f"a partition file if it finds one, so this query would return the "
+            f"previous query's results. Use one shuffle directory per query."
+        )
+        raise RuntimeError(message)
+
+
 def run_distributed(
     sql: str, spec: SessionSpec, extra_udfs: list[ScalarUDF] | None = None
 ) -> DistributedResult:
     """Run `sql`, executing each stage partition in its own worker process.
 
     Requires ``spec.shuffle_dir``: without it the planner inserts no stage and
-    there is nothing to distribute.
+    there is nothing to distribute. The directory must not already hold stage
+    output -- see :func:`require_empty_shuffle`.
 
     ``extra_udfs`` are registered on the driver only. They have to be here for
     the query to *plan*, but not on the worker: a Python UDF is cloudpickled
@@ -183,6 +219,10 @@ def run_distributed(
     if not spec.shuffle_dir:
         message = "run_distributed needs a shuffle_dir; build_session got none"
         raise ValueError(message)
+
+    # Before building a session, so a reused directory costs nothing to
+    # diagnose. `glob` on a directory that does not exist yet yields nothing.
+    require_empty_shuffle(pathlib.Path(spec.shuffle_dir))
 
     ctx, _engine, _storage = build_session(spec)
     for function in extra_udfs or []:

@@ -62,6 +62,15 @@ pub(crate) fn partition_path(shuffle_dir: &str, stage_id: u32, partition: usize)
     Path::new(shuffle_dir).join(format!("stage-{stage_id}-part-{partition}.arrow"))
 }
 
+/// Matches every file [`partition_path`] can produce, for any stage.
+///
+/// Here rather than in Python because a caller asking "does this directory
+/// already hold stage output?" must not re-spell the naming convention: the
+/// answer decides whether [`ShuffleStageExec::execute`] reads or recomputes,
+/// so a pattern that drifted from the path would report an empty directory
+/// that is not one. The two are deliberately adjacent for that reason.
+pub(crate) const PARTITION_GLOB: &str = "stage-*-part-*.arrow";
+
 /// Where a writer builds a partition before publishing it.
 ///
 /// Unique per writer, not merely per partition. Deriving the temporary name

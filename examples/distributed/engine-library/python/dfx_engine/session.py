@@ -62,7 +62,14 @@ class SessionSpec:
     """Table name to the directory ``dfx_storage`` should scan for it."""
 
     shuffle_dir: str
-    """Where stages exchange results. Empty means "run in this process"."""
+    """Where stages exchange results. Empty means "run in this process".
+
+    One directory per query. Stage ids restart at 1 for every plan, and a
+    stage reads a partition file if it finds one, so a directory reused across
+    two queries hands the second one the first one's results.
+    :func:`~dfx_engine.driver.run_distributed` refuses that rather than
+    letting it through.
+    """
 
     target_partitions: int = 2
     """Pinned rather than defaulted to the core count.
