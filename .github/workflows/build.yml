@@ -197,11 +197,15 @@ jobs:
       # `target/<triple>/debug` and the priming build would be wasted.
       #
       # maturin runs one `cargo rustc` per library and cargo resolves features
-      # per package, so five separate invocations each rebuild the shared
-      # datafusion crates under their own feature union -- measured at over a
-      # minute for a single transition between two of these libraries. One
-      # build spanning all five resolves that union once; afterwards each
-      # maturin step only compiles its own leaf crate.
+      # per package, so building them one at a time makes each invocation
+      # rebuild the shared datafusion crates under its own feature union --
+      # measured at over a minute for a single transition between two of these
+      # libraries. One build spanning them all resolves that union once;
+      # afterwards each maturin step only compiles its own leaf crate.
+      #
+      # So this `-p` list has to name every library built below. One that is
+      # missing here still builds, but pays the rebuild this step exists to
+      # avoid -- and pushes the same cost onto whichever library follows it.
       - name: Prime example crate dependencies
         if: matrix.python-tag == 'abi3'
         run: >
@@ -212,7 +216,8 @@ jobs:
           -p dfx-udfs
           -p dfx-engine
 
-      # FFI test wheel only needs to be built once per platform; gate to abi3.
+      # Every build below is gated to abi3 because these wheels are abi3: one
+      # per platform serves every interpreter test.yml runs them against.
       - name: Build FFI provider test library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
@@ -229,8 +234,8 @@ jobs:
           working-directory: examples/datafusion-ffi-query-planner-example
           args: --out dist
 
-      # The three libraries of the distributed example. Listed in dependency
-      # order for readability only; they are independent cdylibs.
+      # The distributed example's libraries. Listed in dependency order for
+      # readability only; they are independent cdylibs.
       - name: Build distributed example storage library
         if: matrix.python-tag == 'abi3'
         uses: PyO3/maturin-action@v1
