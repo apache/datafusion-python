@@ -72,16 +72,36 @@ impl ScalarUDFImpl for NetRevenue {
         Ok(DataType::Float64)
     }
 
+    /// # Why `to_array(number_rows)` and not `values_to_arrays`
+    ///
+    /// `values_to_arrays` infers its length from the arguments, and when they
+    /// are *all* scalars there is nothing to infer from, so it produces one
+    /// row. This function would then hand back a single value for a batch of
+    /// a hundred, into a column the rest of the plan sizes at a hundred.
+    ///
+    /// `number_rows` is the batch's own count and is the only argument-
+    /// independent answer, which is why it is passed. Taking it also makes
+    /// the output length a stated contract rather than something read off
+    /// whichever argument happened to be examined first.
+    ///
+    /// Not reachable from SQL today: an all-literal call is constant, so
+    /// `SimplifyExpressions` folds it before execution and this code sees a
+    /// one-row batch that agrees with `number_rows`. That is precisely what
+    /// makes the shape worth copying correctly -- the bug is invisible until
+    /// something suppresses the fold.
     fn invoke_with_args(&self, args: ScalarFunctionArgs) -> Result<ColumnarValue> {
-        let arrays = ColumnarValue::values_to_arrays(&args.args)?;
-        let [price, discount, tax] = arrays.as_slice() else {
-            return exec_err!("{NET_REVENUE} takes 3 arguments, got {}", arrays.len());
+        let rows = args.number_rows;
+        let [price, discount, tax] = args.args.as_slice() else {
+            return exec_err!("{NET_REVENUE} takes 3 arguments, got {}", args.args.len());
         };
+        let price = price.to_array(rows)?;
+        let discount = discount.to_array(rows)?;
+        let tax = tax.to_array(rows)?;
         let price = price.as_primitive::<Float64Type>();
         let discount = discount.as_primitive::<Float64Type>();
         let tax = tax.as_primitive::<Float64Type>();
 
-        let values: Float64Array = (0..price.len())
+        let values: Float64Array = (0..rows)
             .map(|row| {
                 if price.is_null(row) || discount.is_null(row) || tax.is_null(row) {
                     return None;
