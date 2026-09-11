@@ -255,6 +255,38 @@ def test_the_driver_reads_the_workers_output(spec: SessionSpec) -> None:
         ctx.sql(Q1).collect()
 
 
+def test_a_shuffle_file_with_the_wrong_schema_is_refused(spec: SessionSpec) -> None:
+    """A *readable* file is not the same as one this stage wrote.
+
+    The previous test corrupts the bytes, which the IPC reader rejects on its
+    own. This one leaves a perfectly valid Arrow stream carrying the wrong
+    columns -- what an older build, or a query whose stage was numbered the
+    same, would leave behind. Adopting its schema would push the disagreement
+    up to whichever operator first used the batches, with nothing in the
+    message about the file it came from.
+    """
+    run_distributed(Q1, spec)
+
+    victim = pathlib.Path(
+        _internal.partition_path(spec.shuffle_dir, _internal.stage_id(), 1)
+    )
+    table = pa.table({"unrelated": [1, 2, 3]})
+    sink = pa.BufferOutputStream()
+    with pa.ipc.new_stream(sink, table.schema) as writer:
+        writer.write_table(table)
+    victim.write_bytes(sink.getvalue().to_pybytes())
+
+    ctx, _engine, _storage = build_session(spec)
+    with pytest.raises(Exception, match="this stage produces") as excinfo:
+        ctx.sql(Q1).collect()
+
+    # Names the file and both field lists, so the mismatch is readable
+    # without opening either side.
+    assert victim.name in str(excinfo.value)
+    assert "unrelated: Int64" in str(excinfo.value)
+    assert "l_returnflag: Utf8" in str(excinfo.value)
+
+
 def test_each_librarys_codec_carried_its_own_node(spec: SessionSpec) -> None:
     """Both codecs installed is not the same as both codecs used."""
     ctx, engine, storage = build_session(spec)

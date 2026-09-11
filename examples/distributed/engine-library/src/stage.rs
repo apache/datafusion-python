@@ -42,10 +42,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fmt, fs};
 
+use arrow::datatypes::Schema;
 use arrow::ipc::reader::StreamReader;
 use arrow::ipc::writer::StreamWriter;
 use datafusion::common::tree_node::TreeNodeRecursion;
-use datafusion::common::{DataFusionError, Result, exec_datafusion_err, internal_err};
+use datafusion::common::{DataFusionError, Result, exec_datafusion_err, exec_err, internal_err};
 use datafusion::execution::{SendableRecordBatchStream, TaskContext};
 use datafusion::physical_expr::PhysicalExpr;
 use datafusion::physical_plan::memory::MemoryStream;
@@ -87,6 +88,20 @@ fn temp_partition_path(shuffle_dir: &str, stage_id: u32, partition: usize) -> Pa
         "stage-{stage_id}-part-{partition}.{}-{unique}.arrow.tmp",
         std::process::id()
     ))
+}
+
+/// `name: type` per field, for an error a reader can act on.
+///
+/// The `Debug` of a `Fields` runs to a screenful for even a small schema and
+/// buries the names among nullability flags and empty metadata maps, which is
+/// the opposite of what someone comparing two of them needs.
+fn describe(schema: &Schema) -> String {
+    schema
+        .fields()
+        .iter()
+        .map(|field| format!("{}: {}", field.name(), field.data_type()))
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 /// Marks a subtree as one stage of a distributed query.
@@ -185,17 +200,51 @@ impl ShuffleStageExec {
         Ok(Box::pin(RecordBatchStreamAdapter::new(schema, stream)))
     }
 
+    /// Stream a partition somebody already published.
+    ///
+    /// The file's schema is checked rather than adopted, which is the other
+    /// half of the argument in [`Self::write_partition`]. That one pins what
+    /// it writes to this node's declared schema so a child contradicting its
+    /// own `schema()` fails at the writer; this one refuses a file that
+    /// disagrees, so a file *this process did not write* fails at the reader.
+    ///
+    /// Worth doing because reaching here at all means a file was found, and
+    /// nothing about finding it says who wrote it -- an older build of this
+    /// library, or a query whose stage happened to be numbered the same, both
+    /// leave something readable behind. Adopting its schema instead pushes
+    /// the disagreement up to whichever operator first tries to use the
+    /// batches, where the error no longer names the file it came from; and
+    /// where the two field lists differ only in type, there may be no error
+    /// at all.
+    ///
+    /// Fields only, not the whole schema: a name, a type or a nullability
+    /// that disagrees changes how a batch is read, and schema-level metadata
+    /// does not.
     fn read_partition(&self, partition: usize) -> Result<SendableRecordBatchStream> {
         let path = partition_path(&self.shuffle_dir, self.stage_id, partition);
         let file = fs::File::open(&path)
             .map_err(|err| exec_datafusion_err!("dfx_engine: opening {}: {err}", path.display()))?;
         let reader = StreamReader::try_new(file, None)
             .map_err(|err| exec_datafusion_err!("dfx_engine: reading {}: {err}", path.display()))?;
-        let schema = reader.schema();
+
+        let expected = self.schema();
+        let found = reader.schema();
+        if found.fields() != expected.fields() {
+            return exec_err!(
+                "dfx_engine: {} holds [{}] but this stage produces [{}]",
+                path.display(),
+                describe(&found),
+                describe(&expected)
+            );
+        }
+
         let batches = reader
             .collect::<arrow::error::Result<Vec<_>>>()
             .map_err(|err| exec_datafusion_err!("dfx_engine: reading {}: {err}", path.display()))?;
-        Ok(Box::pin(MemoryStream::try_new(batches, schema, None)?))
+        // The declared schema, not the file's, for the same reason the writer
+        // used it: the two agree on every field by the check above, and the
+        // one this node advertises is the one its parent was planned against.
+        Ok(Box::pin(MemoryStream::try_new(batches, expected, None)?))
     }
 }
 
