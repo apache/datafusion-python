@@ -439,21 +439,47 @@ def test_a_reused_shuffle_directory_is_refused(
 
 
 def test_the_guard_is_scoped_to_stage_output(spec: SessionSpec) -> None:
-    """The driver's own scratch in the same directory is not stage output.
+    """Only the files a stage would read count, not everything in the way.
 
-    `run_distributed` writes each stage's encoded plan and each worker's task
-    envelope beside the results, so a check that rejected any non-empty
-    directory would reject every second call for the wrong reason -- and the
-    obvious fix, deleting what it found, would delete those too.
+    The question the guard asks is "would this query read somebody else's
+    results", and the only files that can do that are the ones matching the
+    stage node's own naming. Rejecting any non-empty directory would answer a
+    different question, and the obvious follow-on -- deleting what it found --
+    would then delete things it never looked at properly.
     """
     shuffle = pathlib.Path(spec.shuffle_dir)
     shuffle.mkdir(parents=True)
-    (shuffle / "stage-1.plan").write_bytes(b"leftover")
-    (shuffle / "task-1-0.json").write_text("{}")
+    (shuffle / "notes.txt").write_text("mine, not the engine's")
+    (shuffle / "stage-1.plan").write_bytes(b"looks close, reads nothing")
 
     result = run_distributed(Q1, spec)
 
     assert _rows(result.batches) == _rows(run_local(Q1, spec))
+
+
+def test_the_driver_keeps_its_scratch_out_of_the_results(spec: SessionSpec) -> None:
+    """Encoded plans and task envelopes go in a subdirectory.
+
+    Not tidiness: it is what makes "does this directory hold stage output?"
+    answerable by looking, which is what
+    :func:`~dfx_engine.driver.require_empty_shuffle` does.
+    """
+    run_distributed(Q1, spec)
+
+    shuffle = pathlib.Path(spec.shuffle_dir)
+    beside_the_results = sorted(
+        path.name for path in shuffle.iterdir() if path.is_file()
+    )
+    assert beside_the_results == sorted(
+        pathlib.Path(
+            _internal.partition_path(spec.shuffle_dir, _internal.stage_id(), partition)
+        ).name
+        for partition in range(4)
+    )
+
+    scratch = sorted(path.name for path in (shuffle / "tasks").iterdir())
+    assert "stage-1.plan" in scratch
+    assert "task-1-0.json" in scratch
 
 
 def test_a_worker_whose_codecs_disagree_refuses_the_plan(spec: SessionSpec) -> None:

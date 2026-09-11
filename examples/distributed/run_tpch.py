@@ -115,11 +115,15 @@ def compare(table: pa.Table, reference: pa.Table) -> None:
             message = f"{name}: {len(got)} rows distributed, {len(want)} local"
             raise ValueError(message)
         for lhs, rhs in zip(got, want, strict=True):
-            close = (
-                abs(lhs - rhs) <= 1e-6 * max(1.0, abs(rhs))
-                if isinstance(lhs, float)
-                else lhs == rhs
-            )
+            if lhs is None or rhs is None:
+                # Checked before the float branch, which would raise
+                # `TypeError` on `None - None` and report a null-handling
+                # difference between the two runs as a crash in the checker.
+                close = lhs is None and rhs is None
+            elif isinstance(lhs, float):
+                close = abs(lhs - rhs) <= 1e-6 * max(1.0, abs(rhs))
+            else:
+                close = lhs == rhs
             if not close:
                 message = f"{name}: {lhs!r} distributed, {rhs!r} local"
                 raise ValueError(message)
