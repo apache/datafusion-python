@@ -100,10 +100,15 @@ Supported Object Stores are
 - {py:class}`~datafusion.object_store.MicrosoftAzure`
 
 ```python
+import os
+
+from datafusion import SessionContext
 from datafusion.object_store import AmazonS3
 
 region = "us-east-1"
 bucket_name = "yellow-trips"
+
+ctx = SessionContext()
 
 s3 = AmazonS3(
     bucket_name=bucket_name,
@@ -118,6 +123,28 @@ ctx.register_object_store("s3://", s3, None)
 ctx.register_parquet("trips", path)
 
 ctx.table("trips").show()
+```
+
+### Use S3 in SQL
+
+Configure S3 access on an {py:class}`~datafusion.object_store.AmazonS3` object and
+register it on the context before issuing SQL that uses an `s3://` location. AWS
+credentials are not SQL `OPTIONS`: `aws.*` is not a recognized SQL configuration
+namespace.
+
+After registering the object store above, a SQL external table can use the same
+S3 path:
+
+```python
+ctx.sql(
+    f"""
+    CREATE EXTERNAL TABLE trips_sql
+    STORED AS PARQUET
+    LOCATION '{path}'
+    """
+).collect()
+
+ctx.sql("SELECT count(passenger_count) FROM trips_sql").show()
 ```
 
 ## Other DataFrame Libraries
