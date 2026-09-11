@@ -50,3 +50,6 @@ assert pylist == [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
 # export to Python dictionary of columns
 pydict = df.to_pydict()
 assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6]}
+
+print(f"Exported as list of rows: {pylist}")
+print(f"Exported as dict of columns: {pydict}")

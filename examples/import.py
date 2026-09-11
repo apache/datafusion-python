@@ -55,3 +55,6 @@ assert type(df) is datafusion.DataFrame
 arrow_table = pa.Table.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
 df = ctx.from_arrow(arrow_table)
 assert type(df) is datafusion.DataFrame
+
+# Display the last converted DataFrame
+df.show()
