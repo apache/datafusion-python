@@ -46,23 +46,23 @@ jobs:
           # Free-threaded builds — one wheel per interpreter.
           - { python-version: "3.14t", wheel-tag: "3.14t", freethreaded: true }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           freethreaded: ${{ matrix.freethreaded }}
 
       - name: Cache Cargo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo
           key: cargo-cache-stable-${{ hashFiles('Cargo.lock') }}
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 

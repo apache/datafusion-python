@@ -45,7 +45,7 @@ jobs:
   lint-rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
@@ -62,14 +62,14 @@ jobs:
   lint-python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
@@ -88,10 +88,10 @@ jobs:
   lint-toml:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install taplo
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.5
         with:
           tool: taplo-cli
 
@@ -103,7 +103,7 @@ jobs:
     if: inputs.build_mode == 'release' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Ensure [patch.crates-io] is empty
         run: python3 dev/check_crates_patch.py
@@ -111,14 +111,14 @@ jobs:
   generate-license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
       - name: Install cargo-license
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.5
         with:
           tool: cargo-license
 
@@ -142,7 +142,7 @@ jobs:
       matrix:
         python-tag: ["abi3", "3.14t"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -159,7 +159,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
@@ -233,7 +233,7 @@ jobs:
       matrix:
         python-tag: ["abi3", "3.14t"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -250,7 +250,7 @@ jobs:
         with:
           key: ${{ inputs.build_mode }}-${{ matrix.python-tag }}
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
@@ -296,7 +296,7 @@ jobs:
         os: [macos-latest, windows-latest]
         python-tag: ["abi3", "3.14t"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
@@ -315,12 +315,12 @@ jobs:
 
       - name: Setup Python (free-threaded)
         if: matrix.python-tag != 'abi3'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
@@ -379,7 +379,7 @@ jobs:
       matrix:
         python-tag: ["abi3", "3.14t"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
@@ -398,12 +398,12 @@ jobs:
 
       - name: Setup Python (free-threaded)
         if: matrix.python-tag != 'abi3'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-tag }}
           freethreaded: true
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
@@ -444,7 +444,7 @@ jobs:
     if: inputs.build_mode == 'release'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
         uses: actions/download-artifact@v8
@@ -516,23 +516,23 @@ jobs:
           fi
 
       - name: Checkout docs sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Checkout docs target branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
           path: docs-target
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.10"
 
       - name: Install dependencies
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           enable-cache: true
 
