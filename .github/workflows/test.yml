@@ -56,7 +56,7 @@ jobs:
           freethreaded: ${{ matrix.freethreaded }}
 
       - name: Cache Cargo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cargo
           key: cargo-cache-stable-${{ hashFiles('Cargo.lock') }}
