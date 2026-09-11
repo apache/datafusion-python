@@ -58,17 +58,17 @@ Your payload has to be enough to rebuild the object somewhere your process is
 not. Write the metadata a fresh instance can be constructed from — a path, a
 connection string, a schema, the options the object was created with.
 
-Two of the example codecs in this repository do not do this, and it is worth
-knowing before copying them. `datafusion-ffi-example` and
-`datafusion-ffi-query-planner-example` keep a process-local `HashMap` of live
-providers and encode an integer token into it: encoding inserts, decoding
-removes. That makes Rust type identity observable across three separately
-loaded libraries in one test, which is what those examples exist to show. It
-also means a decode consumes its token, so the same bytes cannot be decoded
-twice, one encoded plan cannot fan out to several readers, and a plan that
-never reaches a decoder keeps its provider alive for the life of the process.
-A real codec has none of those properties because it does not park the object
-anywhere.
+Two codecs in this repository do not do this, and it is worth knowing before
+copying them. Both are in `datafusion-ffi-example`: its logical codec, for
+table providers, and its physical codec, for execution plan nodes. Each keeps
+a process-local `HashMap` of live objects and encodes an integer token into
+it: encoding inserts, decoding removes. That makes Rust type identity
+observable across three separately loaded libraries in one test, which is what
+that example exists to show. It also means a decode consumes its token, so the
+same bytes cannot be decoded twice, one encoded plan cannot fan out to several
+readers, and a plan that never reaches a decoder keeps its object alive for
+the life of the process. A real codec has none of those properties because it
+does not park the object anywhere.
 
 For one that does it properly, read
 [`examples/distributed/storage-library`](https://github.com/apache/datafusion-python/tree/main/examples/distributed/storage-library).
@@ -183,7 +183,12 @@ after it. The query still succeeds. What changes is which library wrote the
 bytes — so a plan that has to decode in another process now needs whichever
 library happened to win, not the one whose node it is.
 `MyPhysicalExtensionCodec` in [`datafusion-ffi-example`] claims this way, and
-the query-planner example's test suite pins the consequence.
+the query-planner example's test suite pins the consequence. It also pays for
+it with the token registry described in
+{ref}`extension_codec_durable_metadata`: a codec handed a node it cannot
+inspect has nothing to write down about it, so parking the object is all that
+is left. The registry is a consequence of the broad claim, not a separate
+choice.
 
 Two rules of thumb:
 
