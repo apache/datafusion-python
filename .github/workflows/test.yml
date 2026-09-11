@@ -119,8 +119,14 @@ jobs:
           # free-threaded build and re-pick the system 3.12 (see install step).
           uv run --python "$PWD/.venv/bin/python" --no-project pytest -v --import-mode=importlib
 
-      # FFI + TPC-H examples only need to run once; gate to abi3 entries.
-      - name: FFI unit tests
+      # Gated to the abi3 entries because the free-threaded build has no
+      # example wheels to test against -- not to run once. This is five of
+      # the six matrix entries, and running the suites against 3.10 through
+      # 3.14 is the point: the example wheels are abi3, so the interpreter
+      # underneath them is the only thing that varies, and these suites are
+      # what exercise the capsule protocol from Python. Four seconds for the
+      # two FFI examples as of this writing.
+      - name: Example library tests
         if: matrix.wheel-tag == 'abi3'
         run: |
           cd examples/datafusion-ffi-example
