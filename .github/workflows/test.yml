@@ -46,7 +46,7 @@ jobs:
           # Free-threaded builds — one wheel per interpreter.
           - { python-version: "3.14t", wheel-tag: "3.14t", freethreaded: true }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Python
         id: setup-python
