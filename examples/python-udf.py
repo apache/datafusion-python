@@ -38,6 +38,8 @@ df = ctx.create_dataframe([[batch]])
 
 df = df.select(is_null_arr(f.col("a")))
 
+df.show()
+
 result = df.collect()[0]
 
 assert result.column(0) == pa.array([False] * 3)

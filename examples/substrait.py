@@ -15,14 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from pathlib import Path
+
 from datafusion import SessionContext
 from datafusion import substrait as ss
+
+# Resolve the data relative to this file so the example can be run from any
+# working directory. The file comes from the `testing` git submodule:
+# `git submodule update --init testing`.
+csv_path = Path(__file__).parent.parent / "testing/data/csv/aggregate_test_100.csv"
 
 # Create a DataFusion context
 ctx = SessionContext()
 
 # Register table with context
-ctx.register_csv("aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv")
+ctx.register_csv("aggregate_test_data", csv_path)
 
 substrait_plan = ss.Serde.serialize_to_plan("SELECT * FROM aggregate_test_data", ctx)
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>
@@ -31,6 +38,7 @@ substrait_plan = ss.Serde.serialize_to_plan("SELECT * FROM aggregate_test_data",
 substrait_bytes = substrait_plan.encode()
 # type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
 # where they could subsequently be deserialized on the receiving end.
+print(f"Encoded Substrait plan: {len(substrait_bytes)} bytes")
 
 # Alternative serialization approaches
 # type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
@@ -44,6 +52,10 @@ substrait_plan = ss.Serde.deserialize_bytes(substrait_bytes)
 # type(df_logical_plan) -> <class 'substrait.LogicalPlan'>
 df_logical_plan = ss.Consumer.from_substrait_plan(ctx, substrait_plan)
 
+print("\nLogical plan round-tripped from Substrait:")
+print(df_logical_plan.display_indent())
+
 # Back to Substrait Plan just for demonstration purposes
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>
 substrait_plan = ss.Producer.to_substrait_plan(df_logical_plan, ctx)
+print(f"\nRe-encoded Substrait plan: {len(substrait_plan.encode())} bytes")

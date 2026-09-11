@@ -19,13 +19,36 @@
 
 # DataFusion Python Examples
 
-Some examples rely on data which can be downloaded from the following site:
+## Running the examples
+
+Every example is a standalone script; run it from the root of the repository:
+
+```bash
+python examples/create-context.py
+```
+
+Most of them need nothing but the `datafusion` package and create their own
+data. The exceptions are:
+
+| Example | Needs |
+| --- | --- |
+| `dataframe-parquet.py`, `sql-parquet.py`, `sql-to-pandas.py` | `yellow_tripdata_2021-01.parquet`, downloaded into the working directory (see below) |
+| `import.py`, `export.py`, `sql-to-pandas.py` | `pandas`, `polars` (`sql-to-pandas.py` also needs `matplotlib`) |
+| `python-udf-comparisons.py` | the TPC-H dataset in `examples/tpch/data/`, see [`tpch/README.md`](./tpch/README.md) |
+| `ray_pickle_expr.py` | `ray` |
+| `sql-parquet-s3.py` | network access and AWS credentials in the environment |
+| `substrait.py` | the `testing` submodule: `git submodule update --init testing` |
+
+The NYC taxi data can be downloaded from the following site:
 
 - https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
 Here is a direct link to the file used in the examples:
 
 - https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+
+Everything that does not need a manual download or a cluster is run on every
+pull request by the `Run Python examples` step in `.github/workflows/test.yml`.
 
 ### Creating a SessionContext
 
@@ -61,12 +84,6 @@ type and codec boundaries rather than same-library Rust downcasts.
 ### Substrait Support
 
 - [Serialize query plans using Substrait](./substrait.py)
-
-### Executing SQL against DataFrame Libraries (Experimental)
-
-- [Executing SQL on Polars](./sql-on-polars.py)
-- [Executing SQL on Pandas](./sql-on-pandas.py)
-- [Executing SQL on cuDF](./sql-on-cudf.py)
 
 ## TPC-H Examples
 

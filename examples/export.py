@@ -34,19 +34,29 @@ df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
 # export to pandas dataframe
 pandas_df = df.to_pandas()
 assert pandas_df.shape == (3, 2)
+print("pandas DataFrame:")
+print(pandas_df)
 
 # export to PyArrow table
 arrow_table = df.to_arrow_table()
 assert arrow_table.shape == (3, 2)
+print("\nPyArrow table:")
+print(arrow_table)
 
 # export to Polars dataframe
 polars_df = df.to_polars()
 assert polars_df.shape == (3, 2)
+print("\nPolars DataFrame:")
+print(polars_df)
 
 # export to Python list of rows
 pylist = df.to_pylist()
 assert pylist == [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
+print("\nPython list of rows:")
+print(pylist)
 
 # export to Python dictionary of columns
 pydict = df.to_pydict()
 assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6]}
+print("\nPython dictionary of columns:")
+print(pydict)
