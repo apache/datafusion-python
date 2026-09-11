@@ -58,15 +58,47 @@ Your payload has to be enough to rebuild the object somewhere your process is
 not. Write the metadata a fresh instance can be constructed from — a path, a
 connection string, a schema, the options the object was created with.
 
-The example codecs in this repository do not do this, and it is worth knowing
-before copying them. They keep a process-local `HashMap` of live providers and
-encode an integer token into it: encoding inserts, decoding removes. That makes
-Rust type identity observable across three separately loaded libraries in one
-test, which is what the examples exist to show. It also means a decode consumes
-its token, so the same bytes cannot be decoded twice, one encoded plan cannot
-fan out to several readers, and a plan that never reaches a decoder keeps its
-provider alive for the life of the process. A real codec has none of those
-properties because it does not park the object anywhere.
+Two of the example codecs in this repository do not do this, and it is worth
+knowing before copying them. `datafusion-ffi-example` and
+`datafusion-ffi-query-planner-example` keep a process-local `HashMap` of live
+providers and encode an integer token into it: encoding inserts, decoding
+removes. That makes Rust type identity observable across three separately
+loaded libraries in one test, which is what those examples exist to show. It
+also means a decode consumes its token, so the same bytes cannot be decoded
+twice, one encoded plan cannot fan out to several readers, and a plan that
+never reaches a decoder keeps its provider alive for the life of the process.
+A real codec has none of those properties because it does not park the object
+anywhere.
+
+For one that does it properly, read
+[`examples/distributed/storage-library`](https://github.com/apache/datafusion-python/tree/main/examples/distributed/storage-library).
+Its payload is the file paths, the projection, the row limit, and the schema —
+enough to rebuild the scan from nothing — and its tests decode a plan in a
+separate interpreter that never registered the table.
+
+(extension_codec_provider_logical)=
+
+## A table provider needs a *logical* codec
+
+A provider library can reasonably conclude it needs only a physical codec: its
+scan is a physical node, so that is where its own type appears. That holds
+right up until someone installs a query planner.
+
+An FFI query planner is handed the **logical** plan, as protobuf. A logical
+plan holds its tables as `Arc<dyn TableProvider>`, and the default codec's
+`try_encode_table_provider` is unimplemented. So a session with your provider
+and any engine installed fails while planning, before anything is executed,
+with:
+
+```text
+Error serializing custom table ... caused by
+Execution error: No installed extension codec handled a table provider
+```
+
+Implement `try_encode_table_provider` and `try_decode_table_provider`, and
+contribute the logical codec alongside the physical one. The payload can be
+small — the storage library writes just the directory, because everything else
+it holds is read back from there — but it has to exist.
 
 (extension_codec_ids)=
 

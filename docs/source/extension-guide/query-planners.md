@@ -38,6 +38,53 @@ against the codecs of the session that will run the query.
 `MyQueryPlanner` in [`datafusion-ffi-query-planner-example`] is the worked
 implementation.
 
+(planner_host_optimizer_rules)=
+
+## Plan against your own optimizer rules
+
+Your planner returns its plan as **protobuf**, not as a handle. Every query
+therefore serializes what you produce, and anything in it that cannot be
+encoded is your problem rather than a distant one.
+
+That matters because of where physical optimization runs. Physical planning
+applies `session.physical_optimizers()`, and when the session arrived over FFI
+those rules are the *host's* — so each one runs back across the boundary and
+hands you a `ForeignExecutionPlan` wrapping the result. `EnsureCooperative` is
+on by default and will do exactly this. A stock `CooperativeExec` produced that
+way has no reachable `try_to_proto`, so a node that is perfectly serializable
+in the process that made it becomes unserializable in yours:
+
+```text
+Internal error: Unsupported plan and extension codec failed with
+[This feature is not implemented: PhysicalExtensionCodec is not provided].
+Plan: ForeignExecutionPlan { name: "CooperativeExec", ... }
+```
+
+A foreign node is also opaque to `downcast_ref`, so a planner that means to
+*rewrite* the plan — inserting stages, say — cannot inspect what it was given.
+
+Both problems go away if the rules run on your side. Wrap the session you were
+handed in one that delegates everything except `physical_optimizers()`, and
+return the stock rule set from there:
+
+```rust
+let local = LocalOptimizerSession::new(session);   // owns PhysicalOptimizer::default().rules
+DefaultPhysicalPlanner::default()
+    .create_physical_plan(logical_plan, &local)
+    .await?
+```
+
+`LocalOptimizerSession` in
+[`examples/distributed/engine-library`](https://github.com/apache/datafusion-python/tree/main/examples/distributed/engine-library)
+is about twenty delegating methods and one override.
+
+Delegating to a `fallback` avoids the problem differently, by not planning at
+all: the plan comes back from whoever you delegated to, already concrete. That
+is the right choice for a planner that only layers behaviour on another, and
+the wrong one for a planner that needs to rewrite the result — you cannot
+rewrite a subtree you hold an opaque handle to. A planner does one or the
+other.
+
 ## One planner per session
 
 A session holds exactly one query planner. Calling `set_query_planner` again

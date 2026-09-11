@@ -1667,6 +1667,60 @@ dependencies = [
 ]
 
 [[package]]
+name = "dfx-engine"
+version = "54.0.0"
+dependencies = [
+ "arrow",
+ "async-trait",
+ "datafusion",
+ "datafusion-common",
+ "datafusion-ffi",
+ "datafusion-proto",
+ "datafusion-python-util",
+ "datafusion-session",
+ "futures",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+]
+
+[[package]]
+name = "dfx-storage"
+version = "54.0.0"
+dependencies = [
+ "arrow",
+ "async-trait",
+ "datafusion",
+ "datafusion-catalog",
+ "datafusion-common",
+ "datafusion-ffi",
+ "datafusion-proto",
+ "datafusion-python-util",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+ "serde_json",
+]
+
+[[package]]
+name = "dfx-udfs"
+version = "54.0.0"
+dependencies = [
+ "arrow",
+ "arrow-schema",
+ "datafusion",
+ "datafusion-common",
+ "datafusion-expr",
+ "datafusion-ffi",
+ "datafusion-functions-window",
+ "datafusion-proto",
+ "datafusion-python-util",
+ "pyo3",
+ "pyo3-build-config",
+ "pyo3-log",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
