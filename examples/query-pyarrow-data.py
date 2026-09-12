@@ -35,6 +35,8 @@ df = df.select(
     col("a") - col("b"),
 )
 
+df.show()
+
 # execute and collect the first (and only) batch
 result = df.collect()[0]
 

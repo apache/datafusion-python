@@ -47,3 +47,5 @@ df_logical_plan = ss.Consumer.from_substrait_plan(ctx, substrait_plan)
 # Back to Substrait Plan just for demonstration purposes
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>
 substrait_plan = ss.Producer.to_substrait_plan(df_logical_plan, ctx)
+
+print(f"Substrait plan round-trip complete: {len(substrait_bytes)} encoded bytes")

@@ -67,3 +67,5 @@ df = df.aggregate([], [my_udaf(col("a"))])
 result = df.collect()[0]
 
 assert result.column(0) == pa.array([6.0])
+
+print(f"Sum of column 'a': {result.column(0)[0].as_py()}")

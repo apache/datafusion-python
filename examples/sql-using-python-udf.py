@@ -53,6 +53,7 @@ ctx.register_udf(is_null_arr)
 
 # Query the DataFrame using SQL
 result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
+result_df.show()
 # Dataframe:
 # +---+-----------+
 # | a | b_is_null |
