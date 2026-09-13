@@ -84,3 +84,5 @@ result_df = ctx.sql(
 # +---+--------------+
 assert result_df.to_pydict()["a"] == [1, 3]
 assert result_df.to_pydict()["b_aggregated"] == [9, 6]
+
+result_df.show()

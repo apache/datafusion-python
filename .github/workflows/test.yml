@@ -119,6 +119,47 @@ jobs:
           # free-threaded build and re-pick the system 3.12 (see install step).
           uv run --python "$PWD/.venv/bin/python" --no-project pytest -v --import-mode=importlib
 
+      # Run the top-level examples once. They exercise the public Python API
+      # that the test suite does not: several are plain scripts with no pytest
+      # coverage, so nothing caught a broken example before this job existed.
+      - name: Run example scripts
+        if: matrix.python-version == '3.12'
+        run: |
+          set -euo pipefail
+
+          # Extra runtime dependencies used by some examples but not part of
+          # the dev group: pandas and polars for import.py/export.py, and
+          # matplotlib for sql-to-pandas.py.
+          uv pip install --python "$PWD/.venv/bin/python" pandas polars matplotlib
+
+          # Examples that cannot run here:
+          #   - sql-parquet-s3.py: needs network access and AWS credentials
+          #   - sql-parquet.py, dataframe-parquet.py, sql-to-pandas.py: need the
+          #     NYC taxi parquet file documented in examples/README.md
+          #   - python-udf-comparisons.py: needs the TPC-H dataset generated
+          #     later by the tpchgen-cli step
+          #   - ray_pickle_expr.py: needs the optional (heavy) `ray` dependency
+          skip="sql-parquet-s3.py sql-parquet.py dataframe-parquet.py sql-to-pandas.py python-udf-comparisons.py ray_pickle_expr.py"
+
+          failed=""
+          for script in examples/*.py; do
+            name="$(basename "$script")"
+            if [[ " $skip " == *" $name "* ]]; then
+              echo "Skipping $script"
+              continue
+            fi
+            echo "::group::Running $script"
+            if ! uv run --python "$PWD/.venv/bin/python" --no-project python "$script"; then
+              failed="$failed $script"
+            fi
+            echo "::endgroup::"
+          done
+
+          if [[ -n "$failed" ]]; then
+            echo "Example scripts failed:$failed"
+            exit 1
+          fi
+
       # FFI + TPC-H examples only need to run once; gate to abi3 entries.
       - name: FFI unit tests
         if: matrix.wheel-tag == 'abi3'

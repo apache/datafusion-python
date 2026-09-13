@@ -41,3 +41,5 @@ df = df.select(is_null_arr(f.col("a")))
 result = df.collect()[0]
 
 assert result.column(0) == pa.array([False] * 3)
+
+df.show()

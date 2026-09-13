@@ -40,3 +40,5 @@ result = df.collect()[0]
 
 assert result.column(0) == pa.array([5, 7, 9])
 assert result.column(1) == pa.array([-3, -3, -3])
+
+df.show()
