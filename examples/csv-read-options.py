@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as tmp_dir:
     gz_file = tmp_path / "data.csv.gz"
     builder_csv_file = tmp_path / "builder-data.csv"
 
-    sample_csv = "id,name,value\n1,alice,100\n2,bob,200\n3,charlie,null\n"
+    sample_csv = "id,name,value\n1,alice,100\n2,bob,200\n3,charlie,\n"
     csv_file.write_text(sample_csv)
 
     builder_csv = "id|name|value\n1|'alice'|100\n2|'bob'|200\n3|'charlie'|null\n"
