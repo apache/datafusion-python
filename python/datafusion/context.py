@@ -181,16 +181,19 @@ class SessionConfig:
         Example usage:
 
         >>> from datafusion import SessionConfig, SessionContext
-        >>> ctx = SessionContext(SessionConfig())
         >>> config = SessionConfig(
-        ...     config_options={"datafusion.execution.batch_size": "1024"}
+        ...     config_options={
+        ...         "datafusion.execution.batch_size": "1024",
+        ...         "datafusion.execution.target_partitions": "8",
+        ...     }
         ... )
         >>> ctx = SessionContext(config.with_information_schema(True))
         >>> ctx.sql(
-        ...     "select value from information_schema.df_settings"
-        ...     " where name = 'datafusion.execution.batch_size'"
-        ... ).collect()[0]["value"][0]
-        <pyarrow.StringScalar: '1024'>
+        ...     "select value from information_schema.df_settings where name in"
+        ...     " ('datafusion.execution.batch_size',"
+        ...     " 'datafusion.execution.target_partitions') order by name"
+        ... ).collect()[0]["value"].to_pylist()
+        ['1024', '8']
         """
         self.config_internal = SessionConfigInternal(config_options)
 
