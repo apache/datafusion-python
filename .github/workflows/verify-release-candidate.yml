@@ -65,7 +65,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up protoc
         uses: arduino/setup-protoc@v3

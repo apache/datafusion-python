@@ -17,24 +17,19 @@
   under the License.
 -->
 
-# Distributing work
+(distributed_expressions)=
+
+# Shipping expressions to workers
 
 DataFusion supports splitting work across processes by shipping
 serialized expressions to workers: the driver builds an
 {py:class}`~datafusion.Expr`, each worker evaluates it against its
 own slice of data. This pattern suits embarrassingly-parallel
-workloads where the driver decides partitioning up front.
+workloads where the driver decides partitioning up front. If you
+would rather have a library partition your query plan for you, see
+{ref}`distributed_query_engines` instead.
 
-Query-level distribution — where the runtime partitions a single
-logical or physical plan across worker nodes — is in progress
-upstream via [datafusion-distributed](https://github.com/apache/datafusion-distributed) and [Apache
-Ballista](https://github.com/apache/datafusion-ballista). Both
-have short sections at the end of this page; integration details
-will land as those projects become usable from datafusion-python.
-
-## Expression-level distribution
-
-DataFusion expressions support distribution directly: pass one to a
+Expressions support this directly: pass one to a
 worker process and Python's standard
 [pickle](https://docs.python.org/3/library/pickle.html) machinery
 serializes it transparently — the same machinery
@@ -43,7 +38,7 @@ similar libraries already use to ship function arguments. Python UDFs
 — scalar, aggregate, and window — travel inside the serialized
 expression; the receiver does not need to pre-register them.
 
-### Basic worker-pool example
+## Basic worker-pool example
 
 Define a worker function that takes the expression plus a batch and
 returns the evaluated result:
@@ -92,7 +87,7 @@ see [Safe importing of main module](https://docs.python.org/3/library/multiproce
 in the Python docs.
 :::
 
-### What travels with the expression
+## What travels with the expression
 
 - **Built-in functions** (`abs`, `length`, arithmetic, comparisons,
   etc.) — fully portable. Worker needs nothing pre-registered.
@@ -113,7 +108,7 @@ in the Python docs.
 
 (distributed_udf_portability)=
 
-### Portability requirements for inline Python UDFs
+## Portability requirements for inline Python UDFs
 
 Inline Python UDFs ride on [cloudpickle](https://github.com/cloudpipe/cloudpickle), which imposes two
 requirements on the worker environment:
@@ -133,7 +128,7 @@ requirements on the worker environment:
   Self-contained UDFs (no imports beyond what the worker already has,
   e.g. `pyarrow`) avoid this entirely.
 
-### Registering shared UDFs on workers
+## Registering shared UDFs on workers
 
 When an expression references an FFI capsule UDF (or any UDF the
 worker must resolve from its registered functions), set up the
@@ -164,7 +159,7 @@ fine for expressions that only reference built-ins and Python UDFs,
 but FFI-capsule-backed registrations must be installed on the global
 context to resolve.
 
-### Python 3.14 default change
+## Python 3.14 default change
 
 Python 3.14 changed the Linux default start method for
 {py:mod}`multiprocessing` from `fork` to `forkserver` (macOS has
@@ -174,7 +169,7 @@ workers via copy-on-write; with `forkserver` and `spawn` it is
 not. The {py:func}`~datafusion.ipc.set_worker_ctx` pattern works on
 every start method — prefer it over relying on inherited state.
 
-### Practical considerations
+## Practical considerations
 
 - **Serialized size scales with what travels inline.** A serialized
   expression of just built-ins is small (tens of bytes). An
@@ -189,7 +184,7 @@ every start method — prefer it over relying on inherited state.
   the captured state is large, mutable, or not portable to the
   worker's environment. See {ref}`Portability requirements for inline Python UDFs <distributed_udf_portability>` for the Python-version and imported-module rules.
 
-### Disabling Python UDF inlining
+## Disabling Python UDF inlining
 
 For a stricter wire format, call
 {py:meth}`SessionContext.with_python_udf_inlining(enabled=False)
@@ -241,7 +236,7 @@ threat model.
 
 (distributed_expr_security)=
 
-### Security
+## Security
 
 :::{warning}
 Reconstructing an expression containing a Python UDF executes
@@ -255,7 +250,9 @@ functions and pre-registered Rust-side UDFs, and avoid
 {py:func}`pickle.loads` on externally supplied bytes entirely.
 :::
 
-### Reference: session context slots
+(session_context_slots)=
+
+## Reference: session context slots
 
 There is only one type — {py:class}`SessionContext`. It can occupy
 up to four *slots* in a running program:
@@ -297,32 +294,10 @@ Sharp edges:
 - The inlining toggle is per-context state, not a global switch.
   Two contexts with different toggles can coexist in one process.
 
-## Query-level distribution via datafusion-distributed
-
-🚧 *Work in progress upstream — not yet usable from datafusion-python.*
-
-[datafusion-distributed](https://github.com/apache/datafusion-distributed)
-splits a single physical plan into stages and runs each stage on a
-different worker node. The driver writes a SQL or DataFrame query
-once; the runtime handles partitioning, shuffles, and reassembly.
-
-A datafusion-python integration is in development. This section will
-document the integration once it lands. In the meantime, the
-expression-level approach above covers most use cases that do not
-require automatic plan partitioning.
-
-## Query-level distribution via Apache Ballista
-
-🚧 *Work in progress upstream — not yet usable from datafusion-python.*
-
-[Apache Ballista](https://github.com/apache/datafusion-ballista)
-provides distributed query execution on top of DataFusion with a
-scheduler / executor model better suited to long-lived cluster
-deployments. A datafusion-python integration is on the roadmap; this
-section will fill in once the integration is usable.
-
 ## See also
 
+- {ref}`distributed_query_engines` — the other road: let a library
+  partition the plan for you.
 - {py:mod}`datafusion.ipc` — worker context API.
 - `examples/multiprocessing_pickle_expr.py` — runnable
   `multiprocessing.Pool` example that ships a different parametric

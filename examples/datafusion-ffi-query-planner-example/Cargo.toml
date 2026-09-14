@@ -31,6 +31,7 @@ datafusion = { workspace = true }
 datafusion-catalog = { workspace = true, default-features = false }
 datafusion-common = { workspace = true, default-features = false }
 datafusion-ffi = { workspace = true }
+datafusion-proto = { workspace = true }
 datafusion-session = { workspace = true }
 async-trait = { workspace = true }
 datafusion-python-util.workspace = true

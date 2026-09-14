@@ -175,11 +175,16 @@ def set_sender_ctx(ctx: SessionContext) -> None:
 
     Examples:
         >>> from datafusion import SessionContext
-        >>> from datafusion.ipc import set_sender_ctx, get_sender_ctx
+        >>> from datafusion.ipc import (
+        ...     clear_sender_ctx,
+        ...     get_sender_ctx,
+        ...     set_sender_ctx,
+        ... )
         >>> driver = SessionContext().with_python_udf_inlining(enabled=False)
         >>> set_sender_ctx(driver)
         >>> get_sender_ctx() is driver
         True
+        >>> clear_sender_ctx()
     """
     _local.sender_ctx = ctx
 
@@ -224,7 +229,9 @@ def _resolve_ctx(
     Priority: explicit argument > worker context > global context.
     Falling back to the global :class:`SessionContext` (instead of a
     freshly constructed one) preserves any registrations the user has
-    installed on it.
+    installed on it. It carries no extension codecs, though, so a worker
+    that must decode payloads written by one has to install a context
+    carrying them via :func:`set_worker_ctx`.
 
     Examples:
         >>> from datafusion import SessionContext

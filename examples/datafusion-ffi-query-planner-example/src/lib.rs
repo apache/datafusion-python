@@ -18,15 +18,21 @@
 use pyo3::prelude::*;
 
 use crate::config::MyPlannerConfig;
+use crate::extension::{BundledLogicalCodec, BundledPhysicalCodec, MyPlannerExtension};
 use crate::planner::MyQueryPlanner;
 
 mod config;
+mod distributed_exec;
+mod extension;
 mod planner;
 
 #[pymodule]
 fn datafusion_ffi_query_planner_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     pyo3_log::init();
+    m.add_class::<BundledLogicalCodec>()?;
+    m.add_class::<BundledPhysicalCodec>()?;
     m.add_class::<MyPlannerConfig>()?;
+    m.add_class::<MyPlannerExtension>()?;
     m.add_class::<MyQueryPlanner>()?;
     Ok(())
 }

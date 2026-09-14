@@ -20,7 +20,11 @@
 # User Guide
 
 The user guide walks through installing DataFusion in Python, building queries
-with the DataFrame API or SQL, reading and writing data, and tuning execution.
+with the DataFrame API or SQL, reading and writing data, tuning execution, and
+spreading work across processes or machines.
+
+If you are writing an extension library rather than using one, see the
+{ref}`Extension Guide <ffi>`.
 
 ```{toctree}
 :maxdepth: 2
@@ -32,7 +36,8 @@ dataframe/index
 common-operations/index
 io/index
 configuration
-distributing-work
+extensions
+distributing-work/index
 sql
 upgrade-guides
 ai-coding-assistants

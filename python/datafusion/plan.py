@@ -82,9 +82,9 @@ class LogicalPlan:  # noqa: PLW1641
     def display_graphviz(self) -> str:
         """Print the graph visualization of the logical plan.
 
-        Returns a `format`able structure that produces lines meant for graphical display
-        using the `DOT` language. This format can be visualized using software from
-        [`graphviz`](https://graphviz.org/)
+        Returns a formattable structure that produces lines meant for graphical
+        display using the ``DOT`` language. This format can be visualized using
+        software from `graphviz <https://graphviz.org/>`_.
         """
         return self._raw_plan.display_graphviz()
 
@@ -92,21 +92,33 @@ class LogicalPlan:  # noqa: PLW1641
     def from_bytes(ctx: SessionContext, data: bytes) -> LogicalPlan:
         """Create a LogicalPlan from serialized protobuf bytes.
 
-        Decoding routes through the session's installed
-        `LogicalExtensionCodec`. Tables created in memory from record
-        batches are currently not supported.
+        Decoding routes through the codecs installed on ``ctx`` with
+        :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`.
+        Tables created in memory from record batches are currently not
+        supported.
+
+        Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+        positional, and there is no fallback to a worker or global context.
+
+        See Also:
+            :py:meth:`to_bytes`, :py:meth:`ExecutionPlan.from_bytes`,
+            :py:meth:`datafusion.Expr.from_bytes`.
         """
         return LogicalPlan(df_internal.LogicalPlan.from_bytes(ctx.ctx, data))
 
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Convert a LogicalPlan to serialized protobuf bytes.
 
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed `LogicalExtensionCodec` so user FFI codecs (registered
-        via :py:meth:`SessionContext.with_logical_extension_codec`) see
-        the encode path. With ``ctx=None`` a default codec is used.
-        Tables created in memory from record batches are currently not
-        supported.
+        When ``ctx`` is supplied, encoding routes through the codecs
+        installed on it with
+        :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`,
+        so extension codecs see the encode path. With ``ctx=None`` a
+        default codec is used. Tables created in memory from record
+        batches are currently not supported.
+
+        See Also:
+            :py:meth:`from_bytes`, :py:meth:`ExecutionPlan.to_bytes`,
+            :py:meth:`datafusion.Expr.to_bytes`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return self._raw_plan.to_bytes(ctx_arg)
@@ -145,7 +157,7 @@ class ExecutionPlan:
         self._raw_plan = plan
 
     def children(self) -> list[ExecutionPlan]:
-        """Get a list of children `ExecutionPlan` that act as inputs to this plan.
+        """Get a list of children ``ExecutionPlan`` that act as inputs to this plan.
 
         The returned list will be empty for leaf nodes such as scans, will contain a
         single value for unary nodes, or two values for binary nodes (such as joins).
@@ -173,18 +185,35 @@ class ExecutionPlan:
     def from_bytes(ctx: SessionContext, data: bytes) -> ExecutionPlan:
         """Create an ExecutionPlan from serialized protobuf bytes.
 
-        Decoding routes through the session's installed
-        `PhysicalExtensionCodec`. Tables created in memory from record
-        batches are currently not supported.
+        Decoding routes through the codecs installed on ``ctx`` with
+        :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+        Tables created in memory from record batches are currently not
+        supported.
+
+        Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+        positional, and there is no fallback to a worker or global context.
+
+        See Also:
+            :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
         """
         return ExecutionPlan(df_internal.ExecutionPlan.from_bytes(ctx.ctx, data))
 
     def to_bytes(self, ctx: SessionContext | None = None) -> bytes:
         """Convert an ExecutionPlan into serialized protobuf bytes.
 
-        When ``ctx`` is supplied, encoding routes through the session's
-        installed `PhysicalExtensionCodec`. Tables created in memory
-        from record batches are currently not supported.
+        When ``ctx`` is supplied, encoding routes through the codecs
+        installed on it with
+        :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+        Tables created in memory from record batches are currently not
+        supported.
+
+        Round-tripping through this method and :py:meth:`from_bytes` is how
+        an extension library checks that its own codec claimed its nodes,
+        rather than a codec installed earlier in the chain — see
+        :ref:`extension_codec_order`.
+
+        See Also:
+            :py:meth:`from_bytes`, :py:meth:`LogicalPlan.to_bytes`.
         """
         ctx_arg = ctx.ctx if ctx is not None else None
         return self._raw_plan.to_bytes(ctx_arg)

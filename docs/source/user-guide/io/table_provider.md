@@ -28,29 +28,8 @@ you must use DataFusion 43.0.0 or later and expose a [FFI_TableProvider](https:/
 via [PyCapsule](https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule).
 
 A complete example can be found in the [examples folder](https://github.com/apache/datafusion-python/tree/main/examples).
-
-The method takes the `SessionContext` it is being registered on. Take whatever
-the FFI constructor needs from that session — here the logical extension codec —
-rather than building one inside your library. See the {ref}`ffi` guide for the
-full capsule protocol.
-
-```rust
-#[pymethods]
-impl MyTableProvider {
-
-    fn __datafusion_table_provider__<'py>(
-        &self,
-        py: Python<'py>,
-        session: Bound<'py, PyAny>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let provider = Arc::new(self.clone());
-        let codec = ffi_logical_codec_from_pycapsule(session, None)?;
-        let provider = FFI_TableProvider::new_with_ffi_codec(provider, false, None, codec);
-
-        PyCapsule::new_with_value(py, provider, cr"datafusion_table_provider")
-    }
-}
-```
+For how to write one — the getter, what it receives, and how to serialize what
+it exposes — see {ref}`extension_providers` in the Extension Guide.
 
 Once you have this library available, you can construct a
 {py:class}`~datafusion.Table` in Python and register it with the

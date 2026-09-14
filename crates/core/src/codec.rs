@@ -660,7 +660,7 @@ impl PythonLogicalCodec {
     /// `cloudpickle.loads` on the inline `DFPY*` payload. It does
     /// **not** make `pickle.loads(untrusted_bytes)` safe; treat every
     /// `pickle.loads` on untrusted input as unsafe regardless of this
-    /// setting. See `docs/source/user-guide/io/distributing_work.rst`
+    /// setting. See `docs/source/user-guide/distributing-work/expressions.md`
     /// (Security section) for the full threat model, and Python's
     /// [pickle module security warning][1] for why `pickle.loads` is
     /// unsafe in general.

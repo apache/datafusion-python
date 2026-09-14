@@ -21,8 +21,9 @@
 
 ## DataFusion 55.0.0
 
-This release extends the change made in 52.0.0 to the remaining {ref}`ffi` hook
-methods. Users who contribute their own `LogicalExtensionCodec` or
+This release extends the change made in 52.0.0 to the remaining
+{ref}`extension_capsule_protocol` hook methods. Users who contribute their own
+`LogicalExtensionCodec` or
 `PhysicalExtensionCodec` via FFI must update
 `__datafusion_logical_extension_codec__` and
 `__datafusion_physical_extension_codec__` to accept an additional
@@ -75,13 +76,37 @@ used.
 it, so existing calls such as `ctx.__datafusion_logical_extension_codec__()`
 continue to work unchanged.
 
+The provider and catalog getters —
+`__datafusion_table_provider_factory__`, `__datafusion_catalog_provider__`,
+`__datafusion_catalog_provider_list__`, and `__datafusion_schema_provider__` —
+now receive the host's logical extension codec as a bare
+`datafusion_logical_extension_codec` capsule rather than a session.
+`__datafusion_table_provider__` receives a session from
+`SessionContext.register_table` and a codec capsule from
+`Schema.register_table`. No code change is needed in either case: pass the
+argument to `ffi_logical_codec_from_pycapsule`, which calls the codec getter
+when the object has one and returns the object unchanged when it does not. Do
+not inspect the argument's type. See {ref}`extension_getter_argument`.
+
 New in this release, `__datafusion_query_planner__` follows the same protocol.
 It receives the session and takes both extension codecs from it, so a planner
 library never builds a `TaskContextProvider` at all. Install one with
 `SessionContext.set_query_planner(planner)`, which mutates the session the same
 way `add_physical_optimizer_rule` does and returns nothing — the query planner
 lives in `SessionState`, so it belongs to the session rather than to a
-particular handle on it. See the {ref}`ffi` guide for the full protocol.
+particular handle on it. See {ref}`extension_planners` for the full protocol.
+
+If a library ships codecs *and* a planner, prefer
+`SessionContext.with_extensions(bundle)` over installing each piece by hand. It
+installs every codec before it binds any planner, so a planner cannot end up
+carrying a chain that a later `with_logical_extension_codec` call has grown.
+The library exposes a bundle object implementing
+`__datafusion_session_components__` for its codecs and
+`__datafusion_session_planner__` for its planner — the latter is handed the
+planner installed so far, so several libraries that each ship one nest instead
+of displacing each other. See {ref}`extension_bundles`.
+
+(extension_version_mismatch)=
 
 ### Mismatched extension libraries now fail loudly
 

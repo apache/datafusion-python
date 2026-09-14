@@ -54,7 +54,20 @@ extensions = [
     # raises an extension conflict.
     "myst_nb",
     "autoapi.extension",
+    # Emits a meta-refresh stub at each old docname listed in `redirects`
+    # below, so inbound links to pages that have moved keep working.
+    "sphinx_reredirects",
 ]
+
+# Old page URLs that have moved. The site is single-version (each release
+# overwrites asf-site wholesale), so these exist purely for inbound external
+# links — issue comments, release blog posts, and README links that pinned a
+# heading anchor. Keys are docnames without a suffix; the source file must be
+# gone, or Sphinx builds the real page and the stub is never written.
+redirects = {
+    "user-guide/distributing-work": "distributing-work/index.html",
+    "contributor-guide/ffi": "../extension-guide/index.html",
+}
 
 # NOTE: .rst stays alongside .md because sphinx-autoapi generates RST
 # under autoapi/ and Sphinx needs the suffix to parse it. The human-
@@ -90,6 +103,11 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# `autoapi_options` is deliberately left at the default. In particular
+# `special-members` is load-bearing: it is what publishes the
+# `__datafusion_*__` capsule getters, which are the public protocol an
+# extension library implements against. Dropping it would delete that
+# reference surface along with `DataFrame.__init__` and the Arrow dunders.
 autoapi_dirs = ["../../python"]
 autoapi_ignore = ["*tests*"]
 autoapi_member_order = "groupwise"
@@ -103,6 +121,10 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Re-exports
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
+        ("class", "datafusion.QueryPlannerExportable"),
+        ("class", "datafusion.SessionExtensionComponents"),
+        ("class", "datafusion.SessionComponentsExportable"),
+        ("class", "datafusion.SessionPlannerExportable"),
         ("module", "datafusion.common"),
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),
@@ -199,8 +221,10 @@ html_sidebars = {
     "**": ["sidebar-globaltoc.html"],
 }
 
-# tell myst_parser to auto-generate anchor links for headers h1, h2, h3
-myst_heading_anchors = 3
+# tell myst_parser to auto-generate anchor links for headers h1 through h4.
+# h4 is included because the FFI guide cross-references its own `####`
+# subsections; without an anchor those links render but resolve nowhere.
+myst_heading_anchors = 4
 
 # MyST extensions:
 # - tasklist: GitHub-style `- [x]` checkboxes

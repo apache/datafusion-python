@@ -16,6 +16,7 @@
 # under the License.
 import ctypes
 import datetime as dt
+import gc
 import gzip
 import pathlib
 import shutil
@@ -29,6 +30,7 @@ from datafusion import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
+    SessionExtensionComponents,
     SQLOptions,
     Table,
     column,
@@ -877,6 +879,477 @@ def test_contexts_sharing_a_session_share_the_planner(ctx):
 
     assert sibling.table_exist("shared_planner_test")
     assert sibling.session_id() == ctx.session_id()
+
+
+class _NamedCodec:
+    """Wraps a codec capsule in an object that can name itself.
+
+    ``with_extensions`` requires objects rather than bare capsules, because a
+    codec's wire id is read off the object it is handed over as. This is the
+    shape a library holding a raw capsule hands over.
+    """
+
+    def __init__(self, capsule, codec_id):
+        self._capsule = capsule
+        self.__datafusion_codec_id__ = codec_id
+
+    def __datafusion_logical_extension_codec__(self, session=None):
+        return self._capsule
+
+    def __datafusion_physical_extension_codec__(self, session=None):
+        return self._capsule
+
+
+class _CodecOnlyExtension:
+    """Contributes decline-all codecs exported from an unrelated session.
+
+    Retaining ``ctx`` is what the protocol tells real extensions not to do —
+    a bundle is reusable, so a cached context belongs to whichever session it
+    was last installed on. It is kept here only so a test can assert *which*
+    context the factory was handed.
+    """
+
+    def __init__(self, prefix="my_library"):
+        self.exporter = SessionContext()
+        self.prefix = prefix
+        self.bound_ctx = None
+
+    def __datafusion_session_components__(self, ctx):
+        self.bound_ctx = ctx
+        return SessionExtensionComponents(
+            logical_extension_codecs=(
+                _NamedCodec(
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                    f"{self.prefix}.logical",
+                ),
+            ),
+            physical_extension_codecs=(
+                _NamedCodec(
+                    self.exporter.__datafusion_physical_extension_codec__(),
+                    f"{self.prefix}.physical",
+                ),
+            ),
+        )
+
+
+class _PlannerExtension:
+    """Contributes a planner, recording the fallback it was handed.
+
+    Passing ``fallback`` straight back through is the degenerate wrap: it plans
+    the same queries to the same plans, which is what lets a pure-Python test
+    assert the threading without a real layering planner. It is not a no-op —
+    the capsule gets installed, so the session ends up planning through a
+    foreign planner — but nothing here depends on that either way.
+    """
+
+    def __init__(self, calls=None):
+        self.fallbacks = []
+        self.planner_ctx = None
+        # Shared list the hooks append themselves to, so a test can assert the
+        # order they ran in rather than only that each ran.
+        self.calls = [] if calls is None else calls
+
+    def __datafusion_session_planner__(self, ctx, fallback):
+        self.calls.append(self)
+        self.planner_ctx = ctx
+        self.fallbacks.append(fallback)
+        return fallback
+
+
+def test_with_extensions_accepts_no_extensions(ctx):
+    """No extensions installs nothing and returns a handle on this session.
+
+    A caller assembling the list at runtime — from a plugin registry, say —
+    should not have to special-case it being empty, and every sibling varargs
+    method on ``DataFrame`` accepts zero arguments the same way.
+    """
+    ctx.register_record_batches(
+        "empty_extensions_test",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    result = ctx.with_extensions()
+
+    assert result.session_id() == ctx.session_id()
+    assert result.table_exist("empty_extensions_test")
+    assert result.logical_extension_codec_ids() == ctx.logical_extension_codec_ids()
+
+
+def test_with_extensions_no_extensions_keeps_an_installed_planner(ctx):
+    """The empty case must not disturb a planner the session already has.
+
+    A call that installs no codec and no planner skips the planner commit
+    entirely, so the installed planner keeps the chains it was bound to and the
+    session still plans through it.
+    """
+    extension = _CodecOnlyExtension()
+    installed = ctx.with_extensions(extension, _PlannerExtension())
+
+    result = installed.with_extensions()
+
+    assert result.logical_extension_codec_ids() == (
+        installed.logical_extension_codec_ids()
+    )
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_rejects_non_extension(ctx):
+    with pytest.raises(TypeError, match="__datafusion_session_planner__"):
+        ctx.with_extensions(object())
+
+
+def test_with_extensions_rejects_bad_components(ctx):
+    class BadExtension:
+        def __datafusion_session_components__(self, ctx):
+            return 42
+
+    with pytest.raises(TypeError, match="SessionExtensionComponents"):
+        ctx.with_extensions(BadExtension())
+
+
+@pytest.mark.parametrize(
+    "field", ["logical_extension_codecs", "physical_extension_codecs"]
+)
+def test_session_extension_components_rejects_a_single_codec(field):
+    """A lone codec is not an iterable of codecs.
+
+    Dropping the trailing comma is the easy way to write one by accident. The
+    check lives on the value type so the error lands in the extension
+    library's own frame, naming the field it got wrong, rather than surfacing
+    later inside ``with_extensions`` as ``'_NamedCodec' object is not
+    iterable``.
+    """
+    codec = _NamedCodec(
+        SessionContext().__datafusion_logical_extension_codec__(),
+        "my_library.logical",
+    )
+
+    with pytest.raises(TypeError, match=r"must be an iterable of codec objects"):
+        SessionExtensionComponents(**{field: codec})
+
+
+def test_session_extension_components_rejects_a_string():
+    """A str is iterable, so it needs refusing on its own.
+
+    Left alone it would normalize into a tuple of characters and fail much
+    later as that many bogus codecs.
+    """
+    with pytest.raises(TypeError, match=r"not a single str"):
+        SessionExtensionComponents(logical_extension_codecs="my_library.logical")
+
+
+def test_with_extensions_accepts_a_planner_only_extension(ctx):
+    """An extension may implement the planner hook alone.
+
+    A library that ships an optimizing planner and no codecs — nothing to
+    contribute in phase one — should not have to return empty components.
+    """
+    extension = _PlannerExtension()
+    result = ctx.with_extensions(extension)
+
+    assert len(extension.fallbacks) == 1
+    assert result.session_id() == ctx.session_id()
+
+
+def test_with_extensions_threads_the_planner_through_in_order(ctx):
+    """Each planner hook receives what the previous one returned.
+
+    Planners nest rather than chain, so the host hands each bundle the planner
+    built so far. Argument order is nesting order, last one outermost.
+    """
+    calls = []
+    first, second = _PlannerExtension(calls), _PlannerExtension(calls)
+    ctx.with_extensions(first, second)
+
+    # Argument order, once each. Nothing else pins the order: both hooks
+    # return capsules, and a host that ran them backwards would still leave
+    # each with one fallback recorded.
+    assert calls == [first, second]
+
+    # `first` returned its fallback unchanged, but the host re-exports every
+    # hook's return value before handing it on, so `second` receives a capsule
+    # of its own rather than the object `first` was handed.
+    assert second.fallbacks[0] is not first.fallbacks[0]
+
+    # That is as far as pure Python reaches: a capsule is opaque, so this
+    # cannot tell a re-export of `first`'s planner from a fresh read of the
+    # session's. `test_with_extensions_nests_planners_in_argument_order` in
+    # examples/datafusion-ffi-query-planner-example is what pins the nesting,
+    # by asserting the outer planner delegated to the inner one.
+
+
+def test_with_extensions_planner_hook_sees_the_new_handle(ctx):
+    """Phase two runs against the handle carrying the final codec chains.
+
+    A planner captured against the pre-install handle would encode through a
+    chain missing every codec this call installed.
+    """
+    codecs = _CodecOnlyExtension()
+    planner = _PlannerExtension()
+    result = ctx.with_extensions(codecs, planner)
+
+    assert planner.planner_ctx.logical_extension_codec_ids() == ["my_library.logical"]
+    assert result.logical_extension_codec_ids() == ["my_library.logical"]
+
+
+def test_with_extensions_skips_a_planner_hook_returning_none(ctx):
+    """Returning ``None`` contributes no planner and keeps the fallback.
+
+    The skip is what lets the call succeed at all: a host that treated the
+    ``None`` as a contribution would hand it to the export step and fail with
+    ``'None' is not an instance of 'PyCapsule'`` before ``downstream`` ran.
+    """
+
+    class NoPlanner:
+        def __init__(self):
+            self.fallbacks = []
+
+        def __datafusion_session_planner__(self, ctx, fallback):
+            self.fallbacks.append(fallback)
+            # Spelled out rather than left to fall off the end: `None` is the
+            # protocol's "contribute no planner", which is what this test is
+            # about, and an implicit one would read as an oversight.
+            return None  # noqa: RET501, PLR1711
+
+    skipped = NoPlanner()
+    downstream = _PlannerExtension()
+    result = ctx.with_extensions(skipped, downstream)
+
+    # Both hooks ran, and `downstream` was handed a planner rather than the
+    # `None` in front of it. It is a fresh read of the session's planner, not
+    # the object `skipped` was given, so a host that fell back by reusing the
+    # previous hook's *input* is ruled out too.
+    assert len(skipped.fallbacks) == 1
+    assert len(downstream.fallbacks) == 1
+    assert downstream.fallbacks[0] is not skipped.fallbacks[0]
+
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_rejects_bad_codec_capsule(ctx):
+    """A correctly shaped object still has to return the right capsule."""
+
+    class BadCodecExtension:
+        def __datafusion_session_components__(self, ctx):
+            wrong_capsule = ctx.__datafusion_task_context_provider__()
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    _NamedCodec(wrong_capsule, "my_library.logical"),
+                ),
+            )
+
+    with pytest.raises(
+        ValueError, match="Expected name 'datafusion_logical_extension_codec'"
+    ):
+        ctx.with_extensions(BadCodecExtension())
+
+
+def test_with_extensions_rejects_a_bare_capsule_codec(ctx):
+    """A codec must be an object that can name itself, not a bare capsule.
+
+    An id is read off the object a codec is handed over as, and a capsule has
+    no type to read one from. ``with_extensions`` takes no ``codec_id=``, so
+    the capsule is refused here rather than given an id derived from something
+    that is not the codec.
+    """
+
+    class BareCapsuleExtension:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    self.exporter.__datafusion_logical_extension_codec__(),
+                ),
+            )
+
+    with pytest.raises(
+        TypeError,
+        match="must be an object exposing `__datafusion_logical_extension_codec__`",
+    ):
+        ctx.with_extensions(BareCapsuleExtension())
+
+
+def test_with_extensions_rejects_a_bare_physical_capsule_codec(ctx):
+    """The physical getter is named in its own diagnostic."""
+
+    class BareCapsuleExtension:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(
+                physical_extension_codecs=(
+                    self.exporter.__datafusion_physical_extension_codec__(),
+                ),
+            )
+
+    with pytest.raises(
+        TypeError,
+        match="must be an object exposing `__datafusion_physical_extension_codec__`",
+    ):
+        ctx.with_extensions(BareCapsuleExtension())
+
+
+def test_with_extensions_codec_ids_survive_composition(ctx):
+    """A codec keeps its id when its extension is nested inside another one.
+
+    Wire ids have to mean the same thing in whichever process decodes, so
+    packaging one extension inside another — the natural way for an
+    application to present several libraries as one — must not re-tag the
+    inner library's payloads. Reading the id off the handed-over object rather
+    than off the contributing extension is what guarantees that.
+    """
+
+    class ComposedExtension:
+        """Presents another extension's components as its own."""
+
+        def __init__(self, inner):
+            self.inner = inner
+
+        def __datafusion_session_components__(self, ctx):
+            return self.inner.__datafusion_session_components__(ctx)
+
+    direct = ctx.with_extensions(_CodecOnlyExtension())
+    wrapped = SessionContext().with_extensions(ComposedExtension(_CodecOnlyExtension()))
+
+    assert direct.logical_extension_codec_ids() == ["my_library.logical"]
+    assert wrapped.logical_extension_codec_ids() == ["my_library.logical"]
+    assert direct.physical_extension_codec_ids() == ["my_library.physical"]
+    assert wrapped.physical_extension_codec_ids() == ["my_library.physical"]
+
+
+def test_with_extensions_uses_ids_declared_on_the_codec(ctx):
+    """``__datafusion_codec_id__`` on the handed-over object names the codec.
+
+    This is how an extension contributing more than one codec of a kind tells
+    them apart.
+    """
+
+    class TwoNamedCodecs:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    _NamedCodec(
+                        self.exporter.__datafusion_logical_extension_codec__(),
+                        "my_library.first",
+                    ),
+                    _NamedCodec(
+                        self.exporter.__datafusion_logical_extension_codec__(),
+                        "my_library.second",
+                    ),
+                ),
+            )
+
+    result = ctx.with_extensions(TwoNamedCodecs())
+    assert result.logical_extension_codec_ids() == [
+        "my_library.first",
+        "my_library.second",
+    ]
+
+
+def test_with_extensions_rejects_two_codecs_of_one_class(ctx):
+    """Two wrappers of one class claim one class-derived id, so they collide.
+
+    Numbering them by position would be an id another library can mint the
+    same value from, and would break stored plans the first time the extension
+    reordered what it returns, so the ambiguity is refused instead.
+    """
+
+    class UnnamedCodec:
+        def __init__(self, capsule):
+            self._capsule = capsule
+
+        def __datafusion_logical_extension_codec__(self, session=None):
+            return self._capsule
+
+    class TwoUnnamedCodecs:
+        def __init__(self):
+            self.exporter = SessionContext()
+
+        def __datafusion_session_components__(self, ctx):
+            capsule = self.exporter.__datafusion_logical_extension_codec__
+            return SessionExtensionComponents(
+                logical_extension_codecs=(
+                    UnnamedCodec(capsule()),
+                    UnnamedCodec(capsule()),
+                ),
+            )
+
+    with pytest.raises(ValueError, match="__datafusion_codec_id__"):
+        ctx.with_extensions(TwoUnnamedCodecs())
+
+
+def test_with_extensions_leaves_an_exporting_object_its_own_id(ctx):
+    """A codec handed over as an object keeps the identity it declares."""
+    exporter = SessionContext()
+
+    class ObjectCodecExtension:
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(logical_extension_codecs=(exporter,))
+
+    result = ctx.with_extensions(ObjectCodecExtension())
+    assert result.logical_extension_codec_ids() == [exporter.__datafusion_codec_id__]
+
+
+def test_with_extensions_installs_codecs_and_planner(ctx):
+    ctx.register_record_batches(
+        "extensions_test",
+        [[pa.RecordBatch.from_pydict({"value": [1, 2, 3]})]],
+    )
+    extension = _CodecOnlyExtension()
+    result = ctx.with_extensions(extension, _PlannerExtension())
+
+    assert result.table_exist("extensions_test")
+    # In-memory tables need a real extension codec to round-trip through the
+    # FFI planner, so query plans that don't serialize a table provider.
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_binds_to_the_receiving_session(ctx):
+    extension = _CodecOnlyExtension()
+    result = ctx.with_extensions(extension)
+
+    # Factories are handed the receiver itself, so a component bound during
+    # installation targets the session the returned handle also wraps. There
+    # is no intermediate context that could be collected out from under it.
+    assert extension.bound_ctx is ctx
+    assert result.session_id() == ctx.session_id()
+
+    # One session: a registration through either handle is visible to both.
+    ctx.register_record_batches(
+        "bound_test",
+        [[pa.RecordBatch.from_pydict({"value": [1]})]],
+    )
+    assert result.table_exist("bound_test")
+
+
+def test_with_extensions_survives_source_collection():
+    extension = _CodecOnlyExtension()
+    result = SessionContext().with_extensions(extension, _PlannerExtension())
+    gc.collect()
+
+    batches = result.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
+
+
+def test_with_extensions_failure_leaves_source_usable(ctx):
+    class BoomExtension:
+        def __datafusion_session_components__(self, ctx):
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(_CodecOnlyExtension(), BoomExtension())
+
+    batches = ctx.sql("SELECT 1 AS value").collect()
+    assert batches[0].column(0) == pa.array([1])
 
 
 def test_table_provider(ctx):
