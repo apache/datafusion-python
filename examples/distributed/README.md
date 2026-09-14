@@ -66,12 +66,18 @@ Each library's tests can be run from its own directory the same way, without
 the sibling installs. `storage-library` and `udf-library` need only
 `pytest maturin ../../..`.
 
-Against the real TPC-H data — generate it as
-[`examples/tpch`](../tpch/README.md) describes, then:
+Against real TPC-H data, which the script generates for itself:
 
 ```console
+$ uv pip install tpchgen-cli
 $ uv run python ../run_tpch.py --partitions 4
 ```
+
+`tpchgen-cli` shards natively, so `--partitions 4` asks it for four Parquet
+files and tells the engine to use four partitions — the two are the same
+number because a distributed engine can only spread work as widely as the data
+is split. `--scale` sets how much data; it defaults to a tenth of TPC-H scale
+factor 1, and `--scale 1` is the full ~6M row `lineitem`.
 
 ## What actually happens
 

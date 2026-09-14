@@ -17,18 +17,14 @@
 
 """Run TPC-H Q1 across worker processes, and compare against one process.
 
+    uv pip install tpchgen-cli
     python examples/distributed/run_tpch.py --partitions 4
 
-Needs the TPC-H data the repository's other examples use::
-
-    mkdir -p examples/tpch/data && cd examples/tpch/data
-    uv pip install tpchgen-cli && uv run --no-project tpchgen-cli -s 1 --format=parquet
-
-`tpchgen-cli` writes one file per table, so `lineitem.parquet` is a single
-220 MB file -- one partition, and nothing to fan out. This script re-shards
-the columns Q1 needs into `--partitions` files first, which is also a fair
-illustration of the real constraint: a distributed engine can only spread work
-as widely as the data is split.
+Generates its own `lineitem` with `tpchgen-cli`, which shards natively: one
+`tpchgen-cli parquet --parts N` call writes N Parquet files. That is also a
+fair illustration of the real constraint -- a distributed engine can only
+spread work as widely as the data is split -- so the number of files is the
+same `--partitions` the engine is told to use.
 """
 
 from __future__ import annotations
@@ -36,18 +32,16 @@ from __future__ import annotations
 import argparse
 import pathlib
 import shutil
-import sys
+import subprocess
 import tempfile
 import time
 
 import pyarrow as pa
-import pyarrow.parquet as pq
 from dfx_engine.driver import run_distributed, run_local
 from dfx_engine.session import SessionSpec
 
-# Q1 without the `l_shipdate` filter and the `avg` columns, so the shard below
-# stays small. The shape that matters is unchanged: group by two low-cardinality
-# columns, aggregate, order.
+# Q1 without the `l_shipdate` filter and the `avg` columns. The shape that
+# matters is unchanged: group by two low-cardinality columns, aggregate, order.
 Q1 = """
 select l_returnflag,
        l_linestatus,
@@ -61,35 +55,37 @@ group by l_returnflag, l_linestatus
 order by l_returnflag, l_linestatus
 """
 
-COLUMNS = [
-    "l_returnflag",
-    "l_linestatus",
-    "l_quantity",
-    "l_extendedprice",
-    "l_discount",
-    "l_tax",
-]
 
+def generate(into: pathlib.Path, partitions: int, scale: float) -> pathlib.Path:
+    """Write `lineitem` as `partitions` Parquet files, and return their directory.
 
-def reshard(
-    source: pathlib.Path, into: pathlib.Path, partitions: int, rows: int
-) -> int:
-    """Write the first `rows` rows of `source` as `partitions` Parquet files."""
-    into.mkdir(parents=True, exist_ok=True)
-    table = pq.read_table(source, columns=COLUMNS)
-    if rows:
-        table = table.slice(0, rows)
+    `tpchgen-cli` puts a sharded table in a subdirectory named for it, so the
+    directory this returns is `into/lineitem` -- which is what the storage
+    library's table provider wants, since it scans `*.parquet` under a
+    directory and makes one partition per file.
+    """
+    executable = shutil.which("tpchgen-cli")
+    if executable is None:
+        message = (
+            "tpchgen-cli not found on PATH; install it with "
+            "`uv pip install tpchgen-cli`"
+        )
+        raise RuntimeError(message)
 
-    per_file = max(1, table.num_rows // partitions)
-    written = 0
-    for index in range(partitions):
-        offset = index * per_file
-        length = table.num_rows - offset if index == partitions - 1 else per_file
-        if length <= 0:
-            break
-        pq.write_table(table.slice(offset, length), into / f"part-{index}.parquet")
-        written += 1
-    return written
+    subprocess.run(  # noqa: S603
+        [
+            executable,
+            "parquet",
+            f"--scale-factor={scale}",
+            "--tables=lineitem",
+            f"--parts={partitions}",
+            f"--output-dir={into}",
+            "--no-progress",
+            "--quiet",
+        ],
+        check=True,
+    )
+    return into / "lineitem"
 
 
 def compare(table: pa.Table, reference: pa.Table) -> None:
@@ -131,37 +127,20 @@ def compare(table: pa.Table, reference: pa.Table) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--data",
-        type=pathlib.Path,
-        default=pathlib.Path(__file__).resolve().parents[1]
-        / "tpch"
-        / "data"
-        / "lineitem.parquet",
-    )
     parser.add_argument("--partitions", type=int, default=4)
     parser.add_argument(
-        "--rows",
-        type=int,
-        default=2_000_000,
-        help="rows to use; 0 for all of them (SF 1 lineitem is ~6M)",
+        "--scale",
+        type=float,
+        default=0.1,
+        help="TPC-H scale factor; 1 is the full ~6M row lineitem",
     )
     args = parser.parse_args(argv)
 
-    if not args.data.exists():
-        sys.stderr.write(
-            f"{args.data} not found. Generate it with:\n"
-            "  mkdir -p examples/tpch/data && cd examples/tpch/data\n"
-            "  uv pip install tpchgen-cli\n"
-            "  uv run --no-project tpchgen-cli -s 1 --format=parquet\n"
-        )
-        return 2
-
     workspace = pathlib.Path(tempfile.mkdtemp(prefix="dfx-tpch-"))
     try:
-        data = workspace / "lineitem"
-        count = reshard(args.data, data, args.partitions, args.rows)
-        print(f"resharded into {count} file(s) under {data}")
+        data = generate(workspace, args.partitions, args.scale)
+        count = len(list(data.glob("*.parquet")))
+        print(f"generated {count} file(s) under {data}")
 
         spec = SessionSpec(
             tables={"lineitem": str(data)},

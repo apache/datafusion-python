@@ -164,11 +164,15 @@ jobs:
           cd examples/tpch
           uv run --no-project pytest _tests.py
 
-      # The script the distributed example's README advertises, against the
-      # dataset generated above -- so the exact entry point a reader will
-      # copy-paste cannot rot while its test suite stays green. The row cap
-      # keeps the reshard and the worker round trip to seconds; correctness
-      # on the full shape is the pytest suites' job, this is the script.
+      # The script the distributed example's README advertises, run exactly as
+      # a reader would copy-paste it -- so that entry point cannot rot while
+      # its test suite stays green. It generates its own `lineitem` rather than
+      # reading the dataset above, which is why `tpchgen-cli` is installed here
+      # too: the step is meant to stand on its own if the TPC-H steps move or
+      # go away. The scale factor keeps generation and the worker round trip to
+      # seconds; correctness on the full shape is the pytest suites' job.
       - name: Run distributed TPC-H example
         if: matrix.wheel-tag == 'abi3'
-        run: uv run --no-project python examples/distributed/run_tpch.py --rows 400000
+        run: |
+          uv pip install tpchgen-cli
+          uv run --no-project python examples/distributed/run_tpch.py --scale 0.1
