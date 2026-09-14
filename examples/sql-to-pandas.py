@@ -40,3 +40,5 @@ fig = pandas_df.plot(
     kind="bar", title="Trip Count by Number of Passengers"
 ).get_figure()
 fig.savefig("chart.png")
+
+print("Saved chart to chart.png")
