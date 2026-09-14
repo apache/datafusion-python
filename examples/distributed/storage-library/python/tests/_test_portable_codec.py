@@ -131,13 +131,52 @@ def test_a_projection_survives_the_round_trip(readings_dir: pathlib.Path) -> Non
     plan = ctx.sql("select reading from readings").execution_plan()
     restored = ExecutionPlan.from_bytes(ctx, plan.to_bytes(ctx))
 
-    rows = [
-        value
+    batches = [
+        batch.to_pyarrow()
         for partition in range(restored.partition_count)
         for batch in ctx.execute(restored, partition)
-        for value in batch.to_pyarrow().column("reading").to_pylist()
     ]
-    assert sorted(rows) == [1.5, 1.5, 1.5, 2.5, 2.5, 2.5, 3.5, 3.5, 3.5]
+    # Exactly one column, not merely the right values in it: a decoder that
+    # parsed the projection and then dropped it would still produce every
+    # `reading` value below, just alongside the columns that were projected
+    # away. The schema is where that shows.
+    assert [batch.column_names for batch in batches] == [["reading"]] * 3
+    rows = sorted(
+        value for batch in batches for value in batch.column("reading").to_pylist()
+    )
+    assert rows == [1.5, 1.5, 1.5, 2.5, 2.5, 2.5, 3.5, 3.5, 3.5]
+
+
+def _scan_of(plan: ExecutionPlan) -> ExecutionPlan:
+    """Descend to the leaf, which for these plans is this library's scan."""
+    children = plan.children()
+    return _scan_of(children[0]) if children else plan
+
+
+def test_a_limit_survives_the_round_trip(readings_dir: pathlib.Path) -> None:
+    """The limit is part of the descriptor too, and it changes what is read.
+
+    Asserted on the scan node itself rather than on the whole plan: the
+    logical `PushDownLimit` rule keeps a limit operator *above* the scan, and
+    that operator would trim the result to the right count even if the decoder
+    dropped the scan's own limit. Executing the restored scan directly is what
+    makes a dropped limit visible -- three rows per file instead of two.
+    """
+    ctx, _ = _configured(readings_dir)
+    plan = ctx.sql("select reading from readings limit 2").execution_plan()
+    scan = _scan_of(plan)
+    blob = scan.to_bytes(ctx)
+    assert b'"limit":2' in blob
+
+    restored = ExecutionPlan.from_bytes(ctx, blob)
+    per_partition = [
+        sum(batch.to_pyarrow().num_rows for batch in ctx.execute(restored, partition))
+        for partition in range(restored.partition_count)
+    ]
+    # The limit is applied per partition -- each file stops after two of its
+    # three rows. The trim to two rows overall is the limit operator's job,
+    # and that operator is deliberately not part of what was serialized here.
+    assert per_partition == [2, 2, 2]
 
 
 def test_stock_nodes_never_reach_this_codec(readings_dir: pathlib.Path) -> None:
@@ -343,4 +382,13 @@ def test_the_bundle_is_reusable_across_sessions(readings_dir: pathlib.Path) -> N
             == 9
         )
 
-    assert first.__datafusion_codec_id__ != second.__datafusion_codec_id__
+    # The second install has to carry live codecs of its own, not a component
+    # cached from the first -- so the proof is a round trip through `second`
+    # specifically, not a property of the session objects.
+    assert bundle.decode_calls() == 0
+    blob = (
+        second.sql("select sensor_id from readings").execution_plan().to_bytes(second)
+    )
+    restored = ExecutionPlan.from_bytes(second, blob)
+    assert restored.partition_count == 3
+    assert bundle.decode_calls() == 1

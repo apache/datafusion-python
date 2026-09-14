@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from datafusion import SessionConfig, SessionContext, udaf, udf, udwf
-from datafusion.plan import ExecutionPlan
+from datafusion.plan import ExecutionPlan, LogicalPlan
 from dfx_udfs import (
     CodecObservations,
     NetRevenueUDF,
@@ -184,6 +184,10 @@ WORKER = textwrap.dedent(
 )
 
 
+def _decoded(stdout: str) -> int:
+    return int(re.search(r"decoded=(\d+)", stdout).group(1))
+
+
 def _run_worker(
     tmp_path: pathlib.Path, blob: bytes, mode: str, data: pathlib.Path
 ) -> subprocess.CompletedProcess[str]:
@@ -252,21 +256,113 @@ def test_a_worker_with_neither_names_the_function_it_cannot_find(
     assert "dfx_net_revenue" in result.stderr
 
 
+def test_a_worker_with_only_the_codec_rebuilds_the_aggregate(
+    lineitem: pathlib.Path, tmp_path: pathlib.Path
+) -> None:
+    """The aggregate travels by name too, through `aggregate_by_name`.
+
+    Worth its own worker: the scalar tests exercise `scalar_by_name` and
+    nothing else, so a typo in the aggregate's decode arm would only ever
+    surface here.
+    """
+    ctx, _ = _session(lineitem)
+    blob = (
+        ctx.sql("select dfx_weighted_avg(l_extendedprice, l_quantity) from lineitem")
+        .execution_plan()
+        .to_bytes(ctx)
+    )
+
+    result = _run_worker(tmp_path, blob, "codec", lineitem)
+
+    assert result.returncode == 0, result.stderr
+    # (100*1 + 200*3 + 400*4) / (1 + 3 + 4), same as the in-process test.
+    assert "total=287.5" in result.stdout
+    # More than one decode is fine -- the plan holds the function once per
+    # aggregate phase -- but zero would mean the registry answered, and this
+    # worker has nothing registered.
+    assert _decoded(result.stdout) >= 1
+
+
+def test_a_worker_with_only_the_codec_rebuilds_the_window_function(
+    lineitem: pathlib.Path, tmp_path: pathlib.Path
+) -> None:
+    """And the window function, through `window_by_name`."""
+    ctx, _ = _session(lineitem)
+    blob = (
+        ctx.sql(
+            "select dfx_revenue_rank() over (order by l_extendedprice desc) as rnk "
+            "from lineitem"
+        )
+        .execution_plan()
+        .to_bytes(ctx)
+    )
+
+    result = _run_worker(tmp_path, blob, "codec", lineitem)
+
+    assert result.returncode == 0, result.stderr
+    # Ranks 1 + 2 + 3 over the three rows.
+    assert "total=6.0" in result.stdout
+    assert _decoded(result.stdout) >= 1
+
+
 def test_the_codec_declines_names_it_does_not_own(lineitem: pathlib.Path) -> None:
     """A name-only payload reaches every codec, so declining matters.
 
     With no bytes there is no codec id to route on. A codec that answered for
     any name it was handed would hijack another library's functions.
+
+    The foreign name is manufactured by editing the encoded plan: the session's
+    own registry is consulted before any codec, so a name that is actually
+    registered anywhere -- a built-in, say -- never reaches a codec at all.
+    The replacement keeps the byte length, because the name sits inside
+    length-delimited protobuf fields.
     """
     ctx, observations = _session(lineitem, with_codecs=True)
-    # `abs` is a built-in, so the plan references a name this library does not
-    # own; decoding offers it around.
     blob = (
-        ctx.sql("select abs(l_discount) from lineitem").execution_plan().to_bytes(ctx)
+        ctx.sql(
+            "select dfx_net_revenue(l_extendedprice, l_discount, l_tax) from lineitem"
+        )
+        .execution_plan()
+        .to_bytes(ctx)
     )
-    ExecutionPlan.from_bytes(ctx, blob)
+    mangled = blob.replace(b"dfx_net_revenue", b"dfx_not_revenue")
+    assert len(mangled) == len(blob), "the edit has to preserve the protobuf framing"
 
+    with pytest.raises(Exception, match="dfx_not_revenue"):
+        ExecutionPlan.from_bytes(ctx, mangled)
+
+    # The codec was offered the foreign name and said no; it never rebuilt
+    # anything. A codec that hijacked the name would show up as the mirror
+    # image -- a decode, no decline, and a query that "works".
+    assert observations.declined_calls() >= 1
     assert observations.decode_calls() == 0
+
+
+def test_the_logical_codec_rebuilds_functions_by_name(lineitem: pathlib.Path) -> None:
+    """The logical half is a peer, not a passenger.
+
+    `LogicalPlan.to_bytes` is the layer an engine that ships *logical* plans
+    exercises, and nothing about the physical tests touches it. The receiving
+    session installs only the logical codec and registers nothing, so the
+    rebuild below can only have come through `try_decode_udf` on this codec.
+    """
+    ctx, _ = _session(lineitem)
+    blob = (
+        ctx.sql(
+            "select dfx_net_revenue(l_extendedprice, l_discount, l_tax) from lineitem"
+        )
+        .logical_plan()
+        .to_bytes(ctx)
+    )
+
+    receiver_observations = CodecObservations()
+    receiver = SessionContext().with_logical_extension_codec(
+        receiver_observations.logical_codec()
+    )
+    restored = LogicalPlan.from_bytes(receiver, blob)
+
+    assert receiver_observations.decode_calls() == 1
+    assert "dfx_net_revenue" in restored.display_indent()
 
 
 def test_the_codec_ids_are_pinned() -> None:

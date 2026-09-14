@@ -145,6 +145,11 @@ def test_an_inline_python_udf_ships_by_value(spec: SessionSpec) -> None:
     assert stage is not None
     # The callable itself is in the bytes, under the scalar-UDF family prefix.
     assert b"DFPYUDF" in stage.to_bytes(ctx)
+    # By value means the payload carries bytecode, not a two-word pointer --
+    # the other half of the size claim pinned at the by-reference test's
+    # `< 200`. If cloudpickle ever started resolving `<locals>` functions by
+    # reference, this is the line that would notice.
+    assert len(cloudpickle.dumps(bucket)) > 500
 
     result = run_distributed(sql, spec, extra_udfs=[price_bucket])
     # Prices run from one hundred to eight hundred, so four exceed four hundred.
