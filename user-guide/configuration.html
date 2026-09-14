@@ -567,6 +567,33 @@ a <a class="reference internal" href="../autoapi/datafusion/context/index.html#d
 <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
+<section id="setting-options-by-key">
+<h2>Setting options by key<a class="headerlink" href="#setting-options-by-key" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">with_*</span></code> methods cover the common options, but any option DataFusion declares can be
+set by its fully qualified key with <a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.SessionConfig.set" title="datafusion.SessionConfig.set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set()</span></code></a>. The value is
+always a string, and is parsed according to the type the option declares, so an unknown key
+or an unparsable value raises rather than being silently ignored:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">,</span> <span class="s2">&quot;1024&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A whole dictionary of options can be applied at once by passing it to the
+<a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> constructor, which is the shape a replayed set of
+settings usually arrives in:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">({</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">:</span> <span class="s2">&quot;1024&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Both routes reject the same keys, so which one you use does not change what is accepted. The
+constructor applies its entries in an unspecified order, so a dictionary with more than one
+bad key does not report a predictable one first.</p>
+<p>One trap is worth knowing about if you read settings back out of a session and replay them
+somewhere else, such as onto a worker process or into a test fixture. With
+<code class="docutils literal notranslate"><span class="pre">with_information_schema(True)</span></code>, the <code class="docutils literal notranslate"><span class="pre">information_schema.df_settings</span></code> table lists the
+<code class="docutils literal notranslate"><span class="pre">datafusion.runtime.*</span></code> keys alongside the rest, but those come from the runtime environment
+rather than from <code class="docutils literal notranslate"><span class="pre">ConfigOptions</span></code> and cannot be set this way. Feeding that table’s rows back
+in verbatim will fail on the first such row, whichever route you use. Configure the runtime
+through <code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code> instead, and skip the <code class="docutils literal notranslate"><span class="pre">datafusion.runtime.</span></code> prefix when
+replaying.</p>
+</section>
 <section id="maximizing-cpu-usage">
 <h2>Maximizing CPU Usage<a class="headerlink" href="#maximizing-cpu-usage" title="Link to this heading">#</a></h2>
 <p>DataFusion uses partitions to parallelize work. For small queries the
@@ -607,6 +634,50 @@ control:</p>
 <span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="checking-what-the-plan-actually-does">
+<span id="checking-partitioning"></span><h3>Checking what the plan actually does<a class="headerlink" href="#checking-what-the-plan-actually-does" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">repartition</span></code> and <code class="docutils literal notranslate"><span class="pre">repartition_by_hash</span></code> are requests, not instructions. The optimizer is
+free to drop a repartition nothing downstream needs, to collapse partitions again for an
+operator that requires a single stream, or to substitute a repartition of its own sized by
+<code class="docutils literal notranslate"><span class="pre">target_partitions</span></code>. So the number you passed is not necessarily the number you get.</p>
+<p><a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.ExecutionPlan.output_partitioning" title="datafusion.ExecutionPlan.output_partitioning"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_partitioning</span></code></a> reports what the built plan does,
+as opposed to what was asked of it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;data.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">repartition_by_hash</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">plan</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)],</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))])</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+
+<span class="n">partitioning</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">output_partitioning</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">partitioning</span><span class="o">.</span><span class="n">scheme</span><span class="p">)</span>            <span class="c1"># &#39;Hash&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">partitioning</span><span class="o">.</span><span class="n">partition_count</span><span class="p">)</span>   <span class="c1"># 16 -- target_partitions, not the 8 requested</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">partitioning</span><span class="o">.</span><span class="n">hash_expressions</span><span class="p">)</span>  <span class="c1"># [&#39;a@0&#39;]</span>
+</pre></div>
+</div>
+<p>The request for eight partitions did not survive: the optimizer inserted its own hash
+repartition at <code class="docutils literal notranslate"><span class="pre">target_partitions</span></code> instead. Had the aggregation been left off, the
+repartition would have been removed altogether and the plan would report
+<code class="docutils literal notranslate"><span class="pre">UnknownPartitioning</span></code> over the source’s own partition count.</p>
+<p><code class="docutils literal notranslate"><span class="pre">UnknownPartitioning</span></code> means the plan knows how many partitions it has but nothing about how
+rows are distributed across them, which is the ordinary case for a file scan.
+<a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.ExecutionPlan.partition_count" title="datafusion.ExecutionPlan.partition_count"><code class="xref py py-attr docutils literal notranslate"><span class="pre">partition_count</span></code></a> gives the same count on its own when
+the scheme does not matter.</p>
+<p>Four schemes exist, but only three of them can come out of a plan you built here.
+<code class="docutils literal notranslate"><span class="pre">UnknownPartitioning</span></code> comes from a source, and <code class="docutils literal notranslate"><span class="pre">RoundRobinBatch</span></code> and <code class="docutils literal notranslate"><span class="pre">Hash</span></code> from a
+repartition — either one you asked for or one the optimizer inserted. <code class="docutils literal notranslate"><span class="pre">Range</span></code>, which spreads
+an ordered key space across partitions at chosen split points, has no request form in this
+package: <code class="docutils literal notranslate"><span class="pre">repartition</span></code> asks for round-robin, <code class="docutils literal notranslate"><span class="pre">repartition_by_hash</span></code> asks for hash, and SQL
+has no range-repartition syntax.</p>
+<p>It is still worth handling, because a plan does not have to have been built here. Both
+<code class="docutils literal notranslate"><span class="pre">datafusion-proto</span></code> and <code class="docutils literal notranslate"><span class="pre">datafusion-ffi</span></code> carry range partitioning faithfully, so
+<a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.ExecutionPlan.from_bytes" title="datafusion.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> can return a plan reporting it, as can an
+extension library whose query planner builds one — see <a class="reference internal" href="../extension-guide/query-planners.html#extension-planners"><span class="std std-ref">Query planners</span></a>. Such a
+plan executes normally; only the split points are invisible, since
+<a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.PhysicalPartitioning.hash_expressions" title="datafusion.PhysicalPartitioning.hash_expressions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">hash_expressions</span></code></a> returns <code class="docutils literal notranslate"><span class="pre">None</span></code> for every scheme
+but <code class="docutils literal notranslate"><span class="pre">Hash</span></code>. Read <code class="xref py py-func docutils literal notranslate"><span class="pre">repr()</span></code> of the partitioning to see them.</p>
+</section>
 <section id="benchmark-example">
 <h3>Benchmark Example<a class="headerlink" href="#benchmark-example" title="Link to this heading">#</a></h3>
 <p>The repository includes a benchmark script that demonstrates how to maximize CPU usage
@@ -736,7 +807,9 @@ and about <code class="code docutils literal notranslate"><span class="pre">Runt
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-options-by-key">Setting options by key</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#maximizing-cpu-usage">Maximizing CPU Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-what-the-plan-actually-does">Checking what the plan actually does</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmark-example">Benchmark Example</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#important-considerations">Important Considerations</a></li>
 </ul>

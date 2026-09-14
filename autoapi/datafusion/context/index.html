@@ -833,23 +833,69 @@ multiple spillable operators that all will spill.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">SessionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.context.SessionConfig" title="Link to this definition">#</a></dt>
 <dd><p>Session configuration options.</p>
 <p>Create a new <a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> with the given configuration options.</p>
+<p>Each entry is applied as though passed to <a class="reference internal" href="#datafusion.context.SessionConfig.set" title="datafusion.context.SessionConfig.set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set()</span></code></a>, so the same
+keys are rejected. See <a class="reference internal" href="../../../user-guide/configuration.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config_options</strong> – Configuration options.</p>
+<dd class="field-odd"><p><strong>config_options</strong> – Options to apply, keyed by fully qualified name.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a key names no known option, or a value does not
+parse as that option’s declared type. Which of several bad
+entries is reported is not defined.</p>
 </dd>
 </dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">SessionConfig</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">config_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">:</span> <span class="s2">&quot;1024&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">with_information_schema</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;select value from information_schema.df_settings&quot;</span>
+<span class="gp">... </span>    <span class="s2">&quot; where name = &#39;datafusion.execution.batch_size&#39;&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;pyarrow.StringScalar: &#39;1024&#39;&gt;</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionConfig.set">
 <span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionConfig.set" title="Link to this definition">#</a></dt>
-<dd><p>Set a configuration option.</p>
-<p>Args:
-key: Option key.
-value: Option value.</p>
+<dd><p>Set a configuration option by its fully qualified key.</p>
+<p>Not every key that <code class="docutils literal notranslate"><span class="pre">information_schema.df_settings</span></code> lists can be set
+here: the <code class="docutils literal notranslate"><span class="pre">datafusion.runtime.*</span></code> entries come from the runtime
+environment rather than from the session config. See
+<a class="reference internal" href="../../../user-guide/configuration.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Option key including its namespace, such as
+<code class="docutils literal notranslate"><span class="pre">datafusion.execution.batch_size</span></code>.</p></li>
+<li><p><strong>value</strong> – Option value as a string, parsed according to the type the
+option declares.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>This <a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a>, modified in place, so that calls
+chain.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">key</span></code> names no known option, or if <code class="docutils literal notranslate"><span class="pre">value</span></code> does
+not parse as that option’s declared type.</p>
 </dd>
 </dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">,</span> <span class="s2">&quot;1024&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">with_information_schema</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;select value from information_schema.df_settings&quot;</span>
+<span class="gp">... </span>    <span class="s2">&quot; where name = &#39;datafusion.execution.batch_size&#39;&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;pyarrow.StringScalar: &#39;1024&#39;&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1428,8 +1474,45 @@ needed for SQL queries.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">datafusion.plan.ExecutionPlan</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../record_batch/index.html#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><span class="pre">datafusion.record_batch.RecordBatchStream</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute" title="Link to this definition">#</a></dt>
-<dd><p>Execute the <code class="docutils literal notranslate"><span class="pre">plan</span></code> and return the results.</p>
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">datafusion.plan.ExecutionPlan</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../record_batch/index.html#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><span class="pre">datafusion.record_batch.RecordBatchStream</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute" title="Link to this definition">#</a></dt>
+<dd><p>Execute a single partition of <code class="docutils literal notranslate"><span class="pre">plan</span></code> and stream its batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plan</strong> – The physical plan to execute.</p></li>
+<li><p><strong>partition</strong> – Index of the partition to execute, in
+<code class="docutils literal notranslate"><span class="pre">range(plan.partition_count)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A stream over the record batches that partition produces.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">partition</span></code> is not a valid index for <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p></li>
+<li><p><strong>OverflowError</strong> – If <code class="docutils literal notranslate"><span class="pre">partition</span></code> is negative, or too large to fit a
+platform-sized unsigned integer.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_record_batches</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="p">[[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})],</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]})]]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plan</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select a from t&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plan</span><span class="o">.</span><span class="n">partition_count</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">batch</span><span class="o">.</span><span class="n">to_pyarrow</span><span class="p">()</span><span class="o">.</span><span class="n">num_rows</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">partition_count</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

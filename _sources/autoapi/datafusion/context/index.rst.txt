@@ -264,18 +264,60 @@ Module Contents
 
    Create a new :py:class:`SessionConfig` with the given configuration options.
 
-   :param config_options: Configuration options.
+   Each entry is applied as though passed to :py:meth:`set`, so the same
+   keys are rejected. See :ref:`configuration`.
+
+   :param config_options: Options to apply, keyed by fully qualified name.
+
+   :raises ValueError: If a key names no known option, or a value does not
+       parse as that option's declared type. Which of several bad
+       entries is reported is not defined.
+
+   Example usage:
+
+   >>> from datafusion import SessionConfig, SessionContext
+   >>> ctx = SessionContext(SessionConfig())
+   >>> config = SessionConfig(
+   ...     config_options={"datafusion.execution.batch_size": "1024"}
+   ... )
+   >>> ctx = SessionContext(config.with_information_schema(True))
+   >>> ctx.sql(
+   ...     "select value from information_schema.df_settings"
+   ...     " where name = 'datafusion.execution.batch_size'"
+   ... ).collect()[0]["value"][0]
+   <pyarrow.StringScalar: '1024'>
 
 
    .. py:method:: set(key: str, value: str) -> SessionConfig
 
-      Set a configuration option.
+      Set a configuration option by its fully qualified key.
 
-      Args:
-      key: Option key.
-      value: Option value.
+      Not every key that ``information_schema.df_settings`` lists can be set
+      here: the ``datafusion.runtime.*`` entries come from the runtime
+      environment rather than from the session config. See
+      :ref:`configuration`.
 
-      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+      :param key: Option key including its namespace, such as
+                  ``datafusion.execution.batch_size``.
+      :param value: Option value as a string, parsed according to the type the
+                    option declares.
+
+      :returns: This :py:class:`SessionConfig`, modified in place, so that calls
+                chain.
+
+      :raises ValueError: If ``key`` names no known option, or if ``value`` does
+          not parse as that option's declared type.
+
+      Example usage:
+
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+      >>> ctx = SessionContext(config.with_information_schema(True))
+      >>> ctx.sql(
+      ...     "select value from information_schema.df_settings"
+      ...     " where name = 'datafusion.execution.batch_size'"
+      ... ).collect()[0]["value"][0]
+      <pyarrow.StringScalar: '1024'>
 
 
 
@@ -761,9 +803,37 @@ Module Contents
 
 
 
-   .. py:method:: execute(plan: datafusion.plan.ExecutionPlan, partitions: int) -> datafusion.record_batch.RecordBatchStream
+   .. py:method:: execute(plan: datafusion.plan.ExecutionPlan, partition: int) -> datafusion.record_batch.RecordBatchStream
 
-      Execute the ``plan`` and return the results.
+      Execute a single partition of ``plan`` and stream its batches.
+
+      :param plan: The physical plan to execute.
+      :param partition: Index of the partition to execute, in
+                        ``range(plan.partition_count)``.
+
+      :returns: A stream over the record batches that partition produces.
+
+      :raises ValueError: If ``partition`` is not a valid index for ``plan``.
+      :raises OverflowError: If ``partition`` is negative, or too large to fit a
+          platform-sized unsigned integer.
+
+      Example usage:
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> ctx.register_record_batches(
+      ...     "t", [[pa.record_batch({"a": [1, 2]})], [pa.record_batch({"a": [3]})]]
+      ... )
+      >>> plan = ctx.sql("select a from t").execution_plan()
+      >>> plan.partition_count
+      2
+      >>> sum(
+      ...     batch.to_pyarrow().num_rows
+      ...     for p in range(plan.partition_count)
+      ...     for batch in ctx.execute(plan, p)
+      ... )
+      3
 
 
 

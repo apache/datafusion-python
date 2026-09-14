@@ -104,6 +104,7 @@ Classes
    datafusion.MetricsSet
    datafusion.ParquetColumnOptions
    datafusion.ParquetWriterOptions
+   datafusion.PhysicalPartitioning
    datafusion.RecordBatch
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
@@ -711,11 +712,12 @@ Package Contents
 
       Decoding routes through the codecs installed on ``ctx`` with
       :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
-      Tables created in memory from record batches are currently not
-      supported.
 
       Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
       positional, and there is no fallback to a worker or global context.
+      ``ctx`` need share nothing with the session that encoded the plan: a
+      scan over a table registered from record batches decodes here, because
+      the batches travel inside the encoded scan.
 
       .. seealso:: :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
 
@@ -747,8 +749,10 @@ Package Contents
       When ``ctx`` is supplied, encoding routes through the codecs
       installed on it with
       :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
-      Tables created in memory from record batches are currently not
-      supported.
+
+      Unlike :py:meth:`LogicalPlan.to_bytes`, a plan reading a table
+      registered from record batches does round-trip: the batches travel
+      inside the encoded scan.
 
       Round-tripping through this method and :py:meth:`from_bytes` is how
       an extension library checks that its own codec claimed its nodes,
@@ -768,11 +772,53 @@ Package Contents
    .. py:attribute:: _raw_plan
 
 
+   .. py:property:: output_partitioning
+      :type: PhysicalPartitioning
+
+
+      Returns how this plan's output rows are spread across its partitions.
+
+      Where :py:attr:`partition_count` gives only the number of partitions,
+      this also reports the scheme, so a caller executing partitions
+      separately can tell whether they are hash-distributed on known keys or
+      merely counted. A plan does not necessarily partition the way it was
+      asked to; see :ref:`checking_partitioning`.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+      >>> ctx.register_record_batches("t", [
+      ...     [pa.record_batch({"a": [1, 2, 3]})],
+      ...     [pa.record_batch({"a": [4, 5, 6]})],
+      ... ])
+      >>> ctx.sql("select a from t").execution_plan().output_partitioning
+      UnknownPartitioning(2)
+
+      A group-by redistributes rows, so the plan reports the keys:
+
+      >>> grouped = ctx.sql("select a, count(*) from t group by a")
+      >>> partitioning = grouped.execution_plan().output_partitioning
+      >>> partitioning.scheme
+      'Hash'
+      >>> partitioning.partition_count
+      4
+
+
    .. py:property:: partition_count
       :type: int
 
 
       Returns the number of partitions in the physical plan.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().partition_count
+      1
 
 
 .. py:class:: ExplainFormat
@@ -2403,6 +2449,140 @@ Package Contents
 
 
 
+.. py:class:: PhysicalPartitioning(partitioning: datafusion._internal.PhysicalPartitioning)
+
+   How a physical plan's output rows are spread across its partitions.
+
+   Returned by :py:attr:`ExecutionPlan.output_partitioning`. This is the
+   partitioning a built plan *has*. Distinct from
+   :py:class:`datafusion.expr.Partitioning`, the *logical* partitioning a
+   ``Repartition`` node records and hands back from
+   ``partitioning_scheme()`` — a request, which the plan need not honour. See
+   :ref:`checking_partitioning`.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Compare two partitionings by scheme, count and hash expressions.
+
+      Equality is structural, and does not mirror DataFusion's own
+      comparison of the underlying type, under which two
+      ``UnknownPartitioning`` values of the same width are unequal.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+      >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+      >>> a.output_partitioning == b.output_partitioning
+      True
+      >>> a.output_partitioning == "UnknownPartitioning(1)"
+      False
+
+
+
+   .. py:method:: __hash__() -> int
+
+      Hash the partitioning, consistently with :py:meth:`__eq__`.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+      >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+      >>> len({a.output_partitioning, b.output_partitioning})
+      1
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the partitioning.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> repr(df.execution_plan().output_partitioning)
+      'UnknownPartitioning(1)'
+
+
+
+   .. py:method:: _key() -> tuple[str, int, tuple[str, Ellipsis] | None]
+
+
+   .. py:attribute:: _raw_partitioning
+
+
+   .. py:property:: hash_expressions
+      :type: list[str] | None
+
+
+      The expressions rows are hashed on, or ``None`` for other schemes.
+
+      Physical expressions have no Python representation, so these are
+      returned in their displayed form. ``None`` covers ``"Range"`` as well,
+      whose ordering and split points this class does not expose.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+      >>> ctx.register_record_batches("t", [
+      ...     [pa.record_batch({"a": [1, 2, 3]})],
+      ...     [pa.record_batch({"a": [4, 5, 6]})],
+      ... ])
+      >>> scan = ctx.sql("select a from t").execution_plan()
+      >>> scan.output_partitioning.hash_expressions is None
+      True
+      >>> grouped = ctx.sql("select a, count(*) from t group by a")
+      >>> grouped.execution_plan().output_partitioning.hash_expressions
+      ['a@0']
+
+
+   .. py:property:: partition_count
+      :type: int
+
+
+      The number of partitions.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().output_partitioning.partition_count
+      1
+
+
+   .. py:property:: scheme
+      :type: Literal['RoundRobinBatch', 'Hash', 'Range', 'UnknownPartitioning']
+
+
+      Which partitioning scheme this is.
+
+      ``"UnknownPartitioning"`` means the plan knows how many partitions it
+      has but nothing about how rows are distributed between them, which is
+      the usual case for a file scan. ``"RoundRobinBatch"`` and ``"Hash"``
+      come from a repartition the optimizer inserted. ``"Range"`` only
+      appears on a plan this package did not build; see
+      :ref:`checking_partitioning`.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().output_partitioning.scheme
+      'UnknownPartitioning'
+
+
 .. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
 
    This class is essentially a wrapper for :py:class:`pa.RecordBatch`.
@@ -2803,18 +2983,60 @@ Package Contents
 
    Create a new :py:class:`SessionConfig` with the given configuration options.
 
-   :param config_options: Configuration options.
+   Each entry is applied as though passed to :py:meth:`set`, so the same
+   keys are rejected. See :ref:`configuration`.
+
+   :param config_options: Options to apply, keyed by fully qualified name.
+
+   :raises ValueError: If a key names no known option, or a value does not
+       parse as that option's declared type. Which of several bad
+       entries is reported is not defined.
+
+   Example usage:
+
+   >>> from datafusion import SessionConfig, SessionContext
+   >>> ctx = SessionContext(SessionConfig())
+   >>> config = SessionConfig(
+   ...     config_options={"datafusion.execution.batch_size": "1024"}
+   ... )
+   >>> ctx = SessionContext(config.with_information_schema(True))
+   >>> ctx.sql(
+   ...     "select value from information_schema.df_settings"
+   ...     " where name = 'datafusion.execution.batch_size'"
+   ... ).collect()[0]["value"][0]
+   <pyarrow.StringScalar: '1024'>
 
 
    .. py:method:: set(key: str, value: str) -> SessionConfig
 
-      Set a configuration option.
+      Set a configuration option by its fully qualified key.
 
-      Args:
-      key: Option key.
-      value: Option value.
+      Not every key that ``information_schema.df_settings`` lists can be set
+      here: the ``datafusion.runtime.*`` entries come from the runtime
+      environment rather than from the session config. See
+      :ref:`configuration`.
 
-      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+      :param key: Option key including its namespace, such as
+                  ``datafusion.execution.batch_size``.
+      :param value: Option value as a string, parsed according to the type the
+                    option declares.
+
+      :returns: This :py:class:`SessionConfig`, modified in place, so that calls
+                chain.
+
+      :raises ValueError: If ``key`` names no known option, or if ``value`` does
+          not parse as that option's declared type.
+
+      Example usage:
+
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+      >>> ctx = SessionContext(config.with_information_schema(True))
+      >>> ctx.sql(
+      ...     "select value from information_schema.df_settings"
+      ...     " where name = 'datafusion.execution.batch_size'"
+      ... ).collect()[0]["value"][0]
+      <pyarrow.StringScalar: '1024'>
 
 
 

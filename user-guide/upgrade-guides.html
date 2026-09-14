@@ -608,15 +608,6 @@ library never builds a <code class="docutils literal notranslate"><span class="p
 way <code class="docutils literal notranslate"><span class="pre">add_physical_optimizer_rule</span></code> does and returns nothing — the query planner
 lives in <code class="docutils literal notranslate"><span class="pre">SessionState</span></code>, so it belongs to the session rather than to a
 particular handle on it. See <a class="reference internal" href="../extension-guide/query-planners.html#extension-planners"><span class="std std-ref">Query planners</span></a> for the full protocol.</p>
-<p>If a library ships codecs <em>and</em> a planner, prefer
-<code class="docutils literal notranslate"><span class="pre">SessionContext.with_extensions(bundle)</span></code> over installing each piece by hand. It
-installs every codec before it binds any planner, so a planner cannot end up
-carrying a chain that a later <code class="docutils literal notranslate"><span class="pre">with_logical_extension_codec</span></code> call has grown.
-The library exposes a bundle object implementing
-<code class="docutils literal notranslate"><span class="pre">__datafusion_session_components__</span></code> for its codecs and
-<code class="docutils literal notranslate"><span class="pre">__datafusion_session_planner__</span></code> for its planner — the latter is handed the
-planner installed so far, so several libraries that each ship one nest instead
-of displacing each other. See <a class="reference internal" href="../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a>.</p>
 <section id="mismatched-extension-libraries-now-fail-loudly">
 <span id="extension-version-mismatch"></span><h3>Mismatched extension libraries now fail loudly<a class="headerlink" href="#mismatched-extension-libraries-now-fail-loudly" title="Link to this heading">#</a></h3>
 <p>Objects imported through the capsule protocol are checked against the major
@@ -671,6 +662,16 @@ payload now records which codec wrote it. A session with no extension codecs
 installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.</p>
+</section>
+<section id="sessioncontext-execute-renamed-its-second-parameter">
+<h3><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter<a class="headerlink" href="#sessioncontext-execute-renamed-its-second-parameter" title="Link to this heading">#</a></h3>
+<p>The parameter is a single partition index, not a count, and is now named
+<code class="docutils literal notranslate"><span class="pre">partition</span></code> rather than <code class="docutils literal notranslate"><span class="pre">partitions</span></code>. Positional calls are unaffected; update
+any call passing it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">partition</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
 </section>
 <section id="changes-to-the-datafusion-python-util-crate">
 <h3>Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate<a class="headerlink" href="#changes-to-the-datafusion-python-util-crate" title="Link to this heading">#</a></h3>
@@ -881,6 +882,7 @@ using the specific datafusion project crates.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sessioncontext-execute-renamed-its-second-parameter"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
 </ul>
 </li>
