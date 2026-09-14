@@ -94,6 +94,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<metrics::PyMetricsSet>()?;
     m.add_class::<metrics::PyMetric>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
+    m.add_class::<physical_plan::PyPhysicalPartitioning>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;
 

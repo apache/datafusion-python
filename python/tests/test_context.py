@@ -103,6 +103,64 @@ def test_create_context_with_all_valid_args():
         ctx.catalog("datafusion")
 
 
+def test_session_config_set_rejects_an_unknown_namespace():
+    """A bad config key raises rather than aborting through a Rust panic.
+
+    `datafusion.runtime.*` appears in `information_schema.df_settings` but has
+    no `ConfigOptions` namespace, so it is the key a naive "read the settings
+    back and replay them on the worker" loop hits first.
+    """
+    # `ValueError`, not a bare `Exception`: a panic would arrive as
+    # `PanicException`, which derives from `BaseException` and so would not be
+    # caught here at all. Both this and the constructor cases below rely on it.
+    with pytest.raises(ValueError, match="runtime"):
+        SessionConfig().set("datafusion.runtime.memory_limit", "unlimited")
+
+
+def test_session_config_set_rejects_an_unparsable_value():
+    """A well-known key with a value of the wrong type raises too."""
+    with pytest.raises(ValueError, match="batch_size"):
+        SessionConfig().set("datafusion.execution.batch_size", "not_an_int")
+
+
+def test_session_config_constructor_applies_options():
+    """A dict passed to the constructor reaches the session's options."""
+    config = SessionConfig(
+        {
+            "datafusion.execution.batch_size": "1024",
+            "datafusion.execution.target_partitions": "3",
+        }
+    )
+    ctx = SessionContext(config.with_information_schema(True))
+
+    settings = ctx.sql(
+        "select name, value from information_schema.df_settings"
+        " where name in ('datafusion.execution.batch_size',"
+        " 'datafusion.execution.target_partitions')"
+    ).to_pydict()
+
+    assert dict(zip(settings["name"], settings["value"], strict=True)) == {
+        "datafusion.execution.batch_size": "1024",
+        "datafusion.execution.target_partitions": "3",
+    }
+
+
+def test_session_config_constructor_rejects_an_unknown_namespace():
+    """A bad key in the constructor's dict raises rather than panicking.
+
+    The same defect as `SessionConfig.set` had, reached through the argument
+    that a replayed `information_schema.df_settings` dictionary arrives in.
+    """
+    with pytest.raises(ValueError, match="runtime"):
+        SessionConfig({"datafusion.runtime.memory_limit": "unlimited"})
+
+
+def test_session_config_constructor_rejects_an_unparsable_value():
+    """A well-known key with a value of the wrong type raises too."""
+    with pytest.raises(ValueError, match="batch_size"):
+        SessionConfig({"datafusion.execution.batch_size": "not_an_int"})
+
+
 def test_register_record_batches(ctx):
     # create a RecordBatch and register it as memtable
     batch = pa.RecordBatch.from_arrays(
