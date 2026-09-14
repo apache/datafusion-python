@@ -180,7 +180,7 @@ class SessionConfig:
 
         Example usage:
 
-        >>> from datafusion import SessionConfig
+        >>> from datafusion import SessionConfig, SessionContext
         >>> ctx = SessionContext(SessionConfig())
         >>> config = SessionConfig(
         ...     config_options={"datafusion.execution.batch_size": "1024"}
