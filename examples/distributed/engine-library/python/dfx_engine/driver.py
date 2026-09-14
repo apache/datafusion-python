@@ -21,8 +21,9 @@ The shape is deliberately boring, because the interesting part is not the
 scheduling. What matters is the six things the driver has to get right, each
 of which is a way a real deployment goes wrong:
 
-1. It serializes each stage **with** its session. ``to_bytes(None)`` uses an
-   empty codec chain and cannot encode any library's node.
+1. It serializes each stage **with** its session: ``stage.to_bytes(ctx)``. The
+   codecs that can write a library's nodes live on the session; encode without
+   one and only the nodes DataFusion itself defines survive.
 2. It ships the codec ids it used, so a worker can refuse a plan it would
    misread rather than decode it with the wrong codec.
 3. It puts the shuffle directory in the session config, not in the message,
@@ -33,9 +34,8 @@ of which is a way a real deployment goes wrong:
 5. It ships *every* stage. A plan can hold more than one -- an aggregate in
    each branch of a union, say -- and they are independent subtrees rather
    than a chain.
-6. It refuses a shuffle directory that already holds stage output. That same
-   "read it if it is there" rule is what makes a *second* query in the same
-   directory read the first one's results -- see :func:`require_empty_shuffle`.
+6. It refuses a shuffle directory that already holds stage output -- see
+   :func:`require_empty_shuffle`.
 """
 
 from __future__ import annotations
@@ -95,19 +95,9 @@ def find_stages(plan: ExecutionPlan) -> list[ExecutionPlan]:
 
     Matched on the display string because a Python caller has no way to
     downcast a Rust plan node -- there is no ``isinstance`` across an FFI
-    boundary.
-
-    Note the *containment* test. The node was built inside this library and
-    handed back to the host, so what the host prints is not
-    ``ShuffleStageExec: stage=1`` but::
-
-        FFI_ExecutionPlan: ShuffleStageExec, number_of_children=1
-
-    A foreign node reports its own name nested inside the wrapper's, which
-    makes anchored matches on plan text quietly wrong -- the kind of thing
-    that works in a single-library test and fails the moment a real extension
-    is involved. It is also why the stage *id* has to be recomputed here
-    rather than read: the wrapper dropped it.
+    boundary. The test is *containment*, and the stage id is recomputed rather
+    than read out of the text, because a foreign node prints as its FFI wrapper
+    -- see :ref:`extension_foreign_node_display`.
 
     Pre-order is the contract with the planner, which numbers stages in the
     same walk, so the nth node returned here has the id

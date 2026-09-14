@@ -64,9 +64,10 @@ class SessionSpec:
     shuffle_dir: str
     """Where stages exchange results. Empty means "run in this process".
 
-    One directory per query. Stage ids restart at 1 for every plan, and a
-    stage reads a partition file if it finds one, so a directory reused across
-    two queries hands the second one the first one's results.
+    One directory per query. Stage ids restart at ``_internal.stage_id(0)`` for
+    every plan, and a stage reads a partition file if it finds one, so a
+    directory reused across two queries hands the second one the first's
+    results.
     :func:`~dfx_engine.driver.run_distributed` refuses that rather than
     letting it through.
     """
@@ -111,9 +112,9 @@ def expected_codec_ids() -> list[str]:
     The third one looks different because ``dfx_udfs`` ships no bundle, so
     there is no bundle class to hang a ``physical_codec_id()`` on. Its id
     comes off a throwaway codec instead: ``__datafusion_codec_id__`` is a
-    property of the codec object, which is where the protocol puts it, and the
-    two static methods above are a convenience their bundles need only because
-    a bundle is not itself a codec.
+    property of the codec object, which is where the protocol puts it. The two
+    ``physical_codec_id()`` calls below are a convenience their bundles need
+    only because a bundle is not itself a codec.
     """
     return sorted(
         [

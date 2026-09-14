@@ -27,7 +27,7 @@ interpreter rather than a :mod:`multiprocessing` child on purpose:
   stamped with the sender's ``(major, minor)``, and a mismatch is a hard
   error -- so a hardcoded ``python`` on ``PATH`` would be a real bug.
 
-The order of operations in :func:`main` is the interesting part, and every
+The order of operations in :func:`run_task` is the interesting part, and every
 step is there because getting it wrong fails somewhere unhelpful.
 """
 
