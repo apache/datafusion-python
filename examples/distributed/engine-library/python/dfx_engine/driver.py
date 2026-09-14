@@ -162,6 +162,53 @@ def _report(task: tuple[int, int], stdout: str) -> int:
         raise RuntimeError(message) from err
 
 
+def _fan_out(
+    envelopes: list[dict], tasks: list[tuple[int, int]], task_dir: pathlib.Path
+) -> dict[tuple[int, int], int]:
+    """One process per task, all in flight together; rows produced per task.
+
+    This is the claim the example is making: each worker reads a different
+    file and writes a different result, so they need no coordination beyond
+    the directory.
+
+    Every failure -- a nonzero exit or an unreadable report -- is accumulated
+    rather than raised mid-loop, so every worker gets its `communicate` before
+    anything is reported. The `finally` covers the paths that never reach the
+    loop's end at all: a spawn that fails partway through the fan-out, or an
+    interrupt while collecting. A worker abandoned running would keep writing
+    into a shuffle directory its caller believes is settled -- or, in
+    `run_tpch.py`, one that is about to be deleted.
+    """
+    workers: list[subprocess.Popen[str]] = []
+    task_rows: dict[tuple[int, int], int] = {}
+    failures = []
+    try:
+        for envelope, (stage_id, partition) in zip(envelopes, tasks, strict=True):
+            workers.append(_dispatch(envelope, task_dir, stage_id, partition))
+
+        for task, worker in zip(tasks, workers, strict=True):
+            stdout, stderr = worker.communicate()
+            if worker.returncode != 0:
+                stage_id, partition = task
+                failures.append(
+                    f"stage {stage_id} partition {partition} failed:\n{stderr}"
+                )
+                continue
+            try:
+                task_rows[task] = _report(task, stdout)
+            except RuntimeError as err:
+                failures.append(str(err))
+    finally:
+        for worker in workers:
+            if worker.poll() is None:
+                worker.kill()
+                worker.wait()
+
+    if failures:
+        raise RuntimeError("\n".join(failures))
+    return task_rows
+
+
 def require_empty_shuffle(shuffle_dir: pathlib.Path) -> None:
     """Refuse a directory that already holds stage output.
 
@@ -266,26 +313,7 @@ def run_distributed(
                 }
             )
 
-    # One process per task, all in flight together. This is the claim the
-    # example is making: each worker reads a different file and writes a
-    # different result, so they need no coordination beyond the directory.
-    workers = [
-        _dispatch(envelope, task_dir, stage_id, partition)
-        for envelope, (stage_id, partition) in zip(envelopes, tasks, strict=True)
-    ]
-
-    task_rows: dict[tuple[int, int], int] = {}
-    failures = []
-    for task, worker in zip(tasks, workers, strict=True):
-        stdout, stderr = worker.communicate()
-        if worker.returncode != 0:
-            stage_id, partition = task
-            failures.append(f"stage {stage_id} partition {partition} failed:\n{stderr}")
-            continue
-        task_rows[task] = _report(task, stdout)
-
-    if failures:
-        raise RuntimeError("\n".join(failures))
+    task_rows = _fan_out(envelopes, tasks, task_dir)
 
     # Now run the whole query here. Every stage partition has a file, so the
     # stage nodes stream them instead of recomputing -- the driver does only
