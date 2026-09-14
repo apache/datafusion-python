@@ -1748,8 +1748,6 @@ dependencies = [
  "arrow",
  "arrow-schema",
  "datafusion",
- "datafusion-common",
- "datafusion-expr",
  "datafusion-ffi",
  "datafusion-functions-window",
  "datafusion-proto",

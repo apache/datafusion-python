@@ -192,6 +192,13 @@ jobs:
       # container, which drops a container start and an in-container rustup
       # install per library and lets the Swatinem/rust-cache above cover them.
       #
+      # "A runner like this one" is an assumption, not a guarantee: build and
+      # test are separate jobs, and during GitHub's ubuntu-latest image
+      # migrations they can land on different images. A wheel built against a
+      # newer glibc then fails to import on the test runner. If that ever
+      # bites, pin both jobs to the same explicit image -- or put these builds
+      # back in the manylinux container, which made it impossible.
+      #
       # None of them pass `target`, so their artifacts land in `target/debug`
       # alongside the priming build's. Naming a target would move them under
       # `target/<triple>/debug` and the priming build would be wasted.

@@ -114,8 +114,12 @@ impl PartitionedParquetTable {
             Some(schema) => schema,
             None => Arc::new(Self::read_schema(&paths[0])?),
         };
+        let directory = directory
+            .to_str()
+            .ok_or_else(|| DataFusionError::Plan(format!("non-UTF-8 path {directory:?}")))?
+            .to_string();
         Ok(Self {
-            directory: directory.to_string_lossy().into_owned(),
+            directory,
             files,
             schema,
         })
