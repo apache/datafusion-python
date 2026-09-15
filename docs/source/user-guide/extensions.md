@@ -36,9 +36,8 @@ this repository under
 
 Which one you have determines how much setup you do.
 
-**Tables and functions register directly.** If the library gives you a table
-or a function, register it the same way you would register a CSV file. No
-extra setup:
+**Tables register directly.** If the library gives you a table, register it
+the same way you would register a CSV file. No extra setup:
 
 ```python
 from datafusion import SessionContext
@@ -67,6 +66,13 @@ ctx.sql("SELECT count(*) FROM events").show()
 `with_extensions` returns a context; use the returned one. It shares
 everything else with the context you called it on, so tables you registered
 before the call are still there.
+
+**Functions can arrive either way.** A single function is registered directly
+with {py:func}`~datafusion.udf` and
+{py:meth}`~datafusion.SessionContext.register_udf`. A library shipping a set of
+them usually packages them in the same `Extension` object instead, so
+`with_extensions` installs them along with everything else it provides. Follow
+whichever the library documents.
 
 ## Using more than one library
 

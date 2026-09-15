@@ -21,7 +21,7 @@
 
 # Extension bundles
 
-If your library ships codecs, or a query planner, or both, expose a **bundle**
+If your library ships codecs, functions, or a query planner, expose a **bundle**
 and let callers install it with
 {py:meth}`~datafusion.SessionContext.with_extensions`. This is the recommended
 way to package an extension, and the rest of this page explains what the
@@ -45,6 +45,7 @@ class MyEngineExtension:
         return SessionExtensionComponents(
             logical_extension_codecs=(self._make_logical_codec(ctx),),
             physical_extension_codecs=(self._make_physical_codec(ctx),),
+            udfs=(MyScalarUDF(),),
         )
 
     def __datafusion_session_planner__(self, ctx: SessionContext, fallback):
@@ -55,14 +56,21 @@ class MyEngineExtension:
 ```
 
 Implement whichever apply: a codec-only library defines the first, a library
-that ships only an optimizing planner defines the second. The caller then
-writes:
+that ships only an optimizing planner defines the second, and a library that
+ships only functions defines the first and leaves the codec fields empty. The
+caller then writes:
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
 ctx.register_table("t", lib_a.TableProvider())
-ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
+
+Declare functions rather than registering them yourself inside the hook.
+Declared components are resolved before anything is written, and they are
+registered after every codec is installed; a registration you make during the
+hook happens too early to see the other bundles' codecs and is not undone if a
+later extension fails. Table providers are still registered by the caller, on
+the returned handle — see {ref}`extension_bundles_transaction`.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete
 Rust implementation of the protocol, including taking the task-context provider
@@ -281,14 +289,52 @@ for direct ones. The wrapper travels with the codec; the bundle does not.
 The query planner is exempt — it carries no wire id, so it may be an object or
 a capsule.
 
+(extension_bundles_transaction)=
+
 ## Failure and rollback
 
 Nothing is written to the session until every factory has returned and every
-capsule has been validated, so a factory that raises leaves the session exactly
-as it was. A factory that mutates the context it is handed — registering a
-table, say — is **not** rolled back, which is why bundle objects must be
-configuration-only: create fresh components on each call, never cache bound
-components, and do not retain the context passed in.
+component has been validated, so a factory that raises leaves the session
+exactly as it was. A factory that mutates the context it is handed —
+registering a table, say — is **not** rolled back, which is why bundle objects
+must be configuration-only: create fresh components on each call, never cache
+bound components, and do not retain the context passed in.
+
+That guarantee is why the installation runs in the order it does. A call splits
+into a part that may fail and a part that may not:
+
+1. **Collect.** Every `__datafusion_session_components__` runs.
+2. **Chains.** The codecs are assembled into the returned handle. Codec chains
+   live on that handle rather than on the session, so this step writes nothing
+   even though it can fail on a bad capsule or a duplicate id.
+3. **Resolve.** Every declared function is wrapped and every name is checked,
+   and every `__datafusion_session_planner__` runs against the completed
+   chains.
+4. **Commit.** The planner is bound and the functions are registered.
+
+Only step 4 touches the session, and every step that can fail happens before
+it. This is a rule for anyone extending `with_extensions`, not only a
+description: a new kind of component must do its fallible work — importing a
+capsule, resolving a name — in step 3, so that step 4 cannot raise part-way
+through. There is nothing to roll back to if it does. The returned handle
+shares one session with the receiver, and undoing a registration is not the
+same as restoring what it displaced: deregistering a function that shadowed a
+built-in removes the built-in too.
+
+(extension_bundles_collisions)=
+
+### Two bundles claiming one name
+
+Within a single call, two extensions declaring a function of the same kind
+under the same name is a `ValueError` naming both. Codec ids dispatch on
+decode, so a chain can hold many and pick the right one; a function registry
+has no such fall-through, and the second registration would silently replace
+the first. Names are compared per kind, so a scalar function and an aggregate
+may share one.
+
+Shadowing a name the session *already* has is allowed and is not a collision.
+The registry holds every DataFusion built-in, and overriding built-ins by name
+is a supported thing to do — `enable_spark_functions` is built on it.
 
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side

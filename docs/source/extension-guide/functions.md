@@ -26,12 +26,12 @@ functions in pure Python — see
 {doc}`../user-guide/common-operations/udf-and-udfa` — and the two roads meet at
 the same registration methods.
 
-| Hook | Contributes | Wrapped by | Registered with |
-| --- | --- | --- | --- |
-| `__datafusion_scalar_udf__` | scalar function | {py:func}`datafusion.udf` | {py:meth}`~datafusion.SessionContext.register_udf` |
-| `__datafusion_aggregate_udf__` | aggregate function | {py:func}`datafusion.udaf` | {py:meth}`~datafusion.SessionContext.register_udaf` |
-| `__datafusion_window_udf__` | window function | {py:func}`datafusion.udwf` | {py:meth}`~datafusion.SessionContext.register_udwf` |
-| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` |
+| Hook | Contributes | Wrapped by | Registered with | Declared in a bundle as |
+| --- | --- | --- | --- | --- |
+| `__datafusion_scalar_udf__` | scalar function | {py:func}`datafusion.udf` | {py:meth}`~datafusion.SessionContext.register_udf` | `udfs` |
+| `__datafusion_aggregate_udf__` | aggregate function | {py:func}`datafusion.udaf` | {py:meth}`~datafusion.SessionContext.register_udaf` | `udafs` |
+| `__datafusion_window_udf__` | window function | {py:func}`datafusion.udwf` | {py:meth}`~datafusion.SessionContext.register_udwf` | `udwfs` |
+| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` | — |
 
 All four are implemented in [`datafusion-ffi-example`], one per file.
 
@@ -66,6 +66,22 @@ from datafusion import udf
 
 ctx.register_udf(udf(my_library.MyScalarUDF()))
 ```
+
+If your library ships more than a function or two, declare them on a bundle
+instead and let one call install everything:
+
+```python
+class MyLibraryExtension:
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(udfs=(my_library.MyScalarUDF(),))
+
+
+ctx = SessionContext().with_extensions(MyLibraryExtension())
+```
+
+Either the raw exportable or an already-wrapped
+{py:class}`~datafusion.user_defined.ScalarUDF` is accepted; the name comes off
+the capsule either way. See {ref}`extension_bundles`.
 
 ## Table functions
 
