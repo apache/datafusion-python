@@ -2245,11 +2245,14 @@ class SessionContext:
         # it already holds, so the rebuild is unobservable except in the one case
         # where it does harm: a planner sitting on some *other* handle's codecs
         # gets dragged onto this handle's, silently undoing that install.
-        # Everything below this line must be infallible. A registration whose
-        # commit can fail belongs above, split into an import step that returns
-        # a resolved object and an insert step that cannot raise -- there is one
-        # session here, shared with the receiver, so a failure part-way through
-        # has nothing to roll back to. See :ref:`ffi_internals_commit_order`.
+
+        # Commit. Everything below this line must be infallible. A registration
+        # whose commit can fail belongs above, split into an import step that
+        # returns a resolved object and an insert step that cannot raise --
+        # there is one session here, shared with the receiver, so a failure
+        # part-way through has nothing to roll back to. The reasoning is in
+        # docs/source/contributor-guide/ffi-internals.md, under "Why
+        # `with_extensions` commits last".
         if planner is not None or logical_codecs or physical_codecs:
             new.ctx._install_extension_planner(planner)
         for register, functions in resolved:
