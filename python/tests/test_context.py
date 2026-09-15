@@ -1670,6 +1670,89 @@ def test_session_extension_components_rejects_a_single_function(field):
         SessionExtensionComponents(**{field: _doubler()})
 
 
+class _TableExtension:
+    """Contributes tables and table functions, as ``(name, value)`` pairs."""
+
+    def __init__(self, table_providers=(), udtfs=()):
+        self._table_providers = table_providers
+        self._udtfs = udtfs
+
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(
+            table_providers=self._table_providers, udtfs=self._udtfs
+        )
+
+
+def test_with_extensions_registers_a_declared_table(ctx):
+    """A declared table is queryable on the returned handle."""
+    provider = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(_TableExtension(table_providers=(("t", provider),)))
+
+    assert result.sql("SELECT sum(a) FROM t").collect()[0].column(0)[0].as_py() == 6
+
+
+def test_with_extensions_registers_a_declared_udtf(ctx):
+    """A declared table function is callable from SQL.
+
+    Declared as a ``(name, callable)`` pair rather than a built
+    ``TableFunction``, because wrapping one hands the getter a session and the
+    bundle does not have the right one yet.
+    """
+    table = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(_TableExtension(udtfs=(("always", lambda: table),)))
+
+    assert result.sql("SELECT a FROM always()").collect()[0].num_rows == 3
+
+
+def test_with_extensions_rejects_a_table_name_two_extensions_claim(ctx):
+    """Two bundles claiming one table name is refused before anything lands."""
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(ValueError, match=r"table named 'events'"):
+        ctx.with_extensions(
+            _TableExtension(table_providers=(("events", provider),)),
+            _TableExtension(table_providers=(("events", provider),)),
+        )
+
+    assert not ctx.table_exist("events")
+
+
+def test_with_extensions_rejects_a_table_name_the_session_holds(ctx):
+    """A table cannot shadow one, the way a function can.
+
+    DataFusion refuses a duplicate registration rather than replacing it, so
+    this is its rule rather than a policy chosen here — and catching it during
+    resolution is what keeps the rest of the call from being written first.
+    """
+    ctx.from_pydict({"a": [1]}, name="events")
+    provider = ctx.from_pydict({"a": [2]}).into_view()
+
+    with pytest.raises(Exception, match=r"already registered"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("events", provider),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_a_table_in_an_unknown_schema(ctx):
+    """Resolving the destination happens before anything is written too."""
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(Exception, match=r"nope"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("nope.public.t", provider),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
 def test_session_extension_components_rejects_a_single_optimizer_rule():
     """The same for rules, naming what that field holds."""
     with pytest.raises(
@@ -1726,7 +1809,7 @@ def test_every_component_field_has_an_installer():
 
     Reaching into private names on purpose: the two sides answer different
     questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS``, the codec pair, and the rules say which of them
+    ``_FUNCTION_KINDS`` and the four fields named here say which of them
     ``with_extensions`` knows how to install. Nothing observable from outside
     can tell you they have drifted, because the symptom is silence.
     """
@@ -1741,6 +1824,8 @@ def test_every_component_field_has_an_installer():
     assert by_noun == {
         "codec": {"logical_extension_codecs", "physical_extension_codecs"},
         "function": {kind.field for kind in _FUNCTION_KINDS},
+        "table function": {"udtfs"},
+        "table": {"table_providers"},
         "optimizer rule": {"physical_optimizer_rules"},
     }
 

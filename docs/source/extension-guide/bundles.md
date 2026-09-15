@@ -55,7 +55,7 @@ class MyEngineExtension:
         return self._make_planner(ctx, fallback=fallback)
 ```
 
-Implement only the hooks you need. Codecs and functions both go in
+Implement only the hooks you need. Codecs, functions, and tables all go in
 `__datafusion_session_components__`, with the fields you do not use left empty,
 so a codec-only library and a function-only library each define that one alone;
 a library shipping nothing but an optimizing planner defines only
@@ -63,15 +63,15 @@ a library shipping nothing but an optimizing planner defines only
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
-ctx.register_table("t", lib_a.TableProvider())
 ```
 
-Return your functions rather than calling `register_udf` on the `ctx` you were
-handed. Both put the function on the session, but a registration you make
-inside the hook is written the moment it runs — before the other bundles have
-been called, and not undone if one of them raises. What you declare is instead
-resolved and checked while a failure still costs nothing, then written once
-every bundle has succeeded. See {ref}`extension_bundles_transaction`.
+Declare what you contribute rather than calling `register_udf` or
+`register_table` on the `ctx` you were handed. Both put it on the session, but a
+registration you make inside the hook is written the moment it runs — before the
+other bundles have been called, too early to see their codecs, and not undone if
+one of them raises. What you declare is instead resolved and checked while a
+failure still costs nothing, then written once every bundle has succeeded. See
+{ref}`extension_bundles_transaction`.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete
 Rust implementation of the protocol, including taking the task-context provider
@@ -290,6 +290,24 @@ for direct ones. The wrapper travels with the codec; the bundle does not.
 The query planner is exempt — it carries no wire id, so it may be an object or
 a capsule.
 
+(extension_bundles_binding)=
+
+## What a component is resolved against
+
+Components split in two by what their capsule getter asks for, and it decides
+where the host can resolve them:
+
+- **Getters taking no argument** — the three function kinds and physical
+  optimizer rules. Nothing is session-scoped, so a bundle may hand over either
+  a wrapped object or the raw exportable.
+- **Getters taking the session or a codec** — table functions and table
+  providers. These are resolved by the host against the *finished* handle,
+  which is why you hand over the unwrapped value and a name rather than a
+  {py:class}`~datafusion.user_defined.TableFunction` you built yourself.
+  Wrapping one inside your components hook binds it to the context that hook
+  received, which has none of the call's codecs — so it would capture a chain
+  missing every library in the call, including your own.
+
 (extension_bundles_collisions)=
 
 ## Two bundles claiming one name
@@ -328,6 +346,10 @@ Physical optimizer rules are exempt from all of this: they accumulate rather
 than replace, so two bundles contributing one each is the normal case and there
 is nothing to refuse. See {doc}`other-components`.
 
+Tables go the other way. DataFusion refuses a duplicate table registration
+rather than replacing it, so a declared table name that is *already* on the
+session is an error too — a table cannot shadow one the way a function can.
+
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.
 
@@ -357,6 +379,14 @@ call — not yours, and not another bundle's. Look one up at plan time instead,
 where the registry is complete; a planner is called per query, long after the
 install has finished. If you need a function at hook time, you already have the
 object, because you are the one declaring it.
+
+Tables are the single exception to committing last, and they are committed
+first because of it. A declared table has its provider imported, its
+destination schema resolved, and a name already taken refused, all while a
+failure still costs nothing — but the insert itself goes through a
+`SchemaProvider`, and a foreign one can still refuse what it reported as free.
+Running that first means no planner is bound and no function is registered
+behind it when it does.
 
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side

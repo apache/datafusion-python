@@ -43,6 +43,10 @@ PRIVATE_SUPPORT_METHODS = frozenset(
         # the call can still fail without leaving the session half-installed.
         "_resolve_extension_physical_optimizer_rules",
         "_install_extension_physical_optimizer_rules",
+        # Tables, split the same way: import the provider and resolve the
+        # destination schema during resolution, insert at commit.
+        "_resolve_extension_tables",
+        "_install_extension_tables",
     }
 )
 

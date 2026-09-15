@@ -293,6 +293,40 @@ class SessionExtensionComponents:
     :py:func:`~datafusion.udwf`.
     """
 
+    udtfs: tuple[tuple[str, Any], ...] = _components("table function")
+    """Table functions to register, as ``(name, function)`` pairs.
+
+    Unlike the other three function kinds the name is **not** read off the
+    capsule, so it is given here. The value is an object exposing
+    ``__datafusion_table_function__``, or a plain Python callable.
+
+    Pass the unwrapped value, not a
+    :py:class:`~datafusion.user_defined.TableFunction`. Wrapping calls the
+    capsule getter with the session, and the context a bundle is handed has not
+    had this call's codecs installed yet — so a wrapper built inside the hook
+    would be bound to the wrong chains. The host wraps these against the
+    finished context instead. See :ref:`extension_bundles_two_phases`.
+
+    Collides by name like :py:attr:`udfs`.
+    """
+
+    table_providers: tuple[tuple[str, Any], ...] = _components("table")
+    """Tables to register, as ``(name, provider)`` pairs.
+
+    Anything :py:meth:`~datafusion.context.SessionContext.register_table`
+    accepts: an object exposing ``__datafusion_table_provider__``, a
+    :py:class:`~datafusion.catalog.Table`, a
+    :py:class:`~datafusion.dataframe.DataFrame`, or a PyArrow dataset. Names may
+    be qualified (``"cat.schema.events"``); an unqualified one lands in the
+    session's default schema.
+
+    Bound to the finished context for the same reason as :py:attr:`udtfs`.
+
+    A name that is **already registered** is an error, here and in
+    ``register_table`` alike — DataFusion refuses a duplicate table rather than
+    replacing it, so unlike a function a table cannot shadow one.
+    """
+
     physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(
         "optimizer rule"
     )
