@@ -21,6 +21,7 @@ use pyo3::types::{PyAnyMethods, PyCapsule, PyDict, PyDictMethods};
 use pyo3::{Bound, Py, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::aggregate_udf::MySumUDF;
+use crate::catalog_provider::MyCatalogProvider;
 use crate::physical_optimizer::MyPhysicalOptimizerRule;
 use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
@@ -226,6 +227,46 @@ impl MyDataExtension {
         kwargs.set_item(
             "udtfs",
             (("declared_function", Py::new(py, self.function.clone())?),),
+        )?;
+        components.call((), Some(&kwargs))
+    }
+}
+
+/// A bundle contributing a catalog.
+///
+/// `__datafusion_catalog_provider__` takes the session and pulls the host's
+/// logical codec off it, so like a table provider it is handed over unresolved
+/// and the host binds it to the finished handle.
+#[pyclass(
+    from_py_object,
+    name = "MyCatalogExtension",
+    module = "datafusion_ffi_example",
+    subclass
+)]
+#[derive(Debug, Clone, Default)]
+pub(crate) struct MyCatalogExtension {}
+
+#[pymethods]
+impl MyCatalogExtension {
+    #[new]
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn __datafusion_session_components__<'py>(
+        &self,
+        py: Python<'py>,
+        ctx: Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let _ = ctx;
+
+        let components = py
+            .import("datafusion")?
+            .getattr("SessionExtensionComponents")?;
+        let kwargs = PyDict::new(py);
+        kwargs.set_item(
+            "catalog_providers",
+            (("declared_catalog", Py::new(py, MyCatalogProvider::new()?)?),),
         )?;
         components.call((), Some(&kwargs))
     }

@@ -51,6 +51,20 @@ wrapped: `__datafusion_table_provider__` takes the session, and the one your
 components hook receives has none of the call's codecs yet. The host resolves
 it against the finished handle. See {ref}`extension_bundles_binding`.
 
+Catalogs work the same way, as `catalog_providers`:
+
+```python
+return SessionExtensionComponents(catalog_providers=(("engine", MyCatalog()),))
+```
+
+with one difference worth knowing. A declared **table** name that is already
+registered is an error, because DataFusion refuses a duplicate table rather
+than replacing it. A **catalog** name is not: `register_catalog` returns
+whichever provider it displaced, and the default `datafusion` catalog always
+exists — so replacing one is the usual way a library backs a session with its
+own metadata. Only two bundles claiming the same catalog name in one call is
+refused.
+
 Start with a table provider. Reach for the schema and catalog levels when your
 data source has its own namespace that should be browsable rather than
 registered table by table, and for the provider list only when your library is

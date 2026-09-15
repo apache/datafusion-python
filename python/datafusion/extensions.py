@@ -327,6 +327,19 @@ class SessionExtensionComponents:
     replacing it, so unlike a function a table cannot shadow one.
     """
 
+    catalog_providers: tuple[tuple[str, Any], ...] = _components("catalog")
+    """Catalogs to register, as ``(name, provider)`` pairs.
+
+    Anything
+    :py:meth:`~datafusion.context.SessionContext.register_catalog_provider`
+    accepts. Bound to the finished context like :py:attr:`table_providers`.
+
+    Two extensions claiming one name in the same call is refused. Replacing a
+    catalog the session already has is not — the default ``datafusion`` catalog
+    always exists, and swapping it is the usual way a library backs a session
+    with its own metadata.
+    """
+
     physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(
         "optimizer rule"
     )
