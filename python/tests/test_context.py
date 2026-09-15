@@ -20,6 +20,7 @@ import gc
 import gzip
 import pathlib
 import shutil
+from dataclasses import fields
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -1605,6 +1606,34 @@ def test_session_extension_components_rejects_a_single_function(field):
     """A lone function is not an iterable of them, as for codecs."""
     with pytest.raises(TypeError, match=r"must be an iterable of function objects"):
         SessionExtensionComponents(**{field: _doubler()})
+
+
+def test_every_component_field_has_an_installer():
+    """A field added to the components dataclass must be wired into the install.
+
+    ``SessionExtensionComponents`` normalizes any field carrying the component
+    metadata, so one added without an installer would be accepted from a
+    bundle and then quietly dropped — the failure this pins is a contributed
+    component going nowhere, with no error to say so.
+
+    Reaching into private names on purpose: the two sides answer different
+    questions. The metadata says which fields are collections to normalize;
+    ``_FUNCTION_KINDS`` and the codec pair say which of them ``with_extensions``
+    knows how to install. Nothing observable from outside can tell you they
+    have drifted, because the symptom is silence.
+    """
+    from datafusion.context import _FUNCTION_KINDS
+
+    by_noun: dict[str, set[str]] = {}
+    for spec in fields(SessionExtensionComponents):
+        noun = spec.metadata.get("datafusion_component")
+        if noun is not None:
+            by_noun.setdefault(noun, set()).add(spec.name)
+
+    assert by_noun == {
+        "codec": {"logical_extension_codecs", "physical_extension_codecs"},
+        "function": {kind.field for kind in _FUNCTION_KINDS},
+    }
 
 
 def test_table_provider(ctx):

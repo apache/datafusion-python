@@ -46,7 +46,7 @@ from __future__ import annotations
 
 import uuid
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, NamedTuple, Protocol
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -161,6 +161,70 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
+class _FunctionKind(NamedTuple):
+    """How one kind of declared function is resolved and registered.
+
+    One row per function field on
+    :py:class:`~datafusion.extensions.SessionExtensionComponents`, so adding a
+    kind is adding a row rather than editing three places. The dataclass
+    metadata says which fields are collections to normalize; this table says
+    which of them are functions and what to do with one.
+    ``test_every_component_field_has_an_installer`` pins the two together.
+
+    The members naming a ``datafusion.user_defined`` object hold its name
+    rather than the object: that module imports this one, so the lookups are
+    deferred to :py:meth:`SessionContext.with_extensions`, which runs with the
+    cycle long settled.
+    """
+
+    field: str
+    """The ``SessionExtensionComponents`` field a bundle declares these in."""
+
+    wrapper: str
+    """Wrapper class a declaration may already be an instance of."""
+
+    getter: str
+    """Capsule getter an unwrapped declaration must expose instead."""
+
+    factory: str
+    """Helper that turns an unwrapped declaration into a wrapper."""
+
+    label: str
+    """What to call this sort of function in an error message."""
+
+    register: str
+    """:py:class:`SessionContext` method that commits one to the session."""
+
+
+_FUNCTION_KINDS = (
+    _FunctionKind(
+        field="udfs",
+        wrapper="ScalarUDF",
+        getter="__datafusion_scalar_udf__",
+        factory="udf",
+        label="scalar function",
+        register="register_udf",
+    ),
+    _FunctionKind(
+        field="udafs",
+        wrapper="AggregateUDF",
+        getter="__datafusion_aggregate_udf__",
+        factory="udaf",
+        label="aggregate function",
+        register="register_udaf",
+    ),
+    _FunctionKind(
+        field="udwfs",
+        wrapper="WindowUDF",
+        getter="__datafusion_window_udf__",
+        factory="udwf",
+        label="window function",
+        register="register_udwf",
+    ),
+)
+"""Every kind of function a bundle can declare, in registration order."""
+
+
 def _collect_contributions(
     extensions: tuple[object, ...],
     ctx: SessionContext,
@@ -180,8 +244,8 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions by
-        field name.
+        The logical codecs, the physical codecs, and the declared functions
+        keyed by the :py:data:`_FUNCTION_KINDS` field they arrived in.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -201,9 +265,7 @@ def _collect_contributions(
     logical_codecs: list[LogicalExtensionCodecExportable] = []
     physical_codecs: list[PhysicalExtensionCodecExportable] = []
     declared: dict[str, list[tuple[object, Any]]] = {
-        "udfs": [],
-        "udafs": [],
-        "udwfs": [],
+        kind.field: [] for kind in _FUNCTION_KINDS
     }
     for extension in extensions:
         if not isinstance(extension, SessionComponentsExportable):
@@ -2122,41 +2184,23 @@ class SessionContext:
         # Resolve every declared function to the wrapper that registers it, and
         # settle name collisions, while a failure still costs nothing. None of
         # these getters take an argument, so unlike a provider they do not care
-        # which handle they are resolved against.
-        from datafusion.user_defined import (  # noqa: PLC0415
-            AggregateUDF as _AggregateUDF,
-        )
-        from datafusion.user_defined import (  # noqa: PLC0415
-            ScalarUDF as _ScalarUDF,
-        )
-        from datafusion.user_defined import (  # noqa: PLC0415
-            WindowUDF as _WindowUDF,
-        )
-        from datafusion.user_defined import udaf as _udaf  # noqa: PLC0415
-        from datafusion.user_defined import udf as _udf  # noqa: PLC0415
-        from datafusion.user_defined import udwf as _udwf  # noqa: PLC0415
+        # which handle they are resolved against. The bound `register_*` method
+        # is looked up here too, leaving the commit below nothing but calls.
+        from datafusion import user_defined as _user_defined  # noqa: PLC0415
 
-        resolved_udfs = _resolve_declared_functions(
-            declared["udfs"],
-            _ScalarUDF,
-            "__datafusion_scalar_udf__",
-            _udf,
-            "scalar function",
-        )
-        resolved_udafs = _resolve_declared_functions(
-            declared["udafs"],
-            _AggregateUDF,
-            "__datafusion_aggregate_udf__",
-            _udaf,
-            "aggregate function",
-        )
-        resolved_udwfs = _resolve_declared_functions(
-            declared["udwfs"],
-            _WindowUDF,
-            "__datafusion_window_udf__",
-            _udwf,
-            "window function",
-        )
+        resolved: list[tuple[Any, list[Any]]] = [
+            (
+                getattr(new, kind.register),
+                _resolve_declared_functions(
+                    declared[kind.field],
+                    getattr(_user_defined, kind.wrapper),
+                    kind.getter,
+                    getattr(_user_defined, kind.factory),
+                    kind.label,
+                ),
+            )
+            for kind in _FUNCTION_KINDS
+        ]
 
         # Phase two: nest the planners, outermost last. Each hook runs against
         # `new`, which carries the final chains, so a planner captured here
@@ -2191,12 +2235,9 @@ class SessionContext:
         # has nothing to roll back to. See :ref:`ffi_internals_commit_order`.
         if planner is not None or logical_codecs or physical_codecs:
             new.ctx._install_extension_planner(planner)
-        for function in resolved_udfs:
-            new.register_udf(function)
-        for function in resolved_udafs:
-            new.register_udaf(function)
-        for function in resolved_udwfs:
-            new.register_udwf(function)
+        for register, functions in resolved:
+            for function in functions:
+                register(function)
         return new
 
     def table_provider(self, name: str) -> Table:
