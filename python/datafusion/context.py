@@ -308,10 +308,16 @@ def _collect_contributions(
     declared: dict[str, list[tuple[int, object, Any]]] = {
         kind.field: [] for kind in _FUNCTION_KINDS
     }
-    # The rest are not function kinds: tables and table functions are named by
-    # the bundle rather than by the value, and rules carry no name at all, so
-    # each has its own collision rule -- or none -- and its own installer.
-    for field_name in ("udtfs", "table_providers", "physical_optimizer_rules"):
+    # The rest are not function kinds: tables, table functions, and catalogs are
+    # named by the bundle rather than by the value, and rules carry no name at
+    # all, so each has its own collision rule -- or none -- and its own
+    # installer.
+    for field_name in (
+        "udtfs",
+        "table_providers",
+        "catalog_providers",
+        "physical_optimizer_rules",
+    ):
         declared[field_name] = []
     for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
@@ -2327,6 +2333,18 @@ class SessionContext:
                 )
             ]
         )
+        # Bound to `new` for the same reason: the catalog getter is handed the
+        # logical codec its provider will serialize through. Unlike a table a
+        # catalog may replace one the session holds, so only names claimed
+        # twice within the call are refused.
+        resolved_catalogs = new.ctx._resolve_extension_catalogs(
+            [
+                pair
+                for _, _, pair in _reject_repeated_names(
+                    declared["catalog_providers"], "catalog"
+                )
+            ]
+        )
         # Rules accumulate, so there is no name to check and nothing to refuse
         # -- only the capsules to import while failing is still free.
         resolved_rules = _resolve_declared_rules(
@@ -2353,6 +2371,7 @@ class SessionContext:
             [function._udaf for function in resolved["udafs"]],
             [function._udwf for function in resolved["udwfs"]],
             [table_function._udtf for table_function in resolved_udtfs],
+            resolved_catalogs,
             resolved_rules,
         )
         return new

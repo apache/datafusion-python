@@ -22,6 +22,7 @@ import pathlib
 import shutil
 from dataclasses import fields
 
+import datafusion.catalog
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.dataset as ds
@@ -1843,6 +1844,124 @@ def test_with_extensions_rejects_a_table_that_is_not_a_table_by_name(ctx):
         ctx.udf("double")
 
 
+class _Schema(datafusion.catalog.SchemaProvider):
+    """One table, enough to prove a declared catalog is reachable from SQL."""
+
+    def __init__(self, table):
+        self.tables = {"t": table}
+
+    def table_names(self) -> set[str]:
+        return set(self.tables)
+
+    def register_table(self, name, table):
+        self.tables[name] = table
+
+    def deregister_table(self, name, cascade: bool = True):
+        del self.tables[name]
+
+    def table(self, name):
+        return self.tables.get(name)
+
+    def table_exist(self, name) -> bool:
+        return name in self.tables
+
+
+class _Catalog(datafusion.catalog.CatalogProvider):
+    def __init__(self, table):
+        self.schemas = {"s": _Schema(table)}
+
+    def schema_names(self) -> set[str]:
+        return set(self.schemas)
+
+    def schema(self, name):
+        return self.schemas.get(name)
+
+    def register_schema(self, name, schema):
+        self.schemas[name] = schema
+
+    def deregister_schema(self, name, cascade: bool):
+        del self.schemas[name]
+
+
+class _CatalogExtension:
+    """Contributes catalogs as ``(name, provider)`` pairs."""
+
+    def __init__(self, catalog_providers=()):
+        self._catalog_providers = catalog_providers
+
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(catalog_providers=self._catalog_providers)
+
+
+def test_with_extensions_registers_a_declared_catalog(ctx):
+    """A declared catalog is queryable through its qualified name."""
+    table = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(
+        _CatalogExtension(catalog_providers=(("engine", _Catalog(table)),))
+    )
+
+    assert "engine" in result.catalog_names()
+    assert (
+        result.sql("SELECT sum(a) FROM engine.s.t").collect()[0].column(0)[0].as_py()
+        == 6
+    )
+
+
+def test_with_extensions_rejects_a_catalog_two_extensions_claim(ctx):
+    """One name, two bundles: refused with both named."""
+    table = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(ValueError, match=r"catalog named 'engine'"):
+        ctx.with_extensions(
+            _CatalogExtension(catalog_providers=(("engine", _Catalog(table)),)),
+            _CatalogExtension(catalog_providers=(("engine", _Catalog(table)),)),
+        )
+
+    assert "engine" not in ctx.catalog_names()
+
+
+def test_with_extensions_allows_replacing_an_existing_catalog(ctx):
+    """Replacing a catalog the session holds is ordinary, unlike a table.
+
+    ``register_catalog`` returns whichever provider it displaced rather than
+    refusing, and the default ``datafusion`` catalog always exists — so a
+    library backing a session with its own metadata has to be able to do this.
+    """
+    table = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(
+        _CatalogExtension(catalog_providers=(("datafusion", _Catalog(table)),))
+    )
+
+    assert (
+        result.sql("SELECT sum(a) FROM datafusion.s.t")
+        .collect()[0]
+        .column(0)[0]
+        .as_py()
+        == 6
+    )
+
+
+def test_with_extensions_registers_no_catalog_when_a_later_hook_raises(ctx):
+    """Catalogs share the transaction, even though they write to a shared list."""
+
+    class BoomPlanner:
+        def __datafusion_session_planner__(self, ctx, fallback):
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    table = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(
+            _CatalogExtension(catalog_providers=(("engine", _Catalog(table)),)),
+            BoomPlanner(),
+        )
+
+    assert "engine" not in ctx.catalog_names()
+
+
 def test_session_extension_components_rejects_a_single_optimizer_rule():
     """The same for rules, naming what that field holds."""
     with pytest.raises(
@@ -1925,7 +2044,7 @@ def test_every_component_field_has_an_installer():
 
     Reaching into private names on purpose: the two sides answer different
     questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS`` and the four fields named here say which of them
+    ``_FUNCTION_KINDS`` and the fields named here say which of them
     ``with_extensions`` knows how to install. Nothing observable from outside
     can tell you they have drifted, because the symptom is silence.
     """
@@ -1942,6 +2061,7 @@ def test_every_component_field_has_an_installer():
         "function": {kind.field for kind in _FUNCTION_KINDS},
         "table function": {"udtfs"},
         "table": {"table_providers"},
+        "catalog": {"catalog_providers"},
         "optimizer rule": {"physical_optimizer_rules"},
     }
 

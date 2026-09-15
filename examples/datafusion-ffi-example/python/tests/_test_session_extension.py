@@ -23,6 +23,7 @@ import pyarrow as pa
 import pytest
 from datafusion import SessionContext, SessionExtensionComponents
 from datafusion_ffi_example import (
+    MyCatalogExtension,
     MyDataExtension,
     MyFunctionExtension,
     MyLogicalExtensionCodec,
@@ -254,6 +255,42 @@ def test_a_table_name_already_registered_is_refused():
 
     with pytest.raises(KeyError):
         ctx.udf("my_custom_is_null")
+
+
+def test_a_declared_catalog_is_queryable():
+    """A catalog declared by a bundle is reachable by its qualified name."""
+    ctx = SessionContext().with_extensions(MyCatalogExtension())
+
+    assert "declared_catalog" in ctx.catalog_names()
+    result = ctx.sql("SELECT * FROM declared_catalog.my_schema.my_table").collect()
+    assert result[0].num_rows > 0
+
+
+def test_four_libraries_install_in_one_call():
+    """The whole point, across a real FFI boundary.
+
+    Four independently declared bundles — functions, rules, a table and a table
+    function, a catalog — in one call, and a single query that touches three of
+    them while the fourth counts the planning it did.
+    """
+    rules = MyRuleExtension()
+    ctx = SessionContext().with_extensions(
+        MyFunctionExtension(),
+        rules,
+        MyDataExtension(),
+        MyCatalogExtension(),
+    )
+
+    result = ctx.sql(
+        'SELECT my_custom_is_null("A") AS n FROM declared_table '
+        "UNION ALL "
+        "SELECT my_custom_is_null(units) AS n "
+        "FROM declared_catalog.my_schema.my_table"
+    ).collect()
+
+    assert sum(batch.num_rows for batch in result) > 0
+    assert rules.first_calls() > 0
+    assert rules.second_calls() > 0
 
 
 def test_the_hook_returns_the_components_type():
