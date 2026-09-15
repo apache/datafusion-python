@@ -2178,7 +2178,7 @@ class SessionContext:
         # commit can fail belongs above, split into an import step that returns
         # a resolved object and an insert step that cannot raise -- there is one
         # session here, shared with the receiver, so a failure part-way through
-        # has nothing to roll back to. See :ref:`extension_bundles_transaction`.
+        # has nothing to roll back to. See :ref:`ffi_internals_commit_order`.
         if planner is not None or logical_codecs or physical_codecs:
             new.ctx._install_extension_planner(planner)
         for function in resolved_udfs:

@@ -32,9 +32,9 @@ which exposes Delta Lake tables to DataFusion, and the two worked examples in
 this repository under
 [`examples/`](https://github.com/apache/datafusion-python/tree/main/examples).
 
-## Two kinds of extension
+## How an extension reaches your session
 
-Which one you have determines how much setup you do.
+Which route your library takes determines how much setup you do.
 
 **Tables register directly.** If the library gives you a table, register it
 the same way you would register a CSV file. No extra setup:
@@ -63,16 +63,24 @@ ctx.register_table("events", my_engine.TableProvider("s3://bucket/events"))
 ctx.sql("SELECT count(*) FROM events").show()
 ```
 
+**Functions arrive by whichever route their library chose.** A library
+offering one or two functions hands you the functions themselves, and you wrap
+and register each:
+
+```python
+from datafusion import udf
+
+ctx.register_udf(udf(my_library.MyScalarUDF()))
+```
+
+A library shipping a set of them packages them in its `Extension` object
+instead, so `with_extensions` installs them all along with everything else it
+provides, and there is nothing per-function for you to do. Its documentation
+says which.
+
 `with_extensions` returns a context; use the returned one. It shares
 everything else with the context you called it on, so tables you registered
 before the call are still there.
-
-**Functions can arrive either way.** A single function is registered directly
-with {py:func}`~datafusion.udf` and
-{py:meth}`~datafusion.SessionContext.register_udf`. A library shipping a set of
-them usually packages them in the same `Extension` object instead, so
-`with_extensions` installs them along with everything else it provides. Follow
-whichever the library documents.
 
 ## Using more than one library
 
@@ -91,7 +99,24 @@ rarely matters. When a library needs a particular position — usually "list me
 last" for something that wraps the others — it says so in its own
 documentation.
 
-## Two things that will bite you
+## Three things that will bite you
+
+**Two libraries can claim one function name.** If both ship a function of the
+same kind under the same name, the call raises a `ValueError` naming both,
+rather than letting one silently replace the other:
+
+```text
+ValueError: Two extensions declare a scalar function 'normalize': ...
+```
+
+You cannot rename another library's function from your own code, so the fix is
+to use two sessions, one per library, and query each for what only it provides.
+Worth reporting upstream too: the library whose names are the less specific
+should be prefixing them. A function shadowing a *built-in* is not a collision
+and raises nothing — that is a supported thing for a library to do. See
+{ref}`extension_bundles_collisions`.
+
+
 
 **Keep your context alive.** A `DataFrame` or a plan does not keep its session
 alive on its own. If a context is garbage-collected while something built from
@@ -138,6 +163,17 @@ ctx.logical_extension_codec_ids()
 ```
 
 An empty list means nothing extra is installed.
+
+For functions, {py:meth}`~datafusion.SessionContext.udfs`,
+{py:meth}`~datafusion.SessionContext.udafs` and
+{py:meth}`~datafusion.SessionContext.udwfs` return the names a session knows.
+Both the library's and every DataFusion built-in are in there, so look for the
+name rather than reading the whole list:
+
+```python
+"my_engine_normalize" in ctx.udfs()
+# True
+```
 
 ## Next steps
 

@@ -289,41 +289,9 @@ for direct ones. The wrapper travels with the codec; the bundle does not.
 The query planner is exempt — it carries no wire id, so it may be an object or
 a capsule.
 
-(extension_bundles_transaction)=
-
-## Failure and rollback
-
-Nothing is written to the session until every factory has returned and every
-component has been validated, so a factory that raises leaves the session
-exactly as it was. A factory that mutates the context it is handed —
-registering a table, say — is **not** rolled back, which is why bundle objects
-must be configuration-only: create fresh components on each call, never cache
-bound components, and do not retain the context passed in.
-
-That guarantee is why the installation runs in the order it does. A call splits
-into a part that may fail and a part that may not:
-
-1. **Collect.** Every `__datafusion_session_components__` runs.
-2. **Chains.** The codecs are assembled into the returned handle. Codec chains
-   live on that handle rather than on the session, so this step writes nothing
-   even though it can fail on a bad capsule or a duplicate id.
-3. **Resolve.** Every declared function is wrapped and every name is checked,
-   and every `__datafusion_session_planner__` runs against the completed
-   chains.
-4. **Commit.** The planner is bound and the functions are registered.
-
-Only step 4 touches the session, and every step that can fail happens before
-it. This is a rule for anyone extending `with_extensions`, not only a
-description: a new kind of component must do its fallible work — importing a
-capsule, resolving a name — in step 3, so that step 4 cannot raise part-way
-through. There is nothing to roll back to if it does. The returned handle
-shares one session with the receiver, and undoing a registration is not the
-same as restoring what it displaced: deregistering a function that shadowed a
-built-in removes the built-in too.
-
 (extension_bundles_collisions)=
 
-### Two bundles claiming one name
+## Two bundles claiming one name
 
 Within a single call, two extensions declaring a function of the same kind
 under the same name is a `ValueError` naming both. Codec ids dispatch on
@@ -335,6 +303,29 @@ may share one.
 Shadowing a name the session *already* has is allowed and is not a collision.
 The registry holds every DataFusion built-in, and overriding built-ins by name
 is a supported thing to do — `enable_spark_functions` is built on it.
+
+Since the caller cannot repair a collision from their own code, name your
+functions so this does not arise: a prefix tying them to your library is the
+usual answer.
+
+(extension_bundles_transaction)=
+
+## Failure and rollback
+
+Nothing is written to the session until every factory has returned and every
+component has been validated, so a factory that raises leaves the session
+exactly as it was. A factory that mutates the context it is handed —
+registering a table, say — is **not** rolled back, which is why bundle objects
+must be configuration-only: create fresh components on each call, never cache
+bound components, and do not retain the context passed in.
+
+Declaring a component is what buys you that guarantee, and it is the whole
+reason to prefer `udfs=(...)` over a `register_udf` call inside your hook.
+Anything you declare is resolved and checked while a failure still costs
+nothing, and is written only after every bundle in the call has succeeded.
+Anything you register yourself is written immediately, before the other bundles
+have even run. The ordering that makes this hold is recorded at
+{ref}`ffi_internals_commit_order`.
 
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side
