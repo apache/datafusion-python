@@ -228,15 +228,16 @@ _FUNCTION_KINDS = (
 def _collect_contributions(
     extensions: tuple[object, ...],
     ctx: SessionContext,
-) -> tuple[list[Any], list[Any], dict[str, list[tuple[object, Any]]]]:
+) -> tuple[list[Any], list[Any], dict[str, list[tuple[int, object, Any]]]]:
     """Run every components hook and gather what the extensions contribute.
 
     Validates the whole argument list before calling anything, so an argument
     that implements neither hook is refused before a well-formed extension
     ahead of it has done any work. Writes nothing to the session.
 
-    Functions are kept paired with the extension that declared them, so a name
-    claimed twice can name both sides.
+    Functions are kept paired with the extension that declared them and with
+    that extension's position in the argument list, so a name claimed twice can
+    name both sides and tell which remedy applies.
 
     Args:
         extensions: The arguments ``with_extensions`` was given.
@@ -244,8 +245,9 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions
-        keyed by the :py:data:`_FUNCTION_KINDS` field they arrived in.
+        The logical codecs, the physical codecs, and the declared functions as
+        ``(position, extension, function)`` triples, keyed by the
+        :py:data:`_FUNCTION_KINDS` field they arrived in.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -264,10 +266,10 @@ def _collect_contributions(
 
     logical_codecs: list[LogicalExtensionCodecExportable] = []
     physical_codecs: list[PhysicalExtensionCodecExportable] = []
-    declared: dict[str, list[tuple[object, Any]]] = {
+    declared: dict[str, list[tuple[int, object, Any]]] = {
         kind.field: [] for kind in _FUNCTION_KINDS
     }
-    for extension in extensions:
+    for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
             continue
         components = extension.__datafusion_session_components__(ctx)
@@ -282,17 +284,17 @@ def _collect_contributions(
         physical_codecs.extend(components.physical_extension_codecs)
         for field_name, declarations in declared.items():
             declarations.extend(
-                (extension, item) for item in getattr(components, field_name)
+                (position, extension, item) for item in getattr(components, field_name)
             )
     return logical_codecs, physical_codecs, declared
 
 
 def _resolve_declared_functions(
-    declared: list[tuple[object, Any]],
+    declared: list[tuple[int, object, Any]],
     wrapper: type,
     getter: str,
     factory: Any,
-    kind: str,
+    label: str,
 ) -> list[Any]:
     """Wrap every function an extension declared, refusing a name claimed twice.
 
@@ -303,49 +305,63 @@ def _resolve_declared_functions(
     argument is ignored.
 
     Args:
-        declared: ``(extension, function)`` pairs in declaration order.
+        declared: ``(position, extension, function)`` triples in declaration
+            order, where ``position`` indexes the ``with_extensions`` argument
+            list.
         wrapper: The wrapper class a declaration may already be an instance of,
             in which case it is taken as-is.
         getter: The capsule getter an unwrapped declaration must expose.
         factory: The helper that wraps a declaration — ``udf`` and friends.
-        kind: What to call this sort of function in an error.
+        label: What to call this sort of function in an error.
 
     Returns:
         The wrappers to register, in declaration order.
+
+    Raises:
+        TypeError: If a declaration is neither an instance of ``wrapper`` nor
+            an object exposing ``getter``.
+        ValueError: If two declarations resolve to the same name.
     """
     resolved = []
-    claimed: dict[str, object] = {}
-    for extension, function in declared:
+    claimed: dict[str, tuple[int, object]] = {}
+    for position, extension, function in declared:
         if isinstance(function, wrapper):
             wrapped = function
         elif hasattr(function, getter):
             wrapped = factory(function)
         else:
             msg = (
-                f"A declared {kind} must be a {wrapper.__name__} or expose "
+                f"A declared {label} must be a {wrapper.__name__} or expose "
                 f"{getter}, got {function!r} from {extension!r}"
             )
             raise TypeError(msg)
         name = wrapped.name
         if name in claimed:
-            # Identity, not equality: two objects in the argument list are two
-            # installs even when the bundle is a dataclass that compares equal
-            # to its twin. Only a bundle colliding with *itself* can rename.
-            if claimed[name] is extension:
+            # Position, not object identity: what the caller controls is the
+            # argument list, and two entries in it are two installs whether or
+            # not they are the same object. The distinction the message needs
+            # is which remedy exists. One argument colliding with itself is a
+            # bundle author's own bug, and only they can rename a function;
+            # two arguments colliding is the caller's to resolve, and renaming
+            # is not among the things a caller can do.
+            claimed_at, claimed_by = claimed[name]
+            if claimed_at == position:
                 msg = (
-                    f"{extension!r} declares two {kind}s named {name!r}. "
+                    f"{extension!r} declares two {label}s named {name!r}. "
                     "Registrations have no fall-through, so the second would "
                     "silently replace the first; rename one of them."
                 )
             else:
                 msg = (
-                    f"Two extensions declare a {kind} named {name!r}: "
-                    f"{claimed[name]!r} and {extension!r}. Registrations have "
-                    "no fall-through, so one would silently replace the other; "
-                    "install them on separate sessions."
+                    f"Two extensions declare a {label} named {name!r}: "
+                    f"argument {claimed_at} ({claimed_by!r}) and argument "
+                    f"{position} ({extension!r}). Registrations have no "
+                    "fall-through, so one would silently replace the other; "
+                    "install them on separate sessions, or drop the repeat if "
+                    "one extension was passed twice."
                 )
             raise ValueError(msg)
-        claimed[name] = extension
+        claimed[name] = (position, extension)
         resolved.append(wrapped)
     return resolved
 

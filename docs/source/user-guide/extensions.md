@@ -116,6 +116,10 @@ should be prefixing them. A function shadowing a *built-in* is not a collision
 and raises nothing — that is a supported thing for a library to do. See
 {ref}`extension_bundles_collisions`.
 
+Check the argument positions the message names before you go looking for a
+second library. Passing one extension twice collides with itself, and an
+extension list assembled from a plugin registry is the usual way that happens.
+
 **Keep your context alive.** A `DataFrame` or a plan does not keep its session
 alive on its own. If a context is garbage-collected while something built from
 it is still in use, the next query fails with:

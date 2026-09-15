@@ -1526,15 +1526,40 @@ def test_with_extensions_rejects_a_name_two_extensions_claim(ctx):
 
     Unlike codecs, which dispatch by id, a second function under one name would
     silently replace the first.
+
+    A codec-carrying bundle rides along to pin the other half of the
+    transaction: resolution runs *after* the codec chains are built, so this
+    failure lands between the two steps, and the chains must not reach the
+    session either.
     """
     with pytest.raises(ValueError, match=r"scalar function named 'double'"):
         ctx.with_extensions(
+            _CodecOnlyExtension(),
             _FunctionExtension(udfs=(_doubler(),)),
             _FunctionExtension(udfs=(_doubler(),)),
         )
 
     with pytest.raises(KeyError):
         ctx.udf("double")
+    assert ctx.logical_extension_codec_ids() == []
+    assert ctx.physical_extension_codec_ids() == []
+
+
+def test_with_extensions_rejects_one_extension_passed_twice(ctx):
+    """A bundle object listed twice is the caller's duplicate, not a naming bug.
+
+    The remedy has to match the mistake, and nothing the bundle author renames
+    helps here — both claims come from the one declaration. Collisions are
+    therefore keyed on argument position rather than on object identity, which
+    would read a repeat as a bundle colliding with itself and offer a rename
+    that cannot be made.
+    """
+    extension = _FunctionExtension(udfs=(_doubler(),))
+
+    with pytest.raises(ValueError, match=r"argument 0 .* and argument 1 ") as excinfo:
+        ctx.with_extensions(extension, extension)
+
+    assert "rename" not in str(excinfo.value)
 
 
 def test_with_extensions_rejects_a_name_one_extension_claims_twice(ctx):
