@@ -300,10 +300,10 @@ where the host can resolve them:
 - **Getters taking no argument** — the three function kinds and physical
   optimizer rules. Nothing is session-scoped, so a bundle may hand over either
   a wrapped object or the raw exportable.
-- **Getters taking the session or a codec** — table functions and table
-  providers. These are resolved by the host against the *finished* handle,
-  which is why you hand over the unwrapped value and a name rather than a
-  {py:class}`~datafusion.user_defined.TableFunction` you built yourself.
+- **Getters taking the session or a codec** — table functions, table providers,
+  and catalog providers. These are resolved by the host against the *finished*
+  handle, which is why you hand over the unwrapped value and a name rather than
+  a {py:class}`~datafusion.user_defined.TableFunction` you built yourself.
   Wrapping one inside your components hook binds it to the context that hook
   received, which has none of the call's codecs — so it would capture a chain
   missing every library in the call, including your own.
@@ -349,6 +349,8 @@ is nothing to refuse. See {doc}`other-components`.
 Tables go the other way. DataFusion refuses a duplicate table registration
 rather than replacing it, so a declared table name that is *already* on the
 session is an error too — a table cannot shadow one the way a function can.
+Catalogs are back on the function side of that line, and for a reason worth
+reading before you declare one: see {doc}`table-providers`.
 
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.

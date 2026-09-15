@@ -47,6 +47,9 @@ PRIVATE_SUPPORT_METHODS = frozenset(
         # destination schema during resolution, insert at commit.
         "_resolve_extension_tables",
         "_install_extension_tables",
+        # Catalogs, sharing their import half with register_catalog_provider.
+        "_resolve_extension_catalogs",
+        "_install_extension_catalogs",
     }
 )
 
