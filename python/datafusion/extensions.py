@@ -44,7 +44,7 @@ split and for a worked implementation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
@@ -52,8 +52,14 @@ if TYPE_CHECKING:
 
     from datafusion.context import SessionContext
     from datafusion.user_defined import (
+        AggregateUDF,
+        AggregateUDFExportable,
         LogicalExtensionCodecExportable,
         PhysicalExtensionCodecExportable,
+        ScalarUDF,
+        ScalarUDFExportable,
+        WindowUDF,
+        WindowUDFExportable,
     )
 
 __all__ = [
@@ -101,13 +107,24 @@ class QueryPlannerExportable(Protocol):
     def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
 
 
-def _not_a_codec_iterable(field: str, value: object) -> str:
-    """Message for a codec field that cannot be read as a collection."""
+def _not_an_iterable(name: str, value: object, noun: str) -> str:
+    """Message for a component field that cannot be read as a collection."""
     return (
-        f"{field} must be an iterable of codec objects, not a single "
-        f"{type(value).__name__}. A lone codec is written as a one-element "
-        f"tuple — {field}=(codec,) — and the trailing comma is what makes it one."
+        f"{name} must be an iterable of {noun} objects, not a single "
+        f"{type(value).__name__}. A lone {noun} is written as a one-element "
+        f"tuple — {name}=({noun},) — and the trailing comma is what makes it one."
     )
+
+
+def _components(noun: str) -> Any:
+    """Declare a field holding a tuple of contributed components.
+
+    ``noun`` names what the field holds, for the error a bundle sees when it
+    hands over one component instead of a collection of them. Carrying it in
+    the field metadata is what lets ``__post_init__`` normalize a field it was
+    never told about by name.
+    """
+    return field(default=(), metadata={"datafusion_component": noun})
 
 
 @dataclass(frozen=True)
@@ -123,6 +140,12 @@ class SessionExtensionComponents:
 
     Query planners are not listed here. They install in a second phase so each
     can wrap the one before it — see :py:class:`SessionPlannerExportable`.
+
+    Codecs are held by the returned handle; everything else is registered on
+    the session the handle shares. Declaring a component is not the same as
+    registering it yourself during the hook: declared components are resolved
+    before anything is written, so a bundle that fails leaves nothing behind.
+    See :ref:`extension_bundles_transaction`.
 
     Examples:
         A bundle that contributes no codecs is valid — a planner-only library
@@ -158,7 +181,23 @@ class SessionExtensionComponents:
         >>> components.physical_extension_codecs
         ()
 
-        A single codec is not an iterable of codecs, and forgetting the
+        Functions are declared the same way, and register under the name the
+        function itself reports:
+
+        >>> import pyarrow as pa
+        >>> from datafusion import udf
+        >>> double = udf(
+        ...     lambda arr: pa.array([v.as_py() * 2 for v in arr]),
+        ...     [pa.int64()],
+        ...     pa.int64(),
+        ...     volatility="stable",
+        ...     name="double",
+        ... )
+        >>> components = SessionExtensionComponents(udfs=(double,))
+        >>> [fn.name for fn in components.udfs]
+        ['double']
+
+        A single component is not an iterable of them, and forgetting the
         trailing comma is the easy way to write one by accident:
 
         >>> SessionExtensionComponents(logical_extension_codecs=NamedCodec(ctx))
@@ -167,7 +206,9 @@ class SessionExtensionComponents:
         TypeError: logical_extension_codecs must be an iterable of codec objects...
     """
 
-    logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = ()
+    logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = _components(
+        "codec"
+    )
     """Logical codecs to add to the session's codec chain, in declaration order.
 
     Objects exposing ``__datafusion_logical_extension_codec__``, never bare
@@ -176,15 +217,46 @@ class SessionExtensionComponents:
     :ref:`extension_bundles_codecs_are_objects`.
     """
 
-    physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = ()
+    physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = (
+        _components("codec")
+    )
     """Physical codecs to add to the session's codec chain, in declaration order.
 
     As :py:attr:`logical_extension_codecs`, for
     ``__datafusion_physical_extension_codec__``.
     """
 
+    udfs: tuple[ScalarUDF | ScalarUDFExportable, ...] = _components("function")
+    """Scalar functions to register on the session.
+
+    Either a :py:class:`~datafusion.user_defined.ScalarUDF` or an object
+    exposing ``__datafusion_scalar_udf__``, which is wrapped with
+    :py:func:`~datafusion.udf` on the way in. The registered name comes from
+    the function itself, not from this field.
+
+    Two extensions in one
+    :py:meth:`~datafusion.context.SessionContext.with_extensions` call may not
+    declare the same name; shadowing a function the session already has is
+    allowed. See :ref:`extension_bundles_collisions`.
+    """
+
+    udafs: tuple[AggregateUDF | AggregateUDFExportable, ...] = _components("function")
+    """Aggregate functions to register on the session.
+
+    As :py:attr:`udfs`, for ``__datafusion_aggregate_udf__`` and
+    :py:func:`~datafusion.udaf`. Names are compared within their own kind, so
+    an aggregate may share a name with a scalar function.
+    """
+
+    udwfs: tuple[WindowUDF | WindowUDFExportable, ...] = _components("function")
+    """Window functions to register on the session.
+
+    As :py:attr:`udfs`, for ``__datafusion_window_udf__`` and
+    :py:func:`~datafusion.udwf`.
+    """
+
     def __post_init__(self) -> None:
-        """Normalize each codec field to a tuple, rejecting what cannot become one."""
+        """Normalize each component field, rejecting what cannot become a tuple."""
         # A bundle that writes `logical_extension_codecs=codec` instead of
         # `(codec,)` is contributing one codec, not an iterable of them.
         # Without this, the mistake surfaces inside `with_extensions` as
@@ -198,24 +270,25 @@ class SessionExtensionComponents:
         # the first read.
         #
         # Driven off `dataclasses.fields` rather than a written-out list, so a
-        # codec field added later is normalized without anyone remembering to
-        # name it here. The `_codecs` suffix is what marks a field as one of
-        # them, leaving room for a future field that is not a codec collection
-        # and must not be turned into a tuple.
-        for field in fields(self):
-            name = field.name
-            if not name.endswith("_codecs"):
+        # component field added later is normalized without anyone remembering
+        # to name it here. `_components` metadata is what marks a field as one
+        # of them, leaving room for a future field that is not a collection and
+        # must not be turned into a tuple.
+        for spec in fields(self):
+            noun = spec.metadata.get("datafusion_component")
+            if noun is None:
                 continue
+            name = spec.name
             value = getattr(self, name)
             # A str is iterable, so it would otherwise normalize into a tuple
-            # of characters and fail much later as that many bogus codecs.
+            # of characters and fail much later as that many bogus components.
             if isinstance(value, (str, bytes)):
-                raise TypeError(_not_a_codec_iterable(name, value))
+                raise TypeError(_not_an_iterable(name, value, noun))
             try:
-                codecs = tuple(value)
+                components = tuple(value)
             except TypeError:
-                raise TypeError(_not_a_codec_iterable(name, value)) from None
-            object.__setattr__(self, name, codecs)
+                raise TypeError(_not_an_iterable(name, value, noun)) from None
+            object.__setattr__(self, name, components)
 
 
 @runtime_checkable
@@ -231,9 +304,11 @@ class SessionComponentsExportable(Protocol):
     components on every call using the context supplied by
     :py:meth:`~datafusion.context.SessionContext.with_extensions`, and must not
     retain that context or cache the components they bound to it, since the
-    next call may install onto a different session. They should also avoid
-    mutating the context they are handed — a registration made during binding
-    is not rolled back if a later extension fails.
+    next call may install onto a different session. Declare what you contribute
+    rather than registering it on the context you are handed: a registration
+    made during the hook is not rolled back if a later extension fails, and it
+    binds to the codec chains from before the call. See
+    :ref:`extension_bundles_transaction`.
 
     A bundle that also contributes a query planner implements
     :py:class:`SessionPlannerExportable` alongside this protocol.

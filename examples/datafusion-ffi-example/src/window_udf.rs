@@ -40,7 +40,7 @@ pub(crate) struct MyRankUDF {
 #[pymethods]
 impl MyRankUDF {
     #[new]
-    fn new() -> PyResult<Self> {
+    pub(crate) fn new() -> PyResult<Self> {
         Ok(Self { inner: rank_udwf() })
     }
 

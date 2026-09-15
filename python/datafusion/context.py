@@ -46,7 +46,7 @@ from __future__ import annotations
 
 import uuid
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, NamedTuple, Protocol
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -159,6 +159,207 @@ class PhysicalOptimizerRuleExportable(Protocol):
     """
 
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
+
+
+class _FunctionKind(NamedTuple):
+    """How one kind of declared function is resolved and registered.
+
+    One row per function field on
+    :py:class:`~datafusion.extensions.SessionExtensionComponents`, so adding a
+    kind is adding a row rather than editing three places. The dataclass
+    metadata says which fields are collections to normalize; this table says
+    which of them are functions and what to do with one.
+    ``test_every_component_field_has_an_installer`` pins the two together.
+
+    The members naming a ``datafusion.user_defined`` object hold its name
+    rather than the object: that module imports this one, so the lookups are
+    deferred to :py:meth:`SessionContext.with_extensions`, which runs with the
+    cycle long settled.
+    """
+
+    field: str
+    """The ``SessionExtensionComponents`` field a bundle declares these in."""
+
+    wrapper: str
+    """Wrapper class a declaration may already be an instance of."""
+
+    getter: str
+    """Capsule getter an unwrapped declaration must expose instead."""
+
+    factory: str
+    """Helper that turns an unwrapped declaration into a wrapper."""
+
+    label: str
+    """What to call this sort of function in an error message."""
+
+    register: str
+    """:py:class:`SessionContext` method that commits one to the session."""
+
+
+_FUNCTION_KINDS = (
+    _FunctionKind(
+        field="udfs",
+        wrapper="ScalarUDF",
+        getter="__datafusion_scalar_udf__",
+        factory="udf",
+        label="scalar function",
+        register="register_udf",
+    ),
+    _FunctionKind(
+        field="udafs",
+        wrapper="AggregateUDF",
+        getter="__datafusion_aggregate_udf__",
+        factory="udaf",
+        label="aggregate function",
+        register="register_udaf",
+    ),
+    _FunctionKind(
+        field="udwfs",
+        wrapper="WindowUDF",
+        getter="__datafusion_window_udf__",
+        factory="udwf",
+        label="window function",
+        register="register_udwf",
+    ),
+)
+"""Every kind of function a bundle can declare, in registration order."""
+
+
+def _collect_contributions(
+    extensions: tuple[object, ...],
+    ctx: SessionContext,
+) -> tuple[list[Any], list[Any], dict[str, list[tuple[int, object, Any]]]]:
+    """Run every components hook and gather what the extensions contribute.
+
+    Validates the whole argument list before calling anything, so an argument
+    that implements neither hook is refused before a well-formed extension
+    ahead of it has done any work. Writes nothing to the session.
+
+    Functions are kept paired with the extension that declared them and with
+    that extension's position in the argument list, so a name claimed twice can
+    name both sides and tell which remedy applies.
+
+    Args:
+        extensions: The arguments ``with_extensions`` was given.
+        ctx: The context the components are bound against — the receiver, not a
+            context derived from it.
+
+    Returns:
+        The logical codecs, the physical codecs, and the declared functions as
+        ``(position, extension, function)`` triples, keyed by the
+        :py:data:`_FUNCTION_KINDS` field they arrived in.
+
+    Raises:
+        TypeError: If an argument implements neither hook, or a hook returns
+            something other than ``SessionExtensionComponents``.
+    """
+    for extension in extensions:
+        if not isinstance(
+            extension, (SessionComponentsExportable, SessionPlannerExportable)
+        ):
+            msg = (
+                "Extension implements neither "
+                "__datafusion_session_components__ nor "
+                f"__datafusion_session_planner__: {extension!r}"
+            )
+            raise TypeError(msg)
+
+    logical_codecs: list[LogicalExtensionCodecExportable] = []
+    physical_codecs: list[PhysicalExtensionCodecExportable] = []
+    declared: dict[str, list[tuple[int, object, Any]]] = {
+        kind.field: [] for kind in _FUNCTION_KINDS
+    }
+    for position, extension in enumerate(extensions):
+        if not isinstance(extension, SessionComponentsExportable):
+            continue
+        components = extension.__datafusion_session_components__(ctx)
+        if not isinstance(components, SessionExtensionComponents):
+            msg = (
+                "__datafusion_session_components__ must return "
+                "SessionExtensionComponents, got "
+                f"{type(components).__name__} from {extension!r}"
+            )
+            raise TypeError(msg)
+        logical_codecs.extend(components.logical_extension_codecs)
+        physical_codecs.extend(components.physical_extension_codecs)
+        for field_name, declarations in declared.items():
+            declarations.extend(
+                (position, extension, item) for item in getattr(components, field_name)
+            )
+    return logical_codecs, physical_codecs, declared
+
+
+def _resolve_declared_functions(
+    declared: list[tuple[int, object, Any]],
+    wrapper: type,
+    getter: str,
+    factory: Any,
+    label: str,
+) -> list[Any]:
+    """Wrap every function an extension declared, refusing a name claimed twice.
+
+    Runs before anything is written to the session, so a bundle that hands over
+    something unusable — or two bundles that both claim a name — fail with
+    nothing registered. The name is read off the wrapper rather than off the
+    declaration: on the FFI path the capsule reports it, and the constructor
+    argument is ignored.
+
+    Args:
+        declared: ``(position, extension, function)`` triples in declaration
+            order, where ``position`` indexes the ``with_extensions`` argument
+            list.
+        wrapper: The wrapper class a declaration may already be an instance of,
+            in which case it is taken as-is.
+        getter: The capsule getter an unwrapped declaration must expose.
+        factory: The helper that wraps a declaration — ``udf`` and friends.
+        label: What to call this sort of function in an error.
+
+    Returns:
+        The wrappers to register, in declaration order.
+
+    Raises:
+        TypeError: If a declaration is neither an instance of ``wrapper`` nor
+            an object exposing ``getter``.
+        ValueError: If two declarations resolve to the same name.
+    """
+    resolved = []
+    claimed: dict[str, tuple[int, object]] = {}
+    for position, extension, function in declared:
+        if isinstance(function, wrapper):
+            wrapped = function
+        elif hasattr(function, getter):
+            wrapped = factory(function)
+        else:
+            msg = (
+                f"A declared {label} must be {wrapper.__name__} or expose "
+                f"{getter}, got {function!r} from {extension!r}"
+            )
+            raise TypeError(msg)
+        name = wrapped.name
+        if name in claimed:
+            # Keyed on position, not object identity, so each message names
+            # the remedy its reader actually has — see
+            # `extension_bundles_collisions` in the extension guide.
+            claimed_at, claimed_by = claimed[name]
+            if claimed_at == position:
+                msg = (
+                    f"{extension!r} declares two {label}s named {name!r}. "
+                    "Registrations have no fall-through, so the second would "
+                    "silently replace the first; rename one of them."
+                )
+            else:
+                msg = (
+                    f"Two extensions declare a {label} named {name!r}: "
+                    f"argument {claimed_at} ({claimed_by!r}) and argument "
+                    f"{position} ({extension!r}). Registrations have no "
+                    "fall-through, so one would silently replace the other; "
+                    "install them on separate sessions, or drop the repeat if "
+                    "one extension was passed twice."
+                )
+            raise ValueError(msg)
+        claimed[name] = (position, extension)
+        resolved.append(wrapped)
+    return resolved
 
 
 class SessionConfig:
@@ -1915,10 +2116,12 @@ class SessionContext:
         :py:class:`~datafusion.extensions.SessionPlannerExportable`.
 
         Nothing is written to the session until every hook has returned and
-        every capsule has been validated, so a hook that raises leaves the
-        session as it was. A hook that *mutates* the context it is handed —
-        registering a table, say — is not rolled back, which is why bundle
-        objects must be configuration-only.
+        every component has been validated, so a hook that raises leaves the
+        session as it was. Declared functions register after the planner is
+        bound, and are visible on every handle sharing this session. A hook
+        that *mutates* the context it is handed — registering a table, say — is
+        not rolled back, which is why bundle objects must be
+        configuration-only.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
@@ -1938,10 +2141,13 @@ class SessionContext:
 
         Raises:
             TypeError: If an argument implements neither hook, if a hook
-                returns the wrong type, or if a codec is contributed as a bare
-                ``PyCapsule`` rather than an object exposing the getter.
-            ValueError: If two codecs claim the same id, or a getter returns a
-                capsule of the wrong kind. See
+                returns the wrong type, if a codec is contributed as a bare
+                ``PyCapsule`` rather than an object exposing the getter, or if
+                a declared function is neither a wrapper nor exposes its
+                capsule getter.
+            ValueError: If two codecs claim the same id, if two extensions
+                declare a function of one kind under the same name, or if a
+                getter returns a capsule of the wrong kind. See
                 :py:meth:`with_logical_extension_codec` for how ids are
                 assigned.
 
@@ -1975,41 +2181,39 @@ class SessionContext:
             >>> batches[0].column(0).to_pylist()  # doctest: +SKIP
             [1]
         """
-        for extension in extensions:
-            if not isinstance(
-                extension, (SessionComponentsExportable, SessionPlannerExportable)
-            ):
-                msg = (
-                    "Extension implements neither "
-                    "__datafusion_session_components__ nor "
-                    f"__datafusion_session_planner__: {extension!r}"
-                )
-                raise TypeError(msg)
-
-        # Phase one: collect every bundle's codecs. Components are bound
+        # Phase one: collect every bundle's components. Components are bound
         # against this context, not a context derived from it. There is one
         # `Arc<SessionContext>` per session, so a component bound here holds a
         # task-context provider that the returned handle keeps alive.
-        logical_codecs: list[LogicalExtensionCodecExportable] = []
-        physical_codecs: list[PhysicalExtensionCodecExportable] = []
-        for extension in extensions:
-            if not isinstance(extension, SessionComponentsExportable):
-                continue
-            components = extension.__datafusion_session_components__(self)
-            if not isinstance(components, SessionExtensionComponents):
-                msg = (
-                    "__datafusion_session_components__ must return "
-                    "SessionExtensionComponents, got "
-                    f"{type(components).__name__} from {extension!r}"
-                )
-                raise TypeError(msg)
-            logical_codecs.extend(components.logical_extension_codecs)
-            physical_codecs.extend(components.physical_extension_codecs)
+        logical_codecs, physical_codecs, declared = _collect_contributions(
+            extensions, self
+        )
 
         # Writes nothing: the chains belong to the new handle, so a failure
         # above or below leaves this context as it was.
         new = SessionContext.__new__(SessionContext)
         new.ctx = self.ctx._install_extension_codecs(logical_codecs, physical_codecs)
+
+        # Resolve every declared function to the wrapper that registers it, and
+        # settle name collisions, while a failure still costs nothing. None of
+        # these getters take an argument, so unlike a provider they do not care
+        # which handle they are resolved against. The bound `register_*` method
+        # is looked up here too, leaving the commit below nothing but calls.
+        from datafusion import user_defined as _user_defined  # noqa: PLC0415
+
+        resolved: list[tuple[Any, list[Any]]] = [
+            (
+                getattr(new, kind.register),
+                _resolve_declared_functions(
+                    declared[kind.field],
+                    getattr(_user_defined, kind.wrapper),
+                    kind.getter,
+                    getattr(_user_defined, kind.factory),
+                    kind.label,
+                ),
+            )
+            for kind in _FUNCTION_KINDS
+        ]
 
         # Phase two: nest the planners, outermost last. Each hook runs against
         # `new`, which carries the final chains, so a planner captured here
@@ -2037,8 +2241,19 @@ class SessionContext:
         # it already holds, so the rebuild is unobservable except in the one case
         # where it does harm: a planner sitting on some *other* handle's codecs
         # gets dragged onto this handle's, silently undoing that install.
+
+        # Commit. Everything below this line must be infallible. A registration
+        # whose commit can fail belongs above, split into an import step that
+        # returns a resolved object and an insert step that cannot raise --
+        # there is one session here, shared with the receiver, so a failure
+        # part-way through has nothing to roll back to. The reasoning is in
+        # docs/source/contributor-guide/ffi-internals.md, under "Why
+        # `with_extensions` commits last".
         if planner is not None or logical_codecs or physical_codecs:
             new.ctx._install_extension_planner(planner)
+        for register, functions in resolved:
+            for function in functions:
+                register(function)
         return new
 
     def table_provider(self, name: str) -> Table:
