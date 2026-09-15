@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 use crate::aggregate_udf::MySumUDF;
 use crate::catalog_provider::{FixedSchemaProvider, MyCatalogProvider, MyCatalogProviderList};
 use crate::config::MyConfig;
-use crate::extension::MyFunctionExtension;
+use crate::extension::{MyFunctionExtension, MyRuleExtension};
 use crate::logical_extension_codec::MyLogicalExtensionCodec;
 use crate::name_only_codec::{NameOnlyFunction, NameOnlyUdfCodec};
 use crate::physical_extension_codec::MyPhysicalExtensionCodec;
@@ -66,5 +66,6 @@ fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyPhysicalExtensionCodec>()?;
     m.add_class::<MyPhysicalOptimizerRule>()?;
     m.add_class::<MyFunctionExtension>()?;
+    m.add_class::<MyRuleExtension>()?;
     Ok(())
 }

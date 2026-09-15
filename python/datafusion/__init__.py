@@ -93,6 +93,7 @@ from .dataframe import (
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .extensions import (
+    PhysicalOptimizerRuleExportable,
     QueryPlannerExportable,
     SessionComponentsExportable,
     SessionExtensionComponents,
@@ -139,6 +140,7 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
+    "PhysicalOptimizerRuleExportable",
     "PhysicalPartitioning",
     "QueryPlannerExportable",
     "RecordBatch",

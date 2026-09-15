@@ -72,11 +72,11 @@ pub(crate) struct MyPhysicalOptimizerRule {
 #[pymethods]
 impl MyPhysicalOptimizerRule {
     #[new]
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
-    fn optimize_calls(&self) -> usize {
+    pub(crate) fn optimize_calls(&self) -> usize {
         self.optimize_calls.load(Ordering::SeqCst)
     }
 
