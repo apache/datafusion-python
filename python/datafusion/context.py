@@ -265,12 +265,22 @@ def _resolve_declared_functions(
             raise TypeError(msg)
         name = wrapped.name
         if name in claimed:
-            msg = (
-                f"Two extensions declare a {kind} named {name!r}: "
-                f"{claimed[name]!r} and {extension!r}. Registrations have no "
-                "fall-through, so one would silently replace the other; "
-                "install them on separate sessions, or rename one."
-            )
+            # Identity, not equality: two objects in the argument list are two
+            # installs even when the bundle is a dataclass that compares equal
+            # to its twin. Only a bundle colliding with *itself* can rename.
+            if claimed[name] is extension:
+                msg = (
+                    f"{extension!r} declares two {kind}s named {name!r}. "
+                    "Registrations have no fall-through, so the second would "
+                    "silently replace the first; rename one of them."
+                )
+            else:
+                msg = (
+                    f"Two extensions declare a {kind} named {name!r}: "
+                    f"{claimed[name]!r} and {extension!r}. Registrations have "
+                    "no fall-through, so one would silently replace the other; "
+                    "install them on separate sessions."
+                )
             raise ValueError(msg)
         claimed[name] = extension
         resolved.append(wrapped)

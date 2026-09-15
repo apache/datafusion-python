@@ -1523,6 +1523,22 @@ def test_with_extensions_rejects_a_name_two_extensions_claim(ctx):
         ctx.udf("double")
 
 
+def test_with_extensions_rejects_a_name_one_extension_claims_twice(ctx):
+    """A bundle colliding with itself is its own bug, not a clash of libraries.
+
+    Separated from the two-extension case because the remedy differs: a bundle
+    author can rename their own function, and a caller cannot rename someone
+    else's.
+    """
+    with pytest.raises(
+        ValueError, match=r"declares two scalar functions named 'double'"
+    ):
+        ctx.with_extensions(_FunctionExtension(udfs=(_doubler(), _doubler())))
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
 def test_with_extensions_allows_shadowing_an_existing_function(ctx):
     """Claiming a name the session already has is legal.
 
