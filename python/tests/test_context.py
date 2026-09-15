@@ -1674,6 +1674,26 @@ def test_every_component_field_has_an_installer():
     }
 
 
+def test_every_function_kind_names_something_real():
+    """The names on a ``_FunctionKind`` row resolve to what it says they do.
+
+    They are held as strings and looked up during ``with_extensions``, to keep
+    the ``user_defined`` import out of this module's import cycle. The cost is
+    that a typo in a row surfaces as an ``AttributeError`` part-way through an
+    install rather than at import. Every row that exists today is covered by a
+    behaviour test above; this is what covers the next one, which may be added
+    before its own test is.
+    """
+    from datafusion import user_defined
+    from datafusion.context import _FUNCTION_KINDS
+
+    for kind in _FUNCTION_KINDS:
+        assert isinstance(getattr(user_defined, kind.wrapper), type)
+        assert callable(getattr(user_defined, kind.factory))
+        assert callable(getattr(SessionContext, kind.register))
+        assert kind.field in {spec.name for spec in fields(SessionExtensionComponents)}
+
+
 def test_table_provider(ctx):
     batch = pa.RecordBatch.from_pydict({"x": [10, 20, 30]})
     ctx.register_record_batches("provider_test", [[batch]])
