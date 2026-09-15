@@ -336,6 +336,14 @@ Anything you register yourself is written immediately, before the other bundles
 have even run. The ordering that makes this hold is recorded at
 {ref}`ffi_internals_commit_order`.
 
+The one thing that ordering costs you: functions are registered *after* the
+planner hooks run, so `ctx.udfs()` inside your
+`__datafusion_session_planner__` will not list a function declared in the same
+call — not yours, and not another bundle's. Look one up at plan time instead,
+where the registry is complete; a planner is called per query, long after the
+install has finished. If you need a function at hook time, you already have the
+object, because you are the one declaring it.
+
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side
 codec chains belong to the returned handle; the planner is installed on the
