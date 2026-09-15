@@ -1678,20 +1678,20 @@ def test_session_extension_components_rejects_a_single_optimizer_rule():
         SessionExtensionComponents(physical_optimizer_rules=object())
 
 
-def test_with_extensions_rejects_a_rule_that_is_not_a_capsule(ctx):
-    """A rule that will not import is refused, and nothing is installed.
+def test_with_extensions_rejects_a_rule_that_is_not_a_rule(ctx):
+    """A declaration that is not a rule at all names the bundle that made it.
 
-    Importing the capsules is the only part of installing a rule that can
-    fail, so it happens during resolution. A failure here has to leave the
-    session alone even though the extension ahead of it declared a function
-    that was perfectly good.
+    Which of several bundles is at fault is the whole content of the message,
+    and the only place it is still known is here. A failure also has to leave
+    the session alone even though the extension ahead of it declared a
+    function that was perfectly good.
     """
 
     class RuleExtension:
         def __datafusion_session_components__(self, ctx):
             return SessionExtensionComponents(physical_optimizer_rules=(object(),))
 
-    with pytest.raises(RuntimeError, match="datafusion_physical_optimizer_rule"):
+    with pytest.raises(TypeError, match=r"got .* from .*RuleExtension"):
         ctx.with_extensions(
             _FunctionExtension(udfs=(_doubler(),)),
             RuleExtension(),
@@ -1701,13 +1701,36 @@ def test_with_extensions_rejects_a_rule_that_is_not_a_capsule(ctx):
         ctx.udf("double")
 
 
-def test_with_extensions_declaring_no_rules_leaves_the_session_id(ctx):
-    """Installing rules rebuilds ``SessionState``; declaring none must not.
+def test_with_extensions_rejects_a_rule_whose_getter_returns_a_non_capsule(ctx):
+    """A rule shaped right but returning junk is refused by the importer.
 
-    The rebuild mints a fresh session id unless it is carried over, and a
-    changed id would break every ``TaskContext`` the session has handed out.
-    Asserted for the empty case too, because that is the one where the rebuild
-    would be pure cost.
+    The bundle is past the point where it can be named — it declared the right
+    shape — so this is the one rule failure that surfaces as a ``RuntimeError``
+    from the import rather than a ``TypeError`` from the resolve.
+    """
+
+    class NotACapsule:
+        def __datafusion_physical_optimizer_rule__(self):
+            return object()
+
+    class RuleExtension:
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(physical_optimizer_rules=(NotACapsule(),))
+
+    with pytest.raises(RuntimeError, match="datafusion_physical_optimizer_rule"):
+        ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)), RuleExtension())
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_declaring_no_rules_leaves_the_session_id(ctx):
+    """Installing rules rebuilds ``SessionState``; the id has to survive it.
+
+    The rebuild mints a fresh id unless it is carried over, and a changed id
+    would break every ``TaskContext`` the session has handed out. Asserted for
+    a call declaring no rules as well, so the guarantee does not depend on
+    whether the rebuild was skipped.
     """
     before = ctx.session_id()
     result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))

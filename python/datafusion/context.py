@@ -352,6 +352,40 @@ def _resolve_declared_functions(
     return resolved
 
 
+def _resolve_declared_rules(
+    declared: list[tuple[int, object, Any]], resolve: Any
+) -> Any:
+    """Import the capsule of every physical optimizer rule an extension declared.
+
+    There is no name to check — rules accumulate — so unlike
+    :py:func:`_resolve_declared_functions` this only refuses a declaration that
+    cannot be a rule. The getter is looked for here rather than left to the
+    importer so that the error names the bundle that declared it; a caller who
+    passed four bundles cannot otherwise tell which one is at fault.
+
+    Args:
+        declared: ``(position, extension, rule)`` triples in declaration order.
+        resolve: The primitive that imports a list of rules at once, returning
+            an opaque object for the commit step.
+
+    Returns:
+        The imported rules, opaque, in declaration order.
+
+    Raises:
+        TypeError: If a declaration does not expose
+            ``__datafusion_physical_optimizer_rule__``.
+    """
+    for _, extension, rule in declared:
+        if not hasattr(rule, "__datafusion_physical_optimizer_rule__"):
+            msg = (
+                "A declared optimizer rule must expose "
+                f"__datafusion_physical_optimizer_rule__, got {rule!r} "
+                f"from {extension!r}"
+            )
+            raise TypeError(msg)
+    return resolve([rule for _, _, rule in declared])
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -2133,13 +2167,17 @@ class SessionContext:
             TypeError: If an argument implements neither hook, if a hook
                 returns the wrong type, if a codec is contributed as a bare
                 ``PyCapsule`` rather than an object exposing the getter, or if
-                a declared function is neither a wrapper nor exposes its
-                capsule getter.
+                a declared function or optimizer rule does not expose its
+                capsule getter and is not already a wrapper.
             ValueError: If two codecs claim the same id, if two extensions
                 declare a function of one kind under the same name, or if a
                 getter returns a capsule of the wrong kind. See
                 :py:meth:`with_logical_extension_codec` for how ids are
                 assigned.
+            RuntimeError: If a getter is present but returns something that is
+                not a ``PyCapsule`` at all. The message comes from the importer
+                and does not name the bundle, because by then the declaration
+                has already been accepted as the right shape.
 
         Examples:
             The returned handle is a different object sharing one session, and
@@ -2202,8 +2240,9 @@ class SessionContext:
         }
         # Rules accumulate, so there is no name to check and nothing to refuse
         # -- only the capsules to import while failing is still free.
-        resolved_rules = new.ctx._resolve_extension_physical_optimizer_rules(
-            [rule for _, _, rule in declared["physical_optimizer_rules"]]
+        resolved_rules = _resolve_declared_rules(
+            declared["physical_optimizer_rules"],
+            new.ctx._resolve_extension_physical_optimizer_rules,
         )
 
         # Phase two: run the planner hooks and commit, in one call. Each hook

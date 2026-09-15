@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::{Arc, Mutex};
+
 use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
 use pyo3::{Bound, Py, PyAny, PyResult, Python, pyclass, pymethods};
 
@@ -68,24 +70,32 @@ impl MyFunctionExtension {
 ///
 /// Two, because that is what makes accumulation observable: rules never
 /// collide the way function names do, so both of these install and both fire.
-/// Each carries its own counter, which is how a test tells them apart.
+/// Each carries its own counter, which is how a test tells them apart, and
+/// both append to one run log, which is how a test sees the order they
+/// installed in.
 #[pyclass(
     from_py_object,
     name = "MyRuleExtension",
     module = "datafusion_ffi_example",
     subclass
 )]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub(crate) struct MyRuleExtension {
     first: MyPhysicalOptimizerRule,
     second: MyPhysicalOptimizerRule,
+    run_log: Arc<Mutex<Vec<usize>>>,
 }
 
 #[pymethods]
 impl MyRuleExtension {
     #[new]
     fn new() -> Self {
-        Self::default()
+        let run_log = Arc::new(Mutex::new(Vec::new()));
+        Self {
+            first: MyPhysicalOptimizerRule::with_run_log(0, Arc::clone(&run_log)),
+            second: MyPhysicalOptimizerRule::with_run_log(1, Arc::clone(&run_log)),
+            run_log,
+        }
     }
 
     /// How many times the first declared rule has run.
@@ -96,6 +106,12 @@ impl MyRuleExtension {
     /// How many times the second declared rule has run.
     fn second_calls(&self) -> usize {
         self.second.optimize_calls()
+    }
+
+    /// The labels of the two declared rules, in the order they ran: `0` is the
+    /// first declared and `1` the second.
+    fn run_order(&self) -> Vec<usize> {
+        self.run_log.lock().expect("run log poisoned").clone()
     }
 
     /// `ctx` is unused: a rule getter takes no argument, so there is nothing

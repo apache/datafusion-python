@@ -79,11 +79,11 @@ class PhysicalOptimizerRuleExportable(Protocol):
     argument**: a rule needs neither a codec nor a task-context provider, so
     there is nothing session-scoped to hand it.
 
-    Rules accumulate rather than replace, so several libraries may each
-    contribute one and none of them has to know about the others. Install one
-    with :py:meth:`~datafusion.context.SessionContext.add_physical_optimizer_rule`,
+    Rules accumulate rather than replace. Install one with
+    :py:meth:`~datafusion.context.SessionContext.add_physical_optimizer_rule`,
     or declare it on a bundle as
-    :py:attr:`SessionExtensionComponents.physical_optimizer_rules`.
+    :py:attr:`SessionExtensionComponents.physical_optimizer_rules` — see
+    :ref:`extension_other_hooks`.
 
     Examples:
         The getter is the whole protocol, and a capsule is what it must return
@@ -98,7 +98,7 @@ class PhysicalOptimizerRuleExportable(Protocol):
         RuntimeError: "Invalid datafusion_physical_optimizer_rule...
 
         Real usage. Skipped here (needs a built extension library); run for
-        real by ``test_ffi_physical_optimizer_rule`` in
+        real by ``test_ffi_physical_optimizer_rule_runs_during_planning`` in
         ``datafusion-ffi-example``.
 
         >>> from datafusion_ffi_example import MyPhysicalOptimizerRule  # doctest: +SKIP
@@ -299,9 +299,8 @@ class SessionExtensionComponents:
     """Physical optimizer rules to install on the session.
 
     Objects exposing ``__datafusion_physical_optimizer_rule__``. Unlike
-    functions these never collide: rules accumulate, so two extensions may each
-    contribute one without either having to know about the other. All the rules
-    in one call install together, in declaration order.
+    functions these never collide — they accumulate. All the rules in one call
+    install together, in declaration order. See :ref:`extension_other_hooks`.
     """
 
     def __post_init__(self) -> None:

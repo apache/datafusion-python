@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 
 use datafusion::common::Result;
 use datafusion::common::config::ConfigOptions;
@@ -31,9 +31,15 @@ use pyo3::types::PyCapsule;
 /// shared counter each time it runs. Tests use the counter to prove that a
 /// session built with this rule actually routed physical planning through a
 /// user-supplied [`PhysicalOptimizerRule`] over FFI.
+///
+/// A rule declared alongside siblings also appends its label to a log they
+/// all share, which is what lets a test see the order they ran in. Counters
+/// alone cannot: each rule has its own, so they say how often but not when.
 #[derive(Debug)]
 struct CountingPhysicalOptimizerRule {
     optimize_calls: Arc<AtomicUsize>,
+    label: usize,
+    run_log: Option<Arc<Mutex<Vec<usize>>>>,
 }
 
 impl PhysicalOptimizerRule for CountingPhysicalOptimizerRule {
@@ -43,6 +49,9 @@ impl PhysicalOptimizerRule for CountingPhysicalOptimizerRule {
         _config: &ConfigOptions,
     ) -> Result<Arc<dyn ExecutionPlan>> {
         self.optimize_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(run_log) = &self.run_log {
+            run_log.lock().expect("run log poisoned").push(self.label);
+        }
         Ok(plan)
     }
 
@@ -67,6 +76,21 @@ impl PhysicalOptimizerRule for CountingPhysicalOptimizerRule {
 #[derive(Debug, Default, Clone)]
 pub(crate) struct MyPhysicalOptimizerRule {
     optimize_calls: Arc<AtomicUsize>,
+    label: usize,
+    run_log: Option<Arc<Mutex<Vec<usize>>>>,
+}
+
+impl MyPhysicalOptimizerRule {
+    /// A rule that records where it ran relative to the siblings sharing
+    /// `run_log`. `label` is what it appends. Not exposed to Python: only a
+    /// bundle declaring several rules at once has siblings to order against.
+    pub(crate) fn with_run_log(label: usize, run_log: Arc<Mutex<Vec<usize>>>) -> Self {
+        Self {
+            optimize_calls: Arc::new(AtomicUsize::new(0)),
+            label,
+            run_log: Some(run_log),
+        }
+    }
 }
 
 #[pymethods]
@@ -87,6 +111,8 @@ impl MyPhysicalOptimizerRule {
         let rule: Arc<dyn PhysicalOptimizerRule + Send + Sync> =
             Arc::new(CountingPhysicalOptimizerRule {
                 optimize_calls: Arc::clone(&self.optimize_calls),
+                label: self.label,
+                run_log: self.run_log.clone(),
             });
 
         let runtime = get_tokio_runtime().handle().clone();

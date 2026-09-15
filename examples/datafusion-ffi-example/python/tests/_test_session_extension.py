@@ -133,6 +133,21 @@ def test_declared_rules_all_fire():
     assert extension.second_calls() > 0
 
 
+def test_declared_rules_run_in_declaration_order():
+    """The order a bundle lists its rules in is the order they install in.
+
+    Rules rewrite the plan one after another, so the order is part of what a
+    bundle declares. The counters cannot show it — each rule has its own — so
+    the two here append to a log they share.
+    """
+    extension = MyRuleExtension()
+    ctx = SessionContext().with_extensions(extension)
+
+    _query(ctx)
+
+    assert extension.run_order() == [0, 1]
+
+
 def test_rules_install_without_changing_the_session_id():
     """Installing rules rebuilds ``SessionState``; the id has to survive it.
 

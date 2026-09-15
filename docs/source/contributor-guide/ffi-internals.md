@@ -128,9 +128,10 @@ A call therefore splits into a part that may fail and a part that may not:
    live on that handle rather than on the session, so this step writes nothing
    even though it can fail on a bad capsule or a duplicate id.
 3. **Resolve.** Every declared function is wrapped and every name is checked,
-   and every `__datafusion_session_planner__` runs against the completed
-   chains.
-4. **Commit.** The planner is bound and the functions are registered.
+   every declared physical optimizer rule has its capsule imported, and every
+   `__datafusion_session_planner__` runs against the completed chains.
+4. **Commit.** The planner is bound, the functions are registered, and the
+   optimizer rules are installed in a single `SessionState` rebuild.
 
 Only step 4 touches the session, and every step that can fail happens before
 it. This is a rule for the next field added to
