@@ -304,7 +304,8 @@ def _resolve_declared_functions(
 
     Args:
         declared: ``(extension, function)`` pairs in declaration order.
-        wrapper: The Python wrapper class for this kind, passed through already.
+        wrapper: The wrapper class a declaration may already be an instance of,
+            in which case it is taken as-is.
         getter: The capsule getter an unwrapped declaration must expose.
         factory: The helper that wraps a declaration — ``udf`` and friends.
         kind: What to call this sort of function in an error.

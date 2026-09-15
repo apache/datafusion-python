@@ -1422,7 +1422,7 @@ def _doubler(name="double"):
         lambda arr: pa.array([v.as_py() * 2 for v in arr]),
         [pa.int64()],
         pa.int64(),
-        "stable",
+        volatility="stable",
         name=name,
     )
 
@@ -1483,8 +1483,21 @@ def test_with_extensions_registers_a_declared_udf(ctx):
 
 def test_with_extensions_registers_udafs_and_udwfs(ctx):
     """The other two function kinds install the same way."""
-    total = udaf(_Total, pa.int64(), pa.int64(), [pa.int64()], "stable", name="total")
-    first = udwf(_First, pa.int64(), pa.int64(), "immutable", name="first_value_of")
+    total = udaf(
+        _Total,
+        pa.int64(),
+        pa.int64(),
+        [pa.int64()],
+        volatility="stable",
+        name="total",
+    )
+    first = udwf(
+        _First,
+        pa.int64(),
+        pa.int64(),
+        volatility="immutable",
+        name="first_value_of",
+    )
 
     result = ctx.with_extensions(_FunctionExtension(udafs=(total,), udwfs=(first,)))
     result.from_pydict({"a": [1, 2, 3]}, name="nums")

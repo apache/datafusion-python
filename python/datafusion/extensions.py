@@ -121,8 +121,8 @@ def _components(noun: str) -> Any:
 
     ``noun`` names what the field holds, for the error a bundle sees when it
     hands over one component instead of a collection of them. Carrying it in
-    the field metadata is what lets :py:meth:`SessionExtensionComponents.__post_init__`
-    normalize a field it was never told about by name.
+    the field metadata is what lets ``__post_init__`` normalize a field it was
+    never told about by name.
     """
     return field(default=(), metadata={"datafusion_component": noun})
 
@@ -190,7 +190,7 @@ class SessionExtensionComponents:
         ...     lambda arr: pa.array([v.as_py() * 2 for v in arr]),
         ...     [pa.int64()],
         ...     pa.int64(),
-        ...     "stable",
+        ...     volatility="stable",
         ...     name="double",
         ... )
         >>> components = SessionExtensionComponents(udfs=(double,))
