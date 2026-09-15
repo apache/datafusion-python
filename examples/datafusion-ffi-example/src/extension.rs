@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
+use pyo3::{Bound, Py, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::aggregate_udf::MySumUDF;
 use crate::scalar_udf::IsNullUDF;
