@@ -47,6 +47,22 @@ fn __datafusion_physical_optimizer_rule__<'py>(
 }
 ```
 
+If your library ships a rule alongside anything else, declare it on your bundle
+as `physical_optimizer_rules` rather than asking the caller for a separate
+`add_physical_optimizer_rule` call:
+
+```python
+return SessionExtensionComponents(physical_optimizer_rules=(MyRule(),))
+```
+
+Rules are the one kind of component with **no collision rule at all**: they
+accumulate, so two libraries may each contribute one and neither has to know
+about the other. Every rule in a call installs in a single `SessionState`
+rebuild, where `add_physical_optimizer_rule` rebuilds once per call — which for
+a bundle contributing several would clone the whole state that many times, and
+would leave the earlier ones installed if a later one failed. See
+{ref}`extension_bundles_transaction`.
+
 ## Typed configuration
 
 **`__datafusion_extension_options__`** contributes typed configuration entries

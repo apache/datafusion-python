@@ -22,7 +22,7 @@ from __future__ import annotations
 import pyarrow as pa
 import pytest
 from datafusion import SessionContext, SessionExtensionComponents
-from datafusion_ffi_example import MyFunctionExtension
+from datafusion_ffi_example import MyFunctionExtension, MyRuleExtension
 
 
 def _session():
@@ -110,6 +110,78 @@ def test_a_failure_after_the_hook_registers_nothing():
 
     with pytest.raises(KeyError):
         ctx.udf("my_custom_is_null")
+
+
+def _query(ctx):
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["a"])
+    ctx.register_record_batches("t", [[batch]])
+    return ctx.sql("SELECT a FROM t").collect()
+
+
+def test_declared_rules_all_fire():
+    """Rules accumulate, so both of a bundle's two rules run.
+
+    Nothing about installing the second displaces the first, which is what
+    makes rules different from a planner and why there is no collision to
+    refuse.
+    """
+    extension = MyRuleExtension()
+    ctx = SessionContext().with_extensions(extension)
+
+    assert _query(ctx)[0].column(0).to_pylist() == [1, 2, 3]
+    assert extension.first_calls() > 0
+    assert extension.second_calls() > 0
+
+
+def test_rules_install_without_changing_the_session_id():
+    """Installing rules rebuilds ``SessionState``; the id has to survive it.
+
+    A fresh id would leave ``session_id()`` disagreeing with every
+    ``TaskContext`` the session already handed out, which is exactly what a
+    codec's decode callbacks resolve against.
+    """
+    ctx = SessionContext()
+    before = ctx.session_id()
+    result = ctx.with_extensions(MyRuleExtension())
+
+    assert result.session_id() == before
+    assert ctx.session_id() == before
+
+
+def test_rules_and_functions_install_together():
+    """Two bundles, one contributing functions and one rules, in one call."""
+    rules = MyRuleExtension()
+    ctx = SessionContext().with_extensions(MyFunctionExtension(), rules)
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, None])], names=["a"])
+    ctx.register_record_batches("t", [[batch]])
+
+    result = ctx.sql("SELECT my_custom_is_null(a) FROM t").collect()
+
+    assert result[0].column(0).to_pylist() == [False, False, True]
+    assert rules.first_calls() > 0
+
+
+def test_a_failure_leaves_no_rule_installed():
+    """The transaction covers rules, which write through a state rebuild.
+
+    A rule reaching the session before the failing hook would be invisible to
+    ``session_id()`` and to the function registry, so this asserts on the
+    counter instead: an installed rule fires on the next query.
+    """
+    rules = MyRuleExtension()
+    ctx = SessionContext()
+
+    class BoomPlanner:
+        def __datafusion_session_planner__(self, ctx, fallback) -> None:
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(rules, BoomPlanner())
+
+    _query(ctx)
+    assert rules.first_calls() == 0
+    assert rules.second_calls() == 0
 
 
 def test_the_hook_returns_the_components_type():

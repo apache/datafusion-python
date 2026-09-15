@@ -324,6 +324,10 @@ Two cases this does *not* catch:
   DataFusion function, and replacing one by name is a supported thing to do —
   `enable_spark_functions` works that way.
 
+Physical optimizer rules are exempt from all of this: they accumulate rather
+than replace, so two bundles contributing one each is the normal case and there
+is nothing to refuse. See {doc}`other-components`.
+
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.
 

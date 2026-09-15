@@ -1670,6 +1670,52 @@ def test_session_extension_components_rejects_a_single_function(field):
         SessionExtensionComponents(**{field: _doubler()})
 
 
+def test_session_extension_components_rejects_a_single_optimizer_rule():
+    """The same for rules, naming what that field holds."""
+    with pytest.raises(
+        TypeError, match=r"must be an iterable of optimizer rule objects"
+    ):
+        SessionExtensionComponents(physical_optimizer_rules=object())
+
+
+def test_with_extensions_rejects_a_rule_that_is_not_a_capsule(ctx):
+    """A rule that will not import is refused, and nothing is installed.
+
+    Importing the capsules is the only part of installing a rule that can
+    fail, so it happens during resolution. A failure here has to leave the
+    session alone even though the extension ahead of it declared a function
+    that was perfectly good.
+    """
+
+    class RuleExtension:
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(physical_optimizer_rules=(object(),))
+
+    with pytest.raises(RuntimeError, match="datafusion_physical_optimizer_rule"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            RuleExtension(),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_declaring_no_rules_leaves_the_session_id(ctx):
+    """Installing rules rebuilds ``SessionState``; declaring none must not.
+
+    The rebuild mints a fresh session id unless it is carried over, and a
+    changed id would break every ``TaskContext`` the session has handed out.
+    Asserted for the empty case too, because that is the one where the rebuild
+    would be pure cost.
+    """
+    before = ctx.session_id()
+    result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))
+
+    assert result.session_id() == before
+    assert ctx.session_id() == before
+
+
 def test_every_component_field_has_an_installer():
     """A field added to the components dataclass must be wired into the install.
 
@@ -1680,9 +1726,9 @@ def test_every_component_field_has_an_installer():
 
     Reaching into private names on purpose: the two sides answer different
     questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS`` and the codec pair say which of them ``with_extensions``
-    knows how to install. Nothing observable from outside can tell you they
-    have drifted, because the symptom is silence.
+    ``_FUNCTION_KINDS``, the codec pair, and the rules say which of them
+    ``with_extensions`` knows how to install. Nothing observable from outside
+    can tell you they have drifted, because the symptom is silence.
     """
     from datafusion.context import _FUNCTION_KINDS
 
@@ -1695,6 +1741,7 @@ def test_every_component_field_has_an_installer():
     assert by_noun == {
         "codec": {"logical_extension_codecs", "physical_extension_codecs"},
         "function": {kind.field for kind in _FUNCTION_KINDS},
+        "optimizer rule": {"physical_optimizer_rules"},
     }
 
 

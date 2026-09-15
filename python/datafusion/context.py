@@ -70,6 +70,7 @@ from datafusion.catalog import (
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.extensions import (
+    PhysicalOptimizerRuleExportable,
     QueryPlannerExportable,
     SessionComponentsExportable,
     SessionExtensionComponents,
@@ -149,16 +150,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class _FunctionKind(NamedTuple):
@@ -245,9 +236,9 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions as
-        ``(position, extension, function)`` triples, keyed by the
-        :py:data:`_FUNCTION_KINDS` field they arrived in.
+        The logical codecs, the physical codecs, and the declared functions and
+        optimizer rules as ``(position, extension, declaration)`` triples, keyed
+        by the ``SessionExtensionComponents`` field they arrived in.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -269,6 +260,9 @@ def _collect_contributions(
     declared: dict[str, list[tuple[int, object, Any]]] = {
         kind.field: [] for kind in _FUNCTION_KINDS
     }
+    # Rules are not a function kind: they accumulate rather than replace, so
+    # they carry no collision rule and install through their own primitive.
+    declared["physical_optimizer_rules"] = []
     for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
             continue
@@ -2117,10 +2111,10 @@ class SessionContext:
 
         Nothing is written to the session until every hook has returned and
         every component has been validated, so a hook that raises leaves the
-        session as it was. Declared functions register after the planner is
-        bound, and are visible on every handle sharing this session. A hook
-        that *mutates* the context it is handed — registering a table, say — is
-        not rolled back, which is why bundle objects must be
+        session as it was. Declared functions and optimizer rules install after
+        the planner is bound, and are visible on every handle sharing this
+        session. A hook that *mutates* the context it is handed — registering a
+        table, say — is not rolled back, which is why bundle objects must be
         configuration-only.
 
         Shares its session with this context — see :py:class:`SessionContext`.
@@ -2214,6 +2208,11 @@ class SessionContext:
             )
             for kind in _FUNCTION_KINDS
         ]
+        # Rules accumulate, so there is no name to check and nothing to refuse
+        # -- only the capsules to import while failing is still free.
+        resolved_rules = new.ctx._resolve_extension_physical_optimizer_rules(
+            [rule for _, _, rule in declared["physical_optimizer_rules"]]
+        )
 
         # Phase two: nest the planners, outermost last. Each hook runs against
         # `new`, which carries the final chains, so a planner captured here
@@ -2254,6 +2253,7 @@ class SessionContext:
         for register, functions in resolved:
             for function in functions:
                 register(function)
+        new.ctx._install_extension_physical_optimizer_rules(resolved_rules)
         return new
 
     def table_provider(self, name: str) -> Table:

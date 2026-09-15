@@ -39,6 +39,10 @@ PRIVATE_SUPPORT_METHODS = frozenset(
         "_install_extension_codecs",
         "_export_query_planner",
         "_install_extension_planner",
+        # Physical optimizer rules, split so the capsule import happens while
+        # the call can still fail without leaving the session half-installed.
+        "_resolve_extension_physical_optimizer_rules",
+        "_install_extension_physical_optimizer_rules",
     }
 )
 
