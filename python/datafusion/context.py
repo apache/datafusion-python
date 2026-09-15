@@ -212,6 +212,58 @@ _FUNCTION_KINDS = (
 """Every kind of function a bundle can declare, in registration order."""
 
 
+def _reject_repeated_names(
+    declared: list[tuple[int, object, Any]],
+    kind: str,
+) -> list[tuple[int, object, tuple[str, Any]]]:
+    """Refuse a name two extensions both declared, for the pair-shaped fields.
+
+    The sibling of the name check in :py:func:`_resolve_declared_functions`,
+    for components whose name is given alongside the value rather than read
+    off it. Only names declared *in this call* are compared; whether claiming
+    one the session already holds is allowed is the component's own business,
+    and for tables it is checked when the name is resolved.
+
+    Args:
+        declared: ``(position, extension, (name, value))`` triples in
+            declaration order, where ``position`` indexes the
+            ``with_extensions`` argument list.
+        kind: What to call this sort of component in an error.
+
+    Returns:
+        ``declared`` unchanged, so this reads as a step rather than a check.
+
+    Raises:
+        ValueError: If two declarations claim the same name.
+    """
+    claimed: dict[str, tuple[int, object]] = {}
+    for position, extension, pair in declared:
+        name = pair[0]
+        if name in claimed:
+            # Keyed on position for the same reason as in
+            # `_resolve_declared_functions`: the two cases have different
+            # remedies, and only one of them is the caller's.
+            claimed_at, claimed_by = claimed[name]
+            if claimed_at == position:
+                msg = (
+                    f"{extension!r} declares two {kind}s named {name!r}. "
+                    "Registrations have no fall-through, so the second would "
+                    "silently replace the first; rename one of them."
+                )
+            else:
+                msg = (
+                    f"Two extensions declare a {kind} named {name!r}: "
+                    f"argument {claimed_at} ({claimed_by!r}) and argument "
+                    f"{position} ({extension!r}). Registrations have no "
+                    "fall-through, so one would silently replace the other; "
+                    "install them on separate sessions, or drop the repeat if "
+                    "one extension was passed twice."
+                )
+            raise ValueError(msg)
+        claimed[name] = (position, extension)
+    return declared
+
+
 def _collect_contributions(
     extensions: tuple[object, ...],
     ctx: SessionContext,
@@ -232,9 +284,9 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions and
-        optimizer rules as ``(position, extension, declaration)`` triples, keyed
-        by the ``SessionExtensionComponents`` field they arrived in.
+        The logical codecs, the physical codecs, and every other declared
+        component as ``(position, extension, declaration)`` triples, keyed by
+        the ``SessionExtensionComponents`` field they arrived in.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -256,9 +308,11 @@ def _collect_contributions(
     declared: dict[str, list[tuple[int, object, Any]]] = {
         kind.field: [] for kind in _FUNCTION_KINDS
     }
-    # Rules are not a function kind: they accumulate rather than replace, so
-    # they carry no collision rule and install through their own primitive.
-    declared["physical_optimizer_rules"] = []
+    # The rest are not function kinds: tables and table functions are named by
+    # the bundle rather than by the value, and rules carry no name at all, so
+    # each has its own collision rule -- or none -- and its own installer.
+    for field_name in ("udtfs", "table_providers", "physical_optimizer_rules"):
+        declared[field_name] = []
     for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
             continue
@@ -2142,9 +2196,10 @@ class SessionContext:
 
         Nothing is written to the session until every hook has returned and
         every component has been validated, so a hook that raises leaves the
-        session as it was. Declared functions and optimizer rules install after
-        the planner is bound, and are visible on every handle sharing this
-        session. A hook that *mutates* the context it is handed — registering a
+        session as it was. Declared tables install first and everything else
+        after the planner is bound; all of them are visible on every handle
+        sharing this session. A hook that *mutates* the context it is handed —
+        registering a
         table, say — is not rolled back, which is why bundle objects must be
         configuration-only.
 
@@ -2243,6 +2298,26 @@ class SessionContext:
             )
             for kind in _FUNCTION_KINDS
         }
+        # Tables and table functions are not in that table: their getters *do*
+        # take the session, so each is wrapped against `new`, not `self` -- the
+        # handle the components hook saw is missing this call's codecs.
+        resolved_udtfs = [
+            _user_defined.TableFunction(name, func, new)
+            for _, _, (name, func) in _reject_repeated_names(
+                declared["udtfs"], "table function"
+            )
+        ]
+        # Imports each provider against `new` for the same reason, resolves
+        # each name to the schema that will hold it, and refuses a name that is
+        # already taken.
+        resolved_tables = new.ctx._resolve_extension_tables(
+            [
+                pair
+                for _, _, pair in _reject_repeated_names(
+                    declared["table_providers"], "table"
+                )
+            ]
+        )
         # Rules accumulate, so there is no name to check and nothing to refuse
         # -- only the capsules to import while failing is still free.
         resolved_rules = _resolve_declared_rules(
@@ -2264,9 +2339,11 @@ class SessionContext:
             list(extensions),
             new,
             bool(logical_codecs or physical_codecs),
+            resolved_tables,
             [function._udf for function in resolved["udfs"]],
             [function._udaf for function in resolved["udafs"]],
             [function._udwf for function in resolved["udwfs"]],
+            [table_function._udtf for table_function in resolved_udtfs],
             resolved_rules,
         )
         return new

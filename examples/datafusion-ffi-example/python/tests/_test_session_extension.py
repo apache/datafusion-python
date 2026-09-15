@@ -22,7 +22,12 @@ from __future__ import annotations
 import pyarrow as pa
 import pytest
 from datafusion import SessionContext, SessionExtensionComponents
-from datafusion_ffi_example import MyFunctionExtension, MyRuleExtension
+from datafusion_ffi_example import (
+    MyDataExtension,
+    MyFunctionExtension,
+    MyLogicalExtensionCodec,
+    MyRuleExtension,
+)
 
 
 def _session():
@@ -201,6 +206,54 @@ def test_a_failure_leaves_no_rule_installed():
     _query(ctx)
     assert rules.first_calls() == 0
     assert rules.second_calls() == 0
+
+
+def test_declared_tables_and_table_functions_work():
+    """Both arrive as ``(name, value)`` pairs and both are queryable."""
+    ctx = SessionContext().with_extensions(MyDataExtension())
+
+    assert ctx.sql("SELECT * FROM declared_table").collect()[0].num_rows == 2
+    assert ctx.sql("SELECT * FROM declared_function()").collect()[0].num_rows > 0
+
+
+class _CodecBundle:
+    """Contributes a codec, so a later bundle's chain is observably different."""
+
+    def __datafusion_session_components__(self, ctx) -> SessionExtensionComponents:
+        return SessionExtensionComponents(
+            logical_extension_codecs=(MyLogicalExtensionCodec(),)
+        )
+
+
+def test_a_declared_table_function_sees_the_finished_codec_chain():
+    """The claim that makes declaring a table function worth doing.
+
+    ``__datafusion_table_function__`` takes the session and pulls the host's
+    logical codec off it. A bundle wrapping one itself would hand it the
+    context the components hook received, which has none of the call's codecs —
+    so it would capture a chain missing every library in the call, including
+    the one contributed *after* it here. The host resolves it against the
+    finished handle instead, and this asserts the difference rather than
+    describing it.
+    """
+    data = MyDataExtension()
+    ctx = SessionContext().with_extensions(data, _CodecBundle())
+
+    assert ctx.sql("SELECT * FROM declared_function()").collect()[0].num_rows > 0
+    assert data.codec_ids_seen() == ctx.logical_extension_codec_ids()
+    assert data.codec_ids_seen() != []
+
+
+def test_a_table_name_already_registered_is_refused():
+    """Tables cannot shadow, so a clash is caught before anything is written."""
+    ctx = SessionContext()
+    ctx.from_pydict({"a": [1]}, name="declared_table")
+
+    with pytest.raises(Exception, match=r"already registered"):
+        ctx.with_extensions(MyFunctionExtension(), MyDataExtension())
+
+    with pytest.raises(KeyError):
+        ctx.udf("my_custom_is_null")
 
 
 def test_the_hook_returns_the_components_type():

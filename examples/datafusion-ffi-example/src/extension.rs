@@ -17,12 +17,14 @@
 
 use std::sync::{Arc, Mutex};
 
-use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
+use pyo3::types::{PyAnyMethods, PyCapsule, PyDict, PyDictMethods};
 use pyo3::{Bound, Py, PyAny, PyResult, Python, pyclass, pymethods};
 
 use crate::aggregate_udf::MySumUDF;
 use crate::physical_optimizer::MyPhysicalOptimizerRule;
 use crate::scalar_udf::IsNullUDF;
+use crate::table_function::MyTableFunction;
+use crate::table_provider::MyTableProvider;
 use crate::window_udf::MyRankUDF;
 
 /// A bundle contributing this library's three functions in one install.
@@ -133,6 +135,111 @@ impl MyRuleExtension {
                 Py::new(py, self.first.clone())?,
                 Py::new(py, self.second.clone())?,
             ),
+        )?;
+        components.call((), Some(&kwargs))
+    }
+}
+
+/// A table function that records the codec chain it was handed.
+///
+/// `__datafusion_table_function__` takes the session and pulls the host's
+/// logical codec off it, so *which* session it is resolved against is
+/// observable rather than a matter of taste. A bundle cannot wrap one itself:
+/// the context its components hook receives has none of the call's codecs yet.
+/// Recording the ids here is what lets a test assert the host resolved it
+/// against the finished handle instead.
+#[pyclass(
+    from_py_object,
+    name = "RecordingTableFunction",
+    module = "datafusion_ffi_example",
+    subclass
+)]
+#[derive(Debug, Clone)]
+pub(crate) struct RecordingTableFunction {
+    seen: Arc<Mutex<Vec<String>>>,
+    inner: MyTableFunction,
+}
+
+#[pymethods]
+impl RecordingTableFunction {
+    #[new]
+    fn new() -> Self {
+        Self {
+            seen: Arc::new(Mutex::new(Vec::new())),
+            inner: MyTableFunction::new(),
+        }
+    }
+
+    /// The logical codec ids the session carried when this was resolved.
+    fn codec_ids_seen(&self) -> Vec<String> {
+        self.seen.lock().map(|ids| ids.clone()).unwrap_or_default()
+    }
+
+    fn __datafusion_table_function__<'py>(
+        &self,
+        py: Python<'py>,
+        session: Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let ids: Vec<String> = session
+            .call_method0("logical_extension_codec_ids")?
+            .extract()?;
+        if let Ok(mut seen) = self.seen.lock() {
+            *seen = ids;
+        }
+        self.inner.__datafusion_table_function__(py, session)
+    }
+}
+
+/// A bundle contributing a table and a table function.
+///
+/// Both are `(name, value)` pairs, because neither carries a name of its own
+/// the way a scalar function's capsule does.
+#[pyclass(
+    from_py_object,
+    name = "MyDataExtension",
+    module = "datafusion_ffi_example",
+    subclass
+)]
+#[derive(Debug, Clone)]
+pub(crate) struct MyDataExtension {
+    function: RecordingTableFunction,
+}
+
+#[pymethods]
+impl MyDataExtension {
+    #[new]
+    fn new() -> Self {
+        Self {
+            function: RecordingTableFunction::new(),
+        }
+    }
+
+    /// The codec ids the declared table function was resolved against.
+    fn codec_ids_seen(&self) -> Vec<String> {
+        self.function.codec_ids_seen()
+    }
+
+    fn __datafusion_session_components__<'py>(
+        &self,
+        py: Python<'py>,
+        ctx: Bound<'py, PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let _ = ctx;
+
+        let components = py
+            .import("datafusion")?
+            .getattr("SessionExtensionComponents")?;
+        let kwargs = PyDict::new(py);
+        kwargs.set_item(
+            "table_providers",
+            ((
+                "declared_table",
+                Py::new(py, MyTableProvider::new(3, 2, 1))?,
+            ),),
+        )?;
+        kwargs.set_item(
+            "udtfs",
+            (("declared_function", Py::new(py, self.function.clone())?),),
         )?;
         components.call((), Some(&kwargs))
     }

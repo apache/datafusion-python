@@ -39,6 +39,18 @@ A schema provider is the one that does not register on the session: you reach a
 {py:meth}`SessionContext.catalog <datafusion.SessionContext.catalog>`, and
 register the schema on that.
 
+If your library ships a table alongside anything else, declare it on your
+bundle as `table_providers` and let one call install everything:
+
+```python
+return SessionExtensionComponents(table_providers=(("events", MyProvider()),))
+```
+
+Hand over the provider itself, not a {py:class}`~datafusion.catalog.Table` you
+wrapped: `__datafusion_table_provider__` takes the session, and the one your
+components hook receives has none of the call's codecs yet. The host resolves
+it against the finished handle. See {ref}`extension_bundles_binding`.
+
 Start with a table provider. Reach for the schema and catalog levels when your
 data source has its own namespace that should be browsable rather than
 registered table by table, and for the provider list only when your library is
