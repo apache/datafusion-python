@@ -331,19 +331,15 @@ def _resolve_declared_functions(
             wrapped = factory(function)
         else:
             msg = (
-                f"A declared {label} must be a {wrapper.__name__} or expose "
+                f"A declared {label} must be {wrapper.__name__} or expose "
                 f"{getter}, got {function!r} from {extension!r}"
             )
             raise TypeError(msg)
         name = wrapped.name
         if name in claimed:
-            # Position, not object identity: what the caller controls is the
-            # argument list, and two entries in it are two installs whether or
-            # not they are the same object. The distinction the message needs
-            # is which remedy exists. One argument colliding with itself is a
-            # bundle author's own bug, and only they can rename a function;
-            # two arguments colliding is the caller's to resolve, and renaming
-            # is not among the things a caller can do.
+            # Keyed on position, not object identity, so each message names
+            # the remedy its reader actually has — see
+            # `extension_bundles_collisions` in the extension guide.
             claimed_at, claimed_by = claimed[name]
             if claimed_at == position:
                 msg = (
