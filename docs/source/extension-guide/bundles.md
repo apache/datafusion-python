@@ -55,22 +55,23 @@ class MyEngineExtension:
         return self._make_planner(ctx, fallback=fallback)
 ```
 
-Implement whichever apply: a codec-only library defines the first, a library
-that ships only an optimizing planner defines the second, and a library that
-ships only functions defines the first and leaves the codec fields empty. The
-caller then writes:
+Implement only the hooks you need. Codecs and functions both go in
+`__datafusion_session_components__`, with the fields you do not use left empty,
+so a codec-only library and a function-only library each define that one alone;
+a library shipping nothing but an optimizing planner defines only
+`__datafusion_session_planner__`. The caller then writes:
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
 ctx.register_table("t", lib_a.TableProvider())
 ```
 
-Declare functions rather than registering them yourself inside the hook.
-Declared components are resolved before anything is written, and they are
-registered after every codec is installed; a registration you make during the
-hook happens too early to see the other bundles' codecs and is not undone if a
-later extension fails. Table providers are still registered by the caller, on
-the returned handle — see {ref}`extension_bundles_transaction`.
+Return your functions rather than calling `register_udf` on the `ctx` you were
+handed. Both put the function on the session, but a registration you make
+inside the hook is written the moment it runs — before the other bundles have
+been called, and not undone if one of them raises. What you declare is instead
+resolved and checked while a failure still costs nothing, then written once
+every bundle has succeeded. See {ref}`extension_bundles_transaction`.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete
 Rust implementation of the protocol, including taking the task-context provider
@@ -293,20 +294,28 @@ a capsule.
 
 ## Two bundles claiming one name
 
-Within a single call, two extensions declaring a function of the same kind
-under the same name is a `ValueError` naming both. Codec ids dispatch on
-decode, so a chain can hold many and pick the right one; a function registry
-has no such fall-through, and the second registration would silently replace
-the first. Names are compared per kind, so a scalar function and an aggregate
-may share one.
+Two extensions in one call may not declare a function of the same kind under
+the same name. Doing so raises:
 
-Shadowing a name the session *already* has is allowed and is not a collision.
-The registry holds every DataFusion built-in, and overriding built-ins by name
-is a supported thing to do — `enable_spark_functions` is built on it.
+```text
+ValueError: Two extensions declare a scalar function named 'normalize': ...
+```
 
-Since the caller cannot repair a collision from their own code, name your
-functions so this does not arise: a prefix tying them to your library is the
-usual answer.
+Codecs get away with sharing a chain because a payload carries the id of the
+codec that wrote it, so decode routes to the right one. A function registry has
+no such fall-through — one name holds one function — so the second registration
+would quietly replace the first. The call refuses instead.
+
+Two cases this does *not* catch:
+
+- **Different kinds never collide.** Names are compared within a kind, so a
+  scalar function and an aggregate may both be called `normalize`.
+- **Shadowing a built-in is allowed.** The registry already holds every
+  DataFusion function, and replacing one by name is a supported thing to do —
+  `enable_spark_functions` works that way.
+
+Your caller cannot rename your function, so stay out of the way: prefix the
+names with something tied to your library.
 
 (extension_bundles_transaction)=
 

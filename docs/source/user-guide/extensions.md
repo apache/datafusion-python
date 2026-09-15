@@ -106,7 +106,7 @@ same kind under the same name, the call raises a `ValueError` naming both,
 rather than letting one silently replace the other:
 
 ```text
-ValueError: Two extensions declare a scalar function 'normalize': ...
+ValueError: Two extensions declare a scalar function named 'normalize': ...
 ```
 
 You cannot rename another library's function from your own code, so the fix is
