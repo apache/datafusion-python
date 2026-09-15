@@ -63,9 +63,9 @@ ctx.register_table("events", my_engine.TableProvider("s3://bucket/events"))
 ctx.sql("SELECT count(*) FROM events").show()
 ```
 
-**Functions arrive by whichever route their library chose.** A library
-offering one or two functions hands you the functions themselves, and you wrap
-and register each:
+**Tables and functions arrive by whichever route their library chose.** A
+library offering one or two hands you the objects themselves, and you register
+each — a table as above, a function after wrapping it:
 
 ```python
 from datafusion import udf
@@ -75,8 +75,8 @@ ctx.register_udf(udf(my_library.MyScalarUDF()))
 
 A library shipping a set of them packages them in its `Extension` object
 instead, so `with_extensions` installs them all along with everything else it
-provides, and there is nothing per-function for you to do. Its documentation
-says which.
+provides — and the library picks the names — leaving nothing per-item for you to
+do. Its documentation says which.
 
 `with_extensions` returns a context; use the returned one. It shares
 everything else with the context you called it on, so tables you registered

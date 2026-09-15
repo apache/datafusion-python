@@ -27,8 +27,10 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, CatalogProviderList, TableProviderFactory};
-use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_err};
+use datafusion::catalog::{
+    CatalogProvider, CatalogProviderList, SchemaProvider, TableProviderFactory,
+};
+use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_datafusion_err, exec_err};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -1764,6 +1766,68 @@ impl PySessionContext {
         Ok(())
     }
 
+    /// Resolve the tables a `with_extensions` call declared.
+    ///
+    /// The fallible half. Each provider is imported against `slf` — the handle
+    /// carrying the completed codec chains, not the context the components hook
+    /// was given — and each name is resolved to the schema that will hold it.
+    /// A name already taken is refused here, because DataFusion refuses a
+    /// duplicate registration rather than replacing it, and a refusal is much
+    /// more useful before anything has been written.
+    ///
+    /// **Writes nothing.**
+    pub fn _resolve_extension_tables<'py>(
+        slf: &Bound<'py, Self>,
+        tables: Vec<(String, Bound<'py, PyAny>)>,
+    ) -> PyDataFusionResult<PyResolvedTables> {
+        let session = slf.clone().into_bound_py_any(slf.py())?;
+        let state = slf.borrow().ctx.state();
+
+        let mut resolved = Vec::with_capacity(tables.len());
+        for (name, obj) in tables {
+            let provider = PyTable::new(obj, Some(session.clone()))?.table;
+            let reference = TableReference::from(name.as_str());
+            let table_name = reference.table().to_owned();
+            let schema = state.schema_for_ref(reference)?;
+            // Checked against the schema rather than against this call's own
+            // list, so a name the session already holds is caught too. Both
+            // are the same error to a caller.
+            if schema.table_exist(&table_name) {
+                return Err(exec_datafusion_err!(
+                    "An extension declared a table named {name}, which is already registered"
+                )
+                .into());
+            }
+            resolved.push(ResolvedTable {
+                schema,
+                name: table_name,
+                provider,
+            });
+        }
+        Ok(PyResolvedTables { tables: resolved })
+    }
+
+    /// Commit the tables for a `with_extensions` call.
+    ///
+    /// Runs first among the commit steps. Every name was resolved and found
+    /// free by [`Self::_resolve_extension_tables`], so the only way an insert
+    /// still fails is a foreign `SchemaProvider` refusing a registration it
+    /// reported as available — the one place in `with_extensions` that can
+    /// leave a call part-applied. Going first is what keeps the blast radius
+    /// to the tables themselves: no planner is bound and no function is
+    /// registered behind it.
+    pub fn _install_extension_tables(
+        &self,
+        resolved: PyRef<'_, PyResolvedTables>,
+    ) -> PyDataFusionResult<()> {
+        for table in &resolved.tables {
+            table
+                .schema
+                .register_table(table.name.clone(), Arc::clone(&table.provider))?;
+        }
+        Ok(())
+    }
+
     /// Import the physical optimizer rules a `with_extensions` call declared.
     ///
     /// The fallible half of installing them, run while the call can still fail
@@ -1816,6 +1880,24 @@ impl PySessionContext {
         }
         *guard = builder.build();
     }
+}
+
+/// Tables resolved for a `with_extensions` call.
+///
+/// Opaque to Python, and deliberately not added to the module, like
+/// [`PyPhysicalOptimizerRules`]. Each entry is a provider that has already been
+/// imported and a schema that has already been looked up, so committing is an
+/// insert into a resolved destination rather than a fresh name resolution.
+#[pyclass(name = "ResolvedTables", module = "datafusion._internal")]
+pub struct PyResolvedTables {
+    tables: Vec<ResolvedTable>,
+}
+
+/// One entry of [`PyResolvedTables`]: where it goes, and what goes there.
+struct ResolvedTable {
+    schema: Arc<dyn SchemaProvider>,
+    name: String,
+    provider: Arc<dyn TableProvider>,
 }
 
 /// Physical optimizer rules imported for a `with_extensions` call.

@@ -31,7 +31,7 @@ the same registration methods.
 | `__datafusion_scalar_udf__` | scalar function | {py:func}`datafusion.udf` | {py:meth}`~datafusion.SessionContext.register_udf` | `udfs` |
 | `__datafusion_aggregate_udf__` | aggregate function | {py:func}`datafusion.udaf` | {py:meth}`~datafusion.SessionContext.register_udaf` | `udafs` |
 | `__datafusion_window_udf__` | window function | {py:func}`datafusion.udwf` | {py:meth}`~datafusion.SessionContext.register_udwf` | `udwfs` |
-| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` | — |
+| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` | `udtfs`, as `(name, func)` |
 
 All four are implemented in [`datafusion-ffi-example`], one per file. The last
 column is the {py:class}`~datafusion.SessionExtensionComponents` field a
@@ -127,6 +127,18 @@ fn __datafusion_table_function__<'py>(
 Only literal expressions are supported as arguments. The Python side is
 described under
 {doc}`Table Functions <../user-guide/common-operations/udf-and-udfa>`.
+
+Because that getter takes the session, a table function is declared on a bundle
+as a `(name, func)` pair and the host wraps it — not as a
+{py:class}`~datafusion.user_defined.TableFunction` you built, which would
+capture the codec chain from before the call:
+
+```python
+return SessionExtensionComponents(udtfs=(("expand", my_library.MyTableFunction()),))
+```
+
+The name is given here rather than read off the capsule, which is the other way
+this differs from the three above. See {ref}`extension_bundles_binding`.
 
 ## Serializing functions
 
