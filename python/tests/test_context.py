@@ -1454,6 +1454,29 @@ class _First(WindowEvaluator):
         return pa.array([first] * num_rows)
 
 
+def _total(name="total"):
+    """An aggregate function under a name the caller picks."""
+    return udaf(
+        _Total,
+        pa.int64(),
+        pa.int64(),
+        [pa.int64()],
+        volatility="stable",
+        name=name,
+    )
+
+
+def _first(name="first_value_of"):
+    """A window function under a name the caller picks."""
+    return udwf(
+        _First,
+        pa.int64(),
+        pa.int64(),
+        volatility="immutable",
+        name=name,
+    )
+
+
 class _FunctionExtension:
     """Contributes functions and nothing else.
 
@@ -1483,23 +1506,9 @@ def test_with_extensions_registers_a_declared_udf(ctx):
 
 def test_with_extensions_registers_udafs_and_udwfs(ctx):
     """The other two function kinds install the same way."""
-    total = udaf(
-        _Total,
-        pa.int64(),
-        pa.int64(),
-        [pa.int64()],
-        volatility="stable",
-        name="total",
+    result = ctx.with_extensions(
+        _FunctionExtension(udafs=(_total(),), udwfs=(_first(),))
     )
-    first = udwf(
-        _First,
-        pa.int64(),
-        pa.int64(),
-        volatility="immutable",
-        name="first_value_of",
-    )
-
-    result = ctx.with_extensions(_FunctionExtension(udafs=(total,), udwfs=(first,)))
     result.from_pydict({"a": [1, 2, 3]}, name="nums")
 
     assert result.sql("SELECT total(a) FROM nums").collect()[0].column(0) == pa.array(
@@ -1521,26 +1530,39 @@ def test_with_extensions_registers_on_the_shared_session(ctx):
     assert ctx.udf("double").name == "double"
 
 
-def test_with_extensions_rejects_a_name_two_extensions_claim(ctx):
+@pytest.mark.parametrize(
+    ("field", "make", "label", "lookup"),
+    [
+        ("udfs", _doubler, "scalar function", "udf"),
+        ("udafs", _total, "aggregate function", "udaf"),
+        ("udwfs", _first, "window function", "udwf"),
+    ],
+)
+def test_with_extensions_rejects_a_name_two_extensions_claim(
+    ctx, field, make, label, lookup
+):
     """Registrations have no fall-through, so a clash cannot be resolved by order.
 
     Unlike codecs, which dispatch by id, a second function under one name would
-    silently replace the first.
+    silently replace the first. Parametrized over the kinds to pin each
+    ``_FUNCTION_KINDS`` row's field and label wiring, not just the machinery.
 
     A codec-carrying bundle rides along to pin the other half of the
     transaction: resolution runs *after* the codec chains are built, so this
     failure lands between the two steps, and the chains must not reach the
     session either.
     """
-    with pytest.raises(ValueError, match=r"scalar function named 'double'"):
+    name = make().name
+
+    with pytest.raises(ValueError, match=rf"{label} named '{name}'"):
         ctx.with_extensions(
             _CodecOnlyExtension(),
-            _FunctionExtension(udfs=(_doubler(),)),
-            _FunctionExtension(udfs=(_doubler(),)),
+            _FunctionExtension(**{field: (make(),)}),
+            _FunctionExtension(**{field: (make(),)}),
         )
 
     with pytest.raises(KeyError):
-        ctx.udf("double")
+        getattr(ctx, lookup)(name)
     assert ctx.logical_extension_codec_ids() == []
     assert ctx.physical_extension_codec_ids() == []
 
@@ -1560,6 +1582,8 @@ def test_with_extensions_rejects_one_extension_passed_twice(ctx):
         ctx.with_extensions(extension, extension)
 
     assert "rename" not in str(excinfo.value)
+    with pytest.raises(KeyError):
+        ctx.udf("double")
 
 
 def test_with_extensions_rejects_a_name_one_extension_claims_twice(ctx):
