@@ -1980,8 +1980,9 @@ struct ResolvedTable {
 
 /// Catalog providers imported for a `with_extensions` call.
 ///
-/// Opaque to Python, like [`PyResolvedTables`] and [`PyPhysicalOptimizerRules`].
-#[pyclass(name = "ResolvedCatalogs", module = "datafusion._internal")]
+/// Opaque to Python, like [`PyResolvedTables`] and [`PyPhysicalOptimizerRules`],
+/// and `frozen` for the same reason as both: the commit only reads.
+#[pyclass(frozen, name = "ResolvedCatalogs", module = "datafusion._internal")]
 pub struct PyResolvedCatalogs {
     catalogs: Vec<(String, Arc<dyn CatalogProvider>)>,
 }
