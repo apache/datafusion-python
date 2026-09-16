@@ -1725,12 +1725,15 @@ def test_with_extensions_rejects_a_rule_whose_getter_returns_a_non_capsule(ctx):
 
 
 def test_with_extensions_declaring_no_rules_leaves_the_session_id(ctx):
-    """Installing rules rebuilds ``SessionState``; the id has to survive it.
+    """A call declaring no rules leaves the session id alone.
 
-    The rebuild mints a fresh id unless it is carried over, and a changed id
-    would break every ``TaskContext`` the session has handed out. Asserted for
-    a call declaring no rules as well, so the guarantee does not depend on
-    whether the rebuild was skipped.
+    This is the control for the no-op path: with nothing to install the state
+    rebuild is skipped, so the id is untouched rather than carried over. The
+    carry-over itself is not reachable from here — the rebuild needs a real
+    rule capsule, which only a compiled extension can hand over. That half is
+    pinned by ``test_rules_install_without_changing_the_session_id`` in
+    ``datafusion-ffi-example``, where a fresh id would leave ``session_id()``
+    disagreeing with every ``TaskContext`` the session has handed out.
     """
     before = ctx.session_id()
     result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))

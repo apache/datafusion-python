@@ -139,13 +139,17 @@ def test_declared_rules_run_in_declaration_order():
     Rules rewrite the plan one after another, so the order is part of what a
     bundle declares. The counters cannot show it — each rule has its own — so
     the two here append to a log they share.
+
+    Only the first pass is asserted on. How many times a query optimizes is a
+    separate claim from what order the rules run in, and pinning both here
+    would report a changed pass count as an ordering bug.
     """
     extension = MyRuleExtension()
     ctx = SessionContext().with_extensions(extension)
 
     _query(ctx)
 
-    assert extension.run_order() == [0, 1]
+    assert extension.run_order()[:2] == [0, 1]
 
 
 def test_rules_install_without_changing_the_session_id():

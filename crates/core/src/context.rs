@@ -1861,7 +1861,15 @@ impl PySessionContext {
 /// to carry imported rules from the resolve step to the commit step, so the
 /// import can fail before anything is written. `with_extensions` is its only
 /// producer and its only consumer.
-#[pyclass(name = "PhysicalOptimizerRules", module = "datafusion._internal")]
+///
+/// `frozen` because nothing mutates it between those two steps: the commit
+/// only reads the rules back out, so there is no reason to pay for the runtime
+/// borrow flag a mutable pyclass carries.
+#[pyclass(
+    frozen,
+    name = "PhysicalOptimizerRules",
+    module = "datafusion._internal"
+)]
 pub struct PyPhysicalOptimizerRules {
     rules: Vec<Arc<dyn PhysicalOptimizerRule + Send + Sync>>,
 }

@@ -2051,7 +2051,8 @@ class SessionContext:
         PyCapsule, typically produced by a separate compiled extension. The
         underlying :class:`SessionState` is rebuilt from its current state
         with the new rule appended, so previously registered tables, UDFs,
-        and catalogs are preserved.
+        and catalogs are preserved. Prepared statements are not — see
+        :ref:`extension_rule_rebuild`.
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
@@ -2146,6 +2147,10 @@ class SessionContext:
         session. A hook that *mutates* the context it is handed — registering a
         table, say — is not rolled back, which is why bundle objects must be
         configuration-only.
+
+        A call that installs optimizer rules rebuilds the session state, which
+        drops the session's prepared statements — see
+        :ref:`extension_rule_rebuild`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
