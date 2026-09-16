@@ -161,18 +161,6 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
-class QueryPlannerExportable(Protocol):
-    """Type hint for object that has a __datafusion_query_planner__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_QueryPlanner``, typically
-    produced by a separate compiled extension. ``session`` is the
-    :py:class:`SessionContext` the planner is being installed on; take the
-    extension codecs from it rather than building your own.
-    """
-
-    def __datafusion_query_planner__(self, session: Any) -> object: ...  # noqa: D105
-
-
 class ExtensionOptionsExportable(Protocol):
     """Type hint for object that has __datafusion_extension_options__ PyCapsule.
 
