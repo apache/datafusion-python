@@ -162,13 +162,15 @@ class PhysicalOptimizerRuleExportable(Protocol):
 
 
 class _FunctionKind(NamedTuple):
-    """How one kind of declared function is resolved and registered.
+    """How one kind of declared function is resolved.
 
     One row per function field on
     :py:class:`~datafusion.extensions.SessionExtensionComponents`, so adding a
     kind is adding a row rather than editing three places. The dataclass
     metadata says which fields are collections to normalize; this table says
-    which of them are functions and what to do with one.
+    which of them are functions and how to wrap one. Committing is not here:
+    each kind is its own ``_commit_extensions`` parameter, so a kind that
+    resolves but never commits cannot be written.
     ``test_every_component_field_has_an_installer`` pins the two together.
 
     The members naming a ``datafusion.user_defined`` object hold its name
@@ -192,9 +194,6 @@ class _FunctionKind(NamedTuple):
     label: str
     """What to call this sort of function in an error message."""
 
-    register: str
-    """:py:class:`SessionContext` method that commits one to the session."""
-
 
 _FUNCTION_KINDS = (
     _FunctionKind(
@@ -203,7 +202,6 @@ _FUNCTION_KINDS = (
         getter="__datafusion_scalar_udf__",
         factory="udf",
         label="scalar function",
-        register="register_udf",
     ),
     _FunctionKind(
         field="udafs",
@@ -211,7 +209,6 @@ _FUNCTION_KINDS = (
         getter="__datafusion_aggregate_udf__",
         factory="udaf",
         label="aggregate function",
-        register="register_udaf",
     ),
     _FunctionKind(
         field="udwfs",
@@ -219,7 +216,6 @@ _FUNCTION_KINDS = (
         getter="__datafusion_window_udf__",
         factory="udwf",
         label="window function",
-        register="register_udwf",
     ),
 )
 """Every kind of function a bundle can declare, in registration order."""
@@ -2197,63 +2193,38 @@ class SessionContext:
         # Resolve every declared function to the wrapper that registers it, and
         # settle name collisions, while a failure still costs nothing. None of
         # these getters take an argument, so unlike a provider they do not care
-        # which handle they are resolved against. The bound `register_*` method
-        # is looked up here too, leaving the commit below nothing but calls.
+        # which handle they are resolved against.
         from datafusion import user_defined as _user_defined  # noqa: PLC0415
 
-        resolved: list[tuple[Any, list[Any]]] = [
-            (
-                getattr(new, kind.register),
-                _resolve_declared_functions(
-                    declared[kind.field],
-                    getattr(_user_defined, kind.wrapper),
-                    kind.getter,
-                    getattr(_user_defined, kind.factory),
-                    kind.label,
-                ),
+        resolved: dict[str, list[Any]] = {
+            kind.field: _resolve_declared_functions(
+                declared[kind.field],
+                getattr(_user_defined, kind.wrapper),
+                kind.getter,
+                getattr(_user_defined, kind.factory),
+                kind.label,
             )
             for kind in _FUNCTION_KINDS
-        ]
+        }
 
-        # Phase two: nest the planners, outermost last. Each hook runs against
-        # `new`, which carries the final chains, so a planner captured here
-        # never sees a partial codec set. `planner` stays None when no bundle
-        # supplies one, which leaves an already-installed planner in place
-        # rather than wrapping the session's default in an FFI hop.
-        planner: _PyCapsule | None = None
-        for extension in extensions:
-            if not isinstance(extension, SessionPlannerExportable):
-                continue
-            fallback = (
-                planner
-                if planner is not None
-                else new.ctx.__datafusion_query_planner__()
-            )
-            supplied = extension.__datafusion_session_planner__(new, fallback)
-            if supplied is None:
-                continue
-            planner = new.ctx._export_query_planner(supplied)
-
-        # Rebinding the session's planner is a side effect on state shared with
-        # every other handle, so do not pay it for a call that installs nothing
-        # -- the same guard `with_python_udf_inlining` carries. With no codec
-        # installed the chains the planner would be rebuilt against are the ones
-        # it already holds, so the rebuild is unobservable except in the one case
-        # where it does harm: a planner sitting on some *other* handle's codecs
-        # gets dragged onto this handle's, silently undoing that install.
-
-        # Commit. Everything below this line must be infallible. A registration
-        # whose commit can fail belongs above, split into an import step that
-        # returns a resolved object and an insert step that cannot raise --
-        # there is one session here, shared with the receiver, so a failure
-        # part-way through has nothing to roll back to. The reasoning is in
-        # docs/source/contributor-guide/ffi-internals.md, under "Why
-        # `with_extensions` commits last".
-        if planner is not None or logical_codecs or physical_codecs:
-            new.ctx._install_extension_planner(planner)
-        for register, functions in resolved:
-            for function in functions:
-                register(function)
+        # Phase two: run the planner hooks and commit, in one call. Each hook
+        # runs against `new`, which carries the final chains, so a planner
+        # captured there never sees a partial codec set. The hook loop, the
+        # ordering of the commit, and the guard that skips the planner rebind
+        # for a call that installs nothing all live on the Rust side -- see
+        # `_commit_extensions` and docs/source/contributor-guide/
+        # ffi-internals.md, under "Why `with_extensions` commits last". A new
+        # component field must be resolved above and given its own
+        # `_commit_extensions` parameter; the call's arity is what keeps a
+        # declared component from being quietly dropped.
+        new.ctx._commit_extensions(
+            list(extensions),
+            new,
+            bool(logical_codecs or physical_codecs),
+            [function._udf for function in resolved["udfs"]],
+            [function._udaf for function in resolved["udafs"]],
+            [function._udwf for function in resolved["udwfs"]],
+        )
         return new
 
     def table_provider(self, name: str) -> Table:

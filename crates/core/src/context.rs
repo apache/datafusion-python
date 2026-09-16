@@ -1663,10 +1663,9 @@ impl PySessionContext {
     /// **Writes nothing.** The codec chains belong to the returned handle
     /// rather than to `SessionState`, so this phase is transactional for free:
     /// a codec that fails to import, or that collides with an installed id,
-    /// leaves the caller's context exactly as it was. Binding the planner is
-    /// the only step that touches the session, and it is deferred to
-    /// [`Self::_install_extension_planner`] so the planner hooks can run
-    /// against the final chains.
+    /// leaves the caller's context exactly as it was. Everything that touches
+    /// the session is deferred to [`Self::_commit_extensions`] so the planner
+    /// hooks can run against the final chains.
     ///
     /// Codecs must arrive as objects exposing the capsule getter, never as
     /// bare capsules — see [`resolve_bundle_codec_id`].
@@ -1717,49 +1716,87 @@ impl PySessionContext {
         })
     }
 
-    /// Re-export a planner a `__datafusion_session_planner__` hook returned as
-    /// a capsule, so the next hook in the chain receives one either way.
+    /// Run the planner hooks and commit a `with_extensions` call.
     ///
-    /// A hook may hand back an object exposing `__datafusion_query_planner__`
-    /// or a raw capsule; the next hook wraps whatever it is given and should
-    /// not have to branch on which. Importing here also surfaces a malformed
-    /// planner at the hook that produced it rather than at the final install.
-    /// Writes nothing.
-    pub fn _export_query_planner<'py>(
+    /// The second phase, run on the handle carrying the completed chains —
+    /// `session` is that same handle as the Python-level wrapper, which is
+    /// what each `__datafusion_session_planner__` hook receives. The hooks
+    /// run first, **in argument order**, each handed the planner built so
+    /// far as a capsule; a hook may hand back an object exposing
+    /// `__datafusion_query_planner__` or a raw capsule, and each return is
+    /// imported here so a malformed planner surfaces at the hook that
+    /// produced it rather than at the install. Returning `None` contributes
+    /// no planner. All of that writes nothing, so a hook that raises leaves
+    /// the session exactly as it was.
+    ///
+    /// Everything after the hooks is the commit, and none of it can fail: a
+    /// registration whose commit can fail belongs in the resolve step, split
+    /// into an import that returns a resolved object and an insert that
+    /// cannot raise. There is one session here, shared with the receiver, so
+    /// a failure part-way through would have nothing to roll back to. The
+    /// reasoning is in docs/source/contributor-guide/ffi-internals.md, under
+    /// "Why `with_extensions` commits last".
+    ///
+    /// The planner is bound through this context's own `state_ref()`, so
+    /// providers bound to it stay valid. With no planner supplied the bind
+    /// still rebuilds whichever planner the session already holds against
+    /// the new chains, exactly as `with_logical_extension_codec` does —
+    /// unless `rebind_planner` is also false, meaning the call installed no
+    /// codec either. Then the bind is skipped entirely, the same way
+    /// [`Self::with_python_udf_inlining`] returns early for a no-op toggle:
+    /// there is nothing to rebind against, and the rebuild would drag a
+    /// planner sitting on another handle's codecs onto this one's.
+    ///
+    /// The functions are registered *after* the planner hooks have run, so a
+    /// hook never sees this call's functions in the registry — the
+    /// registrations have no fall-through, and a name is free to shadow one
+    /// the session already had.
+    pub fn _commit_extensions<'py>(
         slf: &Bound<'py, Self>,
-        planner: Bound<'py, PyAny>,
-    ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let ffi = ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any()))?;
-        Ok(create_query_planner_capsule(slf.py(), &ffi)?)
-    }
-
-    /// Commit the query planner for a `with_extensions` call.
-    ///
-    /// The second phase, run once every codec is installed and every planner
-    /// hook has returned, so the planner is bound against the final chains.
-    /// This is the one call in `with_extensions` that writes to the session,
-    /// and it goes through this context's own `state_ref()`, so providers
-    /// bound to it stay valid.
-    ///
-    /// `None` means no bundle supplied a planner. That still rebuilds
-    /// whichever planner the session already holds against the new chains,
-    /// exactly as `with_logical_extension_codec` does, and writes nothing at
-    /// all if the session has no FFI planner to rebuild.
-    ///
-    /// The caller skips this step entirely when the call installed no codec
-    /// and no planner, the same way [`Self::with_python_udf_inlining`] returns
-    /// early for a no-op toggle: there is nothing to rebind against, and the
-    /// rebuild would drag a planner sitting on another handle's codecs onto
-    /// this one's.
-    #[pyo3(signature = (planner=None))]
-    pub fn _install_extension_planner<'py>(
-        slf: &Bound<'py, Self>,
-        planner: Option<Bound<'py, PyAny>>,
+        extensions: Vec<Bound<'py, PyAny>>,
+        session: Bound<'py, PyAny>,
+        rebind_planner: bool,
+        udfs: Vec<PyScalarUDF>,
+        udafs: Vec<PyAggregateUDF>,
+        udwfs: Vec<PyWindowUDF>,
     ) -> PyDataFusionResult<()> {
-        let planner = planner
-            .map(|planner| ffi_query_planner_from_pycapsule(&planner, Some(slf.as_any())))
-            .transpose()?;
-        slf.borrow().set_session_query_planner(planner);
+        let py = slf.py();
+        // Nest the planners, outermost last. `planner` stays `None` when no
+        // bundle supplies one, which leaves an already-installed planner in
+        // place rather than wrapping the session's default in an FFI hop.
+        let mut planner: Option<FFI_QueryPlanner> = None;
+        for extension in &extensions {
+            if !extension.hasattr("__datafusion_session_planner__")? {
+                continue;
+            }
+            let fallback = match &planner {
+                Some(ffi) => create_query_planner_capsule(py, ffi)?,
+                None => slf.borrow().__datafusion_query_planner__(py, None)?,
+            };
+            let supplied =
+                extension.call_method1("__datafusion_session_planner__", (&session, fallback))?;
+            if supplied.is_none() {
+                continue;
+            }
+            planner = Some(ffi_query_planner_from_pycapsule(
+                &supplied,
+                Some(slf.as_any()),
+            )?);
+        }
+
+        if planner.is_some() || rebind_planner {
+            slf.borrow().set_session_query_planner(planner);
+        }
+        let this = slf.borrow();
+        for udf in udfs {
+            this.ctx.register_udf(udf.function);
+        }
+        for udaf in udafs {
+            this.ctx.register_udaf(udaf.function);
+        }
+        for udwf in udwfs {
+            this.ctx.register_udwf(udwf.function);
+        }
         Ok(())
     }
 }

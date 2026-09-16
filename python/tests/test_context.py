@@ -1714,7 +1714,6 @@ def test_every_function_kind_names_something_real():
     for kind in _FUNCTION_KINDS:
         assert isinstance(getattr(user_defined, kind.wrapper), type)
         assert callable(getattr(user_defined, kind.factory))
-        assert callable(getattr(SessionContext, kind.register))
         assert kind.field in {spec.name for spec in fields(SessionExtensionComponents)}
 
 
