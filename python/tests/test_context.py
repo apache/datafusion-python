@@ -1753,6 +1753,24 @@ def test_with_extensions_rejects_a_table_in_an_unknown_schema(ctx):
         ctx.udf("double")
 
 
+def test_with_extensions_rejects_a_table_that_is_not_a_table_by_name(ctx):
+    """A declaration that is not a table at all is refused under its name.
+
+    A table value can be any of four shapes, so unlike a rule the junk is only
+    discovered by the importer, after the bundle can be named. The declared
+    name is unique within the call — that is what identifies the culprit.
+    """
+
+    with pytest.raises(Exception, match=r"declared table junk"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("junk", object()),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
 def test_session_extension_components_rejects_a_single_optimizer_rule():
     """The same for rules, naming what that field holds."""
     with pytest.raises(

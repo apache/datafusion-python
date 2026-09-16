@@ -1865,7 +1865,13 @@ impl PySessionContext {
 
         let mut resolved = Vec::with_capacity(tables.len());
         for (name, obj) in tables {
-            let provider = PyTable::new(obj, Some(session.clone()))?.table;
+            // The name is the culprit's identity: it is unique within the call,
+            // so an import failure that carries it points at one declaration.
+            // The importer's own message names neither the table nor the
+            // bundle, because it never knew them.
+            let provider = PyTable::new(obj, Some(session.clone()))
+                .map_err(|err| exec_datafusion_err!("Resolving the declared table {name}: {err}"))?
+                .table;
             let reference = TableReference::from(name.as_str());
             let table_name = reference.table().to_owned();
             let schema = state.schema_for_ref(reference)?;
