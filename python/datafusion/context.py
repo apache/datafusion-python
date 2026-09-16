@@ -2235,17 +2235,17 @@ class SessionContext:
                 a declared function or optimizer rule does not expose its
                 capsule getter and is not already a wrapper.
             ValueError: If two codecs claim the same id, if two extensions
-                declare a function, table, or table function of one kind under
-                the same name, or if a getter returns a capsule of the wrong
-                kind. See :py:meth:`with_logical_extension_codec` for how ids
-                are assigned.
+                declare a function, table, table function, or catalog of one
+                kind under the same name, or if a getter returns a capsule of
+                the wrong kind. See :py:meth:`with_logical_extension_codec`
+                for how ids are assigned.
             RuntimeError: If a getter is present but returns something that is
                 not a ``PyCapsule`` at all. The message comes from the importer
                 and does not name the bundle, because by then the declaration
                 has already been accepted as the right shape.
-            Exception: If a declared table cannot be resolved — the name is
-                already registered, two declarations resolve to one table, the
-                schema is unknown, or the value is not a table.
+            Exception: If a declared table or catalog cannot be resolved —
+                name taken, two declarations resolving to one table, unknown
+                schema, value not a table, or a capsule of the wrong kind.
 
         Examples:
             The returned handle is a different object sharing one session, and

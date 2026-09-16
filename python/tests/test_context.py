@@ -1962,6 +1962,31 @@ def test_with_extensions_registers_no_catalog_when_a_later_hook_raises(ctx):
     assert "engine" not in ctx.catalog_names()
 
 
+def test_with_extensions_rejects_a_catalog_capsule_of_the_wrong_kind(ctx):
+    """A catalog whose getter returns the wrong capsule is refused by name.
+
+    A non-capsule return is not refusable — any object can be a catalog
+    provider, so it falls through to the duck-typed wrap, like a table getter's
+    falls through to the dataset one. A capsule of the wrong *kind* is the
+    resolve failure that remains, and the declared name — unique within the
+    call — is what points at the culprit declaration, as for tables.
+    """
+
+    class WrongCapsuleCatalog:
+        def __datafusion_catalog_provider__(self, codec):
+            return ctx.__datafusion_query_planner__()
+
+    with pytest.raises(Exception, match=r"declared catalog engine"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _CatalogExtension(catalog_providers=(("engine", WrongCapsuleCatalog()),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+    assert "engine" not in ctx.catalog_names()
+
+
 def test_session_extension_components_rejects_a_single_optimizer_rule():
     """The same for rules, naming what that field holds."""
     with pytest.raises(

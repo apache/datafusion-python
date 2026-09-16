@@ -1924,7 +1924,15 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyResolvedCatalogs> {
         let catalogs = catalogs
             .into_iter()
-            .map(|(name, provider)| Ok((name, self.resolve_catalog_provider(provider)?)))
+            .map(|(name, provider)| {
+                // The name identifies the culprit declaration, as for tables:
+                // a getter that returns junk fails in the importer, which
+                // knows neither the catalog nor the bundle.
+                let provider = self.resolve_catalog_provider(provider).map_err(|err| {
+                    exec_datafusion_err!("Resolving the declared catalog {name}: {err}")
+                })?;
+                Ok((name, provider))
+            })
             .collect::<PyDataFusionResult<Vec<_>>>()?;
         Ok(PyResolvedCatalogs { catalogs })
     }
