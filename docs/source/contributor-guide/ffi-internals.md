@@ -129,12 +129,13 @@ A call therefore splits into a part that may fail and a part that may not:
    even though it can fail on a bad capsule or a duplicate id.
 3. **Resolve.** Every declared function is wrapped and every name is checked,
    every declared table has its provider imported and its destination schema
-   resolved, every declared physical optimizer rule has its capsule imported,
-   and every `__datafusion_session_planner__` runs against the completed
-   chains.
+   resolved, every declared catalog has its provider imported, every declared
+   physical optimizer rule has its capsule imported, and every
+   `__datafusion_session_planner__` runs against the completed chains.
 4. **Commit.** The tables are inserted, the planner is bound, the functions
-   are registered, and the optimizer rules are installed in a single
-   `SessionState` rebuild.
+   are registered, the catalogs are registered — `register_catalog` replaces
+   rather than refuses, so it cannot fail — and the optimizer rules are
+   installed in a single `SessionState` rebuild.
 
 Only step 4 touches the session, and every step that can fail happens before
 it — with one honest exception: a table insert goes through a
