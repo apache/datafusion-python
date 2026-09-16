@@ -116,20 +116,21 @@ s3 = AmazonS3(
 )
 
 path = f"s3://{bucket_name}/"
-ctx.register_object_store("s3://", s3, host=bucket_name)
+ctx.register_object_store("s3://", s3, None)
 
 ctx.register_parquet("trips", path)
 
 ctx.table("trips").show()
 ```
 
-### Use S3 in SQL
+### Query S3 data with SQL
 
-Use `CREATE EXTERNAL TABLE` to give an S3 path a table name that you can query
-with SQL. The statement uses the object store registered for the bucket on the
-same {py:class}`~datafusion.context.SessionContext`.
+To reach the same data from SQL, give the S3 path a table name with
+`CREATE EXTERNAL TABLE`. The registered object store carries the credentials and
+the region, so the statement itself needs only the location.
 
-After registering the object store above, create and query an external table:
+Register the store for the bucket as shown above, then use that same
+{py:class}`~datafusion.context.SessionContext` to create and query the table:
 
 ```python
 ctx.sql(
