@@ -356,7 +356,7 @@ class SessionExtensionComponents:
     capsule getter with the session, and the context a bundle is handed has not
     had this call's codecs installed yet — so a wrapper built inside the hook
     would be bound to the wrong chains. The host wraps these against the
-    finished context instead. See :ref:`extension_bundles_two_phases`.
+    finished context instead. See :ref:`extension_bundles_binding`.
 
     Collides by name like :py:attr:`udfs`.
     """
@@ -373,11 +373,12 @@ class SessionExtensionComponents:
 
     Bound to the finished context for the same reason as :py:attr:`udtfs`.
 
-    A name that is **already registered** is an error, here and in
-    ``register_table`` alike — DataFusion refuses a duplicate table rather than
-    replacing it, so unlike a function a table cannot shadow one. Two
-    declarations collide when they resolve to one table, not when they match as
-    strings: see :ref:`extension_bundles_collisions`.
+    A name that is **already registered** is an error, so unlike a function a
+    table cannot shadow one. Two declarations collide when they resolve to one
+    table, not when they match as strings. Both rules hold wherever the table
+    lands, even where
+    :py:meth:`~datafusion.context.SessionContext.register_table` would have
+    replaced: see :ref:`extension_bundles_collisions`.
     """
 
     physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(

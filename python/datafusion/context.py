@@ -2199,9 +2199,8 @@ class SessionContext:
         session as it was. Declared tables install first and everything else
         after the planner is bound; all of them are visible on every handle
         sharing this session. A hook that *mutates* the context it is handed —
-        registering a
-        table, say — is not rolled back, which is why bundle objects must be
-        configuration-only.
+        registering a table, say — is not rolled back, which is why bundle
+        objects must be configuration-only.
 
         A call that installs optimizer rules rebuilds the session state, which
         drops the session's prepared statements — see
@@ -2239,7 +2238,8 @@ class SessionContext:
                 and does not name the bundle, because by then the declaration
                 has already been accepted as the right shape.
             Exception: If a declared table cannot be resolved — the name is
-                taken, the schema unknown, or the value not a table.
+                already registered, two declarations resolve to one table, the
+                schema is unknown, or the value is not a table.
 
         Examples:
             The returned handle is a different object sharing one session, and

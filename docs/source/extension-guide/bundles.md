@@ -346,9 +346,18 @@ Physical optimizer rules are exempt from all of this: they accumulate rather
 than replace, so two bundles contributing one each is the normal case and there
 is nothing to refuse. See {doc}`other-components`.
 
-Tables go the other way. DataFusion refuses a duplicate table registration
-rather than replacing it, so a declared table name that is *already* on the
-session is an error too — a table cannot shadow one the way a function can.
+Tables go the other way: a declared table name that is *already* on the session
+is an error too, so a table cannot shadow one the way a function can.
+
+Strictly, whether a duplicate registration replaces or refuses is the
+`SchemaProvider`'s own call, and the in-memory one a session starts with
+refuses. `with_extensions` does not ask. It settles the question during resolve
+and refuses whatever the destination would have done, which buys two things a
+per-provider answer could not: the same rule wherever your table lands, and the
+refusal arriving while a failure still costs nothing. A `SchemaProvider` that
+would have replaced is therefore stricter through a bundle than through
+{py:meth}`~datafusion.context.SessionContext.register_table`, which asks it
+directly. Deregister the old table first if replacing is what you meant.
 
 A table collides on where it lands rather than on how it was spelled. A name is
 lowercased when it is parsed and filled out from the session's default catalog

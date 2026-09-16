@@ -1793,9 +1793,10 @@ def test_with_extensions_rejects_two_spellings_of_one_table(ctx, first, second):
 def test_with_extensions_rejects_a_table_name_the_session_holds(ctx):
     """A table cannot shadow one, the way a function can.
 
-    DataFusion refuses a duplicate registration rather than replacing it, so
-    this is its rule rather than a policy chosen here — and catching it during
-    resolution is what keeps the rest of the call from being written first.
+    The destination's own policy is not consulted: refusing during resolution
+    is what keeps the rest of the call from being written first, and asking a
+    ``SchemaProvider`` would mean asking at commit time, once refusing costs
+    something.
     """
     ctx.from_pydict({"a": [1]}, name="events")
     provider = ctx.from_pydict({"a": [2]}).into_view()

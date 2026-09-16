@@ -1853,9 +1853,11 @@ impl PySessionContext {
     /// The fallible half. Each provider is imported against `slf` — the handle
     /// carrying the completed codec chains, not the context the components hook
     /// was given — and each name is resolved to the schema that will hold it.
-    /// A name already taken is refused here, because DataFusion refuses a
-    /// duplicate registration rather than replacing it, and a refusal is much
-    /// more useful before anything has been written.
+    /// A name already taken is refused here rather than left to the insert.
+    /// Whether a duplicate replaces or refuses is the `SchemaProvider`'s own
+    /// call — the in-memory one refuses — and asking it would mean asking at
+    /// commit time, once refusing costs something. Deciding here buys one rule
+    /// for every destination and a refusal while a failure is still free.
     ///
     /// Two declarations landing on one destination are refused here too. Both
     /// checks are against the *resolved* reference rather than the declared

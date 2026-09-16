@@ -80,7 +80,11 @@ do. Its documentation says which.
 
 `with_extensions` returns a context; use the returned one. It shares
 everything else with the context you called it on, so tables you registered
-before the call are still there.
+before the call are still there — and a library shipping a table under a name
+you have already used cannot replace it. The call fails and writes nothing, so
+drop yours with {py:meth}`~datafusion.context.SessionContext.deregister_table`
+first, or install onto a context that does not hold it. See
+{ref}`extension_bundles_collisions`.
 
 ## Using more than one library
 
