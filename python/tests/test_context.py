@@ -1670,6 +1670,179 @@ def test_session_extension_components_rejects_a_single_function(field):
         SessionExtensionComponents(**{field: _doubler()})
 
 
+@pytest.mark.parametrize(
+    ("field", "noun"), [("udtfs", "table function"), ("table_providers", "table")]
+)
+def test_session_extension_components_rejects_a_bare_pair(field, noun):
+    """One pair written without its inner parentheses is two components.
+
+    The pair-shaped version of the lone-component mistake, and the one the
+    field's own shape invites: ``udtfs=("expand", func)`` is a two-element
+    tuple, so it normalizes without complaint and fails later inside
+    ``with_extensions`` under a name that says nothing about either.
+    """
+    with pytest.raises(
+        TypeError, match=rf"{field} must be an iterable of \(name, {noun}\) pairs"
+    ):
+        SessionExtensionComponents(**{field: ("a_name", object())})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_rejects_a_pair_of_the_wrong_length(field):
+    """Neither a bare value nor a triple is a ``(name, value)`` pair."""
+    with pytest.raises(TypeError, match=r"is not one"):
+        SessionExtensionComponents(**{field: (object(),)})
+
+    with pytest.raises(TypeError, match=r"is not one"):
+        SessionExtensionComponents(**{field: (("a_name", object(), "extra"),)})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_rejects_an_unnamed_pair(field):
+    """The name comes first, so a pair written the other way round is refused."""
+    with pytest.raises(TypeError, match=r"name in a .* pair must be a str"):
+        SessionExtensionComponents(**{field: ((object(), "a_name"),)})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_normalizes_a_pair_to_a_tuple(field):
+    """A pair given as a list is stored as a tuple, like the fields around it."""
+    value = object()
+
+    components = SessionExtensionComponents(**{field: [["a_name", value]]})
+
+    assert getattr(components, field) == (("a_name", value),)
+
+
+class _TableExtension:
+    """Contributes tables and table functions, as ``(name, value)`` pairs."""
+
+    def __init__(self, table_providers=(), udtfs=()):
+        self._table_providers = table_providers
+        self._udtfs = udtfs
+
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(
+            table_providers=self._table_providers, udtfs=self._udtfs
+        )
+
+
+def test_with_extensions_registers_a_declared_table(ctx):
+    """A declared table is queryable on the returned handle."""
+    provider = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(_TableExtension(table_providers=(("t", provider),)))
+
+    assert result.sql("SELECT sum(a) FROM t").collect()[0].column(0)[0].as_py() == 6
+
+
+def test_with_extensions_registers_a_declared_udtf(ctx):
+    """A declared table function is callable from SQL.
+
+    Declared as a ``(name, callable)`` pair rather than a built
+    ``TableFunction``, because wrapping one hands the getter a session and the
+    bundle does not have the right one yet.
+    """
+    table = ctx.from_pydict({"a": [1, 2, 3]}).into_view()
+
+    result = ctx.with_extensions(_TableExtension(udtfs=(("always", lambda: table),)))
+
+    assert result.sql("SELECT a FROM always()").collect()[0].num_rows == 3
+
+
+def test_with_extensions_rejects_a_table_name_two_extensions_claim(ctx):
+    """Two bundles claiming one table name is refused before anything lands."""
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(ValueError, match=r"table named 'events'"):
+        ctx.with_extensions(
+            _TableExtension(table_providers=(("events", provider),)),
+            _TableExtension(table_providers=(("events", provider),)),
+        )
+
+    assert not ctx.table_exist("events")
+
+
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [
+        ("events", "public.events"),
+        ("events", "datafusion.public.events"),
+        ("Events", "events"),
+    ],
+)
+def test_with_extensions_rejects_two_spellings_of_one_table(ctx, first, second):
+    """Two names for one table is a collision, however differently they are written.
+
+    A declared name is lowercased when it is parsed and filled out from the
+    session's default catalog and schema, so these pairs are one destination.
+    Comparing the spellings would not say so, and the duplicate would surface
+    from the insert with the first table already written.
+    """
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(Exception, match=r"Two extensions declare the table"):
+        ctx.with_extensions(
+            _TableExtension(table_providers=((first, provider),)),
+            _TableExtension(table_providers=((second, provider),)),
+        )
+
+    assert not ctx.table_exist("events")
+
+
+def test_with_extensions_rejects_a_table_name_the_session_holds(ctx):
+    """A table cannot shadow one, the way a function can.
+
+    The destination's own policy is not consulted: refusing during resolution
+    is what keeps the rest of the call from being written first, and asking a
+    ``SchemaProvider`` would mean asking at commit time, once refusing costs
+    something.
+    """
+    ctx.from_pydict({"a": [1]}, name="events")
+    provider = ctx.from_pydict({"a": [2]}).into_view()
+
+    with pytest.raises(Exception, match=r"already registered"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("events", provider),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_a_table_in_an_unknown_schema(ctx):
+    """Resolving the destination happens before anything is written too."""
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(Exception, match=r"nope"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("nope.public.t", provider),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_a_table_that_is_not_a_table_by_name(ctx):
+    """A declaration that is not a table at all is refused under its name.
+
+    A table value can be any of four shapes, so unlike a rule the junk is only
+    discovered by the importer, after the bundle can be named. The declared
+    name is unique within the call — that is what identifies the culprit.
+    """
+
+    with pytest.raises(Exception, match=r"declared table junk"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            _TableExtension(table_providers=(("junk", object()),)),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
 def test_session_extension_components_rejects_a_single_optimizer_rule():
     """The same for rules, naming what that field holds."""
     with pytest.raises(
@@ -1752,7 +1925,7 @@ def test_every_component_field_has_an_installer():
 
     Reaching into private names on purpose: the two sides answer different
     questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS``, the codec pair, and the rules say which of them
+    ``_FUNCTION_KINDS`` and the four fields named here say which of them
     ``with_extensions`` knows how to install. Nothing observable from outside
     can tell you they have drifted, because the symptom is silence.
     """
@@ -1767,6 +1940,8 @@ def test_every_component_field_has_an_installer():
     assert by_noun == {
         "codec": {"logical_extension_codecs", "physical_extension_codecs"},
         "function": {kind.field for kind in _FUNCTION_KINDS},
+        "table function": {"udtfs"},
+        "table": {"table_providers"},
         "optimizer rule": {"physical_optimizer_rules"},
     }
 

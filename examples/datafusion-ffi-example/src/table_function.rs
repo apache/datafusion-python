@@ -38,11 +38,11 @@ pub(crate) struct MyTableFunction {}
 #[pymethods]
 impl MyTableFunction {
     #[new]
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {}
     }
 
-    fn __datafusion_table_function__<'py>(
+    pub(crate) fn __datafusion_table_function__<'py>(
         &self,
         py: Python<'py>,
         session: Bound<PyAny>,

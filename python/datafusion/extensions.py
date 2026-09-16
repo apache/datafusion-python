@@ -154,15 +154,58 @@ def _not_an_iterable(name: str, value: object, noun: str) -> str:
     )
 
 
-def _components(noun: str) -> Any:
+def _not_a_pair(name: str, item: object, noun: str) -> str:
+    """Message for an item of a pair-shaped field that is not ``(name, value)``."""
+    return (
+        f"{name} must be an iterable of (name, {noun}) pairs, and {item!r} is "
+        f"not one. A {noun} is written with its name beside it — "
+        f'{name}=(("a_name", {noun}),) — and the inner parentheses are what '
+        "make the two into one pair."
+    )
+
+
+def _pair_name_not_a_str(name: str, pair_name: object, noun: str) -> str:
+    """Message for a pair whose first element is not the name."""
+    return (
+        f"The name in a {name} pair must be a str, not a "
+        f"{type(pair_name).__name__}. The name comes first: "
+        f'{name}=(("a_name", {noun}),).'
+    )
+
+
+def _components(noun: str, *, pairs: bool = False) -> Any:
     """Declare a field holding a tuple of contributed components.
 
     ``noun`` names what the field holds, for the error a bundle sees when it
     hands over one component instead of a collection of them. Carrying it in
     the field metadata is what lets ``__post_init__`` normalize a field it was
     never told about by name.
+
+    ``pairs`` marks a field whose items are ``(name, value)`` rather than bare
+    components, so ``__post_init__`` checks that shape too.
     """
-    return field(default=(), metadata={"datafusion_component": noun})
+    metadata: dict[str, Any] = {"datafusion_component": noun}
+    if pairs:
+        metadata["datafusion_component_pairs"] = True
+    return field(default=(), metadata=metadata)
+
+
+def _as_pairs(name: str, components: tuple[Any, ...], noun: str) -> tuple[Any, ...]:
+    """Check every item of a pair-shaped field and normalize it to a tuple."""
+    pairs = []
+    for item in components:
+        # A str is iterable and unpacks into two characters, so a two-letter
+        # name would otherwise pass as a pair.
+        if isinstance(item, (str, bytes)):
+            raise TypeError(_not_a_pair(name, item, noun))
+        try:
+            pair_name, value = item
+        except (TypeError, ValueError):
+            raise TypeError(_not_a_pair(name, item, noun)) from None
+        if not isinstance(pair_name, str):
+            raise TypeError(_pair_name_not_a_str(name, pair_name, noun))
+        pairs.append((pair_name, value))
+    return tuple(pairs)
 
 
 @dataclass(frozen=True)
@@ -242,6 +285,14 @@ class SessionExtensionComponents:
         Traceback (most recent call last):
             ...
         TypeError: logical_extension_codecs must be an iterable of codec objects...
+
+        Tables and table functions carry their name beside the value, so there
+        the same mistake is a missing *inner* pair of parentheses:
+
+        >>> SessionExtensionComponents(udtfs=("expand", lambda: None))
+        Traceback (most recent call last):
+            ...
+        TypeError: udtfs must be an iterable of (name, table function) pairs...
     """
 
     logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = _components(
@@ -293,6 +344,43 @@ class SessionExtensionComponents:
     :py:func:`~datafusion.udwf`.
     """
 
+    udtfs: tuple[tuple[str, Any], ...] = _components("table function", pairs=True)
+    """Table functions to register, as ``(name, function)`` pairs.
+
+    Unlike the other three function kinds the name is **not** read off the
+    capsule, so it is given here. The value is an object exposing
+    ``__datafusion_table_function__``, or a plain Python callable.
+
+    Pass the unwrapped value, not a
+    :py:class:`~datafusion.user_defined.TableFunction`. Wrapping calls the
+    capsule getter with the session, and the context a bundle is handed has not
+    had this call's codecs installed yet — so a wrapper built inside the hook
+    would be bound to the wrong chains. The host wraps these against the
+    finished context instead. See :ref:`extension_bundles_binding`.
+
+    Collides by name like :py:attr:`udfs`.
+    """
+
+    table_providers: tuple[tuple[str, Any], ...] = _components("table", pairs=True)
+    """Tables to register, as ``(name, provider)`` pairs.
+
+    Anything :py:meth:`~datafusion.context.SessionContext.register_table`
+    accepts: an object exposing ``__datafusion_table_provider__``, a
+    :py:class:`~datafusion.catalog.Table`, a
+    :py:class:`~datafusion.dataframe.DataFrame`, or a PyArrow dataset. Names may
+    be qualified (``"cat.schema.events"``); an unqualified one lands in the
+    session's default schema.
+
+    Bound to the finished context for the same reason as :py:attr:`udtfs`.
+
+    A name that is **already registered** is an error, so unlike a function a
+    table cannot shadow one. Two declarations collide when they resolve to one
+    table, not when they match as strings. Both rules hold wherever the table
+    lands, even where
+    :py:meth:`~datafusion.context.SessionContext.register_table` would have
+    replaced: see :ref:`extension_bundles_collisions`.
+    """
+
     physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(
         "optimizer rule"
     )
@@ -336,6 +424,14 @@ class SessionExtensionComponents:
                 components = tuple(value)
             except TypeError:
                 raise TypeError(_not_an_iterable(name, value, noun)) from None
+            # The pair-shaped fields have a second version of the same mistake:
+            # `udtfs=("expand", func)` is one pair with its inner parentheses
+            # left off, and normalizes into two components rather than failing.
+            # Left unchecked it surfaces from `with_extensions` as
+            # `'function' object is not subscriptable`, which is the very thing
+            # this method exists to keep out of the caller's lap.
+            if spec.metadata.get("datafusion_component_pairs"):
+                components = _as_pairs(name, components, noun)
             object.__setattr__(self, name, components)
 
 

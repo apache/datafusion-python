@@ -128,13 +128,19 @@ A call therefore splits into a part that may fail and a part that may not:
    live on that handle rather than on the session, so this step writes nothing
    even though it can fail on a bad capsule or a duplicate id.
 3. **Resolve.** Every declared function is wrapped and every name is checked,
-   every declared physical optimizer rule has its capsule imported, and every
-   `__datafusion_session_planner__` runs against the completed chains.
-4. **Commit.** The planner is bound, the functions are registered, and the
-   optimizer rules are installed in a single `SessionState` rebuild.
+   every declared table has its provider imported and its destination schema
+   resolved, every declared physical optimizer rule has its capsule imported,
+   and every `__datafusion_session_planner__` runs against the completed
+   chains.
+4. **Commit.** The tables are inserted, the planner is bound, the functions
+   are registered, and the optimizer rules are installed in a single
+   `SessionState` rebuild.
 
 Only step 4 touches the session, and every step that can fail happens before
-it. This is a rule for the next field added to
+it — with one honest exception: a table insert goes through a
+`SchemaProvider`, and a foreign one can still refuse what it reported as free
+during resolve. Tables commit first because of it, so nothing else has been
+written when that happens. This is a rule for the next field added to
 `SessionExtensionComponents`, not only a description of the current code: a new
 kind of component must do its fallible work — importing a capsule, resolving a
 name — in step 3, so that step 4 cannot raise part-way through.

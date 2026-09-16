@@ -43,6 +43,9 @@ PRIVATE_SUPPORT_METHODS = frozenset(
         # half-installed; the commit itself is a `_commit_extensions`
         # parameter.
         "_resolve_extension_physical_optimizer_rules",
+        # Tables, split the same way: import the provider and resolve the
+        # destination schema during resolution, insert at commit.
+        "_resolve_extension_tables",
     }
 )
 
