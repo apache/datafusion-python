@@ -2311,7 +2311,14 @@ class SessionContext:
         ]
         # Imports each provider against `new` for the same reason, resolves
         # each name to the schema that will hold it, and refuses a name that is
-        # already taken.
+        # already taken or that a second declaration resolves onto.
+        #
+        # The pass below is not redundant with that last check, and neither
+        # subsumes the other. Only the resolver knows that `Events` and
+        # `public.events` are one table, and only this side knows which
+        # argument each declaration came from -- the thing that picks the
+        # remedy. So the common case, two bundles writing the same name the
+        # same way, gets the message that names both of them.
         resolved_tables = new.ctx._resolve_extension_tables(
             [
                 pair

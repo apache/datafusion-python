@@ -324,7 +324,9 @@ class SessionExtensionComponents:
 
     A name that is **already registered** is an error, here and in
     ``register_table`` alike — DataFusion refuses a duplicate table rather than
-    replacing it, so unlike a function a table cannot shadow one.
+    replacing it, so unlike a function a table cannot shadow one. Two
+    declarations collide when they resolve to one table, not when they match as
+    strings: see :ref:`extension_bundles_collisions`.
     """
 
     physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(

@@ -1719,6 +1719,33 @@ def test_with_extensions_rejects_a_table_name_two_extensions_claim(ctx):
     assert not ctx.table_exist("events")
 
 
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [
+        ("events", "public.events"),
+        ("events", "datafusion.public.events"),
+        ("Events", "events"),
+    ],
+)
+def test_with_extensions_rejects_two_spellings_of_one_table(ctx, first, second):
+    """Two names for one table is a collision, however differently they are written.
+
+    A declared name is lowercased when it is parsed and filled out from the
+    session's default catalog and schema, so these pairs are one destination.
+    Comparing the spellings would not say so, and the duplicate would surface
+    from the insert with the first table already written.
+    """
+    provider = ctx.from_pydict({"a": [1]}).into_view()
+
+    with pytest.raises(Exception, match=r"Two extensions declare the table"):
+        ctx.with_extensions(
+            _TableExtension(table_providers=((first, provider),)),
+            _TableExtension(table_providers=((second, provider),)),
+        )
+
+    assert not ctx.table_exist("events")
+
+
 def test_with_extensions_rejects_a_table_name_the_session_holds(ctx):
     """A table cannot shadow one, the way a function can.
 

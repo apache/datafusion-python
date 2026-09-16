@@ -350,6 +350,14 @@ Tables go the other way. DataFusion refuses a duplicate table registration
 rather than replacing it, so a declared table name that is *already* on the
 session is an error too — a table cannot shadow one the way a function can.
 
+A table collides on where it lands rather than on how it was spelled. A name is
+lowercased when it is parsed and filled out from the session's default catalog
+and schema, so `Events`, `events` and `public.events` are one table, and two
+bundles declaring any two of them collide. Comparing the spellings would let the
+pair through resolution and leave the duplicate to surface from the insert, with
+the first table already written — the one thing {ref}`the commit order
+<ffi_internals_commit_order>` exists to prevent.
+
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.
 

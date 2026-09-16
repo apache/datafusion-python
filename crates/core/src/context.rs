@@ -30,7 +30,9 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::catalog::{
     CatalogProvider, CatalogProviderList, SchemaProvider, TableProviderFactory,
 };
-use datafusion::common::{DFSchema, ScalarValue, TableReference, exec_datafusion_err, exec_err};
+use datafusion::common::{
+    DFSchema, ResolvedTableReference, ScalarValue, TableReference, exec_datafusion_err, exec_err,
+};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -1855,6 +1857,13 @@ impl PySessionContext {
     /// duplicate registration rather than replacing it, and a refusal is much
     /// more useful before anything has been written.
     ///
+    /// Two declarations landing on one destination are refused here too. Both
+    /// checks are against the *resolved* reference rather than the declared
+    /// spelling, which is the only thing that answers the question: a name is
+    /// lowercased when it is parsed and filled out from the session's default
+    /// catalog and schema, so `Events`, `events` and `public.events` are one
+    /// table under three spellings.
+    ///
     /// **Writes nothing.**
     pub fn _resolve_extension_tables<'py>(
         slf: &Bound<'py, Self>,
@@ -1862,7 +1871,11 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyResolvedTables> {
         let session = slf.clone().into_bound_py_any(slf.py())?;
         let state = slf.borrow().ctx.state();
+        let catalog_options = &state.config_options().catalog;
+        let default_catalog = catalog_options.default_catalog.clone();
+        let default_schema = catalog_options.default_schema.clone();
 
+        let mut claimed: HashMap<ResolvedTableReference, String> = HashMap::new();
         let mut resolved = Vec::with_capacity(tables.len());
         for (name, obj) in tables {
             // The name is the culprit's identity: it is unique within the call,
@@ -1874,6 +1887,7 @@ impl PySessionContext {
                 .table;
             let reference = TableReference::from(name.as_str());
             let table_name = reference.table().to_owned();
+            let destination = reference.clone().resolve(&default_catalog, &default_schema);
             let schema = state.schema_for_ref(reference)?;
             // Checked against the schema rather than against this call's own
             // list, so a name the session already holds is caught too. Both
@@ -1881,6 +1895,20 @@ impl PySessionContext {
             if schema.table_exist(&table_name) {
                 return Err(exec_datafusion_err!(
                     "An extension declared a table named {name}, which is already registered"
+                )
+                .into());
+            }
+            // The check above cannot catch a name this same call declared,
+            // because nothing is written until the commit step. Without this
+            // one, two spellings of a single table would both resolve and then
+            // collide during the commit with the first already inserted --
+            // exactly the part-applied outcome the two-phase split exists to
+            // rule out.
+            if let Some(claimed_as) = claimed.insert(destination.clone(), name.clone()) {
+                return Err(exec_datafusion_err!(
+                    "Two extensions declare the table {destination}: {claimed_as} and {name} \
+                     name one table, so one would have to replace the other. Rename one of \
+                     them, or install them on separate sessions"
                 )
                 .into());
             }
