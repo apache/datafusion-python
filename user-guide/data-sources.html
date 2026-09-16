@@ -659,7 +659,9 @@ DataFrame()
 <section id="object-store">
 <h2>Object Store<a class="headerlink" href="#object-store" title="Link to this heading">#</a></h2>
 <p>DataFusion has support for multiple storage options in addition to local files.
-The example below requires an appropriate S3 account with access credentials.</p>
+The example below requires access to the S3 bucket. Set <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code> and
+<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code> in the environment before running it. For temporary
+credentials, also set <code class="docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code>.</p>
 <p>Supported Object Stores are</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../autoapi/datafusion/object_store/index.html#datafusion.object_store.AmazonS3" title="datafusion.object_store.AmazonS3"><code class="xref py py-class docutils literal notranslate"><span class="pre">AmazonS3</span></code></a></p></li>
@@ -668,16 +670,17 @@ The example below requires an appropriate S3 account with access credentials.</p
 <li><p><a class="reference internal" href="../autoapi/datafusion/object_store/index.html#datafusion.object_store.LocalFileSystem" title="datafusion.object_store.LocalFileSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalFileSystem</span></code></a></p></li>
 <li><p><a class="reference internal" href="../autoapi/datafusion/object_store/index.html#datafusion.object_store.MicrosoftAzure" title="datafusion.object_store.MicrosoftAzure"><code class="xref py py-class docutils literal notranslate"><span class="pre">MicrosoftAzure</span></code></a></p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.object_store</span><span class="w"> </span><span class="kn">import</span> <span class="n">AmazonS3</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.object_store</span><span class="w"> </span><span class="kn">import</span> <span class="n">AmazonS3</span>
 
 <span class="n">region</span> <span class="o">=</span> <span class="s2">&quot;us-east-1&quot;</span>
 <span class="n">bucket_name</span> <span class="o">=</span> <span class="s2">&quot;yellow-trips&quot;</span>
 
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
 <span class="n">s3</span> <span class="o">=</span> <span class="n">AmazonS3</span><span class="p">(</span>
     <span class="n">bucket_name</span><span class="o">=</span><span class="n">bucket_name</span><span class="p">,</span>
     <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
-    <span class="n">access_key_id</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;AWS_ACCESS_KEY_ID&quot;</span><span class="p">),</span>
-    <span class="n">secret_access_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;AWS_SECRET_ACCESS_KEY&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;s3://</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/&quot;</span>
@@ -688,6 +691,25 @@ The example below requires an appropriate S3 account with access credentials.</p
 <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;trips&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="query-s3-data-with-sql">
+<h3>Query S3 data with SQL<a class="headerlink" href="#query-s3-data-with-sql" title="Link to this heading">#</a></h3>
+<p>To reach the same data from SQL, give the S3 path a table name with
+<code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">EXTERNAL</span> <span class="pre">TABLE</span></code>. The registered object store carries the credentials and
+the region, so the statement itself needs only the location.</p>
+<p>Register the store for the bucket as shown above, then use that same
+<a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> to create and query the table:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    CREATE EXTERNAL TABLE trips_sql</span>
+<span class="s2">    STORED AS PARQUET</span>
+<span class="s2">    LOCATION &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT count(passenger_count) FROM trips_sql&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="other-dataframe-libraries">
 <h2>Other DataFrame Libraries<a class="headerlink" href="#other-dataframe-libraries" title="Link to this heading">#</a></h2>
@@ -894,7 +916,10 @@ original Python object.</p>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Data Sources</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-file">Local file</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-in-memory">Create in-memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-store">Object Store</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-store">Object Store</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#query-s3-data-with-sql">Query S3 data with SQL</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-dataframe-libraries">Other DataFrame Libraries</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#delta-lake">Delta Lake</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apache-iceberg">Apache Iceberg</a></li>
