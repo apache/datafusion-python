@@ -1921,7 +1921,8 @@ impl PySessionContext {
 /// [`PyPhysicalOptimizerRules`]. Each entry is a provider that has already been
 /// imported and a schema that has already been looked up, so committing is an
 /// insert into a resolved destination rather than a fresh name resolution.
-#[pyclass(name = "ResolvedTables", module = "datafusion._internal")]
+/// `frozen` for the same reason as its sibling: the commit only reads.
+#[pyclass(frozen, name = "ResolvedTables", module = "datafusion._internal")]
 pub struct PyResolvedTables {
     tables: Vec<ResolvedTable>,
 }
