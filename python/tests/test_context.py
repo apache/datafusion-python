@@ -1670,6 +1670,50 @@ def test_session_extension_components_rejects_a_single_function(field):
         SessionExtensionComponents(**{field: _doubler()})
 
 
+@pytest.mark.parametrize(
+    ("field", "noun"), [("udtfs", "table function"), ("table_providers", "table")]
+)
+def test_session_extension_components_rejects_a_bare_pair(field, noun):
+    """One pair written without its inner parentheses is two components.
+
+    The pair-shaped version of the lone-component mistake, and the one the
+    field's own shape invites: ``udtfs=("expand", func)`` is a two-element
+    tuple, so it normalizes without complaint and fails later inside
+    ``with_extensions`` under a name that says nothing about either.
+    """
+    with pytest.raises(
+        TypeError, match=rf"{field} must be an iterable of \(name, {noun}\) pairs"
+    ):
+        SessionExtensionComponents(**{field: ("a_name", object())})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_rejects_a_pair_of_the_wrong_length(field):
+    """Neither a bare value nor a triple is a ``(name, value)`` pair."""
+    with pytest.raises(TypeError, match=r"is not one"):
+        SessionExtensionComponents(**{field: (object(),)})
+
+    with pytest.raises(TypeError, match=r"is not one"):
+        SessionExtensionComponents(**{field: (("a_name", object(), "extra"),)})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_rejects_an_unnamed_pair(field):
+    """The name comes first, so a pair written the other way round is refused."""
+    with pytest.raises(TypeError, match=r"name in a .* pair must be a str"):
+        SessionExtensionComponents(**{field: ((object(), "a_name"),)})
+
+
+@pytest.mark.parametrize("field", ["udtfs", "table_providers"])
+def test_session_extension_components_normalizes_a_pair_to_a_tuple(field):
+    """A pair given as a list is stored as a tuple, like the fields around it."""
+    value = object()
+
+    components = SessionExtensionComponents(**{field: [["a_name", value]]})
+
+    assert getattr(components, field) == (("a_name", value),)
+
+
 class _TableExtension:
     """Contributes tables and table functions, as ``(name, value)`` pairs."""
 
