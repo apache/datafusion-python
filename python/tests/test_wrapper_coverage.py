@@ -38,10 +38,11 @@ PRIVATE_SUPPORT_METHODS = frozenset(
         # bundles declared.
         "_install_extension_codecs",
         "_commit_extensions",
-        # Physical optimizer rules, split so the capsule import happens while
-        # the call can still fail without leaving the session half-installed.
+        # Physical optimizer rules import their capsules in a separate step,
+        # so the call can still fail without leaving the session
+        # half-installed; the commit itself is a `_commit_extensions`
+        # parameter.
         "_resolve_extension_physical_optimizer_rules",
-        "_install_extension_physical_optimizer_rules",
     }
 )
 

@@ -2267,8 +2267,8 @@ class SessionContext:
             [function._udf for function in resolved["udfs"]],
             [function._udaf for function in resolved["udafs"]],
             [function._udwf for function in resolved["udwfs"]],
+            resolved_rules,
         )
-        new.ctx._install_extension_physical_optimizer_rules(resolved_rules)
         return new
 
     def table_provider(self, name: str) -> Table:

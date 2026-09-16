@@ -1752,6 +1752,7 @@ impl PySessionContext {
     /// hook never sees this call's functions in the registry — the
     /// registrations have no fall-through, and a name is free to shadow one
     /// the session already had.
+    #[allow(clippy::too_many_arguments)]
     pub fn _commit_extensions<'py>(
         slf: &Bound<'py, Self>,
         extensions: Vec<Bound<'py, PyAny>>,
@@ -1760,6 +1761,7 @@ impl PySessionContext {
         udfs: Vec<PyScalarUDF>,
         udafs: Vec<PyAggregateUDF>,
         udwfs: Vec<PyWindowUDF>,
+        rules: PyRef<'_, PyPhysicalOptimizerRules>,
     ) -> PyDataFusionResult<()> {
         let py = slf.py();
         // Nest the planners, outermost last. `planner` stays `None` when no
@@ -1798,6 +1800,27 @@ impl PySessionContext {
         for udwf in udwfs {
             this.ctx.register_udwf(udwf.function);
         }
+        // Rules accumulate rather than replace, so unlike a planner there is
+        // no composition order to get right and no collision to refuse. All
+        // of them go on in **one** `SessionState` rebuild.
+        // [`Self::add_physical_optimizer_rule`] rebuilds per call, which for
+        // a bundle contributing several would clone the whole state that many
+        // times. Nothing here can fail: the capsules were imported by
+        // [`Self::_resolve_extension_physical_optimizer_rules`].
+        if !rules.rules.is_empty() {
+            let state_ref = this.ctx.state_ref();
+            let mut guard = state_ref.write();
+            // The session id has to be carried over for the same reason
+            // `add_physical_optimizer_rule` carries it: the builder mints a
+            // fresh one, and losing it leaves `session_id()` disagreeing with
+            // every `TaskContext` the session has already handed out.
+            let mut builder = SessionStateBuilder::new_from_existing(guard.clone())
+                .with_session_id(guard.session_id().to_string());
+            for rule in rules.rules.iter().cloned() {
+                builder = builder.with_physical_optimizer_rule(rule);
+            }
+            *guard = builder.build();
+        }
         Ok(())
     }
 
@@ -1805,10 +1828,10 @@ impl PySessionContext {
     ///
     /// The fallible half of installing them, run while the call can still fail
     /// harmlessly. Every capsule is imported here so that
-    /// [`Self::_install_extension_physical_optimizer_rules`] has nothing left
-    /// that can raise — a rule that failed to import after the planner was
-    /// bound would leave the session half-installed, and there is no derived
-    /// context to roll back to.
+    /// [`Self::_commit_extensions`] has nothing left that can raise — a rule
+    /// that failed to import after the planner was bound would leave the
+    /// session half-installed, and there is no derived context to roll back
+    /// to.
     ///
     /// **Writes nothing.**
     pub fn _resolve_extension_physical_optimizer_rules(
@@ -1820,38 +1843,6 @@ impl PySessionContext {
             .map(physical_optimizer_rule_from_pycapsule)
             .collect::<Result<Vec<_>, _>>()?;
         Ok(PyPhysicalOptimizerRules { rules })
-    }
-
-    /// Commit the physical optimizer rules for a `with_extensions` call.
-    ///
-    /// Rules accumulate rather than replace, so unlike a planner there is no
-    /// composition order to get right and no collision to refuse.
-    ///
-    /// All of them go on in **one** `SessionState` rebuild.
-    /// [`Self::add_physical_optimizer_rule`] rebuilds per call, which for a
-    /// bundle contributing several would clone the whole state that many times
-    /// and, worse, leave the earlier rules installed if a later one failed.
-    /// Nothing here can fail: the capsules were imported by
-    /// [`Self::_resolve_extension_physical_optimizer_rules`].
-    pub fn _install_extension_physical_optimizer_rules(
-        &self,
-        resolved: PyRef<'_, PyPhysicalOptimizerRules>,
-    ) {
-        if resolved.rules.is_empty() {
-            return;
-        }
-        let state_ref = self.ctx.state_ref();
-        let mut guard = state_ref.write();
-        // The session id has to be carried over for the same reason
-        // `add_physical_optimizer_rule` carries it: the builder mints a fresh
-        // one, and losing it leaves `session_id()` disagreeing with every
-        // `TaskContext` the session has already handed out.
-        let mut builder = SessionStateBuilder::new_from_existing(guard.clone())
-            .with_session_id(guard.session_id().to_string());
-        for rule in resolved.rules.iter().cloned() {
-            builder = builder.with_physical_optimizer_rule(rule);
-        }
-        *guard = builder.build();
     }
 }
 
