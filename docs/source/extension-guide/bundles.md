@@ -21,7 +21,7 @@
 
 # Extension bundles
 
-If your library ships codecs, or a query planner, or both, expose a **bundle**
+If your library ships codecs, functions, or a query planner, expose a **bundle**
 and let callers install it with
 {py:meth}`~datafusion.SessionContext.with_extensions`. This is the recommended
 way to package an extension, and the rest of this page explains what the
@@ -45,6 +45,7 @@ class MyEngineExtension:
         return SessionExtensionComponents(
             logical_extension_codecs=(self._make_logical_codec(ctx),),
             physical_extension_codecs=(self._make_physical_codec(ctx),),
+            udfs=(MyScalarUDF(),),
         )
 
     def __datafusion_session_planner__(self, ctx: SessionContext, fallback):
@@ -54,15 +55,23 @@ class MyEngineExtension:
         return self._make_planner(ctx, fallback=fallback)
 ```
 
-Implement whichever apply: a codec-only library defines the first, a library
-that ships only an optimizing planner defines the second. The caller then
-writes:
+Implement only the hooks you need. Codecs and functions both go in
+`__datafusion_session_components__`, with the fields you do not use left empty,
+so a codec-only library and a function-only library each define that one alone;
+a library shipping nothing but an optimizing planner defines only
+`__datafusion_session_planner__`. The caller then writes:
 
 ```python
 ctx = SessionContext(config).with_extensions(lib_a.Extension(), lib_b.Extension())
 ctx.register_table("t", lib_a.TableProvider())
-ctx.register_udf(udf(lib_b.SomeUDF()))
 ```
+
+Return your functions rather than calling `register_udf` on the `ctx` you were
+handed. Both put the function on the session, but a registration you make
+inside the hook is written the moment it runs — before the other bundles have
+been called, and not undone if one of them raises. What you declare is instead
+resolved and checked while a failure still costs nothing, then written once
+every bundle has succeeded. See {ref}`extension_bundles_transaction`.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete
 Rust implementation of the protocol, including taking the task-context provider
@@ -281,14 +290,69 @@ for direct ones. The wrapper travels with the codec; the bundle does not.
 The query planner is exempt — it carries no wire id, so it may be an object or
 a capsule.
 
+(extension_bundles_collisions)=
+
+## Two bundles claiming one name
+
+Two extensions in one call may not declare a function of the same kind under
+the same name. Doing so raises:
+
+```text
+ValueError: Two extensions declare a scalar function named 'normalize':
+argument 0 (...) and argument 1 (...). ...
+```
+
+Codecs get away with sharing a chain because a payload carries the id of the
+codec that wrote it, so decode routes to the right one. A function registry has
+no such fall-through — one name holds one function — so the second registration
+would quietly replace the first. The call refuses instead.
+
+Which argument each claim came from is part of the message because it is what
+picks the remedy. Two arguments colliding is the caller's to resolve, by
+installing the two on separate sessions or by dropping a repeat; renaming is
+not something a caller can do. One argument declaring a name twice is the
+bundle author's own bug, and gets a different message saying so. Collisions are
+keyed on position rather than on object identity, so passing one extension
+twice reads as the caller's duplicate that it is, rather than as a bundle
+colliding with itself.
+
+Two cases this does *not* catch:
+
+- **Different kinds never collide.** Names are compared within a kind, so a
+  scalar function and an aggregate may both be called `normalize`.
+- **Shadowing a built-in is allowed.** The registry already holds every
+  DataFusion function, and replacing one by name is a supported thing to do —
+  `enable_spark_functions` works that way.
+
+Your caller cannot rename your function, so stay out of the way: prefix the
+names with something tied to your library.
+
+(extension_bundles_transaction)=
+
 ## Failure and rollback
 
 Nothing is written to the session until every factory has returned and every
-capsule has been validated, so a factory that raises leaves the session exactly
-as it was. A factory that mutates the context it is handed — registering a
-table, say — is **not** rolled back, which is why bundle objects must be
-configuration-only: create fresh components on each call, never cache bound
-components, and do not retain the context passed in.
+component has been validated, so a factory that raises leaves the session
+exactly as it was. A factory that mutates the context it is handed —
+registering a table, say — is **not** rolled back, which is why bundle objects
+must be configuration-only: create fresh components on each call, never cache
+bound components, and do not retain the context passed in.
+
+Declaring a component is what buys you that guarantee, and it is the whole
+reason to prefer `udfs=(...)` over a `register_udf` call inside your hook.
+Anything you declare is resolved and checked while a failure still costs
+nothing, and is written only after every bundle in the call has succeeded.
+Anything you register yourself is written immediately, before the other bundles
+have even run. The ordering that makes this hold is recorded at
+{ref}`ffi_internals_commit_order`.
+
+The one thing that ordering costs you: functions are registered *after* the
+planner hooks run, so `ctx.udfs()` inside your
+`__datafusion_session_planner__` will not list a function declared in the same
+call — not yours, and not another bundle's. Look one up at plan time instead,
+where the registry is complete; a planner is called per query, long after the
+install has finished. If you need a function at hook time, you already have the
+object, because you are the one declaring it.
 
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side

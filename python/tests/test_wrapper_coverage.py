@@ -33,12 +33,11 @@ except ImportError:
 # gap in coverage.
 PRIVATE_SUPPORT_METHODS = frozenset(
     {
-        # The three steps of SessionContext.with_extensions: install the
-        # codecs, re-export each planner hook's return value as a capsule,
-        # commit the planner.
+        # The two steps of SessionContext.with_extensions: install the
+        # codecs, then run the planner hooks and commit everything the
+        # bundles declared.
         "_install_extension_codecs",
-        "_export_query_planner",
-        "_install_extension_planner",
+        "_commit_extensions",
     }
 )
 
