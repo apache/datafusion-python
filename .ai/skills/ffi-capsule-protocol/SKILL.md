@@ -76,6 +76,25 @@ receiver had — the same session, and the same task-context provider, but not
 this call's codecs, not even your own. Read the host's codec chains in the
 planner hook, never in the extension hook.
 
+**That is why a bundle declares unresolved components, not wrapped ones.** The
+components it returns split by what their getter asks for:
+
+- Getters taking no argument — the three function kinds,
+  `__datafusion_physical_optimizer_rule__` — have nothing session-scoped to
+  bind, so a bundle may hand over either the raw exportable or an
+  already-wrapped object.
+- Getters taking the session or a codec — `__datafusion_table_function__`,
+  `__datafusion_table_provider__`, `__datafusion_catalog_provider__` — must be
+  handed over **unwrapped**, with a name. Wrapping one inside the components
+  hook would call its getter with the `ctx` that hook received, capturing a
+  chain missing every library in the call. The host wraps these itself, against
+  the handle carrying the final chains, which is the only place that chain
+  exists.
+
+`RecordingTableFunction` in `examples/datafusion-ffi-example/src/extension.rs`
+records the ids it was resolved against, so the difference is asserted rather
+than described.
+
 A *codec* must always be handed over as an object implementing its getter, never
 as the bare capsule the getter returns; `with_extensions` refuses a capsule.
 A codec's wire id — the string a payload names on decode, which has to mean the
@@ -186,6 +205,19 @@ because "bind the components to the context you are about to return" reads like
 an instruction to derive one first. It is not: the factories are handed the
 receiver, and the returned handle shares its allocation. There is nothing to
 keep alive separately and nothing to garbage-collect out from under a provider.
+
+It is also the one place where sharing an allocation has a cost, and the cost
+shapes how a component is added to it. Because the returned handle *is* the
+receiver's session, a failure part-way through has nothing to roll back to. So
+`with_extensions` does every fallible thing first — importing capsules,
+resolving names, running the planner hooks — and only then writes. **Adding a
+new kind of component means adding a resolve step, never a fallible commit
+step:** a `_resolve_extension_*` that returns an opaque carrier, and a new
+parameter on `_commit_extensions` whose commit cannot fail. The one exception
+is table registration, whose insert goes through a `SchemaProvider` that a
+foreign library may implement; it is committed first so nothing else is
+written behind it. Do not add a second exception without the same
+justification.
 
 `SessionContext.enable_url_table` is the one method that mints a second
 allocation for a session. Its result must not outlive the receiver, and it also

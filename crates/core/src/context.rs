@@ -844,35 +844,9 @@ impl PySessionContext {
     pub fn register_catalog_provider(
         &self,
         name: &str,
-        mut provider: Bound<'_, PyAny>,
+        provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        if provider.hasattr("__datafusion_catalog_provider__")? {
-            let py = provider.py();
-            let ffi = self.ffi_logical_codec();
-            let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
-            provider = call_capsule_getter(
-                provider,
-                "__datafusion_catalog_provider__",
-                CapsuleGetterArg::LogicalCodec(&codec_capsule),
-            )?;
-        }
-
-        let provider = if let Ok(capsule) = provider.cast::<PyCapsule>() {
-            let data: NonNull<FFI_CatalogProvider> = capsule
-                .pointer_checked(Some(c"datafusion_catalog_provider"))?
-                .cast();
-            let provider = unsafe { data.as_ref() };
-            let provider: Arc<dyn CatalogProvider> = provider.into();
-            provider
-        } else {
-            match provider.extract::<PyCatalog>() {
-                Ok(py_catalog) => py_catalog.catalog,
-                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
-                    provider.into(),
-                    self.ffi_logical_codec(),
-                )) as Arc<dyn CatalogProvider>,
-            }
-        };
+        let provider = self.resolve_catalog_provider(provider)?;
 
         let _ = self.ctx.register_catalog(name, provider);
 
@@ -1775,6 +1749,7 @@ impl PySessionContext {
         udafs: Vec<PyAggregateUDF>,
         udwfs: Vec<PyWindowUDF>,
         udtfs: Vec<PyTableFunction>,
+        catalogs: PyRef<'_, PyResolvedCatalogs>,
         rules: PyRef<'_, PyPhysicalOptimizerRules>,
     ) -> PyDataFusionResult<()> {
         let py = slf.py();
@@ -1823,6 +1798,12 @@ impl PySessionContext {
         }
         for udtf in udtfs {
             this.register_udtf(udtf);
+        }
+        // Nothing here can fail: the providers were imported by
+        // [`Self::_resolve_extension_catalogs`], and `register_catalog`
+        // returns whichever provider it displaced rather than refusing.
+        for (name, provider) in &catalogs.catalogs {
+            let _ = this.ctx.register_catalog(name, Arc::clone(provider));
         }
         // Rules accumulate rather than replace, so unlike a planner there is
         // no composition order to get right and no collision to refuse. All
@@ -1923,6 +1904,39 @@ impl PySessionContext {
         Ok(PyResolvedTables { tables: resolved })
     }
 
+    /// Resolve the catalogs a `with_extensions` call declared.
+    ///
+    /// The fallible half. Each provider is imported against `self` — the handle
+    /// carrying the completed codec chains, since
+    /// `__datafusion_catalog_provider__` is handed the logical codec it will
+    /// serialize through.
+    ///
+    /// No name is refused here. `register_catalog` replaces rather than
+    /// rejects, and `datafusion` — the default catalog — always exists, so a
+    /// bundle replacing a catalog is ordinary rather than a mistake. Two
+    /// bundles claiming one name in the same call is refused on the Python
+    /// side, where both can be named.
+    ///
+    /// **Writes nothing.**
+    pub fn _resolve_extension_catalogs<'py>(
+        &self,
+        catalogs: Vec<(String, Bound<'py, PyAny>)>,
+    ) -> PyDataFusionResult<PyResolvedCatalogs> {
+        let catalogs = catalogs
+            .into_iter()
+            .map(|(name, provider)| {
+                // The name identifies the culprit declaration, as for tables:
+                // a getter that returns junk fails in the importer, which
+                // knows neither the catalog nor the bundle.
+                let provider = self.resolve_catalog_provider(provider).map_err(|err| {
+                    exec_datafusion_err!("Resolving the declared catalog {name}: {err}")
+                })?;
+                Ok((name, provider))
+            })
+            .collect::<PyDataFusionResult<Vec<_>>>()?;
+        Ok(PyResolvedCatalogs { catalogs })
+    }
+
     /// Import the physical optimizer rules a `with_extensions` call declared.
     ///
     /// The fallible half of installing them, run while the call can still fail
@@ -1964,6 +1978,15 @@ struct ResolvedTable {
     provider: Arc<dyn TableProvider>,
 }
 
+/// Catalog providers imported for a `with_extensions` call.
+///
+/// Opaque to Python, like [`PyResolvedTables`] and [`PyPhysicalOptimizerRules`],
+/// and `frozen` for the same reason as both: the commit only reads.
+#[pyclass(frozen, name = "ResolvedCatalogs", module = "datafusion._internal")]
+pub struct PyResolvedCatalogs {
+    catalogs: Vec<(String, Arc<dyn CatalogProvider>)>,
+}
+
 /// Physical optimizer rules imported for a `with_extensions` call.
 ///
 /// Opaque to Python, and deliberately not added to the module: it exists only
@@ -1984,6 +2007,50 @@ pub struct PyPhysicalOptimizerRules {
 }
 
 impl PySessionContext {
+    /// Turn whatever a caller offered as a catalog provider into one.
+    ///
+    /// The fallible half of registering a catalog, shared by
+    /// [`Self::register_catalog_provider`] and
+    /// [`Self::_resolve_extension_catalogs`] so both accept exactly the same
+    /// shapes: an object exposing `__datafusion_catalog_provider__`, a bare
+    /// capsule, a [`PyCatalog`], or a Python object implementing the provider
+    /// interface.
+    ///
+    /// The getter is handed **this context's** logical codec, so which handle
+    /// this is called on decides what the provider will serialize through.
+    fn resolve_catalog_provider(
+        &self,
+        mut provider: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<Arc<dyn CatalogProvider>> {
+        if provider.hasattr("__datafusion_catalog_provider__")? {
+            let py = provider.py();
+            let ffi = self.ffi_logical_codec();
+            let codec_capsule = create_logical_extension_capsule(py, ffi.as_ref())?;
+            provider = call_capsule_getter(
+                provider,
+                "__datafusion_catalog_provider__",
+                CapsuleGetterArg::LogicalCodec(&codec_capsule),
+            )?;
+        }
+
+        Ok(if let Ok(capsule) = provider.cast::<PyCapsule>() {
+            let data: NonNull<FFI_CatalogProvider> = capsule
+                .pointer_checked(Some(c"datafusion_catalog_provider"))?
+                .cast();
+            let provider = unsafe { data.as_ref() };
+            let provider: Arc<dyn CatalogProvider> = provider.into();
+            provider
+        } else {
+            match provider.extract::<PyCatalog>() {
+                Ok(py_catalog) => py_catalog.catalog,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(
+                    provider.into(),
+                    self.ffi_logical_codec(),
+                )) as Arc<dyn CatalogProvider>,
+            }
+        })
+    }
+
     /// Write the session's query planner, in place.
     ///
     /// Pass `Some(planner)` to install one, or `None` to rebuild whichever
