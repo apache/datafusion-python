@@ -47,6 +47,48 @@ fn __datafusion_physical_optimizer_rule__<'py>(
 }
 ```
 
+If your library ships a rule alongside anything else, declare it on your bundle
+as `physical_optimizer_rules` rather than asking the caller for a separate
+`add_physical_optimizer_rule` call:
+
+```python
+return SessionExtensionComponents(physical_optimizer_rules=(MyRule(),))
+```
+
+Rules are the one kind of component with **no collision rule at all**: they
+accumulate, so two libraries may each contribute one and neither has to know
+about the other. Every rule in a call installs in a single `SessionState`
+rebuild, where `add_physical_optimizer_rule` rebuilds once per call — which for
+a bundle contributing several would clone the whole state that many times, and
+would leave the earlier ones installed if a later one failed. See
+{ref}`extension_bundles_transaction`.
+
+(extension_rule_rebuild)=
+
+### Installing a rule rebuilds the session state
+
+There is no way to append to a live `SessionState`: DataFusion exposes
+`physical_optimizers` on one read-only, and only `SessionStateBuilder` can add
+to the list. Installing a rule therefore rebuilds the state in place, and the
+rebuild carries over the tables, functions, catalogs, and session id the old
+one held.
+
+**Prepared statements are the exception.** `SessionStateBuilder::build` starts
+the new state with an empty prepared-plan map, so a session that has run
+`PREPARE` reports the statement missing once a rule is installed:
+
+```python
+ctx.sql("PREPARE p AS SELECT a FROM t").collect()
+ctx.with_extensions(MyRuleBundle())
+ctx.sql("EXECUTE p")  # ValueError: Prepared statement 'p' does not exist
+```
+
+This is not specific to bundles — `add_physical_optimizer_rule` drops them the
+same way, and both hit every handle sharing the session rather than only the
+one the call returned. Install your rules before preparing anything. Batching a
+bundle's rules into one rebuild is what keeps the cost to once per call instead
+of once per rule.
+
 ## Typed configuration
 
 **`__datafusion_extension_options__`** contributes typed configuration entries

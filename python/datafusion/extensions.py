@@ -63,11 +63,49 @@ if TYPE_CHECKING:
     )
 
 __all__ = [
+    "PhysicalOptimizerRuleExportable",
     "QueryPlannerExportable",
     "SessionComponentsExportable",
     "SessionExtensionComponents",
     "SessionPlannerExportable",
 ]
+
+
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has a __datafusion_physical_optimizer_rule__ capsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension. It takes **no
+    argument**: a rule needs neither a codec nor a task-context provider, so
+    there is nothing session-scoped to hand it.
+
+    Rules accumulate rather than replace. Install one with
+    :py:meth:`~datafusion.context.SessionContext.add_physical_optimizer_rule`,
+    or declare it on a bundle as
+    :py:attr:`SessionExtensionComponents.physical_optimizer_rules` — see
+    :ref:`extension_other_hooks`.
+
+    Examples:
+        The getter is the whole protocol, and a capsule is what it must return
+        — anything else is refused where it is installed rather than at plan
+        time:
+
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.add_physical_optimizer_rule(object())
+        Traceback (most recent call last):
+            ...
+        RuntimeError: "Invalid datafusion_physical_optimizer_rule...
+
+        Real usage. Skipped here (needs a built extension library); run for
+        real by ``test_ffi_physical_optimizer_rule_runs_during_planning`` in
+        ``datafusion-ffi-example``.
+
+        >>> from datafusion_ffi_example import MyPhysicalOptimizerRule  # doctest: +SKIP
+        >>> ctx.add_physical_optimizer_rule(MyPhysicalOptimizerRule())  # doctest: +SKIP
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class QueryPlannerExportable(Protocol):
@@ -253,6 +291,16 @@ class SessionExtensionComponents:
 
     As :py:attr:`udfs`, for ``__datafusion_window_udf__`` and
     :py:func:`~datafusion.udwf`.
+    """
+
+    physical_optimizer_rules: tuple[PhysicalOptimizerRuleExportable, ...] = _components(
+        "optimizer rule"
+    )
+    """Physical optimizer rules to install on the session.
+
+    Objects exposing ``__datafusion_physical_optimizer_rule__``. Unlike
+    functions these never collide — they accumulate. All the rules in one call
+    install together, in declaration order. See :ref:`extension_other_hooks`.
     """
 
     def __post_init__(self) -> None:

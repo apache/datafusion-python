@@ -44,6 +44,7 @@ use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::physical_optimizer::PhysicalOptimizerRule;
 use datafusion::physical_plan::ExecutionPlanProperties;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
@@ -1751,6 +1752,7 @@ impl PySessionContext {
     /// hook never sees this call's functions in the registry — the
     /// registrations have no fall-through, and a name is free to shadow one
     /// the session already had.
+    #[allow(clippy::too_many_arguments)]
     pub fn _commit_extensions<'py>(
         slf: &Bound<'py, Self>,
         extensions: Vec<Bound<'py, PyAny>>,
@@ -1759,6 +1761,7 @@ impl PySessionContext {
         udfs: Vec<PyScalarUDF>,
         udafs: Vec<PyAggregateUDF>,
         udwfs: Vec<PyWindowUDF>,
+        rules: PyRef<'_, PyPhysicalOptimizerRules>,
     ) -> PyDataFusionResult<()> {
         let py = slf.py();
         // Nest the planners, outermost last. `planner` stays `None` when no
@@ -1797,8 +1800,69 @@ impl PySessionContext {
         for udwf in udwfs {
             this.ctx.register_udwf(udwf.function);
         }
+        // Rules accumulate rather than replace, so unlike a planner there is
+        // no composition order to get right and no collision to refuse. All
+        // of them go on in **one** `SessionState` rebuild.
+        // [`Self::add_physical_optimizer_rule`] rebuilds per call, which for
+        // a bundle contributing several would clone the whole state that many
+        // times. Nothing here can fail: the capsules were imported by
+        // [`Self::_resolve_extension_physical_optimizer_rules`].
+        if !rules.rules.is_empty() {
+            let state_ref = this.ctx.state_ref();
+            let mut guard = state_ref.write();
+            // The session id has to be carried over for the same reason
+            // `add_physical_optimizer_rule` carries it: the builder mints a
+            // fresh one, and losing it leaves `session_id()` disagreeing with
+            // every `TaskContext` the session has already handed out.
+            let mut builder = SessionStateBuilder::new_from_existing(guard.clone())
+                .with_session_id(guard.session_id().to_string());
+            for rule in rules.rules.iter().cloned() {
+                builder = builder.with_physical_optimizer_rule(rule);
+            }
+            *guard = builder.build();
+        }
         Ok(())
     }
+
+    /// Import the physical optimizer rules a `with_extensions` call declared.
+    ///
+    /// The fallible half of installing them, run while the call can still fail
+    /// harmlessly. Every capsule is imported here so that
+    /// [`Self::_commit_extensions`] has nothing left that can raise — a rule
+    /// that failed to import after the planner was bound would leave the
+    /// session half-installed, and there is no derived context to roll back
+    /// to.
+    ///
+    /// **Writes nothing.**
+    pub fn _resolve_extension_physical_optimizer_rules(
+        &self,
+        rules: Vec<Bound<'_, PyAny>>,
+    ) -> PyDataFusionResult<PyPhysicalOptimizerRules> {
+        let rules = rules
+            .iter()
+            .map(physical_optimizer_rule_from_pycapsule)
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(PyPhysicalOptimizerRules { rules })
+    }
+}
+
+/// Physical optimizer rules imported for a `with_extensions` call.
+///
+/// Opaque to Python, and deliberately not added to the module: it exists only
+/// to carry imported rules from the resolve step to the commit step, so the
+/// import can fail before anything is written. `with_extensions` is its only
+/// producer and its only consumer.
+///
+/// `frozen` because nothing mutates it between those two steps: the commit
+/// only reads the rules back out, so there is no reason to pay for the runtime
+/// borrow flag a mutable pyclass carries.
+#[pyclass(
+    frozen,
+    name = "PhysicalOptimizerRules",
+    module = "datafusion._internal"
+)]
+pub struct PyPhysicalOptimizerRules {
+    rules: Vec<Arc<dyn PhysicalOptimizerRule + Send + Sync>>,
 }
 
 impl PySessionContext {

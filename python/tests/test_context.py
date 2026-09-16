@@ -1670,6 +1670,78 @@ def test_session_extension_components_rejects_a_single_function(field):
         SessionExtensionComponents(**{field: _doubler()})
 
 
+def test_session_extension_components_rejects_a_single_optimizer_rule():
+    """The same for rules, naming what that field holds."""
+    with pytest.raises(
+        TypeError, match=r"must be an iterable of optimizer rule objects"
+    ):
+        SessionExtensionComponents(physical_optimizer_rules=object())
+
+
+def test_with_extensions_rejects_a_rule_that_is_not_a_rule(ctx):
+    """A declaration that is not a rule at all names the bundle that made it.
+
+    Which of several bundles is at fault is the whole content of the message,
+    and the only place it is still known is here. A failure also has to leave
+    the session alone even though the extension ahead of it declared a
+    function that was perfectly good.
+    """
+
+    class RuleExtension:
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(physical_optimizer_rules=(object(),))
+
+    with pytest.raises(TypeError, match=r"got .* from .*RuleExtension"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            RuleExtension(),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_a_rule_whose_getter_returns_a_non_capsule(ctx):
+    """A rule shaped right but returning junk is refused by the importer.
+
+    The bundle is past the point where it can be named — it declared the right
+    shape — so this is the one rule failure that surfaces as a ``RuntimeError``
+    from the import rather than a ``TypeError`` from the resolve.
+    """
+
+    class NotACapsule:
+        def __datafusion_physical_optimizer_rule__(self):
+            return object()
+
+    class RuleExtension:
+        def __datafusion_session_components__(self, ctx):
+            return SessionExtensionComponents(physical_optimizer_rules=(NotACapsule(),))
+
+    with pytest.raises(RuntimeError, match="datafusion_physical_optimizer_rule"):
+        ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)), RuleExtension())
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_declaring_no_rules_leaves_the_session_id(ctx):
+    """A call declaring no rules leaves the session id alone.
+
+    This is the control for the no-op path: with nothing to install the state
+    rebuild is skipped, so the id is untouched rather than carried over. The
+    carry-over itself is not reachable from here — the rebuild needs a real
+    rule capsule, which only a compiled extension can hand over. That half is
+    pinned by ``test_rules_install_without_changing_the_session_id`` in
+    ``datafusion-ffi-example``, where a fresh id would leave ``session_id()``
+    disagreeing with every ``TaskContext`` the session has handed out.
+    """
+    before = ctx.session_id()
+    result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))
+
+    assert result.session_id() == before
+    assert ctx.session_id() == before
+
+
 def test_every_component_field_has_an_installer():
     """A field added to the components dataclass must be wired into the install.
 
@@ -1680,9 +1752,9 @@ def test_every_component_field_has_an_installer():
 
     Reaching into private names on purpose: the two sides answer different
     questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS`` and the codec pair say which of them ``with_extensions``
-    knows how to install. Nothing observable from outside can tell you they
-    have drifted, because the symptom is silence.
+    ``_FUNCTION_KINDS``, the codec pair, and the rules say which of them
+    ``with_extensions`` knows how to install. Nothing observable from outside
+    can tell you they have drifted, because the symptom is silence.
     """
     from datafusion.context import _FUNCTION_KINDS
 
@@ -1695,6 +1767,7 @@ def test_every_component_field_has_an_installer():
     assert by_noun == {
         "codec": {"logical_extension_codecs", "physical_extension_codecs"},
         "function": {kind.field for kind in _FUNCTION_KINDS},
+        "optimizer rule": {"physical_optimizer_rules"},
     }
 
 

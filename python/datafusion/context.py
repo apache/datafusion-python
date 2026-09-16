@@ -70,6 +70,7 @@ from datafusion.catalog import (
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.extensions import (
+    PhysicalOptimizerRuleExportable,
     QueryPlannerExportable,
     SessionComponentsExportable,
     SessionExtensionComponents,
@@ -149,16 +150,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class _FunctionKind(NamedTuple):
@@ -241,9 +232,9 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions as
-        ``(position, extension, function)`` triples, keyed by the
-        :py:data:`_FUNCTION_KINDS` field they arrived in.
+        The logical codecs, the physical codecs, and the declared functions and
+        optimizer rules as ``(position, extension, declaration)`` triples, keyed
+        by the ``SessionExtensionComponents`` field they arrived in.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -265,6 +256,9 @@ def _collect_contributions(
     declared: dict[str, list[tuple[int, object, Any]]] = {
         kind.field: [] for kind in _FUNCTION_KINDS
     }
+    # Rules are not a function kind: they accumulate rather than replace, so
+    # they carry no collision rule and install through their own primitive.
+    declared["physical_optimizer_rules"] = []
     for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
             continue
@@ -356,6 +350,40 @@ def _resolve_declared_functions(
         claimed[name] = (position, extension)
         resolved.append(wrapped)
     return resolved
+
+
+def _resolve_declared_rules(
+    declared: list[tuple[int, object, Any]], resolve: Any
+) -> Any:
+    """Import the capsule of every physical optimizer rule an extension declared.
+
+    There is no name to check — rules accumulate — so unlike
+    :py:func:`_resolve_declared_functions` this only refuses a declaration that
+    cannot be a rule. The getter is looked for here rather than left to the
+    importer so that the error names the bundle that declared it; a caller who
+    passed four bundles cannot otherwise tell which one is at fault.
+
+    Args:
+        declared: ``(position, extension, rule)`` triples in declaration order.
+        resolve: The primitive that imports a list of rules at once, returning
+            an opaque object for the commit step.
+
+    Returns:
+        The imported rules, opaque, in declaration order.
+
+    Raises:
+        TypeError: If a declaration does not expose
+            ``__datafusion_physical_optimizer_rule__``.
+    """
+    for _, extension, rule in declared:
+        if not hasattr(rule, "__datafusion_physical_optimizer_rule__"):
+            msg = (
+                "A declared optimizer rule must expose "
+                f"__datafusion_physical_optimizer_rule__, got {rule!r} "
+                f"from {extension!r}"
+            )
+            raise TypeError(msg)
+    return resolve([rule for _, _, rule in declared])
 
 
 class SessionConfig:
@@ -2023,7 +2051,8 @@ class SessionContext:
         PyCapsule, typically produced by a separate compiled extension. The
         underlying :class:`SessionState` is rebuilt from its current state
         with the new rule appended, so previously registered tables, UDFs,
-        and catalogs are preserved.
+        and catalogs are preserved. Prepared statements are not — see
+        :ref:`extension_rule_rebuild`.
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
@@ -2113,11 +2142,15 @@ class SessionContext:
 
         Nothing is written to the session until every hook has returned and
         every component has been validated, so a hook that raises leaves the
-        session as it was. Declared functions register after the planner is
-        bound, and are visible on every handle sharing this session. A hook
-        that *mutates* the context it is handed — registering a table, say — is
-        not rolled back, which is why bundle objects must be
+        session as it was. Declared functions and optimizer rules install after
+        the planner is bound, and are visible on every handle sharing this
+        session. A hook that *mutates* the context it is handed — registering a
+        table, say — is not rolled back, which is why bundle objects must be
         configuration-only.
+
+        A call that installs optimizer rules rebuilds the session state, which
+        drops the session's prepared statements — see
+        :ref:`extension_rule_rebuild`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
@@ -2139,13 +2172,17 @@ class SessionContext:
             TypeError: If an argument implements neither hook, if a hook
                 returns the wrong type, if a codec is contributed as a bare
                 ``PyCapsule`` rather than an object exposing the getter, or if
-                a declared function is neither a wrapper nor exposes its
-                capsule getter.
+                a declared function or optimizer rule does not expose its
+                capsule getter and is not already a wrapper.
             ValueError: If two codecs claim the same id, if two extensions
                 declare a function of one kind under the same name, or if a
                 getter returns a capsule of the wrong kind. See
                 :py:meth:`with_logical_extension_codec` for how ids are
                 assigned.
+            RuntimeError: If a getter is present but returns something that is
+                not a ``PyCapsule`` at all. The message comes from the importer
+                and does not name the bundle, because by then the declaration
+                has already been accepted as the right shape.
 
         Examples:
             The returned handle is a different object sharing one session, and
@@ -2206,6 +2243,12 @@ class SessionContext:
             )
             for kind in _FUNCTION_KINDS
         }
+        # Rules accumulate, so there is no name to check and nothing to refuse
+        # -- only the capsules to import while failing is still free.
+        resolved_rules = _resolve_declared_rules(
+            declared["physical_optimizer_rules"],
+            new.ctx._resolve_extension_physical_optimizer_rules,
+        )
 
         # Phase two: run the planner hooks and commit, in one call. Each hook
         # runs against `new`, which carries the final chains, so a planner
@@ -2224,6 +2267,7 @@ class SessionContext:
             [function._udf for function in resolved["udfs"]],
             [function._udaf for function in resolved["udafs"]],
             [function._udwf for function in resolved["udwfs"]],
+            resolved_rules,
         )
         return new
 
