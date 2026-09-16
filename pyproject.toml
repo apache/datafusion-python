@@ -236,4 +236,5 @@ docs = [
   "sphinx-autoapi>=3.4.0",
   "sphinx-reredirects>=0.1.5",
   "sphinx>=7.1.2",
+  "sphinx_copybutton>=0.5.2",
 ]
