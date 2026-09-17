@@ -67,11 +67,7 @@ ctx.register_table("t", lib_a.TableProvider())
 ```
 
 Return your functions rather than calling `register_udf` on the `ctx` you were
-handed. Both put the function on the session, but a registration you make
-inside the hook is written the moment it runs — before the other bundles have
-been called, and not undone if one of them raises. What you declare is instead
-resolved and checked while a failure still costs nothing, then written once
-every bundle has succeeded. See {ref}`extension_bundles_transaction`.
+handed — see {ref}`extension_bundles_transaction`.
 
 `MyPlannerExtension` in [`datafusion-ffi-query-planner-example`] is a complete
 Rust implementation of the protocol, including taking the task-context provider

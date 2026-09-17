@@ -142,10 +142,8 @@ class SessionExtensionComponents:
     can wrap the one before it — see :py:class:`SessionPlannerExportable`.
 
     Codecs are held by the returned handle; everything else is registered on
-    the session the handle shares. Declaring a component is not the same as
-    registering it yourself during the hook: declared components are resolved
-    before anything is written, so a bundle that fails leaves nothing behind.
-    See :ref:`extension_bundles_transaction`.
+    the session the handle shares. Declare a component here rather than
+    registering it during the hook — see :ref:`extension_bundles_transaction`.
 
     Examples:
         A bundle that contributes no codecs is valid — a planner-only library
@@ -305,9 +303,7 @@ class SessionComponentsExportable(Protocol):
     :py:meth:`~datafusion.context.SessionContext.with_extensions`, and must not
     retain that context or cache the components they bound to it, since the
     next call may install onto a different session. Declare what you contribute
-    rather than registering it on the context you are handed: a registration
-    made during the hook is not rolled back if a later extension fails, and it
-    binds to the codec chains from before the call. See
+    rather than registering it on the context you are handed — see
     :ref:`extension_bundles_transaction`.
 
     A bundle that also contributes a query planner implements

@@ -2078,9 +2078,8 @@ class SessionContext:
         every component has been validated, so a hook that raises leaves the
         session as it was. Declared functions register after the planner is
         bound, and are visible on every handle sharing this session. A hook
-        that *mutates* the context it is handed — registering a table, say — is
-        not rolled back, which is why bundle objects must be
-        configuration-only.
+        that *mutates* the context it is handed is not rolled back — see
+        :ref:`extension_bundles_transaction`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 

@@ -64,9 +64,7 @@ publish. Each links to the page that explains it.
       → {ref}`extension_bundles`
 - [ ] **Your bundle is configuration-only.** Fresh components on every call,
       no cached bound components, no retaining the context passed in, no
-      registering anything on it — declare what you contribute instead, so the
-      host can validate it before anything is written and install it after
-      every codec is in place.
+      registering anything on it — declare what you contribute instead.
       → {ref}`extension_bundles_transaction`
 - [ ] **Your codecs are objects exposing the getter, not bare capsules.**
       `with_extensions` refuses a capsule, because there would be nothing to

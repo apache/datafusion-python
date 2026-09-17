@@ -130,7 +130,9 @@ A call therefore splits into a part that may fail and a part that may not:
 3. **Resolve.** Every declared function is wrapped and every name is checked,
    and every `__datafusion_session_planner__` runs against the completed
    chains.
-4. **Commit.** The planner is bound and the functions are registered.
+4. **Commit.** The planner is bound, then the declared functions are
+   registered with the same `register_*` methods a caller would use, because
+   they cannot fail either.
 
 Only step 4 touches the session, and every step that can fail happens before
 it. This is a rule for the next field added to
