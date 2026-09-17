@@ -1729,12 +1729,13 @@ impl PySessionContext {
     /// no planner. All of that writes nothing, so a hook that raises leaves
     /// the session exactly as it was.
     ///
-    /// Everything after the hooks is the commit, and none of it can fail: a
-    /// registration whose commit can fail belongs in the resolve step, split
-    /// into an import that returns a resolved object and an insert that
-    /// cannot raise. There is one session here, shared with the receiver, so
-    /// a failure part-way through would have nothing to roll back to. The
-    /// reasoning is in docs/source/contributor-guide/ffi-internals.md, under
+    /// Binding the planner is the commit, and it cannot fail. Anything else a
+    /// call installs is committed by the Python caller once this returns,
+    /// through the ordinary `register_*` methods, which cannot fail either.
+    /// Whatever can fail belongs before this call: there is one session here,
+    /// shared with the receiver, so a failure part-way through the commit
+    /// would have nothing to roll back to. The reasoning is in
+    /// docs/source/contributor-guide/ffi-internals.md, under
     /// "Why `with_extensions` commits last".
     ///
     /// The planner is bound through this context's own `state_ref()`, so
@@ -1746,19 +1747,11 @@ impl PySessionContext {
     /// [`Self::with_python_udf_inlining`] returns early for a no-op toggle:
     /// there is nothing to rebind against, and the rebuild would drag a
     /// planner sitting on another handle's codecs onto this one's.
-    ///
-    /// The functions are registered *after* the planner hooks have run, so a
-    /// hook never sees this call's functions in the registry — the
-    /// registrations have no fall-through, and a name is free to shadow one
-    /// the session already had.
     pub fn _commit_extensions<'py>(
         slf: &Bound<'py, Self>,
         extensions: Vec<Bound<'py, PyAny>>,
         session: Bound<'py, PyAny>,
         rebind_planner: bool,
-        udfs: Vec<PyScalarUDF>,
-        udafs: Vec<PyAggregateUDF>,
-        udwfs: Vec<PyWindowUDF>,
     ) -> PyDataFusionResult<()> {
         let py = slf.py();
         // Nest the planners, outermost last. `planner` stays `None` when no
@@ -1786,16 +1779,6 @@ impl PySessionContext {
 
         if planner.is_some() || rebind_planner {
             slf.borrow().set_session_query_planner(planner);
-        }
-        let this = slf.borrow();
-        for udf in udfs {
-            this.ctx.register_udf(udf.function);
-        }
-        for udaf in udafs {
-            this.ctx.register_udaf(udaf.function);
-        }
-        for udwf in udwfs {
-            this.ctx.register_udwf(udwf.function);
         }
         Ok(())
     }

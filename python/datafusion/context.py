@@ -2182,21 +2182,28 @@ class SessionContext:
             "window function",
         )
 
-        # Phase two: run the planner hooks and commit, in one call. Each hook
+        # Phase two: run the planner hooks, then bind the planner. Each hook
         # runs against `new`, which carries the final chains, so a planner
-        # captured there never sees a partial codec set. The hook loop, the
-        # ordering of the commit, and the guard that skips the planner rebind
-        # for a call that installs nothing all live on the Rust side -- see
-        # `_commit_extensions` and docs/source/contributor-guide/
-        # ffi-internals.md, under "Why `with_extensions` commits last".
+        # captured there never sees a partial codec set. The hook loop and the
+        # guard that skips the rebind for a call that installs nothing live on
+        # the Rust side -- see `_commit_extensions`.
         new.ctx._commit_extensions(
             list(extensions),
             new,
             bool(contributed.logical_codecs or contributed.physical_codecs),
-            [function._udf for function in udfs],
-            [function._udaf for function in udafs],
-            [function._udwf for function in udwfs],
         )
+
+        # The rest of the commit. Registering cannot fail, which is what lets
+        # it run after the point of no return -- see
+        # docs/source/contributor-guide/ffi-internals.md, under "Why
+        # `with_extensions` commits last". It runs after the planner hooks, so
+        # a hook never sees this call's functions in the registry.
+        for function in udfs:
+            new.register_udf(function)
+        for function in udafs:
+            new.register_udaf(function)
+        for function in udwfs:
+            new.register_udwf(function)
         return new
 
     def table_provider(self, name: str) -> Table:

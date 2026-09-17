@@ -33,9 +33,10 @@ except ImportError:
 # gap in coverage.
 PRIVATE_SUPPORT_METHODS = frozenset(
     {
-        # The two steps of SessionContext.with_extensions: install the
-        # codecs, then run the planner hooks and commit everything the
-        # bundles declared.
+        # The two Rust steps of SessionContext.with_extensions: install the
+        # codecs, then run the planner hooks and bind the planner. Declared
+        # functions are registered from Python with the public `register_*`
+        # methods once this returns.
         "_install_extension_codecs",
         "_commit_extensions",
     }
