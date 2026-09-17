@@ -1680,6 +1680,13 @@ def test_every_component_field_has_an_installer():
     ``datafusion.context._Contributions``, collect it in
     ``_collect_contributions``, and resolve and install it in
     ``with_extensions``. Then add it below.
+
+    The dataclass is the source of truth, so the comparison is an equality and
+    not a subset — a subset would grow to cover a new field on its own, which
+    is the one case this exists to catch. A field that is deliberately not a
+    component collection goes in ``not_components`` rather than into
+    ``_COMPONENT_NOUNS``, which is what keeps that exemption a decision someone
+    made instead of an operator someone loosened.
     """
     from datafusion.extensions import _COMPONENT_NOUNS
 
@@ -1690,8 +1697,11 @@ def test_every_component_field_has_an_installer():
         "udafs",
         "udwfs",
     }
+    # Fields that are not component collections: normalized by nothing,
+    # installed by nothing, and exempt on purpose. Empty today.
+    not_components: set[str] = set()
     declared = {spec.name for spec in fields(SessionExtensionComponents)}
-    assert set(_COMPONENT_NOUNS) <= declared
+    assert declared - not_components == set(_COMPONENT_NOUNS)
 
 
 def test_table_provider(ctx):
