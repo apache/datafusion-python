@@ -1191,6 +1191,32 @@ def test_with_extensions_skips_a_planner_hook_returning_none(ctx):
     assert batches[0].column(0) == pa.array([1])
 
 
+def test_with_extensions_ignores_a_planner_attribute_set_to_none(ctx):
+    """Regression test: ``__datafusion_session_planner__ = None`` is not a hook.
+
+    A base class spelling out that its subclasses contribute no planner binds
+    the attribute to ``None`` rather than omitting it. ``isinstance`` against
+    :py:class:`~datafusion.extensions.SessionPlannerExportable` rejects that,
+    but a ``hasattr`` does not, so a host that validated with one and dispatched
+    with the other called the ``None``: ``'NoneType' object is not callable``,
+    naming neither the extension nor the hook.
+
+    ``_commit_extensions`` still carries a Rust-side ``hasattr``, and the
+    Python caller now hands it a list already narrowed by ``isinstance``. Two
+    checks means one of them decides, and this pins which: a refactor that
+    passes the unfiltered arguments through reintroduces the failure, and
+    nothing else in this file notices.
+    """
+
+    class NoPlannerExtension(_CodecOnlyExtension):
+        __datafusion_session_planner__ = None
+
+    result = ctx.with_extensions(NoPlannerExtension())
+
+    assert result.logical_extension_codec_ids() == ["my_library.logical"]
+    assert result.physical_extension_codec_ids() == ["my_library.physical"]
+
+
 def test_with_extensions_rejects_bad_codec_capsule(ctx):
     """A correctly shaped object still has to return the right capsule."""
 
