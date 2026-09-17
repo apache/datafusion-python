@@ -106,7 +106,8 @@ same kind under the same name, the call raises a `ValueError` naming both,
 rather than letting one silently replace the other:
 
 ```text
-ValueError: Two extensions declare a scalar function named 'normalize': ...
+ValueError: A scalar function named 'normalize' is declared twice: argument 0
+(<lib_a.Extension>) and argument 1 (<lib_b.Extension>). ...
 ```
 
 You cannot rename another library's function from your own code, so the fix is
@@ -121,6 +122,8 @@ supported thing for a library to do. See {ref}`extension_bundles_collisions`.
 Check the argument positions the message names before you go looking for a
 second library. Passing one extension twice collides with itself, and an
 extension list assembled from a plugin registry is the usual way that happens.
+If both positions are the *same* number, only one library is involved and it
+declared the name twice — nothing on your side fixes that, so report it.
 
 **Functions outlive the handle you installed them on.** `with_extensions`
 returns a new context, and its codecs belong to that context alone — but

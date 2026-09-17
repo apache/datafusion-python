@@ -290,12 +290,12 @@ a capsule.
 
 ## Two bundles claiming one name
 
-Two extensions in one call may not declare a function of the same kind under
-the same name. Doing so raises:
+One `with_extensions` call may not declare a function of the same kind under
+the same name twice. Doing so raises:
 
 ```text
-ValueError: Two extensions declare a scalar function named 'normalize':
-argument 0 (...) and argument 1 (...). ...
+ValueError: A scalar function named 'normalize' is declared twice: argument 0
+(<lib_a.Extension>) and argument 1 (<lib_b.Extension>). ...
 ```
 
 Codecs get away with sharing a chain because a payload carries the id of the
@@ -303,14 +303,14 @@ codec that wrote it, so decode routes to the right one. A function registry has
 no such fall-through — one name holds one function — so the second registration
 would quietly replace the first. The call refuses instead.
 
-Which argument each claim came from is part of the message because it is what
-picks the remedy. Two arguments colliding is the caller's to resolve, by
-installing the two on separate sessions or by dropping a repeat; renaming is
-not something a caller can do. One argument declaring a name twice is the
-bundle author's own bug, and gets a different message saying so. Collisions are
-keyed on position rather than on object identity, so passing one extension
-twice reads as the caller's duplicate that it is, rather than as a bundle
-colliding with itself.
+The argument each claim came from is in the message because it is what picks
+the remedy, and the reader works it out from the two positions. Two different
+positions means two bundles, which only the caller can resolve — by dropping a
+repeat, or by installing them on separate sessions. One position named twice
+means a single bundle claimed the name twice, which is its author's own bug and
+the one case a rename fixes. Collisions are keyed on position rather than on
+object identity so that passing one extension twice reads as the caller's
+duplicate that it is, rather than as a bundle colliding with itself.
 
 Three cases this does *not* catch:
 

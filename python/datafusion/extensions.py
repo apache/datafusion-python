@@ -233,10 +233,10 @@ class SessionExtensionComponents:
     :py:func:`~datafusion.udf` on the way in. The registered name comes from
     the function itself, not from this field.
 
-    Two extensions in one
-    :py:meth:`~datafusion.context.SessionContext.with_extensions` call may not
-    declare the same name; shadowing a function the session already has is
-    allowed. See :ref:`extension_bundles_collisions`.
+    One :py:meth:`~datafusion.context.SessionContext.with_extensions` call may
+    not declare a name twice, whether the two claims come from one extension or
+    two; shadowing a function the session already has is allowed. See
+    :ref:`extension_bundles_collisions`.
     """
 
     udafs: tuple[AggregateUDF | AggregateUDFExportable, ...] = ()

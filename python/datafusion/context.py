@@ -296,25 +296,19 @@ def _resolve_declared_functions(
             raise TypeError(msg)
         name = wrapped.name
         if name in claimed:
-            # Keyed on position, not object identity, so each message names
-            # the remedy its reader actually has — see
+            # Keyed on position, not object identity: one argument listed
+            # twice is what tells the reader a single bundle claimed the name
+            # twice, which is the only case a rename can fix. See
             # `extension_bundles_collisions` in the extension guide.
             claimed_at, claimed_by = claimed[name]
-            if claimed_at == position:
-                msg = (
-                    f"{extension!r} declares two {label}s named {name!r}. "
-                    "Registrations have no fall-through, so the second would "
-                    "silently replace the first; rename one of them."
-                )
-            else:
-                msg = (
-                    f"Two extensions declare a {label} named {name!r}: "
-                    f"argument {claimed_at} ({claimed_by!r}) and argument "
-                    f"{position} ({extension!r}). Registrations have no "
-                    "fall-through, so one would silently replace the other; "
-                    "install them on separate sessions, or drop the repeat if "
-                    "one extension was passed twice."
-                )
+            msg = (
+                f"A {label} named {name!r} is declared twice: argument "
+                f"{claimed_at} ({claimed_by!r}) and argument {position} "
+                f"({extension!r}). Registrations have no fall-through, so one "
+                "would silently replace the other. Rename one if both came "
+                "from an extension you own, drop the repeat if one extension "
+                "was passed twice, or install them on separate sessions."
+            )
             raise ValueError(msg)
         claimed[name] = (position, extension)
         resolved.append(wrapped)
@@ -2103,8 +2097,8 @@ class SessionContext:
                 ``PyCapsule`` rather than an object exposing the getter, or if
                 a declared function is neither a wrapper nor exposes its
                 capsule getter.
-            ValueError: If two codecs claim the same id, if two extensions
-                declare a function of one kind under the same name, or if a
+            ValueError: If two codecs claim the same id, if one call declares a
+                function of one kind under the same name twice, or if a
                 getter returns a capsule of the wrong kind. See
                 :py:meth:`with_logical_extension_codec` for how ids are
                 assigned.

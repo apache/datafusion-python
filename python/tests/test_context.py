@@ -1570,34 +1570,31 @@ def test_with_extensions_rejects_a_name_two_extensions_claim(
 def test_with_extensions_rejects_one_extension_passed_twice(ctx):
     """A bundle object listed twice is the caller's duplicate, not a naming bug.
 
-    The remedy has to match the mistake, and nothing the bundle author renames
-    helps here — both claims come from the one declaration. Collisions are
-    therefore keyed on argument position rather than on object identity, which
-    would read a repeat as a bundle colliding with itself and offer a rename
-    that cannot be made.
+    Two argument positions is what says so, and it is the reason collisions are
+    keyed on position rather than on object identity: identity would read a
+    repeat as one bundle colliding with itself, pointing the reader at a rename
+    of someone else's function that they cannot make.
     """
     extension = _FunctionExtension(udfs=(_doubler(),))
 
-    with pytest.raises(ValueError, match=r"argument 0 .* and argument 1 ") as excinfo:
+    with pytest.raises(ValueError, match=r"argument 0 .* and argument 1 "):
         ctx.with_extensions(extension, extension)
 
-    assert "rename" not in str(excinfo.value)
     with pytest.raises(KeyError):
         ctx.udf("double")
 
 
 def test_with_extensions_rejects_a_name_one_extension_claims_twice(ctx):
-    """A bundle colliding with itself is its own bug, not a clash of libraries.
+    """A bundle colliding with itself is caught by the same check.
 
-    Separated from the two-extension case because the remedy differs: a bundle
-    author can rename their own function, and a caller cannot rename someone
-    else's.
+    One argument position named twice is what distinguishes it, and it is the
+    case the message's rename remedy is for — the only reader who can rename a
+    function is the one who declared both of them.
     """
-    with pytest.raises(
-        ValueError, match=r"declares two scalar functions named 'double'"
-    ):
+    with pytest.raises(ValueError, match=r"argument 0 .* and argument 0 ") as excinfo:
         ctx.with_extensions(_FunctionExtension(udfs=(_doubler(), _doubler())))
 
+    assert "scalar function named 'double'" in str(excinfo.value)
     with pytest.raises(KeyError):
         ctx.udf("double")
 
