@@ -1673,30 +1673,28 @@ def test_session_extension_components_rejects_a_single_function(field):
 def test_every_component_field_has_an_installer():
     """A field added to the components dataclass must be wired into the install.
 
-    ``SessionExtensionComponents`` normalizes any field carrying the component
-    metadata, so one added without an installer would be accepted from a
-    bundle and then quietly dropped — the failure this pins is a contributed
-    component going nowhere, with no error to say so. Nothing observable from
-    outside can catch that, because the symptom is silence.
+    ``SessionExtensionComponents`` normalizes every field named in
+    ``_COMPONENT_NOUNS``, so one added without an installer would be accepted
+    from a bundle and then quietly dropped — the failure this pins is a
+    contributed component going nowhere, with no error to say so. Nothing
+    observable from outside can catch that, because the symptom is silence.
 
     If this fails because you added a field: give it a member on
     ``datafusion.context._Contributions``, collect it in
     ``_collect_contributions``, and resolve and install it in
     ``with_extensions``. Then add it below.
     """
-    component_fields = {
-        spec.name
-        for spec in fields(SessionExtensionComponents)
-        if spec.metadata.get("datafusion_component") is not None
-    }
+    from datafusion.extensions import _COMPONENT_NOUNS
 
-    assert component_fields == {
+    assert set(_COMPONENT_NOUNS) == {
         "logical_extension_codecs",
         "physical_extension_codecs",
         "udfs",
         "udafs",
         "udwfs",
     }
+    declared = {spec.name for spec in fields(SessionExtensionComponents)}
+    assert set(_COMPONENT_NOUNS) <= declared
 
 
 def test_table_provider(ctx):

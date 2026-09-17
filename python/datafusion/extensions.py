@@ -44,7 +44,7 @@ split and for a worked implementation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
@@ -116,15 +116,20 @@ def _not_an_iterable(name: str, value: object, noun: str) -> str:
     )
 
 
-def _components(noun: str) -> Any:
-    """Declare a field holding a tuple of contributed components.
+_COMPONENT_NOUNS = {
+    "logical_extension_codecs": "codec",
+    "physical_extension_codecs": "codec",
+    "udfs": "function",
+    "udafs": "function",
+    "udwfs": "function",
+}
+"""Fields of :py:class:`SessionExtensionComponents` holding a tuple of
+components, and what to call one of them in an error.
 
-    ``noun`` names what the field holds, for the error a bundle sees when it
-    hands over one component instead of a collection of them. Carrying it in
-    the field metadata is what lets ``__post_init__`` normalize a field it was
-    never told about by name.
-    """
-    return field(default=(), metadata={"datafusion_component": noun})
+Listing them here rather than marking each field is what leaves room for a
+future field that is not a collection and must not be normalized into a tuple.
+``test_every_component_field_has_an_installer`` pins the contents.
+"""
 
 
 @dataclass(frozen=True)
@@ -204,9 +209,7 @@ class SessionExtensionComponents:
         TypeError: logical_extension_codecs must be an iterable of codec objects...
     """
 
-    logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = _components(
-        "codec"
-    )
+    logical_extension_codecs: tuple[LogicalExtensionCodecExportable, ...] = ()
     """Logical codecs to add to the session's codec chain, in declaration order.
 
     Objects exposing ``__datafusion_logical_extension_codec__``, never bare
@@ -215,16 +218,14 @@ class SessionExtensionComponents:
     :ref:`extension_bundles_codecs_are_objects`.
     """
 
-    physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = (
-        _components("codec")
-    )
+    physical_extension_codecs: tuple[PhysicalExtensionCodecExportable, ...] = ()
     """Physical codecs to add to the session's codec chain, in declaration order.
 
     As :py:attr:`logical_extension_codecs`, for
     ``__datafusion_physical_extension_codec__``.
     """
 
-    udfs: tuple[ScalarUDF | ScalarUDFExportable, ...] = _components("function")
+    udfs: tuple[ScalarUDF | ScalarUDFExportable, ...] = ()
     """Scalar functions to register on the session.
 
     Either a :py:class:`~datafusion.user_defined.ScalarUDF` or an object
@@ -238,7 +239,7 @@ class SessionExtensionComponents:
     allowed. See :ref:`extension_bundles_collisions`.
     """
 
-    udafs: tuple[AggregateUDF | AggregateUDFExportable, ...] = _components("function")
+    udafs: tuple[AggregateUDF | AggregateUDFExportable, ...] = ()
     """Aggregate functions to register on the session.
 
     As :py:attr:`udfs`, for ``__datafusion_aggregate_udf__`` and
@@ -246,7 +247,7 @@ class SessionExtensionComponents:
     an aggregate may share a name with a scalar function.
     """
 
-    udwfs: tuple[WindowUDF | WindowUDFExportable, ...] = _components("function")
+    udwfs: tuple[WindowUDF | WindowUDFExportable, ...] = ()
     """Window functions to register on the session.
 
     As :py:attr:`udfs`, for ``__datafusion_window_udf__`` and
@@ -267,16 +268,7 @@ class SessionExtensionComponents:
         # member of an immutable value, and a generator would be exhausted by
         # the first read.
         #
-        # Driven off `dataclasses.fields` rather than a written-out list, so a
-        # component field added later is normalized without anyone remembering
-        # to name it here. `_components` metadata is what marks a field as one
-        # of them, leaving room for a future field that is not a collection and
-        # must not be turned into a tuple.
-        for spec in fields(self):
-            noun = spec.metadata.get("datafusion_component")
-            if noun is None:
-                continue
-            name = spec.name
+        for name, noun in _COMPONENT_NOUNS.items():
             value = getattr(self, name)
             # A str is iterable, so it would otherwise normalize into a tuple
             # of characters and fail much later as that many bogus components.
