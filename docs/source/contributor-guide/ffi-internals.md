@@ -131,8 +131,8 @@ A call therefore splits into a part that may fail and a part that may not:
    and every `__datafusion_session_planner__` runs against the completed
    chains.
 4. **Commit.** The planner is bound, then the declared functions are
-   registered with the same `register_*` methods a caller would use, because
-   they cannot fail either.
+   registered with `register_udf`, `register_udaf` and `register_udwf` — the
+   same methods a caller would use, and three that cannot fail.
 
 Only step 4 touches the session, and every step that can fail happens before
 it. This is a rule for the next field added to

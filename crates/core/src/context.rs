@@ -1731,8 +1731,8 @@ impl PySessionContext {
     ///
     /// Binding the planner is the commit, and it cannot fail. Anything else a
     /// call installs is committed by the Python caller once this returns,
-    /// through the ordinary `register_*` methods, which cannot fail either.
-    /// Whatever can fail belongs before this call — see
+    /// through `register_udf`, `register_udaf` and `register_udwf`, which
+    /// cannot fail. Whatever can fail belongs before this call — see
     /// docs/source/contributor-guide/ffi-internals.md, under
     /// "Why `with_extensions` commits last".
     ///

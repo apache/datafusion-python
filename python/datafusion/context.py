@@ -2186,8 +2186,8 @@ class SessionContext:
             bool(contributed.logical_codecs or contributed.physical_codecs),
         )
 
-        # The rest of the commit. Registering cannot fail, which is what lets
-        # it run after the point of no return -- see
+        # The rest of the commit. These three registrations cannot fail, which
+        # is what lets them run after the point of no return -- see
         # docs/source/contributor-guide/ffi-internals.md, under "Why
         # `with_extensions` commits last". It runs after the planner hooks, so
         # a hook never sees this call's functions in the registry.
