@@ -57,6 +57,7 @@ extensions = [
     # Emits a meta-refresh stub at each old docname listed in `redirects`
     # below, so inbound links to pages that have moved keep working.
     "sphinx_reredirects",
+    "sphinx_copybutton",
 ]
 
 # Old page URLs that have moved. The site is single-version (each release
