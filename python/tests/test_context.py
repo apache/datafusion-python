@@ -20,11 +20,14 @@ import gc
 import gzip
 import pathlib
 import shutil
+from dataclasses import fields
 
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.dataset as ds
 import pytest
 from datafusion import (
+    Accumulator,
     CsvReadOptions,
     DataFrame,
     RuntimeEnvBuilder,
@@ -35,8 +38,11 @@ from datafusion import (
     Table,
     column,
     literal,
+    udaf,
     udf,
+    udwf,
 )
+from datafusion.user_defined import WindowEvaluator
 
 
 def test_create_context_no_args():
@@ -1185,6 +1191,32 @@ def test_with_extensions_skips_a_planner_hook_returning_none(ctx):
     assert batches[0].column(0) == pa.array([1])
 
 
+def test_with_extensions_ignores_a_planner_attribute_set_to_none(ctx):
+    """Regression test: ``__datafusion_session_planner__ = None`` is not a hook.
+
+    A base class spelling out that its subclasses contribute no planner binds
+    the attribute to ``None`` rather than omitting it. ``isinstance`` against
+    :py:class:`~datafusion.extensions.SessionPlannerExportable` rejects that,
+    but a ``hasattr`` does not, so a host that validated with one and dispatched
+    with the other called the ``None``: ``'NoneType' object is not callable``,
+    naming neither the extension nor the hook.
+
+    ``_commit_extensions`` still carries a Rust-side ``hasattr``, and the
+    Python caller now hands it a list already narrowed by ``isinstance``. Two
+    checks means one of them decides, and this pins which: a refactor that
+    passes the unfiltered arguments through reintroduces the failure, and
+    nothing else in this file notices.
+    """
+
+    class NoPlannerExtension(_CodecOnlyExtension):
+        __datafusion_session_planner__ = None
+
+    result = ctx.with_extensions(NoPlannerExtension())
+
+    assert result.logical_extension_codec_ids() == ["my_library.logical"]
+    assert result.physical_extension_codec_ids() == ["my_library.physical"]
+
+
 def test_with_extensions_rejects_bad_codec_capsule(ctx):
     """A correctly shaped object still has to return the right capsule."""
 
@@ -1408,6 +1440,291 @@ def test_with_extensions_failure_leaves_source_usable(ctx):
 
     batches = ctx.sql("SELECT 1 AS value").collect()
     assert batches[0].column(0) == pa.array([1])
+
+
+def _doubler(name="double"):
+    """A scalar function under a name the caller picks."""
+    return udf(
+        lambda arr: pa.array([v.as_py() * 2 for v in arr]),
+        [pa.int64()],
+        pa.int64(),
+        volatility="stable",
+        name=name,
+    )
+
+
+class _Total(Accumulator):
+    """The smallest accumulator that survives a partial/final split."""
+
+    def __init__(self):
+        self._sum = 0
+
+    def state(self) -> list[pa.Scalar]:
+        return [pa.scalar(self._sum)]
+
+    def update(self, values: pa.Array) -> None:
+        self._sum += pc.sum(values).as_py() or 0
+
+    def merge(self, states: list[pa.Array]) -> None:
+        self._sum += pc.sum(states[0]).as_py() or 0
+
+    def evaluate(self) -> pa.Scalar:
+        return pa.scalar(self._sum)
+
+
+class _First(WindowEvaluator):
+    """Repeats the first value of the partition across every row."""
+
+    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+        first = values[0][0].as_py()
+        return pa.array([first] * num_rows)
+
+
+def _total(name="total"):
+    """An aggregate function under a name the caller picks."""
+    return udaf(
+        _Total,
+        pa.int64(),
+        pa.int64(),
+        [pa.int64()],
+        volatility="stable",
+        name=name,
+    )
+
+
+def _first(name="first_value_of"):
+    """A window function under a name the caller picks."""
+    return udwf(
+        _First,
+        pa.int64(),
+        pa.int64(),
+        volatility="immutable",
+        name=name,
+    )
+
+
+class _FunctionExtension:
+    """Contributes functions and nothing else.
+
+    The shape a library shipping only functions has: no codecs, no planner,
+    so the whole of its installation is what it declares here.
+    """
+
+    def __init__(self, udfs=(), udafs=(), udwfs=()):
+        self._udfs = udfs
+        self._udafs = udafs
+        self._udwfs = udwfs
+
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(
+            udfs=self._udfs, udafs=self._udafs, udwfs=self._udwfs
+        )
+
+
+def test_with_extensions_registers_a_declared_udf(ctx):
+    """A declared scalar function is callable from SQL on the returned handle."""
+    result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))
+    result.from_pydict({"a": [1, 2, 3]}, name="nums")
+
+    batches = result.sql("SELECT double(a) AS doubled FROM nums").collect()
+    assert batches[0].column(0) == pa.array([2, 4, 6])
+
+
+def test_with_extensions_registers_udafs_and_udwfs(ctx):
+    """The other two function kinds install the same way."""
+    result = ctx.with_extensions(
+        _FunctionExtension(udafs=(_total(),), udwfs=(_first(),))
+    )
+    result.from_pydict({"a": [1, 2, 3]}, name="nums")
+
+    assert result.sql("SELECT total(a) FROM nums").collect()[0].column(0) == pa.array(
+        [6]
+    )
+    batches = result.sql("SELECT first_value_of(a) OVER () FROM nums").collect()
+    assert batches[0].column(0) == pa.array([1, 1, 1])
+
+
+def test_with_extensions_registers_on_the_shared_session(ctx):
+    """Registrations land on the session, which the source context also holds.
+
+    Only the codec chains belong to the returned handle. Pinned deliberately:
+    a future change that made registrations private to the handle would be a
+    behaviour change, not a fix.
+    """
+    ctx.with_extensions(_FunctionExtension(udfs=(_doubler(),)))
+
+    assert ctx.udf("double").name == "double"
+
+
+@pytest.mark.parametrize(
+    ("field", "make", "label", "lookup"),
+    [
+        ("udfs", _doubler, "scalar function", "udf"),
+        ("udafs", _total, "aggregate function", "udaf"),
+        ("udwfs", _first, "window function", "udwf"),
+    ],
+)
+def test_with_extensions_rejects_a_name_two_extensions_claim(
+    ctx, field, make, label, lookup
+):
+    """Registrations have no fall-through, so a clash cannot be resolved by order.
+
+    Unlike codecs, which dispatch by id, a second function under one name would
+    silently replace the first. Parametrized over the kinds to pin each one's
+    field and label wiring, not just the machinery.
+
+    A codec-carrying bundle rides along to pin the other half of the
+    transaction: resolution runs *after* the codec chains are built, so this
+    failure lands between the two steps, and the chains must not reach the
+    session either.
+    """
+    name = make().name
+
+    with pytest.raises(ValueError, match=rf"{label} named '{name}'"):
+        ctx.with_extensions(
+            _CodecOnlyExtension(),
+            _FunctionExtension(**{field: (make(),)}),
+            _FunctionExtension(**{field: (make(),)}),
+        )
+
+    with pytest.raises(KeyError):
+        getattr(ctx, lookup)(name)
+    assert ctx.logical_extension_codec_ids() == []
+    assert ctx.physical_extension_codec_ids() == []
+
+
+def test_with_extensions_rejects_one_extension_passed_twice(ctx):
+    """A bundle object listed twice is the caller's duplicate, not a naming bug.
+
+    Two argument positions is what says so, and it is the reason collisions are
+    keyed on position rather than on object identity: identity would read a
+    repeat as one bundle colliding with itself, pointing the reader at a rename
+    of someone else's function that they cannot make.
+    """
+    extension = _FunctionExtension(udfs=(_doubler(),))
+
+    with pytest.raises(ValueError, match=r"argument 0 .* and argument 1 "):
+        ctx.with_extensions(extension, extension)
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_a_name_one_extension_claims_twice(ctx):
+    """A bundle colliding with itself is caught by the same check.
+
+    One argument position named twice is what distinguishes it, and it is the
+    case the message's rename remedy is for — the only reader who can rename a
+    function is the one who declared both of them.
+    """
+    with pytest.raises(ValueError, match=r"argument 0 .* and argument 0 ") as excinfo:
+        ctx.with_extensions(_FunctionExtension(udfs=(_doubler(), _doubler())))
+
+    assert "scalar function named 'double'" in str(excinfo.value)
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_allows_shadowing_an_existing_function(ctx):
+    """Claiming a name the session already has is legal.
+
+    ``ctx.udfs()`` holds every built-in, and ``enable_spark_functions``
+    overrides built-ins by design, so refusing this would refuse a supported
+    use rather than catch a mistake.
+    """
+    result = ctx.with_extensions(_FunctionExtension(udfs=(_doubler(name="abs"),)))
+    result.from_pydict({"a": [1, 2, 3]}, name="nums")
+
+    batches = result.sql("SELECT abs(a) AS shadowed FROM nums").collect()
+    assert batches[0].column(0) == pa.array([2, 4, 6])
+
+
+def test_with_extensions_registers_nothing_when_a_components_hook_raises(ctx):
+    """A failure in phase one leaves the first extension's functions uninstalled."""
+
+    class BoomExtension:
+        def __datafusion_session_components__(self, ctx):
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            BoomExtension(),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_registers_nothing_when_a_planner_hook_raises(ctx):
+    """A failure in phase two does too, which is what pins the ordering.
+
+    By the time the planner hooks run, the functions have been resolved and
+    their names checked. Committing them at that point rather than after would
+    pass every other test here and still leave this one registered.
+    """
+
+    class BoomPlanner:
+        def __datafusion_session_planner__(self, ctx, fallback):
+            msg = "boom"
+            raise RuntimeError(msg)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        ctx.with_extensions(
+            _FunctionExtension(udfs=(_doubler(),)),
+            BoomPlanner(),
+        )
+
+    with pytest.raises(KeyError):
+        ctx.udf("double")
+
+
+def test_with_extensions_rejects_an_unusable_declaration(ctx):
+    """Something that is neither a wrapper nor an exportable names both sides."""
+    with pytest.raises(TypeError, match=r"__datafusion_scalar_udf__"):
+        ctx.with_extensions(_FunctionExtension(udfs=(object(),)))
+
+
+@pytest.mark.parametrize("field", ["udfs", "udafs", "udwfs"])
+def test_session_extension_components_rejects_a_single_function(field):
+    """A lone function is not an iterable of them, as for codecs."""
+    with pytest.raises(TypeError, match=r"must be an iterable of function objects"):
+        SessionExtensionComponents(**{field: _doubler()})
+
+
+def test_every_component_field_has_an_installer():
+    """A field added to the components dataclass must be wired into the install.
+
+    ``SessionExtensionComponents`` normalizes every field named in
+    ``_COMPONENT_NOUNS``, so one added without an installer would be accepted
+    from a bundle and then quietly dropped — the failure this pins is a
+    contributed component going nowhere, with no error to say so. Nothing
+    observable from outside can catch that, because the symptom is silence.
+
+    If this fails because you added a field: give it a member on
+    ``datafusion.context._Contributions``, collect it in
+    ``_collect_contributions``, and resolve and install it in
+    ``with_extensions``. Then add it below.
+
+    Keep the comparison an equality. A subset check is satisfied by any new
+    field on its own, which is the one case this exists to catch. A field that
+    is deliberately not a component collection belongs in ``not_components``.
+    """
+    from datafusion.extensions import _COMPONENT_NOUNS
+
+    assert set(_COMPONENT_NOUNS) == {
+        "logical_extension_codecs",
+        "physical_extension_codecs",
+        "udfs",
+        "udafs",
+        "udwfs",
+    }
+    # Fields that are not component collections: normalized by nothing,
+    # installed by nothing, and exempt on purpose. Empty today.
+    not_components: set[str] = set()
+    declared = {spec.name for spec in fields(SessionExtensionComponents)}
+    assert declared - not_components == set(_COMPONENT_NOUNS)
 
 
 def test_table_provider(ctx):
