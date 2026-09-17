@@ -2179,9 +2179,11 @@ class SessionContext:
         # runs against `new`, which carries the final chains, so a planner
         # captured there never sees a partial codec set. The hook loop and the
         # guard that skips the rebind for a call that installs nothing live on
-        # the Rust side -- see `_commit_extensions`.
+        # the Rust side -- see `_commit_extensions`. The list is narrowed with
+        # the same check the validation above uses, so one predicate decides
+        # both what is admitted and what is called.
         new.ctx._commit_extensions(
-            list(extensions),
+            [e for e in extensions if isinstance(e, SessionPlannerExportable)],
             new,
             bool(contributed.logical_codecs or contributed.physical_codecs),
         )
