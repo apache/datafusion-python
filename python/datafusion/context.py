@@ -161,79 +161,46 @@ class PhysicalOptimizerRuleExportable(Protocol):
     def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
-class _FunctionKind(NamedTuple):
-    """How one kind of declared function is resolved.
+class _Contributions(NamedTuple):
+    """Everything a call's extensions contributed, before any of it is resolved.
 
-    One row per function field on
-    :py:class:`~datafusion.extensions.SessionExtensionComponents`, so adding a
-    kind is adding a row rather than editing three places. The dataclass
-    metadata says which fields are collections to normalize; this table says
-    which of them are functions and how to wrap one. Committing is not here:
-    each kind is its own ``_commit_extensions`` parameter, so a kind that
-    resolves but never commits cannot be written.
-    ``test_every_component_field_has_an_installer`` pins the two together.
+    One member per component field on
+    :py:class:`~datafusion.extensions.SessionExtensionComponents`. A field added
+    there needs a member here and a resolve step in
+    :py:meth:`SessionContext.with_extensions`;
+    ``test_every_component_field_has_an_installer`` is what fails if it gets
+    neither.
 
-    The members naming a ``datafusion.user_defined`` object hold its name
-    rather than the object: that module imports this one, so the lookups are
-    deferred to :py:meth:`SessionContext.with_extensions`, which runs with the
-    cycle long settled.
+    Functions are kept paired with the extension that declared them and with
+    that extension's position in the argument list, so a name claimed twice can
+    name both sides and tell which remedy applies.
     """
 
-    field: str
-    """The ``SessionExtensionComponents`` field a bundle declares these in."""
+    logical_codecs: list[LogicalExtensionCodecExportable]
+    """Logical codecs, in declaration order."""
 
-    wrapper: str
-    """Wrapper class a declaration may already be an instance of."""
+    physical_codecs: list[PhysicalExtensionCodecExportable]
+    """Physical codecs, in declaration order."""
 
-    getter: str
-    """Capsule getter an unwrapped declaration must expose instead."""
+    udfs: list[tuple[int, object, Any]]
+    """Declared scalar functions as ``(position, extension, function)``."""
 
-    factory: str
-    """Helper that turns an unwrapped declaration into a wrapper."""
+    udafs: list[tuple[int, object, Any]]
+    """Declared aggregate functions, as :py:attr:`udfs`."""
 
-    label: str
-    """What to call this sort of function in an error message."""
-
-
-_FUNCTION_KINDS = (
-    _FunctionKind(
-        field="udfs",
-        wrapper="ScalarUDF",
-        getter="__datafusion_scalar_udf__",
-        factory="udf",
-        label="scalar function",
-    ),
-    _FunctionKind(
-        field="udafs",
-        wrapper="AggregateUDF",
-        getter="__datafusion_aggregate_udf__",
-        factory="udaf",
-        label="aggregate function",
-    ),
-    _FunctionKind(
-        field="udwfs",
-        wrapper="WindowUDF",
-        getter="__datafusion_window_udf__",
-        factory="udwf",
-        label="window function",
-    ),
-)
-"""Every kind of function a bundle can declare, in registration order."""
+    udwfs: list[tuple[int, object, Any]]
+    """Declared window functions, as :py:attr:`udfs`."""
 
 
 def _collect_contributions(
     extensions: tuple[object, ...],
     ctx: SessionContext,
-) -> tuple[list[Any], list[Any], dict[str, list[tuple[int, object, Any]]]]:
+) -> _Contributions:
     """Run every components hook and gather what the extensions contribute.
 
     Validates the whole argument list before calling anything, so an argument
     that implements neither hook is refused before a well-formed extension
     ahead of it has done any work. Writes nothing to the session.
-
-    Functions are kept paired with the extension that declared them and with
-    that extension's position in the argument list, so a name claimed twice can
-    name both sides and tell which remedy applies.
 
     Args:
         extensions: The arguments ``with_extensions`` was given.
@@ -241,9 +208,7 @@ def _collect_contributions(
             context derived from it.
 
     Returns:
-        The logical codecs, the physical codecs, and the declared functions as
-        ``(position, extension, function)`` triples, keyed by the
-        :py:data:`_FUNCTION_KINDS` field they arrived in.
+        What every bundle declared, gathered by kind.
 
     Raises:
         TypeError: If an argument implements neither hook, or a hook returns
@@ -260,11 +225,7 @@ def _collect_contributions(
             )
             raise TypeError(msg)
 
-    logical_codecs: list[LogicalExtensionCodecExportable] = []
-    physical_codecs: list[PhysicalExtensionCodecExportable] = []
-    declared: dict[str, list[tuple[int, object, Any]]] = {
-        kind.field: [] for kind in _FUNCTION_KINDS
-    }
+    contributed = _Contributions([], [], [], [], [])
     for position, extension in enumerate(extensions):
         if not isinstance(extension, SessionComponentsExportable):
             continue
@@ -276,13 +237,15 @@ def _collect_contributions(
                 f"{type(components).__name__} from {extension!r}"
             )
             raise TypeError(msg)
-        logical_codecs.extend(components.logical_extension_codecs)
-        physical_codecs.extend(components.physical_extension_codecs)
-        for field_name, declarations in declared.items():
-            declarations.extend(
-                (position, extension, item) for item in getattr(components, field_name)
-            )
-    return logical_codecs, physical_codecs, declared
+        contributed.logical_codecs.extend(components.logical_extension_codecs)
+        contributed.physical_codecs.extend(components.physical_extension_codecs)
+        for declared, functions in (
+            (contributed.udfs, components.udfs),
+            (contributed.udafs, components.udafs),
+            (contributed.udwfs, components.udwfs),
+        ):
+            declared.extend((position, extension, item) for item in functions)
+    return contributed
 
 
 def _resolve_declared_functions(
@@ -2181,31 +2144,43 @@ class SessionContext:
         # against this context, not a context derived from it. There is one
         # `Arc<SessionContext>` per session, so a component bound here holds a
         # task-context provider that the returned handle keeps alive.
-        logical_codecs, physical_codecs, declared = _collect_contributions(
-            extensions, self
-        )
+        contributed = _collect_contributions(extensions, self)
 
         # Writes nothing: the chains belong to the new handle, so a failure
         # above or below leaves this context as it was.
         new = SessionContext.__new__(SessionContext)
-        new.ctx = self.ctx._install_extension_codecs(logical_codecs, physical_codecs)
+        new.ctx = self.ctx._install_extension_codecs(
+            contributed.logical_codecs, contributed.physical_codecs
+        )
 
         # Resolve every declared function to the wrapper that registers it, and
         # settle name collisions, while a failure still costs nothing. None of
         # these getters take an argument, so unlike a provider they do not care
-        # which handle they are resolved against.
-        from datafusion import user_defined as _user_defined  # noqa: PLC0415
+        # which handle they are resolved against. `user_defined` imports this
+        # module, so the import waits until here, with the cycle long settled.
+        from datafusion import user_defined as _ud  # noqa: PLC0415
 
-        resolved: dict[str, list[Any]] = {
-            kind.field: _resolve_declared_functions(
-                declared[kind.field],
-                getattr(_user_defined, kind.wrapper),
-                kind.getter,
-                getattr(_user_defined, kind.factory),
-                kind.label,
-            )
-            for kind in _FUNCTION_KINDS
-        }
+        udfs = _resolve_declared_functions(
+            contributed.udfs,
+            _ud.ScalarUDF,
+            "__datafusion_scalar_udf__",
+            _ud.udf,
+            "scalar function",
+        )
+        udafs = _resolve_declared_functions(
+            contributed.udafs,
+            _ud.AggregateUDF,
+            "__datafusion_aggregate_udf__",
+            _ud.udaf,
+            "aggregate function",
+        )
+        udwfs = _resolve_declared_functions(
+            contributed.udwfs,
+            _ud.WindowUDF,
+            "__datafusion_window_udf__",
+            _ud.udwf,
+            "window function",
+        )
 
         # Phase two: run the planner hooks and commit, in one call. Each hook
         # runs against `new`, which carries the final chains, so a planner
@@ -2213,17 +2188,14 @@ class SessionContext:
         # ordering of the commit, and the guard that skips the planner rebind
         # for a call that installs nothing all live on the Rust side -- see
         # `_commit_extensions` and docs/source/contributor-guide/
-        # ffi-internals.md, under "Why `with_extensions` commits last". A new
-        # component field must be resolved above and given its own
-        # `_commit_extensions` parameter; the call's arity is what keeps a
-        # declared component from being quietly dropped.
+        # ffi-internals.md, under "Why `with_extensions` commits last".
         new.ctx._commit_extensions(
             list(extensions),
             new,
-            bool(logical_codecs or physical_codecs),
-            [function._udf for function in resolved["udfs"]],
-            [function._udaf for function in resolved["udafs"]],
-            [function._udwf for function in resolved["udwfs"]],
+            bool(contributed.logical_codecs or contributed.physical_codecs),
+            [function._udf for function in udfs],
+            [function._udaf for function in udafs],
+            [function._udwf for function in udwfs],
         )
         return new
 

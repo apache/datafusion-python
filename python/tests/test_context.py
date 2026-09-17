@@ -1544,8 +1544,8 @@ def test_with_extensions_rejects_a_name_two_extensions_claim(
     """Registrations have no fall-through, so a clash cannot be resolved by order.
 
     Unlike codecs, which dispatch by id, a second function under one name would
-    silently replace the first. Parametrized over the kinds to pin each
-    ``_FUNCTION_KINDS`` row's field and label wiring, not just the machinery.
+    silently replace the first. Parametrized over the kinds to pin each one's
+    field and label wiring, not just the machinery.
 
     A codec-carrying bundle rides along to pin the other half of the
     transaction: resolution runs *after* the codec chains are built, so this
@@ -1676,45 +1676,27 @@ def test_every_component_field_has_an_installer():
     ``SessionExtensionComponents`` normalizes any field carrying the component
     metadata, so one added without an installer would be accepted from a
     bundle and then quietly dropped — the failure this pins is a contributed
-    component going nowhere, with no error to say so.
+    component going nowhere, with no error to say so. Nothing observable from
+    outside can catch that, because the symptom is silence.
 
-    Reaching into private names on purpose: the two sides answer different
-    questions. The metadata says which fields are collections to normalize;
-    ``_FUNCTION_KINDS`` and the codec pair say which of them ``with_extensions``
-    knows how to install. Nothing observable from outside can tell you they
-    have drifted, because the symptom is silence.
+    If this fails because you added a field: give it a member on
+    ``datafusion.context._Contributions``, collect it in
+    ``_collect_contributions``, and resolve and install it in
+    ``with_extensions``. Then add it below.
     """
-    from datafusion.context import _FUNCTION_KINDS
-
-    by_noun: dict[str, set[str]] = {}
-    for spec in fields(SessionExtensionComponents):
-        noun = spec.metadata.get("datafusion_component")
-        if noun is not None:
-            by_noun.setdefault(noun, set()).add(spec.name)
-
-    assert by_noun == {
-        "codec": {"logical_extension_codecs", "physical_extension_codecs"},
-        "function": {kind.field for kind in _FUNCTION_KINDS},
+    component_fields = {
+        spec.name
+        for spec in fields(SessionExtensionComponents)
+        if spec.metadata.get("datafusion_component") is not None
     }
 
-
-def test_every_function_kind_names_something_real():
-    """The names on a ``_FunctionKind`` row resolve to what it says they do.
-
-    They are held as strings and looked up during ``with_extensions``, to keep
-    the ``user_defined`` import out of this module's import cycle. The cost is
-    that a typo in a row surfaces as an ``AttributeError`` part-way through an
-    install rather than at import. Every row that exists today is covered by a
-    behaviour test above; this is what covers the next one, which may be added
-    before its own test is.
-    """
-    from datafusion import user_defined
-    from datafusion.context import _FUNCTION_KINDS
-
-    for kind in _FUNCTION_KINDS:
-        assert isinstance(getattr(user_defined, kind.wrapper), type)
-        assert callable(getattr(user_defined, kind.factory))
-        assert kind.field in {spec.name for spec in fields(SessionExtensionComponents)}
+    assert component_fields == {
+        "logical_extension_codecs",
+        "physical_extension_codecs",
+        "udfs",
+        "udafs",
+        "udwfs",
+    }
 
 
 def test_table_provider(ctx):
