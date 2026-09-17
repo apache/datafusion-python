@@ -312,13 +312,20 @@ keyed on position rather than on object identity, so passing one extension
 twice reads as the caller's duplicate that it is, rather than as a bundle
 colliding with itself.
 
-Two cases this does *not* catch:
+Three cases this does *not* catch:
 
 - **Different kinds never collide.** Names are compared within a kind, so a
   scalar function and an aggregate may both be called `normalize`.
 - **Shadowing a built-in is allowed.** The registry already holds every
   DataFusion function, and replacing one by name is a supported thing to do —
   `enable_spark_functions` works that way.
+- **One call at a time is checked.** The names compared are the ones declared
+  in a single `with_extensions` call. Two calls on the same session, or a call
+  following a hand-written `register_udf`, land in the registry one after the
+  other, and the later one silently replaces the earlier — that is the
+  shadowing rule above, applied to something you may not have meant to shadow.
+  Splitting colliding bundles across two calls therefore does not resolve the
+  collision; it hides it. Use two sessions.
 
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.

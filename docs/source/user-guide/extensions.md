@@ -99,7 +99,7 @@ rarely matters. When a library needs a particular position — usually "list me
 last" for something that wraps the others — it says so in its own
 documentation.
 
-## Three things that will bite you
+## Four things that will bite you
 
 **Two libraries can claim one function name.** If both ship a function of the
 same kind under the same name, the call raises a `ValueError` naming both,
@@ -111,14 +111,30 @@ ValueError: Two extensions declare a scalar function named 'normalize': ...
 
 You cannot rename another library's function from your own code, so the fix is
 to use two sessions, one per library, and query each for what only it provides.
-Worth reporting upstream too: the library whose names are the less specific
-should be prefixing them. A function shadowing a *built-in* is not a collision
-and raises nothing — that is a supported thing for a library to do. See
-{ref}`extension_bundles_collisions`.
+Installing the two in separate `with_extensions` calls on one session is not a
+fix: only the names within a single call are compared, so the second library's
+function quietly replaces the first's. Worth reporting upstream too: the
+library whose names are the less specific should be prefixing them. A function
+shadowing a *built-in* is not a collision and raises nothing — that is a
+supported thing for a library to do. See {ref}`extension_bundles_collisions`.
 
 Check the argument positions the message names before you go looking for a
 second library. Passing one extension twice collides with itself, and an
 extension list assembled from a plugin registry is the usual way that happens.
+
+**Functions outlive the handle you installed them on.** `with_extensions`
+returns a new context, and its codecs belong to that context alone — but
+functions are registered on the *session*, which every handle shares. So this
+changes the context you called it on:
+
+```python
+ctx.with_extensions(my_library.Extension())  # return value dropped
+ctx.udf("my_library_normalize")  # ...and it is there anyway
+```
+
+Use the returned context regardless — you need it for the codecs, and it is
+what the next section's checks read. But do not count on dropping it to undo
+an install.
 
 **Keep your context alive.** A `DataFrame` or a plan does not keep its session
 alive on its own. If a context is garbage-collected while something built from
