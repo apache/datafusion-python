@@ -21,6 +21,34 @@
 
 ## DataFusion 55.0.0
 
+### URL tables share the original session
+
+`SessionContext.enable_url_table()` now enables URL tables on the existing session
+and returns another handle on it. Previously it copied session state into a separate
+session while retaining the same session id. Configuration and function registrations
+could then diverge, and replacing the original handle could invalidate FFI providers.
+
+Before, callers had to use the returned context to query file paths:
+
+```python
+ctx = SessionContext()
+enabled = ctx.enable_url_table()
+# Only enabled could query local file paths as tables.
+```
+
+After, both handles share configuration, registrations, and URL table support:
+
+```python
+ctx = SessionContext()
+ctx.enable_url_table()  # Takes effect even when the returned handle is discarded.
+```
+
+Existing `ctx = ctx.enable_url_table()` calls continue to work and now retain FFI
+providers bound to the original session. Repeated calls have no effect. To keep a
+session without URL table support, create a separate `SessionContext` explicitly.
+
+### FFI codec hooks receive the session
+
 This release extends the change made in 52.0.0 to the remaining
 {ref}`extension_capsule_protocol` hook methods. Users who contribute their own
 `LogicalExtensionCodec` or
