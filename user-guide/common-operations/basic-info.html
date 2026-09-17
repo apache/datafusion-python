@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
@@ -44,6 +45,8 @@
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/basic-info';</script>
     <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
@@ -562,11 +565,11 @@
 +-----+---------+--------+--------+
 | nrs | names   | random | groups |
 +-----+---------+--------+--------+
-| 1   | python  | 221    | A      |
-| 2   | ruby    | 228    | A      |
-| 3   | java    | 899    | B      |
-| 4   | haskell | 477    | C      |
-| 5   | go      | 76     | B      |
+| 1   | python  | 924    | A      |
+| 2   | ruby    | 949    | A      |
+| 3   | java    | 122    | B      |
+| 4   | haskell | 557    | C      |
+| 5   | go      | 249    | B      |
 +-----+---------+--------+--------+
 </pre></div>
 </div>
@@ -584,8 +587,8 @@
 +-----+--------+--------+--------+
 | nrs | names  | random | groups |
 +-----+--------+--------+--------+
-| 1   | python | 221    | A      |
-| 2   | ruby   | 228    | A      |
+| 1   | python | 924    | A      |
+| 2   | ruby   | 949    | A      |
 +-----+--------+--------+--------+
 </pre></div>
 </div>
@@ -617,11 +620,11 @@ passing them to an Arrow table, and then converting them to a pandas DataFrame.<
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   nrs    names  random groups
-0    1   python     221      A
-1    2     ruby     228      A
-2    3     java     899      B
-3    4  haskell     477      C
-4    5       go      76      B
+0    1   python     924      A
+1    2     ruby     949      A
+2    3     java     122      B
+3    4  haskell     557      C
+4    5       go     249      B
 </pre></div>
 </div>
 </div>
@@ -635,17 +638,17 @@ passing them to an Arrow table, and then converting them to a pandas DataFrame.<
 </div>
 <div class="cell_output docutils container">
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame()
-+------------+--------------------+-------+--------------------+--------+
-| describe   | nrs                | names | random             | groups |
-+------------+--------------------+-------+--------------------+--------+
-| count      | 5.0                | 5     | 5.0                | 5      |
-| null_count | 0.0                | 0     | 0.0                | 0      |
-| mean       | 3.0                | null  | 380.2              | null   |
-| std        | 1.5811388300841898 | null  | 323.87142510570453 | null   |
-| min        | 1.0                | go    | 76.0               | A      |
-| max        | 5.0                | ruby  | 899.0              | C      |
-| median     | 3.0                | null  | 228.0              | null   |
-+------------+--------------------+-------+--------------------+--------+
++------------+--------------------+-------+-------------------+--------+
+| describe   | nrs                | names | random            | groups |
++------------+--------------------+-------+-------------------+--------+
+| count      | 5.0                | 5     | 5.0               | 5      |
+| null_count | 0.0                | 0     | 0.0               | 0      |
+| mean       | 3.0                | null  | 560.2             | null   |
+| std        | 1.5811388300841898 | null  | 378.2825663442607 | null   |
+| min        | 1.0                | go    | 122.0             | A      |
+| max        | 5.0                | ruby  | 949.0             | C      |
+| median     | 3.0                | null  | 557.0             | null   |
++------------+--------------------+-------+-------------------+--------+
 </pre></div>
 </div>
 </div>
