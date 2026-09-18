@@ -1761,6 +1761,11 @@ def regexp_like(
     Tests a string using a regular expression returning true if at least one match,
     false otherwise.
 
+    Args:
+        string: Data to test against the regular expression.
+        regex: Regular expression to search for.
+        flags: Flags to control regex behavior.
+
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": ["hello123"]})
@@ -1796,6 +1801,11 @@ def regexp_match(
 
     Returns an array with each element containing the leftmost-first match of the
     corresponding index in ``regex`` to string in ``string``.
+
+    Args:
+        string: Data to match against the regular expression.
+        regex: Regular expression to search for.
+        flags: Flags to control regex behavior.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1838,6 +1848,13 @@ def regexp_replace(
 
     Supported flags with the addition of 'g' can be found at
     <https://docs.rs/regex/latest/regex/#grouping-and-flags>
+
+    Args:
+        string: Data to search for the regular expression match.
+        pattern: Regular expression to search for.
+        replacement: Text substituted for each match.
+        flags: Flags to control regex behavior. Add ``g`` to replace every
+            match rather than only the first.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1884,6 +1901,12 @@ def regexp_count(
 
     Optional start position (the first position is 1) to search for the regular
     expression.
+
+    Args:
+        string: Data to search for the regular expression match.
+        pattern: Regular expression to search for.
+        start: Position to start the search (the first position is 1).
+        flags: Flags to control regex behavior.
 
     Examples:
         >>> ctx = dfn.SessionContext()
