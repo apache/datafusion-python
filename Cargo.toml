@@ -43,7 +43,7 @@ pyo3-log = "0.13.3"
 chrono = { version = "0.4", default-features = false }
 arrow = { version = "59" }
 arrow-array = { version = "59" }
-arrow-schema = { version = "59" }
+arrow-schema = { version = "60" }
 arrow-select = { version = "59" }
 datafusion = { version = "55.1.0" }
 datafusion-substrait = { version = "55.1.0" }
