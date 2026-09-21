@@ -59,11 +59,27 @@ this section only makes sense once they are distinct in your head:
   the codecs that serialize them.
 - **A planner library** — owns a query planner and the configuration it needs.
 
-The worked examples in this repository use two separate crates,
-[`datafusion-ffi-example`] and [`datafusion-ffi-query-planner-example`], so
-each role has a distinct shared-library identity. A real library may play more
-than one role; keeping them separate in the examples is what makes the
-boundaries observable.
+A real library may play more than one role. Keeping them in separate crates is
+what makes the boundaries observable, because each one is then a distinct
+shared library and the FFI conversions are real rather than same-library
+downcasts.
+
+The examples in this repository are three trees, and it is worth knowing which
+one answers your question:
+
+- [`examples/distributed`] is the **worked example**, and the place to start.
+  Three libraries — functions, tables, and an engine — cooperate on one query
+  whose leaf stage runs in separate worker processes. It is also the only
+  example whose plans genuinely leave the process, so it is where the codecs
+  encode durable metadata rather than tokens.
+- [`datafusion-ffi-example`] is the **capsule-protocol test bed**: one of every
+  hook, exercised hard. Read it to see the shape of a getter, not to see a
+  library designed well.
+- [`datafusion-ffi-query-planner-example`] is the **planner-composition test
+  bed**: what happens when more than one library contributes a query planner,
+  and how `fallback` nests them. The distributed example cannot cover this —
+  a planner that rewrites the plan into stages has to plan for itself, so it
+  has no use for a fallback.
 
 The session owns the codecs used for the exchange and supplies them to the
 foreign planner. That is what lets the planner decode provider-owned objects,
@@ -134,3 +150,4 @@ checklist
 
 [`datafusion-ffi-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example
 [`datafusion-ffi-query-planner-example`]: https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-query-planner-example
+[`examples/distributed`]: https://github.com/apache/datafusion-python/tree/main/examples/distributed

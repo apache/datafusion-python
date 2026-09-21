@@ -166,7 +166,19 @@ class ExecutionPlan:
         return [ExecutionPlan(e) for e in self._raw_plan.children()]
 
     def display(self) -> str:
-        """Print the physical plan."""
+        """Print the physical plan.
+
+        A node contributed by an extension library prints as its FFI wrapper
+        rather than as itself, which changes how it can be matched; see
+        :ref:`extension_foreign_node_display`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+            >>> df.execution_plan().display().strip()
+            'DataSourceExec: partitions=1, partition_sizes=[1]'
+        """
         return self._raw_plan.display()
 
     def display_indent(self) -> str:
@@ -231,9 +243,11 @@ class ExecutionPlan:
 
         Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
         positional, and there is no fallback to a worker or global context.
-        ``ctx`` need share nothing with the session that encoded the plan: a
+        ``ctx`` need not share the encoding session's registered tables: a
         scan over a table registered from record batches decodes here, because
-        the batches travel inside the encoded scan.
+        the batches travel inside the encoded scan. It does need the same
+        extension codecs, which are what decode any node an extension library
+        defines.
 
         See Also:
             :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
@@ -246,6 +260,9 @@ class ExecutionPlan:
         When ``ctx`` is supplied, encoding routes through the codecs
         installed on it with
         :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+        Without it, no extension codec is consulted, so a node an extension
+        library defines fails to encode; inline Python UDFs still travel,
+        since they are not carried by an extension codec.
 
         Unlike :py:meth:`LogicalPlan.to_bytes`, a plan reading a table
         registered from record batches does round-trip: the batches travel
@@ -387,8 +404,9 @@ class PhysicalPartitioning:
         """The expressions rows are hashed on, or ``None`` for other schemes.
 
         Physical expressions have no Python representation, so these are
-        returned in their displayed form. ``None`` covers ``"Range"`` as well,
-        whose ordering and split points this class does not expose.
+        returned in their displayed form. ``"Range"`` reports ``None`` too,
+        even though it does partition on expressions: its ordering and split
+        points are not exposed here.
 
         Examples:
             >>> import pyarrow as pa

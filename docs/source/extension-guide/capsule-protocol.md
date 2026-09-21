@@ -88,6 +88,47 @@ original `Arc` and skips the boundary entirely, and only otherwise wraps it in
 a `ForeignTableProvider`. Which one you get is an implementation detail, and
 both implement `TableProvider`.
 
+(extension_foreign_node_display)=
+
+## A foreign node prints as its wrapper
+
+Which one you get stops being invisible in one place you are likely to look:
+the plan's display text.
+
+`ForeignExecutionPlan` implements `DisplayAs` on its own behalf and never calls
+the wrapped node's `fmt_as`. What the receiver prints is the wrapper's format
+with the node's `name()` — the bare type name — embedded in it:
+
+```text
+FFI_ExecutionPlan: ShuffleStageExec, number_of_children=1
+```
+
+not the `ShuffleStageExec: stage=1` that the node writes about itself. Two
+things follow, and both bite the same task: finding your own node in a plan the
+host built, which is how you confirm your planner or optimizer rule fired.
+
+**Match by containment.** Your node's name lands in the middle of the string,
+so `display().startswith("ShuffleStageExec")` and a `^ShuffleStageExec` regex
+are both false. Test for the name being *in* the text.
+
+**Anything `fmt_as` wrote is gone.** The wrapper reports a name and a child
+count; every parameter your node prints about itself — a stage number, a path,
+a partition count — is dropped, and no amount of parsing gets it back. Carry
+what you need inside the encoded plan, or recompute it from something the host
+can still see, such as the node's position in a walk of the tree.
+
+The trap is that neither mistake fails in a small test. The conversion
+described above hands back the original `Arc` when the provider and the
+receiver turn out to be the same shared library, and a node that never crossed
+the boundary prints as itself. So an anchored match — or a regex that reads a
+parameter out of the display — passes for a node your library both built and
+inspected, then silently stops matching once a second library is genuinely
+involved. There is no exception; a branch just stops being taken.
+
+`find_stages` in [`examples/distributed`] does both halves: a containment test,
+and a stage id recomputed from pre-order position because the display no longer
+carries it.
+
 ## Wrapping it in a capsule
 
 In order to share these FFI structures, we need to wrap them in some kind of
@@ -236,3 +277,4 @@ the session that is actually running the query — see
 library to construct a `SessionContext` of its own.
 
 [datafusion-ffi]: https://crates.io/crates/datafusion-ffi
+[`examples/distributed`]: https://github.com/apache/datafusion-python/tree/main/examples/distributed

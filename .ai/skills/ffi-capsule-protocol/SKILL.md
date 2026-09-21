@@ -67,8 +67,13 @@ above: it takes a second argument, the planner assembled so far. A session has
 one planner slot, so planners compose by nesting rather than by chaining, and
 the host hands each bundle the previous layer instead of letting it capture one.
 Wrap `fallback` and delegate to it; returning a planner that ignores it discards
-every layer beneath, including one the session already had. It runs after every
-bundle's codecs are installed, so `ctx` carries the final chains.
+every layer beneath, including one the session already had. The one legitimate
+exception is a planner that *rewrites* the plan (splitting it into stages, say):
+it cannot delegate, because a fallback returns nodes it can neither downcast nor
+serialize, so it plans for itself against its own optimizer rules —
+`examples/distributed/engine-library` is the worked case, and
+`docs/source/extension-guide/query-planners.md` argues it. The hook runs after
+every bundle's codecs are installed, so `ctx` carries the final chains.
 
 That is also the only hook where it does. `__datafusion_session_components__`
 runs before anything is installed, so its `ctx` still carries the chains the
