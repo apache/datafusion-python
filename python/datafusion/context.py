@@ -70,6 +70,7 @@ from datafusion.catalog import (
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.extensions import (
+    PhysicalOptimizerRuleExportable,
     QueryPlannerExportable,
     SessionComponentsExportable,
     SessionExtensionComponents,
@@ -149,16 +150,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -1918,7 +1909,8 @@ class SessionContext:
         every capsule has been validated, so a hook that raises leaves the
         session as it was. A hook that *mutates* the context it is handed —
         registering a table, say — is not rolled back, which is why bundle
-        objects must be configuration-only.
+        objects must be configuration-only. See
+        :ref:`extension_bundles_transaction`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
@@ -2030,6 +2022,11 @@ class SessionContext:
                 continue
             planner = new.ctx._export_query_planner(supplied)
 
+        # The commit step. Everything above is allowed to raise; this is not.
+        # See docs/source/contributor-guide/ffi-internals.md, "Why
+        # `with_extensions` commits last", for what a new component kind has to
+        # do to keep that true.
+        #
         # Rebinding the session's planner is a side effect on state shared with
         # every other handle, so do not pay it for a call that installs nothing
         # -- the same guard `with_python_udf_inlining` carries. With no codec

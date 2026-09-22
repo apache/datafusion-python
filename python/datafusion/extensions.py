@@ -32,11 +32,12 @@ then every :py:class:`SessionPlannerExportable` runs in argument order. A bundle
 implements either hook or both. Bundle order is significant for planners, which
 nest, and irrelevant for codecs, which accumulate.
 
-Of the four names here, only the two bundle hooks are ``@runtime_checkable``,
+Of the five names here, only the two bundle hooks are ``@runtime_checkable``,
 because :py:meth:`~datafusion.context.SessionContext.with_extensions`
-dispatches on them from Python. :py:class:`QueryPlannerExportable` is a type
-hint only, matching the other capsule-getter protocols in
-:py:mod:`datafusion.user_defined` and :py:mod:`datafusion.catalog`.
+dispatches on them from Python. :py:class:`QueryPlannerExportable` and
+:py:class:`PhysicalOptimizerRuleExportable` are type hints only, matching the
+other capsule-getter protocols in :py:mod:`datafusion.user_defined` and
+:py:mod:`datafusion.catalog`.
 
 See :ref:`extension_bundles` in the online documentation for why the phases are
 split and for a worked implementation.
@@ -57,11 +58,47 @@ if TYPE_CHECKING:
     )
 
 __all__ = [
+    "PhysicalOptimizerRuleExportable",
     "QueryPlannerExportable",
     "SessionComponentsExportable",
     "SessionExtensionComponents",
     "SessionPlannerExportable",
 ]
+
+
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension. It takes **no
+    argument**: a rule needs neither a codec nor a task-context provider, so
+    there is nothing session-scoped to hand it.
+
+    Rules accumulate rather than replace. Install one with
+    :py:meth:`~datafusion.context.SessionContext.add_physical_optimizer_rule`
+    — see :ref:`extension_other_hooks`.
+
+    Examples:
+        The getter is the whole protocol, and a capsule is what it must return
+        — anything else is refused where it is installed rather than at plan
+        time:
+
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.add_physical_optimizer_rule(object())
+        Traceback (most recent call last):
+            ...
+        RuntimeError: "Invalid datafusion_physical_optimizer_rule...
+
+        Real usage. Skipped here (needs a built extension library); run for
+        real by ``test_ffi_physical_optimizer_rule_runs_during_planning`` in
+        ``datafusion-ffi-example``.
+
+        >>> from datafusion_ffi_example import MyPhysicalOptimizerRule  # doctest: +SKIP
+        >>> ctx.add_physical_optimizer_rule(MyPhysicalOptimizerRule())  # doctest: +SKIP
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class QueryPlannerExportable(Protocol):
@@ -110,7 +147,7 @@ def _not_a_codec_iterable(field: str, value: object) -> str:
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class SessionExtensionComponents:
     """Components an extension contributes to a session context.
 
@@ -120,6 +157,9 @@ class SessionExtensionComponents:
     component must be created against the context passed to that method;
     components bound to a different session hold a task-context provider for
     that other session and cannot be rebound.
+
+    Construction is keyword-only, so later releases can add component kinds
+    without changing what an existing call means.
 
     Query planners are not listed here. They install in a second phase so each
     can wrap the one before it — see :py:class:`SessionPlannerExportable`.
@@ -233,7 +273,8 @@ class SessionComponentsExportable(Protocol):
     retain that context or cache the components they bound to it, since the
     next call may install onto a different session. They should also avoid
     mutating the context they are handed — a registration made during binding
-    is not rolled back if a later extension fails.
+    is not rolled back if a later extension fails. See
+    :ref:`extension_bundles_transaction`.
 
     A bundle that also contributes a query planner implements
     :py:class:`SessionPlannerExportable` alongside this protocol.
