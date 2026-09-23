@@ -2028,10 +2028,13 @@ class SessionContext:
                 continue
             planner = new.ctx._export_query_planner(supplied)
 
-        # The commit step. Everything above is allowed to raise; this is not.
-        # See docs/source/contributor-guide/ffi-internals.md, "Why
-        # `with_extensions` commits last", for what a new component kind has to
-        # do to keep that true.
+        # The commit step, and the only one that writes to the session. It can
+        # still raise -- `_install_extension_planner` re-imports the capsule
+        # before binding it -- so what keeps the promise is the order, not any
+        # step being incapable of failing: every fallible operation finishes
+        # before the first write. See docs/source/contributor-guide/
+        # ffi-internals.md, "Why `with_extensions` commits last", for what a new
+        # component kind has to do to keep that true.
         #
         # Rebinding the session's planner is a side effect on state shared with
         # every other handle, so do not pay it for a call that installs nothing
