@@ -90,8 +90,9 @@ class PhysicalOptimizerRuleExportable(Protocol):
             ...
         RuntimeError: "Invalid datafusion_physical_optimizer_rule...
 
-        Real usage. Skipped here (needs a built extension library); run for
-        real by ``test_ffi_physical_optimizer_rule_runs_during_planning`` in
+        Real usage. Skipped here (needs a built extension library); parsed out
+        of this docstring and run for real by
+        ``test_physical_optimizer_rule_docstring_example_still_runs`` in
         ``datafusion-ffi-example``.
 
         >>> from datafusion_ffi_example import MyPhysicalOptimizerRule  # doctest: +SKIP
