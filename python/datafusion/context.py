@@ -70,7 +70,6 @@ from datafusion.catalog import (
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.extensions import (
-    PhysicalOptimizerRuleExportable,
     QueryPlannerExportable,
     SessionComponentsExportable,
     SessionExtensionComponents,
@@ -100,6 +99,12 @@ if TYPE_CHECKING:
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
     from datafusion.expr import Expr, SortKey
+
+    # Type-only on purpose. `datafusion.extensions` is the one home for the
+    # capsule-getter protocols; importing this at runtime would restore
+    # `datafusion.context.PhysicalOptimizerRuleExportable`, the 54.0.0 path
+    # that 55.0.0 drops.
+    from datafusion.extensions import PhysicalOptimizerRuleExportable
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -1821,7 +1826,8 @@ class SessionContext:
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                a :class:`PhysicalOptimizerRuleExportable`.
+                a
+                :py:class:`~datafusion.extensions.PhysicalOptimizerRuleExportable`.
 
         Examples:
             >>> from datafusion import SessionContext

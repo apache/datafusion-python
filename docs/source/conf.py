@@ -122,10 +122,7 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Re-exports
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
-        ("class", "datafusion.QueryPlannerExportable"),
         ("class", "datafusion.SessionExtensionComponents"),
-        ("class", "datafusion.SessionComponentsExportable"),
-        ("class", "datafusion.SessionPlannerExportable"),
         ("module", "datafusion.common"),
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),

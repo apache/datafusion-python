@@ -127,7 +127,7 @@ class QueryPlannerExportable(Protocol):
 
         The protocol itself is not runtime-checkable:
 
-        >>> from datafusion import QueryPlannerExportable
+        >>> from datafusion.extensions import QueryPlannerExportable
         >>> try:
         ...     isinstance(ctx, QueryPlannerExportable)
         ... except TypeError as e:
@@ -291,10 +291,8 @@ class SessionComponentsExportable(Protocol):
         The codecs this bundle contributes.
 
     Examples:
-        >>> from datafusion import (
-        ...     SessionExtensionComponents,
-        ...     SessionComponentsExportable,
-        ... )
+        >>> from datafusion import SessionExtensionComponents
+        >>> from datafusion.extensions import SessionComponentsExportable
         >>> class MyLibraryExtension:
         ...     def __datafusion_session_components__(self, ctx):
         ...         return SessionExtensionComponents()
@@ -355,7 +353,8 @@ class SessionPlannerExportable(Protocol):
         worth contrasting, because both plan queries successfully and only one
         of them is the no-op:
 
-        >>> from datafusion import SessionContext, SessionPlannerExportable
+        >>> from datafusion import SessionContext
+        >>> from datafusion.extensions import SessionPlannerExportable
         >>> class Contributes:
         ...     def __datafusion_session_planner__(self, ctx, fallback):
         ...         return None  # the no-op: session keeps its own planner
