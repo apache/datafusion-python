@@ -666,6 +666,30 @@ installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.</p>
 </section>
+<section id="capsule-getter-protocols-moved-to-datafusion-extensions">
+<h3>Capsule-getter protocols moved to <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code><a class="headerlink" href="#capsule-getter-protocols-moved-to-datafusion-extensions" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code> now lives in <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code>, next to
+the other protocols an extension library implements against. It was previously
+importable from <code class="docutils literal notranslate"><span class="pre">datafusion.context</span></code>, and that path is gone.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicalOptimizerRuleExportable</span>  <span class="c1"># before</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicalOptimizerRuleExportable</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>This affects type annotations only. The protocol is structural and not
+<code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>, so nothing imports it to call <code class="docutils literal notranslate"><span class="pre">isinstance</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">SessionContext.add_physical_optimizer_rule</span></code> is unchanged — a rule object that
+worked before still works, whether or not its library names the protocol
+anywhere.</p>
+<p>The bundle protocols added in this release —  <code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code>, and <code class="docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code> — are reached the
+same way, through <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code> rather than the package root. They are
+new in 55.0.0, so no earlier import path existed. <code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code>
+stays at the root, because a bundle constructs one rather than merely naming it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionExtensionComponents</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionComponentsExportable</span>
+</pre></div>
+</div>
+</section>
 <section id="sessioncontext-execute-renamed-its-second-parameter">
 <h3><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter<a class="headerlink" href="#sessioncontext-execute-renamed-its-second-parameter" title="Link to this heading">#</a></h3>
 <p>The parameter is a single partition index, not a count, and is now named
@@ -885,6 +909,7 @@ using the specific datafusion project crates.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#capsule-getter-protocols-moved-to-datafusion-extensions">Capsule-getter protocols moved to <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sessioncontext-execute-renamed-its-second-parameter"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
 </ul>

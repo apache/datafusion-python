@@ -41,7 +41,6 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
-   datafusion.context.PhysicalOptimizerRuleExportable
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
@@ -76,20 +75,6 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
-
-
-.. py:class:: PhysicalOptimizerRuleExportable
-
-   Bases: :py:obj:`Protocol`
-
-
-   Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-   The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-   typically produced by a separate compiled extension.
-
-
-   .. py:method:: __datafusion_physical_optimizer_rule__() -> object
 
 
 .. py:class:: RuntimeEnvBuilder
@@ -632,7 +617,7 @@ Module Contents
 
 
 
-   .. py:method:: add_physical_optimizer_rule(rule: PhysicalOptimizerRuleExportable) -> None
+   .. py:method:: add_physical_optimizer_rule(rule: datafusion.extensions.PhysicalOptimizerRuleExportable) -> None
 
       Append a user-defined physical optimizer rule to the session.
 
@@ -643,7 +628,8 @@ Module Contents
       and catalogs are preserved.
 
       :param rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                   a :class:`PhysicalOptimizerRuleExportable`.
+                   a
+                   :py:class:`~datafusion.extensions.PhysicalOptimizerRuleExportable`.
 
       .. rubric:: Examples
 
@@ -1954,7 +1940,8 @@ Module Contents
       every capsule has been validated, so a hook that raises leaves the
       session as it was. A hook that *mutates* the context it is handed —
       registering a table, say — is not rolled back, which is why bundle
-      objects must be configuration-only.
+      objects must be configuration-only. See
+      :ref:`extension_bundles_transaction`.
 
       Shares its session with this context — see :py:class:`SessionContext`.
 

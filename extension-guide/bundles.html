@@ -780,13 +780,18 @@ for direct ones. The wrapper travels with the codec; the bundle does not.</p>
 a capsule.</p>
 </section>
 <section id="failure-and-rollback">
-<h2>Failure and rollback<a class="headerlink" href="#failure-and-rollback" title="Link to this heading">#</a></h2>
+<span id="extension-bundles-transaction"></span><h2>Failure and rollback<a class="headerlink" href="#failure-and-rollback" title="Link to this heading">#</a></h2>
 <p>Nothing is written to the session until every factory has returned and every
 capsule has been validated, so a factory that raises leaves the session exactly
 as it was. A factory that mutates the context it is handed — registering a
 table, say — is <strong>not</strong> rolled back, which is why bundle objects must be
 configuration-only: create fresh components on each call, never cache bound
 components, and do not retain the context passed in.</p>
+<p>Declaring a component is what buys you that guarantee. Anything you return from
+your hook is validated while a failure still costs nothing, and is written only
+after every bundle in the call has succeeded. Anything you register yourself is
+written immediately, before the other bundles have even run. The ordering that
+makes this hold is recorded at <a class="reference internal" href="../contributor-guide/ffi-internals.html#ffi-internals-commit-order"><span class="std std-ref">Why with_extensions commits last</span></a>.</p>
 <p>Like every other derivation, the returned context is a handle on the <em>same</em>
 session as the receiver — see <a class="reference internal" href="sessions.html#extension-sessions"><span class="std std-ref">Sessions, handles, and lifetimes</span></a>. Only the Python-side
 codec chains belong to the returned handle; the planner is installed on the

@@ -562,22 +562,19 @@ execution model.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.ArrowStreamExportable" title="datafusion.context.ArrowStreamExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a></p></td>
 <td><p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a></p></td>
-<td><p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -608,20 +605,6 @@ execution model.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.ArrowStreamExportable.__arrow_c_stream__">
 <span class="sig-name descname"><span class="pre">__arrow_c_stream__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">PhysicalOptimizerRuleExportable</span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p>
-<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_PhysicalOptimizerRule</span></code>,
-typically produced by a separate compiled extension.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
-<span class="sig-name descname"><span class="pre">__datafusion_physical_optimizer_rule__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1277,7 +1260,7 @@ a non-file scheme is missing a host/bucket component.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.add_physical_optimizer_rule">
-<span class="sig-name descname"><span class="pre">add_physical_optimizer_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><span class="pre">PhysicalOptimizerRuleExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_physical_optimizer_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../extensions/index.html#datafusion.extensions.PhysicalOptimizerRuleExportable" title="datafusion.extensions.PhysicalOptimizerRuleExportable"><span class="pre">datafusion.extensions.PhysicalOptimizerRuleExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.add_physical_optimizer_rule" title="Link to this definition">#</a></dt>
 <dd><p>Append a user-defined physical optimizer rule to the session.</p>
 <p>The rule is imported via its <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_optimizer_rule__</span></code>
 PyCapsule, typically produced by a separate compiled extension. The
@@ -1287,7 +1270,8 @@ and catalogs are preserved.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>rule</strong> – Object exposing <code class="docutils literal notranslate"><span class="pre">__datafusion_physical_optimizer_rule__</span></code>,
-a <a class="reference internal" href="#datafusion.context.PhysicalOptimizerRuleExportable" title="datafusion.context.PhysicalOptimizerRuleExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a>.</p>
+a
+<a class="reference internal" href="../extensions/index.html#datafusion.extensions.PhysicalOptimizerRuleExportable" title="datafusion.extensions.PhysicalOptimizerRuleExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a>.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -2781,7 +2765,8 @@ planner hook to contribute no planner; see
 every capsule has been validated, so a hook that raises leaves the
 session as it was. A hook that <em>mutates</em> the context it is handed —
 registering a table, say — is not rolled back, which is why bundle
-objects must be configuration-only.</p>
+objects must be configuration-only. See
+<a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles-transaction"><span class="std std-ref">Failure and rollback</span></a>.</p>
 <p>Shares its session with this context — see <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
 <p>See <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a> in the online documentation for why the
 phases are split, how to contribute a bundle’s two halves at different
@@ -3120,10 +3105,6 @@ duck-typing it is not optional.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable"><code class="docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__"><code class="docutils literal notranslate"><span class="pre">ArrowStreamExportable.__arrow_c_stream__()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder"><code class="docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a><ul class="nav section-nav flex-column">

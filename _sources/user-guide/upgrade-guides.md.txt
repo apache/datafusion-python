@@ -159,6 +159,34 @@ installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.
 
+### Capsule-getter protocols moved to `datafusion.extensions`
+
+`PhysicalOptimizerRuleExportable` now lives in `datafusion.extensions`, next to
+the other protocols an extension library implements against. It was previously
+importable from `datafusion.context`, and that path is gone.
+
+```python
+from datafusion.context import PhysicalOptimizerRuleExportable  # before
+from datafusion.extensions import PhysicalOptimizerRuleExportable  # after
+```
+
+This affects type annotations only. The protocol is structural and not
+`@runtime_checkable`, so nothing imports it to call `isinstance`, and
+`SessionContext.add_physical_optimizer_rule` is unchanged — a rule object that
+worked before still works, whether or not its library names the protocol
+anywhere.
+
+The bundle protocols added in this release —  `QueryPlannerExportable`,
+`SessionComponentsExportable`, and `SessionPlannerExportable` — are reached the
+same way, through `datafusion.extensions` rather than the package root. They are
+new in 55.0.0, so no earlier import path existed. `SessionExtensionComponents`
+stays at the root, because a bundle constructs one rather than merely naming it:
+
+```python
+from datafusion import SessionExtensionComponents
+from datafusion.extensions import SessionComponentsExportable
+```
+
 ### `SessionContext.execute` renamed its second parameter
 
 The parameter is a single partition index, not a count, and is now named

@@ -544,27 +544,31 @@ installed with <a class="reference internal" href="../context/index.html#datafus
 then every <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> runs in argument order. A bundle
 implements either hook or both. Bundle order is significant for planners, which
 nest, and irrelevant for codecs, which accumulate.</p>
-<p>Of the four names here, only the two bundle hooks are <code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>,
+<p>Of the five names here, only the two bundle hooks are <code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>,
 because <a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.with_extensions" title="datafusion.context.SessionContext.with_extensions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_extensions()</span></code></a>
-dispatches on them from Python. <a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a> is a type
-hint only, matching the other capsule-getter protocols in
-<a class="reference internal" href="../user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> and <a class="reference internal" href="../catalog/index.html#module-datafusion.catalog" title="datafusion.catalog"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.catalog</span></code></a>.</p>
+dispatches on them from Python. <a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a> and
+<a class="reference internal" href="#datafusion.extensions.PhysicalOptimizerRuleExportable" title="datafusion.extensions.PhysicalOptimizerRuleExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a> are type hints only, matching the
+other capsule-getter protocols in <a class="reference internal" href="../user_defined/index.html#module-datafusion.user_defined" title="datafusion.user_defined"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.user_defined</span></code></a> and
+<a class="reference internal" href="../catalog/index.html#module-datafusion.catalog" title="datafusion.catalog"><code class="xref py py-mod docutils literal notranslate"><span class="pre">datafusion.catalog</span></code></a>.</p>
 <p>See <a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles"><span class="std std-ref">Extension bundles</span></a> in the online documentation for why the phases are
 split and for a worked implementation.</p>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.PhysicalOptimizerRuleExportable" title="datafusion.extensions.PhysicalOptimizerRuleExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a></p></td>
+<td><p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.QueryPlannerExportable" title="datafusion.extensions.QueryPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a></p></td>
 <td><p>Type hint for object that has a __datafusion_query_planner__ PyCapsule.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.SessionComponentsExportable" title="datafusion.extensions.SessionComponentsExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code></a></p></td>
 <td><p>Type hint for extension bundles installable via <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents" title="datafusion.extensions.SessionExtensionComponents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.SessionExtensionComponents" title="datafusion.extensions.SessionExtensionComponents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code></a></p></td>
 <td><p>Components an extension contributes to a session context.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a></p></td>
 <td><p>Type hint for extension bundles that contribute a query planner.</p></td>
 </tr>
 </tbody>
@@ -573,6 +577,45 @@ split and for a worked implementation.</p>
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.extensions.PhysicalOptimizerRuleExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">PhysicalOptimizerRuleExportable</span></span><a class="headerlink" href="#datafusion.extensions.PhysicalOptimizerRuleExportable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.</p>
+<p>The method returns a PyCapsule wrapping an <code class="docutils literal notranslate"><span class="pre">FFI_PhysicalOptimizerRule</span></code>,
+typically produced by a separate compiled extension. It takes <strong>no
+argument</strong>: a rule needs neither a codec nor a task-context provider, so
+there is nothing session-scoped to hand it.</p>
+<p>Rules accumulate rather than replace. Install one with
+<a class="reference internal" href="../context/index.html#datafusion.context.SessionContext.add_physical_optimizer_rule" title="datafusion.context.SessionContext.add_physical_optimizer_rule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_physical_optimizer_rule()</span></code></a>
+— see <a class="reference internal" href="../../../extension-guide/other-components.html#extension-other-hooks"><span class="std std-ref">Optimizer rules and configuration</span></a>.</p>
+<p class="rubric">Examples</p>
+<p>The getter is the whole protocol, and a capsule is what it must return
+— anything else is refused where it is installed rather than at plan
+time:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">add_physical_optimizer_rule</span><span class="p">(</span><span class="nb">object</span><span class="p">())</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">RuntimeError</span>: <span class="n">&quot;Invalid datafusion_physical_optimizer_rule...</span>
+</pre></div>
+</div>
+<p>Real usage. Skipped here (needs a built extension library); parsed out
+of this docstring and run for real by
+<code class="docutils literal notranslate"><span class="pre">test_physical_optimizer_rule_docstring_example_still_runs</span></code> in
+<code class="docutils literal notranslate"><span class="pre">datafusion-ffi-example</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion_ffi_example</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyPhysicalOptimizerRule</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">add_physical_optimizer_rule</span><span class="p">(</span><span class="n">MyPhysicalOptimizerRule</span><span class="p">())</span>  
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.extensions.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__">
+<span class="sig-name descname"><span class="pre">__datafusion_physical_optimizer_rule__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.extensions.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.extensions.QueryPlannerExportable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.extensions.</span></span><span class="sig-name descname"><span class="pre">QueryPlannerExportable</span></span><a class="headerlink" href="#datafusion.extensions.QueryPlannerExportable" title="Link to this definition">#</a></dt>
@@ -598,7 +641,7 @@ already has:</p>
 </pre></div>
 </div>
 <p>The protocol itself is not runtime-checkable:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryPlannerExportable</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryPlannerExportable</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">QueryPlannerExportable</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -628,7 +671,8 @@ components on every call using the context supplied by
 retain that context or cache the components they bound to it, since the
 next call may install onto a different session. They should also avoid
 mutating the context they are handed — a registration made during binding
-is not rolled back if a later extension fails.</p>
+is not rolled back if a later extension fails. See
+<a class="reference internal" href="../../../extension-guide/bundles.html#extension-bundles-transaction"><span class="std std-ref">Failure and rollback</span></a>.</p>
 <p>A bundle that also contributes a query planner implements
 <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a> alongside this protocol.</p>
 <dl class="field-list simple">
@@ -645,10 +689,8 @@ sees the completed chains — see <a class="reference internal" href="../../../e
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<span class="gp">... </span>    <span class="n">SessionExtensionComponents</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">SessionComponentsExportable</span><span class="p">,</span>
-<span class="gp">... </span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionExtensionComponents</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionComponentsExportable</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyLibraryExtension</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_components__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">SessionExtensionComponents</span><span class="p">()</span>
@@ -675,6 +717,8 @@ and consumed by
 component must be created against the context passed to that method;
 components bound to a different session hold a task-context provider for
 that other session and cannot be rebound.</p>
+<p>Construction is keyword-only, so later releases can add component kinds
+without changing what an existing call means.</p>
 <p>Query planners are not listed here. They install in a second phase so each
 can wrap the one before it — see <a class="reference internal" href="#datafusion.extensions.SessionPlannerExportable" title="datafusion.extensions.SessionPlannerExportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code></a>.</p>
 <p class="rubric">Examples</p>
@@ -792,7 +836,8 @@ DataFusion default unless one was installed earlier.</p></li>
 <code class="docutils literal notranslate"><span class="pre">my_library.Planner(fallback=fallback)</span></code>. The two degenerate cases are
 worth contrasting, because both plan queries successfully and only one
 of them is the no-op:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">SessionPlannerExportable</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionPlannerExportable</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Contributes</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">__datafusion_session_planner__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># the no-op: session keeps its own planner</span>
@@ -871,6 +916,10 @@ of them is the no-op:</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.PhysicalOptimizerRuleExportable"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__"><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable.__datafusion_physical_optimizer_rule__()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.QueryPlannerExportable"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.extensions.QueryPlannerExportable.__datafusion_query_planner__"><code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable.__datafusion_query_planner__()</span></code></a></li>
 </ul>

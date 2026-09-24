@@ -620,6 +620,48 @@ library would serialize, and would do it with the codecs it was imported with.</
 <p>The extension-facing consequence — install codecs before a layered planner, and
 prefer <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> — is documented at <a class="reference internal" href="../extension-guide/query-planners.html#planner-codec-rebinding"><span class="std std-ref">Install codecs before a layered planner</span></a>.</p>
 </section>
+<section id="why-with-extensions-commits-last">
+<span id="ffi-internals-commit-order"></span><h2>Why <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> commits last<a class="headerlink" href="#why-with-extensions-commits-last" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> promises that a bundle which raises leaves the session as it
+was, apart from anything a hook writes to the context it is handed
+(<a class="reference internal" href="../extension-guide/bundles.html#extension-bundles-transaction"><span class="std std-ref">Failure and rollback</span></a>). Keeping that promise is an ordering constraint on the implementation, not
+a property of any one step, because the planner is bound on the shared
+<code class="docutils literal notranslate"><span class="pre">SessionState</span></code> rather than on the returned handle.</p>
+<p>A call therefore splits into four steps, of which only the last writes:</p>
+<ol class="arabic simple">
+<li><p><strong>Collect.</strong> Every <code class="docutils literal notranslate"><span class="pre">__datafusion_session_components__</span></code> runs and its codecs
+are gathered. Nothing is installed yet, so a hook that raises here has
+touched nothing.</p></li>
+<li><p><strong>Chains.</strong> The codecs are assembled into the returned handle. Codec chains
+live on that handle rather than on the session, so this step writes nothing
+to the session even though it can fail on a bad capsule or a duplicate id.</p></li>
+<li><p><strong>Resolve.</strong> Every <code class="docutils literal notranslate"><span class="pre">__datafusion_session_planner__</span></code> runs, in argument order,
+against the completed chains, and each supplied planner is exported to a
+capsule. Every hook that can raise has run by the end of this step.</p></li>
+<li><p><strong>Commit.</strong> The accumulated planner is re-imported from its capsule and
+bound, in a single <code class="docutils literal notranslate"><span class="pre">SessionState</span></code> rebuild. The bind is skipped entirely when
+the call installed nothing, so an empty call does not drag a planner sitting
+on another handle’s codecs onto this one’s.</p></li>
+</ol>
+<p>Only step 4 touches the session, and it is not itself infallible:
+<code class="docutils literal notranslate"><span class="pre">_install_extension_planner</span></code> runs <code class="docutils literal notranslate"><span class="pre">ffi_query_planner_from_pycapsule</span></code> before it
+calls <code class="docutils literal notranslate"><span class="pre">set_session_query_planner</span></code>, which cannot fail. The property that keeps
+the promise is therefore about order, not about any step being incapable of
+raising — every fallible operation, including the ones inside the commit,
+completes before the first write.</p>
+<p>That is the rule for the next field added to <code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code>, not
+only a description of the current code: a new kind of component must do its
+fallible work — importing a capsule, resolving a name — before anything is
+written, so no failure can leave the session half-updated.</p>
+<p>There would be nothing to roll back to if one did. The returned handle shares one
+session with the receiver, so the damage is visible from every other handle;
+and undoing a registration is not the same as restoring what it displaced,
+because deregistering a function that shadowed a built-in removes the built-in
+too. The split is cheaper than an undo log that cannot be written correctly.</p>
+<p>The extension-facing statement of this is
+<a class="reference internal" href="../extension-guide/bundles.html#extension-bundles-transaction"><span class="std std-ref">Failure and rollback</span></a>, which says only that declaring a
+component is safe where registering one during the hook is not.</p>
+</section>
 <section id="two-argument-kinds-for-one-convention">
 <h2>Two argument kinds for one convention<a class="headerlink" href="#two-argument-kinds-for-one-convention" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">CapsuleGetterArg</span></code> in <code class="docutils literal notranslate"><span class="pre">crates/util/src/lib.rs</span></code> distinguishes three cases: no
@@ -693,6 +735,7 @@ read the host’s logical codec off” — rather than by type.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-session-one-arc-sessioncontext">One session, one <code class="docutils literal notranslate"><span class="pre">Arc&lt;SessionContext&gt;</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-planner-codec-rebinding-is-one-level-deep">Why planner codec rebinding is one level deep</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-with-extensions-commits-last">Why <code class="docutils literal notranslate"><span class="pre">with_extensions</span></code> commits last</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#two-argument-kinds-for-one-convention">Two argument kinds for one convention</a></li>
 </ul>
   </nav></div>
