@@ -1086,6 +1086,21 @@ def test_session_extension_components_rejects_a_single_codec(field):
         SessionExtensionComponents(**{field: codec})
 
 
+def test_session_extension_components_is_keyword_only():
+    codecs = (
+        _NamedCodec(
+            SessionContext().__datafusion_logical_extension_codec__(),
+            "my_library.logical",
+        ),
+    )
+
+    with pytest.raises(TypeError, match=r"positional argument"):
+        SessionExtensionComponents(codecs)
+
+    components = SessionExtensionComponents(logical_extension_codecs=codecs)
+    assert components.logical_extension_codecs == codecs
+
+
 def test_session_extension_components_rejects_a_string():
     """A str is iterable, so it needs refusing on its own.
 

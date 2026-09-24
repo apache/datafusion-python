@@ -116,7 +116,8 @@ prefer `with_extensions` — is documented at {ref}`planner_codec_rebinding`.
 ## Why `with_extensions` commits last
 
 `with_extensions` promises that a bundle which raises leaves the session as it
-was. Keeping that promise is an ordering constraint on the implementation, not
+was, apart from anything a hook writes to the context it is handed
+({ref}`extension_bundles_transaction`). Keeping that promise is an ordering constraint on the implementation, not
 a property of any one step, because the planner is bound on the shared
 `SessionState` rather than on the returned handle.
 

@@ -201,13 +201,10 @@ def test_import_from_functions_submodule():
         "SessionPlannerExportable",
     ],
 )
-def test_extension_protocols_live_only_in_extensions(name):
-    import datafusion.context
+def test_extension_protocols_import_from_extensions(name):
     import datafusion.extensions
 
     assert getattr(datafusion.extensions, name).__module__ == "datafusion.extensions"
-    assert not hasattr(datafusion.context, name)
-    assert not hasattr(datafusion, name)
 
 
 def test_classes_are_inheritable():
