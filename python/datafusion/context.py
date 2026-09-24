@@ -58,6 +58,7 @@ from urllib.parse import urlparse
 
 import pyarrow as pa
 
+from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -69,12 +70,6 @@ from datafusion.catalog import (
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
-from datafusion.extensions import (
-    QueryPlannerExportable,
-    SessionComponentsExportable,
-    SessionExtensionComponents,
-    SessionPlannerExportable,
-)
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
     CsvReadOptions,
@@ -101,10 +96,16 @@ if TYPE_CHECKING:
     from datafusion.expr import Expr, SortKey
 
     # Type-only on purpose. `datafusion.extensions` is the one home for the
-    # capsule-getter protocols; importing this at runtime would restore
-    # `datafusion.context.PhysicalOptimizerRuleExportable`, the 54.0.0 path
-    # that 55.0.0 drops.
-    from datafusion.extensions import PhysicalOptimizerRuleExportable
+    # capsule-getter protocols; importing these at runtime would make them
+    # reachable as `datafusion.context.*`, and for
+    # `PhysicalOptimizerRuleExportable` would restore the 54.0.0 path that
+    # 55.0.0 drops. Runtime checks go through the private `_extensions` alias.
+    from datafusion.extensions import (
+        PhysicalOptimizerRuleExportable,
+        QueryPlannerExportable,
+        SessionComponentsExportable,
+        SessionPlannerExportable,
+    )
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -1975,7 +1976,11 @@ class SessionContext:
         """
         for extension in extensions:
             if not isinstance(
-                extension, (SessionComponentsExportable, SessionPlannerExportable)
+                extension,
+                (
+                    _extensions.SessionComponentsExportable,
+                    _extensions.SessionPlannerExportable,
+                ),
             ):
                 msg = (
                     "Extension implements neither "
@@ -1991,10 +1996,10 @@ class SessionContext:
         logical_codecs: list[LogicalExtensionCodecExportable] = []
         physical_codecs: list[PhysicalExtensionCodecExportable] = []
         for extension in extensions:
-            if not isinstance(extension, SessionComponentsExportable):
+            if not isinstance(extension, _extensions.SessionComponentsExportable):
                 continue
             components = extension.__datafusion_session_components__(self)
-            if not isinstance(components, SessionExtensionComponents):
+            if not isinstance(components, _extensions.SessionExtensionComponents):
                 msg = (
                     "__datafusion_session_components__ must return "
                     "SessionExtensionComponents, got "
@@ -2016,7 +2021,7 @@ class SessionContext:
         # rather than wrapping the session's default in an FFI hop.
         planner: _PyCapsule | None = None
         for extension in extensions:
-            if not isinstance(extension, SessionPlannerExportable):
+            if not isinstance(extension, _extensions.SessionPlannerExportable):
                 continue
             fallback = (
                 planner

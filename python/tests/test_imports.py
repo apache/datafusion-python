@@ -192,6 +192,24 @@ def test_import_from_functions_submodule():
         from datafusion.functions import foobar  # noqa: F401
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "PhysicalOptimizerRuleExportable",
+        "QueryPlannerExportable",
+        "SessionComponentsExportable",
+        "SessionPlannerExportable",
+    ],
+)
+def test_extension_protocols_live_only_in_extensions(name):
+    import datafusion.context
+    import datafusion.extensions
+
+    assert getattr(datafusion.extensions, name).__module__ == "datafusion.extensions"
+    assert not hasattr(datafusion.context, name)
+    assert not hasattr(datafusion, name)
+
+
 def test_classes_are_inheritable():
     class MyExecContext(SessionContext):
         pass
