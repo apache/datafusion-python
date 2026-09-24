@@ -58,6 +58,7 @@ from urllib.parse import urlparse
 
 import pyarrow as pa
 
+from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -69,12 +70,6 @@ from datafusion.catalog import (
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
-from datafusion.extensions import (
-    QueryPlannerExportable,
-    SessionComponentsExportable,
-    SessionExtensionComponents,
-    SessionPlannerExportable,
-)
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
     CsvReadOptions,
@@ -99,6 +94,18 @@ if TYPE_CHECKING:
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
     from datafusion.expr import Expr, SortKey
+
+    # Type-only on purpose. `datafusion.extensions` is the one home for the
+    # capsule-getter protocols; importing these at runtime would make them
+    # reachable as `datafusion.context.*`, and for
+    # `PhysicalOptimizerRuleExportable` would restore the 54.0.0 path that
+    # 55.0.0 drops. Runtime checks go through the private `_extensions` alias.
+    from datafusion.extensions import (
+        PhysicalOptimizerRuleExportable,
+        QueryPlannerExportable,
+        SessionComponentsExportable,
+        SessionPlannerExportable,
+    )
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -149,16 +156,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -1830,7 +1827,8 @@ class SessionContext:
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                a :class:`PhysicalOptimizerRuleExportable`.
+                a
+                :py:class:`~datafusion.extensions.PhysicalOptimizerRuleExportable`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -1918,7 +1916,8 @@ class SessionContext:
         every capsule has been validated, so a hook that raises leaves the
         session as it was. A hook that *mutates* the context it is handed —
         registering a table, say — is not rolled back, which is why bundle
-        objects must be configuration-only.
+        objects must be configuration-only. See
+        :ref:`extension_bundles_transaction`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
@@ -1977,7 +1976,11 @@ class SessionContext:
         """
         for extension in extensions:
             if not isinstance(
-                extension, (SessionComponentsExportable, SessionPlannerExportable)
+                extension,
+                (
+                    _extensions.SessionComponentsExportable,
+                    _extensions.SessionPlannerExportable,
+                ),
             ):
                 msg = (
                     "Extension implements neither "
@@ -1993,10 +1996,10 @@ class SessionContext:
         logical_codecs: list[LogicalExtensionCodecExportable] = []
         physical_codecs: list[PhysicalExtensionCodecExportable] = []
         for extension in extensions:
-            if not isinstance(extension, SessionComponentsExportable):
+            if not isinstance(extension, _extensions.SessionComponentsExportable):
                 continue
             components = extension.__datafusion_session_components__(self)
-            if not isinstance(components, SessionExtensionComponents):
+            if not isinstance(components, _extensions.SessionExtensionComponents):
                 msg = (
                     "__datafusion_session_components__ must return "
                     "SessionExtensionComponents, got "
@@ -2018,7 +2021,7 @@ class SessionContext:
         # rather than wrapping the session's default in an FFI hop.
         planner: _PyCapsule | None = None
         for extension in extensions:
-            if not isinstance(extension, SessionPlannerExportable):
+            if not isinstance(extension, _extensions.SessionPlannerExportable):
                 continue
             fallback = (
                 planner
@@ -2030,6 +2033,14 @@ class SessionContext:
                 continue
             planner = new.ctx._export_query_planner(supplied)
 
+        # The commit step, and the only one that writes to the session. It can
+        # still raise -- `_install_extension_planner` re-imports the capsule
+        # before binding it -- so what keeps the promise is the order, not any
+        # step being incapable of failing: every fallible operation finishes
+        # before the first write. See docs/source/contributor-guide/
+        # ffi-internals.md, "Why `with_extensions` commits last", for what a new
+        # component kind has to do to keep that true.
+        #
         # Rebinding the session's planner is a side effect on state shared with
         # every other handle, so do not pay it for a call that installs nothing
         # -- the same guard `with_python_udf_inlining` carries. With no codec

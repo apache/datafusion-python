@@ -281,6 +281,8 @@ for direct ones. The wrapper travels with the codec; the bundle does not.
 The query planner is exempt — it carries no wire id, so it may be an object or
 a capsule.
 
+(extension_bundles_transaction)=
+
 ## Failure and rollback
 
 Nothing is written to the session until every factory has returned and every
@@ -289,6 +291,12 @@ as it was. A factory that mutates the context it is handed — registering a
 table, say — is **not** rolled back, which is why bundle objects must be
 configuration-only: create fresh components on each call, never cache bound
 components, and do not retain the context passed in.
+
+Declaring a component is what buys you that guarantee. Anything you return from
+your hook is validated while a failure still costs nothing, and is written only
+after every bundle in the call has succeeded. Anything you register yourself is
+written immediately, before the other bundles have even run. The ordering that
+makes this hold is recorded at {ref}`ffi_internals_commit_order`.
 
 Like every other derivation, the returned context is a handle on the *same*
 session as the receiver — see {ref}`extension_sessions`. Only the Python-side
