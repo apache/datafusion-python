@@ -593,6 +593,22 @@ def minute(col: Expr) -> Expr:
     return Expr(_f.minute(col.expr))
 
 
+def monthname(col: Expr) -> Expr:
+    """Spark ``monthname``: three-letter abbreviated month name.
+
+    Examples:
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+        >>> r = df.select(dfn.functions.spark.monthname(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'Mar'
+    """
+    return Expr(_f.monthname(col.expr))
+
+
 def second(col: Expr) -> Expr:
     """Spark ``second``: extract second component of a timestamp.
 
@@ -933,6 +949,22 @@ def unix_seconds(col: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
+def weekday(col: Expr) -> Expr:
+    """Spark ``weekday``: day of the week, Monday = 0 through Sunday = 6.
+
+    Examples:
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+        >>> r = df.select(dfn.functions.spark.weekday(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        4
+    """
+    return Expr(_f.weekday(col.expr))
+
+
 def crc32(col: Expr) -> Expr:
     """Spark ``crc32``: cyclic redundancy check value as a bigint.
 
@@ -1114,6 +1146,22 @@ def abs(col: Expr) -> Expr:
     return Expr(_f.abs(col.expr))
 
 
+def atan2(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``atan2``: angle in radians of the point ``(col2, col1)``.
+
+    ``col1`` is the y coordinate and ``col2`` the x coordinate. Both accept
+    native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.atan2(1.0, 0.0).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1.5707963267948966
+    """
+    return Expr(_f.atan2(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
 def ceil(col: Expr) -> Expr:
     """Spark ``ceil``: smallest integer ≥ arg.
 
@@ -1184,6 +1232,21 @@ def hex(col: Expr) -> Expr:
     return Expr(_f.hex(col.expr))
 
 
+def hypot(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``hypot``: ``sqrt(col1^2 + col2^2)`` without intermediate overflow.
+
+    Both arguments accept native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.hypot(3.0, 4.0).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        5.0
+    """
+    return Expr(_f.hypot(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
 def modulus(dividend: Expr | float, divisor: Expr | float) -> Expr:
     """Spark ``mod``: remainder of ``dividend / divisor`` (sign follows dividend).
 
@@ -1214,6 +1277,30 @@ def pmod(dividend: Expr | float, divisor: Expr | float) -> Expr:
         2
     """
     return Expr(_f.pmod(coerce_to_expr(dividend).expr, coerce_to_expr(divisor).expr))
+
+
+def pow(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``pow``: ``col1`` raised to the power ``col2``, as a double.
+
+    Both arguments accept native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.pow(2, 10).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1024.0
+    """
+    return Expr(_f.pow(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
+def power(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``power``: ``col1`` raised to the power ``col2``.
+
+    See Also:
+        This is an alias for :py:func:`pow`.
+    """
+    return pow(col1, col2)
 
 
 def rint(col: Expr) -> Expr:
@@ -1400,6 +1487,25 @@ def concat(*cols: Expr) -> Expr:
     return Expr(_f.concat(*[c.expr for c in cols]))
 
 
+def concat_ws(sep: Expr | str, *cols: Expr) -> Expr:
+    """Spark ``concat_ws``: joins strings and arrays of strings with ``sep``.
+
+    NULL inputs are skipped rather than propagated.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["x"], "b": [None], "c": ["z"]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.concat_ws(
+        ...         "-", dfn.col("a"), dfn.col("b"), dfn.col("c")
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        'x-z'
+    """
+    return Expr(_f.concat_ws(coerce_to_expr(sep).expr, *[c.expr for c in cols]))
+
+
 def elt(*inputs: Expr) -> Expr:
     """Spark ``elt``: returns the n-th input (1-indexed).
 
@@ -1497,6 +1603,19 @@ def luhn_check(col: Expr) -> Expr:
         True
     """
     return Expr(_f.luhn_check(col.expr))
+
+
+def quote(col: Expr) -> Expr:
+    r"""Spark ``quote``: wraps a string in single quotes, escaping inner quotes.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.quote(dfn.lit("it's")).alias("v"))
+        >>> print(r.collect_column("v")[0].as_py())
+        'it\'s'
+    """
+    return Expr(_f.quote(col.expr))
 
 
 def format_string(format: str | Expr, *cols: Expr) -> Expr:
@@ -1735,6 +1854,7 @@ __all__ = [
     # String
     "ascii",
     # Aggregate
+    "atan2",
     "avg",
     "base64",
     "bin",
@@ -1752,6 +1872,7 @@ __all__ = [
     "collect_set",
     "concat",
     # Hash
+    "concat_ws",
     "crc32",
     "csc",
     "date_add",
@@ -1767,6 +1888,7 @@ __all__ = [
     "from_utc_timestamp",
     "hex",
     "hour",
+    "hypot",
     "if_",
     "ilike",
     "is_valid_utf8",
@@ -1784,11 +1906,15 @@ __all__ = [
     "map_from_entries",
     "minute",
     "modulus",
+    "monthname",
     "negative",
     "next_day",
     # URL
     "parse_url",
     "pmod",
+    "pow",
+    "power",
+    "quote",
     "rint",
     "round",
     "sec",
@@ -1821,6 +1947,7 @@ __all__ = [
     "unix_seconds",
     "url_decode",
     "url_encode",
+    "weekday",
     "width_bucket",
     "xxhash64",
 ]

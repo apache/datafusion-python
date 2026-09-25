@@ -745,6 +745,12 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.inner_product,
             {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]},
         ),
+        (f.list_add, f.array_add, {"a": [[1.0, 2.0]], "b": [[3.0, 4.0]]}),
+        (f.list_subtract, f.array_subtract, {"a": [[1.0, 2.0]], "b": [[3.0, 4.0]]}),
+        (f.list_scale, f.array_scale, {"a": [[1.0, 2.0]], "b": [3.0]}),
+        (f.list_sum, f.array_sum, {"a": [[1.0, 2.0, 3.0]]}),
+        (f.list_avg, f.array_avg, {"a": [[1.0, 2.0, 3.0]]}),
+        (f.list_product, f.array_product, {"a": [[1.0, 2.0, 3.0]]}),
     ],
 )
 def test_array_function_aliases(alias_fn, primary_fn, data):
@@ -759,7 +765,69 @@ def test_array_function_aliases(alias_fn, primary_fn, data):
     )
 
 
-@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product, f.dot_product])
+@pytest.mark.parametrize(
+    ("build_expr", "expected"),
+    [
+        pytest.param(
+            lambda: f.array_add(column("a"), column("b")),
+            [[11.0, None, 33.0], [], None],
+            id="array_add",
+        ),
+        pytest.param(
+            lambda: f.array_subtract(column("b"), column("a")),
+            [[9.0, None, 27.0], [], None],
+            id="array_subtract",
+        ),
+        pytest.param(
+            lambda: f.array_scale(column("a"), 2),
+            [[2.0, 4.0, 6.0], [], [None, None]],
+            id="array_scale_native_scalar",
+        ),
+        pytest.param(
+            lambda: f.array_scale(column("a"), literal(None).cast(pa.float64())),
+            [None, None, None],
+            id="array_scale_null_scalar",
+        ),
+        pytest.param(
+            lambda: f.array_sum(column("a")),
+            [6.0, None, None],
+            id="array_sum",
+        ),
+        pytest.param(
+            lambda: f.array_avg(column("a")),
+            [2.0, None, None],
+            id="array_avg",
+        ),
+        pytest.param(
+            lambda: f.array_product(column("a")),
+            [6.0, None, None],
+            id="array_product",
+        ),
+    ],
+)
+def test_array_arithmetic_functions(build_expr, expected):
+    """Element-wise and reducing array math, including NULL and empty rows."""
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {
+            "a": [[1.0, 2.0, 3.0], [], [None, None]],
+            "b": [[10.0, None, 30.0], [], None],
+        }
+    )
+    result = df.select(build_expr().alias("r")).collect_column("r").to_pylist()
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        f.cosine_distance,
+        f.inner_product,
+        f.dot_product,
+        f.array_add,
+        f.array_subtract,
+    ],
+)
 def test_array_distance_length_mismatch_raises(fn):
     """Length-mismatched inputs to vector distance fns should raise at execute."""
     ctx = SessionContext()

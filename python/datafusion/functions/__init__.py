@@ -82,15 +82,18 @@ __all__ = [
     "acosh",
     "alias",
     "any_match",
+    "any_value",
     "approx_distinct",
     "approx_median",
     "approx_percentile_cont",
     "approx_percentile_cont_with_weight",
     "array",
+    "array_add",
     "array_agg",
     "array_any_match",
     "array_any_value",
     "array_append",
+    "array_avg",
     "array_cat",
     "array_compact",
     "array_concat",
@@ -103,6 +106,7 @@ __all__ = [
     "array_except",
     "array_extract",
     "array_filter",
+    "array_first",
     "array_has",
     "array_has_all",
     "array_has_any",
@@ -119,6 +123,7 @@ __all__ = [
     "array_position",
     "array_positions",
     "array_prepend",
+    "array_product",
     "array_push_back",
     "array_push_front",
     "array_remove",
@@ -130,8 +135,11 @@ __all__ = [
     "array_replace_n",
     "array_resize",
     "array_reverse",
+    "array_scale",
     "array_slice",
     "array_sort",
+    "array_subtract",
+    "array_sum",
     "array_to_string",
     "array_transform",
     "array_union",
@@ -230,9 +238,11 @@ __all__ = [
     "left",
     "length",
     "levenshtein",
+    "list_add",
     "list_any_match",
     "list_any_value",
     "list_append",
+    "list_avg",
     "list_cat",
     "list_compact",
     "list_concat",
@@ -245,6 +255,7 @@ __all__ = [
     "list_except",
     "list_extract",
     "list_filter",
+    "list_first",
     "list_has",
     "list_has_all",
     "list_has_any",
@@ -262,6 +273,7 @@ __all__ = [
     "list_position",
     "list_positions",
     "list_prepend",
+    "list_product",
     "list_push_back",
     "list_push_front",
     "list_remove",
@@ -273,8 +285,11 @@ __all__ = [
     "list_replace_n",
     "list_resize",
     "list_reverse",
+    "list_scale",
     "list_slice",
     "list_sort",
+    "list_subtract",
+    "list_sum",
     "list_to_string",
     "list_transform",
     "list_union",
@@ -710,6 +725,46 @@ def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
         This is an alias for :py:func:`array_filter`.
     """
     return array_filter(array, predicate)
+
+
+def array_first(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return the first element of ``array`` for which ``predicate`` is ``True``.
+
+    ``predicate`` may be a Python callable, converted to a lambda
+    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    return a boolean expression. Returns NULL if no element matches.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+        >>> df.select(
+        ...     F.array_first(col("a"), lambda v: v > 2).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        3
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+        >>> df.select(
+        ...     F.array_first(col("a"), predicate).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        3
+
+    See Also:
+        :py:func:`array_filter`, :py:func:`array_any_match`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_first(array.expr, _to_lambda(predicate).expr))
+
+
+def list_first(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return the first element of a list for which a predicate is ``True``.
+
+    See Also:
+        This is an alias for :py:func:`array_first`.
+    """
+    return array_first(array, predicate)
 
 
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
@@ -3687,6 +3742,122 @@ def dot_product(array1: Expr, array2: Expr) -> Expr:
     return inner_product(array1, array2)
 
 
+def array_add(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise sum of two numeric arrays of equal length.
+
+    A NULL element in either input produces a NULL at that position. Execution
+    fails if the arrays in a row have different lengths.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[10.0, 20.0, 30.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.array_add(dfn.col("a"), dfn.col("b")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [11.0, 22.0, 33.0]
+    """
+    return Expr(f.array_add(array1.expr, array2.expr))
+
+
+def array_subtract(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise difference of two numeric arrays of equal length.
+
+    Computes ``array1[i] - array2[i]``. A NULL element in either input produces
+    a NULL at that position. Execution fails if the arrays in a row have
+    different lengths.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[10.0, 20.0, 30.0]], "b": [[1.0, 2.0, 3.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.array_subtract(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [9.0, 18.0, 27.0]
+    """
+    return Expr(f.array_subtract(array1.expr, array2.expr))
+
+
+def array_scale(array: Expr, scalar: Expr | float) -> Expr:
+    """Multiplies each element of a numeric array by ``scalar``.
+
+    A NULL element produces a NULL at that position. Returns NULL if ``scalar``
+    is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, 2.0, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_scale(dfn.col("a"), 2.0).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [2.0, 4.0, 6.0]
+    """
+    scalar = coerce_to_expr(scalar)
+    return Expr(f.array_scale(array.expr, scalar.expr))
+
+
+def array_sum(array: Expr) -> Expr:
+    """Returns the sum of the elements of a numeric array.
+
+    NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+    contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_sum(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        4.0
+    """
+    return Expr(f.array_sum(array.expr))
+
+
+def array_avg(array: Expr) -> Expr:
+    """Returns the arithmetic mean of the elements of a numeric array.
+
+    NULL elements are skipped and excluded from the count. Returns NULL if the
+    array is NULL, empty, or contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_avg(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        2.0
+    """
+    return Expr(f.array_avg(array.expr))
+
+
+def array_product(array: Expr) -> Expr:
+    """Returns the product of the elements of a numeric array.
+
+    NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+    contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[2.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_product(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        6.0
+    """
+    return Expr(f.array_product(array.expr))
+
+
 def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
@@ -3730,6 +3901,60 @@ def list_normalize(array: Expr) -> Expr:
         This is an alias for :py:func:`array_normalize`.
     """
     return array_normalize(array)
+
+
+def list_add(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise sum of two numeric lists of equal length.
+
+    See Also:
+        This is an alias for :py:func:`array_add`.
+    """
+    return array_add(array1, array2)
+
+
+def list_subtract(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise difference of two numeric lists of equal length.
+
+    See Also:
+        This is an alias for :py:func:`array_subtract`.
+    """
+    return array_subtract(array1, array2)
+
+
+def list_scale(array: Expr, scalar: Expr | float) -> Expr:
+    """Multiplies each element of a numeric list by a scalar.
+
+    See Also:
+        This is an alias for :py:func:`array_scale`.
+    """
+    return array_scale(array, scalar)
+
+
+def list_sum(array: Expr) -> Expr:
+    """Returns the sum of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_sum`.
+    """
+    return array_sum(array)
+
+
+def list_avg(array: Expr) -> Expr:
+    """Returns the arithmetic mean of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_avg`.
+    """
+    return array_avg(array)
+
+
+def list_product(array: Expr) -> Expr:
+    """Returns the product of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_product`.
+    """
+    return array_product(array)
 
 
 def list_dims(array: Expr) -> Expr:
@@ -6358,6 +6583,42 @@ def nth_value(
             null_treatment=null_treatment.value,
         )
     )
+
+
+def any_value(expression: Expr, filter: Expr | None = None) -> Expr:
+    """Returns an arbitrary non-null value from each group.
+
+    Returns NULL if every value in the group is NULL. Which value is returned
+    is not specified and may differ between runs.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to pick a value from
+        filter: If provided, only consider rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 7, None]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.any_value(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        7
+
+        >>> df = ctx.from_pydict({"a": [None, 7, 8], "b": [1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.any_value(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("b") > dfn.lit(2)
+        ...     ).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        8
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.any_value(expression.expr, filter=filter_raw))
 
 
 def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:

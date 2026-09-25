@@ -197,6 +197,13 @@ fn array_filter(array: PyExpr, predicate: PyExpr) -> PyExpr {
     datafusion::functions_nested::expr_fn::array_filter(array.into(), predicate.into()).into()
 }
 
+/// Higher-order function: return the first element of `array` for which
+/// `predicate` (a lambda returning a boolean) is true, or null if none match.
+#[pyfunction]
+fn array_first(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_first(array.into(), predicate.into()).into()
+}
+
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
@@ -663,6 +670,12 @@ array_fn!(array_compact, array);
 array_fn!(array_normalize, array);
 array_fn!(cosine_distance, array1 array2);
 array_fn!(inner_product, array1 array2);
+array_fn!(array_add, array1 array2);
+array_fn!(array_subtract, array1 array2);
+array_fn!(array_scale, array scalar);
+array_fn!(array_sum, array);
+array_fn!(array_avg, array);
+array_fn!(array_product, array);
 array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
@@ -688,6 +701,7 @@ aggregate_function!(avg);
 aggregate_function!(sum);
 aggregate_function!(bit_and);
 aggregate_function!(bit_or);
+aggregate_function!(any_value);
 aggregate_function!(bit_xor);
 aggregate_function!(bool_and);
 aggregate_function!(bool_or);
@@ -1126,6 +1140,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
+    m.add_wrapped(wrap_pyfunction!(any_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;
     m.add_wrapped(wrap_pyfunction!(bool_and))?;
     m.add_wrapped(wrap_pyfunction!(bool_or))?;
@@ -1140,6 +1155,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_transform))?;
     m.add_wrapped(wrap_pyfunction!(array_any_match))?;
     m.add_wrapped(wrap_pyfunction!(array_filter))?;
+    m.add_wrapped(wrap_pyfunction!(array_first))?;
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
@@ -1151,6 +1167,12 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_normalize))?;
     m.add_wrapped(wrap_pyfunction!(cosine_distance))?;
     m.add_wrapped(wrap_pyfunction!(inner_product))?;
+    m.add_wrapped(wrap_pyfunction!(array_add))?;
+    m.add_wrapped(wrap_pyfunction!(array_subtract))?;
+    m.add_wrapped(wrap_pyfunction!(array_scale))?;
+    m.add_wrapped(wrap_pyfunction!(array_sum))?;
+    m.add_wrapped(wrap_pyfunction!(array_avg))?;
+    m.add_wrapped(wrap_pyfunction!(array_product))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
     m.add_wrapped(wrap_pyfunction!(array_empty))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;

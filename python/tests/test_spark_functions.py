@@ -17,6 +17,8 @@
 
 """Tests for the Spark-compatible function bindings."""
 
+import math
+
 import pyarrow as pa
 import pytest
 from datafusion import SessionContext, col, lit
@@ -75,9 +77,27 @@ def _dt(*args):
         (lambda: spark.rint(lit(2.5)), 2.0),
         (lambda: spark.round(lit(2.5), lit(0)), 3.0),
         (lambda: spark.negative(lit(3)), -3),
+        (lambda: spark.atan2(lit(1.0), lit(1.0)), 0.7853981633974483),
+        (lambda: spark.atan2(0.0, -1.0), 3.141592653589793),
+        (lambda: spark.hypot(lit(3.0), lit(4.0)), 5.0),
+        (lambda: spark.hypot(1e200, 1e200), math.hypot(1e200, 1e200)),
+        (lambda: spark.pow(lit(2), lit(10)), 1024.0),
+        (lambda: spark.pow(0.0, -1.0), float("inf")),
+        (lambda: spark.power(2, 3), 8.0),
     ],
 )
 def test_math(df, expr_factory, expected):
+    assert _val(df, expr_factory()) == expected
+
+
+@pytest.mark.parametrize(
+    ("expr_factory", "expected"),
+    [
+        (lambda: spark.monthname(_ts()), "Jan"),
+        (lambda: spark.weekday(_ts()), 2),
+    ],
+)
+def test_monthname_weekday(df, expr_factory, expected):
     assert _val(df, expr_factory()) == expected
 
 
@@ -105,6 +125,13 @@ def test_factorial(df):
         (lambda: spark.is_valid_utf8(lit("hi")), True),
         (lambda: spark.concat(lit("a"), lit("b")), "ab"),
         (lambda: spark.elt(lit(2), lit("a"), lit("b")), "b"),
+        (lambda: spark.quote(lit("it's")), "'it\\'s'"),
+        (lambda: spark.concat_ws(",", lit("a"), lit("b")), "a,b"),
+        (lambda: spark.concat_ws(lit("-"), lit("a"), lit(None), lit("b")), "a-b"),
+        (
+            lambda: spark.concat_ws(",", f.make_array(lit("a"), lit("b")), lit("c")),
+            "a,b,c",
+        ),
     ],
 )
 def test_string(df, expr_factory, expected):

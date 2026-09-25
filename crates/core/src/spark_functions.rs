@@ -155,6 +155,7 @@ spark_expr_fn!(date_add, start_date days);
 spark_expr_fn!(date_sub, start_date days);
 spark_expr_fn!(hour, arg1);
 spark_expr_fn!(minute, arg1);
+spark_expr_fn!(monthname, arg1);
 spark_expr_fn!(second, arg1);
 spark_expr_fn!(last_day, arg1);
 spark_expr_fn!(make_dt_interval, days hours mins secs);
@@ -171,6 +172,7 @@ spark_expr_fn!(unix_date, dt);
 spark_expr_fn!(unix_micros, ts);
 spark_expr_fn!(unix_millis, ts);
 spark_expr_fn!(unix_seconds, ts);
+spark_expr_fn!(weekday, arg1);
 
 // ---------------------------------------------------------------------------
 // Hash functions
@@ -200,13 +202,16 @@ spark_expr_fn!(str_to_map, text pair_delim key_value_delim);
 // ---------------------------------------------------------------------------
 
 spark_expr_fn!(abs, arg1);
+spark_expr_fn!(atan2, arg1 arg2);
 spark_expr_fn!(ceil, arg1);
 spark_expr_fn!(expm1, arg1);
 spark_expr_fn!(factorial, arg1);
 spark_expr_fn!(floor, arg1);
 spark_expr_fn!(hex, arg1);
+spark_expr_fn!(hypot, arg1 arg2);
 spark_expr_fn!(modulus, dividend divisor);
 spark_expr_fn!(pmod, dividend divisor);
+spark_expr_fn!(pow, arg1 arg2);
 spark_expr_fn!(rint, arg1);
 spark_expr_fn!(round, value scale);
 spark_expr_fn!(unhex, arg1);
@@ -230,12 +235,23 @@ fn char_fn(arg1: PyExpr) -> PyExpr {
     expr_fn::char(arg1.into()).into()
 }
 spark_udf_vec!(concat, udf::string::concat);
+/// `concat_ws(sep, *cols)`. The upstream `expr_fn::concat_ws` takes a single
+/// `Expr` for the values, so call the UDF directly to keep `*cols` variadic.
+#[pyfunction]
+#[pyo3(signature = (sep, *cols))]
+fn concat_ws(sep: PyExpr, cols: Vec<PyExpr>) -> PyExpr {
+    let args: Vec<Expr> = std::iter::once(sep.into())
+        .chain(cols.into_iter().map(Into::into))
+        .collect();
+    Expr::ScalarFunction(ScalarFunction::new_udf(udf::string::concat_ws(), args)).into()
+}
 spark_udf_vec!(elt, udf::string::elt);
 spark_expr_fn!(ilike, str pattern);
 spark_expr_fn!(length, arg1);
 spark_expr_fn!(like, str pattern);
 spark_expr_fn!(luhn_check, arg1);
 spark_udf_vec!(format_string, udf::string::format_string);
+spark_expr_fn!(quote, arg1);
 spark_expr_fn!(space, arg1);
 spark_expr_fn!(substring, str pos length);
 spark_expr_fn!(unbase64, str);
@@ -292,6 +308,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(date_sub))?;
     m.add_wrapped(wrap_pyfunction!(hour))?;
     m.add_wrapped(wrap_pyfunction!(minute))?;
+    m.add_wrapped(wrap_pyfunction!(monthname))?;
     m.add_wrapped(wrap_pyfunction!(second))?;
     m.add_wrapped(wrap_pyfunction!(last_day))?;
     m.add_wrapped(wrap_pyfunction!(make_dt_interval))?;
@@ -308,6 +325,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(unix_micros))?;
     m.add_wrapped(wrap_pyfunction!(unix_millis))?;
     m.add_wrapped(wrap_pyfunction!(unix_seconds))?;
+    m.add_wrapped(wrap_pyfunction!(weekday))?;
     // Hash
     m.add_wrapped(wrap_pyfunction!(crc32))?;
     m.add_wrapped(wrap_pyfunction!(sha1))?;
@@ -321,13 +339,16 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(str_to_map))?;
     // Math
     m.add_wrapped(wrap_pyfunction!(abs))?;
+    m.add_wrapped(wrap_pyfunction!(atan2))?;
     m.add_wrapped(wrap_pyfunction!(ceil))?;
     m.add_wrapped(wrap_pyfunction!(expm1))?;
     m.add_wrapped(wrap_pyfunction!(factorial))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(hex))?;
+    m.add_wrapped(wrap_pyfunction!(hypot))?;
     m.add_wrapped(wrap_pyfunction!(modulus))?;
     m.add_wrapped(wrap_pyfunction!(pmod))?;
+    m.add_wrapped(wrap_pyfunction!(pow))?;
     m.add_wrapped(wrap_pyfunction!(rint))?;
     m.add_wrapped(wrap_pyfunction!(round))?;
     m.add_wrapped(wrap_pyfunction!(unhex))?;
@@ -341,11 +362,13 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(base64))?;
     m.add_wrapped(wrap_pyfunction!(char_fn))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
+    m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(elt))?;
     m.add_wrapped(wrap_pyfunction!(ilike))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
     m.add_wrapped(wrap_pyfunction!(like))?;
     m.add_wrapped(wrap_pyfunction!(luhn_check))?;
+    m.add_wrapped(wrap_pyfunction!(quote))?;
     m.add_wrapped(wrap_pyfunction!(format_string))?;
     m.add_wrapped(wrap_pyfunction!(space))?;
     m.add_wrapped(wrap_pyfunction!(substring))?;

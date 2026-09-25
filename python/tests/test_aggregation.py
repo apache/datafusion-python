@@ -317,7 +317,21 @@ def test_aggregate_100(df_aggregate_100, name, expr, expected):
     assert df.collect()[0].to_pydict() == expected_dict
 
 
+def test_any_value_skips_nulls_per_group():
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {"g": ["x", "x", "y", "y", "z"], "v": [None, 7, 8, None, None]}
+    )
+    result = (
+        df.aggregate([column("g")], [f.any_value(column("v")).alias("v")])
+        .sort(column("g").sort())
+        .to_pydict()
+    )
+    assert result == {"g": ["x", "y", "z"], "v": [7, 8, None]}
+
+
 data_test_bitwise_and_boolean_functions = [
+    ("any_value_filter", f.any_value(column("a"), filter=column("a") == lit(2)), [2]),
     ("bit_and", f.bit_and(column("a")), [0]),
     ("bit_and_filter", f.bit_and(column("a"), filter=column("a") != lit(2)), [1]),
     ("bit_or", f.bit_or(column("b")), [6]),
