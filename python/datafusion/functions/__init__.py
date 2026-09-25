@@ -3126,18 +3126,57 @@ def array(*args: Expr) -> Expr:
     return make_array(*args)
 
 
-def range(start: Expr, stop: Expr, step: Expr) -> Expr:
-    """Create a list of values in the range between start and stop.
+def _series(
+    fn: Callable[..., Any],
+    name: str,
+    start: Expr | int,
+    stop: Expr | int | None,
+    step: Expr | int | None,
+) -> Expr:
+    if stop is None and step is not None:
+        msg = f"{name}() requires stop when step is given"
+        raise ValueError(msg)
+    stop = coerce_to_expr_or_none(stop)
+    step = coerce_to_expr_or_none(step)
+    return Expr(
+        fn(
+            coerce_to_expr(start).expr,
+            stop.expr if stop is not None else None,
+            step.expr if step is not None else None,
+        )
+    )
+
+
+def range(
+    start: Expr | int,
+    stop: Expr | int | None = None,
+    step: Expr | int | None = None,
+) -> Expr:
+    """Create a list of values from ``start`` up to, but excluding, ``stop``.
+
+    With a single argument, it is the upper bound and the range starts at 0,
+    like Python's built-in :py:class:`range`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
-        >>> result = df.select(
-        ...     dfn.functions.range(dfn.lit(0), dfn.lit(5), dfn.lit(2)).alias("r"))
+        >>> result = df.select(dfn.functions.range(5).alias("r"))
+        >>> result.collect_column("r")[0].as_py()
+        [0, 1, 2, 3, 4]
+
+        Specify a ``stop``:
+
+        >>> result = df.select(dfn.functions.range(1, stop=5).alias("r"))
+        >>> result.collect_column("r")[0].as_py()
+        [1, 2, 3, 4]
+
+        Specify a ``step``:
+
+        >>> result = df.select(dfn.functions.range(0, stop=5, step=2).alias("r"))
         >>> result.collect_column("r")[0].as_py()
         [0, 2, 4]
     """
-    return Expr(f.range(start.expr, stop.expr, step.expr))
+    return _series(f.range, "range", start, stop, step)
 
 
 def uuid() -> Expr:
@@ -5077,38 +5116,45 @@ def string_to_list(
     return string_to_array(string, delimiter, null_string)
 
 
-def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
-    """Creates a list of values in the range between start and stop.
+def gen_series(
+    start: Expr | int,
+    stop: Expr | int | None = None,
+    step: Expr | int | None = None,
+) -> Expr:
+    """Creates a list of values from ``start`` up to and including ``stop``.
 
-    Unlike :py:func:`range`, this includes the upper bound.
+    Unlike :py:func:`range`, this includes the upper bound. With a single
+    argument, it is the upper bound and the series starts at 0.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [0]})
-        >>> result = df.select(
-        ...     dfn.functions.gen_series(
-        ...         dfn.lit(1), dfn.lit(5),
-        ...     ).alias("result"))
+        >>> result = df.select(dfn.functions.gen_series(3).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [0, 1, 2, 3]
+
+        Specify a ``stop``:
+
+        >>> result = df.select(dfn.functions.gen_series(1, stop=5).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3, 4, 5]
 
-        Specify a custom ``step``:
+        Specify a ``step``:
 
         >>> result = df.select(
-        ...     dfn.functions.gen_series(
-        ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
-        ...     ).alias("result"))
+        ...     dfn.functions.gen_series(1, stop=10, step=3).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 4, 7, 10]
     """
-    step_expr = step.expr if step is not None else None
-    return Expr(f.gen_series(start.expr, stop.expr, step_expr))
+    return _series(f.gen_series, "gen_series", start, stop, step)
 
 
-def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
-    """Creates a list of values in the range between start and stop.
-
-    Unlike :py:func:`range`, this includes the upper bound.
+def generate_series(
+    start: Expr | int,
+    stop: Expr | int | None = None,
+    step: Expr | int | None = None,
+) -> Expr:
+    """Creates a list of values from ``start`` up to and including ``stop``.
 
     See Also:
         This is an alias for :py:func:`gen_series`.

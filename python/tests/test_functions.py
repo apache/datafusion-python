@@ -2359,6 +2359,23 @@ def test_gen_series_with_step():
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
 
 
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [(f.range, [[0], [0, 1]]), (f.gen_series, [[0, 1], [0, 1, 2]])],
+)
+def test_series_single_arg_accepts_column(func, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"n": [1, 2]})
+    result = df.select(func(column("n")).alias("v"))
+    assert result.collect_column("v").to_pylist() == expected
+
+
+@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
+def test_series_step_requires_stop(func):
+    with pytest.raises(ValueError, match="requires stop"):
+        func(0, step=2)
+
+
 class TestPythonicNativeTypes:
     """Tests for accepting native Python types instead of requiring lit()."""
 

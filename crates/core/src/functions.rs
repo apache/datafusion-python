@@ -131,18 +131,44 @@ fn array_to_string(array: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>
     .into()
 }
 
-#[pyfunction]
-#[pyo3(signature = (start, stop, step=None))]
-fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
-    let mut args = vec![start.into(), stop.into()];
-    if let Some(step) = step {
-        args.push(step.into());
-    }
+/// Builds `range` or `gen_series` from its one, two, or three arguments.
+fn series_expr(
+    udf: std::sync::Arc<datafusion::logical_expr::ScalarUDF>,
+    start: PyExpr,
+    stop: Option<PyExpr>,
+    step: Option<PyExpr>,
+) -> PyExpr {
+    let args = std::iter::once(start)
+        .chain(stop)
+        .chain(step)
+        .map(Into::into)
+        .collect();
     Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
-        datafusion::functions_nested::range::gen_series_udf(),
-        args,
+        udf, args,
     ))
     .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop=None, step=None))]
+fn range(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+    series_expr(
+        datafusion::functions_nested::range::range_udf(),
+        start,
+        stop,
+        step,
+    )
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop=None, step=None))]
+fn gen_series(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+    series_expr(
+        datafusion::functions_nested::range::gen_series_udf(),
+        start,
+        stop,
+        step,
+    )
 }
 
 #[pyfunction]
@@ -701,7 +727,6 @@ array_fn!(array_min, array);
 array_fn!(array_reverse, array);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
-array_fn!(range, start stop step);
 
 // Map Functions
 array_fn!(map_keys, map);
