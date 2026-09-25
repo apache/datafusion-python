@@ -42,7 +42,7 @@ pyo3-async-runtimes = { version = "0.29" }
 pyo3-log = "0.13.3"
 chrono = { version = "0.4", default-features = false }
 arrow = { version = "59" }
-arrow-array = { version = "59" }
+arrow-array = { version = "60" }
 arrow-schema = { version = "59" }
 arrow-select = { version = "59" }
 datafusion = { version = "55.1.0" }
