@@ -7000,6 +7000,7 @@ def lead(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Create a lead window function.
 
@@ -7030,6 +7031,8 @@ def lead(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
+        null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+            counting ``shift_offset`` rows.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -7052,6 +7055,16 @@ def lead(
         ...     ).alias("lead"))
         >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lead").to_pylist()
         [2, 0, 0]
+
+        >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+        >>> result = df.select(
+        ...     dfn.col("i"),
+        ...     dfn.functions.lead(
+        ...         dfn.col("v"), order_by="i",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("lead"))
+        >>> result.sort(dfn.col("i")).collect_column("lead").to_pylist()
+        [4, 4, 4, None]
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -7066,6 +7079,7 @@ def lead(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
+            null_treatment=null_treatment.value,
         )
     )
 
@@ -7076,6 +7090,7 @@ def lag(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Create a lag window function.
 
@@ -7103,6 +7118,8 @@ def lag(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
+        null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+            counting ``shift_offset`` rows.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -7125,6 +7142,16 @@ def lag(
         ...     ).alias("lag"))
         >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lag").to_pylist()
         [0, 1, 0]
+
+        >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+        >>> result = df.select(
+        ...     dfn.col("i"),
+        ...     dfn.functions.lag(
+        ...         dfn.col("v"), order_by="i",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("lag"))
+        >>> result.sort(dfn.col("i")).collect_column("lag").to_pylist()
+        [None, 1, 1, 1]
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -7139,6 +7166,7 @@ def lag(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
+            null_treatment=null_treatment.value,
         )
     )
 

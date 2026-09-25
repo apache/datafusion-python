@@ -46,6 +46,7 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
+from datafusion.common import NullTreatment
 from datafusion.dataframe import DataFrameWriteOptions
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
@@ -1076,6 +1077,26 @@ data_test_window_functions = [
             partition_by=column("c"),
         ),
         [-1, -1, None, 7, -1, -1, None],
+    ),
+    (
+        "lead_ignore_nulls",
+        f.lead(
+            column("b"),
+            order_by=column("a"),
+            partition_by=column("c"),
+            null_treatment=NullTreatment.IGNORE_NULLS,
+        ),
+        [7, 7, 8, None, 9, 9, None],
+    ),
+    (
+        "lag_ignore_nulls",
+        f.lag(
+            column("b"),
+            order_by=column("a"),
+            partition_by=column("c"),
+            null_treatment=NullTreatment.IGNORE_NULLS,
+        ),
+        [None, 7, 7, 7, None, 9, 9],
     ),
     (
         "first_value",

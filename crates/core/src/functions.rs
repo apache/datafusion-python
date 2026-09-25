@@ -891,33 +891,35 @@ pub(crate) fn add_builder_fns_to_window(
 }
 
 #[pyfunction]
-#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None, null_treatment=None))]
 pub fn lead(
     arg: PyExpr,
     shift_offset: i64,
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
+    add_builder_fns_to_window(window_fn, partition_by, None, order_by, null_treatment)
 }
 
 #[pyfunction]
-#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None, null_treatment=None))]
 pub fn lag(
     arg: PyExpr,
     shift_offset: i64,
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
+    add_builder_fns_to_window(window_fn, partition_by, None, order_by, null_treatment)
 }
 
 #[pyfunction]
