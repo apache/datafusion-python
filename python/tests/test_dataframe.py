@@ -47,7 +47,11 @@ from datafusion import (
     functions as f,
 )
 from datafusion.common import NullTreatment
-from datafusion.dataframe import DataFrameWriteOptions
+from datafusion.dataframe import (
+    DataFrameWriteOptions,
+    ExplainAnalyzeLevel,
+    ExplainMetricCategory,
+)
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
@@ -3869,6 +3873,57 @@ def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
     assert "plan_type" in captured.out
     if expected_substring is not None:
         assert expected_substring in captured.out
+
+
+def _explain_output(capsys, **kwargs):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2]}).filter(column("a") > literal(1))
+    df.explain(**kwargs)
+    return capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "present", "absent"),
+    [
+        pytest.param({}, [], ["statistics="], id="default_no_statistics"),
+        pytest.param(
+            {"show_statistics": True}, ["statistics=[Rows="], [], id="show_statistics"
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_level": ExplainAnalyzeLevel.DEV},
+            ["output_rows=", "output_batches="],
+            [],
+            id="analyze_level_dev",
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_level": ExplainAnalyzeLevel.SUMMARY},
+            ["output_rows="],
+            ["output_batches="],
+            id="analyze_level_summary",
+        ),
+        pytest.param(
+            {
+                "analyze": True,
+                "analyze_categories": [ExplainMetricCategory.ROWS],
+            },
+            ["output_rows="],
+            ["elapsed_compute=", "output_bytes="],
+            id="analyze_categories_rows",
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_categories": []},
+            ["FilterExec: a@0 > 1, metrics=[]"],
+            ["output_rows="],
+            id="analyze_categories_empty_suppresses_metrics",
+        ),
+    ],
+)
+def test_explain_options(capsys, kwargs, present, absent):
+    out = _explain_output(capsys, **kwargs)
+    for text in present:
+        assert text in out
+    for text in absent:
+        assert text not in out
 
 
 @pytest.mark.parametrize(
