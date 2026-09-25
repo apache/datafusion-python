@@ -31,7 +31,12 @@ from datafusion import SessionContext
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    from _typeshed import CapsuleType as _PyCapsule
+    import sys
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
