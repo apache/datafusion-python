@@ -1186,6 +1186,14 @@ def test_window_partition_by_accepts_string(partitioned_df, partition):
     assert table.column("fv").to_pylist() == [1, 1, 1, 1, 5, 5, 5]
 
 
+@pytest.mark.parametrize("func", [f.lead, f.lag])
+def test_lead_lag_default_null_treatment_keeps_column_name(partitioned_df, func):
+    """Omitting null_treatment must not add RESPECT NULLS to the output name."""
+    df = partitioned_df.select(func(column("b"), order_by=column("a")))
+    name = df.schema().names[0]
+    assert "RESPECT NULLS" not in name
+
+
 @pytest.mark.parametrize(
     ("units", "start_bound", "end_bound"),
     [

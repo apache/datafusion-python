@@ -7000,7 +7000,7 @@ def lead(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
-    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
+    null_treatment: NullTreatment | None = None,
 ) -> Expr:
     """Create a lead window function.
 
@@ -7079,7 +7079,9 @@ def lead(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
-            null_treatment=null_treatment.value,
+            null_treatment=(
+                null_treatment.value if null_treatment is not None else None
+            ),
         )
     )
 
@@ -7090,7 +7092,7 @@ def lag(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
-    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
+    null_treatment: NullTreatment | None = None,
 ) -> Expr:
     """Create a lag window function.
 
@@ -7166,7 +7168,9 @@ def lag(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
-            null_treatment=null_treatment.value,
+            null_treatment=(
+                null_treatment.value if null_treatment is not None else None
+            ),
         )
     )
 
