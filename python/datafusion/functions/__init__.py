@@ -1952,10 +1952,10 @@ def regexp_instr(
     Args:
         values: Data to search for the regular expression match.
         regex: Regular expression to search for.
-        start: Optional position to start the search (the first position is 1).
-        n: Optional occurrence of the match to find (the first occurrence is 1).
-        flags: Optional regular expression flags to control regex behavior.
-        sub_expr: Optionally capture group position instead of the entire match.
+        start: Position to start the search (the first position is 1).
+        n: Occurrence of the match to find (the first occurrence is 1).
+        flags: Flags to control regex behavior.
+        sub_expr: Capture group position instead of the entire match.
 
     Examples:
         >>> ctx = dfn.SessionContext()
