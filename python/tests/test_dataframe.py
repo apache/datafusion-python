@@ -925,13 +925,18 @@ def test_distinct():
 data_test_window_functions = [
     (
         "row",
-        f.row_number(order_by=[column("b"), column("a").sort(ascending=False)]),
+        f.row_number(
+            order_by=[
+                f.order_by(column("b"), nulls_first=True),
+                column("a").sort(ascending=False),
+            ]
+        ),
         [4, 2, 3, 5, 7, 1, 6],
     ),
     (
         "row_w_params",
         f.row_number(
-            order_by=[column("b"), column("a")],
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
             partition_by=[column("c")],
         ),
         [2, 1, 3, 4, 2, 1, 3],
@@ -939,15 +944,22 @@ data_test_window_functions = [
     (
         "row_w_params_no_lists",
         f.row_number(
-            order_by=column("b"),
+            order_by=f.order_by(column("b"), nulls_first=True),
             partition_by=column("c"),
         ),
         [2, 1, 3, 4, 2, 1, 3],
     ),
-    ("rank", f.rank(order_by=[column("b")]), [3, 1, 3, 5, 6, 1, 6]),
+    (
+        "rank",
+        f.rank(order_by=[f.order_by(column("b"), nulls_first=True)]),
+        [3, 1, 3, 5, 6, 1, 6],
+    ),
     (
         "rank_w_params",
-        f.rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        f.rank(
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
+            partition_by=[column("c")],
+        ),
         [2, 1, 3, 4, 2, 1, 3],
     ),
     (
@@ -957,12 +969,15 @@ data_test_window_functions = [
     ),
     (
         "dense_rank",
-        f.dense_rank(order_by=[column("b")]),
+        f.dense_rank(order_by=[f.order_by(column("b"), nulls_first=True)]),
         [2, 1, 2, 3, 4, 1, 4],
     ),
     (
         "dense_rank_w_params",
-        f.dense_rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        f.dense_rank(
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
+            partition_by=[column("c")],
+        ),
         [2, 1, 3, 4, 2, 1, 3],
     ),
     (
@@ -972,14 +987,18 @@ data_test_window_functions = [
     ),
     (
         "percent_rank",
-        f.round(f.percent_rank(order_by=[column("b")]), literal(3)),
+        f.round(
+            f.percent_rank(order_by=[f.order_by(column("b"), nulls_first=True)]),
+            literal(3),
+        ),
         [0.333, 0.0, 0.333, 0.667, 0.833, 0.0, 0.833],
     ),
     (
         "percent_rank_w_params",
         f.round(
             f.percent_rank(
-                order_by=[column("b"), column("a")], partition_by=[column("c")]
+                order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
+                partition_by=[column("c")],
             ),
             literal(3),
         ),
@@ -995,14 +1014,18 @@ data_test_window_functions = [
     ),
     (
         "cume_dist",
-        f.round(f.cume_dist(order_by=[column("b")]), literal(3)),
+        f.round(
+            f.cume_dist(order_by=[f.order_by(column("b"), nulls_first=True)]),
+            literal(3),
+        ),
         [0.571, 0.286, 0.571, 0.714, 1.0, 0.286, 1.0],
     ),
     (
         "cume_dist_w_params",
         f.round(
             f.cume_dist(
-                order_by=[column("b"), column("a")], partition_by=[column("c")]
+                order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
+                partition_by=[column("c")],
             ),
             literal(3),
         ),
@@ -1018,27 +1041,39 @@ data_test_window_functions = [
     ),
     (
         "ntile",
-        f.ntile(2, order_by=[column("b")]),
+        f.ntile(2, order_by=[f.order_by(column("b"), nulls_first=True)]),
         [1, 1, 1, 2, 2, 1, 2],
     ),
     (
         "ntile_w_params",
-        f.ntile(2, order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        f.ntile(
+            2,
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
+            partition_by=[column("c")],
+        ),
         [1, 1, 2, 2, 1, 1, 2],
     ),
     (
         "ntile_w_params_no_lists",
-        f.ntile(2, order_by=column("b"), partition_by=column("c")),
+        f.ntile(
+            2,
+            order_by=f.order_by(column("b"), nulls_first=True),
+            partition_by=column("c"),
+        ),
         [1, 1, 2, 2, 1, 1, 2],
     ),
-    ("lead", f.lead(column("b"), order_by=[column("b")]), [7, None, 8, 9, 9, 7, None]),
+    (
+        "lead",
+        f.lead(column("b"), order_by=[f.order_by(column("b"), nulls_first=True)]),
+        [7, None, 8, 9, 9, 7, None],
+    ),
     (
         "lead_w_params",
         f.lead(
             column("b"),
             shift_offset=2,
             default_value=-1,
-            order_by=[column("b"), column("a")],
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
             partition_by=[column("c")],
         ),
         [8, 7, -1, -1, -1, 9, -1],
@@ -1049,19 +1084,23 @@ data_test_window_functions = [
             column("b"),
             shift_offset=2,
             default_value=-1,
-            order_by=column("b"),
+            order_by=f.order_by(column("b"), nulls_first=True),
             partition_by=column("c"),
         ),
         [8, 7, -1, -1, -1, 9, -1],
     ),
-    ("lag", f.lag(column("b"), order_by=[column("b")]), [None, None, 7, 7, 8, None, 9]),
+    (
+        "lag",
+        f.lag(column("b"), order_by=[f.order_by(column("b"), nulls_first=True)]),
+        [None, None, 7, 7, 8, None, 9],
+    ),
     (
         "lag_w_params",
         f.lag(
             column("b"),
             shift_offset=2,
             default_value=-1,
-            order_by=[column("b"), column("a")],
+            order_by=[f.order_by(column("b"), nulls_first=True), column("a")],
             partition_by=[column("c")],
         ),
         [-1, -1, None, 7, -1, -1, None],
@@ -1072,7 +1111,7 @@ data_test_window_functions = [
             column("b"),
             shift_offset=2,
             default_value=-1,
-            order_by=column("b"),
+            order_by=f.order_by(column("b"), nulls_first=True),
             partition_by=column("c"),
         ),
         [-1, -1, None, 7, -1, -1, None],
@@ -1080,21 +1119,30 @@ data_test_window_functions = [
     (
         "first_value",
         f.first_value(column("a")).over(
-            Window(partition_by=[column("c")], order_by=[column("b")])
+            Window(
+                partition_by=[column("c")],
+                order_by=[f.order_by(column("b"), nulls_first=True)],
+            )
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
     (
         "first_value_without_list_args",
         f.first_value(column("a")).over(
-            Window(partition_by=column("c"), order_by=column("b"))
+            Window(
+                partition_by=column("c"),
+                order_by=f.order_by(column("b"), nulls_first=True),
+            )
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
     (
         "first_value_order_by_string",
         f.first_value(column("a")).over(
-            Window(partition_by=[column("c")], order_by="b")
+            Window(
+                partition_by=[column("c")],
+                order_by=f.order_by(column("b"), nulls_first=True),
+            )
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
@@ -1103,7 +1151,7 @@ data_test_window_functions = [
         f.last_value(column("a")).over(
             Window(
                 partition_by=[column("c")],
-                order_by=[column("b")],
+                order_by=[f.order_by(column("b"), nulls_first=True)],
                 window_frame=WindowFrame("rows", None, None),
             )
         ),
@@ -1111,7 +1159,9 @@ data_test_window_functions = [
     ),
     (
         "3rd_value",
-        f.nth_value(column("b"), 3).over(Window(order_by=[column("a")])),
+        f.nth_value(column("b"), 3).over(
+            Window(order_by=[f.order_by(column("a"), nulls_first=True)])
+        ),
         [None, None, 7, 7, 7, 7, 7],
     ),
     (
@@ -1154,7 +1204,9 @@ def test_rank_partition_by_accepts_string(partitioned_df, partition):
 def test_window_partition_by_accepts_string(partitioned_df, partition):
     """Window.partition_by accepts string identifiers."""
     expr = f.first_value(column("a")).over(
-        Window(partition_by=partition, order_by=column("b"))
+        Window(
+            partition_by=partition, order_by=f.order_by(column("b"), nulls_first=True)
+        )
     )
     df = partitioned_df.select(expr.alias("fv"))
     table = pa.Table.from_batches(df.sort(column("a")).collect())
@@ -1262,9 +1314,9 @@ def _build_array_agg_df(df):
 @pytest.mark.parametrize(
     ("builder", "expected"),
     [
-        pytest.param(_build_last_value_df, [3, 3, 3, 3, 6, 6, 6], id="last_value"),
+        pytest.param(_build_last_value_df, [1, 1, 1, 1, 5, 5, 5], id="last_value"),
         pytest.param(_build_nth_value_df, [None, None, 7, 7, 7, 7, 7], id="nth_value"),
-        pytest.param(_build_rank_df, [1, 1, 3, 3, 5, 6, 6], id="rank"),
+        pytest.param(_build_rank_df, [1, 1, 3, 4, 4, 6, 6], id="rank"),
         pytest.param(_build_array_agg_df, [[0, 1, 2, 3], [4, 5, 6]], id="array_agg"),
     ],
 )
@@ -3881,3 +3933,24 @@ def test_unnest_columns_with_recursions(input_data, recursions, expected_a):
         kwargs["recursions"] = recursions
     result = df.unnest_columns("a", **kwargs).collect()[0]
     assert result.column(0).to_pylist() == expected_a
+
+
+def test_sort_default_null_behavior():
+    ctx = SessionContext()
+    ctx.sql("create table t (a int)").collect()
+    ctx.sql("insert into t values (3), (null), (1), (null), (4), (2)").collect()
+
+    # sort
+    result_sort = ctx.table("t").sort(column("a")).to_pydict()
+
+    # sort_by
+    result_sort_by = ctx.table("t").sort_by(column("a")).to_pydict()
+
+    # sql
+    result_sql = ctx.sql("select * from t order by a").to_pydict()
+
+    # order_by function
+    result_order_by = ctx.table("t").sort(f.order_by(column("a"))).to_pydict()
+
+    assert result_sort == result_sort_by == result_sql == result_order_by
+    assert result_sort == {"a": [1, 2, 3, 4, None, None]}
