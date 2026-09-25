@@ -330,12 +330,42 @@ def test_any_value_skips_nulls_per_group():
     assert result == {"g": ["x", "y", "z"], "v": [7, 8, None]}
 
 
+@pytest.mark.parametrize(
+    ("expr", "expected"),
+    [
+        pytest.param(f.mean(column("v")), 2.0, id="mean"),
+        pytest.param(f.mean(column("v"), distinct=True), 3.0, id="mean_distinct"),
+        pytest.param(
+            f.mean(column("v"), filter=column("v") > lit(1.0)), 5.0, id="mean_filter"
+        ),
+        pytest.param(f.percentile_cont(column("v"), 0.5), 1.0, id="percentile_cont"),
+        pytest.param(
+            f.percentile_cont(column("v"), 0.5, distinct=True),
+            3.0,
+            id="percentile_cont_distinct",
+        ),
+        pytest.param(
+            f.quantile_cont(column("v"), 0.5, distinct=True),
+            3.0,
+            id="quantile_cont_distinct",
+        ),
+    ],
+)
+def test_distinct_numeric_aggregates(expr, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1.0, 1.0, 1.0, 5.0]})
+    result = df.aggregate([], [expr.alias("r")]).collect_column("r")[0].as_py()
+    assert result == expected
+
+
 data_test_bitwise_and_boolean_functions = [
     ("any_value_filter", f.any_value(column("a"), filter=column("a") == lit(2)), [2]),
     ("bit_and", f.bit_and(column("a")), [0]),
     ("bit_and_filter", f.bit_and(column("a"), filter=column("a") != lit(2)), [1]),
     ("bit_or", f.bit_or(column("b")), [6]),
     ("bit_or_filter", f.bit_or(column("b"), filter=column("a") != lit(3)), [4]),
+    ("bit_and_distinct", f.bit_and(column("b"), distinct=True), [4]),
+    ("bit_or_distinct", f.bit_or(column("b"), distinct=True), [6]),
     ("bit_xor", f.bit_xor(column("c")), [4]),
     ("bit_xor_distinct", f.bit_xor(column("b"), distinct=True), [2]),
     ("bit_xor_filter", f.bit_xor(column("b"), filter=column("a") != lit(3)), [0]),
@@ -490,6 +520,11 @@ def test_first_last_value(df_partitioned, name, expr, result) -> None:
             "string_agg",
             f.string_agg(column("a"), ",", order_by=column("b")),
             "one,three,two,two",
+        ),
+        (
+            "string_agg",
+            f.string_agg(column("a"), ",", distinct=True, order_by=column("a")),
+            "one,three,two",
         ),
     ],
 )

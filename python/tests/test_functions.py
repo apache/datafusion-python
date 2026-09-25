@@ -20,6 +20,7 @@ from datetime import date, datetime, time, timezone
 
 import numpy as np
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import SessionContext, column, literal
 from datafusion import functions as f
@@ -763,6 +764,44 @@ def test_array_function_aliases(alias_fn, primary_fn, data):
     assert (
         alias_result[0].column(0).to_pylist() == primary_result[0].column(0).to_pylist()
     )
+
+
+@pytest.mark.parametrize(
+    ("fn", "expected"),
+    [
+        pytest.param(f.input_file_name, ["data.parquet"] * 2, id="input_file_name"),
+        pytest.param(f.file_row_index, [1, 2], id="file_row_index"),
+    ],
+)
+def test_file_metadata_functions(tmp_path, fn, expected):
+    path = tmp_path / "data.parquet"
+    pq.write_table(pa.table({"a": [10, 20, 30]}), path)
+    ctx = SessionContext()
+    df = ctx.read_parquet(str(path)).filter(column("a") > literal(10))
+    result = df.select(fn().alias("r")).collect_column("r").to_pylist()
+    if fn is f.input_file_name:
+        result = [r.rsplit("/", 1)[-1] for r in result]
+    assert result == expected
+
+
+@pytest.mark.parametrize("fn", [f.input_file_name, f.file_row_index])
+def test_file_metadata_functions_outside_scan_raise(fn):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="source dependent"):
+        df.select(fn().alias("r")).collect()
+
+
+def test_rand_and_substring_index_aliases():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"s": ["a.b.c"]})
+    r = df.select(
+        f.rand().alias("r"),
+        f.substring_index(column("s"), ".", 2).alias("si"),
+        f.substr_index(column("s"), ".", 2).alias("sp"),
+    ).to_pydict()
+    assert 0.0 <= r["r"][0] < 1.0
+    assert r["si"] == r["sp"] == ["a.b"]
 
 
 @pytest.mark.parametrize(

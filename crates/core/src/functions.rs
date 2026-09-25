@@ -622,6 +622,8 @@ expr_fn_vec!(arrow_metadata);
 expr_fn_vec!(with_metadata);
 expr_fn!(union_tag, arg1);
 expr_fn!(random);
+expr_fn!(input_file_name);
+expr_fn!(file_row_index);
 
 #[pyfunction]
 fn get_field(expr: PyExpr, names: Vec<PyExpr>) -> PyExpr {
@@ -768,16 +770,17 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-#[pyo3(signature = (sort_expression, percentile, filter=None))]
+#[pyo3(signature = (sort_expression, percentile, distinct=None, filter=None))]
 pub fn percentile_cont(
     sort_expression: PySortExpr,
     percentile: f64,
+    distinct: Option<bool>,
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn =
         functions_aggregate::expr_fn::percentile_cont(sort_expression.sort, lit(percentile));
 
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, None, None)
 }
 
 // We handle last_value explicitly because the signature expects an order_by
@@ -1070,6 +1073,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
+    m.add_wrapped(wrap_pyfunction!(input_file_name))?;
+    m.add_wrapped(wrap_pyfunction!(file_row_index))?;
     m.add_wrapped(wrap_pyfunction!(regexp_count))?;
     m.add_wrapped(wrap_pyfunction!(regexp_instr))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;

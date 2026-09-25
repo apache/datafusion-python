@@ -209,6 +209,7 @@ __all__ = [
     "exp",
     "extract",
     "factorial",
+    "file_row_index",
     "find_in_set",
     "first_value",
     "flatten",
@@ -224,6 +225,7 @@ __all__ = [
     "in_list",
     "initcap",
     "inner_product",
+    "input_file_name",
     "instr",
     "is_nan",
     "isnan",
@@ -334,6 +336,7 @@ __all__ = [
     "power",
     "quantile_cont",
     "radians",
+    "rand",
     "random",
     "range",
     "rank",
@@ -382,6 +385,7 @@ __all__ = [
     "substr",
     "substr_index",
     "substring",
+    "substring_index",
     "sum",
     "tan",
     "tanh",
@@ -2342,6 +2346,15 @@ def substr_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr
     return Expr(f.substr_index(string.expr, delimiter.expr, count.expr))
 
 
+def substring_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr:
+    """Returns an indexed substring.
+
+    See Also:
+        This is an alias for :py:func:`substr_index`.
+    """
+    return substr_index(string, delimiter, count)
+
+
 def substring(string: Expr, position: Expr | int, length: Expr | int) -> Expr:
     """Substring from the ``position`` with ``length`` characters.
 
@@ -3485,6 +3498,64 @@ def random() -> Expr:
         True
     """
     return Expr(f.random())
+
+
+def rand() -> Expr:
+    """Returns a random value in the range ``0.0 <= x < 1.0``.
+
+    See Also:
+        This is an alias for :py:func:`random`.
+    """
+    return random()
+
+
+def input_file_name() -> Expr:
+    """Returns the path of the file that produced the current row.
+
+    Only valid inside a scan of a file-backed table; evaluating it anywhere
+    else raises an error.
+
+    Examples:
+        >>> import tempfile, os
+        >>> import pyarrow as pa, pyarrow.parquet as pq
+        >>> tmp = tempfile.mkdtemp()
+        >>> path = os.path.join(tmp, "data.parquet")
+        >>> pq.write_table(pa.table({"a": [1, 2]}), path)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.read_parquet(path)
+        >>> result = df.select(dfn.functions.input_file_name().alias("f"))
+        >>> result.collect_column("f")[0].as_py().endswith("data.parquet")
+        True
+
+    See Also:
+        :py:func:`file_row_index`.
+    """
+    return Expr(f.input_file_name())
+
+
+def file_row_index() -> Expr:
+    """Returns the zero-based position of the current row within its source file.
+
+    The index restarts at zero for each file, so rows from different files in one
+    scan can share a value. Only valid inside a scan of a Parquet table;
+    evaluating it anywhere else raises an error.
+
+    Examples:
+        >>> import tempfile, os
+        >>> import pyarrow as pa, pyarrow.parquet as pq
+        >>> tmp = tempfile.mkdtemp()
+        >>> path = os.path.join(tmp, "data.parquet")
+        >>> pq.write_table(pa.table({"a": [10, 20, 30]}), path)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.read_parquet(path).filter(dfn.col("a") > dfn.lit(10))
+        >>> result = df.select(dfn.functions.file_row_index().alias("i"))
+        >>> result.collect_column("i").to_pylist()
+        [1, 2]
+
+    See Also:
+        :py:func:`input_file_name`.
+    """
+    return Expr(f.file_row_index())
 
 
 def array_append(array: Expr, element: Expr) -> Expr:
@@ -5335,6 +5406,7 @@ def approx_percentile_cont_with_weight(
 def percentile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the exact percentile of input values using continuous interpolation.
@@ -5343,11 +5415,12 @@ def percentile_cont(
     percentile value rather than an approximation.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         sort_expression: Values for which to find the percentile
         percentile: This must be between 0.0 and 1.0, inclusive
+        distinct: If True, duplicate values are removed before computing
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5367,15 +5440,28 @@ def percentile_cont(
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3.5
+
+        >>> df = ctx.from_pydict({"a": [1.0, 1.0, 1.0, 4.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5, distinct=True,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
+    return Expr(
+        f.percentile_cont(
+            sort_expr_raw, percentile, distinct=distinct, filter=filter_raw
+        )
+    )
 
 
 def quantile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the exact percentile of input values using continuous interpolation.
@@ -5383,7 +5469,9 @@ def quantile_cont(
     See Also:
         This is an alias for :py:func:`percentile_cont`.
     """
-    return percentile_cont(sort_expression, percentile, filter)
+    return percentile_cont(
+        sort_expression, percentile, distinct=distinct, filter=filter
+    )
 
 
 def array_agg(
@@ -5750,13 +5838,17 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
     return Expr(f.max(expression.expr, filter=filter_raw))
 
 
-def mean(expression: Expr, filter: Expr | None = None) -> Expr:
+def mean(
+    expression: Expr,
+    distinct: bool = False,
+    filter: Expr | None = None,
+) -> Expr:
     """Returns the average (mean) value of the argument.
 
     See Also:
         This is an alias for :py:func:`avg`.
     """
-    return avg(expression, filter)
+    return avg(expression, distinct=distinct, filter=filter)
 
 
 def median(
@@ -6621,16 +6713,19 @@ def any_value(expression: Expr, filter: Expr | None = None) -> Expr:
     return Expr(f.any_value(expression.expr, filter=filter_raw))
 
 
-def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
+def bit_and(
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
+) -> Expr:
     """Computes the bitwise AND of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6653,19 +6748,22 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
         5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_and(expression.expr, filter=filter_raw))
+    return Expr(f.bit_and(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
+def bit_or(
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
+) -> Expr:
     """Computes the bitwise OR of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6690,7 +6788,7 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
         6
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_or(expression.expr, filter=filter_raw))
+    return Expr(f.bit_or(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def bit_xor(
@@ -7315,6 +7413,7 @@ def ntile(
 def string_agg(
     expression: Expr,
     delimiter: str,
+    distinct: bool = False,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
@@ -7325,11 +7424,12 @@ def string_agg(
     their string equivalents.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``distinct`` and ``null_treatment``.
+    the option ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
         delimiter: Text to place between each value of expression
+        distinct: If True, each unique value of expression is included only once
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
@@ -7352,6 +7452,14 @@ def string_agg(
         ...     ).alias("s")])
         >>> result.collect_column("s")[0].as_py()
         'y,z'
+
+        >>> df = ctx.from_pydict({"a": ["y", "x", "y"]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.string_agg(
+        ...         dfn.col("a"), ",", distinct=True, order_by="a",
+        ...     ).alias("s")])
+        >>> result.collect_column("s")[0].as_py()
+        'x,y'
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -7360,6 +7468,7 @@ def string_agg(
         f.string_agg(
             expression.expr,
             delimiter,
+            distinct=distinct,
             filter=filter_raw,
             order_by=order_by_raw,
         )
