@@ -625,34 +625,38 @@ impl PyExpr {
     // Expression Function Builder functions
 
     pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
-        self.expr
-            .clone()
+        builder_from_expr(&self.expr)
             .order_by(to_sort_expressions(order_by))
             .into()
     }
 
     pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        self.expr.clone().filter(filter.expr.clone()).into()
+        builder_from_expr(&self.expr)
+            .filter(filter.expr.clone())
+            .into()
     }
 
     pub fn distinct(&self) -> PyExprFuncBuilder {
-        self.expr.clone().distinct().into()
+        builder_from_expr(&self.expr).distinct().into()
     }
 
     pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
-        self.expr
-            .clone()
+        builder_from_expr(&self.expr)
             .null_treatment(Some(null_treatment.into()))
             .into()
     }
 
     pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
         let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        self.expr.clone().partition_by(partition_by).into()
+        builder_from_expr(&self.expr)
+            .partition_by(partition_by)
+            .into()
     }
 
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        self.expr.clone().window_frame(window_frame.into()).into()
+        builder_from_expr(&self.expr)
+            .window_frame(window_frame.into())
+            .into()
     }
 
     #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
@@ -740,6 +744,57 @@ impl PyExpr {
         let expr = from_proto::parse_expr(&proto_expr, task_ctx.as_ref(), codec.as_ref())
             .map_err(|e| PyRuntimeError::new_err(format!("Unable to decode expr: {e}")))?;
         Ok(Self { expr })
+    }
+}
+
+/// Start an [`ExprFuncBuilder`] that keeps the options already set on `expr`.
+///
+/// Upstream's `ExprFunctionExt` methods on an `Expr` start from an empty
+/// builder, so `build()` would reset every option not set again. The Python
+/// function wrappers already apply their keyword options, so chaining another
+/// builder method onto their result must not discard them.
+fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
+    match expr {
+        Expr::AggregateFunction(agg) => {
+            let params = &agg.params;
+            let mut builder = expr.clone().null_treatment(params.null_treatment);
+            if !params.order_by.is_empty() {
+                builder = builder.order_by(params.order_by.clone());
+            }
+            if let Some(filter) = &params.filter {
+                builder = builder.filter(filter.as_ref().clone());
+            }
+            if params.distinct {
+                builder = builder.distinct();
+            }
+            builder
+        }
+        Expr::WindowFunction(window) => {
+            let params = &window.params;
+            let mut builder = expr.clone().null_treatment(params.null_treatment);
+            if !params.partition_by.is_empty() {
+                builder = builder.partition_by(params.partition_by.clone());
+            }
+            let has_order_by = !params.order_by.is_empty();
+            if has_order_by {
+                builder = builder.order_by(params.order_by.clone());
+            }
+            // A frame equal to the default `build()` derived from the order-by is
+            // left unset, so it is derived again from the final order-by.
+            if params.window_frame
+                != datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true))
+            {
+                builder = builder.window_frame(params.window_frame.clone());
+            }
+            if let Some(filter) = &params.filter {
+                builder = builder.filter(filter.as_ref().clone());
+            }
+            if params.distinct {
+                builder = builder.distinct();
+            }
+            builder
+        }
+        _ => expr.clone().null_treatment(None),
     }
 }
 
