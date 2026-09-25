@@ -17,6 +17,8 @@
 
 """Tests for the Spark-compatible function bindings."""
 
+import math
+
 import pyarrow as pa
 import pytest
 from datafusion import SessionContext, col, lit
@@ -75,9 +77,27 @@ def _dt(*args):
         (lambda: spark.rint(lit(2.5)), 2.0),
         (lambda: spark.round(lit(2.5), lit(0)), 3.0),
         (lambda: spark.negative(lit(3)), -3),
+        (lambda: spark.atan2(lit(1.0), lit(1.0)), 0.7853981633974483),
+        (lambda: spark.atan2(0.0, -1.0), 3.141592653589793),
+        (lambda: spark.hypot(lit(3.0), lit(4.0)), 5.0),
+        (lambda: spark.hypot(1e200, 1e200), math.hypot(1e200, 1e200)),
+        (lambda: spark.pow(lit(2), lit(10)), 1024.0),
+        (lambda: spark.pow(0.0, -1.0), float("inf")),
+        (lambda: spark.power(2, 3), 8.0),
     ],
 )
 def test_math(df, expr_factory, expected):
+    assert _val(df, expr_factory()) == expected
+
+
+@pytest.mark.parametrize(
+    ("expr_factory", "expected"),
+    [
+        (lambda: spark.monthname(_ts()), "Jan"),
+        (lambda: spark.weekday(_ts()), 2),
+    ],
+)
+def test_monthname_weekday(df, expr_factory, expected):
     assert _val(df, expr_factory()) == expected
 
 
@@ -105,6 +125,13 @@ def test_factorial(df):
         (lambda: spark.is_valid_utf8(lit("hi")), True),
         (lambda: spark.concat(lit("a"), lit("b")), "ab"),
         (lambda: spark.elt(lit(2), lit("a"), lit("b")), "b"),
+        (lambda: spark.quote(lit("it's")), "'it\\'s'"),
+        (lambda: spark.concat_ws(",", lit("a"), lit("b")), "a,b"),
+        (lambda: spark.concat_ws(lit("-"), lit("a"), lit(None), lit("b")), "a-b"),
+        (
+            lambda: spark.concat_ws(",", f.make_array(lit("a"), lit("b")), lit("c")),
+            "a,b,c",
+        ),
     ],
 )
 def test_string(df, expr_factory, expected):
@@ -473,3 +500,39 @@ def test_sql_concat_semantics_override():
         ctx2.sql("SELECT concat('a', NULL, 'b') AS c").collect_column("c")[0].as_py()
     )
     assert spark_out is None
+
+
+@pytest.mark.parametrize(
+    ("alias_fn", "primary_fn", "args"),
+    [
+        (spark.getbit, spark.bit_get, lambda: (lit(5), lit(0))),
+        (spark.dateadd, spark.date_add, lambda: (_ts().cast(pa.date32()), 3)),
+        (
+            spark.datediff,
+            spark.date_diff,
+            lambda: (_ts().cast(pa.date32()), lit("2020-01-01").cast(pa.date32())),
+        ),
+        (spark.datepart, spark.date_part, lambda: ("YEAR", _ts())),
+        (spark.sha, spark.sha1, lambda: (lit("abc"),)),
+        (spark.ceiling, spark.ceil, lambda: (lit(1.2),)),
+        (spark.printf, spark.format_string, lambda: ("%d-%s", lit(42), lit("hi"))),
+        (spark.char_length, spark.length, lambda: (lit("hello"),)),
+        (spark.character_length, spark.length, lambda: (lit("hello"),)),
+        (spark.power, spark.pow, lambda: (lit(2), lit(3))),
+        (spark.substr, spark.substring, lambda: (lit("hello"), 2, 3)),
+    ],
+)
+def test_aliases_match_primary(df, alias_fn, primary_fn, args):
+    assert _val(df, alias_fn(*args())) == _val(df, primary_fn(*args()))
+
+
+def test_substr_without_len(df):
+    assert _val(df, spark.substr(lit("hello"), 2)) == "ello"
+    assert _val(df, spark.substr(lit("hello"), -3)) == "llo"
+
+
+def test_last_day_date_keyword(df):
+    import datetime as dt
+
+    d = lit(pa.scalar(dt.date(2024, 2, 10), type=pa.date32()))
+    assert _val(df, spark.last_day(date=d)) == dt.date(2024, 2, 29)

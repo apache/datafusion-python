@@ -198,6 +198,37 @@ ctx.execute(plan, partitions=0)  # before
 ctx.execute(plan, partition=0)  # after
 ```
 
+### More aggregate functions accept `distinct`
+
+{py:func}`~datafusion.functions.bit_and`,
+{py:func}`~datafusion.functions.bit_or`,
+{py:func}`~datafusion.functions.mean`,
+{py:func}`~datafusion.functions.percentile_cont`,
+{py:func}`~datafusion.functions.quantile_cont`, and
+{py:func}`~datafusion.functions.string_agg` now accept a `distinct` argument.
+As with `sum` and `avg` in 54.0.0, `distinct` is inserted *before* `filter`, so
+code that passed `filter` (or, for `string_agg`, `order_by`) positionally must
+pass it by keyword.
+
+```python
+f.bit_and(column("a"), my_filter)  # before
+f.bit_and(column("a"), filter=my_filter)  # after
+```
+
+Passing `filter` to `mean` previously raised a `TypeError`, whether passed
+positionally or by keyword; it now works.
+
+### `spark.last_day` renamed its parameter
+
+The parameter of {py:func}`datafusion.functions.spark.last_day` is now named
+`date`, matching `pyspark.sql.functions.last_day`. Positional calls are
+unaffected; update any call passing it by keyword.
+
+```python
+spark.last_day(col=d)  # before
+spark.last_day(date=d)  # after
+```
+
 ### Changes to the `datafusion-python-util` crate
 
 Extension libraries written in Rust usually depend on the

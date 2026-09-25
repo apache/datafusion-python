@@ -46,7 +46,12 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
-from datafusion.dataframe import DataFrameWriteOptions
+from datafusion.common import NullTreatment
+from datafusion.dataframe import (
+    DataFrameWriteOptions,
+    ExplainAnalyzeLevel,
+    ExplainMetricCategory,
+)
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
@@ -1078,6 +1083,26 @@ data_test_window_functions = [
         [-1, -1, None, 7, -1, -1, None],
     ),
     (
+        "lead_ignore_nulls",
+        f.lead(
+            column("b"),
+            order_by=column("a"),
+            partition_by=column("c"),
+            null_treatment=NullTreatment.IGNORE_NULLS,
+        ),
+        [7, 7, 8, None, 9, 9, None],
+    ),
+    (
+        "lag_ignore_nulls",
+        f.lag(
+            column("b"),
+            order_by=column("a"),
+            partition_by=column("c"),
+            null_treatment=NullTreatment.IGNORE_NULLS,
+        ),
+        [None, 7, 7, 7, None, 9, 9],
+    ),
+    (
         "first_value",
         f.first_value(column("a")).over(
             Window(partition_by=[column("c")], order_by=[column("b")])
@@ -1159,6 +1184,14 @@ def test_window_partition_by_accepts_string(partitioned_df, partition):
     df = partitioned_df.select(expr.alias("fv"))
     table = pa.Table.from_batches(df.sort(column("a")).collect())
     assert table.column("fv").to_pylist() == [1, 1, 1, 1, 5, 5, 5]
+
+
+@pytest.mark.parametrize("func", [f.lead, f.lag])
+def test_lead_lag_default_null_treatment_keeps_column_name(partitioned_df, func):
+    """Omitting null_treatment must not add RESPECT NULLS to the output name."""
+    df = partitioned_df.select(func(column("b"), order_by=column("a")))
+    name = df.schema().names[0]
+    assert "RESPECT NULLS" not in name
 
 
 @pytest.mark.parametrize(
@@ -3450,6 +3483,50 @@ def test_fill_null_all_null_column(ctx):
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
 
 
+def _nan_df(ctx):
+    nan = float("nan")
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1.0, nan, None], type=pa.float64()),
+            pa.array([nan, 2.0, 3.0], type=pa.float32()),
+            pa.array([1, 2, 3]),
+            pa.array(["x", "nan", None]),
+        ],
+        names=["f64", "f32", "i", "s"],
+    )
+    return ctx.create_dataframe([[batch]])
+
+
+def _is_nan(v):
+    return v is not None and v != v  # noqa: PLR0124
+
+
+def test_fill_nan_all_columns(ctx):
+    result = _nan_df(ctx).fill_nan(0.0).to_pydict()
+    # NaN replaced in both float widths; null is not NaN and stays null.
+    assert result["f64"] == [1.0, 0.0, None]
+    assert result["f32"] == [0.0, 2.0, 3.0]
+    # Non-float columns are untouched.
+    assert result["i"] == [1, 2, 3]
+    assert result["s"] == ["x", "nan", None]
+
+
+def test_fill_nan_subset(ctx):
+    result = _nan_df(ctx).fill_nan(-1.0, subset=["f32"]).to_pydict()
+    assert result["f32"] == [-1.0, 2.0, 3.0]
+    assert _is_nan(result["f64"][1])
+
+
+def test_fill_nan_preserves_schema(ctx):
+    df = _nan_df(ctx)
+    assert df.fill_nan(0.0).schema() == df.schema()
+
+
+def test_fill_nan_unknown_column_raises(ctx):
+    with pytest.raises(Exception, match="missing"):
+        _nan_df(ctx).fill_nan(0.0, subset=["missing"]).collect()
+
+
 _slow_udf_started = threading.Event()
 
 
@@ -3804,6 +3881,57 @@ def test_explain_with_format(capsys, fmt, verbose, analyze, expected_substring):
     assert "plan_type" in captured.out
     if expected_substring is not None:
         assert expected_substring in captured.out
+
+
+def _explain_output(capsys, **kwargs):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1, 2]}).filter(column("a") > literal(1))
+    df.explain(**kwargs)
+    return capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "present", "absent"),
+    [
+        pytest.param({}, [], ["statistics="], id="default_no_statistics"),
+        pytest.param(
+            {"show_statistics": True}, ["statistics=[Rows="], [], id="show_statistics"
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_level": ExplainAnalyzeLevel.DEV},
+            ["output_rows=", "output_batches="],
+            [],
+            id="analyze_level_dev",
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_level": ExplainAnalyzeLevel.SUMMARY},
+            ["output_rows="],
+            ["output_batches="],
+            id="analyze_level_summary",
+        ),
+        pytest.param(
+            {
+                "analyze": True,
+                "analyze_categories": [ExplainMetricCategory.ROWS],
+            },
+            ["output_rows="],
+            ["elapsed_compute=", "output_bytes="],
+            id="analyze_categories_rows",
+        ),
+        pytest.param(
+            {"analyze": True, "analyze_categories": []},
+            ["FilterExec: a@0 > 1, metrics=[]"],
+            ["output_rows="],
+            id="analyze_categories_empty_suppresses_metrics",
+        ),
+    ],
+)
+def test_explain_options(capsys, kwargs, present, absent):
+    out = _explain_output(capsys, **kwargs)
+    for text in present:
+        assert text in out
+    for text in absent:
+        assert text not in out
 
 
 @pytest.mark.parametrize(

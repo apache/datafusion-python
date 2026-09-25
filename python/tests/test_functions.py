@@ -20,6 +20,7 @@ from datetime import date, datetime, time, timezone
 
 import numpy as np
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 from datafusion import SessionContext, column, literal
 from datafusion import functions as f
@@ -745,6 +746,12 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.inner_product,
             {"a": [[1.0, 2.0, 3.0]], "b": [[4.0, 5.0, 6.0]]},
         ),
+        (f.list_add, f.array_add, {"a": [[1.0, 2.0]], "b": [[3.0, 4.0]]}),
+        (f.list_subtract, f.array_subtract, {"a": [[1.0, 2.0]], "b": [[3.0, 4.0]]}),
+        (f.list_scale, f.array_scale, {"a": [[1.0, 2.0]], "b": [3.0]}),
+        (f.list_sum, f.array_sum, {"a": [[1.0, 2.0, 3.0]]}),
+        (f.list_avg, f.array_avg, {"a": [[1.0, 2.0, 3.0]]}),
+        (f.list_product, f.array_product, {"a": [[1.0, 2.0, 3.0]]}),
     ],
 )
 def test_array_function_aliases(alias_fn, primary_fn, data):
@@ -759,7 +766,107 @@ def test_array_function_aliases(alias_fn, primary_fn, data):
     )
 
 
-@pytest.mark.parametrize("fn", [f.cosine_distance, f.inner_product, f.dot_product])
+@pytest.mark.parametrize(
+    ("fn", "expected"),
+    [
+        pytest.param(f.input_file_name, ["data.parquet"] * 2, id="input_file_name"),
+        pytest.param(f.file_row_index, [1, 2], id="file_row_index"),
+    ],
+)
+def test_file_metadata_functions(tmp_path, fn, expected):
+    path = tmp_path / "data.parquet"
+    pq.write_table(pa.table({"a": [10, 20, 30]}), path)
+    ctx = SessionContext()
+    df = ctx.read_parquet(str(path)).filter(column("a") > literal(10))
+    result = df.select(fn().alias("r")).collect_column("r").to_pylist()
+    if fn is f.input_file_name:
+        result = [r.rsplit("/", 1)[-1] for r in result]
+    assert result == expected
+
+
+@pytest.mark.parametrize("fn", [f.input_file_name, f.file_row_index])
+def test_file_metadata_functions_outside_scan_raise(fn):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception, match="source dependent"):
+        df.select(fn().alias("r")).collect()
+
+
+def test_rand_and_substring_index_aliases():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"s": ["a.b.c"]})
+    r = df.select(
+        f.rand().alias("r"),
+        f.substring_index(column("s"), ".", 2).alias("si"),
+        f.substr_index(column("s"), ".", 2).alias("sp"),
+    ).to_pydict()
+    assert 0.0 <= r["r"][0] < 1.0
+    assert r["si"] == r["sp"] == ["a.b"]
+
+
+@pytest.mark.parametrize(
+    ("build_expr", "expected"),
+    [
+        pytest.param(
+            lambda: f.array_add(column("a"), column("b")),
+            [[11.0, None, 33.0], [], None],
+            id="array_add",
+        ),
+        pytest.param(
+            lambda: f.array_subtract(column("b"), column("a")),
+            [[9.0, None, 27.0], [], None],
+            id="array_subtract",
+        ),
+        pytest.param(
+            lambda: f.array_scale(column("a"), 2),
+            [[2.0, 4.0, 6.0], [], [None, None]],
+            id="array_scale_native_scalar",
+        ),
+        pytest.param(
+            lambda: f.array_scale(column("a"), literal(None).cast(pa.float64())),
+            [None, None, None],
+            id="array_scale_null_scalar",
+        ),
+        pytest.param(
+            lambda: f.array_sum(column("a")),
+            [6.0, None, None],
+            id="array_sum",
+        ),
+        pytest.param(
+            lambda: f.array_avg(column("a")),
+            [2.0, None, None],
+            id="array_avg",
+        ),
+        pytest.param(
+            lambda: f.array_product(column("a")),
+            [6.0, None, None],
+            id="array_product",
+        ),
+    ],
+)
+def test_array_arithmetic_functions(build_expr, expected):
+    """Element-wise and reducing array math, including NULL and empty rows."""
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {
+            "a": [[1.0, 2.0, 3.0], [], [None, None]],
+            "b": [[10.0, None, 30.0], [], None],
+        }
+    )
+    result = df.select(build_expr().alias("r")).collect_column("r").to_pylist()
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        f.cosine_distance,
+        f.inner_product,
+        f.dot_product,
+        f.array_add,
+        f.array_subtract,
+    ],
+)
 def test_array_distance_length_mismatch_raises(fn):
     """Length-mismatched inputs to vector distance fns should raise at execute."""
     ctx = SessionContext()
@@ -2252,6 +2359,23 @@ def test_gen_series_with_step():
     assert result[0].column(0)[0].as_py() == [1, 4, 7, 10]
 
 
+@pytest.mark.parametrize(
+    ("func", "expected"),
+    [(f.range, [[0], [0, 1]]), (f.gen_series, [[0, 1], [0, 1, 2]])],
+)
+def test_series_single_arg_accepts_column(func, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"n": [1, 2]})
+    result = df.select(func(column("n")).alias("v"))
+    assert result.collect_column("v").to_pylist() == expected
+
+
+@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
+def test_series_step_requires_stop(func):
+    with pytest.raises(ValueError, match="requires stop"):
+        func(0, step=2)
+
+
 class TestPythonicNativeTypes:
     """Tests for accepting native Python types instead of requiring lit()."""
 
@@ -2440,3 +2564,46 @@ class TestPythonicNativeTypes:
             f.split_part(column("a"), literal(","), literal(2)).alias("s")
         ).collect()
         assert result[0].column(0)[0].as_py() == "b"
+
+
+@pytest.mark.parametrize(
+    ("fn", "expected"),
+    [
+        (f.btrim, "hi"),
+        (f.trim, "hi"),
+        (f.ltrim, "hixyx"),
+        (f.rtrim, "xyxhi"),
+    ],
+)
+def test_trim_characters(fn, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["xyxhixyx"]})
+    assert df.select(fn(column("a"), characters="xy").alias("r")).collect_column(
+        "r"
+    ).to_pylist() == [expected]
+    assert df.select(
+        fn(column("a"), characters=literal("xy")).alias("r")
+    ).collect_column("r").to_pylist() == [expected]
+
+
+@pytest.mark.parametrize(
+    "fn", [f.array_to_string, f.array_join, f.list_to_string, f.list_join]
+)
+def test_array_to_string_null_string(fn):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, None, 3]]})
+    without = df.select(fn(column("a"), "-").alias("r")).collect_column("r")
+    with_null = df.select(fn(column("a"), "-", null_string="NA").alias("r"))
+    assert without.to_pylist() == ["1-3"]
+    assert with_null.collect_column("r").to_pylist() == ["1-NA-3"]
+
+
+def test_substr_length():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello"]})
+    r = df.select(
+        f.substr(column("a"), 2).alias("tail"),
+        f.substr(column("a"), 2, length=3).alias("mid"),
+        f.substr(column("a"), 2, length=literal(3)).alias("mid_expr"),
+    ).to_pydict()
+    assert r == {"tail": ["ello"], "mid": ["ell"], "mid_expr": ["ell"]}

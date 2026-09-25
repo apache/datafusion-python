@@ -32,6 +32,7 @@ from datafusion import (
     lit_with_metadata,
     literal_with_metadata,
 )
+from datafusion.common import NullTreatment
 from datafusion.expr import (
     EXPR_TYPE_ERROR,
     Aggregate,
@@ -53,6 +54,8 @@ from datafusion.expr import (
     TransactionEnd,
     TransactionStart,
     Values,
+    Window,
+    WindowFrame,
     coerce_to_expr,
     coerce_to_expr_list,
     coerce_to_expr_or_none,
@@ -1251,3 +1254,120 @@ def test_expr_to_bytes_no_ctx_default_codec() -> None:
     restored = Expr.from_bytes(blob, ctx=fresh)
 
     assert restored.canonical_name() == original.canonical_name()
+
+
+@pytest.fixture
+def builder_df():
+    ctx = SessionContext()
+    return ctx.from_pydict(
+        {"g": [1, 1, 1, 2], "s": ["y", "x", "z", "w"], "v": [3, 1, 2, 4]}
+    )
+
+
+@pytest.mark.parametrize(
+    ("build_expr", "expected"),
+    [
+        pytest.param(
+            lambda: (
+                functions.array_agg(col("s"), order_by="s")
+                .filter(col("v") > lit(1))
+                .build()
+            ),
+            ["w", "y", "z"],
+            id="order_by_kept_after_filter",
+        ),
+        pytest.param(
+            lambda: (
+                functions.array_agg(col("s"), filter=col("v") > lit(1))
+                .order_by(col("s").sort(ascending=False))
+                .build()
+            ),
+            ["z", "y", "w"],
+            id="filter_kept_after_order_by",
+        ),
+        pytest.param(
+            lambda: (
+                functions.string_agg(col("s"), ",", order_by="s").distinct().build()
+            ),
+            "w,x,y,z",
+            id="order_by_kept_after_distinct",
+        ),
+        pytest.param(
+            lambda: (
+                functions.first_value(col("s"), order_by="v")
+                .filter(col("v") > lit(1))
+                .build()
+            ),
+            "z",
+            id="first_value_order_by_kept_after_filter",
+        ),
+    ],
+)
+def test_aggregate_builder_keeps_existing_options(builder_df, build_expr, expected):
+    result = builder_df.aggregate([], [build_expr().alias("r")])
+    assert result.collect_column("r")[0].as_py() == expected
+
+
+def test_window_builder_keeps_existing_options(builder_df):
+    expr = functions.lead(col("v"), order_by="v").partition_by(col("g")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [2, 3, None, None]
+
+
+def test_window_builder_keeps_explicit_frame(builder_df):
+    window = Window(order_by=col("v"), window_frame=WindowFrame("rows", 1, 0))
+    expr = functions.sum(col("v")).over(window).partition_by(col("g")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 5, 4]
+
+
+def test_window_builder_keeps_explicit_default_frame(builder_df):
+    # An explicit frame equal to the no-order_by default must survive a later
+    # order_by instead of being re-derived as the running frame.
+    window = Window(window_frame=WindowFrame("rows", None, None))
+    expr = functions.sum(col("v")).over(window).order_by(col("v")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+def test_window_builder_keeps_frame_set_on_builder(builder_df):
+    expr = (
+        functions.sum(col("v"))
+        .over(Window())
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .order_by(col("v"))
+        .build()
+    )
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+def test_over_keeps_window_function_options():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"g": [1, 1, 1, 2], "i": [1, 2, 3, 4], "v": [1, None, 3, 4]})
+    expr = functions.lead(
+        col("v"), 1, order_by="i", null_treatment=NullTreatment.IGNORE_NULLS
+    ).over(Window(partition_by=[col("g")]))
+    result = df.select(col("i"), expr.alias("r")).sort(col("i"))
+    assert result.collect_column("r").to_pylist() == [3, 3, None, None]
+
+
+def test_over_keeps_explicit_default_frame(builder_df):
+    # A frame equal to the no-order_by default, set by an earlier over(), must
+    # survive a later over() that adds an order_by.
+    expr = (
+        functions.sum(col("v"))
+        .over(Window(window_frame=WindowFrame("rows", None, None)))
+        .over(Window(order_by=col("v")))
+    )
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+def test_window_builder_rederives_default_frame(builder_df):
+    # No order_by means a whole-partition frame; adding one later must switch
+    # to the running frame rather than keep the whole-partition default.
+    expr = functions.sum(col("v")).over(Window()).order_by(col("v")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]

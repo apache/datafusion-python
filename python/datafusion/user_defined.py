@@ -31,7 +31,12 @@ from datafusion import SessionContext
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    from _typeshed import CapsuleType as _PyCapsule
+    import sys
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
@@ -283,6 +288,10 @@ class ScalarUDF:
     @staticmethod
     def udf(func: ScalarUDFExportable) -> ScalarUDF: ...
 
+    @overload
+    @staticmethod
+    def udf(func: _PyCapsule) -> ScalarUDF: ...
+
     @staticmethod
     def udf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Function (UDF).
@@ -388,7 +397,7 @@ class ScalarUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_scalar_udf__"):
+        if hasattr(args[0], "__datafusion_scalar_udf__") or _is_pycapsule(args[0]):
             return ScalarUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -398,12 +407,18 @@ class ScalarUDF:
         return _decorator(*args, **kwargs)
 
     @staticmethod
-    def from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF:
+    def from_pycapsule(func: ScalarUDFExportable | _PyCapsule) -> ScalarUDF:
         """Create a Scalar UDF from ScalarUDF PyCapsule object.
 
         This function will instantiate a Scalar UDF that uses a DataFusion
         ScalarUDF that is exported via the FFI bindings.
         """
+        if _is_pycapsule(func):
+            scalar = cast("ScalarUDF", object.__new__(ScalarUDF))
+            scalar._udf = df_internal.ScalarUDF.from_pycapsule(func)
+            return scalar
+
+        func = cast("ScalarUDFExportable", func)
         name = str(func.__class__)
         return ScalarUDF(
             name=name,
@@ -1011,6 +1026,14 @@ class WindowUDF:
         name: str | None = None,
     ) -> WindowUDF: ...
 
+    @overload
+    @staticmethod
+    def udwf(func: WindowUDFExportable) -> WindowUDF: ...
+
+    @overload
+    @staticmethod
+    def udwf(func: _PyCapsule) -> WindowUDF: ...
+
     @staticmethod
     def udwf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Window Function (UDWF).
@@ -1075,7 +1098,7 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
-        if hasattr(args[0], "__datafusion_window_udf__"):
+        if hasattr(args[0], "__datafusion_window_udf__") or _is_pycapsule(args[0]):
             return WindowUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -1146,12 +1169,18 @@ class WindowUDF:
         return decorator
 
     @staticmethod
-    def from_pycapsule(func: WindowUDFExportable) -> WindowUDF:
+    def from_pycapsule(func: WindowUDFExportable | _PyCapsule) -> WindowUDF:
         """Create a Window UDF from WindowUDF PyCapsule object.
 
         This function will instantiate a Window UDF that uses a DataFusion
         WindowUDF that is exported via the FFI bindings.
         """
+        if _is_pycapsule(func):
+            window = cast("WindowUDF", object.__new__(WindowUDF))
+            window._udwf = df_internal.WindowUDF.from_pycapsule(func)
+            return window
+
+        func = cast("WindowUDFExportable", func)
         name = str(func.__class__)
         return WindowUDF(
             name=name,

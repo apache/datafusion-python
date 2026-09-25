@@ -356,6 +356,15 @@ def bit_get(col: Expr, pos: Expr | str) -> Expr:
     return Expr(_f.bit_get(col.expr, _to_raw_expr(pos)))
 
 
+def getbit(col: Expr, pos: Expr | str) -> Expr:
+    """Spark ``getbit``: returns the bit (0 or 1) at ``pos``.
+
+    See Also:
+        This is an alias for :py:func:`bit_get`.
+    """
+    return bit_get(col, pos)
+
+
 def bit_count(col: Expr) -> Expr:
     """Spark ``bit_count``: number of bits set in the integer's binary form.
 
@@ -539,6 +548,15 @@ def date_add(start: Expr, days: Expr | int) -> Expr:
     return Expr(_f.date_add(start.expr, _coerce_i32(days).expr))
 
 
+def dateadd(start: Expr, days: Expr | int) -> Expr:
+    """Spark ``dateadd``: date + N days.
+
+    See Also:
+        This is an alias for :py:func:`date_add`.
+    """
+    return date_add(start, days)
+
+
 def date_sub(start: Expr, days: Expr | int) -> Expr:
     """Spark ``date_sub``: date - N days.
 
@@ -593,6 +611,22 @@ def minute(col: Expr) -> Expr:
     return Expr(_f.minute(col.expr))
 
 
+def monthname(col: Expr) -> Expr:
+    """Spark ``monthname``: three-letter abbreviated month name.
+
+    Examples:
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+        >>> r = df.select(dfn.functions.spark.monthname(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'Mar'
+    """
+    return Expr(_f.monthname(col.expr))
+
+
 def second(col: Expr) -> Expr:
     """Spark ``second``: extract second component of a timestamp.
 
@@ -611,7 +645,7 @@ def second(col: Expr) -> Expr:
     return Expr(_f.second(col.expr))
 
 
-def last_day(col: Expr) -> Expr:
+def last_day(date: Expr) -> Expr:
     """Spark ``last_day``: last day of the month containing the date.
 
     Examples:
@@ -624,7 +658,7 @@ def last_day(col: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 31)
     """
-    return Expr(_f.last_day(col.expr))
+    return Expr(_f.last_day(date.expr))
 
 
 def make_dt_interval(
@@ -738,6 +772,15 @@ def date_diff(end: Expr, start: Expr) -> Expr:
     return Expr(_f.date_diff(end.expr, start.expr))
 
 
+def datediff(end: Expr, start: Expr) -> Expr:
+    """Spark ``datediff``: number of days from ``start`` to ``end``.
+
+    See Also:
+        This is an alias for :py:func:`date_diff`.
+    """
+    return date_diff(end, start)
+
+
 def date_trunc(format: Expr | str, timestamp: Expr) -> Expr:
     """Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
 
@@ -814,6 +857,15 @@ def date_part(field: Expr | str, source: Expr) -> Expr:
         2020
     """
     return Expr(_f.date_part(coerce_to_expr(field).expr, source.expr))
+
+
+def datepart(field: Expr | str, source: Expr) -> Expr:
+    """Spark ``datepart``: extract ``field`` from a date/time/timestamp.
+
+    See Also:
+        This is an alias for :py:func:`date_part`.
+    """
+    return date_part(field, source)
 
 
 def from_utc_timestamp(timestamp: Expr, tz: Expr | str) -> Expr:
@@ -933,6 +985,22 @@ def unix_seconds(col: Expr) -> Expr:
 # ---------------------------------------------------------------------------
 
 
+def weekday(col: Expr) -> Expr:
+    """Spark ``weekday``: day of the week, Monday = 0 through Sunday = 6.
+
+    Examples:
+        >>> import pyarrow as pa
+        >>> from datetime import date
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+        >>> r = df.select(dfn.functions.spark.weekday(d).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        4
+    """
+    return Expr(_f.weekday(col.expr))
+
+
 def crc32(col: Expr) -> Expr:
     """Spark ``crc32``: cyclic redundancy check value as a bigint.
 
@@ -957,6 +1025,15 @@ def sha1(col: Expr) -> Expr:
         'aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d'
     """
     return Expr(_f.sha1(col.expr))
+
+
+def sha(col: Expr) -> Expr:
+    """Spark ``sha``: SHA-1 hash as a hex string.
+
+    See Also:
+        This is an alias for :py:func:`sha1`.
+    """
+    return sha1(col)
 
 
 def sha2(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
@@ -1114,6 +1191,22 @@ def abs(col: Expr) -> Expr:
     return Expr(_f.abs(col.expr))
 
 
+def atan2(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``atan2``: angle in radians of the point ``(col2, col1)``.
+
+    ``col1`` is the y coordinate and ``col2`` the x coordinate. Both accept
+    native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.atan2(1.0, 0.0).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1.5707963267948966
+    """
+    return Expr(_f.atan2(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
 def ceil(col: Expr) -> Expr:
     """Spark ``ceil``: smallest integer ≥ arg.
 
@@ -1125,6 +1218,15 @@ def ceil(col: Expr) -> Expr:
         2
     """
     return Expr(_f.ceil(col.expr))
+
+
+def ceiling(col: Expr) -> Expr:
+    """Spark ``ceiling``: smallest integer ≥ arg.
+
+    See Also:
+        This is an alias for :py:func:`ceil`.
+    """
+    return ceil(col)
 
 
 def expm1(col: Expr) -> Expr:
@@ -1184,6 +1286,21 @@ def hex(col: Expr) -> Expr:
     return Expr(_f.hex(col.expr))
 
 
+def hypot(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``hypot``: ``sqrt(col1^2 + col2^2)`` without intermediate overflow.
+
+    Both arguments accept native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.hypot(3.0, 4.0).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        5.0
+    """
+    return Expr(_f.hypot(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
 def modulus(dividend: Expr | float, divisor: Expr | float) -> Expr:
     """Spark ``mod``: remainder of ``dividend / divisor`` (sign follows dividend).
 
@@ -1214,6 +1331,30 @@ def pmod(dividend: Expr | float, divisor: Expr | float) -> Expr:
         2
     """
     return Expr(_f.pmod(coerce_to_expr(dividend).expr, coerce_to_expr(divisor).expr))
+
+
+def pow(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``pow``: ``col1`` raised to the power ``col2``, as a double.
+
+    Both arguments accept native numbers or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.pow(2, 10).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        1024.0
+    """
+    return Expr(_f.pow(coerce_to_expr(col1).expr, coerce_to_expr(col2).expr))
+
+
+def power(col1: Expr | float, col2: Expr | float) -> Expr:
+    """Spark ``power``: ``col1`` raised to the power ``col2``.
+
+    See Also:
+        This is an alias for :py:func:`pow`.
+    """
+    return pow(col1, col2)
 
 
 def rint(col: Expr) -> Expr:
@@ -1400,6 +1541,25 @@ def concat(*cols: Expr) -> Expr:
     return Expr(_f.concat(*[c.expr for c in cols]))
 
 
+def concat_ws(sep: Expr | str, *cols: Expr) -> Expr:
+    """Spark ``concat_ws``: joins strings and arrays of strings with ``sep``.
+
+    NULL inputs are skipped rather than propagated.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["x"], "b": [None], "c": ["z"]})
+        >>> r = df.select(
+        ...     dfn.functions.spark.concat_ws(
+        ...         "-", dfn.col("a"), dfn.col("b"), dfn.col("c")
+        ...     ).alias("v")
+        ... )
+        >>> r.collect_column("v")[0].as_py()
+        'x-z'
+    """
+    return Expr(_f.concat_ws(coerce_to_expr(sep).expr, *[c.expr for c in cols]))
+
+
 def elt(*inputs: Expr) -> Expr:
     """Spark ``elt``: returns the n-th input (1-indexed).
 
@@ -1456,6 +1616,24 @@ def length(col: Expr) -> Expr:
     return Expr(_f.length(col.expr))
 
 
+def character_length(col: Expr) -> Expr:
+    """Spark ``character_length``: character length of a string, or bytes of binary.
+
+    See Also:
+        This is an alias for :py:func:`length`.
+    """
+    return length(col)
+
+
+def char_length(col: Expr) -> Expr:
+    """Spark ``char_length``: character length of a string, or bytes of binary.
+
+    See Also:
+        This is an alias for :py:func:`length`.
+    """
+    return length(col)
+
+
 def like(
     str: Expr,
     pattern: Expr | str,
@@ -1499,6 +1677,19 @@ def luhn_check(col: Expr) -> Expr:
     return Expr(_f.luhn_check(col.expr))
 
 
+def quote(col: Expr) -> Expr:
+    r"""Spark ``quote``: wraps a string in single quotes, escaping inner quotes.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.quote(dfn.lit("it's")).alias("v"))
+        >>> print(r.collect_column("v")[0].as_py())
+        'it\'s'
+    """
+    return Expr(_f.quote(col.expr))
+
+
 def format_string(format: str | Expr, *cols: Expr) -> Expr:
     """Spark ``format_string``: printf-style format string.
 
@@ -1518,6 +1709,15 @@ def format_string(format: str | Expr, *cols: Expr) -> Expr:
     """
     fmt_expr = format if isinstance(format, Expr) else Expr.literal(format)
     return Expr(_f.format_string(fmt_expr.expr, *[c.expr for c in cols]))
+
+
+def printf(format: str | Expr, *cols: Expr) -> Expr:
+    """Spark ``printf``: printf-style format string.
+
+    See Also:
+        This is an alias for :py:func:`format_string`.
+    """
+    return format_string(format, *cols)
 
 
 def space(col: Expr | int) -> Expr:
@@ -1552,6 +1752,28 @@ def substring(str: Expr, pos: Expr | int, len: Expr | int) -> Expr:
     return Expr(
         _f.substring(str.expr, coerce_to_expr(pos).expr, coerce_to_expr(len).expr)
     )
+
+
+def substr(str: Expr, pos: Expr | int, len: Expr | int | None = None) -> Expr:
+    """Spark ``substr``: 1-indexed substring, to the end when ``len`` is omitted.
+
+    Same as :py:func:`substring` except that ``len`` is optional. ``pos`` and
+    ``len`` accept native ``int`` values or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.substr(dfn.lit("hello"), 2).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'ello'
+
+        >>> r = df.select(
+        ...     dfn.functions.spark.substr(dfn.lit("hello"), 2, len=3).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'ell'
+    """
+    len_raw = coerce_to_expr(len).expr if len is not None else None
+    return Expr(_f.substr(str.expr, coerce_to_expr(pos).expr, len_raw))
 
 
 def unbase64(col: Expr) -> Expr:
@@ -1735,6 +1957,7 @@ __all__ = [
     # String
     "ascii",
     # Aggregate
+    "atan2",
     "avg",
     "base64",
     "bin",
@@ -1747,11 +1970,15 @@ __all__ = [
     "bitmap_count",
     "bitwise_not",
     "ceil",
+    "ceiling",
     "char",
+    "char_length",
+    "character_length",
     "collect_list",
     "collect_set",
     "concat",
     # Hash
+    "concat_ws",
     "crc32",
     "csc",
     "date_add",
@@ -1759,14 +1986,19 @@ __all__ = [
     "date_part",
     "date_sub",
     "date_trunc",
+    "dateadd",
+    "datediff",
+    "datepart",
     "elt",
     "expm1",
     "factorial",
     "floor",
     "format_string",
     "from_utc_timestamp",
+    "getbit",
     "hex",
     "hour",
+    "hypot",
     "if_",
     "ilike",
     "is_valid_utf8",
@@ -1784,15 +2016,21 @@ __all__ = [
     "map_from_entries",
     "minute",
     "modulus",
+    "monthname",
     "negative",
     "next_day",
     # URL
     "parse_url",
     "pmod",
+    "pow",
+    "power",
+    "printf",
+    "quote",
     "rint",
     "round",
     "sec",
     "second",
+    "sha",
     "sha1",
     "sha2",
     "shiftleft",
@@ -1806,6 +2044,7 @@ __all__ = [
     "space",
     "spark_cast",
     "str_to_map",
+    "substr",
     "substring",
     "time_trunc",
     "to_utc_timestamp",
@@ -1821,6 +2060,7 @@ __all__ = [
     "unix_seconds",
     "url_decode",
     "url_encode",
+    "weekday",
     "width_bucket",
     "xxhash64",
 ]

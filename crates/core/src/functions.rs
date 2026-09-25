@@ -19,7 +19,7 @@ use std::collections::HashMap;
 
 use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::logical_expr::expr::{Alias, FieldMetadata, NullTreatment as DFNullTreatment};
-use datafusion::logical_expr::{Expr, ExprFunctionExt, lit};
+use datafusion::logical_expr::{Expr, ExprFuncBuilder, ExprFunctionExt, lit};
 use datafusion::{functions, functions_aggregate, functions_window};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
@@ -118,17 +118,57 @@ fn string_to_array(string: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr
 }
 
 #[pyfunction]
-#[pyo3(signature = (start, stop, step=None))]
-fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
-    let mut args = vec![start.into(), stop.into()];
-    if let Some(step) = step {
-        args.push(step.into());
+#[pyo3(signature = (array, delimiter, null_string=None))]
+fn array_to_string(array: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![array.into(), delimiter.into()];
+    if let Some(null_string) = null_string {
+        args.push(null_string.into());
     }
     Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
-        datafusion::functions_nested::range::gen_series_udf(),
+        datafusion::functions_nested::string::array_to_string_udf(),
         args,
     ))
     .into()
+}
+
+/// Builds `range` or `gen_series` from its one, two, or three arguments.
+fn series_expr(
+    udf: std::sync::Arc<datafusion::logical_expr::ScalarUDF>,
+    start: PyExpr,
+    stop: Option<PyExpr>,
+    step: Option<PyExpr>,
+) -> PyExpr {
+    let args = std::iter::once(start)
+        .chain(stop)
+        .chain(step)
+        .map(Into::into)
+        .collect();
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        udf, args,
+    ))
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop=None, step=None))]
+fn range(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+    series_expr(
+        datafusion::functions_nested::range::range_udf(),
+        start,
+        stop,
+        step,
+    )
+}
+
+#[pyfunction]
+#[pyo3(signature = (start, stop=None, step=None))]
+fn gen_series(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+    series_expr(
+        datafusion::functions_nested::range::gen_series_udf(),
+        start,
+        stop,
+        step,
+    )
 }
 
 #[pyfunction]
@@ -195,6 +235,13 @@ fn array_any_match(array: PyExpr, predicate: PyExpr) -> PyExpr {
 #[pyfunction]
 fn array_filter(array: PyExpr, predicate: PyExpr) -> PyExpr {
     datafusion::functions_nested::expr_fn::array_filter(array.into(), predicate.into()).into()
+}
+
+/// Higher-order function: return the first element of `array` for which
+/// `predicate` (a lambda returning a boolean) is true, or null if none match.
+#[pyfunction]
+fn array_first(array: PyExpr, predicate: PyExpr) -> PyExpr {
+    datafusion::functions_nested::expr_fn::array_first(array.into(), predicate.into()).into()
 }
 
 /// Computes a binary hash of the given data. type is the algorithm to use.
@@ -615,6 +662,8 @@ expr_fn_vec!(arrow_metadata);
 expr_fn_vec!(with_metadata);
 expr_fn!(union_tag, arg1);
 expr_fn!(random);
+expr_fn!(input_file_name);
+expr_fn!(file_row_index);
 
 #[pyfunction]
 fn get_field(expr: PyExpr, names: Vec<PyExpr>) -> PyExpr {
@@ -637,7 +686,6 @@ fn version() -> PyExpr {
 
 // Array Functions
 array_fn!(array_append, array element);
-array_fn!(array_to_string, array delimiter);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
 array_fn!(array_element, array element);
@@ -663,6 +711,12 @@ array_fn!(array_compact, array);
 array_fn!(array_normalize, array);
 array_fn!(cosine_distance, array1 array2);
 array_fn!(inner_product, array1 array2);
+array_fn!(array_add, array1 array2);
+array_fn!(array_subtract, array1 array2);
+array_fn!(array_scale, array scalar);
+array_fn!(array_sum, array);
+array_fn!(array_avg, array);
+array_fn!(array_product, array);
 array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
@@ -673,7 +727,6 @@ array_fn!(array_min, array);
 array_fn!(array_reverse, array);
 array_fn!(cardinality, array);
 array_fn!(flatten, array);
-array_fn!(range, start stop step);
 
 // Map Functions
 array_fn!(map_keys, map);
@@ -688,6 +741,7 @@ aggregate_function!(avg);
 aggregate_function!(sum);
 aggregate_function!(bit_and);
 aggregate_function!(bit_or);
+aggregate_function!(any_value);
 aggregate_function!(bit_xor);
 aggregate_function!(bool_and);
 aggregate_function!(bool_or);
@@ -754,16 +808,17 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-#[pyo3(signature = (sort_expression, percentile, filter=None))]
+#[pyo3(signature = (sort_expression, percentile, distinct=None, filter=None))]
 pub fn percentile_cont(
     sort_expression: PySortExpr,
     percentile: f64,
+    distinct: Option<bool>,
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn =
         functions_aggregate::expr_fn::percentile_cont(sort_expression.sort, lit(percentile));
 
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, None, None)
 }
 
 // We handle last_value explicitly because the signature expects an order_by
@@ -836,8 +891,27 @@ pub(crate) fn add_builder_fns_to_window(
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
-    let null_treatment = null_treatment.map(|n| n.into());
-    let mut builder = window_fn.null_treatment(null_treatment);
+    apply_window_options(
+        window_fn.null_treatment(None),
+        partition_by,
+        window_frame,
+        order_by,
+        null_treatment,
+    )
+}
+
+/// Applies the options that are `Some` to `builder` and builds it. Options
+/// that are `None` keep whatever `builder` already holds.
+pub(crate) fn apply_window_options(
+    mut builder: ExprFuncBuilder,
+    partition_by: Option<Vec<PyExpr>>,
+    window_frame: Option<PyWindowFrame>,
+    order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyDataFusionResult<PyExpr> {
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(Some(null_treatment.into()));
+    }
 
     if let Some(partition_cols) = partition_by {
         builder = builder.partition_by(
@@ -861,33 +935,35 @@ pub(crate) fn add_builder_fns_to_window(
 }
 
 #[pyfunction]
-#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None, null_treatment=None))]
 pub fn lead(
     arg: PyExpr,
     shift_offset: i64,
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
+    add_builder_fns_to_window(window_fn, partition_by, None, order_by, null_treatment)
 }
 
 #[pyfunction]
-#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None, null_treatment=None))]
 pub fn lag(
     arg: PyExpr,
     shift_offset: i64,
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
+    add_builder_fns_to_window(window_fn, partition_by, None, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -1056,6 +1132,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
+    m.add_wrapped(wrap_pyfunction!(input_file_name))?;
+    m.add_wrapped(wrap_pyfunction!(file_row_index))?;
     m.add_wrapped(wrap_pyfunction!(regexp_count))?;
     m.add_wrapped(wrap_pyfunction!(regexp_instr))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;
@@ -1126,6 +1204,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
+    m.add_wrapped(wrap_pyfunction!(any_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;
     m.add_wrapped(wrap_pyfunction!(bool_and))?;
     m.add_wrapped(wrap_pyfunction!(bool_or))?;
@@ -1140,6 +1219,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_transform))?;
     m.add_wrapped(wrap_pyfunction!(array_any_match))?;
     m.add_wrapped(wrap_pyfunction!(array_filter))?;
+    m.add_wrapped(wrap_pyfunction!(array_first))?;
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
@@ -1151,6 +1231,12 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_normalize))?;
     m.add_wrapped(wrap_pyfunction!(cosine_distance))?;
     m.add_wrapped(wrap_pyfunction!(inner_product))?;
+    m.add_wrapped(wrap_pyfunction!(array_add))?;
+    m.add_wrapped(wrap_pyfunction!(array_subtract))?;
+    m.add_wrapped(wrap_pyfunction!(array_scale))?;
+    m.add_wrapped(wrap_pyfunction!(array_sum))?;
+    m.add_wrapped(wrap_pyfunction!(array_avg))?;
+    m.add_wrapped(wrap_pyfunction!(array_product))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
     m.add_wrapped(wrap_pyfunction!(array_empty))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
