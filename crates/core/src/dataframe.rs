@@ -1320,6 +1320,26 @@ impl PyDataFrame {
         let df = self.df.as_ref().fill_null(&scalar_value.0, &cols)?;
         Ok(Self::new(df))
     }
+
+    /// Fill NaN values with a specified value for specific floating-point columns
+    #[pyo3(signature = (value, columns=None))]
+    fn fill_nan(
+        &self,
+        value: Py<PyAny>,
+        columns: Option<Vec<PyBackedStr>>,
+        py: Python,
+    ) -> PyDataFusionResult<Self> {
+        let scalar_value: PyScalarValue = value.extract(py)?;
+
+        let cols = match columns {
+            Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
+            None => Vec::new(), // Empty vector means fill NaN for all columns
+        };
+
+        let cols = cols.iter().map(String::as_str).collect::<Vec<_>>();
+        let df = self.df.as_ref().fill_nan(&scalar_value.0, &cols)?;
+        Ok(Self::new(df))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]

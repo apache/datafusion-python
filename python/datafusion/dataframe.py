@@ -1875,6 +1875,34 @@ class DataFrame:
         """
         return DataFrame(self.df.fill_null(value, subset))
 
+    def fill_nan(self, value: float, subset: list[str] | None = None) -> DataFrame:
+        """Fill NaN values in floating-point columns with a value.
+
+        Only floating-point columns are changed; others are kept unchanged, as is
+        any column ``value`` cannot be cast to. NaN is distinct from null, which
+        :py:meth:`fill_null` handles.
+
+        Args:
+            value: Value to replace NaN with. Will be cast to match column type.
+            subset: Optional list of column names to fill. If None, fills all
+                floating-point columns.
+
+        Returns:
+            DataFrame with NaN values replaced.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> nan = float("nan")
+            >>> df = ctx.from_pydict({"a": [1.0, nan, None], "b": [nan, 2.0, 3.0]})
+            >>> df.fill_nan(0.0).to_pydict()
+            {'a': [1.0, 0.0, None], 'b': [0.0, 2.0, 3.0]}
+
+            >>> df.fill_nan(0.0, subset=["a"]).collect_column("b")[0].as_py()
+            nan
+        """
+        return DataFrame(self.df.fill_nan(value, subset))
+
 
 class InsertOp(Enum):
     """Insert operation mode.

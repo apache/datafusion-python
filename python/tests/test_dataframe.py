@@ -3450,6 +3450,50 @@ def test_fill_null_all_null_column(ctx):
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
 
 
+def _nan_df(ctx):
+    nan = float("nan")
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1.0, nan, None], type=pa.float64()),
+            pa.array([nan, 2.0, 3.0], type=pa.float32()),
+            pa.array([1, 2, 3]),
+            pa.array(["x", "nan", None]),
+        ],
+        names=["f64", "f32", "i", "s"],
+    )
+    return ctx.create_dataframe([[batch]])
+
+
+def _is_nan(v):
+    return v is not None and v != v  # noqa: PLR0124
+
+
+def test_fill_nan_all_columns(ctx):
+    result = _nan_df(ctx).fill_nan(0.0).to_pydict()
+    # NaN replaced in both float widths; null is not NaN and stays null.
+    assert result["f64"] == [1.0, 0.0, None]
+    assert result["f32"] == [0.0, 2.0, 3.0]
+    # Non-float columns are untouched.
+    assert result["i"] == [1, 2, 3]
+    assert result["s"] == ["x", "nan", None]
+
+
+def test_fill_nan_subset(ctx):
+    result = _nan_df(ctx).fill_nan(-1.0, subset=["f32"]).to_pydict()
+    assert result["f32"] == [-1.0, 2.0, 3.0]
+    assert _is_nan(result["f64"][1])
+
+
+def test_fill_nan_preserves_schema(ctx):
+    df = _nan_df(ctx)
+    assert df.fill_nan(0.0).schema() == df.schema()
+
+
+def test_fill_nan_unknown_column_raises(ctx):
+    with pytest.raises(Exception, match="missing"):
+        _nan_df(ctx).fill_nan(0.0, subset=["missing"]).collect()
+
+
 _slow_udf_started = threading.Event()
 
 
