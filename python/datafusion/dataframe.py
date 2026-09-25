@@ -1558,7 +1558,7 @@ class DataFrame:
             if compression_level is not None:
                 msg = "compression_level should be None when using ParquetWriterOptions"
                 raise ValueError(msg)
-            self.write_parquet_with_options(path, compression)
+            self.write_parquet_with_options(path, compression, write_options)
             return
 
         if isinstance(compression, str):
