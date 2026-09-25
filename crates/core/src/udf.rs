@@ -209,6 +209,16 @@ impl ScalarUDFImpl for PythonFunctionScalarUDF {
     }
 }
 
+fn scalar_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<ScalarUDF> {
+    let data: NonNull<FFI_ScalarUDF> = capsule
+        .pointer_checked(Some(c"datafusion_scalar_udf"))?
+        .cast();
+    let udf = unsafe { data.as_ref() };
+    let udf: Arc<dyn ScalarUDFImpl> = udf.into();
+
+    Ok(ScalarUDF::new_from_shared_impl(udf))
+}
+
 /// Represents a PyScalarUDF
 #[pyclass(
     from_py_object,
@@ -247,6 +257,12 @@ impl PyScalarUDF {
 
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if func.is_instance_of::<PyCapsule>() {
+            let capsule = func.cast::<PyCapsule>().map_err(to_datafusion_err)?;
+            let function = scalar_udf_from_capsule(capsule)?;
+            return Ok(Self { function });
+        }
+
         if func.hasattr("__datafusion_scalar_udf__")? {
             let capsule = call_capsule_getter(
                 func.clone(),
@@ -254,15 +270,8 @@ impl PyScalarUDF {
                 CapsuleGetterArg::None,
             )?;
             let capsule = capsule.cast::<PyCapsule>().map_err(to_datafusion_err)?;
-            let data: NonNull<FFI_ScalarUDF> = capsule
-                .pointer_checked(Some(c"datafusion_scalar_udf"))?
-                .cast();
-            let udf = unsafe { data.as_ref() };
-            let udf: Arc<dyn ScalarUDFImpl> = udf.into();
-
-            Ok(Self {
-                function: ScalarUDF::new_from_shared_impl(udf),
-            })
+            let function = scalar_udf_from_capsule(capsule)?;
+            Ok(Self { function })
         } else {
             Err(crate::errors::PyDataFusionError::Common(
                 "__datafusion_scalar_udf__ does not exist on ScalarUDF object.".to_string(),

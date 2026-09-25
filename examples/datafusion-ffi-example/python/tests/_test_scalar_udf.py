@@ -68,3 +68,11 @@ def test_ffi_scalar_call_directly():
     ]
 
     assert result == expected
+
+
+def test_ffi_scalar_from_bare_capsule():
+    ctx = setup_context_with_table()
+    my_udf = udf(IsNullUDF().__datafusion_scalar_udf__())
+
+    result = ctx.table("test_table").select(my_udf(col("a")).alias("r"))
+    assert result.collect_column("r").to_pylist() == [False, False, False, True]

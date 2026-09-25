@@ -87,3 +87,15 @@ def test_ffi_window_call_directly():
         (40, 4),
     ]
     assert results == expected
+
+
+def test_ffi_window_from_bare_capsule():
+    ctx = setup_context_with_table()
+    my_udwf = udwf(MyRankUDF().__datafusion_window_udf__())
+
+    result = (
+        ctx.table("test_table")
+        .select(col("a"), my_udwf().order_by(col("a")).build().alias("r"))
+        .sort(col("a"))
+    )
+    assert result.collect_column("r").to_pylist() == [1, 2, 3, 4]
