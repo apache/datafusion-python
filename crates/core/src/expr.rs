@@ -55,7 +55,7 @@ use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
-use crate::functions::add_builder_fns_to_window;
+use crate::functions::{add_builder_fns_to_window, apply_window_options};
 use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -678,13 +678,14 @@ impl PyExpr {
             .into()
     }
 
-    #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
+    #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None, keep_window_frame=false))]
     pub fn over(
         &self,
         partition_by: Option<Vec<PyExpr>>,
         window_frame: Option<PyWindowFrame>,
         order_by: Option<Vec<PySortExpr>>,
         null_treatment: Option<NullTreatment>,
+        keep_window_frame: bool,
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
@@ -701,8 +702,8 @@ impl PyExpr {
                     null_treatment,
                 )
             }
-            Expr::WindowFunction(_) => add_builder_fns_to_window(
-                self.expr.clone(),
+            Expr::WindowFunction(_) => apply_window_options(
+                builder_from_expr(&self.expr, keep_window_frame),
                 partition_by,
                 window_frame,
                 order_by,

@@ -19,7 +19,7 @@ use std::collections::HashMap;
 
 use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::logical_expr::expr::{Alias, FieldMetadata, NullTreatment as DFNullTreatment};
-use datafusion::logical_expr::{Expr, ExprFunctionExt, lit};
+use datafusion::logical_expr::{Expr, ExprFuncBuilder, ExprFunctionExt, lit};
 use datafusion::{functions, functions_aggregate, functions_window};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
@@ -866,8 +866,27 @@ pub(crate) fn add_builder_fns_to_window(
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
-    let null_treatment = null_treatment.map(|n| n.into());
-    let mut builder = window_fn.null_treatment(null_treatment);
+    apply_window_options(
+        window_fn.null_treatment(None),
+        partition_by,
+        window_frame,
+        order_by,
+        null_treatment,
+    )
+}
+
+/// Applies the options that are `Some` to `builder` and builds it. Options
+/// that are `None` keep whatever `builder` already holds.
+pub(crate) fn apply_window_options(
+    mut builder: ExprFuncBuilder,
+    partition_by: Option<Vec<PyExpr>>,
+    window_frame: Option<PyWindowFrame>,
+    order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyDataFusionResult<PyExpr> {
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(Some(null_treatment.into()));
+    }
 
     if let Some(partition_cols) = partition_by {
         builder = builder.partition_by(

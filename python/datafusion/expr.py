@@ -1118,9 +1118,12 @@ class Expr:  # noqa: PLW1641
                 order_by=order_by_raw,
                 window_frame=window_frame_raw,
                 null_treatment=null_treatment_raw,
+                keep_window_frame=self._explicit_window_frame,
             )
         )
-        result._explicit_window_frame = window_frame_raw is not None
+        result._explicit_window_frame = (
+            window_frame_raw is not None or self._explicit_window_frame
+        )
         return result
 
     def asin(self) -> Expr:

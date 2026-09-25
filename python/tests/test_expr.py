@@ -32,6 +32,7 @@ from datafusion import (
     lit_with_metadata,
     literal_with_metadata,
 )
+from datafusion.common import NullTreatment
 from datafusion.expr import (
     EXPR_TYPE_ERROR,
     Aggregate,
@@ -1337,6 +1338,28 @@ def test_window_builder_keeps_frame_set_on_builder(builder_df):
         .build()
         .order_by(col("v"))
         .build()
+    )
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+def test_over_keeps_window_function_options():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"g": [1, 1, 1, 2], "i": [1, 2, 3, 4], "v": [1, None, 3, 4]})
+    expr = functions.lead(
+        col("v"), 1, order_by="i", null_treatment=NullTreatment.IGNORE_NULLS
+    ).over(Window(partition_by=[col("g")]))
+    result = df.select(col("i"), expr.alias("r")).sort(col("i"))
+    assert result.collect_column("r").to_pylist() == [3, 3, None, None]
+
+
+def test_over_keeps_explicit_default_frame(builder_df):
+    # A frame equal to the no-order_by default, set by an earlier over(), must
+    # survive a later over() that adds an order_by.
+    expr = (
+        functions.sum(col("v"))
+        .over(Window(window_frame=WindowFrame("rows", None, None)))
+        .over(Window(order_by=col("v")))
     )
     result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
     assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
