@@ -486,46 +486,71 @@ def decode(expr: Expr, encoding: Expr | str) -> Expr:
     return Expr(f.decode(expr.expr, encoding.expr))
 
 
-def array_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
+def array_to_string(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
+
+    NULL elements are omitted unless ``null_string`` is given, in which case it
+    is written in their place.
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> df = ctx.from_pydict({"a": [[1, None, 3]]})
         >>> result = df.select(
         ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
         >>> result.collect_column("s")[0].as_py()
-        '1,2,3'
+        '1,3'
+
+        >>> result = df.select(
+        ...     dfn.functions.array_to_string(
+        ...         dfn.col("a"), ",", null_string="*"
+        ...     ).alias("s"))
+        >>> result.collect_column("s")[0].as_py()
+        '1,*,3'
     """
     delimiter = coerce_to_expr(delimiter)
-    return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
+    null_string = coerce_to_expr_or_none(null_string)
+    return Expr(
+        f.array_to_string(
+            expr.expr,
+            delimiter.expr.cast(pa.string()),
+            null_string.expr if null_string is not None else None,
+        )
+    )
 
 
-def array_join(expr: Expr, delimiter: Expr | str) -> Expr:
+def array_join(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
-def list_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
+def list_to_string(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
-def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
+def list_join(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
 def lambda_var(name: str) -> Expr:
@@ -1128,8 +1153,8 @@ def bit_length(arg: Expr) -> Expr:
     return Expr(f.bit_length(arg.expr))
 
 
-def btrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string.
+def btrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from both sides of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1137,8 +1162,20 @@ def btrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.btrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         'a'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.btrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'a'
     """
-    return Expr(f.btrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.btrim(*args))
 
 
 def cbrt(arg: Expr) -> Expr:
@@ -1616,8 +1653,8 @@ def lpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
 
-def ltrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the beginning of a string.
+def ltrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from the beginning of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1625,8 +1662,20 @@ def ltrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.ltrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         'a  '
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.ltrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'axx'
     """
-    return Expr(f.ltrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.ltrim(*args))
 
 
 def md5(arg: Expr) -> Expr:
@@ -2138,8 +2187,8 @@ def rpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
 
-def rtrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the end of a string.
+def rtrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from the end of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2147,8 +2196,20 @@ def rtrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.rtrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         ' a'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.rtrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'xxa'
     """
-    return Expr(f.rtrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.rtrim(*args))
 
 
 def sha224(arg: Expr) -> Expr:
@@ -2312,8 +2373,10 @@ def strpos(string: Expr, substring: Expr | str) -> Expr:
     return Expr(f.strpos(string.expr, substring.expr))
 
 
-def substr(string: Expr, position: Expr | int) -> Expr:
-    """Substring from the ``position`` to the end.
+def substr(
+    string: Expr, position: Expr | int, length: Expr | int | None = None
+) -> Expr:
+    """Substring from the ``position``, to the end or for ``length`` characters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2322,7 +2385,17 @@ def substr(string: Expr, position: Expr | int) -> Expr:
         ...     dfn.functions.substr(dfn.col("a"), 3).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'llo'
+
+        >>> result = df.select(
+        ...     dfn.functions.substr(dfn.col("a"), 2, length=3).alias("s"))
+        >>> result.collect_column("s")[0].as_py()
+        'ell'
+
+    See Also:
+        :py:func:`substring`.
     """
+    if length is not None:
+        return substring(string, position, length)
     position = coerce_to_expr(position)
     return Expr(f.substr(string.expr, position.expr))
 
@@ -2958,8 +3031,8 @@ def translate(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
     return Expr(f.translate(string.expr, from_val.expr, to_val.expr))
 
 
-def trim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string.
+def trim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from both sides of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2967,8 +3040,20 @@ def trim(arg: Expr) -> Expr:
         >>> result = df.select(dfn.functions.trim(dfn.col("a")).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         'hello'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxhelloxx"]})
+        >>> result = df.select(
+        ...     dfn.functions.trim(dfn.col("a"), characters="x").alias("t")
+        ... )
+        >>> result.collect_column("t")[0].as_py()
+        'hello'
     """
-    return Expr(f.trim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.trim(*args))
 
 
 def trunc(num: Expr, precision: Expr | int | None = None) -> Expr:

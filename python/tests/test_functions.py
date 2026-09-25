@@ -2547,3 +2547,46 @@ class TestPythonicNativeTypes:
             f.split_part(column("a"), literal(","), literal(2)).alias("s")
         ).collect()
         assert result[0].column(0)[0].as_py() == "b"
+
+
+@pytest.mark.parametrize(
+    ("fn", "expected"),
+    [
+        (f.btrim, "hi"),
+        (f.trim, "hi"),
+        (f.ltrim, "hixyx"),
+        (f.rtrim, "xyxhi"),
+    ],
+)
+def test_trim_characters(fn, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["xyxhixyx"]})
+    assert df.select(fn(column("a"), characters="xy").alias("r")).collect_column(
+        "r"
+    ).to_pylist() == [expected]
+    assert df.select(
+        fn(column("a"), characters=literal("xy")).alias("r")
+    ).collect_column("r").to_pylist() == [expected]
+
+
+@pytest.mark.parametrize(
+    "fn", [f.array_to_string, f.array_join, f.list_to_string, f.list_join]
+)
+def test_array_to_string_null_string(fn):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, None, 3]]})
+    without = df.select(fn(column("a"), "-").alias("r")).collect_column("r")
+    with_null = df.select(fn(column("a"), "-", null_string="NA").alias("r"))
+    assert without.to_pylist() == ["1-3"]
+    assert with_null.collect_column("r").to_pylist() == ["1-NA-3"]
+
+
+def test_substr_length():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["hello"]})
+    r = df.select(
+        f.substr(column("a"), 2).alias("tail"),
+        f.substr(column("a"), 2, length=3).alias("mid"),
+        f.substr(column("a"), 2, length=literal(3)).alias("mid_expr"),
+    ).to_pydict()
+    assert r == {"tail": ["ello"], "mid": ["ell"], "mid_expr": ["ell"]}

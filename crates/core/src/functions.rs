@@ -118,6 +118,20 @@ fn string_to_array(string: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr
 }
 
 #[pyfunction]
+#[pyo3(signature = (array, delimiter, null_string=None))]
+fn array_to_string(array: PyExpr, delimiter: PyExpr, null_string: Option<PyExpr>) -> PyExpr {
+    let mut args = vec![array.into(), delimiter.into()];
+    if let Some(null_string) = null_string {
+        args.push(null_string.into());
+    }
+    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+        datafusion::functions_nested::string::array_to_string_udf(),
+        args,
+    ))
+    .into()
+}
+
+#[pyfunction]
 #[pyo3(signature = (start, stop, step=None))]
 fn gen_series(start: PyExpr, stop: PyExpr, step: Option<PyExpr>) -> PyExpr {
     let mut args = vec![start.into(), stop.into()];
@@ -646,7 +660,6 @@ fn version() -> PyExpr {
 
 // Array Functions
 array_fn!(array_append, array element);
-array_fn!(array_to_string, array delimiter);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
 array_fn!(array_element, array element);
