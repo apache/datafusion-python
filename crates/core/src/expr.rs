@@ -624,37 +624,56 @@ impl PyExpr {
 
     // Expression Function Builder functions
 
-    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr)
+    #[pyo3(signature = (order_by, keep_window_frame=false))]
+    pub fn order_by(
+        &self,
+        order_by: Vec<PySortExpr>,
+        keep_window_frame: bool,
+    ) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr, keep_window_frame)
             .order_by(to_sort_expressions(order_by))
             .into()
     }
 
-    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr)
+    #[pyo3(signature = (filter, keep_window_frame=false))]
+    pub fn filter(&self, filter: PyExpr, keep_window_frame: bool) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr, keep_window_frame)
             .filter(filter.expr.clone())
             .into()
     }
 
-    pub fn distinct(&self) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr).distinct().into()
+    #[pyo3(signature = (keep_window_frame=false))]
+    pub fn distinct(&self, keep_window_frame: bool) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr, keep_window_frame)
+            .distinct()
+            .into()
     }
 
-    pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr)
+    #[pyo3(signature = (null_treatment, keep_window_frame=false))]
+    pub fn null_treatment(
+        &self,
+        null_treatment: NullTreatment,
+        keep_window_frame: bool,
+    ) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr, keep_window_frame)
             .null_treatment(Some(null_treatment.into()))
             .into()
     }
 
-    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+    #[pyo3(signature = (partition_by, keep_window_frame=false))]
+    pub fn partition_by(
+        &self,
+        partition_by: Vec<PyExpr>,
+        keep_window_frame: bool,
+    ) -> PyExprFuncBuilder {
         let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        builder_from_expr(&self.expr)
+        builder_from_expr(&self.expr, keep_window_frame)
             .partition_by(partition_by)
             .into()
     }
 
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr)
+        builder_from_expr(&self.expr, false)
             .window_frame(window_frame.into())
             .into()
     }
@@ -753,7 +772,12 @@ impl PyExpr {
 /// builder, so `build()` would reset every option not set again. The Python
 /// function wrappers already apply their keyword options, so chaining another
 /// builder method onto their result must not discard them.
-fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
+///
+/// A built window function always stores a concrete frame, so whether the user
+/// chose it is lost. `keep_window_frame` carries that from the Python side; when
+/// false, a frame equal to the default for the current order-by is treated as
+/// unset.
+fn builder_from_expr(expr: &Expr, keep_window_frame: bool) -> ExprFuncBuilder {
     match expr {
         Expr::AggregateFunction(agg) => {
             let params = &agg.params;
@@ -781,8 +805,9 @@ fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
             }
             // A frame equal to the default `build()` derived from the order-by is
             // left unset, so it is derived again from the final order-by.
-            if params.window_frame
-                != datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true))
+            if keep_window_frame
+                || params.window_frame
+                    != datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true))
             {
                 builder = builder.window_frame(params.window_frame.clone());
             }

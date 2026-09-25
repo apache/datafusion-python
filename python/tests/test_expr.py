@@ -1320,6 +1320,28 @@ def test_window_builder_keeps_explicit_frame(builder_df):
     assert result.collect_column("r").to_pylist() == [1, 3, 5, 4]
 
 
+def test_window_builder_keeps_explicit_default_frame(builder_df):
+    # An explicit frame equal to the no-order_by default must survive a later
+    # order_by instead of being re-derived as the running frame.
+    window = Window(window_frame=WindowFrame("rows", None, None))
+    expr = functions.sum(col("v")).over(window).order_by(col("v")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+def test_window_builder_keeps_frame_set_on_builder(builder_df):
+    expr = (
+        functions.sum(col("v"))
+        .over(Window())
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .order_by(col("v"))
+        .build()
+    )
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
 def test_window_builder_rederives_default_frame(builder_df):
     # No order_by means a whole-partition frame; adding one later must switch
     # to the running frame rather than keep the whole-partition default.
