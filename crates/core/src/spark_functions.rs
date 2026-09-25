@@ -254,6 +254,18 @@ spark_udf_vec!(format_string, udf::string::format_string);
 spark_expr_fn!(quote, arg1);
 spark_expr_fn!(space, arg1);
 spark_expr_fn!(substring, str pos length);
+/// `substr(str, pos, len=None)`. Upstream `expr_fn::substring` always takes a
+/// length, so call the UDF directly to allow the two-argument form.
+#[pyfunction]
+#[pyo3(signature = (str, pos, len=None))]
+fn substr(str: PyExpr, pos: PyExpr, len: Option<PyExpr>) -> PyExpr {
+    let args: Vec<Expr> = [Some(str), Some(pos), len]
+        .into_iter()
+        .flatten()
+        .map(Into::into)
+        .collect();
+    Expr::ScalarFunction(ScalarFunction::new_udf(udf::string::substring(), args)).into()
+}
 spark_expr_fn!(unbase64, str);
 spark_expr_fn!(soundex, str);
 spark_expr_fn!(is_valid_utf8, str);
@@ -372,6 +384,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(format_string))?;
     m.add_wrapped(wrap_pyfunction!(space))?;
     m.add_wrapped(wrap_pyfunction!(substring))?;
+    m.add_wrapped(wrap_pyfunction!(substr))?;
     m.add_wrapped(wrap_pyfunction!(unbase64))?;
     m.add_wrapped(wrap_pyfunction!(soundex))?;
     m.add_wrapped(wrap_pyfunction!(is_valid_utf8))?;

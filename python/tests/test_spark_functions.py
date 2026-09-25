@@ -500,3 +500,39 @@ def test_sql_concat_semantics_override():
         ctx2.sql("SELECT concat('a', NULL, 'b') AS c").collect_column("c")[0].as_py()
     )
     assert spark_out is None
+
+
+@pytest.mark.parametrize(
+    ("alias_fn", "primary_fn", "args"),
+    [
+        (spark.getbit, spark.bit_get, lambda: (lit(5), lit(0))),
+        (spark.dateadd, spark.date_add, lambda: (_ts().cast(pa.date32()), 3)),
+        (
+            spark.datediff,
+            spark.date_diff,
+            lambda: (_ts().cast(pa.date32()), lit("2020-01-01").cast(pa.date32())),
+        ),
+        (spark.datepart, spark.date_part, lambda: ("YEAR", _ts())),
+        (spark.sha, spark.sha1, lambda: (lit("abc"),)),
+        (spark.ceiling, spark.ceil, lambda: (lit(1.2),)),
+        (spark.printf, spark.format_string, lambda: ("%d-%s", lit(42), lit("hi"))),
+        (spark.char_length, spark.length, lambda: (lit("hello"),)),
+        (spark.character_length, spark.length, lambda: (lit("hello"),)),
+        (spark.power, spark.pow, lambda: (lit(2), lit(3))),
+        (spark.substr, spark.substring, lambda: (lit("hello"), 2, 3)),
+    ],
+)
+def test_aliases_match_primary(df, alias_fn, primary_fn, args):
+    assert _val(df, alias_fn(*args())) == _val(df, primary_fn(*args()))
+
+
+def test_substr_without_len(df):
+    assert _val(df, spark.substr(lit("hello"), 2)) == "ello"
+    assert _val(df, spark.substr(lit("hello"), -3)) == "llo"
+
+
+def test_last_day_date_keyword(df):
+    import datetime as dt
+
+    d = lit(pa.scalar(dt.date(2024, 2, 10), type=pa.date32()))
+    assert _val(df, spark.last_day(date=d)) == dt.date(2024, 2, 29)

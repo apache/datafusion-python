@@ -356,6 +356,15 @@ def bit_get(col: Expr, pos: Expr | str) -> Expr:
     return Expr(_f.bit_get(col.expr, _to_raw_expr(pos)))
 
 
+def getbit(col: Expr, pos: Expr | str) -> Expr:
+    """Spark ``getbit``: returns the bit (0 or 1) at ``pos``.
+
+    See Also:
+        This is an alias for :py:func:`bit_get`.
+    """
+    return bit_get(col, pos)
+
+
 def bit_count(col: Expr) -> Expr:
     """Spark ``bit_count``: number of bits set in the integer's binary form.
 
@@ -539,6 +548,15 @@ def date_add(start: Expr, days: Expr | int) -> Expr:
     return Expr(_f.date_add(start.expr, _coerce_i32(days).expr))
 
 
+def dateadd(start: Expr, days: Expr | int) -> Expr:
+    """Spark ``dateadd``: date + N days.
+
+    See Also:
+        This is an alias for :py:func:`date_add`.
+    """
+    return date_add(start, days)
+
+
 def date_sub(start: Expr, days: Expr | int) -> Expr:
     """Spark ``date_sub``: date - N days.
 
@@ -627,7 +645,7 @@ def second(col: Expr) -> Expr:
     return Expr(_f.second(col.expr))
 
 
-def last_day(col: Expr) -> Expr:
+def last_day(date: Expr) -> Expr:
     """Spark ``last_day``: last day of the month containing the date.
 
     Examples:
@@ -640,7 +658,7 @@ def last_day(col: Expr) -> Expr:
         >>> r.collect_column("v")[0].as_py()
         datetime.date(2020, 1, 31)
     """
-    return Expr(_f.last_day(col.expr))
+    return Expr(_f.last_day(date.expr))
 
 
 def make_dt_interval(
@@ -754,6 +772,15 @@ def date_diff(end: Expr, start: Expr) -> Expr:
     return Expr(_f.date_diff(end.expr, start.expr))
 
 
+def datediff(end: Expr, start: Expr) -> Expr:
+    """Spark ``datediff``: number of days from ``start`` to ``end``.
+
+    See Also:
+        This is an alias for :py:func:`date_diff`.
+    """
+    return date_diff(end, start)
+
+
 def date_trunc(format: Expr | str, timestamp: Expr) -> Expr:
     """Spark ``date_trunc``: truncate timestamp to unit ``fmt``.
 
@@ -830,6 +857,15 @@ def date_part(field: Expr | str, source: Expr) -> Expr:
         2020
     """
     return Expr(_f.date_part(coerce_to_expr(field).expr, source.expr))
+
+
+def datepart(field: Expr | str, source: Expr) -> Expr:
+    """Spark ``datepart``: extract ``field`` from a date/time/timestamp.
+
+    See Also:
+        This is an alias for :py:func:`date_part`.
+    """
+    return date_part(field, source)
 
 
 def from_utc_timestamp(timestamp: Expr, tz: Expr | str) -> Expr:
@@ -989,6 +1025,15 @@ def sha1(col: Expr) -> Expr:
         'aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d'
     """
     return Expr(_f.sha1(col.expr))
+
+
+def sha(col: Expr) -> Expr:
+    """Spark ``sha``: SHA-1 hash as a hex string.
+
+    See Also:
+        This is an alias for :py:func:`sha1`.
+    """
+    return sha1(col)
 
 
 def sha2(col: Expr, numBits: Expr | int) -> Expr:  # noqa: N803
@@ -1173,6 +1218,15 @@ def ceil(col: Expr) -> Expr:
         2
     """
     return Expr(_f.ceil(col.expr))
+
+
+def ceiling(col: Expr) -> Expr:
+    """Spark ``ceiling``: smallest integer ≥ arg.
+
+    See Also:
+        This is an alias for :py:func:`ceil`.
+    """
+    return ceil(col)
 
 
 def expm1(col: Expr) -> Expr:
@@ -1562,6 +1616,24 @@ def length(col: Expr) -> Expr:
     return Expr(_f.length(col.expr))
 
 
+def character_length(col: Expr) -> Expr:
+    """Spark ``character_length``: character length of a string, or bytes of binary.
+
+    See Also:
+        This is an alias for :py:func:`length`.
+    """
+    return length(col)
+
+
+def char_length(col: Expr) -> Expr:
+    """Spark ``char_length``: character length of a string, or bytes of binary.
+
+    See Also:
+        This is an alias for :py:func:`length`.
+    """
+    return length(col)
+
+
 def like(
     str: Expr,
     pattern: Expr | str,
@@ -1639,6 +1711,15 @@ def format_string(format: str | Expr, *cols: Expr) -> Expr:
     return Expr(_f.format_string(fmt_expr.expr, *[c.expr for c in cols]))
 
 
+def printf(format: str | Expr, *cols: Expr) -> Expr:
+    """Spark ``printf``: printf-style format string.
+
+    See Also:
+        This is an alias for :py:func:`format_string`.
+    """
+    return format_string(format, *cols)
+
+
 def space(col: Expr | int) -> Expr:
     """Spark ``space``: string of n spaces.
 
@@ -1671,6 +1752,28 @@ def substring(str: Expr, pos: Expr | int, len: Expr | int) -> Expr:
     return Expr(
         _f.substring(str.expr, coerce_to_expr(pos).expr, coerce_to_expr(len).expr)
     )
+
+
+def substr(str: Expr, pos: Expr | int, len: Expr | int | None = None) -> Expr:
+    """Spark ``substr``: 1-indexed substring, to the end when ``len`` is omitted.
+
+    Same as :py:func:`substring` except that ``len`` is optional. ``pos`` and
+    ``len`` accept native ``int`` values or :class:`Expr`.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"x": [1]})
+        >>> r = df.select(dfn.functions.spark.substr(dfn.lit("hello"), 2).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'ello'
+
+        >>> r = df.select(
+        ...     dfn.functions.spark.substr(dfn.lit("hello"), 2, len=3).alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'ell'
+    """
+    len_raw = coerce_to_expr(len).expr if len is not None else None
+    return Expr(_f.substr(str.expr, coerce_to_expr(pos).expr, len_raw))
 
 
 def unbase64(col: Expr) -> Expr:
@@ -1867,7 +1970,10 @@ __all__ = [
     "bitmap_count",
     "bitwise_not",
     "ceil",
+    "ceiling",
     "char",
+    "char_length",
+    "character_length",
     "collect_list",
     "collect_set",
     "concat",
@@ -1880,12 +1986,16 @@ __all__ = [
     "date_part",
     "date_sub",
     "date_trunc",
+    "dateadd",
+    "datediff",
+    "datepart",
     "elt",
     "expm1",
     "factorial",
     "floor",
     "format_string",
     "from_utc_timestamp",
+    "getbit",
     "hex",
     "hour",
     "hypot",
@@ -1914,11 +2024,13 @@ __all__ = [
     "pmod",
     "pow",
     "power",
+    "printf",
     "quote",
     "rint",
     "round",
     "sec",
     "second",
+    "sha",
     "sha1",
     "sha2",
     "shiftleft",
@@ -1932,6 +2044,7 @@ __all__ = [
     "space",
     "spark_cast",
     "str_to_map",
+    "substr",
     "substring",
     "time_trunc",
     "to_utc_timestamp",

@@ -218,6 +218,17 @@ f.bit_and(column("a"), filter=my_filter)  # after
 Passing `filter` to `mean` previously raised a `TypeError`, whether passed
 positionally or by keyword; it now works.
 
+### `spark.last_day` renamed its parameter
+
+The parameter of {py:func}`datafusion.functions.spark.last_day` is now named
+`date`, matching `pyspark.sql.functions.last_day`. Positional calls are
+unaffected; update any call passing it by keyword.
+
+```python
+spark.last_day(col=d)  # before
+spark.last_day(date=d)  # after
+```
+
 ### Changes to the `datafusion-python-util` crate
 
 Extension libraries written in Rust usually depend on the
