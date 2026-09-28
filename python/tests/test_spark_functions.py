@@ -515,7 +515,6 @@ def test_sql_concat_semantics_override():
         (spark.datepart, spark.date_part, lambda: ("YEAR", _ts())),
         (spark.sha, spark.sha1, lambda: (lit("abc"),)),
         (spark.ceiling, spark.ceil, lambda: (lit(1.2),)),
-        (spark.printf, spark.format_string, lambda: ("%d-%s", lit(42), lit("hi"))),
         (spark.char_length, spark.length, lambda: (lit("hello"),)),
         (spark.character_length, spark.length, lambda: (lit("hello"),)),
         (spark.power, spark.pow, lambda: (lit(2), lit(3))),
@@ -524,6 +523,14 @@ def test_sql_concat_semantics_override():
 )
 def test_aliases_match_primary(df, alias_fn, primary_fn, args):
     assert _val(df, alias_fn(*args())) == _val(df, primary_fn(*args()))
+
+
+def test_printf_str_is_column_name():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["aa%d%s"], "b": [123], "c": ["cc"]})
+    assert _val(df, spark.printf("a", "b", "c")) == "aa123cc"
+    assert _val(df, spark.printf(col("a"), col("b"), col("c"))) == "aa123cc"
+    assert _val(df, spark.printf(lit("%d-%s"), lit(42), lit("hi"))) == "42-hi"
 
 
 def test_substr_without_len(df):

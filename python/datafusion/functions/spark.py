@@ -1711,13 +1711,28 @@ def format_string(format: str | Expr, *cols: Expr) -> Expr:
     return Expr(_f.format_string(fmt_expr.expr, *[c.expr for c in cols]))
 
 
-def printf(format: str | Expr, *cols: Expr) -> Expr:
+def printf(format: Expr | str, *cols: Expr | str) -> Expr:
     """Spark ``printf``: printf-style format string.
 
-    See Also:
-        This is an alias for :py:func:`format_string`.
+    Unlike :py:func:`format_string`, a bare ``str`` ``format`` or ``cols`` entry
+    is treated as a column name (matching pyspark), not a literal; pass
+    :func:`~datafusion.lit` for a literal format.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": ["aa%d%s"], "b": [123], "c": ["cc"]})
+        >>> r = df.select(dfn.functions.spark.printf("a", "b", "c").alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        'aa123cc'
+
+        >>> r = df.select(
+        ...     dfn.functions.spark.printf(dfn.lit("%d-%s"), "b", "c").alias("v"))
+        >>> r.collect_column("v")[0].as_py()
+        '123-cc'
     """
-    return format_string(format, *cols)
+    return Expr(
+        _f.format_string(_to_raw_expr(format), *[_to_raw_expr(c) for c in cols])
+    )
 
 
 def space(col: Expr | int) -> Expr:
