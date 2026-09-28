@@ -258,6 +258,19 @@ Code that selects the result by its generated name should `alias()` it instead.
 How a window frame is handled when chaining is described in
 {ref}`window_frame_chaining`.
 
+### `fill_null(subset=[])` fills no columns
+
+{py:meth}`~datafusion.dataframe.DataFrame.fill_null` with an empty `subset`
+list used to fill every column, the same as `subset=None`. It now returns the
+DataFrame unchanged, so a subset computed from the schema that matches nothing
+no longer rewrites every column. The new
+{py:meth}`~datafusion.dataframe.DataFrame.fill_nan` behaves the same way.
+
+```python
+df.fill_null(0, subset=[])  # before: fills all columns; after: fills none
+df.fill_null(0)  # fills all columns, before and after
+```
+
 ### `spark.last_day` renamed its parameter
 
 The parameter of {py:func}`datafusion.functions.spark.last_day` is now named

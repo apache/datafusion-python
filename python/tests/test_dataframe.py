@@ -3429,6 +3429,10 @@ def test_fill_null_specific_types(null_df):
     ]
 
 
+def test_fill_null_empty_subset_fills_nothing(null_df):
+    assert null_df.fill_null(0, subset=[]).to_pydict() == null_df.to_pydict()
+
+
 def test_fill_null_immutability(null_df):
     """Test that original DataFrame is unchanged after fill_null."""
     # Get original values with nulls
@@ -3515,6 +3519,12 @@ def test_fill_nan_subset(ctx):
     result = _nan_df(ctx).fill_nan(-1.0, subset=["f32"]).to_pydict()
     assert result["f32"] == [-1.0, 2.0, 3.0]
     assert _is_nan(result["f64"][1])
+
+
+def test_fill_nan_empty_subset_fills_nothing(ctx):
+    result = _nan_df(ctx).fill_nan(0.0, subset=[]).to_pydict()
+    assert _is_nan(result["f64"][1])
+    assert _is_nan(result["f32"][0])
 
 
 def test_fill_nan_preserves_schema(ctx):

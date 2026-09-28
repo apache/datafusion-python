@@ -1911,7 +1911,8 @@ class DataFrame:
 
         Args:
             value: Value to replace nulls with. Will be cast to match column type.
-            subset: Optional list of column names to fill. If None, fills all columns.
+            subset: Optional list of column names to fill. If None, fills all columns;
+                an empty list fills none.
 
         Returns:
             DataFrame with null values replaced where type casting is possible
@@ -1924,11 +1925,16 @@ class DataFrame:
             >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
             [0, 1, 3]
 
+            >>> df.fill_null(0, subset=[]).to_pydict()
+            {'a': [1, None, 3], 'b': [None, 5, 6]}
+
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
         """
+        if subset is not None and not subset:
+            return self
         return DataFrame(self.df.fill_null(value, subset))
 
     def fill_nan(self, value: float, subset: list[str] | None = None) -> DataFrame:
@@ -1941,7 +1947,7 @@ class DataFrame:
         Args:
             value: Value to replace NaN with. Will be cast to match column type.
             subset: Optional list of column names to fill. If None, fills all
-                floating-point columns.
+                floating-point columns; an empty list fills none.
 
         Returns:
             DataFrame with NaN values replaced.
@@ -1956,7 +1962,12 @@ class DataFrame:
 
             >>> df.fill_nan(0.0, subset=["a"]).collect_column("b")[0].as_py()
             nan
+
+            >>> df.fill_nan(0.0, subset=[]).collect_column("b")[0].as_py()
+            nan
         """
+        if subset is not None and not subset:
+            return self
         return DataFrame(self.df.fill_nan(value, subset))
 
 
