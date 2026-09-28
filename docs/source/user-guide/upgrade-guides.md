@@ -218,6 +218,46 @@ f.bit_and(column("a"), filter=my_filter)  # after
 Passing `filter` to `mean` previously raised a `TypeError`, whether passed
 positionally or by keyword; it now works.
 
+### Chaining keeps options already set
+
+Chaining a builder method (`order_by`, `filter`, `distinct`, `null_treatment`,
+`partition_by`, `window_frame`) or `over()` onto a function used to start from
+an empty builder, so options set by the function's keyword arguments were
+silently reset. They are now kept, which can change results:
+
+```python
+e = f.lead(col("v"), 1, partition_by=[col("g")], order_by="t")
+e.over(Window(order_by="t"))  # before: partition dropped; after: kept
+```
+
+Options that used to be dropped now take effect, so a chain that ran before
+may now raise. For example, DISTINCT requires the ORDER BY expressions to be
+among the arguments:
+
+```python
+f.array_agg(col("s"), distinct=True).order_by(col("v")).build()
+# before: ran without DISTINCT
+# after:  Execution error: In an aggregate with DISTINCT, ORDER BY expressions
+#         must appear in argument list
+```
+
+Drop `distinct`, or order by the aggregated column, to get either of the
+results the chain can actually produce.
+
+The default `RESPECT NULLS` set by `first_value`, `last_value`, and `nth_value`
+is also kept, so their generated column names change:
+
+```python
+f.first_value(col("a")).order_by(col("b")).build()
+# before: first_value(a) ORDER BY [b ASC NULLS FIRST]
+# after:  first_value(a) RESPECT NULLS ORDER BY [b ASC NULLS FIRST]
+```
+
+This now matches the name from `f.first_value(col("a"), order_by=col("b"))`.
+Code that selects the result by its generated name should `alias()` it instead.
+How a window frame is handled when chaining is described in
+{ref}`window_frame_chaining`.
+
 ### `spark.last_day` renamed its parameter
 
 The parameter of {py:func}`datafusion.functions.spark.last_day` is now named

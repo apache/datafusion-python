@@ -1079,15 +1079,19 @@ class Expr:  # noqa: PLW1641
         return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
     def over(self, window: Window) -> Expr:
-        """Turn an aggregate function into a window function.
+        """Evaluate an aggregate or window function over a window.
 
-        This function turns any aggregate function into a window function. With the
+        On an aggregate function this turns it into a window function. With the
         exception of ``partition_by``, how each of the parameters is used is determined
         by the underlying aggregate function.
 
         On an aggregate, the ``order_by``, ``null_treatment``, ``filter``, and
         ``distinct`` options it was built with are dropped; see
         :ref:`aggregate_over_options`.
+
+        On a window function, each option set in ``window`` replaces the one already
+        set and the others are kept; see :ref:`window_frame_chaining` for how the
+        frame is handled.
 
         Args:
             window: Window definition
