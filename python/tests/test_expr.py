@@ -1380,3 +1380,32 @@ def test_window_builder_rederives_default_frame_from_empty_order_by(first):
     expr = functions.sum(col("v")).over(first).over(Window(order_by="i"))
     result = df.select(col("v"), expr.alias("r")).sort(col("v"))
     assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
+
+
+@pytest.mark.parametrize(
+    "builder",
+    [
+        pytest.param(
+            lambda: functions.sum(col("v")).partition_by(col("g")),
+            id="partition_by on aggregate",
+        ),
+        pytest.param(
+            lambda: functions.sum(col("v")).window_frame(WindowFrame("rows", 1, 0)),
+            id="window_frame on aggregate",
+        ),
+        pytest.param(
+            lambda: functions.lead(col("v"), order_by="v").distinct(),
+            id="distinct on window function",
+        ),
+    ],
+)
+def test_builder_rejects_option_for_other_function_kind(builder):
+    with pytest.raises(Exception, match="ExprFunctionExt can only be used with"):
+        builder().build()
+
+
+def test_window_builder_distinct_on_aggregate_window(builder_df):
+    expr = functions.sum(col("v")).over(Window()).distinct().build()
+    df = builder_df.select(col("g"), (col("v") % lit(2)).alias("v"))
+    result = df.select(expr.alias("r"))
+    assert result.collect_column("r").to_pylist() == [1, 1, 1, 1]

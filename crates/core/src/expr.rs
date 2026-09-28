@@ -637,7 +637,21 @@ impl PyExpr {
     }
 
     pub fn distinct(&self) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr).distinct().into()
+        // Only aggregates support DISTINCT, including an aggregate run as a window
+        // function. For anything else, upstream's empty builder makes `build()`
+        // raise instead of dropping the option.
+        let supports_distinct = match &self.expr {
+            Expr::AggregateFunction(_) => true,
+            Expr::WindowFunction(window) => {
+                matches!(window.fun, WindowFunctionDefinition::AggregateUDF(_))
+            }
+            _ => false,
+        };
+        if supports_distinct {
+            builder_from_expr(&self.expr).distinct().into()
+        } else {
+            self.expr.clone().distinct().into()
+        }
     }
 
     pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
@@ -648,12 +662,21 @@ impl PyExpr {
 
     pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
         let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
+        // Window-only option: on an aggregate, upstream's empty builder makes
+        // `build()` raise instead of dropping it.
+        if matches!(self.expr, Expr::AggregateFunction(_)) {
+            return self.expr.clone().partition_by(partition_by).into();
+        }
         builder_from_expr(&self.expr)
             .partition_by(partition_by)
             .into()
     }
 
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
+        // Window-only option; see `partition_by`.
+        if matches!(self.expr, Expr::AggregateFunction(_)) {
+            return self.expr.clone().window_frame(window_frame.into()).into();
+        }
         builder_from_expr(&self.expr)
             .window_frame(window_frame.into())
             .into()
