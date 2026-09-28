@@ -28,7 +28,9 @@ use datafusion::logical_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
-use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
+use datafusion_python_util::{
+    CapsuleGetterArg, call_capsule_getter, parse_volatility, validate_pycapsule,
+};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -310,6 +312,7 @@ impl AggregateUDFImpl for PythonFunctionAggregateUDF {
 }
 
 fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
+    validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
     let data: NonNull<FFI_AggregateUDF> = capsule
         .pointer_checked(Some(c"datafusion_aggregate_udf"))?
         .cast();

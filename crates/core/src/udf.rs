@@ -31,7 +31,9 @@ use datafusion::logical_expr::{
     Volatility,
 };
 use datafusion_ffi::udf::FFI_ScalarUDF;
-use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
+use datafusion_python_util::{
+    CapsuleGetterArg, call_capsule_getter, parse_volatility, validate_pycapsule,
+};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -210,6 +212,7 @@ impl ScalarUDFImpl for PythonFunctionScalarUDF {
 }
 
 fn scalar_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<ScalarUDF> {
+    validate_pycapsule(capsule, "datafusion_scalar_udf")?;
     let data: NonNull<FFI_ScalarUDF> = capsule
         .pointer_checked(Some(c"datafusion_scalar_udf"))?
         .cast();

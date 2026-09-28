@@ -30,7 +30,9 @@ use datafusion::logical_expr::{
 };
 use datafusion::scalar::ScalarValue;
 use datafusion_ffi::udwf::FFI_WindowUDF;
-use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
+use datafusion_python_util::{
+    CapsuleGetterArg, call_capsule_getter, parse_volatility, validate_pycapsule,
+};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyList, PyTuple};
@@ -217,6 +219,7 @@ pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFa
 }
 
 fn window_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<WindowUDF> {
+    validate_pycapsule(capsule, "datafusion_window_udf")?;
     let data: NonNull<FFI_WindowUDF> = capsule
         .pointer_checked(Some(c"datafusion_window_udf"))?
         .cast();

@@ -20,7 +20,7 @@ from uuid import UUID
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
-from datafusion import SessionContext, column, udf
+from datafusion import SessionContext, column, udaf, udf, udwf
 from datafusion import functions as f
 
 
@@ -278,3 +278,21 @@ def test_udf_with_nullability(ctx: SessionContext) -> None:
     with pytest.raises(Exception) as e_info:
         _results = df_result.collect()
     assert "Invalid argument error" in str(e_info)
+
+
+@pytest.mark.parametrize(
+    ("decorator", "expected"),
+    [
+        (udf, "datafusion_scalar_udf"),
+        (udaf, "datafusion_aggregate_udf"),
+        (udwf, "datafusion_window_udf"),
+    ],
+)
+def test_wrong_capsule_kind_names_expected_and_found(decorator, expected):
+    capsule = SessionContext().__datafusion_logical_extension_codec__()
+    with pytest.raises(
+        ValueError,
+        match=f"Expected name '{expected}' in PyCapsule, "
+        "instead got 'datafusion_logical_extension_codec'",
+    ):
+        decorator(capsule)
