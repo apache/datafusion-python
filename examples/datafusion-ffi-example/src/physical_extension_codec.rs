@@ -40,11 +40,14 @@ const EXECUTION_PLAN_TOKEN: &[u8] = b"DFPYEXEP";
 static NEXT_EXECUTION_PLAN_ID: AtomicU64 = AtomicU64::new(1);
 static EXECUTION_PLANS: OnceLock<Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>>> = OnceLock::new();
 
-/// Execution-plan counterpart of the logical codec's provider registry, with
-/// the same lifecycle: encoding inserts, decoding removes, so a decode
-/// consumes its token and an encode that is never decoded leaks. See
-/// [`crate::logical_extension_codec`] for why that is acceptable here and not
-/// in a real codec.
+/// Hands an execution plan to another library in this process by token.
+///
+/// Encoding inserts, decoding removes, so a decode consumes its token and an
+/// encode that is never decoded leaks. That is acceptable for an example whose
+/// job is to show that Rust type identity survives a trip through two other
+/// libraries; a real codec should encode metadata sufficient to rebuild the
+/// plan instead, the way [`crate::logical_extension_codec`] does for
+/// `MemTable`.
 fn execution_plans() -> &'static Mutex<HashMap<u64, Arc<dyn ExecutionPlan>>> {
     EXECUTION_PLANS.get_or_init(|| Mutex::new(HashMap::new()))
 }

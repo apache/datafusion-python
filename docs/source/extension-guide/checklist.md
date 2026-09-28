@@ -91,8 +91,9 @@ publish. Each links to the page that explains it.
       derived from it is in use. This is the rule most likely to arrive as a
       bug report against your library. → {ref}`extension_sessions`
 - [ ] **Your production codec serializes durable metadata**, not a
-      process-local token. The examples in this repository use tokens to make
-      ownership observable; that is a demonstration, not a pattern.
+      process-local token. The example logical codec in this repository does
+      this; the example physical codec uses a token to make ownership
+      observable, which is a demonstration, not a pattern.
       → {ref}`extension_codec_durable_metadata`
 - [ ] **You have integration tests across a real FFI boundary.** The two
       example crates in this repository are the pattern: build the cdylib,

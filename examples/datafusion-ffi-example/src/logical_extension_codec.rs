@@ -15,12 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::HashMap;
 use std::fmt;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::io::Cursor;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use arrow::datatypes::SchemaRef;
+use arrow::ipc::reader::StreamReader;
+use arrow::ipc::writer::StreamWriter;
+use arrow::record_batch::RecordBatch;
 use datafusion::catalog::MemTable;
 use datafusion::common::{DataFusionError, Result, TableReference};
 use datafusion::datasource::TableProvider;
@@ -34,35 +37,126 @@ use pyo3::types::PyCapsule;
 
 use crate::required_udf::{TaskContextProbe, resolve_required_udf};
 
-const TABLE_PROVIDER_TOKEN: &[u8] = b"DFPYEXTP";
-static NEXT_TABLE_PROVIDER_ID: AtomicU64 = AtomicU64::new(1);
-static TABLE_PROVIDERS: OnceLock<Mutex<HashMap<u64, Arc<dyn TableProvider>>>> = OnceLock::new();
+/// Default byte prefix stamped on every table provider this codec encodes.
+const TABLE_PROVIDER_PREFIX: &[u8] = b"DFPYEXTP";
 
-/// Hands a provider to another library in this process by token.
+/// Format tag that follows the prefix. Bump it if the layout below changes.
+const MEM_TABLE_FORMAT: &[u8] = b"MEMTBL1";
+
+/// Write a [`MemTable`] as durable metadata: its schema and every batch of
+/// every partition, so that a decoder anywhere can rebuild an equivalent
+/// table from the bytes alone.
 ///
-/// Encoding inserts, decoding removes. Two consequences worth knowing before
-/// copying this:
+/// Layout, after the caller's provider prefix:
 ///
-/// - **Decode consumes the token.** Decoding the same encoded bytes twice
-///   fails the second time with `Unknown ... table provider token`. That is
-///   fine here because every plan is encoded immediately before the single
-///   decode that consumes it, but it rules out anything that replays a stored
-///   plan, retries a decode, or fans one encoded plan out to several readers.
-/// - **An encode that is never decoded leaks.** Nothing expires entries, so a
-///   plan that fails to reach its decoder keeps its provider alive for the
-///   life of the process.
+/// ```text
+/// b"MEMTBL1" | u32 LE n_partitions | { u32 LE ipc_len | ipc stream }*
+/// ```
 ///
-/// Both are acceptable for an example whose job is to show that Rust type
-/// identity survives a trip through two other libraries. Neither is acceptable
-/// in a real codec, which should encode metadata sufficient to rebuild the
-/// provider rather than parking the object here.
-fn table_providers() -> &'static Mutex<HashMap<u64, Arc<dyn TableProvider>>> {
-    TABLE_PROVIDERS.get_or_init(|| Mutex::new(HashMap::new()))
+/// Each partition is one Arrow IPC stream. The stream carries the schema, so
+/// the decoder never has to trust a schema handed to it out of band.
+fn encode_mem_table(table: &MemTable, buf: &mut Vec<u8>) -> Result<()> {
+    let schema = table.schema();
+    buf.extend_from_slice(MEM_TABLE_FORMAT);
+    buf.extend_from_slice(&length_prefix(table.batches.len())?);
+
+    for partition in &table.batches {
+        // `MemTable` guards each partition with a tokio `RwLock`. This encode
+        // runs on a tokio worker thread, where `blocking_read` panics, so
+        // take the lock only if it is free. A partition that is mid-insert
+        // is reported rather than waited for.
+        let batches = partition.try_read().map_err(|_| {
+            DataFusionError::Internal(
+                "datafusion-ffi-example cannot encode a MemTable while a partition is locked"
+                    .to_string(),
+            )
+        })?;
+
+        let mut ipc = Vec::new();
+        let mut writer = StreamWriter::try_new(&mut ipc, schema.as_ref())?;
+        for batch in batches.iter() {
+            writer.write(batch)?;
+        }
+        writer.finish()?;
+        drop(writer);
+
+        buf.extend_from_slice(&length_prefix(ipc.len())?);
+        buf.extend_from_slice(&ipc);
+    }
+    Ok(())
 }
 
-fn token_id(buf: &[u8], prefix: &[u8]) -> Option<u64> {
-    let id: [u8; 8] = buf.strip_prefix(prefix)?.try_into().ok()?;
-    Some(u64::from_le_bytes(id))
+/// Rebuild a [`MemTable`] from bytes written by [`encode_mem_table`].
+///
+/// The table's schema is the one carried inside the IPC streams, not the
+/// `schema` argument DataFusion passes to `try_decode_table_provider`. A
+/// payload that does not describe itself consistently is rejected here
+/// instead of producing a table whose batches disagree with its schema.
+fn decode_mem_table(payload: &[u8]) -> Result<MemTable> {
+    let mut rest = payload.strip_prefix(MEM_TABLE_FORMAT).ok_or_else(|| {
+        DataFusionError::Internal(
+            "datafusion-ffi-example table provider payload has an unknown format tag".to_string(),
+        )
+    })?;
+
+    let n_partitions = read_length_prefix(&mut rest)?;
+    let mut schema: Option<SchemaRef> = None;
+    let mut partitions: Vec<Vec<RecordBatch>> = Vec::with_capacity(n_partitions);
+
+    for _ in 0..n_partitions {
+        let ipc_len = read_length_prefix(&mut rest)?;
+        if rest.len() < ipc_len {
+            return Err(DataFusionError::Internal(
+                "datafusion-ffi-example table provider payload is truncated".to_string(),
+            ));
+        }
+        let (ipc, tail) = rest.split_at(ipc_len);
+        rest = tail;
+
+        let reader = StreamReader::try_new(Cursor::new(ipc), None)?;
+        let ipc_schema = reader.schema();
+        match &schema {
+            None => schema = Some(ipc_schema),
+            Some(first) if *first != ipc_schema => {
+                return Err(DataFusionError::Internal(
+                    "datafusion-ffi-example table provider partitions disagree on schema"
+                        .to_string(),
+                ));
+            }
+            Some(_) => {}
+        }
+        partitions.push(reader.collect::<std::result::Result<Vec<_>, _>>()?);
+    }
+
+    if !rest.is_empty() {
+        return Err(DataFusionError::Internal(
+            "datafusion-ffi-example table provider payload has trailing bytes".to_string(),
+        ));
+    }
+
+    let schema = schema.ok_or_else(|| {
+        DataFusionError::Internal(
+            "datafusion-ffi-example table provider payload has no partitions".to_string(),
+        )
+    })?;
+    MemTable::try_new(schema, partitions)
+}
+
+fn length_prefix(len: usize) -> Result<[u8; 4]> {
+    u32::try_from(len)
+        .map(u32::to_le_bytes)
+        .map_err(|_| DataFusionError::Internal(format!("length {len} does not fit in u32")))
+}
+
+fn read_length_prefix(rest: &mut &[u8]) -> Result<usize> {
+    let (head, tail) = rest.split_at_checked(4).ok_or_else(|| {
+        DataFusionError::Internal(
+            "datafusion-ffi-example table provider payload is truncated".to_string(),
+        )
+    })?;
+    *rest = tail;
+    let bytes: [u8; 4] = head.try_into().expect("split_at_checked returned 4 bytes");
+    Ok(u32::from_le_bytes(bytes) as usize)
 }
 
 #[derive(Debug, Default)]
@@ -76,23 +170,20 @@ pub(crate) struct CallCounters {
 
 /// Example codec for objects owned by this extension library.
 ///
-/// The table-provider token registry is intentionally process-local. It is a compact
-/// example of preserving Rust type identity across three loaded libraries, not a
-/// network serialization format. Production libraries should encode reconstructible
-/// provider metadata rather than retaining objects in a global registry.
-///
-/// See [`table_providers`] for the token lifecycle, which is narrower than it
-/// looks: a decode consumes its token, so the same encoded plan cannot be
-/// decoded twice.
+/// Table providers are encoded as durable metadata, see [`encode_mem_table`].
+/// Nothing is retained between encode and decode, so the same bytes decode
+/// any number of times, in any process, and an encoded plan that never
+/// reaches a decoder costs nothing.
 struct CountingLogicalExtensionCodec {
     inner: DefaultLogicalExtensionCodec,
     counters: Arc<CallCounters>,
     /// Scalar function every table-provider decode must resolve from the
     /// `TaskContext` it is handed. See [`crate::required_udf`].
     required_udf: Option<String>,
-    /// Byte prefix identifying providers this codec owns. Distinct tokens let a
-    /// test install several instances and observe which one the chain picks.
-    token: Arc<[u8]>,
+    /// Byte prefix identifying providers this codec owns. Distinct prefixes
+    /// let a test install several instances and observe which one the chain
+    /// picks.
+    provider_prefix: Arc<[u8]>,
 }
 
 impl fmt::Debug for CountingLogicalExtensionCodec {
@@ -127,19 +218,11 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         ctx: &TaskContext,
     ) -> Result<Arc<dyn TableProvider>> {
         resolve_required_udf(self.required_udf.as_deref(), ctx, &self.counters.task_ctx)?;
-        if let Some(id) = token_id(buf, &self.token) {
+        if let Some(payload) = buf.strip_prefix(self.provider_prefix.as_ref()) {
             self.counters
                 .decode_table_provider
                 .fetch_add(1, Ordering::SeqCst);
-            return table_providers()
-                .lock()
-                .map_err(|err| DataFusionError::Internal(err.to_string()))?
-                .remove(&id)
-                .ok_or_else(|| {
-                    DataFusionError::Internal(format!(
-                        "Unknown datafusion-ffi-example table provider token {id}"
-                    ))
-                });
+            return Ok(Arc::new(decode_mem_table(payload)?));
         }
         self.inner
             .try_decode_table_provider(buf, table_ref, schema, ctx)
@@ -151,18 +234,12 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
         node: Arc<dyn TableProvider>,
         buf: &mut Vec<u8>,
     ) -> Result<()> {
-        if node.downcast_ref::<MemTable>().is_some() {
+        if let Some(table) = node.downcast_ref::<MemTable>() {
             self.counters
                 .encode_table_provider
                 .fetch_add(1, Ordering::SeqCst);
-            let id = NEXT_TABLE_PROVIDER_ID.fetch_add(1, Ordering::SeqCst);
-            table_providers()
-                .lock()
-                .map_err(|err| DataFusionError::Internal(err.to_string()))?
-                .insert(id, node);
-            buf.extend_from_slice(&self.token);
-            buf.extend_from_slice(&id.to_le_bytes());
-            return Ok(());
+            buf.extend_from_slice(&self.provider_prefix);
+            return encode_mem_table(table, buf);
         }
         self.inner.try_encode_table_provider(table_ref, node, buf)
     }
@@ -188,7 +265,7 @@ impl LogicalExtensionCodec for CountingLogicalExtensionCodec {
 pub(crate) struct MyLogicalExtensionCodec {
     counters: Arc<CallCounters>,
     required_udf: Option<String>,
-    token: Arc<[u8]>,
+    provider_prefix: Arc<[u8]>,
 }
 
 #[pymethods]
@@ -200,7 +277,7 @@ impl MyLogicalExtensionCodec {
     /// unset for the ordinary behaviour; set it to observe *which* session's
     /// registry the FFI decode callback actually receives.
     ///
-    /// `provider_prefix` overrides [`TABLE_PROVIDER_TOKEN`], the byte prefix
+    /// `provider_prefix` overrides [`TABLE_PROVIDER_PREFIX`], the byte prefix
     /// stamped on encoded table providers. Two instances built with different
     /// prefixes each own a disjoint slice of the wire format, which is what
     /// lets a test install both and tell from the decoded bytes which one the
@@ -211,8 +288,8 @@ impl MyLogicalExtensionCodec {
         Self {
             counters: Arc::new(CallCounters::default()),
             required_udf: require_udf_on_decode,
-            token: provider_prefix.map_or_else(
-                || Arc::from(TABLE_PROVIDER_TOKEN),
+            provider_prefix: provider_prefix.map_or_else(
+                || Arc::from(TABLE_PROVIDER_PREFIX),
                 |prefix| Arc::from(prefix.as_bytes()),
             ),
         }
@@ -259,7 +336,7 @@ impl MyLogicalExtensionCodec {
             inner: DefaultLogicalExtensionCodec {},
             counters: Arc::clone(&self.counters),
             required_udf: self.required_udf.clone(),
-            token: Arc::clone(&self.token),
+            provider_prefix: Arc::clone(&self.provider_prefix),
         });
 
         let runtime = get_tokio_runtime().handle().clone();
