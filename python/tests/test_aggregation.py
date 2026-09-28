@@ -394,6 +394,14 @@ def test_bit_and_bool_fns(df, name, expr, result):
     assert df.collect()[0].to_pydict() == expected
 
 
+@pytest.mark.parametrize("fn", [f.bit_and, f.bit_or])
+def test_bitwise_distinct_is_kept(fn):
+    # AND and OR ignore duplicates, so the result alone cannot show whether
+    # ``distinct`` reached the plan.
+    assert "DISTINCT" in fn(column("b"), distinct=True).canonical_name()
+    assert "DISTINCT" not in fn(column("b")).canonical_name()
+
+
 @pytest.mark.parametrize(
     ("name", "expr", "result"),
     [
