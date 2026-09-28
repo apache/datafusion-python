@@ -780,12 +780,14 @@ pub fn approx_percentile_cont(
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont(
-        sort_expression.sort,
+        sort_expression.sort.clone(),
         lit(percentile),
         num_centroids.map(lit),
     );
 
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+    // The builder starts empty, so the WITHIN GROUP ordering upstream stored
+    // must be passed again or `build()` drops its direction.
+    add_builder_fns_to_aggregate(agg_fn, None, filter, Some(vec![sort_expression]), None)
 }
 
 #[pyfunction]
@@ -798,13 +800,14 @@ pub fn approx_percentile_cont_with_weight(
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
-        sort_expression.sort,
+        sort_expression.sort.clone(),
         weight.expr,
         lit(percentile),
         num_centroids.map(lit),
     );
 
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+    // See `approx_percentile_cont`.
+    add_builder_fns_to_aggregate(agg_fn, None, filter, Some(vec![sort_expression]), None)
 }
 
 #[pyfunction]
@@ -815,10 +818,13 @@ pub fn percentile_cont(
     distinct: Option<bool>,
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
-    let agg_fn =
-        functions_aggregate::expr_fn::percentile_cont(sort_expression.sort, lit(percentile));
+    let agg_fn = functions_aggregate::expr_fn::percentile_cont(
+        sort_expression.sort.clone(),
+        lit(percentile),
+    );
 
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, None, None)
+    // See `approx_percentile_cont`.
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, Some(vec![sort_expression]), None)
 }
 
 // We handle last_value explicitly because the signature expects an order_by

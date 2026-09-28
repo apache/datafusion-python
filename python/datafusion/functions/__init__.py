@@ -5444,7 +5444,8 @@ def approx_percentile_cont(
     setting the ``num_centroids`` parameter.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``null_treatment`` and ``distinct``, and ``order_by`` replaces the
+    ordering of ``sort_expression``.
 
     Args:
         sort_expression: Values for which to find the approximate percentile
@@ -5493,7 +5494,8 @@ def approx_percentile_cont_with_weight(
     it uses the associated associated weights.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    the options ``null_treatment`` and ``distinct``, and ``order_by`` replaces the
+    ordering of ``sort_expression``.
 
     Args:
         sort_expression: Values for which to find the approximate percentile
@@ -5546,7 +5548,8 @@ def percentile_cont(
     percentile value rather than an approximation.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by`` and ``null_treatment``.
+    the option ``null_treatment``, and ``order_by`` replaces the ordering of
+    ``sort_expression``.
 
     Args:
         sort_expression: Values for which to find the percentile

@@ -554,3 +554,57 @@ def test_string_agg_rejects_non_bool_distinct(distinct) -> None:
     # ``filter``.
     with pytest.raises(TypeError, match="distinct must be a bool"):
         f.string_agg(column("a"), ",", distinct, column("b"))
+
+
+@pytest.mark.parametrize(
+    ("expr", "sql"),
+    [
+        pytest.param(
+            lambda s: f.percentile_cont(s, 0.25),
+            "percentile_cont(0.25)",
+            id="percentile_cont",
+        ),
+        pytest.param(
+            lambda s: f.quantile_cont(s, 0.25),
+            "quantile_cont(0.25)",
+            id="quantile_cont",
+        ),
+        pytest.param(
+            lambda s: f.approx_percentile_cont(s, 0.25),
+            "approx_percentile_cont(0.25)",
+            id="approx_percentile_cont",
+        ),
+        pytest.param(
+            lambda s: f.approx_percentile_cont_with_weight(s, lit(1.0), 0.25),
+            "approx_percentile_cont_with_weight(1.0, 0.25)",
+            id="approx_percentile_cont_with_weight",
+        ),
+    ],
+)
+def test_percentile_keeps_sort_direction(expr, sql) -> None:
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]}, name="t")
+    desc = column("a").sort(ascending=False)
+
+    result = df.aggregate([], [expr(desc).alias("p")]).collect_column("p")
+    expected = ctx.sql(
+        f"SELECT {sql} WITHIN GROUP (ORDER BY a DESC) AS p FROM t"
+    ).collect_column("p")
+    assert result.to_pylist() == expected.to_pylist()
+    assert (
+        result.to_pylist()
+        != df.aggregate([], [expr(column("a")).alias("p")])
+        .collect_column("p")
+        .to_pylist()
+    )
+
+
+def test_percentile_cont_order_by_replaces_sort() -> None:
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    expr = (
+        f.percentile_cont(column("a"), 0.25)
+        .order_by(column("a").sort(ascending=False))
+        .build()
+    )
+    assert df.aggregate([], [expr.alias("p")]).collect_column("p")[0].as_py() == 4.0

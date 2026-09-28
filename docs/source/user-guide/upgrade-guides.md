@@ -258,6 +258,29 @@ Code that selects the result by its generated name should `alias()` it instead.
 How a window frame is handled when chaining is described in
 {ref}`window_frame_chaining`.
 
+### Percentile functions keep the sort direction
+
+{py:func}`~datafusion.functions.percentile_cont`,
+{py:func}`~datafusion.functions.quantile_cont`,
+{py:func}`~datafusion.functions.approx_percentile_cont`, and
+{py:func}`~datafusion.functions.approx_percentile_cont_with_weight` ignored the
+direction of `sort_expression`, so a descending sort gave the ascending result.
+They now match `WITHIN GROUP (ORDER BY ... DESC)` in SQL:
+
+```python
+f.percentile_cont(col("a").sort(ascending=False), 0.25)
+# a = [1, 2, 3, 4, 5]; before: 2.0, after: 4.0
+```
+
+Their generated column names now include the ordering, in the same form as SQL.
+Code that selects the result by its generated name should `alias()` it instead.
+
+```python
+f.percentile_cont(col("a"), 0.25)
+# before: percentile_cont(t.a,Float64(0.25))
+# after:  percentile_cont(Float64(0.25)) WITHIN GROUP [t.a ASC NULLS FIRST]
+```
+
 ### `fill_null(subset=[])` fills no columns
 
 {py:meth}`~datafusion.dataframe.DataFrame.fill_null` with an empty `subset`
