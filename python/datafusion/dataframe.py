@@ -1247,12 +1247,16 @@ class DataFrame:
             format: Output format for the plan. Defaults to
                 :py:attr:`ExplainFormat.INDENT`.
             show_statistics: If ``True``, include each operator's statistics.
-                ``None`` uses the ``datafusion.explain.show_statistics`` setting.
+                Cannot be combined with ``analyze``. ``None`` uses the
+                ``datafusion.explain.show_statistics`` setting.
             analyze_level: Which metrics to report with ``analyze``. ``None``
                 uses the ``datafusion.explain.analyze_level`` setting.
             analyze_categories: Report only metrics in these categories with
                 ``analyze``; an empty iterable reports none. ``None`` uses the
                 ``datafusion.explain.analyze_categories`` setting.
+
+        Raises:
+            ValueError: If both ``analyze`` and ``show_statistics`` are ``True``.
 
         Examples:
             Show the plan in tree format:
@@ -1273,6 +1277,9 @@ class DataFrame:
             ...     analyze=True, analyze_categories=[ExplainMetricCategory.ROWS]
             ... )  # doctest: +SKIP
         """
+        if analyze and show_statistics:
+            msg = "show_statistics cannot be combined with analyze"
+            raise ValueError(msg)
         fmt = format.value if format is not None else None
         level = analyze_level.value if analyze_level is not None else None
         categories = (

@@ -3934,6 +3934,13 @@ def test_explain_options(capsys, kwargs, present, absent):
         assert text not in out
 
 
+def test_explain_rejects_show_statistics_with_analyze(capsys):
+    # Upstream's Analyze plan has no statistics override, so the flag would be
+    # silently ignored; SQL rejects the same combination.
+    with pytest.raises(ValueError, match="cannot be combined with analyze"):
+        _explain_output(capsys, analyze=True, show_statistics=True)
+
+
 @pytest.mark.parametrize(
     ("window_exprs", "expected_columns"),
     [
