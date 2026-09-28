@@ -1085,6 +1085,10 @@ class Expr:  # noqa: PLW1641
         exception of ``partition_by``, how each of the parameters is used is determined
         by the underlying aggregate function.
 
+        On an aggregate, the ``order_by``, ``null_treatment``, ``filter``, and
+        ``distinct`` options it was built with are dropped; see
+        :ref:`aggregate_over_options`.
+
         Args:
             window: Window definition
         """

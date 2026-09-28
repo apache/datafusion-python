@@ -225,6 +225,28 @@ df.select(
 )
 ```
 
+(aggregate_over_options)=
+
+### Options set on the aggregate
+
+`over()` currently drops the `order_by`, `null_treatment`, `filter`, and
+`distinct` options an aggregate was built with
+([apache/datafusion-python#1764](https://github.com/apache/datafusion-python/issues/1764)),
+so the window runs as if they were never set:
+
+```python
+# DISTINCT is dropped: averages 1.0, 1.0, 4.0 rather than 1.0, 4.0.
+f.avg(col("v"), distinct=True).over(Window())
+```
+
+Until that is fixed, pass `order_by` and `null_treatment` in the `Window`, and
+chain `filter()` or `distinct()` after `over()`:
+
+```python
+f.avg(col("v")).over(Window()).distinct().build()
+f.sum(col("v")).over(Window()).filter(col("v") > lit(1)).build()
+```
+
 ## Available Functions
 
 The possible window functions are:
