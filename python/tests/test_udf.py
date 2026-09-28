@@ -59,6 +59,15 @@ def test_udf_decorator(df):
     assert result == pa.array([False, False, True])
 
 
+def test_udf_decorator_keyword_arguments(df):
+    @udf(input_fields=[pa.int64()], return_field=pa.bool_(), volatility="immutable")
+    def is_null(x: pa.Array) -> pa.Array:
+        return x.is_null()
+
+    result = df.select(is_null(column("b"))).collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+
 def test_register_udf(ctx, df) -> None:
     is_null = udf(
         lambda x: x.is_null(),

@@ -397,7 +397,9 @@ class ScalarUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_scalar_udf__") or _is_pycapsule(args[0]):
+        if args and (
+            hasattr(args[0], "__datafusion_scalar_udf__") or _is_pycapsule(args[0])
+        ):
             return ScalarUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -747,7 +749,9 @@ class AggregateUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0]):
+        if args and (
+            hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0])
+        ):
             return AggregateUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -1098,7 +1102,9 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
-        if hasattr(args[0], "__datafusion_window_udf__") or _is_pycapsule(args[0]):
+        if args and (
+            hasattr(args[0], "__datafusion_window_udf__") or _is_pycapsule(args[0])
+        ):
             return WindowUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
