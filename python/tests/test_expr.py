@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import copy
+import pickle
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timezone
@@ -1321,22 +1323,29 @@ def test_window_builder_keeps_explicit_frame(builder_df):
     assert result.collect_column("r").to_pylist() == [1, 3, 5, 4]
 
 
-def test_window_builder_keeps_explicit_default_frame(builder_df):
-    # An explicit frame equal to the no-order_by default must survive a later
-    # order_by instead of being re-derived as the running frame.
+def test_window_builder_default_frame_same_after_copy_and_pickle(builder_df):
+    # Whether a frame is re-derived depends only on the expression, so a copy
+    # or a pickled round trip chains to the same result as the original.
     window = Window(window_frame=WindowFrame("rows", None, None))
-    expr = functions.sum(col("v")).over(window).order_by(col("v")).build()
-    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
-    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+    expr = functions.sum(col("v")).over(window)
+
+    def chained(e):
+        r = e.order_by(col("v")).build().alias("r")
+        return builder_df.select(col("v"), r).sort(col("v")).collect_column("r")
+
+    expected = [1, 3, 6, 10]
+    assert chained(expr).to_pylist() == expected
+    assert chained(copy.copy(expr)).to_pylist() == expected
+    assert chained(pickle.loads(pickle.dumps(expr))).to_pylist() == expected  # noqa: S301
 
 
-def test_window_builder_keeps_frame_set_on_builder(builder_df):
+def test_window_builder_keeps_default_frame_set_last(builder_df):
+    frame = WindowFrame("rows", None, None)
     expr = (
         functions.sum(col("v"))
         .over(Window())
-        .window_frame(WindowFrame("rows", None, None))
-        .build()
         .order_by(col("v"))
+        .window_frame(frame)
         .build()
     )
     result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
@@ -1351,18 +1360,6 @@ def test_over_keeps_window_function_options():
     ).over(Window(partition_by=[col("g")]))
     result = df.select(col("i"), expr.alias("r")).sort(col("i"))
     assert result.collect_column("r").to_pylist() == [3, 3, None, None]
-
-
-def test_over_keeps_explicit_default_frame(builder_df):
-    # A frame equal to the no-order_by default, set by an earlier over(), must
-    # survive a later over() that adds an order_by.
-    expr = (
-        functions.sum(col("v"))
-        .over(Window(window_frame=WindowFrame("rows", None, None)))
-        .over(Window(order_by=col("v")))
-    )
-    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
-    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
 
 
 def test_window_builder_rederives_default_frame(builder_df):

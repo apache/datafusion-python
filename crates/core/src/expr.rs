@@ -624,68 +624,48 @@ impl PyExpr {
 
     // Expression Function Builder functions
 
-    #[pyo3(signature = (order_by, keep_window_frame=false))]
-    pub fn order_by(
-        &self,
-        order_by: Vec<PySortExpr>,
-        keep_window_frame: bool,
-    ) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr, keep_window_frame)
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr)
             .order_by(to_sort_expressions(order_by))
             .into()
     }
 
-    #[pyo3(signature = (filter, keep_window_frame=false))]
-    pub fn filter(&self, filter: PyExpr, keep_window_frame: bool) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr, keep_window_frame)
+    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr)
             .filter(filter.expr.clone())
             .into()
     }
 
-    #[pyo3(signature = (keep_window_frame=false))]
-    pub fn distinct(&self, keep_window_frame: bool) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr, keep_window_frame)
-            .distinct()
-            .into()
+    pub fn distinct(&self) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr).distinct().into()
     }
 
-    #[pyo3(signature = (null_treatment, keep_window_frame=false))]
-    pub fn null_treatment(
-        &self,
-        null_treatment: NullTreatment,
-        keep_window_frame: bool,
-    ) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr, keep_window_frame)
+    pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
+        builder_from_expr(&self.expr)
             .null_treatment(Some(null_treatment.into()))
             .into()
     }
 
-    #[pyo3(signature = (partition_by, keep_window_frame=false))]
-    pub fn partition_by(
-        &self,
-        partition_by: Vec<PyExpr>,
-        keep_window_frame: bool,
-    ) -> PyExprFuncBuilder {
+    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
         let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        builder_from_expr(&self.expr, keep_window_frame)
+        builder_from_expr(&self.expr)
             .partition_by(partition_by)
             .into()
     }
 
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        builder_from_expr(&self.expr, false)
+        builder_from_expr(&self.expr)
             .window_frame(window_frame.into())
             .into()
     }
 
-    #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None, keep_window_frame=false))]
+    #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
     pub fn over(
         &self,
         partition_by: Option<Vec<PyExpr>>,
         window_frame: Option<PyWindowFrame>,
         order_by: Option<Vec<PySortExpr>>,
         null_treatment: Option<NullTreatment>,
-        keep_window_frame: bool,
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
@@ -703,7 +683,7 @@ impl PyExpr {
                 )
             }
             Expr::WindowFunction(_) => apply_window_options(
-                builder_from_expr(&self.expr, keep_window_frame),
+                builder_from_expr(&self.expr),
                 partition_by,
                 window_frame,
                 order_by,
@@ -775,10 +755,10 @@ impl PyExpr {
 /// builder method onto their result must not discard them.
 ///
 /// A built window function always stores a concrete frame, so whether the user
-/// chose it is lost. `keep_window_frame` carries that from the Python side; when
-/// false, a frame equal to the default for the current order-by is treated as
-/// unset.
-fn builder_from_expr(expr: &Expr, keep_window_frame: bool) -> ExprFuncBuilder {
+/// chose it is lost. A frame equal to the default for the current order-by is
+/// treated as unset, which depends only on the expression and so behaves the
+/// same after a copy, pickle, or round trip through protobuf or SQL.
+fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
     match expr {
         Expr::AggregateFunction(agg) => {
             let params = &agg.params;
@@ -806,9 +786,8 @@ fn builder_from_expr(expr: &Expr, keep_window_frame: bool) -> ExprFuncBuilder {
             }
             // A frame equal to the default `build()` derived from the order-by is
             // left unset, so it is derived again from the final order-by.
-            if keep_window_frame
-                || params.window_frame
-                    != datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true))
+            if params.window_frame
+                != datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true))
             {
                 builder = builder.window_frame(params.window_frame.clone());
             }

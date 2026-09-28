@@ -135,6 +135,33 @@ df.select(
 )
 ```
 
+(window_frame_chaining)=
+
+#### Chaining onto a window function
+
+A built window function stores a concrete frame, with no record of whether you
+chose it. When you chain another builder method or `over()` onto one, a frame
+equal to the default for its current `order_by` is treated as unset and derived
+again from the final `order_by`. Any other frame is kept.
+
+This rule depends only on the expression, so a copy, a pickled expression sent
+to a worker, or one parsed from SQL all chain the same way. The cost is that an
+explicit frame that matches the default is indistinguishable from no frame:
+
+```python
+whole = WindowFrame("rows", None, None)  # same as the no-order_by default
+
+# The frame is re-derived, giving a running sum.
+f.sum(col("v")).over(Window(window_frame=whole)).order_by(col("v")).build()
+```
+
+To keep such a frame, set it after the `order_by`, or pass both in one `Window`:
+
+```python
+f.sum(col("v")).over(Window()).order_by(col("v")).window_frame(whole).build()
+f.sum(col("v")).over(Window(order_by=col("v"), window_frame=whole))
+```
+
 ### Null Treatment
 
 When using aggregate functions as window functions, it is often useful to specify how null values
