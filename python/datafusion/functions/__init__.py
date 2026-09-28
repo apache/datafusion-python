@@ -958,7 +958,7 @@ def count_star(filter: Expr | None = None) -> Expr:
 
     This aggregate function will count all of the rows in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``distinct``, and ``null_treatment``.
 
     Args:
@@ -5360,7 +5360,7 @@ def approx_distinct(
     will approximate the number of distinct entries. It may return significantly faster
     than :py:func:`count` for some DataFrames.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5396,7 +5396,7 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function is similar to :py:func:`median`, but it will only
     approximate the median. It may return significantly faster for some DataFrames.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5443,7 +5443,7 @@ def approx_percentile_cont(
     compute the percentile. You can limit the number of bins used in this algorithm by
     setting the ``num_centroids`` parameter.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``null_treatment`` and ``distinct``, and ``order_by`` replaces the
     ordering of ``sort_expression``.
 
@@ -5493,7 +5493,7 @@ def approx_percentile_cont_with_weight(
     This aggregate function is similar to :py:func:`approx_percentile_cont` except that
     it uses the associated associated weights.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``null_treatment`` and ``distinct``, and ``order_by`` replaces the
     ordering of ``sort_expression``.
 
@@ -5547,7 +5547,7 @@ def percentile_cont(
     Unlike :py:func:`approx_percentile_cont`, this function computes the exact
     percentile value rather than an approximation.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``null_treatment``, and ``order_by`` replaces the ordering of
     ``sort_expression``.
 
@@ -5620,7 +5620,7 @@ def array_agg(
     consider :py:func:`array_sort` after aggregation.
     [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``null_treatment``.
 
     Args:
@@ -5734,7 +5734,7 @@ def avg(
 
     This aggregate function expects a numeric expression and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5777,7 +5777,7 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5816,7 +5816,7 @@ def count(
 
     This aggregate function will count the non-null rows provided in the expression.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5860,7 +5860,7 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5901,7 +5901,7 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5943,7 +5943,7 @@ def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 def max(expression: Expr, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the maximum value of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5993,7 +5993,7 @@ def median(
     This aggregate function returns the median value of the expression for the given
     aggregate function.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6027,7 +6027,7 @@ def median(
 def min(expression: Expr, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the minimum value of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6065,7 +6065,7 @@ def sum(
 
     This aggregate function expects a numeric expression.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6106,7 +6106,7 @@ def sum(
 def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the standard deviation of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6138,7 +6138,7 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
 def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population standard deviation of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6191,7 +6191,7 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
 def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6232,7 +6232,7 @@ def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
 def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6280,7 +6280,7 @@ def regr_avgx(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6321,7 +6321,7 @@ def regr_avgy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6362,7 +6362,7 @@ def regr_count(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6403,7 +6403,7 @@ def regr_intercept(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6446,7 +6446,7 @@ def regr_r2(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6487,7 +6487,7 @@ def regr_slope(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6528,7 +6528,7 @@ def regr_sxx(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6569,7 +6569,7 @@ def regr_sxy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6610,7 +6610,7 @@ def regr_syy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6651,7 +6651,7 @@ def first_value(
 
     This aggregate function will return the first value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6707,7 +6707,7 @@ def last_value(
 
     This aggregate function will return the last value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6764,7 +6764,7 @@ def nth_value(
 
     This aggregate function will return the n-th value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6817,7 +6817,7 @@ def any_value(expression: Expr, filter: Expr | None = None) -> Expr:
     Returns NULL if every value in the group is NULL. Which value is returned
     is not specified and may differ between runs.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6854,7 +6854,7 @@ def bit_and(
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6892,7 +6892,7 @@ def bit_or(
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6932,7 +6932,7 @@ def bit_xor(
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6971,7 +6971,7 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function will compare every value in the input partition. These are
     expected to be boolean values.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -7010,7 +7010,7 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function will compare every value in the input partition. These are
     expected to be boolean values.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -7071,7 +7071,7 @@ def lead(
         +--------+------+-----+
 
     To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    :ref:`window_functions` online documentation.
 
     Args:
         arg: Value to return
@@ -7589,7 +7589,7 @@ def string_agg(
     separating them with the specified delimiter. Non-string values will be converted to
     their string equivalents.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``null_treatment``.
 
     Args:
