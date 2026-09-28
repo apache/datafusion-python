@@ -7624,6 +7624,12 @@ def string_agg(
         >>> result.collect_column("s")[0].as_py()
         'x,y'
     """
+    if not isinstance(distinct, bool):
+        msg = (
+            f"distinct must be a bool, got {type(distinct).__name__}; "
+            "pass filter and order_by by keyword"
+        )
+        raise TypeError(msg)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 

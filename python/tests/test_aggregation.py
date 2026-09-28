@@ -545,3 +545,12 @@ def test_string_agg(name, expr, result) -> None:
     }
     df.show()
     assert df.collect()[0].to_pydict() == expected
+
+
+@pytest.mark.parametrize("distinct", [None, column("b")])
+def test_string_agg_rejects_non_bool_distinct(distinct) -> None:
+    # A positional ``None`` placeholder for the old ``filter`` slot now lands
+    # in ``distinct`` and must raise rather than shift ``order_by`` into
+    # ``filter``.
+    with pytest.raises(TypeError, match="distinct must be a bool"):
+        f.string_agg(column("a"), ",", distinct, column("b"))
