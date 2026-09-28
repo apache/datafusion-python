@@ -1368,3 +1368,15 @@ def test_window_builder_rederives_default_frame(builder_df):
     expr = functions.sum(col("v")).over(Window()).order_by(col("v")).build()
     result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
     assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
+
+
+@pytest.mark.parametrize("first", [Window(), Window(order_by=[])])
+def test_window_builder_rederives_default_frame_from_empty_order_by(first):
+    # An empty order_by derives a RANGE frame rather than the whole partition;
+    # both are defaults, so a later order_by gets the ROWS running frame, which
+    # does not sum the tied ``i`` values together.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"i": [1, 1, 2, 3], "v": [1, 2, 3, 4]})
+    expr = functions.sum(col("v")).over(first).over(Window(order_by="i"))
+    result = df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]

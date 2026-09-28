@@ -142,7 +142,9 @@ df.select(
 A built window function stores a concrete frame, with no record of whether you
 chose it. When you chain another builder method or `over()` onto one, a frame
 equal to the default for its current `order_by` is treated as unset and derived
-again from the final `order_by`. Any other frame is kept.
+again from the final `order_by`. Any other frame is kept. With no `order_by`,
+both the whole-partition frame and `RANGE UNBOUNDED PRECEDING .. CURRENT ROW`
+(the frame an empty `order_by` list derives) count as the default.
 
 This rule depends only on the expression, so a copy, a pickled expression sent
 to a worker, or one parsed from SQL all chain the same way. The cost is that an
