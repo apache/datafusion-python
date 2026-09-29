@@ -21,7 +21,7 @@ name: CI
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["main", "branch-*"]
 
 concurrency:
   group: ${{ github.repository }}-${{ github.head_ref || github.sha }}-${{ github.workflow }}
