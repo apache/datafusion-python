@@ -22,6 +22,7 @@ use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
 
 use super::logical_node::LogicalNode;
+use crate::errors::PyDataFusionResult;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
@@ -67,15 +68,15 @@ impl PyRecursiveQuery {
         static_term: PyLogicalPlan,
         recursive_term: PyLogicalPlan,
         is_distinct: bool,
-    ) -> Self {
-        Self {
-            query: RecursiveQuery {
+    ) -> PyDataFusionResult<Self> {
+        Ok(Self {
+            query: RecursiveQuery::try_new(
                 name,
-                static_term: static_term.plan(),
-                recursive_term: recursive_term.plan(),
+                static_term.plan(),
+                recursive_term.plan(),
                 is_distinct,
-            },
-        }
+            )?,
+        })
     }
 
     fn name(&self) -> PyResult<String> {

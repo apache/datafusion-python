@@ -411,6 +411,17 @@ def test_recursive_query():
     plan = plan.inputs()[0].inputs()[0].to_variant()
     assert isinstance(plan, RecursiveQuery)
 
+    # Rebuilding the node through the constructor exercises the schema
+    # reconciliation DataFusion performs over the static and recursive terms.
+    rebuilt = RecursiveQuery(
+        plan.name(),
+        plan.static_term(),
+        plan.recursive_term(),
+        plan.is_distinct(),
+    )
+    assert rebuilt.name() == plan.name()
+    assert rebuilt.is_distinct() == plan.is_distinct()
+
 
 def test_values():
     ctx = SessionContext()
