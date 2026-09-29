@@ -57,7 +57,7 @@ impl Display for PyLimit {
             Skip: {:?}
             Fetch: {:?}
             Input: {:?}",
-            &self.limit.skip, &self.limit.fetch, &self.limit.input
+            self.limit.skip, self.limit.fetch, self.limit.input
         )
     }
 }

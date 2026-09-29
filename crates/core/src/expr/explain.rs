@@ -61,11 +61,11 @@ impl Display for PyExplain {
             stringified_plans: {:?}
             schema: {:?}
             logical_optimization_succeeded: {:?}",
-            &self.explain.verbose,
-            &self.explain.plan,
-            &self.explain.stringified_plans,
-            &self.explain.schema,
-            &self.explain.logical_optimization_succeeded
+            self.explain.verbose,
+            self.explain.plan,
+            self.explain.stringified_plans,
+            self.explain.schema,
+            self.explain.logical_optimization_succeeded
         )
     }
 }

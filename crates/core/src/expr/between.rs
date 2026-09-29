@@ -55,7 +55,7 @@ impl Display for PyBetween {
             Negated: {:?}
             Low: {:?}
             High: {:?}",
-            &self.between.expr, &self.between.negated, &self.between.low, &self.between.high
+            self.between.expr, self.between.negated, self.between.low, self.between.high
         )
     }
 }

@@ -51,7 +51,7 @@ impl Display for PyLambda {
         write!(
             f,
             "Lambda(params={:?}, body={:?})",
-            &self.lambda.params, &self.lambda.body,
+            self.lambda.params, self.lambda.body,
         )
     }
 }

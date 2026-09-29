@@ -82,7 +82,7 @@ impl Display for PyRepartition {
             "Repartition
             input: {:?}
             partitioning_scheme: {:?}",
-            &self.repartition.input, &self.repartition.partitioning_scheme,
+            self.repartition.input, self.repartition.partitioning_scheme,
         )
     }
 }

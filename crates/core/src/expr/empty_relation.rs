@@ -56,7 +56,7 @@ impl Display for PyEmptyRelation {
             "Empty Relation
             Produce One Row: {:?}
             Schema: {:?}",
-            &self.empty.produce_one_row, &self.empty.schema
+            self.empty.produce_one_row, self.empty.schema
         )
     }
 }

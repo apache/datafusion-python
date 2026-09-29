@@ -56,7 +56,7 @@ impl Display for PyUnion {
             "Union
             Inputs: {:?}
             Schema: {:?}",
-            &self.union_.inputs, &self.union_.schema,
+            self.union_.inputs, self.union_.schema,
         )
     }
 }
