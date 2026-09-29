@@ -65,8 +65,8 @@ impl Display for PyAggregate {
             \nAggregates(s): {:?}
             \nInput: {:?}
             \nProjected Schema: {:?}",
-            &self.aggregate.group_expr,
-            &self.aggregate.aggr_expr,
+            self.aggregate.group_expr,
+            self.aggregate.aggr_expr,
             self.aggregate.input,
             self.aggregate.schema
         )

@@ -57,7 +57,7 @@ impl Display for PyFilter {
             "Filter
             Predicate: {:?}
             Input: {:?}",
-            &self.filter.predicate, &self.filter.input
+            self.filter.predicate, self.filter.input
         )
     }
 }

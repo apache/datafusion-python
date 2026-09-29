@@ -132,14 +132,14 @@ impl Display for PyJoin {
             JoinConstraint: {:?}
             Schema: {:?}
             NullEquality: {:?}",
-            &self.join.left,
-            &self.join.right,
-            &self.join.on,
-            &self.join.filter,
-            &self.join.join_type,
-            &self.join.join_constraint,
-            &self.join.schema,
-            &self.join.null_equality,
+            self.join.left,
+            self.join.right,
+            self.join.on,
+            self.join.filter,
+            self.join.join_type,
+            self.join.join_constraint,
+            self.join.schema,
+            self.join.null_equality,
         )
     }
 }
