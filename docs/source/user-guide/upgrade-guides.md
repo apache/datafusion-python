@@ -244,6 +244,17 @@ f.array_agg(col("s"), distinct=True).order_by(col("v")).build()
 Drop `distinct`, or order by the aggregated column, to get either of the
 results the chain can actually produce.
 
+An option that does not apply to the function now raises as soon as it is
+set, anywhere in the chain. `filter` and `distinct` need an aggregate,
+including one used as a window function, and `partition_by` and
+`window_frame` need a window function. Later in a chain these were silently
+dropped:
+
+```python
+f.sum(col("v")).filter(col("v") > lit(1)).partition_by(col("g"))
+# before: partition_by dropped; after: raises
+```
+
 The default `RESPECT NULLS` set by `first_value`, `last_value`, and `nth_value`
 is also kept, so their generated column names change:
 

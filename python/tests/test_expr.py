@@ -1448,25 +1448,76 @@ def test_window_builder_rederives_default_frame_from_empty_order_by(first):
 
 
 @pytest.mark.parametrize(
-    "builder",
+    ("builder", "message"),
     [
         pytest.param(
             lambda: functions.sum(col("v")).partition_by(col("g")),
+            "partition_by\\(\\) applies only to window functions; sum is an aggregate",
             id="partition_by on aggregate",
         ),
         pytest.param(
             lambda: functions.sum(col("v")).window_frame(WindowFrame("rows", 1, 0)),
+            "window_frame\\(\\) applies only to window functions; sum is an aggregate",
             id="window_frame on aggregate",
         ),
         pytest.param(
+            lambda: (
+                functions.sum(col("v")).filter(col("v") > lit(1)).partition_by(col("g"))
+            ),
+            "partition_by\\(\\) applies only to window functions; sum is an aggregate",
+            id="partition_by chained on aggregate",
+        ),
+        pytest.param(
+            lambda: (
+                functions.sum(col("v"))
+                .order_by(col("v"))
+                .window_frame(WindowFrame("rows", 1, 0))
+            ),
+            "window_frame\\(\\) applies only to window functions; sum is an aggregate",
+            id="window_frame chained on aggregate",
+        ),
+        pytest.param(
             lambda: functions.lead(col("v"), order_by="v").distinct(),
+            "distinct\\(\\) applies only to aggregate functions.*lead is a window",
             id="distinct on window function",
+        ),
+        pytest.param(
+            lambda: (
+                functions.lead(col("v"), order_by="v").partition_by(col("g")).distinct()
+            ),
+            "distinct\\(\\) applies only to aggregate functions.*lead is a window",
+            id="distinct chained on window function",
+        ),
+        pytest.param(
+            lambda: functions.row_number(order_by=[col("v")]).filter(col("v") > lit(2)),
+            "filter\\(\\) applies only to aggregate functions.*row_number is a window",
+            id="filter on window function",
+        ),
+        pytest.param(
+            lambda: (
+                functions.lead(col("v"), order_by="v")
+                .partition_by(col("g"))
+                .filter(col("v") > lit(2))
+            ),
+            "filter\\(\\) applies only to aggregate functions.*lead is a window",
+            id="filter chained on window function",
         ),
     ],
 )
-def test_builder_rejects_option_for_other_function_kind(builder):
+def test_builder_rejects_option_for_other_function_kind(builder, message):
+    with pytest.raises(Exception, match=message):
+        builder()
+
+
+def test_builder_on_non_function_raises_at_build():
     with pytest.raises(Exception, match="ExprFunctionExt can only be used with"):
-        builder().build()
+        col("v").distinct().build()
+
+
+def test_window_builder_filter_on_aggregate_window(builder_df):
+    expr = functions.sum(col("v")).over(Window()).filter(col("v") > lit(1)).build()
+    result = builder_df.select(expr.alias("r"))
+    assert result.collect_column("r").to_pylist() == [9, 9, 9, 9]
 
 
 def test_window_builder_distinct_on_aggregate_window(builder_df):
