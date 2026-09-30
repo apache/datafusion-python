@@ -1933,7 +1933,7 @@ class DataFrame:
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
         """
-        if subset is not None and not subset:
+        if subset is not None and len(subset) == 0:
             return self
         return DataFrame(self.df.fill_null(value, subset))
 
@@ -1966,7 +1966,7 @@ class DataFrame:
             >>> df.fill_nan(0.0, subset=[]).collect_column("b")[0].as_py()
             nan
         """
-        if subset is not None and not subset:
+        if subset is not None and len(subset) == 0:
             return self
         return DataFrame(self.df.fill_nan(value, subset))
 
