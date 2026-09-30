@@ -286,6 +286,21 @@ order the rows. A `WITHIN GROUP` function such as `percentile_cont` still accept
 an ascending `sort_expression`, and raises on a descending one, which used to
 give the ascending result. See {ref}`aggregate_over_options`.
 
+### Python aggregate UDFs reject `DISTINCT`
+
+A Python {py:class}`~datafusion.user_defined.Accumulator` cannot deduplicate its
+input, so a Python aggregate UDF with `DISTINCT` counted every row. It now
+raises instead of returning that result:
+
+```python
+my_sum(col("v")).over(Window()).distinct().build()
+# v = [1, 1, 1, 5]; before: 8.0; after: DISTINCT is not supported ...
+```
+
+When the optimizer rewrites the query to group by the distinct values first,
+as it does for SQL's `SELECT my_sum(DISTINCT v) FROM t`, the query still runs
+and gives the distinct result.
+
 ### Percentile functions keep the sort direction
 
 {py:func}`~datafusion.functions.percentile_cont`,
