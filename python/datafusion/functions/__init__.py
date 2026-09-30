@@ -40,7 +40,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 import pyarrow as pa
 
@@ -3126,13 +3126,36 @@ def array(*args: Expr) -> Expr:
     return make_array(*args)
 
 
+_SERIES_SIGNATURE = inspect.Signature(
+    [
+        inspect.Parameter("start", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+        inspect.Parameter(
+            "stop", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None
+        ),
+        inspect.Parameter(
+            "step", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None
+        ),
+    ]
+)
+
+
 def _series(
-    fn: Callable[..., Any],
-    name: str,
-    start: Expr | int,
-    stop: Expr | int | None,
-    step: Expr | int | None,
+    fn: Callable[..., Any], name: str, args: tuple[Any, ...], kwargs: dict[str, Any]
 ) -> Expr:
+    # A lone argument is the upper bound, so it is taken only by position:
+    # a value passed as ``start=`` must not silently become the end.
+    try:
+        bound = _SERIES_SIGNATURE.bind(*args, **kwargs)
+    except TypeError as e:
+        msg = f"{name}() {e}"
+        raise TypeError(msg) from None
+    start, stop, step = (bound.arguments.get(p) for p in ("start", "stop", "step"))
+    if stop is None and "start" in kwargs:
+        msg = (
+            f"{name}() takes a single upper bound positionally; "
+            "pass start= together with stop="
+        )
+        raise TypeError(msg)
     if stop is None and step is not None:
         msg = f"{name}() requires stop when step is given"
         raise ValueError(msg)
@@ -3147,15 +3170,23 @@ def _series(
     )
 
 
+@overload
+def range(stop: Expr | int, /) -> Expr: ...
+
+
+@overload
 def range(
     start: Expr | int,
-    stop: Expr | int | None = None,
+    stop: Expr | int,
     step: Expr | int | None = None,
-) -> Expr:
+) -> Expr: ...
+
+
+def range(*args: Any, **kwargs: Any) -> Expr:
     """Create a list of values from ``start`` up to, but excluding, ``stop``.
 
-    With a single argument, it is the upper bound and the range starts at 0,
-    like Python's built-in :py:class:`range`.
+    With a single argument, passed by position, it is the upper bound and the
+    range starts at 0, like Python's built-in :py:class:`range`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -3176,7 +3207,7 @@ def range(
         >>> result.collect_column("r")[0].as_py()
         [0, 2, 4]
     """
-    return _series(f.range, "range", start, stop, step)
+    return _series(f.range, "range", args, kwargs)
 
 
 def uuid() -> Expr:
@@ -5116,15 +5147,24 @@ def string_to_list(
     return string_to_array(string, delimiter, null_string)
 
 
+@overload
+def gen_series(stop: Expr | int, /) -> Expr: ...
+
+
+@overload
 def gen_series(
     start: Expr | int,
-    stop: Expr | int | None = None,
+    stop: Expr | int,
     step: Expr | int | None = None,
-) -> Expr:
+) -> Expr: ...
+
+
+def gen_series(*args: Any, **kwargs: Any) -> Expr:
     """Creates a list of values from ``start`` up to and including ``stop``.
 
     Unlike :py:func:`range`, this includes the upper bound. With a single
-    argument, it is the upper bound and the series starts at 0.
+    argument, passed by position, it is the upper bound and the series starts
+    at 0.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -5146,20 +5186,28 @@ def gen_series(
         >>> result.collect_column("result")[0].as_py()
         [1, 4, 7, 10]
     """
-    return _series(f.gen_series, "gen_series", start, stop, step)
+    return _series(f.gen_series, "gen_series", args, kwargs)
 
 
+@overload
+def generate_series(stop: Expr | int, /) -> Expr: ...
+
+
+@overload
 def generate_series(
     start: Expr | int,
-    stop: Expr | int | None = None,
+    stop: Expr | int,
     step: Expr | int | None = None,
-) -> Expr:
+) -> Expr: ...
+
+
+def generate_series(*args: Any, **kwargs: Any) -> Expr:
     """Creates a list of values from ``start`` up to and including ``stop``.
 
     See Also:
         This is an alias for :py:func:`gen_series`.
     """
-    return gen_series(start, stop, step)
+    return _series(f.gen_series, "generate_series", args, kwargs)
 
 
 def flatten(array: Expr) -> Expr:

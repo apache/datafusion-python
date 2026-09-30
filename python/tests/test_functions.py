@@ -2376,6 +2376,47 @@ def test_series_step_requires_stop(func):
         func(0, step=2)
 
 
+@pytest.mark.parametrize(
+    ("func", "args", "kwargs", "expected"),
+    [
+        pytest.param(f.range, (5,), {}, [0, 1, 2, 3, 4], id="range stop"),
+        pytest.param(f.range, (1, 5), {}, [1, 2, 3, 4], id="range start stop"),
+        pytest.param(f.range, (1,), {"stop": 5}, [1, 2, 3, 4], id="range stop="),
+        pytest.param(
+            f.range,
+            (),
+            {"start": 0, "stop": 5, "step": 2},
+            [0, 2, 4],
+            id="range all keywords",
+        ),
+        pytest.param(f.gen_series, (3,), {}, [0, 1, 2, 3], id="gen_series stop"),
+        pytest.param(
+            f.generate_series,
+            (),
+            {"start": 1, "stop": 3},
+            [1, 2, 3],
+            id="generate_series keywords",
+        ),
+    ],
+)
+def test_series_argument_forms(func, args, kwargs, expected):
+    df = SessionContext().from_pydict({"a": [0]})
+    result = df.select(func(*args, **kwargs).alias("v"))
+    assert result.collect_column("v")[0].as_py() == expected
+
+
+@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
+def test_series_lone_start_keyword_raises(func):
+    with pytest.raises(TypeError, match="single upper bound positionally"):
+        func(start=5)
+
+
+@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
+def test_series_bad_arguments_name_the_function(func):
+    with pytest.raises(TypeError, match=rf"^{func.__name__}\(\) "):
+        func(1, 2, 3, 4)
+
+
 class TestPythonicNativeTypes:
     """Tests for accepting native Python types instead of requiring lit()."""
 

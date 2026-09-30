@@ -137,21 +137,31 @@ fn series_expr(
     start: PyExpr,
     stop: Option<PyExpr>,
     step: Option<PyExpr>,
-) -> PyExpr {
+) -> PyResult<PyExpr> {
+    // Upstream reads the arguments by position, so a step without a stop
+    // would be taken as the stop.
+    if stop.is_none() && step.is_some() {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "{}() requires stop when step is given",
+            udf.name()
+        )));
+    }
     let args = std::iter::once(start)
         .chain(stop)
         .chain(step)
         .map(Into::into)
         .collect();
-    Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
-        udf, args,
-    ))
-    .into()
+    Ok(
+        Expr::ScalarFunction(datafusion::logical_expr::expr::ScalarFunction::new_udf(
+            udf, args,
+        ))
+        .into(),
+    )
 }
 
 #[pyfunction]
 #[pyo3(signature = (start, stop=None, step=None))]
-fn range(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+fn range(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyResult<PyExpr> {
     series_expr(
         datafusion::functions_nested::range::range_udf(),
         start,
@@ -162,7 +172,7 @@ fn range(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
 
 #[pyfunction]
 #[pyo3(signature = (start, stop=None, step=None))]
-fn gen_series(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyExpr {
+fn gen_series(start: PyExpr, stop: Option<PyExpr>, step: Option<PyExpr>) -> PyResult<PyExpr> {
     series_expr(
         datafusion::functions_nested::range::gen_series_udf(),
         start,
