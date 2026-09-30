@@ -85,11 +85,16 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
+    import sys
     from collections.abc import Iterable, Sequence
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
-    from typing_extensions import CapsuleType as _PyCapsule
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema

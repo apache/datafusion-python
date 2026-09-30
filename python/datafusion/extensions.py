@@ -49,7 +49,12 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from typing_extensions import CapsuleType as _PyCapsule
+    import sys
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.context import SessionContext
     from datafusion.user_defined import (
