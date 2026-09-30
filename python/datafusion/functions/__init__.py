@@ -5590,6 +5590,29 @@ def approx_percentile_cont_with_weight(
     )
 
 
+def _check_distinct(name: str, distinct: object, *shifted: str) -> None:
+    """Raise when a positional ``filter`` from before ``distinct`` landed here.
+
+    Args:
+        name: Function name for the message.
+        distinct: The value received for ``distinct``.
+        shifted: Names of the arguments that follow ``distinct``.
+
+    Examples:
+        >>> dfn.functions._check_distinct("mean", True, "filter")
+        >>> dfn.functions._check_distinct("mean", dfn.col("a"), "filter")
+        Traceback (most recent call last):
+        ...
+        TypeError: mean() distinct must be a bool, got Expr; pass filter by keyword
+    """
+    if distinct is None or isinstance(distinct, Expr):
+        msg = (
+            f"{name}() distinct must be a bool, got {type(distinct).__name__}; "
+            f"pass {' and '.join(shifted)} by keyword"
+        )
+        raise TypeError(msg)
+
+
 def percentile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
@@ -5638,6 +5661,7 @@ def percentile_cont(
         >>> result.collect_column("v")[0].as_py()
         2.5
     """
+    _check_distinct("percentile_cont", distinct, "filter")
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(
@@ -5658,6 +5682,7 @@ def quantile_cont(
     See Also:
         This is an alias for :py:func:`percentile_cont`.
     """
+    _check_distinct("quantile_cont", distinct, "filter")
     return percentile_cont(
         sort_expression, percentile, distinct=distinct, filter=filter
     )
@@ -6037,6 +6062,7 @@ def mean(
     See Also:
         This is an alias for :py:func:`avg`.
     """
+    _check_distinct("mean", distinct, "filter")
     return avg(expression, distinct=distinct, filter=filter)
 
 
@@ -6936,6 +6962,7 @@ def bit_and(
         >>> result.collect_column("v")[0].as_py()
         5
     """
+    _check_distinct("bit_and", distinct, "filter")
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_and(expression.expr, distinct=distinct, filter=filter_raw))
 
@@ -6976,6 +7003,7 @@ def bit_or(
         >>> result.collect_column("v")[0].as_py()
         6
     """
+    _check_distinct("bit_or", distinct, "filter")
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_or(expression.expr, distinct=distinct, filter=filter_raw))
 
@@ -7682,14 +7710,7 @@ def string_agg(
         >>> result.collect_column("s")[0].as_py()
         'x,y'
     """
-    # A positional call written before ``distinct`` was added puts the old
-    # ``filter`` value, None or an Expr, here.
-    if distinct is None or isinstance(distinct, Expr):
-        msg = (
-            f"distinct must be a bool, got {type(distinct).__name__}; "
-            "pass filter and order_by by keyword"
-        )
-        raise TypeError(msg)
+    _check_distinct("string_agg", distinct, "filter", "order_by")
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
