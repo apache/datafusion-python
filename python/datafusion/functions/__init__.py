@@ -959,7 +959,8 @@ def count_star(filter: Expr | None = None) -> Expr:
     This aggregate function will count all of the rows in the partition.
 
     If using the builder functions described in :ref:`aggregation` this function ignores
-    the options ``order_by``, ``distinct``, and ``null_treatment``.
+    the options ``order_by`` and ``null_treatment``. ``distinct`` counts the distinct
+    values of the constant ``1``, so the result is 1 for any non-empty input.
 
     Args:
         filter: If provided, only count rows for which the filter is True
@@ -5543,9 +5544,9 @@ def approx_percentile_cont_with_weight(
     it uses the associated associated weights.
 
     If using the builder functions described in :ref:`aggregation` this function ignores
-    the options ``null_treatment`` and ``distinct``. A chained ``order_by`` sets only
-    the sort direction; the percentile is still computed over ``sort_expression``,
-    so pass the same expression.
+    the option ``null_treatment`` and rejects ``distinct``. A chained ``order_by``
+    sets only the sort direction; the percentile is still computed over
+    ``sort_expression``, so pass the same expression.
 
     Args:
         sort_expression: Values for which to find the approximate percentile
