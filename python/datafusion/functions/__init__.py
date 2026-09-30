@@ -7679,7 +7679,9 @@ def string_agg(
         >>> result.collect_column("s")[0].as_py()
         'x,y'
     """
-    if not isinstance(distinct, bool):
+    # A positional call written before ``distinct`` was added puts the old
+    # ``filter`` value, None or an Expr, here.
+    if distinct is None or isinstance(distinct, Expr):
         msg = (
             f"distinct must be a bool, got {type(distinct).__name__}; "
             "pass filter and order_by by keyword"

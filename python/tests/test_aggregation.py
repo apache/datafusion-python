@@ -564,6 +564,13 @@ def test_string_agg_rejects_non_bool_distinct(distinct) -> None:
         f.string_agg(column("a"), ",", distinct, column("b"))
 
 
+def test_string_agg_accepts_numpy_bool_distinct() -> None:
+    np = pytest.importorskip("numpy")
+    df = SessionContext().from_pydict({"a": ["x", "y", "x"]})
+    expr = f.string_agg(column("a"), ",", distinct=np.True_, order_by="a")
+    assert df.aggregate([], [expr.alias("s")]).collect_column("s")[0].as_py() == "x,y"
+
+
 @pytest.mark.parametrize(
     ("expr", "sql"),
     [
