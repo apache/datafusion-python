@@ -1939,6 +1939,8 @@ class DataFrame:
             - Only fills nulls in columns where the value can be cast to the column type
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
+            - Fails on a DataFrame with an uppercase or dotted column name; see
+              :ref:`fill_column_names`
         """
         if subset is not None and len(subset) == 0:
             return self
@@ -1949,7 +1951,8 @@ class DataFrame:
 
         Only floating-point columns are changed; others are kept unchanged, as is
         any column ``value`` cannot be cast to. NaN is distinct from null, which
-        :py:meth:`fill_null` handles.
+        :py:meth:`fill_null` handles. Fails on a DataFrame with an uppercase or
+        dotted column name; see :ref:`fill_column_names`.
 
         Args:
             value: Value to replace NaN with. Will be cast to match column type.
