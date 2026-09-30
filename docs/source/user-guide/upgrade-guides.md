@@ -216,7 +216,7 @@ f.bit_and(column("a"), filter=my_filter)  # after
 ```
 
 Passing `filter` to `mean` previously raised a `TypeError`, whether passed
-positionally or by keyword; it now works.
+positionally or by keyword; it now works when passed by keyword.
 
 ### Chaining keeps options already set
 
