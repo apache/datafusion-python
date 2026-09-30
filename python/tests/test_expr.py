@@ -27,6 +27,7 @@ import nanoarrow
 import pyarrow as pa
 import pytest
 from datafusion import (
+    Expr,
     SessionContext,
     col,
     functions,
@@ -1323,20 +1324,35 @@ def test_window_builder_keeps_explicit_frame(builder_df):
     assert result.collect_column("r").to_pylist() == [1, 3, 5, 4]
 
 
-def test_window_builder_default_frame_same_after_copy_and_pickle(builder_df):
+@pytest.mark.parametrize(
+    "window",
+    [
+        pytest.param(Window(), id="no order_by"),
+        pytest.param(Window(order_by=[]), id="empty order_by"),
+        pytest.param(
+            Window(window_frame=WindowFrame("rows", None, None)), id="rows frame"
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "round_trip",
+    [
+        pytest.param(lambda e: e, id="original"),
+        pytest.param(copy.copy, id="copy"),
+        pytest.param(lambda e: pickle.loads(pickle.dumps(e)), id="pickle"),  # noqa: S301
+        pytest.param(lambda e: Expr.from_bytes(e.to_bytes()), id="from_bytes"),
+    ],
+)
+def test_window_builder_default_frame_same_after_round_trip(window, round_trip):
     # Whether a frame is re-derived depends only on the expression, so a copy
-    # or a pickled round trip chains to the same result as the original.
-    window = Window(window_frame=WindowFrame("rows", None, None))
-    expr = functions.sum(col("v")).over(window)
-
-    def chained(e):
-        r = e.order_by(col("v")).build().alias("r")
-        return builder_df.select(col("v"), r).sort(col("v")).collect_column("r")
-
-    expected = [1, 3, 6, 10]
-    assert chained(expr).to_pylist() == expected
-    assert chained(copy.copy(expr)).to_pylist() == expected
-    assert chained(pickle.loads(pickle.dumps(expr))).to_pylist() == expected  # noqa: S301
+    # or a decoded round trip chains to the same result as the original. The
+    # tied ``i`` values show a RANGE frame surviving the later order_by.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"i": [1, 1, 2, 3], "v": [1, 2, 3, 4]})
+    expr = round_trip(functions.sum(col("v")).over(window))
+    r = expr.over(Window(order_by="i")).alias("r")
+    result = df.select(col("v"), r).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
 
 
 def test_window_builder_keeps_default_frame_set_last(builder_df):

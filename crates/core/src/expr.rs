@@ -24,7 +24,7 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::expr::{
     AggregateFunction, AggregateFunctionParams, FieldMetadata, HigherOrderFunction, InList,
-    InSubquery, Lambda, ScalarFunction, SetComparison, WindowFunction,
+    InSubquery, Lambda, ScalarFunction, SetComparison, Sort, WindowFunction,
 };
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
@@ -822,9 +822,17 @@ fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
             if !params.partition_by.is_empty() {
                 builder = builder.partition_by(params.partition_by.clone());
             }
-            let has_order_by = !params.order_by.is_empty();
+            // Decoding a RANGE frame with no order-by (copy, pickle, protobuf, or
+            // SQL) adds a constant sort key, which orders nothing and so is
+            // treated as absent.
+            let order_by: &[Sort] = if params.order_by == [lit(1u64).sort(true, false)] {
+                &[]
+            } else {
+                &params.order_by
+            };
+            let has_order_by = !order_by.is_empty();
             if has_order_by {
-                builder = builder.order_by(params.order_by.clone());
+                builder = builder.order_by(order_by.to_vec());
             }
             // A frame equal to the default `build()` derived from the order-by is
             // left unset, so it is derived again from the final order-by. An
