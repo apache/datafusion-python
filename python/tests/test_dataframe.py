@@ -3960,11 +3960,40 @@ def test_explain_options(capsys, kwargs, present, absent):
         assert text not in out
 
 
-def test_explain_rejects_show_statistics_with_analyze(capsys):
-    # Upstream's Analyze plan has no statistics override, so the flag would be
-    # silently ignored; SQL rejects the same combination.
-    with pytest.raises(ValueError, match="cannot be combined with analyze"):
-        _explain_output(capsys, analyze=True, show_statistics=True)
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        pytest.param(
+            {"analyze": True, "show_statistics": True},
+            "show_statistics cannot be combined with analyze",
+            id="show_statistics_true_with_analyze",
+        ),
+        pytest.param(
+            {"analyze": True, "show_statistics": False},
+            "show_statistics cannot be combined with analyze",
+            id="show_statistics_false_with_analyze",
+        ),
+        pytest.param(
+            {"analyze_level": ExplainAnalyzeLevel.DEV},
+            "analyze_level requires analyze",
+            id="analyze_level_without_analyze",
+        ),
+        pytest.param(
+            {"analyze_categories": [ExplainMetricCategory.ROWS]},
+            "analyze_categories requires analyze",
+            id="analyze_categories_without_analyze",
+        ),
+        pytest.param(
+            {"analyze_categories": []},
+            "analyze_categories requires analyze",
+            id="empty_analyze_categories_without_analyze",
+        ),
+    ],
+)
+def test_explain_rejects_options_that_would_be_ignored(capsys, kwargs, message):
+    # Upstream would silently ignore these; SQL's EXPLAIN rejects them.
+    with pytest.raises(ValueError, match=message):
+        _explain_output(capsys, **kwargs)
 
 
 @pytest.mark.parametrize(
