@@ -1362,6 +1362,55 @@ def test_over_keeps_window_function_options():
     assert result.collect_column("r").to_pylist() == [3, 3, None, None]
 
 
+@pytest.mark.parametrize(
+    ("aggregate", "expected"),
+    [
+        pytest.param(
+            functions.avg(col("v"), distinct=True), [2.5, 2.5, 2.5], id="distinct"
+        ),
+        pytest.param(
+            functions.sum(col("v"), filter=col("v") > lit(1.0)),
+            [4.0, 4.0, 4.0],
+            id="filter",
+        ),
+        pytest.param(
+            functions.first_value(col("n"), null_treatment=NullTreatment.IGNORE_NULLS),
+            [2.0, 2.0, 2.0],
+            id="null_treatment",
+        ),
+        pytest.param(
+            functions.percentile_cont(col("v"), 0.5),
+            [1.0, 1.0, 1.0],
+            id="ascending within group",
+        ),
+    ],
+)
+def test_over_keeps_aggregate_options(aggregate, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1.0, 1.0, 4.0], "n": [None, 2.0, 3.0]})
+    result = df.select(aggregate.over(Window()).alias("r"))
+    assert result.collect_column("r").to_pylist() == expected
+
+
+@pytest.mark.parametrize(
+    "aggregate",
+    [
+        pytest.param(
+            functions.percentile_cont(col("v").sort(ascending=False), 0.25),
+            id="descending within group",
+        ),
+        pytest.param(
+            functions.approx_percentile_cont(col("v").sort(ascending=False), 0.25),
+            id="descending approx within group",
+        ),
+        pytest.param(functions.array_agg(col("v"), order_by="v"), id="order_by"),
+    ],
+)
+def test_over_rejects_aggregate_order_by(aggregate):
+    with pytest.raises(Exception, match="Aggregate order_by is not supported"):
+        aggregate.over(Window())
+
+
 def test_window_builder_rederives_default_frame(builder_df):
     # No order_by means a whole-partition frame; adding one later must switch
     # to the running frame rather than keep the whole-partition default.

@@ -258,6 +258,23 @@ Code that selects the result by its generated name should `alias()` it instead.
 How a window frame is handled when chaining is described in
 {ref}`window_frame_chaining`.
 
+### `over()` keeps options set on an aggregate
+
+`Expr.over()` on an aggregate used to drop the `filter`, `distinct`,
+`null_treatment`, and `order_by` options it was built with. The first three are
+now kept, which can change results:
+
+```python
+f.avg(col("v"), distinct=True).over(Window())
+# v = [1, 1, 4]; before: 2.0, after: 2.5
+```
+
+An `order_by` on the aggregate now raises instead of being dropped, as it does
+with `OVER` in SQL. Remove it, or move it into the `Window` if it was meant to
+order the rows. A `WITHIN GROUP` function such as `percentile_cont` still accepts
+an ascending `sort_expression`, and raises on a descending one, which used to
+give the ascending result. See {ref}`aggregate_over_options`.
+
 ### Percentile functions keep the sort direction
 
 {py:func}`~datafusion.functions.percentile_cont`,
@@ -265,7 +282,8 @@ How a window frame is handled when chaining is described in
 {py:func}`~datafusion.functions.approx_percentile_cont`, and
 {py:func}`~datafusion.functions.approx_percentile_cont_with_weight` ignored the
 direction of `sort_expression`, so a descending sort gave the ascending result.
-They now match `WITHIN GROUP (ORDER BY ... DESC)` in SQL:
+Used as aggregates, they now match `WITHIN GROUP (ORDER BY ... DESC)` in SQL
+(see {ref}`aggregate_over_options` for their use in a window):
 
 ```python
 f.percentile_cont(col("a").sort(ascending=False), 0.25)

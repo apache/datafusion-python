@@ -55,7 +55,7 @@ use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
-use crate::functions::{add_builder_fns_to_window, apply_window_options};
+use crate::functions::apply_window_options;
 use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -692,13 +692,32 @@ impl PyExpr {
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
-                let window_fn = Expr::WindowFunction(Box::new(WindowFunction::new(
-                    WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
-                    agg_fn.params.args.clone(),
-                )));
+                let params = &agg_fn.params;
+                // A window never passes an ordering to the accumulator, so an
+                // aggregate's order_by cannot be kept. A WITHIN GROUP function
+                // runs ascending as a window, so only an ascending ordering can
+                // be dropped without changing the result.
+                let order_by_is_redundant = agg_fn.func.supports_within_group_clause()
+                    && params.order_by.iter().all(|sort| sort.asc);
+                if !params.order_by.is_empty() && !order_by_is_redundant {
+                    return Err(datafusion::error::DataFusionError::Plan(format!(
+                        "Aggregate order_by is not supported when {} is used as a window \
+                         function",
+                        agg_fn.func.name()
+                    ))
+                    .into());
+                }
 
-                add_builder_fns_to_window(
-                    window_fn,
+                let mut window_fn = WindowFunction::new(
+                    WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
+                    params.args.clone(),
+                );
+                window_fn.params.filter = params.filter.clone();
+                window_fn.params.distinct = params.distinct;
+                window_fn.params.null_treatment = params.null_treatment;
+
+                apply_window_options(
+                    builder_from_expr(&Expr::WindowFunction(Box::new(window_fn))),
                     partition_by,
                     window_frame,
                     order_by,

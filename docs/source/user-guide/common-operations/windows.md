@@ -229,22 +229,24 @@ df.select(
 
 ### Options set on the aggregate
 
-`over()` currently drops the `order_by`, `null_treatment`, `filter`, and
-`distinct` options an aggregate was built with
-([apache/datafusion-python#1764](https://github.com/apache/datafusion-python/issues/1764)),
-so the window runs as if they were never set:
+`over()` keeps the `filter`, `distinct`, and `null_treatment` options an
+aggregate was built with:
 
 ```python
-# DISTINCT is dropped: averages 1.0, 1.0, 4.0 rather than 1.0, 4.0.
+# Averages the distinct values 1.0 and 4.0.
 f.avg(col("v"), distinct=True).over(Window())
 ```
 
-Until that is fixed, pass `order_by` and `null_treatment` in the `Window`, and
-chain `filter()` or `distinct()` after `over()`:
+An aggregate's `order_by` raises, as `ORDER BY` inside an aggregate call does
+with `OVER` in SQL. A window does not pass an ordering to the aggregate, so
+the `order_by` in the `Window` only sets the frame and the order of rows. The
+one exception is a `WITHIN GROUP` function such as
+{py:func}`~datafusion.functions.percentile_cont`, which computes ascending as a
+window: an ascending `sort_expression` is accepted, and a descending one raises.
 
 ```python
-f.avg(col("v")).over(Window()).distinct().build()
-f.sum(col("v")).over(Window()).filter(col("v") > lit(1)).build()
+f.percentile_cont(col("v"), 0.25).over(Window())  # ascending, accepted
+f.percentile_cont(col("v").sort(ascending=False), 0.25).over(Window())  # raises
 ```
 
 ## Available Functions
