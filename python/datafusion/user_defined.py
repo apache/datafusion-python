@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import functools
+import sys
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, TypeVar, cast, overload
@@ -30,14 +31,14 @@ import datafusion._internal as df_internal
 from datafusion import SessionContext
 from datafusion.expr import Expr
 
+# Imported at runtime so ``typing.get_type_hints`` resolves the capsule
+# overloads; typing_extensions is a runtime dependency below 3.13.
+if sys.version_info >= (3, 13):
+    from types import CapsuleType as _PyCapsule
+else:
+    from typing_extensions import CapsuleType as _PyCapsule
+
 if TYPE_CHECKING:
-    import sys
-
-    if sys.version_info >= (3, 13):
-        from types import CapsuleType as _PyCapsule
-    else:
-        from typing_extensions import CapsuleType as _PyCapsule
-
     _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
 

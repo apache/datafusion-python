@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import typing
 from uuid import UUID
 
 import pyarrow as pa
@@ -22,6 +23,7 @@ import pyarrow.compute as pc
 import pytest
 from datafusion import SessionContext, column, udaf, udf, udwf
 from datafusion import functions as f
+from datafusion.user_defined import AggregateUDF, ScalarUDF, WindowUDF
 
 
 @pytest.fixture
@@ -316,3 +318,16 @@ def test_wrong_capsule_kind_names_expected_and_found(decorator, expected):
         "instead got 'datafusion_logical_extension_codec'",
     ):
         decorator(capsule)
+
+
+@pytest.mark.parametrize(
+    "from_pycapsule",
+    [
+        pytest.param(ScalarUDF.from_pycapsule, id="scalar"),
+        pytest.param(AggregateUDF.from_pycapsule, id="aggregate"),
+        pytest.param(WindowUDF.from_pycapsule, id="window"),
+    ],
+)
+def test_from_pycapsule_type_hints_resolve(from_pycapsule):
+    hints = typing.get_type_hints(from_pycapsule)
+    assert "func" in hints

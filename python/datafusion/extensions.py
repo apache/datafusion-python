@@ -49,7 +49,7 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from _typeshed import CapsuleType as _PyCapsule
+    from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.context import SessionContext
     from datafusion.user_defined import (

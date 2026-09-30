@@ -89,7 +89,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
-    from _typeshed import CapsuleType as _PyCapsule
+    from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
