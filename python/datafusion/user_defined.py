@@ -293,7 +293,7 @@ class ScalarUDF:
     def udf(func: _PyCapsule) -> ScalarUDF: ...
 
     @staticmethod
-    def udf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udf(*args: Any, **kwargs: Any):  # noqa: D417, C901
         """Create a new User-Defined Function (UDF).
 
         This class can be used both as either a function or a decorator.
@@ -397,6 +397,8 @@ class ScalarUDF:
 
             return decorator
 
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
         if args and (
             hasattr(args[0], "__datafusion_scalar_udf__") or _is_pycapsule(args[0])
         ):
@@ -749,6 +751,8 @@ class AggregateUDF:
 
             return decorator
 
+        if not args and "accum" in kwargs:
+            args = (kwargs.pop("accum"),)
         if args and (
             hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0])
         ):
@@ -1102,6 +1106,8 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
         if args and (
             hasattr(args[0], "__datafusion_window_udf__") or _is_pycapsule(args[0])
         ):
@@ -1292,6 +1298,8 @@ class TableFunction:
         :class:`SessionContext` injected as a ``session`` keyword
         argument on each invocation.
         """
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return TableFunction._create_table_udf(

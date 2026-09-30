@@ -68,6 +68,17 @@ def test_udf_decorator_keyword_arguments(df):
     assert result == pa.array([False, False, True])
 
 
+def test_udf_function_keyword_arguments(df):
+    is_null = udf(
+        func=lambda x: x.is_null(),
+        input_fields=[pa.int64()],
+        return_field=pa.bool_(),
+        volatility="immutable",
+    )
+    result = df.select(is_null(column("b"))).collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+
 def test_register_udf(ctx, df) -> None:
     is_null = udf(
         lambda x: x.is_null(),

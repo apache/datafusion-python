@@ -476,3 +476,15 @@ def test_udwf_decorator_keyword_arguments(ctx):
     df = ctx.from_pydict({"a": [1, 2, 3]})
     result = df.select(window_count(column("a")).alias("c")).collect_column("c")
     assert result.to_pylist() == [0, 1, 2]
+
+
+def test_udwf_function_keyword_arguments(ctx):
+    window_count = udwf(
+        func=SimpleWindowCount,
+        input_types=[pa.int64()],
+        return_type=pa.int64(),
+        volatility="immutable",
+    )
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    result = df.select(window_count(column("a")).alias("c")).collect_column("c")
+    assert result.to_pylist() == [0, 1, 2]

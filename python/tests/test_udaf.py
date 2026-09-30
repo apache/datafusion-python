@@ -183,6 +183,18 @@ def test_udaf_decorator_keyword_arguments(df):
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
 
+def test_udaf_function_keyword_arguments(df):
+    summarize = udaf(
+        accum=Summarize,
+        input_types=pa.float64(),
+        return_type=pa.float64(),
+        state_type=[pa.float64()],
+        volatility="immutable",
+    )
+    result = df.aggregate([], [summarize(column("a"))]).collect()[0]
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
 @pytest.mark.parametrize("as_scalar", [True, False])
 def test_udaf_aggregate_with_arguments(df, as_scalar):
     bias = 10.0
