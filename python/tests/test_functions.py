@@ -2412,6 +2412,14 @@ def test_series_lone_start_keyword_raises(func):
 
 
 @pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
+@pytest.mark.parametrize("kwargs", [{}, {"stop": None}], ids=["positional", "keyword"])
+def test_series_explicit_none_stop_raises(func, kwargs):
+    args = (1,) if kwargs else (1, None)
+    with pytest.raises(TypeError, match="stop cannot be None"):
+        func(*args, **kwargs)
+
+
+@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
 def test_series_bad_arguments_name_the_function(func):
     with pytest.raises(TypeError, match=rf"^{func.__name__}\(\) "):
         func(1, 2, 3, 4)

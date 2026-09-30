@@ -3151,6 +3151,9 @@ def _series(
         msg = f"{name}() {e}"
         raise TypeError(msg) from None
     start, stop, step = (bound.arguments.get(p) for p in ("start", "stop", "step"))
+    if "stop" in bound.arguments and stop is None:
+        msg = f"{name}() stop cannot be None"
+        raise TypeError(msg)
     if stop is None and "start" in kwargs:
         msg = (
             f"{name}() takes a single upper bound positionally; "
