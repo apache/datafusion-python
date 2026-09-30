@@ -222,9 +222,9 @@ class ScalarUDF:
     def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
         """Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udf = internal
@@ -419,9 +419,7 @@ class ScalarUDF:
         ScalarUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            scalar = cast("ScalarUDF", object.__new__(ScalarUDF))
-            scalar._udf = df_internal.ScalarUDF.from_pycapsule(func)
-            return scalar
+            return ScalarUDF._from_internal(df_internal.ScalarUDF.from_pycapsule(func))
 
         func = cast("ScalarUDFExportable", func)
         name = str(func.__class__)
@@ -549,9 +547,9 @@ class AggregateUDF:
     def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
         """Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udaf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udaf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udaf = internal
@@ -773,9 +771,9 @@ class AggregateUDF:
         AggregateUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            aggregate = cast("AggregateUDF", object.__new__(AggregateUDF))
-            aggregate._udaf = df_internal.AggregateUDF.from_pycapsule(func)
-            return aggregate
+            return AggregateUDF._from_internal(
+                df_internal.AggregateUDF.from_pycapsule(func)
+            )
 
         capsule = cast("AggregateUDFExportable", func)
         name = str(capsule.__class__)
@@ -985,9 +983,9 @@ class WindowUDF:
     def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
         """Wrap an already-constructed internal ``WindowUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udwf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udwf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udwf = internal
@@ -1189,9 +1187,7 @@ class WindowUDF:
         WindowUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            window = cast("WindowUDF", object.__new__(WindowUDF))
-            window._udwf = df_internal.WindowUDF.from_pycapsule(func)
-            return window
+            return WindowUDF._from_internal(df_internal.WindowUDF.from_pycapsule(func))
 
         func = cast("WindowUDFExportable", func)
         name = str(func.__class__)
