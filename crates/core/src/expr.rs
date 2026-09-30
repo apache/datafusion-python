@@ -804,16 +804,9 @@ fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
                 builder = builder.order_by(order_by.to_vec());
             }
             // A frame equal to the default `build()` derived from the order-by is
-            // left unset, so it is derived again from the final order-by. An
-            // absent and an empty order-by derive different frames but are both
-            // stored as empty, so either frame counts as the default here.
-            let is_default_frame = if has_order_by {
-                params.window_frame == datafusion::logical_expr::WindowFrame::new(Some(true))
-            } else {
-                params.window_frame == datafusion::logical_expr::WindowFrame::new(None)
-                    || params.window_frame
-                        == datafusion::logical_expr::WindowFrame::new(Some(false))
-            };
+            // left unset, so it is derived again from the final order-by.
+            let is_default_frame = params.window_frame
+                == datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true));
             if !is_default_frame {
                 builder = builder.window_frame(params.window_frame.clone());
             }

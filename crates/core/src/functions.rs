@@ -918,6 +918,9 @@ pub(crate) fn add_builder_fns_to_window(
 
 /// Applies the options that are `Some` to `builder` and builds it. Options
 /// that are `None` keep whatever `builder` already holds.
+///
+/// An empty `order_by` is treated as `None`. Passing it through would make
+/// `build()` derive a RANGE frame with no sort key, which cannot execute.
 pub(crate) fn apply_window_options(
     mut builder: ExprFuncBuilder,
     partition_by: Option<Vec<PyExpr>>,
@@ -938,7 +941,7 @@ pub(crate) fn apply_window_options(
         );
     }
 
-    if let Some(order_by_cols) = order_by {
+    if let Some(order_by_cols) = order_by.filter(|cols| !cols.is_empty()) {
         let order_by_cols = to_sort_expressions(order_by_cols);
         builder = builder.order_by(order_by_cols);
     }

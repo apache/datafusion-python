@@ -1437,14 +1437,33 @@ def test_window_builder_rederives_default_frame(builder_df):
 
 @pytest.mark.parametrize("first", [Window(), Window(order_by=[])])
 def test_window_builder_rederives_default_frame_from_empty_order_by(first):
-    # An empty order_by derives a RANGE frame rather than the whole partition;
-    # both are defaults, so a later order_by gets the ROWS running frame, which
-    # does not sum the tied ``i`` values together.
+    # An empty order_by is the same as none, so a later order_by gets the ROWS
+    # running frame, which does not sum the tied ``i`` values together.
     ctx = SessionContext()
     df = ctx.from_pydict({"i": [1, 1, 2, 3], "v": [1, 2, 3, 4]})
     expr = functions.sum(col("v")).over(first).over(Window(order_by="i"))
     result = df.select(col("v"), expr.alias("r")).sort(col("v"))
     assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
+
+
+@pytest.mark.parametrize(
+    ("expr", "expected"),
+    [
+        pytest.param(
+            functions.sum(col("v")).over(Window(order_by=[])),
+            [10, 10, 10, 10],
+            id="over",
+        ),
+        pytest.param(functions.row_number(order_by=[]), [1, 2, 3, 4], id="keyword"),
+    ],
+)
+def test_window_empty_order_by_executes_as_no_order_by(expr, expected):
+    # An empty order_by must not derive a RANGE frame with no sort key, which
+    # fails at execution with "ORDER BY column cannot be empty".
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1, 2, 3, 4]})
+    result = df.select(expr.alias("r")).collect_column("r").to_pylist()
+    assert result == expected
 
 
 @pytest.mark.parametrize(
