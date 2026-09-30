@@ -686,7 +686,8 @@ impl PyExpr {
                 window_fn.params.null_treatment = params.null_treatment;
 
                 apply_window_options(
-                    builder_from_expr(&Expr::WindowFunction(Box::new(window_fn))),
+                    PyExprFuncBuilder::from_expr(&Expr::WindowFunction(Box::new(window_fn)))
+                        .builder,
                     partition_by,
                     window_frame,
                     order_by,
@@ -694,7 +695,7 @@ impl PyExpr {
                 )
             }
             Expr::WindowFunction(_) => apply_window_options(
-                builder_from_expr(&self.expr),
+                PyExprFuncBuilder::from_expr(&self.expr).builder,
                 partition_by,
                 window_frame,
                 order_by,
@@ -758,70 +759,6 @@ impl PyExpr {
     }
 }
 
-/// Start an [`ExprFuncBuilder`] that keeps the options already set on `expr`.
-///
-/// Upstream's `ExprFunctionExt` methods on an `Expr` start from an empty
-/// builder, so `build()` would reset every option not set again. The Python
-/// function wrappers already apply their keyword options, so chaining another
-/// builder method onto their result must not discard them.
-///
-/// A built window function always stores a concrete frame, so whether the user
-/// chose it is lost. A frame equal to the default for the current order-by is
-/// treated as unset, which depends only on the expression and so behaves the
-/// same after a copy, pickle, or round trip through protobuf or SQL.
-fn builder_from_expr(expr: &Expr) -> ExprFuncBuilder {
-    match expr {
-        Expr::AggregateFunction(agg) => {
-            let params = &agg.params;
-            let mut builder = expr.clone().null_treatment(params.null_treatment);
-            if !params.order_by.is_empty() {
-                builder = builder.order_by(params.order_by.clone());
-            }
-            if let Some(filter) = &params.filter {
-                builder = builder.filter(filter.as_ref().clone());
-            }
-            if params.distinct {
-                builder = builder.distinct();
-            }
-            builder
-        }
-        Expr::WindowFunction(window) => {
-            let params = &window.params;
-            let mut builder = expr.clone().null_treatment(params.null_treatment);
-            if !params.partition_by.is_empty() {
-                builder = builder.partition_by(params.partition_by.clone());
-            }
-            // Decoding a RANGE frame with no order-by (copy, pickle, protobuf, or
-            // SQL) adds a constant sort key, which orders nothing and so is
-            // treated as absent.
-            let order_by: &[Sort] = if params.order_by == [lit(1u64).sort(true, false)] {
-                &[]
-            } else {
-                &params.order_by
-            };
-            let has_order_by = !order_by.is_empty();
-            if has_order_by {
-                builder = builder.order_by(order_by.to_vec());
-            }
-            // A frame equal to the default `build()` derived from the order-by is
-            // left unset, so it is derived again from the final order-by.
-            let is_default_frame = params.window_frame
-                == datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true));
-            if !is_default_frame {
-                builder = builder.window_frame(params.window_frame.clone());
-            }
-            if let Some(filter) = &params.filter {
-                builder = builder.filter(filter.as_ref().clone());
-            }
-            if params.distinct {
-                builder = builder.distinct();
-            }
-            builder
-        }
-        _ => expr.clone().null_treatment(None),
-    }
-}
-
 #[pyclass(
     from_py_object,
     frozen,
@@ -850,22 +787,83 @@ enum FuncKind {
 }
 
 impl PyExprFuncBuilder {
+    /// Start a builder that keeps the options already set on `expr`.
+    ///
+    /// Upstream's `ExprFunctionExt` methods on an `Expr` start from an empty
+    /// builder, so `build()` would reset every option not set again. The Python
+    /// function wrappers already apply their keyword options, so chaining another
+    /// builder method onto their result must not discard them.
+    ///
+    /// A built window function always stores a concrete frame, so whether the user
+    /// chose it is lost. A frame equal to the default for the current order-by is
+    /// treated as unset, which depends only on the expression and so behaves the
+    /// same after a copy, pickle, or round trip through protobuf or SQL.
     fn from_expr(expr: &Expr) -> Self {
-        let (kind, name) = match expr {
-            Expr::AggregateFunction(agg) => (FuncKind::Aggregate, agg.func.name().to_string()),
+        match expr {
+            Expr::AggregateFunction(agg) => {
+                let params = &agg.params;
+                let mut builder = expr.clone().null_treatment(params.null_treatment);
+                if !params.order_by.is_empty() {
+                    builder = builder.order_by(params.order_by.clone());
+                }
+                if let Some(filter) = &params.filter {
+                    builder = builder.filter(filter.as_ref().clone());
+                }
+                if params.distinct {
+                    builder = builder.distinct();
+                }
+                Self {
+                    builder,
+                    kind: FuncKind::Aggregate,
+                    name: agg.func.name().to_string(),
+                }
+            }
             Expr::WindowFunction(window) => {
+                let params = &window.params;
+                let mut builder = expr.clone().null_treatment(params.null_treatment);
+                if !params.partition_by.is_empty() {
+                    builder = builder.partition_by(params.partition_by.clone());
+                }
+                // Decoding a RANGE frame with no order-by (copy, pickle, protobuf, or
+                // SQL) adds a constant sort key, which orders nothing and so is
+                // treated as absent.
+                let order_by: &[Sort] = if params.order_by == [lit(1u64).sort(true, false)] {
+                    &[]
+                } else {
+                    &params.order_by
+                };
+                let has_order_by = !order_by.is_empty();
+                if has_order_by {
+                    builder = builder.order_by(order_by.to_vec());
+                }
+                // A frame equal to the default `build()` derived from the order-by is
+                // left unset, so it is derived again from the final order-by.
+                let is_default_frame = params.window_frame
+                    == datafusion::logical_expr::WindowFrame::new(has_order_by.then_some(true));
+                if !is_default_frame {
+                    builder = builder.window_frame(params.window_frame.clone());
+                }
+                if let Some(filter) = &params.filter {
+                    builder = builder.filter(filter.as_ref().clone());
+                }
+                if params.distinct {
+                    builder = builder.distinct();
+                }
                 let kind = match window.fun {
                     WindowFunctionDefinition::AggregateUDF(_) => FuncKind::AggregateWindow,
                     WindowFunctionDefinition::WindowUDF(_) => FuncKind::Window,
                 };
-                (kind, window.fun.name().to_string())
+                Self {
+                    builder,
+                    kind,
+                    name: window.fun.name().to_string(),
+                }
             }
-            _ => (FuncKind::Other, String::new()),
-        };
-        Self {
-            builder: builder_from_expr(expr),
-            kind,
-            name,
+            _ => Self {
+                builder: expr.clone().null_treatment(None),
+                kind: FuncKind::Other,
+                name: String::new(),
+            },
         }
     }
 
