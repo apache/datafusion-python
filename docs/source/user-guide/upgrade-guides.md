@@ -282,7 +282,21 @@ f.avg(col("v"), distinct=True).over(Window())
 
 An `order_by` on the aggregate now raises instead of being dropped, as it does
 with `OVER` in SQL. Remove it, or move it into the `Window` if it was meant to
-order the rows. A `WITHIN GROUP` function such as `percentile_cont` still accepts
+order the rows:
+
+```python
+# before: order_by dropped; after: raises
+f.first_value(col("v"), order_by=col("i").sort(ascending=False)).over(
+    Window(partition_by=[col("g")])
+)
+
+# after: the Window orders the rows the aggregate sees
+f.first_value(col("v")).over(
+    Window(partition_by=[col("g")], order_by=[col("i").sort(ascending=False)])
+)
+```
+
+A `WITHIN GROUP` function such as `percentile_cont` still accepts
 an ascending `sort_expression`, and raises on a descending one, which used to
 give the ascending result. See {ref}`aggregate_over_options`.
 
