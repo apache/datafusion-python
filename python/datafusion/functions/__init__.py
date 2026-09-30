@@ -3130,9 +3130,7 @@ def array(*args: Expr) -> Expr:
 _SERIES_SIGNATURE = inspect.Signature(
     [
         inspect.Parameter("start", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-        inspect.Parameter(
-            "stop", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None
-        ),
+        inspect.Parameter("stop", inspect.Parameter.POSITIONAL_OR_KEYWORD),
         inspect.Parameter(
             "step", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None
         ),
@@ -3143,39 +3141,34 @@ _SERIES_SIGNATURE = inspect.Signature(
 def _series(
     fn: Callable[..., Any], name: str, args: tuple[Any, ...], kwargs: dict[str, Any]
 ) -> Expr:
-    # A lone argument is the upper bound, so it is taken only by position:
-    # a value passed as ``start=`` must not silently become the end.
+    # ``stop`` is required and ``start`` defaults to 0, as in numpy.arange: a
+    # lone positional argument is ``stop``. ``start=`` alone is then a missing
+    # ``stop``, so it cannot silently become the upper bound.
+    if len(args) == 1 and not kwargs:
+        args = (0, *args)
+    elif not args and "start" not in kwargs:
+        kwargs = {"start": 0, **kwargs}
     try:
         bound = _SERIES_SIGNATURE.bind(*args, **kwargs)
     except TypeError as e:
         msg = f"{name}() {e}"
         raise TypeError(msg) from None
-    start, stop, step = (bound.arguments.get(p) for p in ("start", "stop", "step"))
-    if "stop" in bound.arguments and stop is None:
+    start, stop = bound.arguments["start"], bound.arguments["stop"]
+    if stop is None:
         msg = f"{name}() stop cannot be None"
         raise TypeError(msg)
-    if stop is None and "start" in kwargs:
-        msg = (
-            f"{name}() takes a single upper bound positionally; "
-            "pass start= together with stop="
-        )
-        raise TypeError(msg)
-    if stop is None and step is not None:
-        msg = f"{name}() requires stop when step is given"
-        raise ValueError(msg)
-    stop = coerce_to_expr_or_none(stop)
-    step = coerce_to_expr_or_none(step)
+    step = coerce_to_expr_or_none(bound.arguments.get("step"))
     return Expr(
         fn(
             coerce_to_expr(start).expr,
-            stop.expr if stop is not None else None,
+            coerce_to_expr(stop).expr,
             step.expr if step is not None else None,
         )
     )
 
 
 @overload
-def range(stop: Expr | int, /) -> Expr: ...
+def range(stop: Expr | int) -> Expr: ...
 
 
 @overload
@@ -3189,8 +3182,8 @@ def range(
 def range(*args: Any, **kwargs: Any) -> Expr:
     """Create a list of values from ``start`` up to, but excluding, ``stop``.
 
-    With a single argument, passed by position, it is the upper bound and the
-    range starts at 0, like Python's built-in :py:class:`range`.
+    With a single argument it is ``stop`` and the range starts at 0, like
+    Python's built-in :py:class:`range`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -5152,7 +5145,7 @@ def string_to_list(
 
 
 @overload
-def gen_series(stop: Expr | int, /) -> Expr: ...
+def gen_series(stop: Expr | int) -> Expr: ...
 
 
 @overload
@@ -5167,8 +5160,7 @@ def gen_series(*args: Any, **kwargs: Any) -> Expr:
     """Creates a list of values from ``start`` up to and including ``stop``.
 
     Unlike :py:func:`range`, this includes the upper bound. With a single
-    argument, passed by position, it is the upper bound and the series starts
-    at 0.
+    argument it is ``stop`` and the series starts at 0.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -5194,7 +5186,7 @@ def gen_series(*args: Any, **kwargs: Any) -> Expr:
 
 
 @overload
-def generate_series(stop: Expr | int, /) -> Expr: ...
+def generate_series(stop: Expr | int) -> Expr: ...
 
 
 @overload

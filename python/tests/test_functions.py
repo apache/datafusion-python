@@ -2372,7 +2372,7 @@ def test_series_single_arg_accepts_column(func, expected):
 
 @pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
 def test_series_step_requires_stop(func):
-    with pytest.raises(ValueError, match="requires stop"):
+    with pytest.raises(TypeError, match="missing a required argument: 'stop'"):
         func(0, step=2)
 
 
@@ -2382,6 +2382,10 @@ def test_series_step_requires_stop(func):
         pytest.param(f.range, (5,), {}, [0, 1, 2, 3, 4], id="range stop"),
         pytest.param(f.range, (1, 5), {}, [1, 2, 3, 4], id="range start stop"),
         pytest.param(f.range, (1,), {"stop": 5}, [1, 2, 3, 4], id="range stop="),
+        pytest.param(f.range, (), {"stop": 5}, [0, 1, 2, 3, 4], id="range stop= only"),
+        pytest.param(
+            f.range, (), {"stop": 5, "step": 2}, [0, 2, 4], id="range stop= step="
+        ),
         pytest.param(
             f.range,
             (),
@@ -2407,7 +2411,8 @@ def test_series_argument_forms(func, args, kwargs, expected):
 
 @pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
 def test_series_lone_start_keyword_raises(func):
-    with pytest.raises(TypeError, match="single upper bound positionally"):
+    # start=5 alone must not become stop=5; stop is the required argument.
+    with pytest.raises(TypeError, match="missing a required argument: 'stop'"):
         func(start=5)
 
 
