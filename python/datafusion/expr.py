@@ -1550,9 +1550,9 @@ class Expr:  # noqa: PLW1641
 class ExprFuncBuilder:
     """Sets the options of an aggregate or window function.
 
-    Each method raises when its option does not apply to the function:
-    ``filter`` and ``distinct`` need an aggregate, including one used as a window
-    function, and ``partition_by`` and ``window_frame`` need a window function.
+    ``filter`` and ``distinct`` apply to an aggregate, including one used as a
+    window function; ``partition_by`` and ``window_frame`` apply to a window
+    function.
     """
 
     def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
