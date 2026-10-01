@@ -70,6 +70,25 @@ maturin develop --uv
 python -m pytest
 ```
 
+### Rust tests and downstream Rust dependencies
+
+Run the core Rust tests, including the executable linking smoke test, with:
+
+```shell
+cargo test --locked -p datafusion-python --no-default-features --features substrait
+```
+
+An installed Python interpreter and its development libraries are required.
+Set `PYO3_PYTHON` to select an interpreter if needed. Do not use `--workspace`
+for these tests: the FFI example crates enable `pyo3/extension-module`, which
+prevents linking libpython into an executable.
+
+Rust executables depending on `datafusion-python` should set
+`default-features = false` and enable optional features such as `substrait`
+as needed. The default `extension-module` feature is for Python extension
+builds. Free-threaded wheel builds disable defaults to avoid `abi3` and must
+explicitly enable `extension-module` (and `mimalloc` to retain the default allocator).
+
 ## Running & Installing pre-commit hooks
 
 arrow-datafusion-python takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.
