@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import functools
+import sys
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, TypeVar, cast, overload
@@ -30,9 +31,14 @@ import datafusion._internal as df_internal
 from datafusion import SessionContext
 from datafusion.expr import Expr
 
-if TYPE_CHECKING:
-    from _typeshed import CapsuleType as _PyCapsule
+# Imported at runtime so ``typing.get_type_hints`` resolves the capsule
+# overloads; typing_extensions is a runtime dependency below 3.13.
+if sys.version_info >= (3, 13):
+    from types import CapsuleType as _PyCapsule
+else:
+    from typing_extensions import CapsuleType as _PyCapsule
 
+if TYPE_CHECKING:
     _R = TypeVar("_R", bound=pa.Array)
     from collections.abc import Callable, Sequence
 
@@ -216,9 +222,9 @@ class ScalarUDF:
     def _from_internal(cls, internal: df_internal.ScalarUDF) -> ScalarUDF:
         """Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udf = internal
@@ -283,8 +289,12 @@ class ScalarUDF:
     @staticmethod
     def udf(func: ScalarUDFExportable) -> ScalarUDF: ...
 
+    @overload
     @staticmethod
-    def udf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udf(func: _PyCapsule) -> ScalarUDF: ...
+
+    @staticmethod
+    def udf(*args: Any, **kwargs: Any):  # noqa: D417, C901
         """Create a new User-Defined Function (UDF).
 
         This class can be used both as either a function or a decorator.
@@ -388,7 +398,11 @@ class ScalarUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_scalar_udf__"):
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
+        if args and (
+            hasattr(args[0], "__datafusion_scalar_udf__") or _is_pycapsule(args[0])
+        ):
             return ScalarUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -398,12 +412,16 @@ class ScalarUDF:
         return _decorator(*args, **kwargs)
 
     @staticmethod
-    def from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF:
+    def from_pycapsule(func: ScalarUDFExportable | _PyCapsule) -> ScalarUDF:
         """Create a Scalar UDF from ScalarUDF PyCapsule object.
 
         This function will instantiate a Scalar UDF that uses a DataFusion
         ScalarUDF that is exported via the FFI bindings.
         """
+        if _is_pycapsule(func):
+            return ScalarUDF._from_internal(df_internal.ScalarUDF.from_pycapsule(func))
+
+        func = cast("ScalarUDFExportable", func)
         name = str(func.__class__)
         return ScalarUDF(
             name=name,
@@ -529,9 +547,9 @@ class AggregateUDF:
     def _from_internal(cls, internal: df_internal.AggregateUDF) -> AggregateUDF:
         """Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udaf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udaf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udaf = internal
@@ -732,7 +750,11 @@ class AggregateUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0]):
+        if not args and "accum" in kwargs:
+            args = (kwargs.pop("accum"),)
+        if args and (
+            hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0])
+        ):
             return AggregateUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -749,9 +771,9 @@ class AggregateUDF:
         AggregateUDF that is exported via the FFI bindings.
         """
         if _is_pycapsule(func):
-            aggregate = cast("AggregateUDF", object.__new__(AggregateUDF))
-            aggregate._udaf = df_internal.AggregateUDF.from_pycapsule(func)
-            return aggregate
+            return AggregateUDF._from_internal(
+                df_internal.AggregateUDF.from_pycapsule(func)
+            )
 
         capsule = cast("AggregateUDFExportable", func)
         name = str(capsule.__class__)
@@ -961,9 +983,9 @@ class WindowUDF:
     def _from_internal(cls, internal: df_internal.WindowUDF) -> WindowUDF:
         """Wrap an already-constructed internal ``WindowUDF`` handle.
 
-        Used by :py:meth:`SessionContext.udwf` to surface a function looked
-        up from the session's function registry without re-running
-        :py:meth:`__init__`.
+        Used by :py:meth:`SessionContext.udwf` and :py:meth:`from_pycapsule`
+        to wrap a handle from the session's function registry or an FFI
+        capsule without re-running :py:meth:`__init__`.
         """
         wrapper = cls.__new__(cls)
         wrapper._udwf = internal
@@ -1010,6 +1032,14 @@ class WindowUDF:
         volatility: Volatility | str,
         name: str | None = None,
     ) -> WindowUDF: ...
+
+    @overload
+    @staticmethod
+    def udwf(func: WindowUDFExportable) -> WindowUDF: ...
+
+    @overload
+    @staticmethod
+    def udwf(func: _PyCapsule) -> WindowUDF: ...
 
     @staticmethod
     def udwf(*args: Any, **kwargs: Any):  # noqa: D417
@@ -1075,7 +1105,11 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
-        if hasattr(args[0], "__datafusion_window_udf__"):
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
+        if args and (
+            hasattr(args[0], "__datafusion_window_udf__") or _is_pycapsule(args[0])
+        ):
             return WindowUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -1146,12 +1180,16 @@ class WindowUDF:
         return decorator
 
     @staticmethod
-    def from_pycapsule(func: WindowUDFExportable) -> WindowUDF:
+    def from_pycapsule(func: WindowUDFExportable | _PyCapsule) -> WindowUDF:
         """Create a Window UDF from WindowUDF PyCapsule object.
 
         This function will instantiate a Window UDF that uses a DataFusion
         WindowUDF that is exported via the FFI bindings.
         """
+        if _is_pycapsule(func):
+            return WindowUDF._from_internal(df_internal.WindowUDF.from_pycapsule(func))
+
+        func = cast("WindowUDFExportable", func)
         name = str(func.__class__)
         return WindowUDF(
             name=name,
@@ -1257,6 +1295,8 @@ class TableFunction:
         :class:`SessionContext` injected as a ``session`` keyword
         argument on each invocation.
         """
+        if not args and "func" in kwargs:
+            args = (kwargs.pop("func"),)
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return TableFunction._create_table_udf(

@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import copy
+import pickle
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timezone
@@ -25,6 +27,7 @@ import nanoarrow
 import pyarrow as pa
 import pytest
 from datafusion import (
+    Expr,
     SessionContext,
     col,
     functions,
@@ -32,6 +35,7 @@ from datafusion import (
     lit_with_metadata,
     literal_with_metadata,
 )
+from datafusion.common import NullTreatment
 from datafusion.expr import (
     EXPR_TYPE_ERROR,
     Aggregate,
@@ -53,6 +57,8 @@ from datafusion.expr import (
     TransactionEnd,
     TransactionStart,
     Values,
+    Window,
+    WindowFrame,
     coerce_to_expr,
     coerce_to_expr_list,
     coerce_to_expr_or_none,
@@ -1251,3 +1257,276 @@ def test_expr_to_bytes_no_ctx_default_codec() -> None:
     restored = Expr.from_bytes(blob, ctx=fresh)
 
     assert restored.canonical_name() == original.canonical_name()
+
+
+@pytest.fixture
+def builder_df():
+    ctx = SessionContext()
+    return ctx.from_pydict(
+        {"g": [1, 1, 1, 2], "s": ["y", "x", "z", "w"], "v": [3, 1, 2, 4]}
+    )
+
+
+@pytest.mark.parametrize(
+    ("build_expr", "expected"),
+    [
+        pytest.param(
+            lambda: (
+                functions.array_agg(col("s"), order_by="s")
+                .filter(col("v") > lit(1))
+                .build()
+            ),
+            ["w", "y", "z"],
+            id="order_by_kept_after_filter",
+        ),
+        pytest.param(
+            lambda: (
+                functions.array_agg(col("s"), filter=col("v") > lit(1))
+                .order_by(col("s").sort(ascending=False))
+                .build()
+            ),
+            ["z", "y", "w"],
+            id="filter_kept_after_order_by",
+        ),
+        pytest.param(
+            lambda: (
+                functions.string_agg(col("s"), ",", order_by="s").distinct().build()
+            ),
+            "w,x,y,z",
+            id="order_by_kept_after_distinct",
+        ),
+    ],
+)
+def test_aggregate_builder_keeps_existing_options(builder_df, build_expr, expected):
+    result = builder_df.aggregate([], [build_expr().alias("r")])
+    assert result.collect_column("r")[0].as_py() == expected
+
+
+@pytest.mark.parametrize(
+    ("chain", "options"),
+    [
+        pytest.param(
+            lambda: functions.lead(col("v"), order_by="v").partition_by(col("g")),
+            "order_by",
+            id="builder on keyword order_by",
+        ),
+        pytest.param(
+            lambda: functions.lead(col("v"), partition_by=[col("g")]).over(
+                Window(order_by="v")
+            ),
+            "partition_by",
+            id="over on keyword partition_by",
+        ),
+        pytest.param(
+            lambda: functions.lead(col("v"), order_by="v").null_treatment(
+                NullTreatment.IGNORE_NULLS
+            ),
+            "order_by",
+            id="null_treatment on keyword order_by",
+        ),
+        pytest.param(
+            lambda: (
+                functions.sum(col("v"))
+                .over(Window(window_frame=WindowFrame("rows", 1, 0)))
+                .partition_by(col("g"))
+            ),
+            "window_frame",
+            id="builder on explicit frame",
+        ),
+        pytest.param(
+            lambda: pickle.loads(  # noqa: S301
+                pickle.dumps(
+                    functions.sum(col("v")).over(
+                        Window(window_frame=WindowFrame("range", None, None))
+                    )
+                )
+            ).partition_by(col("g")),
+            "order_by, window_frame",
+            id="builder on decoded range frame",
+        ),
+    ],
+)
+def test_window_chain_rejects_existing_window_options(chain, options):
+    with pytest.raises(Exception, match=f"already has window options \\({options}\\)"):
+        chain()
+
+
+def test_over_keeps_window_function_null_treatment():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"g": [1, 1, 1, 2], "i": [1, 2, 3, 4], "v": [1, None, 3, 4]})
+    expr = functions.lead(col("v"), 1, null_treatment=NullTreatment.IGNORE_NULLS).over(
+        Window(partition_by=[col("g")], order_by="i")
+    )
+    result = df.select(col("i"), expr.alias("r")).sort(col("i"))
+    assert result.collect_column("r").to_pylist() == [3, 3, None, None]
+
+
+@pytest.mark.parametrize(
+    "window",
+    [
+        pytest.param(Window(), id="no order_by"),
+        pytest.param(
+            Window(window_frame=WindowFrame("rows", None, None)), id="rows frame"
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "round_trip",
+    [
+        pytest.param(lambda e: e, id="original"),
+        pytest.param(copy.copy, id="copy"),
+        pytest.param(lambda e: pickle.loads(pickle.dumps(e)), id="pickle"),  # noqa: S301
+        pytest.param(lambda e: Expr.from_bytes(e.to_bytes()), id="from_bytes"),
+    ],
+)
+def test_window_builder_default_frame_same_after_round_trip(window, round_trip):
+    # The whole-partition frame counts as no frame, so a copy or a decoded round
+    # trip chains to the same result as the original.
+    ctx = SessionContext()
+    df = ctx.from_pydict({"i": [1, 1, 2, 3], "v": [1, 2, 3, 4]})
+    expr = round_trip(functions.sum(col("v")).over(window))
+    r = expr.over(Window(order_by="i")).alias("r")
+    result = df.select(col("v"), r).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
+
+
+def test_window_builder_keeps_default_frame_set_last(builder_df):
+    frame = WindowFrame("rows", None, None)
+    expr = (
+        functions.sum(col("v"))
+        .over(Window())
+        .order_by(col("v"))
+        .window_frame(frame)
+        .build()
+    )
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [10, 10, 10, 10]
+
+
+@pytest.mark.parametrize(
+    ("aggregate", "expected"),
+    [
+        pytest.param(
+            functions.avg(col("v"), distinct=True), [2.5, 2.5, 2.5], id="distinct"
+        ),
+        pytest.param(
+            functions.sum(col("v"), filter=col("v") > lit(1.0)),
+            [4.0, 4.0, 4.0],
+            id="filter",
+        ),
+        pytest.param(
+            functions.first_value(col("n"), null_treatment=NullTreatment.IGNORE_NULLS),
+            [2.0, 2.0, 2.0],
+            id="null_treatment",
+        ),
+        pytest.param(
+            functions.percentile_cont(col("v"), 0.5),
+            [1.0, 1.0, 1.0],
+            id="ascending within group",
+        ),
+    ],
+)
+def test_over_keeps_aggregate_options(aggregate, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1.0, 1.0, 4.0], "n": [None, 2.0, 3.0]})
+    result = df.select(aggregate.over(Window()).alias("r"))
+    assert result.collect_column("r").to_pylist() == expected
+
+
+@pytest.mark.parametrize(
+    "aggregate",
+    [
+        pytest.param(
+            functions.percentile_cont(col("v").sort(ascending=False), 0.25),
+            id="descending within group",
+        ),
+        pytest.param(functions.array_agg(col("v"), order_by="v"), id="order_by"),
+    ],
+)
+def test_over_rejects_aggregate_order_by(aggregate):
+    with pytest.raises(Exception, match="Aggregate order_by is not supported"):
+        aggregate.over(Window())
+
+
+def test_window_builder_rederives_default_frame(builder_df):
+    # No order_by means a whole-partition frame; adding one later must switch
+    # to the running frame rather than keep the whole-partition default.
+    expr = functions.sum(col("v")).over(Window()).order_by(col("v")).build()
+    result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
+    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
+
+
+@pytest.mark.parametrize(
+    ("expr", "expected"),
+    [
+        pytest.param(
+            functions.sum(col("v")).over(Window(order_by=[])),
+            [10, 10, 10, 10],
+            id="over",
+        ),
+        pytest.param(functions.row_number(order_by=[]), [1, 2, 3, 4], id="keyword"),
+    ],
+)
+def test_window_empty_order_by_executes_as_no_order_by(expr, expected):
+    # An empty order_by must not derive a RANGE frame with no sort key, which
+    # fails at execution with "ORDER BY column cannot be empty".
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1, 2, 3, 4]})
+    result = df.select(expr.alias("r")).collect_column("r").to_pylist()
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("builder", "message"),
+    [
+        pytest.param(
+            lambda: functions.sum(col("v")).partition_by(col("g")),
+            "partition_by\\(\\) applies only to window functions; sum is an aggregate",
+            id="partition_by on aggregate",
+        ),
+        pytest.param(
+            lambda: (
+                functions.sum(col("v"))
+                .order_by(col("v"))
+                .window_frame(WindowFrame("rows", 1, 0))
+            ),
+            "window_frame\\(\\) applies only to window functions; sum is an aggregate",
+            id="window_frame chained on aggregate",
+        ),
+        pytest.param(
+            lambda: functions.lead(col("v")).distinct(),
+            "distinct\\(\\) applies only to aggregate functions.*lead is a window",
+            id="distinct on window function",
+        ),
+        pytest.param(
+            lambda: (
+                functions.lead(col("v"))
+                .partition_by(col("g"))
+                .filter(col("v") > lit(2))
+            ),
+            "filter\\(\\) applies only to aggregate functions.*lead is a window",
+            id="filter chained on window function",
+        ),
+    ],
+)
+def test_builder_rejects_option_for_other_function_kind(builder, message):
+    # The chained rows cover the kind being checked on every call, not only
+    # the first one made from the expression.
+    with pytest.raises(Exception, match=message):
+        builder()
+
+
+@pytest.mark.parametrize(
+    ("chain", "expected"),
+    [
+        pytest.param(lambda b: b.filter(col("v") > lit(0)), [2, 2, 2, 2], id="filter"),
+        pytest.param(lambda b: b.distinct(), [1, 1, 1, 1], id="distinct"),
+    ],
+)
+def test_window_builder_aggregate_options_on_aggregate_window(
+    builder_df, chain, expected
+):
+    # An aggregate run as a window function still takes aggregate options.
+    df = builder_df.select(col("g"), (col("v") % lit(2)).alias("v"))
+    expr = chain(functions.sum(col("v")).over(Window())).build()
+    assert df.select(expr.alias("r")).collect_column("r").to_pylist() == expected
