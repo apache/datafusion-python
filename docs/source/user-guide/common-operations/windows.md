@@ -181,8 +181,8 @@ f.sum(col("v")).over(Window(order_by=col("v"), window_frame=whole))
 ### Null Treatment
 
 When using aggregate functions as window functions, it is often useful to specify how null values
-should be treated. In order to do this you need to use the builder function. In future releases
-we expect this to be simplified in the interface.
+should be treated. Pass `null_treatment` in the `Window`, or set it on the aggregate itself, which
+`over()` keeps (see {ref}`aggregate_over_options`).
 
 One common usage for handling nulls is the case where you want to find the last value up to the
 current row. In the following example we demonstrate how setting the null treatment to ignore
