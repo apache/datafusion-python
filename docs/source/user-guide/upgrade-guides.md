@@ -223,11 +223,21 @@ positionally or by keyword; it now works when passed by keyword.
 Chaining a builder method (`order_by`, `filter`, `distinct`, `null_treatment`,
 `partition_by`, `window_frame`) or `over()` onto a function used to start from
 an empty builder, so options set by the function's keyword arguments were
-silently reset. They are now kept, which can change results:
+silently reset. On an aggregate they are now kept, which can change results:
+
+```python
+e = f.string_agg(col("s"), ",", order_by="s")
+e.distinct().build()  # before: order_by dropped; after: kept
+```
+
+On a window function that already has a `partition_by`, `order_by`, or
+`window_frame`, chaining now raises instead of dropping them. Set them in one
+place, as described in {ref}`window_function_chaining`:
 
 ```python
 e = f.lead(col("v"), 1, partition_by=[col("g")], order_by="t")
-e.over(Window(order_by="t"))  # before: partition dropped; after: kept
+e.over(Window(order_by="t"))  # before: partition dropped; after: raises
+f.lead(col("v"), 1).over(Window(partition_by=[col("g")], order_by="t"))  # after
 ```
 
 Options that used to be dropped now take effect, so a chain that ran before
@@ -266,8 +276,6 @@ f.first_value(col("a")).order_by(col("b")).build()
 
 This now matches the name from `f.first_value(col("a"), order_by=col("b"))`.
 Code that selects the result by its generated name should `alias()` it instead.
-How a window frame is handled when chaining is described in
-{ref}`window_frame_chaining`.
 
 ### `over()` keeps options set on an aggregate
 

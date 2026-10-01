@@ -135,27 +135,43 @@ df.select(
 )
 ```
 
-(window_frame_chaining)=
+(window_function_chaining)=
 
 #### Chaining onto a window function
 
-A built window function stores a concrete frame, with no record of whether you
-chose it. When you chain another builder method or `over()` onto one, a frame
-equal to the default for its current `order_by` is treated as unset and derived
-again from the final `order_by`. Any other frame is kept.
+Set a window function's `partition_by`, `order_by`, and `window_frame` in one
+place: its keyword arguments, a single `over()`, or one builder chain ending in
+`build()`. Chaining a builder method or `over()` onto a window function that
+already has any of them raises:
 
-This rule depends only on the expression, so a copy, a pickled expression sent
-to a worker, or one parsed from SQL all chain the same way. The cost is that an
-explicit frame that matches the default is indistinguishable from no frame:
+```python
+# Raises: lead already has window options (order_by)
+f.lead(col("v"), order_by="t").over(Window(partition_by=[col("g")]))
+
+# Set them together instead.
+f.lead(col("v")).over(Window(partition_by=[col("g")], order_by="t"))
+```
+
+A built window function stores a concrete frame with no record of whether you
+chose it or it was derived from `order_by`, so the options cannot be merged
+without guessing. Merging may become possible once
+[apache/datafusion#25934](https://github.com/apache/datafusion/issues/25934)
+is resolved.
+
+The `null_treatment` already set is kept, as are `filter` and `distinct` on an
+aggregate used as a window function. The whole-partition frame counts as no
+frame, so adding an `order_by` derives the running frame, even when you passed
+that frame explicitly:
 
 ```python
 whole = WindowFrame("rows", None, None)  # same as the no-order_by default
 
-# The frame is re-derived, giving a running sum.
+# Both give a running sum.
+f.sum(col("v")).over(Window()).order_by(col("v")).build()
 f.sum(col("v")).over(Window(window_frame=whole)).order_by(col("v")).build()
 ```
 
-To keep such a frame, set it after the `order_by`, or pass both in one `Window`:
+To keep that frame, set it after the `order_by`, or pass both in one `Window`:
 
 ```python
 f.sum(col("v")).over(Window()).order_by(col("v")).window_frame(whole).build()

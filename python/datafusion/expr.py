@@ -1095,9 +1095,8 @@ class Expr:  # noqa: PLW1641
         it was built with are kept, and an ``order_by`` raises; see
         :ref:`aggregate_over_options`.
 
-        On a window function, each option set in ``window`` replaces the one already
-        set and the others are kept; see :ref:`window_frame_chaining` for how the
-        frame is handled.
+        On a window function that already has a ``partition_by``, ``order_by``, or
+        ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
         Args:
             window: Window definition
@@ -1552,7 +1551,9 @@ class ExprFuncBuilder:
 
     ``filter`` and ``distinct`` apply to an aggregate, including one used as a
     window function; ``partition_by`` and ``window_frame`` apply to a window
-    function.
+    function. Starting a builder from a window function that already has a
+    ``partition_by``, ``order_by``, or ``window_frame`` raises; see
+    :ref:`window_function_chaining`.
     """
 
     def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
