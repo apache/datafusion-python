@@ -304,8 +304,9 @@ impl AggregateUDFImpl for PythonFunctionAggregateUDF {
 
     fn accumulator(&self, acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
         // The Python accumulator cannot see the flag, so it would count every
-        // row. A plan the optimizer rewrote to group by the distinct values
-        // arrives here without it and still runs.
+        // row. A query with a single DISTINCT argument is rewritten by the
+        // optimizer to group by those values; it arrives here without the
+        // flag and still runs.
         if acc_args.is_distinct {
             return datafusion::common::not_impl_err!(
                 "DISTINCT is not supported for the Python aggregate UDF {}",
