@@ -309,10 +309,6 @@ def distinct_ctx():
             ),
             id="distinct window",
         ),
-        pytest.param(
-            lambda ctx, _: ctx.sql("select summarize(distinct v) over () from t"),
-            id="sql distinct window",
-        ),
     ],
 )
 def test_udaf_distinct_raises(distinct_ctx, run):

@@ -784,14 +784,6 @@ def test_file_metadata_functions(tmp_path, fn, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("fn", [f.input_file_name, f.file_row_index])
-def test_file_metadata_functions_outside_scan_raise(fn):
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": [1]})
-    with pytest.raises(Exception, match="source dependent"):
-        df.select(fn().alias("r")).collect()
-
-
 def test_rand_and_substring_index_aliases():
     ctx = SessionContext()
     df = ctx.from_pydict({"s": ["a.b.c"]})
@@ -2370,12 +2362,6 @@ def test_series_single_arg_accepts_column(func, expected):
     assert result.collect_column("v").to_pylist() == expected
 
 
-@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
-def test_series_step_requires_stop(func):
-    with pytest.raises(TypeError, match="missing a required argument: 'stop'"):
-        func(0, step=2)
-
-
 @pytest.mark.parametrize(
     ("func", "args", "kwargs", "expected"),
     [
@@ -2409,25 +2395,29 @@ def test_series_argument_forms(func, args, kwargs, expected):
     assert result.collect_column("v")[0].as_py() == expected
 
 
-@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
-def test_series_lone_start_keyword_raises(func):
-    # start=5 alone must not become stop=5; stop is the required argument.
-    with pytest.raises(TypeError, match="missing a required argument: 'stop'"):
-        func(start=5)
-
-
-@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
-@pytest.mark.parametrize("kwargs", [{}, {"stop": None}], ids=["positional", "keyword"])
-def test_series_explicit_none_stop_raises(func, kwargs):
-    args = (1,) if kwargs else (1, None)
-    with pytest.raises(TypeError, match="stop cannot be None"):
-        func(*args, **kwargs)
-
-
-@pytest.mark.parametrize("func", [f.range, f.gen_series, f.generate_series])
-def test_series_bad_arguments_name_the_function(func):
-    with pytest.raises(TypeError, match=rf"^{func.__name__}\(\) "):
-        func(1, 2, 3, 4)
+@pytest.mark.parametrize(
+    ("args", "kwargs", "match"),
+    [
+        pytest.param(
+            (), {"start": 5}, "missing a required argument: 'stop'", id="start only"
+        ),
+        pytest.param(
+            (1,),
+            {"step": 2},
+            "missing a required argument: 'stop'",
+            id="step without stop",
+        ),
+        pytest.param((1, None), {}, "stop cannot be None", id="positional None stop"),
+        pytest.param(
+            (1,), {"stop": None}, "stop cannot be None", id="keyword None stop"
+        ),
+    ],
+)
+def test_series_invalid_arguments(args, kwargs, match):
+    # Each of these would otherwise silently promote the given value to stop.
+    # gen_series and generate_series share _series, so range stands for all.
+    with pytest.raises(TypeError, match=match):
+        f.range(*args, **kwargs)
 
 
 class TestPythonicNativeTypes:

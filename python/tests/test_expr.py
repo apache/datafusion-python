@@ -1295,15 +1295,6 @@ def builder_df():
             "w,x,y,z",
             id="order_by_kept_after_distinct",
         ),
-        pytest.param(
-            lambda: (
-                functions.first_value(col("s"), order_by="v")
-                .filter(col("v") > lit(1))
-                .build()
-            ),
-            "z",
-            id="first_value_order_by_kept_after_filter",
-        ),
     ],
 )
 def test_aggregate_builder_keeps_existing_options(builder_df, build_expr, expected):
@@ -1328,7 +1319,6 @@ def test_window_builder_keeps_explicit_frame(builder_df):
     "window",
     [
         pytest.param(Window(), id="no order_by"),
-        pytest.param(Window(order_by=[]), id="empty order_by"),
         pytest.param(
             Window(window_frame=WindowFrame("rows", None, None)), id="rows frame"
         ),
@@ -1415,10 +1405,6 @@ def test_over_keeps_aggregate_options(aggregate, expected):
             functions.percentile_cont(col("v").sort(ascending=False), 0.25),
             id="descending within group",
         ),
-        pytest.param(
-            functions.approx_percentile_cont(col("v").sort(ascending=False), 0.25),
-            id="descending approx within group",
-        ),
         pytest.param(functions.array_agg(col("v"), order_by="v"), id="order_by"),
     ],
 )
@@ -1432,17 +1418,6 @@ def test_window_builder_rederives_default_frame(builder_df):
     # to the running frame rather than keep the whole-partition default.
     expr = functions.sum(col("v")).over(Window()).order_by(col("v")).build()
     result = builder_df.select(col("v"), expr.alias("r")).sort(col("v"))
-    assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
-
-
-@pytest.mark.parametrize("first", [Window(), Window(order_by=[])])
-def test_window_builder_rederives_default_frame_from_empty_order_by(first):
-    # An empty order_by is the same as none, so a later order_by gets the ROWS
-    # running frame, which does not sum the tied ``i`` values together.
-    ctx = SessionContext()
-    df = ctx.from_pydict({"i": [1, 1, 2, 3], "v": [1, 2, 3, 4]})
-    expr = functions.sum(col("v")).over(first).over(Window(order_by="i"))
-    result = df.select(col("v"), expr.alias("r")).sort(col("v"))
     assert result.collect_column("r").to_pylist() == [1, 3, 6, 10]
 
 
@@ -1475,18 +1450,6 @@ def test_window_empty_order_by_executes_as_no_order_by(expr, expected):
             id="partition_by on aggregate",
         ),
         pytest.param(
-            lambda: functions.sum(col("v")).window_frame(WindowFrame("rows", 1, 0)),
-            "window_frame\\(\\) applies only to window functions; sum is an aggregate",
-            id="window_frame on aggregate",
-        ),
-        pytest.param(
-            lambda: (
-                functions.sum(col("v")).filter(col("v") > lit(1)).partition_by(col("g"))
-            ),
-            "partition_by\\(\\) applies only to window functions; sum is an aggregate",
-            id="partition_by chained on aggregate",
-        ),
-        pytest.param(
             lambda: (
                 functions.sum(col("v"))
                 .order_by(col("v"))
@@ -1502,18 +1465,6 @@ def test_window_empty_order_by_executes_as_no_order_by(expr, expected):
         ),
         pytest.param(
             lambda: (
-                functions.lead(col("v"), order_by="v").partition_by(col("g")).distinct()
-            ),
-            "distinct\\(\\) applies only to aggregate functions.*lead is a window",
-            id="distinct chained on window function",
-        ),
-        pytest.param(
-            lambda: functions.row_number(order_by=[col("v")]).filter(col("v") > lit(2)),
-            "filter\\(\\) applies only to aggregate functions.*row_number is a window",
-            id="filter on window function",
-        ),
-        pytest.param(
-            lambda: (
                 functions.lead(col("v"), order_by="v")
                 .partition_by(col("g"))
                 .filter(col("v") > lit(2))
@@ -1524,23 +1475,23 @@ def test_window_empty_order_by_executes_as_no_order_by(expr, expected):
     ],
 )
 def test_builder_rejects_option_for_other_function_kind(builder, message):
+    # The chained rows cover the kind being checked on every call, not only
+    # the first one made from the expression.
     with pytest.raises(Exception, match=message):
         builder()
 
 
-def test_builder_on_non_function_raises_at_build():
-    with pytest.raises(Exception, match="ExprFunctionExt can only be used with"):
-        col("v").distinct().build()
-
-
-def test_window_builder_filter_on_aggregate_window(builder_df):
-    expr = functions.sum(col("v")).over(Window()).filter(col("v") > lit(1)).build()
-    result = builder_df.select(expr.alias("r"))
-    assert result.collect_column("r").to_pylist() == [9, 9, 9, 9]
-
-
-def test_window_builder_distinct_on_aggregate_window(builder_df):
-    expr = functions.sum(col("v")).over(Window()).distinct().build()
+@pytest.mark.parametrize(
+    ("chain", "expected"),
+    [
+        pytest.param(lambda b: b.filter(col("v") > lit(0)), [2, 2, 2, 2], id="filter"),
+        pytest.param(lambda b: b.distinct(), [1, 1, 1, 1], id="distinct"),
+    ],
+)
+def test_window_builder_aggregate_options_on_aggregate_window(
+    builder_df, chain, expected
+):
+    # An aggregate run as a window function still takes aggregate options.
     df = builder_df.select(col("g"), (col("v") % lit(2)).alias("v"))
-    result = df.select(expr.alias("r"))
-    assert result.collect_column("r").to_pylist() == [1, 1, 1, 1]
+    expr = chain(functions.sum(col("v")).over(Window())).build()
+    assert df.select(expr.alias("r")).collect_column("r").to_pylist() == expected

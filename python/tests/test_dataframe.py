@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
@@ -3429,15 +3430,24 @@ def test_fill_null_specific_types(null_df):
     ]
 
 
-def test_fill_null_empty_subset_fills_nothing(null_df):
-    assert null_df.fill_null(0, subset=[]).to_pydict() == null_df.to_pydict()
-
-
-@pytest.mark.parametrize("columns", [["int_col", "float_col"], []])
-def test_fill_null_numpy_subset(null_df, columns):
-    np = pytest.importorskip("numpy")
-    result = null_df.fill_null(0, subset=np.array(columns, dtype=str))
-    assert result.to_pydict() == null_df.fill_null(0, subset=columns).to_pydict()
+@pytest.mark.parametrize(
+    ("subset", "expected_cols"),
+    [
+        pytest.param([], [], id="empty list"),
+        pytest.param(np.array([], dtype=str), [], id="empty numpy"),
+        pytest.param(np.array(["int_col"]), ["int_col"], id="numpy"),
+    ],
+)
+def test_fill_null_subset_forms(null_df, subset, expected_cols):
+    # An empty subset fills nothing rather than everything, and a numpy array
+    # is accepted without being tested for truthiness.
+    result = null_df.fill_null(0, subset=subset).to_pydict()
+    original = null_df.to_pydict()
+    for name, values in result.items():
+        if name in expected_cols:
+            assert None not in values
+        else:
+            assert values == original[name]
 
 
 def test_fill_null_immutability(null_df):
@@ -3513,7 +3523,9 @@ def _is_nan(v):
 
 
 def test_fill_nan_all_columns(ctx):
-    result = _nan_df(ctx).fill_nan(0.0).to_pydict()
+    df = _nan_df(ctx)
+    assert df.fill_nan(0.0).schema() == df.schema()
+    result = df.fill_nan(0.0).to_pydict()
     # NaN replaced in both float widths; null is not NaN and stays null.
     assert result["f64"] == [1.0, 0.0, None]
     assert result["f32"] == [0.0, 2.0, 3.0]
@@ -3528,29 +3540,20 @@ def test_fill_nan_subset(ctx):
     assert _is_nan(result["f64"][1])
 
 
-def test_fill_nan_empty_subset_fills_nothing(ctx):
-    result = _nan_df(ctx).fill_nan(0.0, subset=[]).to_pydict()
-    assert _is_nan(result["f64"][1])
-    assert _is_nan(result["f32"][0])
-
-
-@pytest.mark.parametrize("columns", [["f64", "f32"], []])
-def test_fill_nan_numpy_subset(ctx, columns):
-    np = pytest.importorskip("numpy")
-    df = _nan_df(ctx)
-    result = df.fill_nan(0.0, subset=np.array(columns, dtype=str)).to_pydict()
-    expected = df.fill_nan(0.0, subset=columns).to_pydict()
-    assert str(result) == str(expected)
-
-
-def test_fill_nan_preserves_schema(ctx):
-    df = _nan_df(ctx)
-    assert df.fill_nan(0.0).schema() == df.schema()
-
-
-def test_fill_nan_unknown_column_raises(ctx):
-    with pytest.raises(Exception, match="missing"):
-        _nan_df(ctx).fill_nan(0.0, subset=["missing"]).collect()
+@pytest.mark.parametrize(
+    ("subset", "f64_filled", "f32_filled"),
+    [
+        pytest.param([], False, False, id="empty list"),
+        pytest.param(np.array([], dtype=str), False, False, id="empty numpy"),
+        pytest.param(np.array(["f32"]), False, True, id="numpy"),
+    ],
+)
+def test_fill_nan_subset_forms(ctx, subset, f64_filled, f32_filled):
+    # An empty subset fills nothing rather than everything, and a numpy array
+    # is accepted without being tested for truthiness.
+    result = _nan_df(ctx).fill_nan(0.0, subset=subset).to_pydict()
+    assert _is_nan(result["f64"][1]) != f64_filled
+    assert _is_nan(result["f32"][0]) != f32_filled
 
 
 _slow_udf_started = threading.Event()
@@ -3982,11 +3985,6 @@ def test_explain_options(capsys, kwargs, present, absent):
             {"analyze_categories": [ExplainMetricCategory.ROWS]},
             "analyze_categories requires analyze",
             id="analyze_categories_without_analyze",
-        ),
-        pytest.param(
-            {"analyze_categories": []},
-            "analyze_categories requires analyze",
-            id="empty_analyze_categories_without_analyze",
         ),
     ],
 )

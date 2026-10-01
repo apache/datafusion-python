@@ -555,37 +555,56 @@ def test_string_agg(name, expr, result) -> None:
     assert df.collect()[0].to_pydict() == expected
 
 
-@pytest.mark.parametrize("distinct", [None, column("b")])
-def test_string_agg_rejects_non_bool_distinct(distinct) -> None:
-    # A positional ``None`` placeholder for the old ``filter`` slot now lands
-    # in ``distinct`` and must raise rather than shift ``order_by`` into
-    # ``filter``.
-    with pytest.raises(
-        TypeError, match=r"string_agg\(\) distinct must be a bool.*filter and order_by"
-    ):
-        f.string_agg(column("a"), ",", distinct, column("b"))
+_FILTER = column("b") > lit(1)
 
 
 @pytest.mark.parametrize(
-    "call",
+    ("call", "match"),
     [
         pytest.param(
-            lambda flt: f.percentile_cont(column("a"), 0.5, flt), id="percentile_cont"
+            lambda: f.percentile_cont(column("a"), 0.5, _FILTER),
+            r"percentile_cont\(\).*pass filter by keyword",
+            id="percentile_cont",
         ),
         pytest.param(
-            lambda flt: f.quantile_cont(column("a"), 0.5, flt), id="quantile_cont"
+            lambda: f.quantile_cont(column("a"), 0.5, _FILTER),
+            r"quantile_cont\(\).*pass filter by keyword",
+            id="quantile_cont",
         ),
-        pytest.param(lambda flt: f.mean(column("a"), flt), id="mean"),
-        pytest.param(lambda flt: f.bit_and(column("a"), flt), id="bit_and"),
-        pytest.param(lambda flt: f.bit_or(column("a"), flt), id="bit_or"),
+        pytest.param(
+            lambda: f.mean(column("a"), _FILTER),
+            r"mean\(\).*pass filter by keyword",
+            id="mean",
+        ),
+        pytest.param(
+            lambda: f.bit_and(column("a"), _FILTER),
+            r"bit_and\(\).*pass filter by keyword",
+            id="bit_and",
+        ),
+        pytest.param(
+            lambda: f.bit_or(column("a"), _FILTER),
+            r"bit_or\(\).*pass filter by keyword",
+            id="bit_or",
+        ),
+        pytest.param(
+            lambda: f.string_agg(column("a"), ",", _FILTER, column("b")),
+            r"string_agg\(\).*pass filter and order_by by keyword",
+            id="string_agg filter",
+        ),
+        pytest.param(
+            lambda: f.string_agg(column("a"), ",", None, column("b")),
+            r"string_agg\(\).*pass filter and order_by by keyword",
+            id="string_agg None placeholder",
+        ),
     ],
 )
-def test_positional_filter_names_the_function(call) -> None:
-    # ``distinct`` was inserted before ``filter``; a call written for the old
-    # signature must say which function and what to change, not fail in PyO3.
-    match = r"\(\) distinct must be a bool.*pass filter by keyword"
+def test_positional_filter_names_the_function(call, match) -> None:
+    # ``distinct`` was inserted before ``filter``. A call written for the old
+    # signature must name the function and the fix, not fail inside PyO3. The
+    # ``None`` placeholder would otherwise run with order_by shifted into
+    # filter.
     with pytest.raises(TypeError, match=match):
-        call(column("b") > lit(1))
+        call()
 
 
 def test_string_agg_accepts_numpy_bool_distinct() -> None:
