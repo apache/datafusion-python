@@ -52,6 +52,7 @@ divergence.
 
 ## What a derived context shares
 
+{py:meth}`~datafusion.SessionContext.enable_url_table`,
 {py:meth}`~datafusion.SessionContext.with_logical_extension_codec`,
 {py:meth}`~datafusion.SessionContext.with_physical_extension_codec`,
 {py:meth}`~datafusion.SessionContext.with_python_udf_inlining`, and
@@ -105,13 +106,6 @@ The same rule applies to a capsule you take off a context inside your own code:
 a codec capsule taken from a throwaway `SessionContext()` names a session that
 is already gone and fails on first use.
 
-:::{warning}
-{py:meth}`~datafusion.SessionContext.enable_url_table` is an exception to the
-one-session-one-allocation rule above: it clones the underlying
-`SessionContext`, so the returned context has an allocation of its own and must
-not outlive the receiver. It also forks the session's state while keeping its
-id, so two handles report one `session_id()` with divergent configuration. That
-is a bug rather than a design, tracked in
-[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708);
-do not build on the behaviour.
-:::
+Enabling URL tables takes effect on the shared session even if the returned
+handle is discarded. The returned handle keeps the receiver's codec settings
+unchanged, and repeated calls do not nest catalog wrappers.

@@ -20,6 +20,7 @@ import gc
 import gzip
 import pathlib
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -41,6 +42,91 @@ from datafusion import (
 
 def test_create_context_no_args():
     SessionContext()
+
+
+@pytest.mark.parametrize("discard_returned", [False, True])
+def test_enable_url_table_shares_session(tmp_path, discard_returned):
+    """URL tables, configuration, and registrations belong to all aliases."""
+    ctx = SessionContext()
+    original_config = (
+        ctx.sql("SHOW datafusion.catalog.create_default_catalog_and_schema")
+        .collect()[0]
+        .column(1)
+        .to_pylist()
+    )
+    alias = ctx.with_python_udf_inlining(enabled=False)
+    session_id = ctx.session_id()
+    ctx.sql("CREATE SCHEMA existing").collect()
+    ctx.register_record_batches("existing.numbers", [[pa.record_batch({"n": [7]})]])
+    ctx.register_udf(
+        udf(lambda x: x, [pa.int64()], pa.int64(), "immutable", "identity")
+    )
+    path = tmp_path / "numbers.csv"
+    path.write_text("n\n7\n")
+
+    if discard_returned:
+        alias.enable_url_table()
+        returned = ctx
+    else:
+        returned = alias.enable_url_table()
+
+    # Both directions must see subsequent SETs, not only the initial snapshot.
+    for writer, reader, value in [(ctx, returned, 111), (returned, alias, 222)]:
+        writer.sql(f"SET datafusion.execution.batch_size = {value}").collect()
+        assert reader.sql("SHOW datafusion.execution.batch_size").collect()[0].column(
+            1
+        ).to_pylist() == [str(value)]
+
+    returned.register_udf(
+        udf(lambda x: x, [pa.int64()], pa.int64(), "immutable", "later_identity")
+    )
+    for handle in (ctx, alias, returned):
+        assert handle.session_id() == session_id
+        assert (
+            handle.sql("SHOW datafusion.catalog.create_default_catalog_and_schema")
+            .collect()[0]
+            .column(1)
+            .to_pylist()
+            == original_config
+        )
+        assert handle.sql("SELECT identity(n) FROM existing.numbers").collect()[
+            0
+        ].column(0).to_pylist() == [7]
+        assert handle.sql("SELECT later_identity(9)").collect()[0].column(
+            0
+        ).to_pylist() == [9]
+        assert handle.sql(f'SELECT n FROM "{path}"').collect()[0].column(
+            0
+        ).to_pylist() == [7]
+        handle.enable_url_table()
+        handle.enable_url_table()
+        assert handle.sql(f'SELECT n FROM "{path}"').collect()[0].column(
+            0
+        ).to_pylist() == [7]
+
+
+def test_enable_url_table_from_multiple_aliases(tmp_path):
+    """Enabling through multiple handles preserves concurrent registrations."""
+    ctx = SessionContext()
+    path = tmp_path / "numbers.csv"
+    path.write_text("n\n7\n")
+    aliases = [ctx.with_python_udf_inlining(enabled=False) for _ in range(4)]
+
+    def enable_and_register(index):
+        alias = aliases[index]
+        for _ in range(4):
+            alias.enable_url_table()
+            alias.sql(f'SELECT n FROM "{path}"').collect()
+        alias.register_udf(
+            udf(lambda x: x, [pa.int64()], pa.int64(), "immutable", f"identity_{index}")
+        )
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(enable_and_register, range(4)))
+    for index in range(4):
+        assert ctx.sql(f"SELECT identity_{index}(7)").collect()[0].column(
+            0
+        ).to_pylist() == [7]
 
 
 def test_create_context_session_config_only():
