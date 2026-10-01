@@ -2504,6 +2504,25 @@ def test_write_parquet(df, tmp_path, path_to_str):
     assert result == expected
 
 
+def test_write_parquet_writer_options_keeps_write_options(ctx, tmp_path):
+    """``write_parquet`` honours ``write_options`` alongside ``ParquetWriterOptions``.
+
+    The ``ParquetWriterOptions`` branch delegates to
+    :py:meth:`DataFrame.write_parquet_with_options`, which takes ``write_options``
+    too, so ``partition_by`` must still reach the writer.
+    """
+    df = ctx.from_pydict({"part": ["a", "a", "b"], "v": [1, 2, 3]})
+    path = tmp_path / "partitioned"
+
+    df.write_parquet(
+        path,
+        ParquetWriterOptions(),
+        write_options=DataFrameWriteOptions(partition_by="part"),
+    )
+
+    assert sorted(p.name for p in path.iterdir()) == ["part=a", "part=b"]
+
+
 @pytest.mark.parametrize(
     ("compression", "compression_level"),
     [("gzip", 6), ("brotli", 7), ("zstd", 15)],
