@@ -425,7 +425,7 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e, ascending=True, nulls_first=True).raw_sort
+    return SortExpr(e, ascending=True, nulls_first=False).raw_sort
 
 
 def sort_list_to_raw_sort_list(
@@ -893,7 +893,7 @@ class Expr:  # noqa: PLW1641
         """
         return Expr(self.expr.alias(name, metadata))
 
-    def sort(self, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
+    def sort(self, ascending: bool = True, nulls_first: bool = False) -> SortExpr:
         """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
         Args:

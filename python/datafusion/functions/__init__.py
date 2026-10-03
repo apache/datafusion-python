@@ -808,7 +808,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
     return Expr(f.concat_ws(separator, args))
 
 
-def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
+def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = False) -> SortExpr:
     """Creates a new sort expression.
 
     Examples:
