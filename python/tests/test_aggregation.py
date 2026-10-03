@@ -102,6 +102,16 @@ def df_aggregate_100():
         (f.var(column("a")), lambda a, b, c, d: np.array(np.var(a, ddof=1))),
         (f.var_pop(column("b")), lambda a, b, c, d: np.array(np.var(b, ddof=0))),
         (f.var_samp(column("c")), lambda a, b, c, d: np.array(np.var(c, ddof=1))),
+        # Column names in place of column(...)
+        (f.avg("a"), lambda a, b, c, d: np.array(np.average(a))),
+        (f.corr("a", "b"), lambda a, b, c, d: np.array(np.corrcoef(a, b)[0][1])),
+        (f.count("a"), lambda a, b, c, d: pa.array([len(a)])),
+        (f.covar("a", "b"), lambda a, b, c, d: np.array(np.cov(a, b, ddof=1)[0][1])),
+        (f.max("a"), lambda a, b, c, d: np.array(np.max(a))),
+        (f.mean("b"), lambda a, b, c, d: np.array(np.mean(b))),
+        (f.sum("b"), lambda a, b, c, d: np.array(np.sum(b.to_pylist()))),
+        (f.stddev_samp("c"), lambda a, b, c, d: np.array(np.std(c, ddof=1))),
+        (f.var("a"), lambda a, b, c, d: np.array(np.var(a, ddof=1))),
     ],
 )
 def test_aggregation_stats(df, agg_expr, calc_expected):
@@ -496,3 +506,54 @@ def test_string_agg(name, expr, result) -> None:
     }
     df.show()
     assert df.collect()[0].to_pydict() == expected
+
+
+@pytest.mark.parametrize(
+    ("by_name", "by_expr"),
+    [
+        (f.count(["e"]), f.count([column("e")])),
+        (f.regr_slope("c", "a"), f.regr_slope(column("c"), column("a"))),
+        (
+            f.approx_percentile_cont("b", 0.5),
+            f.approx_percentile_cont(column("b"), 0.5),
+        ),
+        (
+            f.approx_percentile_cont_with_weight("b", "a", 0.5),
+            f.approx_percentile_cont_with_weight(column("b"), column("a"), 0.5),
+        ),
+        (f.percentile_cont("c", 0.5), f.percentile_cont(column("c"), 0.5)),
+        (
+            f.first_value("a", order_by="c"),
+            f.first_value(column("a"), order_by="c"),
+        ),
+        (f.array_agg("a", order_by="a"), f.array_agg(column("a"), order_by="a")),
+        (f.bool_and("d"), f.bool_and(column("d"))),
+    ],
+)
+def test_aggregate_accepts_column_name(df, by_name, by_expr) -> None:
+    result = df.aggregate([], [by_name.alias("v")]).collect()[0]
+    expected = df.aggregate([], [by_expr.alias("v")]).collect()[0]
+    assert result == expected
+
+
+def test_string_agg_accepts_column_name() -> None:
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": ["one", "two", "three"], "b": [2, 0, 1]})
+
+    result = df.aggregate([], [f.string_agg("a", ",", order_by="b").alias("v")])
+
+    assert result.collect()[0].to_pydict() == {"v": ["two,three,one"]}
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda: f.sum(1),
+        lambda: f.corr("a", 1),
+        lambda: f.count(["a", 1]),
+        lambda: f.approx_percentile_cont_with_weight("a", 1, 0.5),
+    ],
+)
+def test_aggregate_rejects_non_column_input(build) -> None:
+    with pytest.raises(TypeError, match="Expected Expr or column name"):
+        build()
