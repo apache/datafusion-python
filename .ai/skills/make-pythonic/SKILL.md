@@ -338,6 +338,8 @@ def some_function(column: Expr | str) -> Expr:
 
 **IMPORTANT:** In `functions.py`, string arguments almost never mean column names. Functions operate on expressions, and column references should use `col()`. Category C applies mainly to DataFrame methods and context APIs, not to scalar/aggregate/window functions. Do NOT convert string arguments to column expressions in `functions.py` unless there is a very clear reason to do so.
 
+The documented exception is the column inputs of aggregate functions (`sum`, `avg`, `count`, `corr`, the `regr_*` family, and so on). There a string can only mean a column, so they accept `Expr | str` via `_to_raw_expr()`. Their literal arguments (for example `string_agg`'s `delimiter` or `nth_value`'s `n`) are unaffected.
+
 ## Implementation Steps
 
 For each function being updated:

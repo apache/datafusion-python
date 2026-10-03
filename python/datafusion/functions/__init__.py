@@ -54,6 +54,7 @@ from datafusion.expr import (
     Expr,
     SortExpr,
     SortKey,
+    _to_raw_expr,
     coerce_to_expr,
     coerce_to_expr_list,
     coerce_to_expr_or_none,
@@ -4924,7 +4925,7 @@ def element_at(map: Expr, key: Expr) -> Expr:
 
 # aggregate functions
 def approx_distinct(
-    expression: Expr,
+    expression: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Returns the approximate number of distinct values.
@@ -4937,7 +4938,7 @@ def approx_distinct(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Values to check for distinct entries
+        expression: Values to check for distinct entries (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -4960,10 +4961,10 @@ def approx_distinct(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
+    return Expr(f.approx_distinct(_to_raw_expr(expression), filter=filter_raw))
 
 
-def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
+def approx_median(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Returns the approximate median value.
 
     This aggregate function is similar to :py:func:`median`, but it will only
@@ -4973,7 +4974,7 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     the options ``order_by`` and ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Values to find the median for
+        expression: Values to find the median for (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -4995,11 +4996,11 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
         2.5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.approx_median(expression.expr, filter=filter_raw))
+    return Expr(f.approx_median(_to_raw_expr(expression), filter=filter_raw))
 
 
 def approx_percentile_cont(
-    sort_expression: Expr | SortExpr,
+    sort_expression: Expr | SortExpr | str,
     percentile: float,
     num_centroids: int | None = None,
     filter: Expr | None = None,
@@ -5021,6 +5022,7 @@ def approx_percentile_cont(
 
     Args:
         sort_expression: Values for which to find the approximate percentile
+            (expression, sort expression, or column name)
         percentile: This must be between 0.0 and 1.0, inclusive
         num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
@@ -5044,6 +5046,8 @@ def approx_percentile_cont(
         >>> result.collect_column("v")[0].as_py()
         3.5
     """
+    if isinstance(sort_expression, str):
+        sort_expression = Expr.column(sort_expression)
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(
@@ -5054,8 +5058,8 @@ def approx_percentile_cont(
 
 
 def approx_percentile_cont_with_weight(
-    sort_expression: Expr | SortExpr,
-    weight: Expr,
+    sort_expression: Expr | SortExpr | str,
+    weight: Expr | str,
     percentile: float,
     num_centroids: int | None = None,
     filter: Expr | None = None,
@@ -5070,7 +5074,9 @@ def approx_percentile_cont_with_weight(
 
     Args:
         sort_expression: Values for which to find the approximate percentile
+            (expression, sort expression, or column name)
         weight: Relative weight for each of the values in ``expression``
+            (expression or column name)
         percentile: This must be between 0.0 and 1.0, inclusive
         num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
@@ -5094,12 +5100,14 @@ def approx_percentile_cont_with_weight(
         >>> result.collect_column("v")[0].as_py()
         2.5
     """
+    if isinstance(sort_expression, str):
+        sort_expression = Expr.column(sort_expression)
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont_with_weight(
             sort_expr_raw,
-            weight.expr,
+            _to_raw_expr(weight),
             percentile,
             num_centroids=num_centroids,
             filter=filter_raw,
@@ -5108,7 +5116,7 @@ def approx_percentile_cont_with_weight(
 
 
 def percentile_cont(
-    sort_expression: Expr | SortExpr,
+    sort_expression: Expr | SortExpr | str,
     percentile: float,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5121,7 +5129,8 @@ def percentile_cont(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        sort_expression: Values for which to find the percentile
+        sort_expression: Values for which to find the percentile (expression, sort
+            expression, or column name)
         percentile: This must be between 0.0 and 1.0, inclusive
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5143,13 +5152,15 @@ def percentile_cont(
         >>> result.collect_column("v")[0].as_py()
         3.5
     """
+    if isinstance(sort_expression, str):
+        sort_expression = Expr.column(sort_expression)
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
 
 
 def quantile_cont(
-    sort_expression: Expr | SortExpr,
+    sort_expression: Expr | SortExpr | str,
     percentile: float,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5162,7 +5173,7 @@ def quantile_cont(
 
 
 def array_agg(
-    expression: Expr,
+    expression: Expr | str,
     distinct: bool = False,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -5177,7 +5188,7 @@ def array_agg(
     the option ``null_treatment``.
 
     Args:
-        expression: Values to combine into an array
+        expression: Values to combine into an array (expression or column name)
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values. Accepts column names or expressions.
@@ -5214,7 +5225,10 @@ def array_agg(
 
     return Expr(
         f.array_agg(
-            expression.expr, distinct=distinct, filter=filter_raw, order_by=order_by_raw
+            _to_raw_expr(expression),
+            distinct=distinct,
+            filter=filter_raw,
+            order_by=order_by_raw,
         )
     )
 
@@ -5279,7 +5293,7 @@ def grouping(
 
 
 def avg(
-    expression: Expr,
+    expression: Expr | str,
     distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5291,7 +5305,7 @@ def avg(
     the options ``order_by`` and ``null_treatment``.
 
     Args:
-        expression: Values to combine into an array
+        expression: Values to combine into an array (expression or column name)
         distinct: If True, duplicate values are removed before averaging.
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5322,10 +5336,10 @@ def avg(
         2.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.avg(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(f.avg(_to_raw_expr(expression), distinct=distinct, filter=filter_raw))
 
 
-def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
+def corr(value_y: Expr | str, value_x: Expr | str, filter: Expr | None = None) -> Expr:
     """Returns the correlation coefficient between ``value1`` and ``value2``.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -5334,8 +5348,8 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        value_y: The dependent variable for correlation
-        value_x: The independent variable for correlation
+        value_y: The dependent variable for correlation (expression or column name)
+        value_x: The independent variable for correlation (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5357,11 +5371,11 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         1.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
+    return Expr(f.corr(_to_raw_expr(value_y), _to_raw_expr(value_x), filter=filter_raw))
 
 
 def count(
-    expressions: Expr | list[Expr] | None = None,
+    expressions: Expr | str | list[Expr | str] | None = None,
     distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5373,7 +5387,8 @@ def count(
     the options ``order_by`` and ``null_treatment``.
 
     Args:
-        expressions: Argument to perform bitwise calculation on
+        expressions: Argument to perform bitwise calculation on (expression, column
+            name, or a list of either)
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5401,14 +5416,16 @@ def count(
     if expressions is None:
         args = [Expr.literal(1).expr]
     elif isinstance(expressions, list):
-        args = [arg.expr for arg in expressions]
+        args = [_to_raw_expr(arg) for arg in expressions]
     else:
-        args = [expressions.expr]
+        args = [_to_raw_expr(expressions)]
 
     return Expr(f.count(*args, distinct=distinct, filter=filter_raw))
 
 
-def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
+def covar_pop(
+    value_y: Expr | str, value_x: Expr | str, filter: Expr | None = None
+) -> Expr:
     """Computes the population covariance.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -5417,8 +5434,8 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        value_y: The dependent variable for covariance
-        value_x: The independent variable for covariance
+        value_y: The dependent variable for covariance (expression or column name)
+        value_x: The independent variable for covariance (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5446,10 +5463,14 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
         1.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
+    return Expr(
+        f.covar_pop(_to_raw_expr(value_y), _to_raw_expr(value_x), filter=filter_raw)
+    )
 
 
-def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
+def covar_samp(
+    value_y: Expr | str, value_x: Expr | str, filter: Expr | None = None
+) -> Expr:
     """Computes the sample covariance.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -5458,8 +5479,8 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        value_y: The dependent variable for covariance
-        value_x: The independent variable for covariance
+        value_y: The dependent variable for covariance (expression or column name)
+        value_x: The independent variable for covariance (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5481,10 +5502,12 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
         0.5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
+    return Expr(
+        f.covar_samp(_to_raw_expr(value_y), _to_raw_expr(value_x), filter=filter_raw)
+    )
 
 
-def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
+def covar(value_y: Expr | str, value_x: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
     See Also:
@@ -5493,14 +5516,14 @@ def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     return covar_samp(value_y, value_x, filter)
 
 
-def max(expression: Expr, filter: Expr | None = None) -> Expr:
+def max(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the maximum value of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The value to find the maximum of
+        expression: The value to find the maximum of (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5522,10 +5545,10 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
         2
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.max(expression.expr, filter=filter_raw))
+    return Expr(f.max(_to_raw_expr(expression), filter=filter_raw))
 
 
-def mean(expression: Expr, filter: Expr | None = None) -> Expr:
+def mean(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     See Also:
@@ -5535,7 +5558,7 @@ def mean(expression: Expr, filter: Expr | None = None) -> Expr:
 
 
 def median(
-    expression: Expr, distinct: bool = False, filter: Expr | None = None
+    expression: Expr | str, distinct: bool = False, filter: Expr | None = None
 ) -> Expr:
     """Computes the median of a set of numbers.
 
@@ -5546,7 +5569,7 @@ def median(
     the options ``order_by`` and ``null_treatment``.
 
     Args:
-        expression: The value to compute the median of
+        expression: The value to compute the median of (expression or column name)
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5570,17 +5593,19 @@ def median(
         1.5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(
+        f.median(_to_raw_expr(expression), distinct=distinct, filter=filter_raw)
+    )
 
 
-def min(expression: Expr, filter: Expr | None = None) -> Expr:
+def min(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the minimum value of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The value to find the minimum of
+        expression: The value to find the minimum of (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5602,11 +5627,11 @@ def min(expression: Expr, filter: Expr | None = None) -> Expr:
         2
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.min(expression.expr, filter=filter_raw))
+    return Expr(f.min(_to_raw_expr(expression), filter=filter_raw))
 
 
 def sum(
-    expression: Expr,
+    expression: Expr | str,
     distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5618,7 +5643,7 @@ def sum(
     the options ``order_by`` and ``null_treatment``.
 
     Args:
-        expression: Values to combine into an array
+        expression: Values to combine into an array (expression or column name)
         distinct: If True, duplicate values are removed before summing.
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5629,6 +5654,12 @@ def sum(
         ...     [], [dfn.functions.sum(
         ...         dfn.col("a")
         ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        6
+
+        A column name can be passed in place of ``col(...)``:
+
+        >>> result = df.aggregate([], [dfn.functions.sum("a").alias("v")])
         >>> result.collect_column("v")[0].as_py()
         6
 
@@ -5649,17 +5680,17 @@ def sum(
         6
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.sum(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(f.sum(_to_raw_expr(expression), distinct=distinct, filter=filter_raw))
 
 
-def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
+def stddev(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the standard deviation of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The value to find the minimum of
+        expression: The value to find the minimum of (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5681,17 +5712,17 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
         1.41...
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.stddev(expression.expr, filter=filter_raw))
+    return Expr(f.stddev(_to_raw_expr(expression), filter=filter_raw))
 
 
-def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
+def stddev_pop(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the population standard deviation of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The value to find the minimum of
+        expression: The value to find the minimum of (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5716,10 +5747,10 @@ def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         1.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
+    return Expr(f.stddev_pop(_to_raw_expr(expression), filter=filter_raw))
 
 
-def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
+def stddev_samp(arg: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     See Also:
@@ -5728,7 +5759,7 @@ def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     return stddev(arg, filter=filter)
 
 
-def var(expression: Expr, filter: Expr | None = None) -> Expr:
+def var(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
@@ -5737,14 +5768,14 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
     return var_samp(expression, filter)
 
 
-def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
+def var_pop(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The variable to compute the variance for
+        expression: The variable to compute the variance for (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5766,10 +5797,10 @@ def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
         1.0
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.var_pop(expression.expr, filter=filter_raw))
+    return Expr(f.var_pop(_to_raw_expr(expression), filter=filter_raw))
 
 
-def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
+def var_population(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
     See Also:
@@ -5778,14 +5809,14 @@ def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
     return var_pop(expression, filter)
 
 
-def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
+def var_samp(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: The variable to compute the variance for
+        expression: The variable to compute the variance for (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5807,10 +5838,10 @@ def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
         0.5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.var_sample(expression.expr, filter=filter_raw))
+    return Expr(f.var_sample(_to_raw_expr(expression), filter=filter_raw))
 
 
-def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
+def var_sample(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     See Also:
@@ -5820,8 +5851,8 @@ def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
 
 
 def regr_avgx(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the average of the independent variable ``x``.
@@ -5833,8 +5864,8 @@ def regr_avgx(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5857,12 +5888,12 @@ def regr_avgx(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_avgx(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_avgx(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_avgy(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the average of the dependent variable ``y``.
@@ -5874,8 +5905,8 @@ def regr_avgy(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5898,12 +5929,12 @@ def regr_avgy(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_avgy(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_avgy(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_count(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Counts the number of rows in which both expressions are not null.
@@ -5915,8 +5946,8 @@ def regr_count(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5939,12 +5970,12 @@ def regr_count(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_count(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_count(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_intercept(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the intercept from the linear regression.
@@ -5956,8 +5987,8 @@ def regr_intercept(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5982,12 +6013,12 @@ def regr_intercept(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_intercept(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_intercept(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_r2(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the R-squared value from linear regression.
@@ -5999,8 +6030,8 @@ def regr_r2(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6023,12 +6054,12 @@ def regr_r2(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_r2(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_r2(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_slope(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the slope from linear regression.
@@ -6040,8 +6071,8 @@ def regr_slope(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6064,12 +6095,12 @@ def regr_slope(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_slope(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_slope(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_sxx(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of squares of the independent variable ``x``.
@@ -6081,8 +6112,8 @@ def regr_sxx(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6105,12 +6136,12 @@ def regr_sxx(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_sxx(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_sxx(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_sxy(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of products of pairs of numbers.
@@ -6122,8 +6153,8 @@ def regr_sxy(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6146,12 +6177,12 @@ def regr_sxy(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_sxy(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_sxy(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def regr_syy(
-    y: Expr,
-    x: Expr,
+    y: Expr | str,
+    x: Expr | str,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of squares of the dependent variable ``y``.
@@ -6163,8 +6194,8 @@ def regr_syy(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        y: The linear regression dependent variable
-        x: The linear regression independent variable
+        y: The linear regression dependent variable (expression or column name)
+        x: The linear regression independent variable (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6187,11 +6218,11 @@ def regr_syy(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    return Expr(f.regr_syy(y.expr, x.expr, filter=filter_raw))
+    return Expr(f.regr_syy(_to_raw_expr(y), _to_raw_expr(x), filter=filter_raw))
 
 
 def first_value(
-    expression: Expr,
+    expression: Expr | str,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
@@ -6205,6 +6236,7 @@ def first_value(
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
@@ -6238,7 +6270,7 @@ def first_value(
 
     return Expr(
         f.first_value(
-            expression.expr,
+            _to_raw_expr(expression),
             filter=filter_raw,
             order_by=order_by_raw,
             null_treatment=null_treatment.value,
@@ -6247,7 +6279,7 @@ def first_value(
 
 
 def last_value(
-    expression: Expr,
+    expression: Expr | str,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
@@ -6261,6 +6293,7 @@ def last_value(
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
@@ -6294,7 +6327,7 @@ def last_value(
 
     return Expr(
         f.last_value(
-            expression.expr,
+            _to_raw_expr(expression),
             filter=filter_raw,
             order_by=order_by_raw,
             null_treatment=null_treatment.value,
@@ -6303,7 +6336,7 @@ def last_value(
 
 
 def nth_value(
-    expression: Expr,
+    expression: Expr | str,
     n: int,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -6318,6 +6351,7 @@ def nth_value(
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         n: Index of value to return. Starts at 1.
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
@@ -6351,7 +6385,7 @@ def nth_value(
 
     return Expr(
         f.nth_value(
-            expression.expr,
+            _to_raw_expr(expression),
             n,
             filter=filter_raw,
             order_by=order_by_raw,
@@ -6360,7 +6394,7 @@ def nth_value(
     )
 
 
-def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
+def bit_and(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the bitwise AND of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
@@ -6370,6 +6404,7 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6392,10 +6427,10 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
         5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_and(expression.expr, filter=filter_raw))
+    return Expr(f.bit_and(_to_raw_expr(expression), filter=filter_raw))
 
 
-def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
+def bit_or(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the bitwise OR of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
@@ -6405,6 +6440,7 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6429,11 +6465,11 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
         6
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_or(expression.expr, filter=filter_raw))
+    return Expr(f.bit_or(_to_raw_expr(expression), filter=filter_raw))
 
 
 def bit_xor(
-    expression: Expr, distinct: bool = False, filter: Expr | None = None
+    expression: Expr | str, distinct: bool = False, filter: Expr | None = None
 ) -> Expr:
     """Computes the bitwise XOR of the argument.
 
@@ -6444,6 +6480,7 @@ def bit_xor(
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
 
@@ -6469,10 +6506,12 @@ def bit_xor(
         5
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(
+        f.bit_xor(_to_raw_expr(expression), distinct=distinct, filter=filter_raw)
+    )
 
 
-def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
+def bool_and(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the boolean AND of the argument.
 
     This aggregate function will compare every value in the input partition. These are
@@ -6482,7 +6521,7 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Argument to perform calculation on
+        expression: Argument to perform calculation on (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6508,10 +6547,10 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
         True
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bool_and(expression.expr, filter=filter_raw))
+    return Expr(f.bool_and(_to_raw_expr(expression), filter=filter_raw))
 
 
-def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
+def bool_or(expression: Expr | str, filter: Expr | None = None) -> Expr:
     """Computes the boolean OR of the argument.
 
     This aggregate function will compare every value in the input partition. These are
@@ -6521,7 +6560,7 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Argument to perform calculation on
+        expression: Argument to perform calculation on (expression or column name)
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6547,7 +6586,7 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
         False
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bool_or(expression.expr, filter=filter_raw))
+    return Expr(f.bool_or(_to_raw_expr(expression), filter=filter_raw))
 
 
 def lead(
@@ -7052,7 +7091,7 @@ def ntile(
 
 
 def string_agg(
-    expression: Expr,
+    expression: Expr | str,
     delimiter: str,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
@@ -7068,6 +7107,7 @@ def string_agg(
 
     Args:
         expression: Argument to perform bitwise calculation on
+            (expression or column name)
         delimiter: Text to place between each value of expression
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
@@ -7097,7 +7137,7 @@ def string_agg(
 
     return Expr(
         f.string_agg(
-            expression.expr,
+            _to_raw_expr(expression),
             delimiter,
             filter=filter_raw,
             order_by=order_by_raw,
