@@ -108,6 +108,32 @@ class ExplainFormat(Enum):
     """Graphviz DOT format for graph rendering."""
 
 
+class ExplainAnalyzeLevel(Enum):
+    """Which metrics :py:meth:`DataFrame.explain` reports when ``analyze=True``."""
+
+    SUMMARY = "summary"
+    """Common metrics for finding which operator is slow."""
+
+    DEV = "dev"
+    """All metrics, including those for deep operator-level introspection."""
+
+
+class ExplainMetricCategory(Enum):
+    """Category of metric reported by :py:meth:`DataFrame.explain` with ``analyze``."""
+
+    ROWS = "rows"
+    """Row counts, such as ``output_rows``."""
+
+    BYTES = "bytes"
+    """Byte sizes, such as ``output_bytes``."""
+
+    TIMING = "timing"
+    """Elapsed times, such as ``elapsed_compute``."""
+
+    UNCATEGORIZED = "uncategorized"
+    """Metrics that declare no category."""
+
+
 # excerpt from deltalake
 # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
 class Compression(Enum):
@@ -1207,6 +1233,9 @@ class DataFrame:
         verbose: bool = False,
         analyze: bool = False,
         format: ExplainFormat | None = None,
+        show_statistics: bool | None = None,
+        analyze_level: ExplainAnalyzeLevel | None = None,
+        analyze_categories: Iterable[ExplainMetricCategory] | None = None,
     ) -> None:
         """Print an explanation of the DataFrame's plan so far.
 
@@ -1217,6 +1246,18 @@ class DataFrame:
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
                 :py:attr:`ExplainFormat.INDENT`.
+            show_statistics: If ``True``, include each operator's statistics.
+                ``None`` uses the ``datafusion.explain.show_statistics``
+                setting.
+            analyze_level: Which metrics to report with ``analyze``. ``None``
+                uses the ``datafusion.explain.analyze_level`` setting.
+            analyze_categories: Report only metrics in these categories with
+                ``analyze``; an empty iterable reports none. ``None`` uses the
+                ``datafusion.explain.analyze_categories`` setting.
+
+        Raises:
+            ValueError: If ``show_statistics`` is set with ``analyze``, or
+                ``analyze_level`` or ``analyze_categories`` is set without it.
 
         Examples:
             Show the plan in tree format:
@@ -1229,9 +1270,31 @@ class DataFrame:
             Show plan with runtime metrics:
 
             >>> df.explain(analyze=True)  # doctest: +SKIP
+
+            Show only row-count metrics:
+
+            >>> from datafusion.dataframe import ExplainMetricCategory
+            >>> df.explain(
+            ...     analyze=True, analyze_categories=[ExplainMetricCategory.ROWS]
+            ... )  # doctest: +SKIP
         """
+        if analyze and show_statistics is not None:
+            msg = "show_statistics cannot be combined with analyze"
+            raise ValueError(msg)
+        if not analyze and analyze_level is not None:
+            msg = "analyze_level requires analyze"
+            raise ValueError(msg)
+        if not analyze and analyze_categories is not None:
+            msg = "analyze_categories requires analyze"
+            raise ValueError(msg)
         fmt = format.value if format is not None else None
-        self.df.explain(verbose, analyze, fmt)
+        level = analyze_level.value if analyze_level is not None else None
+        categories = (
+            [c.value for c in analyze_categories]
+            if analyze_categories is not None
+            else None
+        )
+        self.df.explain(verbose, analyze, fmt, show_statistics, level, categories)
 
     def logical_plan(self) -> LogicalPlan:
         """Return the unoptimized ``LogicalPlan``.
@@ -1855,7 +1918,8 @@ class DataFrame:
 
         Args:
             value: Value to replace nulls with. Will be cast to match column type.
-            subset: Optional list of column names to fill. If None, fills all columns.
+            subset: Optional list of column names to fill. If None, fills all columns;
+                an empty list fills none.
 
         Returns:
             DataFrame with null values replaced where type casting is possible
@@ -1868,12 +1932,53 @@ class DataFrame:
             >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
             [0, 1, 3]
 
+            >>> df.fill_null(0, subset=[]).to_pydict()
+            {'a': [1, None, 3], 'b': [None, 5, 6]}
+
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
+            - Fails on a DataFrame with an uppercase or dotted column name; see
+              :ref:`fill_column_names`
         """
+        if subset is not None and len(subset) == 0:
+            return self
         return DataFrame(self.df.fill_null(value, subset))
+
+    def fill_nan(self, value: float, subset: list[str] | None = None) -> DataFrame:
+        """Fill NaN values in floating-point columns with a value.
+
+        Only floating-point columns are changed; others are kept unchanged, as is
+        any column ``value`` cannot be cast to. NaN is distinct from null, which
+        :py:meth:`fill_null` handles. Fails on a DataFrame with an uppercase or
+        dotted column name; see :ref:`fill_column_names`.
+
+        Args:
+            value: Value to replace NaN with. Will be cast to match column type.
+            subset: Optional list of column names to fill. If None, fills all
+                floating-point columns; an empty list fills none.
+
+        Returns:
+            DataFrame with NaN values replaced.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> nan = float("nan")
+            >>> df = ctx.from_pydict({"a": [1.0, nan, None], "b": [nan, 2.0, 3.0]})
+            >>> df.fill_nan(0.0).to_pydict()
+            {'a': [1.0, 0.0, None], 'b': [0.0, 2.0, 3.0]}
+
+            >>> df.fill_nan(0.0, subset=["a"]).collect_column("b")[0].as_py()
+            nan
+
+            >>> df.fill_nan(0.0, subset=[]).collect_column("b")[0].as_py()
+            nan
+        """
+        if subset is not None and len(subset) == 0:
+            return self
+        return DataFrame(self.df.fill_nan(value, subset))
 
 
 class InsertOp(Enum):
