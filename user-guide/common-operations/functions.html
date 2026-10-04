@@ -648,16 +648,16 @@ NULL-propagation, 1-indexed substrings, HALF_UP rounding, etc.), see
 +-------------------------------+
 | now()                         |
 +-------------------------------+
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
-| 2026-09-29T18:58:48.954962516 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
+| 2026-10-04T16:25:56.059570654 |
 +-------------------------------+
 Data truncated.
 </pre></div>
@@ -882,6 +882,35 @@ Data truncated.
 </div>
 <p>The fill value will be cast to match each column’s type. If casting fails for a column, that column remains unchanged.</p>
 </section>
+<section id="fill-nan">
+<h2>fill_nan<a class="headerlink" href="#fill-nan" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">fill_nan()</span></code> method replaces NaN values in floating-point columns. NaN is
+distinct from NULL, which <code class="docutils literal notranslate"><span class="pre">fill_null()</span></code> handles:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Replace NaN with 0.0 in every floating-point column</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+<span class="c1"># Replace NaN only in specific columns</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;price&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="column-names-with-uppercase-letters-or-dots">
+<span id="fill-column-names"></span><h2>Column names with uppercase letters or dots<a class="headerlink" href="#column-names-with-uppercase-letters-or-dots" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fill_null()</span></code> and <code class="docutils literal notranslate"><span class="pre">fill_nan()</span></code> fail on a DataFrame that has any column whose
+name contains an uppercase letter or a <code class="docutils literal notranslate"><span class="pre">.</span></code>, even when that column is not in
+<code class="docutils literal notranslate"><span class="pre">subset</span></code>
+(<a class="reference external" href="https://github.com/apache/datafusion/issues/25829">apache/datafusion#25829</a>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;Price&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">),</span> <span class="mf">2.0</span><span class="p">],</span> <span class="s2">&quot;qty&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">]})</span>
+<span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;qty&quot;</span><span class="p">])</span>
+<span class="c1"># Schema error: No field named price. Did you mean &#39;...&quot;Price&quot;&#39;?</span>
+</pre></div>
+</div>
+<p>Until that is fixed, rename such columns first. Quote the old name so it is
+not normalized:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">with_column_renamed</span><span class="p">(</span><span class="s1">&#39;&quot;Price&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;qty&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -942,6 +971,8 @@ Data truncated.
 </li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-missing-values">Handling Missing Values</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fill-null">fill_null</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fill-nan">fill_nan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#column-names-with-uppercase-letters-or-dots">Column names with uppercase letters or dots</a></li>
 </ul>
 </li>
 </ul>

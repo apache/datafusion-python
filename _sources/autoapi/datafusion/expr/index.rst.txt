@@ -631,8 +631,9 @@ Module Contents
       Only evaluate distinct values for an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -671,8 +672,9 @@ Module Contents
       Filter an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -904,11 +906,18 @@ Module Contents
 
    .. py:method:: over(window: Window) -> Expr
 
-      Turn an aggregate function into a window function.
+      Evaluate an aggregate or window function over a window.
 
-      This function turns any aggregate function into a window function. With the
+      On an aggregate function this turns it into a window function. With the
       exception of ``partition_by``, how each of the parameters is used is determined
       by the underlying aggregate function.
+
+      On an aggregate, the ``null_treatment``, ``filter``, and ``distinct`` options
+      it was built with are kept, and an ``order_by`` raises; see
+      :ref:`aggregate_over_options`.
+
+      On a window function that already has a ``partition_by``, ``order_by``, or
+      ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
       :param window: Window definition
 
@@ -919,8 +928,10 @@ Module Contents
       Set the partitioning for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 
@@ -1214,11 +1225,13 @@ Module Contents
 
    .. py:method:: window_frame(window_frame: WindowFrame) -> ExprFuncBuilder
 
-      Set the frame fora  window function.
+      Set the frame for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 

@@ -56,15 +56,18 @@ Functions
    datafusion.functions.acosh
    datafusion.functions.alias
    datafusion.functions.any_match
+   datafusion.functions.any_value
    datafusion.functions.approx_distinct
    datafusion.functions.approx_median
    datafusion.functions.approx_percentile_cont
    datafusion.functions.approx_percentile_cont_with_weight
    datafusion.functions.array
+   datafusion.functions.array_add
    datafusion.functions.array_agg
    datafusion.functions.array_any_match
    datafusion.functions.array_any_value
    datafusion.functions.array_append
+   datafusion.functions.array_avg
    datafusion.functions.array_cat
    datafusion.functions.array_compact
    datafusion.functions.array_concat
@@ -77,6 +80,7 @@ Functions
    datafusion.functions.array_except
    datafusion.functions.array_extract
    datafusion.functions.array_filter
+   datafusion.functions.array_first
    datafusion.functions.array_has
    datafusion.functions.array_has_all
    datafusion.functions.array_has_any
@@ -93,6 +97,7 @@ Functions
    datafusion.functions.array_position
    datafusion.functions.array_positions
    datafusion.functions.array_prepend
+   datafusion.functions.array_product
    datafusion.functions.array_push_back
    datafusion.functions.array_push_front
    datafusion.functions.array_remove
@@ -104,8 +109,11 @@ Functions
    datafusion.functions.array_replace_n
    datafusion.functions.array_resize
    datafusion.functions.array_reverse
+   datafusion.functions.array_scale
    datafusion.functions.array_slice
    datafusion.functions.array_sort
+   datafusion.functions.array_subtract
+   datafusion.functions.array_sum
    datafusion.functions.array_to_string
    datafusion.functions.array_transform
    datafusion.functions.array_union
@@ -175,6 +183,7 @@ Functions
    datafusion.functions.exp
    datafusion.functions.extract
    datafusion.functions.factorial
+   datafusion.functions.file_row_index
    datafusion.functions.find_in_set
    datafusion.functions.first_value
    datafusion.functions.flatten
@@ -190,6 +199,7 @@ Functions
    datafusion.functions.in_list
    datafusion.functions.initcap
    datafusion.functions.inner_product
+   datafusion.functions.input_file_name
    datafusion.functions.instr
    datafusion.functions.is_nan
    datafusion.functions.isnan
@@ -204,9 +214,11 @@ Functions
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
+   datafusion.functions.list_add
    datafusion.functions.list_any_match
    datafusion.functions.list_any_value
    datafusion.functions.list_append
+   datafusion.functions.list_avg
    datafusion.functions.list_cat
    datafusion.functions.list_compact
    datafusion.functions.list_concat
@@ -219,6 +231,7 @@ Functions
    datafusion.functions.list_except
    datafusion.functions.list_extract
    datafusion.functions.list_filter
+   datafusion.functions.list_first
    datafusion.functions.list_has
    datafusion.functions.list_has_all
    datafusion.functions.list_has_any
@@ -236,6 +249,7 @@ Functions
    datafusion.functions.list_position
    datafusion.functions.list_positions
    datafusion.functions.list_prepend
+   datafusion.functions.list_product
    datafusion.functions.list_push_back
    datafusion.functions.list_push_front
    datafusion.functions.list_remove
@@ -247,8 +261,11 @@ Functions
    datafusion.functions.list_replace_n
    datafusion.functions.list_resize
    datafusion.functions.list_reverse
+   datafusion.functions.list_scale
    datafusion.functions.list_slice
    datafusion.functions.list_sort
+   datafusion.functions.list_subtract
+   datafusion.functions.list_sum
    datafusion.functions.list_to_string
    datafusion.functions.list_transform
    datafusion.functions.list_union
@@ -293,6 +310,7 @@ Functions
    datafusion.functions.power
    datafusion.functions.quantile_cont
    datafusion.functions.radians
+   datafusion.functions.rand
    datafusion.functions.random
    datafusion.functions.range
    datafusion.functions.rank
@@ -340,6 +358,7 @@ Functions
    datafusion.functions.substr
    datafusion.functions.substr_index
    datafusion.functions.substring
+   datafusion.functions.substring_index
    datafusion.functions.sum
    datafusion.functions.tan
    datafusion.functions.tanh
@@ -452,6 +471,40 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`array_any_match`.
 
 
+.. py:function:: any_value(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns an arbitrary non-null value from each group.
+
+   Returns NULL if every value in the group is NULL. Which value is returned
+   is not specified and may differ between runs.
+
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Argument to pick a value from
+   :param filter: If provided, only consider rows for which the filter is True
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [None, 7, None]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.any_value(dfn.col("a")).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   7
+
+   >>> df = ctx.from_pydict({"a": [None, 7, 8], "b": [1, 2, 3]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.any_value(
+   ...         dfn.col("a"),
+   ...         filter=dfn.col("b") > dfn.lit(2)
+   ...     ).alias("v")]
+   ... )
+   >>> result.collect_column("v")[0].as_py()
+   8
+
+
 .. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the approximate number of distinct values.
@@ -460,7 +513,7 @@ Package Contents
    will approximate the number of distinct entries. It may return significantly faster
    than :py:func:`count` for some DataFrames.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: Values to check for distinct entries
@@ -493,7 +546,7 @@ Package Contents
    This aggregate function is similar to :py:func:`median`, but it will only
    approximate the median. It may return significantly faster for some DataFrames.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``, and ``distinct``.
 
    :param expression: Values to find the median for
@@ -533,8 +586,10 @@ Package Contents
    compute the percentile. You can limit the number of bins used in this algorithm by
    setting the ``num_centroids`` parameter.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the options ``null_treatment`` and ``distinct``. A chained ``order_by`` sets only
+   the sort direction; the percentile is still computed over ``sort_expression``,
+   so pass the same expression.
 
    :param sort_expression: Values for which to find the approximate percentile
    :param percentile: This must be between 0.0 and 1.0, inclusive
@@ -569,8 +624,10 @@ Package Contents
    This aggregate function is similar to :py:func:`approx_percentile_cont` except that
    it uses the associated associated weights.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the option ``null_treatment`` and rejects ``distinct``. A chained ``order_by``
+   sets only the sort direction; the percentile is still computed over
+   ``sort_expression``, so pass the same expression.
 
    :param sort_expression: Values for which to find the approximate percentile
    :param weight: Relative weight for each of the values in ``expression``
@@ -606,6 +663,26 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`make_array`.
 
 
+.. py:function:: array_add(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the element-wise sum of two numeric arrays of equal length.
+
+   A NULL element in either input produces a NULL at that position. Execution
+   fails if the arrays in a row have different lengths.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict(
+   ...     {"a": [[1.0, 2.0, 3.0]], "b": [[10.0, 20.0, 30.0]]}
+   ... )
+   >>> result = df.select(
+   ...     dfn.functions.array_add(dfn.col("a"), dfn.col("b")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   [11.0, 22.0, 33.0]
+
+
 .. py:function:: array_agg(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
 
    Aggregate values into an array.
@@ -614,7 +691,7 @@ Package Contents
    consider :py:func:`array_sort` after aggregation.
    [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the option ``null_treatment``.
 
    :param expression: Values to combine into an array
@@ -707,6 +784,24 @@ Package Contents
    ...     dfn.functions.array_append(dfn.col("a"), dfn.lit(4)).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [1, 2, 3, 4]
+
+
+.. py:function:: array_avg(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the arithmetic mean of the elements of a numeric array.
+
+   NULL elements are skipped and excluded from the count. Returns NULL if the
+   array is NULL, empty, or contains only NULL elements.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_avg(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   2.0
 
 
 .. py:function:: array_cat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -879,6 +974,36 @@ Package Contents
    .. seealso:: :py:func:`array_transform`, :py:func:`array_any_match`, :py:func:`lambda_`.
 
 
+.. py:function:: array_first(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return the first element of ``array`` for which ``predicate`` is ``True``.
+
+   ``predicate`` may be a Python callable, converted to a lambda
+   automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+   return a boolean expression. Returns NULL if no element matches.
+
+   .. rubric:: Examples
+
+   Using a Python callable:
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+   >>> df.select(
+   ...     F.array_first(col("a"), lambda v: v > 2).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   3
+
+   Using an explicit lambda built with :py:func:`lambda_`:
+
+   >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+   >>> df.select(
+   ...     F.array_first(col("a"), predicate).alias("f")
+   ... ).collect_column("f")[0].as_py()
+   3
+
+   .. seealso:: :py:func:`array_filter`, :py:func:`array_any_match`, :py:func:`lambda_`.
+
+
 .. py:function:: array_has(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if the element appears in the first array, otherwise false.
@@ -953,7 +1078,7 @@ Package Contents
    [2, 3]
 
 
-.. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -1133,6 +1258,24 @@ Package Contents
    [0, 1, 2]
 
 
+.. py:function:: array_product(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the product of the elements of a numeric array.
+
+   NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+   contains only NULL elements.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[2.0, None, 3.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_product(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   6.0
+
+
 .. py:function:: array_push_back(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Appends an element to the end of an array.
@@ -1287,6 +1430,24 @@ Package Contents
    [3, 2, 1]
 
 
+.. py:function:: array_scale(array: datafusion.expr.Expr, scalar: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Multiplies each element of a numeric array by ``scalar``.
+
+   A NULL element produces a NULL at that position. Returns NULL if ``scalar``
+   is NULL.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1.0, 2.0, 3.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_scale(dfn.col("a"), 2.0).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   [2.0, 4.0, 6.0]
+
+
 .. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr | int, end: datafusion.expr.Expr | int, stride: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
@@ -1338,18 +1499,69 @@ Package Contents
    [None, 3, 1]
 
 
-.. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: array_subtract(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
 
-   Converts each element to its text representation.
+   Returns the element-wise difference of two numeric arrays of equal length.
+
+   Computes ``array1[i] - array2[i]``. A NULL element in either input produces
+   a NULL at that position. Execution fails if the arrays in a row have
+   different lengths.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
-   >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+   >>> df = ctx.from_pydict(
+   ...     {"a": [[10.0, 20.0, 30.0]], "b": [[1.0, 2.0, 3.0]]}
+   ... )
+   >>> result = df.select(
+   ...     dfn.functions.array_subtract(
+   ...         dfn.col("a"), dfn.col("b")
+   ...     ).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   [9.0, 18.0, 27.0]
+
+
+.. py:function:: array_sum(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the sum of the elements of a numeric array.
+
+   NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+   contains only NULL elements.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+   >>> result = df.select(
+   ...     dfn.functions.array_sum(dfn.col("a")).alias("result")
+   ... )
+   >>> result.collect_column("result")[0].as_py()
+   4.0
+
+
+.. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
+
+   Converts each element to its text representation.
+
+   NULL elements are omitted unless ``null_string`` is given, in which case it
+   is written in their place.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": [[1, None, 3]]})
    >>> result = df.select(
    ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
    >>> result.collect_column("s")[0].as_py()
-   '1,2,3'
+   '1,3'
+
+   >>> result = df.select(
+   ...     dfn.functions.array_to_string(
+   ...         dfn.col("a"), ",", null_string="*"
+   ...     ).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   '1,*,3'
 
 
 .. py:function:: array_transform(array: datafusion.expr.Expr, transform: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
@@ -1632,7 +1844,7 @@ Package Contents
 
    This aggregate function expects a numeric expression and will return a float.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
@@ -1667,16 +1879,17 @@ Package Contents
    2.0
 
 
-.. py:function:: bit_and(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: bit_and(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the bitwise AND of the argument.
 
    This aggregate function will bitwise compare every value in the input partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Argument to perform bitwise calculation on
+   :param distinct: If True, evaluate each unique value of expression only once
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -1713,16 +1926,17 @@ Package Contents
    8
 
 
-.. py:function:: bit_or(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: bit_or(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the bitwise OR of the argument.
 
    This aggregate function will bitwise compare every value in the input partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``.
 
    :param expression: Argument to perform bitwise calculation on
+   :param distinct: If True, evaluate each unique value of expression only once
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -1754,7 +1968,7 @@ Package Contents
 
    This aggregate function will bitwise compare every value in the input partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``.
 
    :param expression: Argument to perform bitwise calculation on
@@ -1791,7 +2005,7 @@ Package Contents
    This aggregate function will compare every value in the input partition. These are
    expected to be boolean values.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: Argument to perform calculation on
@@ -1828,7 +2042,7 @@ Package Contents
    This aggregate function will compare every value in the input partition. These are
    expected to be boolean values.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: Argument to perform calculation on
@@ -1858,15 +2072,24 @@ Package Contents
    False
 
 
-.. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: btrim(arg: datafusion.expr.Expr, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
-   Removes all characters, spaces by default, from both sides of a string.
+   Removes ``characters``, spaces by default, from both sides of a string.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [" a  "]})
    >>> trim_df = df.select(dfn.functions.btrim(dfn.col("a")).alias("trimmed"))
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   'a'
+
+   Trim a different set of characters:
+
+   >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+   >>> trim_df = df.select(
+   ...     dfn.functions.btrim(dfn.col("a"), characters="x").alias("trimmed")
+   ... )
    >>> trim_df.collect_column("trimmed")[0].as_py()
    'a'
 
@@ -2076,7 +2299,7 @@ Package Contents
 
    This aggregate function expects both values to be numeric and will return a float.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param value_y: The dependent variable for correlation
@@ -2205,7 +2428,7 @@ Package Contents
 
    This aggregate function will count the non-null rows provided in the expression.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``.
 
    :param expressions: Argument to perform bitwise calculation on
@@ -2239,8 +2462,9 @@ Package Contents
 
    This aggregate function will count all of the rows in the partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``distinct``, and ``null_treatment``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``. ``distinct`` counts the distinct
+   values of the constant ``1``, so the result is 1 for any non-empty input.
 
    :param filter: If provided, only count rows for which the filter is True
 
@@ -2275,7 +2499,7 @@ Package Contents
 
    This aggregate function expects both values to be numeric and will return a float.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param value_y: The dependent variable for covariance
@@ -2314,7 +2538,7 @@ Package Contents
 
    This aggregate function expects both values to be numeric and will return a float.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param value_y: The dependent variable for covariance
@@ -2694,6 +2918,30 @@ Package Contents
    6
 
 
+.. py:function:: file_row_index() -> datafusion.expr.Expr
+
+   Returns the zero-based position of the current row within its source file.
+
+   The index restarts at zero for each file, so rows from different files in one
+   scan can share a value. Only valid inside a scan of a Parquet table;
+   evaluating it anywhere else raises an error.
+
+   .. rubric:: Examples
+
+   >>> import tempfile, os
+   >>> import pyarrow as pa, pyarrow.parquet as pq
+   >>> tmp = tempfile.mkdtemp()
+   >>> path = os.path.join(tmp, "data.parquet")
+   >>> pq.write_table(pa.table({"a": [10, 20, 30]}), path)
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.read_parquet(path).filter(dfn.col("a") > dfn.lit(10))
+   >>> result = df.select(dfn.functions.file_row_index().alias("i"))
+   >>> result.collect_column("i").to_pylist()
+   [1, 2]
+
+   .. seealso:: :py:func:`input_file_name`.
+
+
 .. py:function:: find_in_set(string: datafusion.expr.Expr, string_list: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Find a string in a list of strings.
@@ -2719,7 +2967,7 @@ Package Contents
 
    This aggregate function will return the first value in the partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the option ``distinct``.
 
    :param expression: Argument to perform bitwise calculation on
@@ -2811,38 +3059,40 @@ Package Contents
    4
 
 
-.. py:function:: gen_series(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: gen_series(stop: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+                 gen_series(start: datafusion.expr.Expr | int, stop: datafusion.expr.Expr | int, step: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
-   Creates a list of values in the range between start and stop.
+   Creates a list of values from ``start`` up to and including ``stop``.
 
-   Unlike :py:func:`range`, this includes the upper bound.
+   Unlike :py:func:`range`, this includes the upper bound. With a single
+   argument it is ``stop`` and the series starts at 0.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [0]})
-   >>> result = df.select(
-   ...     dfn.functions.gen_series(
-   ...         dfn.lit(1), dfn.lit(5),
-   ...     ).alias("result"))
+   >>> result = df.select(dfn.functions.gen_series(3).alias("result"))
+   >>> result.collect_column("result")[0].as_py()
+   [0, 1, 2, 3]
+
+   Specify a ``stop``:
+
+   >>> result = df.select(dfn.functions.gen_series(1, stop=5).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [1, 2, 3, 4, 5]
 
-   Specify a custom ``step``:
+   Specify a ``step``:
 
    >>> result = df.select(
-   ...     dfn.functions.gen_series(
-   ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
-   ...     ).alias("result"))
+   ...     dfn.functions.gen_series(1, stop=10, step=3).alias("result"))
    >>> result.collect_column("result")[0].as_py()
    [1, 4, 7, 10]
 
 
-.. py:function:: generate_series(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: generate_series(stop: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+                 generate_series(start: datafusion.expr.Expr | int, stop: datafusion.expr.Expr | int, step: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
-   Creates a list of values in the range between start and stop.
-
-   Unlike :py:func:`range`, this includes the upper bound.
+   Creates a list of values from ``start`` up to and including ``stop``.
 
    .. seealso:: This is an alias for :py:func:`gen_series`.
 
@@ -3064,6 +3314,29 @@ Package Contents
    True
 
 
+.. py:function:: input_file_name() -> datafusion.expr.Expr
+
+   Returns the path of the file that produced the current row.
+
+   Only valid inside a scan of a file-backed table; evaluating it anywhere
+   else raises an error.
+
+   .. rubric:: Examples
+
+   >>> import tempfile, os
+   >>> import pyarrow as pa, pyarrow.parquet as pq
+   >>> tmp = tempfile.mkdtemp()
+   >>> path = os.path.join(tmp, "data.parquet")
+   >>> pq.write_table(pa.table({"a": [1, 2]}), path)
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.read_parquet(path)
+   >>> result = df.select(dfn.functions.input_file_name().alias("f"))
+   >>> result.collect_column("f")[0].as_py().endswith("data.parquet")
+   True
+
+   .. seealso:: :py:func:`file_row_index`.
+
+
 .. py:function:: instr(string: datafusion.expr.Expr, substring: datafusion.expr.Expr | str) -> datafusion.expr.Expr
 
    Finds the position from where the ``substring`` matches the ``string``.
@@ -3102,7 +3375,7 @@ Package Contents
    True
 
 
-.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
+.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
 
    Create a lag window function.
 
@@ -3129,6 +3402,8 @@ Package Contents
    :param partition_by: Expressions to partition the window frame on.
    :param order_by: Set ordering within the window frame. Accepts
                     column names or expressions.
+   :param null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+                          counting ``shift_offset`` rows.
 
    .. rubric:: Examples
 
@@ -3152,6 +3427,16 @@ Package Contents
    ...     ).alias("lag"))
    >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lag").to_pylist()
    [0, 1, 0]
+
+   >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+   >>> result = df.select(
+   ...     dfn.col("i"),
+   ...     dfn.functions.lag(
+   ...         dfn.col("v"), order_by="i",
+   ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+   ...     ).alias("lag"))
+   >>> result.sort(dfn.col("i")).collect_column("lag").to_pylist()
+   [None, 1, 1, 1]
 
 
 .. py:function:: lambda_(params: list[str], body: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3208,7 +3493,7 @@ Package Contents
 
    This aggregate function will return the last value in the partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the option ``distinct``.
 
    :param expression: Argument to perform bitwise calculation on
@@ -3257,7 +3542,7 @@ Package Contents
    12
 
 
-.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
+.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Any | None = None, partition_by: list[datafusion.expr.Expr] | datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
 
    Create a lead window function.
 
@@ -3279,7 +3564,7 @@ Package Contents
        +--------+------+-----+
 
    To set window function parameters use the window builder approach described in the
-   ref:`_window_functions` online documentation.
+   :ref:`window_functions` online documentation.
 
    :param arg: Value to return
    :param shift_offset: Number of rows following the current row.
@@ -3287,6 +3572,8 @@ Package Contents
    :param partition_by: Expressions to partition the window frame on.
    :param order_by: Set ordering within the window frame. Accepts
                     column names or expressions.
+   :param null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+                          counting ``shift_offset`` rows.
 
    .. rubric:: Examples
 
@@ -3310,6 +3597,16 @@ Package Contents
    ...     ).alias("lead"))
    >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lead").to_pylist()
    [2, 0, 0]
+
+   >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+   >>> result = df.select(
+   ...     dfn.col("i"),
+   ...     dfn.functions.lead(
+   ...         dfn.col("v"), order_by="i",
+   ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+   ...     ).alias("lead"))
+   >>> result.sort(dfn.col("i")).collect_column("lead").to_pylist()
+   [4, 4, 4, None]
 
 
 .. py:function:: least(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3371,6 +3668,13 @@ Package Contents
    3
 
 
+.. py:function:: list_add(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the element-wise sum of two numeric lists of equal length.
+
+   .. seealso:: This is an alias for :py:func:`array_add`.
+
+
 .. py:function:: list_any_match(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
 
    Return ``True`` if any element of a list satisfies a predicate.
@@ -3390,6 +3694,13 @@ Package Contents
    Appends an element to the end of an array.
 
    .. seealso:: This is an alias for :py:func:`array_append`.
+
+
+.. py:function:: list_avg(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the arithmetic mean of the elements of a numeric list.
+
+   .. seealso:: This is an alias for :py:func:`array_avg`.
 
 
 .. py:function:: list_cat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3476,6 +3787,13 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`array_filter`.
 
 
+.. py:function:: list_first(array: datafusion.expr.Expr, predicate: datafusion.expr.Expr | collections.abc.Callable[Ellipsis, Any]) -> datafusion.expr.Expr
+
+   Return the first element of a list for which a predicate is ``True``.
+
+   .. seealso:: This is an alias for :py:func:`array_first`.
+
+
 .. py:function:: list_has(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns true if the element appears in the array, otherwise false.
@@ -3511,7 +3829,7 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`array_intersect`.
 
 
-.. py:function:: list_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: list_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -3593,6 +3911,13 @@ Package Contents
    Prepends an element to the beginning of an array.
 
    .. seealso:: This is an alias for :py:func:`array_prepend`.
+
+
+.. py:function:: list_product(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the product of the elements of a numeric list.
+
+   .. seealso:: This is an alias for :py:func:`array_product`.
 
 
 .. py:function:: list_push_back(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -3678,6 +4003,13 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`array_reverse`.
 
 
+.. py:function:: list_scale(array: datafusion.expr.Expr, scalar: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Multiplies each element of a numeric list by a scalar.
+
+   .. seealso:: This is an alias for :py:func:`array_scale`.
+
+
 .. py:function:: list_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr | int, end: datafusion.expr.Expr | int, stride: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
    Returns a slice of the array.
@@ -3692,7 +4024,21 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`array_sort`.
 
 
-.. py:function:: list_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+.. py:function:: list_subtract(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the element-wise difference of two numeric lists of equal length.
+
+   .. seealso:: This is an alias for :py:func:`array_subtract`.
+
+
+.. py:function:: list_sum(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the sum of the elements of a numeric list.
+
+   .. seealso:: This is an alias for :py:func:`array_sum`.
+
+
+.. py:function:: list_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
    Converts each element to its text representation.
 
@@ -3816,9 +4162,9 @@ Package Contents
    '...the cat'
 
 
-.. py:function:: ltrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: ltrim(arg: datafusion.expr.Expr, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
-   Removes all characters, spaces by default, from the beginning of a string.
+   Removes ``characters``, spaces by default, from the beginning of a string.
 
    .. rubric:: Examples
 
@@ -3827,6 +4173,15 @@ Package Contents
    >>> trim_df = df.select(dfn.functions.ltrim(dfn.col("a")).alias("trimmed"))
    >>> trim_df.collect_column("trimmed")[0].as_py()
    'a  '
+
+   Trim a different set of characters:
+
+   >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+   >>> trim_df = df.select(
+   ...     dfn.functions.ltrim(dfn.col("a"), characters="x").alias("trimmed")
+   ... )
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   'axx'
 
 
 .. py:function:: make_array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -4016,7 +4371,7 @@ Package Contents
 
    Aggregate function that returns the maximum value of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The value to find the maximum of
@@ -4055,7 +4410,7 @@ Package Contents
    '5d41402abc4b2a76b9719d911017c592'
 
 
-.. py:function:: mean(expression: datafusion.expr.Expr, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: mean(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Returns the average (mean) value of the argument.
 
@@ -4069,7 +4424,7 @@ Package Contents
    This aggregate function returns the median value of the expression for the given
    aggregate function.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``.
 
    :param expression: The value to compute the median of
@@ -4101,7 +4456,7 @@ Package Contents
 
    Aggregate function that returns the minimum value of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The value to find the minimum of
@@ -4190,7 +4545,7 @@ Package Contents
 
    This aggregate function will return the n-th value in the partition.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the option ``distinct``.
 
    :param expression: Argument to perform bitwise calculation on
@@ -4422,18 +4777,21 @@ Package Contents
    [0.0, 0.5, 1.0, 0.0, 1.0]
 
 
-.. py:function:: percentile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: percentile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the exact percentile of input values using continuous interpolation.
 
    Unlike :py:func:`approx_percentile_cont`, this function computes the exact
    percentile value rather than an approximation.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``order_by``, ``null_treatment``, and ``distinct``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the option ``null_treatment``. A chained ``order_by`` sets only the sort
+   direction; the percentile is still computed over ``sort_expression``, so pass
+   the same expression.
 
    :param sort_expression: Values for which to find the percentile
    :param percentile: This must be between 0.0 and 1.0, inclusive
+   :param distinct: If True, duplicate values are removed before computing
    :param filter: If provided, only compute against rows for which the filter is True
 
    .. rubric:: Examples
@@ -4454,6 +4812,14 @@ Package Contents
    ...     ).alias("v")])
    >>> result.collect_column("v")[0].as_py()
    3.5
+
+   >>> df = ctx.from_pydict({"a": [1.0, 1.0, 1.0, 4.0]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.percentile_cont(
+   ...         dfn.col("a"), 0.5, distinct=True,
+   ...     ).alias("v")])
+   >>> result.collect_column("v")[0].as_py()
+   2.5
 
 
 .. py:function:: pi() -> datafusion.expr.Expr
@@ -4501,7 +4867,7 @@ Package Contents
    8.0
 
 
-.. py:function:: quantile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+.. py:function:: quantile_cont(sort_expression: datafusion.expr.Expr | datafusion.expr.SortExpr, percentile: float, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the exact percentile of input values using continuous interpolation.
 
@@ -4524,6 +4890,13 @@ Package Contents
    True
 
 
+.. py:function:: rand() -> datafusion.expr.Expr
+
+   Returns a random value in the range ``0.0 <= x < 1.0``.
+
+   .. seealso:: This is an alias for :py:func:`random`.
+
+
 .. py:function:: random() -> datafusion.expr.Expr
 
    Returns a random value in the range ``0.0 <= x < 1.0``.
@@ -4540,16 +4913,31 @@ Package Contents
    True
 
 
-.. py:function:: range(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: range(stop: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+                 range(start: datafusion.expr.Expr | int, stop: datafusion.expr.Expr | int, step: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
-   Create a list of values in the range between start and stop.
+   Create a list of values from ``start`` up to, but excluding, ``stop``.
+
+   With a single argument it is ``stop`` and the range starts at 0, like
+   Python's built-in :py:class:`range`.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": [1]})
-   >>> result = df.select(
-   ...     dfn.functions.range(dfn.lit(0), dfn.lit(5), dfn.lit(2)).alias("r"))
+   >>> result = df.select(dfn.functions.range(5).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   [0, 1, 2, 3, 4]
+
+   Specify a ``stop``:
+
+   >>> result = df.select(dfn.functions.range(1, stop=5).alias("r"))
+   >>> result.collect_column("r")[0].as_py()
+   [1, 2, 3, 4]
+
+   Specify a ``step``:
+
+   >>> result = df.select(dfn.functions.range(0, stop=5, step=2).alias("r"))
    >>> result.collect_column("r")[0].as_py()
    [0, 2, 4]
 
@@ -4773,7 +5161,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4807,7 +5195,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4841,7 +5229,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4875,7 +5263,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4911,7 +5299,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4945,7 +5333,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -4979,7 +5367,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -5013,7 +5401,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -5047,7 +5435,7 @@ Package Contents
    This is a linear regression aggregate function. Only non-null pairs of the inputs
    are evaluated.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param y: The linear regression dependent variable
@@ -5213,9 +5601,9 @@ Package Contents
    'hi!!!'
 
 
-.. py:function:: rtrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: rtrim(arg: datafusion.expr.Expr, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
-   Removes all characters, spaces by default, from the end of a string.
+   Removes ``characters``, spaces by default, from the end of a string.
 
    .. rubric:: Examples
 
@@ -5224,6 +5612,15 @@ Package Contents
    >>> trim_df = df.select(dfn.functions.rtrim(dfn.col("a")).alias("trimmed"))
    >>> trim_df.collect_column("trimmed")[0].as_py()
    ' a'
+
+   Trim a different set of characters:
+
+   >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+   >>> trim_df = df.select(
+   ...     dfn.functions.rtrim(dfn.col("a"), characters="x").alias("trimmed")
+   ... )
+   >>> trim_df.collect_column("trimmed")[0].as_py()
+   'xxa'
 
 
 .. py:function:: sha224(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -5373,7 +5770,7 @@ Package Contents
 
    Computes the standard deviation of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The value to find the minimum of
@@ -5403,7 +5800,7 @@ Package Contents
 
    Computes the population standard deviation of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The value to find the minimum of
@@ -5439,7 +5836,7 @@ Package Contents
    .. seealso:: This is an alias for :py:func:`stddev`.
 
 
-.. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
+.. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, distinct: bool = False, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None) -> datafusion.expr.Expr
 
    Concatenates the input strings.
 
@@ -5447,11 +5844,12 @@ Package Contents
    separating them with the specified delimiter. Non-string values will be converted to
    their string equivalents.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
-   the options ``distinct`` and ``null_treatment``.
+   If using the builder functions described in :ref:`aggregation` this function ignores
+   the option ``null_treatment``.
 
    :param expression: Argument to perform bitwise calculation on
    :param delimiter: Text to place between each value of expression
+   :param distinct: If True, each unique value of expression is included only once
    :param filter: If provided, only compute against rows for which the filter is True
    :param order_by: Set the ordering of the expression to evaluate. Accepts
                     column names or expressions.
@@ -5475,6 +5873,14 @@ Package Contents
    ...     ).alias("s")])
    >>> result.collect_column("s")[0].as_py()
    'y,z'
+
+   >>> df = ctx.from_pydict({"a": ["y", "x", "y"]})
+   >>> result = df.aggregate(
+   ...     [], [dfn.functions.string_agg(
+   ...         dfn.col("a"), ",", distinct=True, order_by="a",
+   ...     ).alias("s")])
+   >>> result.collect_column("s")[0].as_py()
+   'x,y'
 
 
 .. py:function:: string_to_array(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, null_string: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
@@ -5544,9 +5950,9 @@ Package Contents
    True
 
 
-.. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+.. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr | int, length: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
 
-   Substring from the ``position`` to the end.
+   Substring from the ``position``, to the end or for ``length`` characters.
 
    .. rubric:: Examples
 
@@ -5556,6 +5962,13 @@ Package Contents
    ...     dfn.functions.substr(dfn.col("a"), 3).alias("s"))
    >>> result.collect_column("s")[0].as_py()
    'llo'
+
+   >>> result = df.select(
+   ...     dfn.functions.substr(dfn.col("a"), 2, length=3).alias("s"))
+   >>> result.collect_column("s")[0].as_py()
+   'ell'
+
+   .. seealso:: :py:func:`substring`.
 
 
 .. py:function:: substr_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
@@ -5589,13 +6002,20 @@ Package Contents
    'hello'
 
 
+.. py:function:: substring_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr | str, count: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Returns an indexed substring.
+
+   .. seealso:: This is an alias for :py:func:`substr_index`.
+
+
 .. py:function:: sum(expression: datafusion.expr.Expr, distinct: bool = False, filter: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Computes the sum of a set of numbers.
 
    This aggregate function expects a numeric expression.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by`` and ``null_treatment``.
 
    :param expression: Values to combine into an array
@@ -5948,15 +6368,24 @@ Package Contents
    'HELLO'
 
 
-.. py:function:: trim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: trim(arg: datafusion.expr.Expr, characters: datafusion.expr.Expr | str | None = None) -> datafusion.expr.Expr
 
-   Removes all characters, spaces by default, from both sides of a string.
+   Removes ``characters``, spaces by default, from both sides of a string.
 
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
    >>> df = ctx.from_pydict({"a": ["  hello  "]})
    >>> result = df.select(dfn.functions.trim(dfn.col("a")).alias("t"))
+   >>> result.collect_column("t")[0].as_py()
+   'hello'
+
+   Trim a different set of characters:
+
+   >>> df = ctx.from_pydict({"a": ["xxhelloxx"]})
+   >>> result = df.select(
+   ...     dfn.functions.trim(dfn.col("a"), characters="x").alias("t")
+   ... )
    >>> result.collect_column("t")[0].as_py()
    'hello'
 
@@ -6090,7 +6519,7 @@ Package Contents
 
    Computes the population variance of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The variable to compute the variance for
@@ -6127,7 +6556,7 @@ Package Contents
 
    Computes the sample variance of the argument.
 
-   If using the builder functions described in ref:`_aggregation` this function ignores
+   If using the builder functions described in :ref:`aggregation` this function ignores
    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
    :param expression: The variable to compute the variance for

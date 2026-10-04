@@ -566,8 +566,14 @@ overview of the execution model.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrameWriteOptions</span></code></a></p></td>
 <td><p>Writer options for DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ExplainAnalyzeLevel" title="datafusion.dataframe.ExplainAnalyzeLevel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainAnalyzeLevel</span></code></a></p></td>
+<td><p>Which metrics <a class="reference internal" href="#datafusion.dataframe.DataFrame.explain" title="datafusion.dataframe.DataFrame.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a> reports when <code class="docutils literal notranslate"><span class="pre">analyze=True</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a></p></td>
 <td><p>Output format for explain plans.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.ExplainMetricCategory" title="datafusion.dataframe.ExplainMetricCategory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainMetricCategory</span></code></a></p></td>
+<td><p>Category of metric reported by <a class="reference internal" href="#datafusion.dataframe.DataFrame.explain" title="datafusion.dataframe.DataFrame.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">analyze</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.InsertOp" title="datafusion.dataframe.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
 <td><p>Insert operation mode.</p></td>
@@ -1109,7 +1115,7 @@ if the original name is not strictly lower case.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.explain">
-<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><span class="pre">ExplainFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.explain" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ExplainFormat" title="datafusion.dataframe.ExplainFormat"><span class="pre">ExplainFormat</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_statistics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ExplainAnalyzeLevel" title="datafusion.dataframe.ExplainAnalyzeLevel"><span class="pre">ExplainAnalyzeLevel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.dataframe.ExplainMetricCategory" title="datafusion.dataframe.ExplainMetricCategory"><span class="pre">ExplainMetricCategory</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.explain" title="Link to this definition">#</a></dt>
 <dd><p>Print an explanation of the DataFrame’s plan so far.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">analyze</span></code> is specified, runs the plan and reports metrics.</p>
 <dl class="field-list simple">
@@ -1119,7 +1125,19 @@ if the original name is not strictly lower case.</p>
 <li><p><strong>analyze</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the plan will run and metrics reported.</p></li>
 <li><p><strong>format</strong> – Output format for the plan. Defaults to
 <a class="reference internal" href="#datafusion.dataframe.ExplainFormat.INDENT" title="datafusion.dataframe.ExplainFormat.INDENT"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ExplainFormat.INDENT</span></code></a>.</p></li>
+<li><p><strong>show_statistics</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, include each operator’s statistics.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> uses the <code class="docutils literal notranslate"><span class="pre">datafusion.explain.show_statistics</span></code>
+setting.</p></li>
+<li><p><strong>analyze_level</strong> – Which metrics to report with <code class="docutils literal notranslate"><span class="pre">analyze</span></code>. <code class="docutils literal notranslate"><span class="pre">None</span></code>
+uses the <code class="docutils literal notranslate"><span class="pre">datafusion.explain.analyze_level</span></code> setting.</p></li>
+<li><p><strong>analyze_categories</strong> – Report only metrics in these categories with
+<code class="docutils literal notranslate"><span class="pre">analyze</span></code>; an empty iterable reports none. <code class="docutils literal notranslate"><span class="pre">None</span></code> uses the
+<code class="docutils literal notranslate"><span class="pre">datafusion.explain.analyze_categories</span></code> setting.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">show_statistics</span></code> is set with <code class="docutils literal notranslate"><span class="pre">analyze</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">analyze_level</span></code> or <code class="docutils literal notranslate"><span class="pre">analyze_categories</span></code> is set without it.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -1134,6 +1152,52 @@ if the original name is not strictly lower case.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="n">analyze</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
 </pre></div>
 </div>
+<p>Show only row-count metrics:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplainMetricCategory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">analyze</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">analyze_categories</span><span class="o">=</span><span class="p">[</span><span class="n">ExplainMetricCategory</span><span class="o">.</span><span class="n">ROWS</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.fill_nan">
+<span class="sig-name descname"><span class="pre">fill_nan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.fill_nan" title="Link to this definition">#</a></dt>
+<dd><p>Fill NaN values in floating-point columns with a value.</p>
+<p>Only floating-point columns are changed; others are kept unchanged, as is
+any column <code class="docutils literal notranslate"><span class="pre">value</span></code> cannot be cast to. NaN is distinct from null, which
+<a class="reference internal" href="#datafusion.dataframe.DataFrame.fill_null" title="datafusion.dataframe.DataFrame.fill_null"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_null()</span></code></a> handles. Fails on a DataFrame with an uppercase or
+dotted column name; see <a class="reference internal" href="../../../user-guide/common-operations/functions.html#fill-column-names"><span class="std std-ref">Column names with uppercase letters or dots</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – Value to replace NaN with. Will be cast to match column type.</p></li>
+<li><p><strong>subset</strong> – Optional list of column names to fill. If None, fills all
+floating-point columns; an empty list fills none.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with NaN values replaced.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nan</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">nan</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">nan</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1.0, 0.0, None], &#39;b&#39;: [0.0, 2.0, 3.0]}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">nan</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">fill_nan</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[])</span><span class="o">.</span><span class="n">collect_column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
+<span class="go">nan</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1144,7 +1208,8 @@ if the original name is not strictly lower case.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>value</strong> – Value to replace nulls with. Will be cast to match column type.</p></li>
-<li><p><strong>subset</strong> – Optional list of column names to fill. If None, fills all columns.</p></li>
+<li><p><strong>subset</strong> – Optional list of column names to fill. If None, fills all columns;
+an empty list fills none.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1160,11 +1225,17 @@ if the original name is not strictly lower case.</p>
 <span class="go">[0, 1, 3]</span>
 </pre></div>
 </div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[])</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>
+<span class="go">{&#39;a&#39;: [1, None, 3], &#39;b&#39;: [None, 5, 6]}</span>
+</pre></div>
+</div>
 <p class="rubric">Notes</p>
 <ul class="simple">
 <li><p>Only fills nulls in columns where the value can be cast to the column type</p></li>
 <li><p>For columns where casting fails, the original column is kept unchanged</p></li>
 <li><p>For columns not in subset, the original column is kept unchanged</p></li>
+<li><p>Fails on a DataFrame with an uppercase or dotted column name; see
+<a class="reference internal" href="../../../user-guide/common-operations/functions.html#fill-column-names"><span class="std std-ref">Column names with uppercase letters or dots</span></a></p></li>
 </ul>
 </dd></dl>
 
@@ -2075,6 +2146,25 @@ See the individual implementation and documentation for details.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainAnalyzeLevel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">ExplainAnalyzeLevel</span></span><a class="headerlink" href="#datafusion.dataframe.ExplainAnalyzeLevel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Which metrics <a class="reference internal" href="#datafusion.dataframe.DataFrame.explain" title="datafusion.dataframe.DataFrame.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a> reports when <code class="docutils literal notranslate"><span class="pre">analyze=True</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainAnalyzeLevel.DEV">
+<span class="sig-name descname"><span class="pre">DEV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dev'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainAnalyzeLevel.DEV" title="Link to this definition">#</a></dt>
+<dd><p>All metrics, including those for deep operator-level introspection.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainAnalyzeLevel.SUMMARY">
+<span class="sig-name descname"><span class="pre">SUMMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'summary'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainAnalyzeLevel.SUMMARY" title="Link to this definition">#</a></dt>
+<dd><p>Common metrics for finding which operator is slow.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">ExplainFormat</span></span><a class="headerlink" href="#datafusion.dataframe.ExplainFormat" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
@@ -2102,6 +2192,37 @@ See the individual implementation and documentation for details.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.ExplainFormat.TREE">
 <span class="sig-name descname"><span class="pre">TREE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tree'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainFormat.TREE" title="Link to this definition">#</a></dt>
 <dd><p>Tree-style visual format with box-drawing characters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainMetricCategory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">ExplainMetricCategory</span></span><a class="headerlink" href="#datafusion.dataframe.ExplainMetricCategory" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Category of metric reported by <a class="reference internal" href="#datafusion.dataframe.DataFrame.explain" title="datafusion.dataframe.DataFrame.explain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">analyze</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainMetricCategory.BYTES">
+<span class="sig-name descname"><span class="pre">BYTES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bytes'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainMetricCategory.BYTES" title="Link to this definition">#</a></dt>
+<dd><p>Byte sizes, such as <code class="docutils literal notranslate"><span class="pre">output_bytes</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainMetricCategory.ROWS">
+<span class="sig-name descname"><span class="pre">ROWS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rows'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainMetricCategory.ROWS" title="Link to this definition">#</a></dt>
+<dd><p>Row counts, such as <code class="docutils literal notranslate"><span class="pre">output_rows</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainMetricCategory.TIMING">
+<span class="sig-name descname"><span class="pre">TIMING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'timing'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainMetricCategory.TIMING" title="Link to this definition">#</a></dt>
+<dd><p>Elapsed times, such as <code class="docutils literal notranslate"><span class="pre">elapsed_compute</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.ExplainMetricCategory.UNCATEGORIZED">
+<span class="sig-name descname"><span class="pre">UNCATEGORIZED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'uncategorized'</span></em><a class="headerlink" href="#datafusion.dataframe.ExplainMetricCategory.UNCATEGORIZED" title="Link to this definition">#</a></dt>
+<dd><p>Metrics that declare no category.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2476,6 +2597,7 @@ here.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.execute_stream_partitioned"><code class="docutils literal notranslate"><span class="pre">DataFrame.execute_stream_partitioned()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.execution_plan"><code class="docutils literal notranslate"><span class="pre">DataFrame.execution_plan()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.explain"><code class="docutils literal notranslate"><span class="pre">DataFrame.explain()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.fill_nan"><code class="docutils literal notranslate"><span class="pre">DataFrame.fill_nan()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.fill_null"><code class="docutils literal notranslate"><span class="pre">DataFrame.fill_null()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.filter"><code class="docutils literal notranslate"><span class="pre">DataFrame.filter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.find_qualified_columns"><code class="docutils literal notranslate"><span class="pre">DataFrame.find_qualified_columns()</span></code></a></li>
@@ -2523,11 +2645,23 @@ here.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.DataFrameWriteOptions._raw_write_options"><code class="docutils literal notranslate"><span class="pre">DataFrameWriteOptions._raw_write_options</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainAnalyzeLevel"><code class="docutils literal notranslate"><span class="pre">ExplainAnalyzeLevel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainAnalyzeLevel.DEV"><code class="docutils literal notranslate"><span class="pre">ExplainAnalyzeLevel.DEV</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainAnalyzeLevel.SUMMARY"><code class="docutils literal notranslate"><span class="pre">ExplainAnalyzeLevel.SUMMARY</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat"><code class="docutils literal notranslate"><span class="pre">ExplainFormat</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.GRAPHVIZ"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.GRAPHVIZ</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.INDENT"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.INDENT</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.PGJSON"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.PGJSON</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainFormat.TREE"><code class="docutils literal notranslate"><span class="pre">ExplainFormat.TREE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainMetricCategory"><code class="docutils literal notranslate"><span class="pre">ExplainMetricCategory</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainMetricCategory.BYTES"><code class="docutils literal notranslate"><span class="pre">ExplainMetricCategory.BYTES</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainMetricCategory.ROWS"><code class="docutils literal notranslate"><span class="pre">ExplainMetricCategory.ROWS</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainMetricCategory.TIMING"><code class="docutils literal notranslate"><span class="pre">ExplainMetricCategory.TIMING</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.ExplainMetricCategory.UNCATEGORIZED"><code class="docutils literal notranslate"><span class="pre">ExplainMetricCategory.UNCATEGORIZED</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp"><code class="docutils literal notranslate"><span class="pre">InsertOp</span></code></a><ul class="nav section-nav flex-column">

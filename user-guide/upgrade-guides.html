@@ -700,6 +700,155 @@ any call passing it by keyword.</p>
 </pre></div>
 </div>
 </section>
+<section id="more-aggregate-functions-accept-distinct">
+<h3>More aggregate functions accept <code class="docutils literal notranslate"><span class="pre">distinct</span></code><a class="headerlink" href="#more-aggregate-functions-accept-distinct" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.bit_and" title="datafusion.functions.bit_and"><code class="xref py py-func docutils literal notranslate"><span class="pre">bit_and()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.bit_or" title="datafusion.functions.bit_or"><code class="xref py py-func docutils literal notranslate"><span class="pre">bit_or()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.mean" title="datafusion.functions.mean"><code class="xref py py-func docutils literal notranslate"><span class="pre">mean()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">percentile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont" title="datafusion.functions.quantile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">quantile_cont()</span></code></a>, and
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.string_agg" title="datafusion.functions.string_agg"><code class="xref py py-func docutils literal notranslate"><span class="pre">string_agg()</span></code></a> now accept a <code class="docutils literal notranslate"><span class="pre">distinct</span></code> argument.
+As with <code class="docutils literal notranslate"><span class="pre">sum</span></code> and <code class="docutils literal notranslate"><span class="pre">avg</span></code> in 54.0.0, <code class="docutils literal notranslate"><span class="pre">distinct</span></code> is inserted <em>before</em> <code class="docutils literal notranslate"><span class="pre">filter</span></code>, so
+code that passed <code class="docutils literal notranslate"><span class="pre">filter</span></code> (or, for <code class="docutils literal notranslate"><span class="pre">string_agg</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>) positionally must
+pass it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">my_filter</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="nb">filter</span><span class="o">=</span><span class="n">my_filter</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>Passing <code class="docutils literal notranslate"><span class="pre">filter</span></code> to <code class="docutils literal notranslate"><span class="pre">mean</span></code> previously raised a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, whether passed
+positionally or by keyword; it now works when passed by keyword.</p>
+</section>
+<section id="chaining-keeps-options-already-set">
+<h3>Chaining keeps options already set<a class="headerlink" href="#chaining-keeps-options-already-set" title="Link to this heading">#</a></h3>
+<p>Chaining a builder method (<code class="docutils literal notranslate"><span class="pre">order_by</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">distinct</span></code>, <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>,
+<code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">window_frame</span></code>) or <code class="docutils literal notranslate"><span class="pre">over()</span></code> onto a function used to start from
+an empty builder, so options set by the function’s keyword arguments were
+silently reset. On an aggregate they are now kept, which can change results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">string_agg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>  <span class="c1"># before: order_by dropped; after: kept</span>
+</pre></div>
+</div>
+<p>On a window function that already has a <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code>, chaining now raises instead of dropping them. Set them in one
+place, as described in <a class="reference internal" href="common-operations/windows.html#window-function-chaining"><span class="std std-ref">Chaining onto a window function</span></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>  <span class="c1"># before: partition dropped; after: raises</span>
+<span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>Options that used to be dropped now take effect, so a chain that ran before
+may now raise. For example, DISTINCT requires the ORDER BY expressions to be
+among the arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">array_agg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># before: ran without DISTINCT</span>
+<span class="c1"># after:  Execution error: In an aggregate with DISTINCT, ORDER BY expressions</span>
+<span class="c1">#         must appear in argument list</span>
+</pre></div>
+</div>
+<p>Drop <code class="docutils literal notranslate"><span class="pre">distinct</span></code>, or order by the aggregated column, to get either of the
+results the chain can actually produce.</p>
+<p>An option that does not apply to the function now raises as soon as it is
+set, anywhere in the chain. <code class="docutils literal notranslate"><span class="pre">filter</span></code> and <code class="docutils literal notranslate"><span class="pre">distinct</span></code> need an aggregate,
+including one used as a window function, and <code class="docutils literal notranslate"><span class="pre">partition_by</span></code> and
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code> need a window function. Later in a chain these were silently
+dropped:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">))</span>
+<span class="c1"># before: partition_by dropped; after: raises</span>
+</pre></div>
+</div>
+<p>The default <code class="docutils literal notranslate"><span class="pre">RESPECT</span> <span class="pre">NULLS</span></code> set by <code class="docutils literal notranslate"><span class="pre">first_value</span></code>, <code class="docutils literal notranslate"><span class="pre">last_value</span></code>, and <code class="docutils literal notranslate"><span class="pre">nth_value</span></code>
+is also kept, so their generated column names change:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># before: first_value(a) ORDER BY [b ASC NULLS FIRST]</span>
+<span class="c1"># after:  first_value(a) RESPECT NULLS ORDER BY [b ASC NULLS FIRST]</span>
+</pre></div>
+</div>
+<p>This now matches the name from <code class="docutils literal notranslate"><span class="pre">f.first_value(col(&quot;a&quot;),</span> <span class="pre">order_by=col(&quot;b&quot;))</span></code>.
+Code that selects the result by its generated name should <code class="docutils literal notranslate"><span class="pre">alias()</span></code> it instead.</p>
+</section>
+<section id="over-keeps-options-set-on-an-aggregate">
+<h3><code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps options set on an aggregate<a class="headerlink" href="#over-keeps-options-set-on-an-aggregate" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Expr.over()</span></code> on an aggregate used to drop the <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">distinct</span></code>,
+<code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>, and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> options it was built with. The first three are
+now kept, which can change results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span>
+<span class="c1"># v = [1, 1, 4]; before: 2.0, after: 2.5</span>
+</pre></div>
+</div>
+<p>An <code class="docutils literal notranslate"><span class="pre">order_by</span></code> on the aggregate now raises instead of being dropped, as it does
+with <code class="docutils literal notranslate"><span class="pre">OVER</span></code> in SQL. Remove it, or move it into the <code class="docutils literal notranslate"><span class="pre">Window</span></code> if it was meant to
+order the rows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># before: order_by dropped; after: raises</span>
+<span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)])</span>
+<span class="p">)</span>
+
+<span class="c1"># after: the Window orders the rows the aggregate sees</span>
+<span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)])</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">WITHIN</span> <span class="pre">GROUP</span></code> function such as <code class="docutils literal notranslate"><span class="pre">percentile_cont</span></code> still accepts
+an ascending <code class="docutils literal notranslate"><span class="pre">sort_expression</span></code>, and raises on a descending one, which used to
+give the ascending result. See <a class="reference internal" href="common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a>.</p>
+</section>
+<section id="python-aggregate-udfs-reject-distinct">
+<h3>Python aggregate UDFs reject <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code><a class="headerlink" href="#python-aggregate-udfs-reject-distinct" title="Link to this heading">#</a></h3>
+<p>A Python <a class="reference internal" href="../autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> cannot deduplicate its
+input, so a Python aggregate UDF with <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code> counted every row. It now
+raises instead of returning that result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># v = [1, 1, 1, 5]; before: 8.0; after: DISTINCT is not supported ...</span>
+</pre></div>
+</div>
+<p>When the optimizer rewrites the query to group by the distinct values first,
+as it does for SQL’s <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">my_sum(DISTINCT</span> <span class="pre">v)</span> <span class="pre">FROM</span> <span class="pre">t</span></code>, the query still runs
+and gives the distinct result.</p>
+</section>
+<section id="percentile-functions-keep-the-sort-direction">
+<h3>Percentile functions keep the sort direction<a class="headerlink" href="#percentile-functions-keep-the-sort-direction" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">percentile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont" title="datafusion.functions.quantile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">quantile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont" title="datafusion.functions.approx_percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">approx_percentile_cont()</span></code></a>, and
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont_with_weight" title="datafusion.functions.approx_percentile_cont_with_weight"><code class="xref py py-func docutils literal notranslate"><span class="pre">approx_percentile_cont_with_weight()</span></code></a> ignored the
+direction of <code class="docutils literal notranslate"><span class="pre">sort_expression</span></code>, so a descending sort gave the ascending result.
+Used as aggregates, they now match <code class="docutils literal notranslate"><span class="pre">WITHIN</span> <span class="pre">GROUP</span> <span class="pre">(ORDER</span> <span class="pre">BY</span> <span class="pre">...</span> <span class="pre">DESC)</span></code> in SQL
+(see <a class="reference internal" href="common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a> for their use in a window):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="c1"># a = [1, 2, 3, 4, 5]; before: 2.0, after: 4.0</span>
+</pre></div>
+</div>
+<p>Their generated column names now include the ordering, in the same form as SQL.
+Code that selects the result by its generated name should <code class="docutils literal notranslate"><span class="pre">alias()</span></code> it instead.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="c1"># before: percentile_cont(t.a,Float64(0.25))</span>
+<span class="c1"># after:  percentile_cont(Float64(0.25)) WITHIN GROUP [t.a ASC NULLS FIRST]</span>
+</pre></div>
+</div>
+</section>
+<section id="fill-null-subset-fills-no-columns">
+<h3><code class="docutils literal notranslate"><span class="pre">fill_null(subset=[])</span></code> fills no columns<a class="headerlink" href="#fill-null-subset-fills-no-columns" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.fill_null" title="datafusion.dataframe.DataFrame.fill_null"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_null()</span></code></a> with an empty <code class="docutils literal notranslate"><span class="pre">subset</span></code>
+list used to fill every column, the same as <code class="docutils literal notranslate"><span class="pre">subset=None</span></code>. It now returns the
+DataFrame unchanged, so a subset computed from the schema that matches nothing
+no longer rewrites every column. The new
+<a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.fill_nan" title="datafusion.dataframe.DataFrame.fill_nan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_nan()</span></code></a> behaves the same way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[])</span>  <span class="c1"># before: fills all columns; after: fills none</span>
+<span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># fills all columns, before and after</span>
+</pre></div>
+</div>
+</section>
+<section id="spark-last-day-renamed-its-parameter">
+<h3><code class="docutils literal notranslate"><span class="pre">spark.last_day</span></code> renamed its parameter<a class="headerlink" href="#spark-last-day-renamed-its-parameter" title="Link to this heading">#</a></h3>
+<p>The parameter of <a class="reference internal" href="../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.last_day" title="datafusion.functions.spark.last_day"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.last_day()</span></code></a> is now named
+<code class="docutils literal notranslate"><span class="pre">date</span></code>, matching <code class="docutils literal notranslate"><span class="pre">pyspark.sql.functions.last_day</span></code>. Positional calls are
+unaffected; update any call passing it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">last_day</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">last_day</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+</section>
 <section id="changes-to-the-datafusion-python-util-crate">
 <h3>Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate<a class="headerlink" href="#changes-to-the-datafusion-python-util-crate" title="Link to this heading">#</a></h3>
 <p>Extension libraries written in Rust usually depend on the
@@ -911,6 +1060,13 @@ using the specific datafusion project crates.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#capsule-getter-protocols-moved-to-datafusion-extensions">Capsule-getter protocols moved to <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sessioncontext-execute-renamed-its-second-parameter"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-aggregate-functions-accept-distinct">More aggregate functions accept <code class="docutils literal notranslate"><span class="pre">distinct</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chaining-keeps-options-already-set">Chaining keeps options already set</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#over-keeps-options-set-on-an-aggregate"><code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps options set on an aggregate</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-aggregate-udfs-reject-distinct">Python aggregate UDFs reject <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#percentile-functions-keep-the-sort-direction">Percentile functions keep the sort direction</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fill-null-subset-fills-no-columns"><code class="docutils literal notranslate"><span class="pre">fill_null(subset=[])</span></code> fills no columns</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spark-last-day-renamed-its-parameter"><code class="docutils literal notranslate"><span class="pre">spark.last_day</span></code> renamed its parameter</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
 </ul>
 </li>

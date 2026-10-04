@@ -340,6 +340,6 @@ Module Contents
    False
 
 
-   .. py:method:: __datafusion_session_planner__(ctx: datafusion.context.SessionContext, fallback: _typeshed.CapsuleType) -> QueryPlannerExportable | _typeshed.CapsuleType | None
+   .. py:method:: __datafusion_session_planner__(ctx: datafusion.context.SessionContext, fallback: types.CapsuleType) -> QueryPlannerExportable | types.CapsuleType | None
 
 

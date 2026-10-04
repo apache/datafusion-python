@@ -555,6 +555,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
 <td><p>A DataFusion table.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.TableProviderFactory" title="datafusion.catalog.TableProviderFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderFactory</span></code></a></p></td>
+<td><p>Abstract class for defining a Python based Table Provider Factory.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -891,6 +894,19 @@ interface (advanced)</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.catalog.TableProviderFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">TableProviderFactory</span></span><a class="headerlink" href="#datafusion.catalog.TableProviderFactory" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract class for defining a Python based Table Provider Factory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.TableProviderFactory.create">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.expr.CreateExternalTable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.catalog.TableProviderFactory.create" title="Link to this definition">#</a></dt>
+<dd><p>Create a table using the <code class="xref py py-class docutils literal notranslate"><span class="pre">CreateExternalTable</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -1005,6 +1021,10 @@ interface (advanced)</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table._inner"><code class="docutils literal notranslate"><span class="pre">Table._inner</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.kind"><code class="docutils literal notranslate"><span class="pre">Table.kind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.Table.schema"><code class="docutils literal notranslate"><span class="pre">Table.schema</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.TableProviderFactory"><code class="docutils literal notranslate"><span class="pre">TableProviderFactory</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.catalog.TableProviderFactory.create"><code class="docutils literal notranslate"><span class="pre">TableProviderFactory.create()</span></code></a></li>
 </ul>
 </li>
 </ul>

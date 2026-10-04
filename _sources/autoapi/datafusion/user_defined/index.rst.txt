@@ -142,13 +142,13 @@ Module Contents
 
       Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udaf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udaf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
+   .. py:method:: from_pycapsule(func: AggregateUDFExportable | types.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -162,7 +162,7 @@ Module Contents
    .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
                   udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
                   udaf(accum: AggregateUDFExportable) -> AggregateUDF
-                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
+                  udaf(accum: types.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -392,13 +392,13 @@ Module Contents
 
       Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
-   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
+   .. py:method:: from_pycapsule(func: ScalarUDFExportable | types.CapsuleType) -> ScalarUDF
       :staticmethod:
 
 
@@ -412,6 +412,7 @@ Module Contents
    .. py:method:: udf(input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
                   udf(func: collections.abc.Callable[Ellipsis, _R], input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
                   udf(func: ScalarUDFExportable) -> ScalarUDF
+                  udf(func: types.CapsuleType) -> ScalarUDF
       :staticmethod:
 
 
@@ -871,9 +872,9 @@ Module Contents
 
       Wrap an already-constructed internal ``WindowUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udwf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udwf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
@@ -893,7 +894,7 @@ Module Contents
 
 
 
-   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
+   .. py:method:: from_pycapsule(func: WindowUDFExportable | types.CapsuleType) -> WindowUDF
       :staticmethod:
 
 
@@ -906,6 +907,8 @@ Module Contents
 
    .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
                   udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+                  udwf(func: WindowUDFExportable) -> WindowUDF
+                  udwf(func: types.CapsuleType) -> WindowUDF
       :staticmethod:
 
 
@@ -997,7 +1000,7 @@ Module Contents
    .. py:method:: __datafusion_window_udf__() -> object
 
 
-.. py:function:: _is_pycapsule(value: object) -> TypeGuard[_typeshed.CapsuleType]
+.. py:function:: _is_pycapsule(value: object) -> TypeGuard[types.CapsuleType]
 
    Return ``True`` when ``value`` is a CPython ``PyCapsule``.
 

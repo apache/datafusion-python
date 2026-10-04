@@ -21,6 +21,7 @@ Classes
    datafusion.catalog.Schema
    datafusion.catalog.SchemaProvider
    datafusion.catalog.Table
+   datafusion.catalog.TableProviderFactory
 
 
 Module Contents
@@ -374,5 +375,21 @@ Module Contents
 
 
       Returns the schema associated with this table.
+
+
+.. py:class:: TableProviderFactory
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract class for defining a Python based Table Provider Factory.
+
+
+   .. py:method:: create(cmd: datafusion.expr.CreateExternalTable) -> Table
+      :abstractmethod:
+
+
+      Create a table using the :class:`CreateExternalTable`.
+
 
 

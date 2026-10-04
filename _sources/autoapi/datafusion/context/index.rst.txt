@@ -1653,7 +1653,7 @@ Module Contents
 
 
 
-   .. py:method:: set_query_planner(planner: datafusion.extensions.QueryPlannerExportable | _typeshed.CapsuleType) -> None
+   .. py:method:: set_query_planner(planner: datafusion.extensions.QueryPlannerExportable | types.CapsuleType) -> None
 
       Install a custom query planner on this session.
 
@@ -1998,7 +1998,7 @@ Module Contents
 
 
 
-   .. py:method:: with_logical_extension_codec(codec: datafusion.user_defined.LogicalExtensionCodecExportable | _typeshed.CapsuleType, codec_id: str | None = None) -> SessionContext
+   .. py:method:: with_logical_extension_codec(codec: datafusion.user_defined.LogicalExtensionCodecExportable | types.CapsuleType, codec_id: str | None = None) -> SessionContext
 
       Create a new session context with an additional logical codec.
 
@@ -2061,7 +2061,7 @@ Module Contents
 
 
 
-   .. py:method:: with_physical_extension_codec(codec: datafusion.user_defined.PhysicalExtensionCodecExportable | _typeshed.CapsuleType, codec_id: str | None = None) -> SessionContext
+   .. py:method:: with_physical_extension_codec(codec: datafusion.user_defined.PhysicalExtensionCodecExportable | types.CapsuleType, codec_id: str | None = None) -> SessionContext
 
       Create a new session context with an additional physical codec.
 

@@ -43,7 +43,9 @@ Classes
    datafusion.dataframe.Compression
    datafusion.dataframe.DataFrame
    datafusion.dataframe.DataFrameWriteOptions
+   datafusion.dataframe.ExplainAnalyzeLevel
    datafusion.dataframe.ExplainFormat
+   datafusion.dataframe.ExplainMetricCategory
    datafusion.dataframe.InsertOp
    datafusion.dataframe.ParquetColumnOptions
    datafusion.dataframe.ParquetWriterOptions
@@ -524,7 +526,7 @@ Module Contents
 
 
 
-   .. py:method:: explain(verbose: bool = False, analyze: bool = False, format: ExplainFormat | None = None) -> None
+   .. py:method:: explain(verbose: bool = False, analyze: bool = False, format: ExplainFormat | None = None, show_statistics: bool | None = None, analyze_level: ExplainAnalyzeLevel | None = None, analyze_categories: collections.abc.Iterable[ExplainMetricCategory] | None = None) -> None
 
       Print an explanation of the DataFrame's plan so far.
 
@@ -534,6 +536,17 @@ Module Contents
       :param analyze: If ``True``, the plan will run and metrics reported.
       :param format: Output format for the plan. Defaults to
                      :py:attr:`ExplainFormat.INDENT`.
+      :param show_statistics: If ``True``, include each operator's statistics.
+                              ``None`` uses the ``datafusion.explain.show_statistics``
+                              setting.
+      :param analyze_level: Which metrics to report with ``analyze``. ``None``
+                            uses the ``datafusion.explain.analyze_level`` setting.
+      :param analyze_categories: Report only metrics in these categories with
+                                 ``analyze``; an empty iterable reports none. ``None`` uses the
+                                 ``datafusion.explain.analyze_categories`` setting.
+
+      :raises ValueError: If ``show_statistics`` is set with ``analyze``, or
+          ``analyze_level`` or ``analyze_categories`` is set without it.
 
       .. rubric:: Examples
 
@@ -548,6 +561,45 @@ Module Contents
 
       >>> df.explain(analyze=True)  # doctest: +SKIP
 
+      Show only row-count metrics:
+
+      >>> from datafusion.dataframe import ExplainMetricCategory
+      >>> df.explain(
+      ...     analyze=True, analyze_categories=[ExplainMetricCategory.ROWS]
+      ... )  # doctest: +SKIP
+
+
+
+   .. py:method:: fill_nan(value: float, subset: list[str] | None = None) -> DataFrame
+
+      Fill NaN values in floating-point columns with a value.
+
+      Only floating-point columns are changed; others are kept unchanged, as is
+      any column ``value`` cannot be cast to. NaN is distinct from null, which
+      :py:meth:`fill_null` handles. Fails on a DataFrame with an uppercase or
+      dotted column name; see :ref:`fill_column_names`.
+
+      :param value: Value to replace NaN with. Will be cast to match column type.
+      :param subset: Optional list of column names to fill. If None, fills all
+                     floating-point columns; an empty list fills none.
+
+      :returns: DataFrame with NaN values replaced.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> nan = float("nan")
+      >>> df = ctx.from_pydict({"a": [1.0, nan, None], "b": [nan, 2.0, 3.0]})
+      >>> df.fill_nan(0.0).to_pydict()
+      {'a': [1.0, 0.0, None], 'b': [0.0, 2.0, 3.0]}
+
+      >>> df.fill_nan(0.0, subset=["a"]).collect_column("b")[0].as_py()
+      nan
+
+      >>> df.fill_nan(0.0, subset=[]).collect_column("b")[0].as_py()
+      nan
+
 
 
    .. py:method:: fill_null(value: Any, subset: list[str] | None = None) -> DataFrame
@@ -555,7 +607,8 @@ Module Contents
       Fill null values in specified columns with a value.
 
       :param value: Value to replace nulls with. Will be cast to match column type.
-      :param subset: Optional list of column names to fill. If None, fills all columns.
+      :param subset: Optional list of column names to fill. If None, fills all columns;
+                     an empty list fills none.
 
       :returns: DataFrame with null values replaced where type casting is possible
 
@@ -568,11 +621,16 @@ Module Contents
       >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
       [0, 1, 3]
 
+      >>> df.fill_null(0, subset=[]).to_pydict()
+      {'a': [1, None, 3], 'b': [None, 5, 6]}
+
       .. rubric:: Notes
 
       - Only fills nulls in columns where the value can be cast to the column type
       - For columns where casting fails, the original column is kept unchanged
       - For columns not in subset, the original column is kept unchanged
+      - Fails on a DataFrame with an uppercase or dotted column name; see
+        :ref:`fill_column_names`
 
 
 
@@ -1345,6 +1403,28 @@ Module Contents
    .. py:attribute:: _raw_write_options
 
 
+.. py:class:: ExplainAnalyzeLevel
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Which metrics :py:meth:`DataFrame.explain` reports when ``analyze=True``.
+
+
+   .. py:attribute:: DEV
+      :value: 'dev'
+
+
+      All metrics, including those for deep operator-level introspection.
+
+
+   .. py:attribute:: SUMMARY
+      :value: 'summary'
+
+
+      Common metrics for finding which operator is slow.
+
+
 .. py:class:: ExplainFormat
 
    Bases: :py:obj:`enum.Enum`
@@ -1381,6 +1461,42 @@ Module Contents
 
 
       Tree-style visual format with box-drawing characters.
+
+
+.. py:class:: ExplainMetricCategory
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Category of metric reported by :py:meth:`DataFrame.explain` with ``analyze``.
+
+
+   .. py:attribute:: BYTES
+      :value: 'bytes'
+
+
+      Byte sizes, such as ``output_bytes``.
+
+
+   .. py:attribute:: ROWS
+      :value: 'rows'
+
+
+      Row counts, such as ``output_rows``.
+
+
+   .. py:attribute:: TIMING
+      :value: 'timing'
+
+
+      Elapsed times, such as ``elapsed_compute``.
+
+
+   .. py:attribute:: UNCATEGORIZED
+      :value: 'uncategorized'
+
+
+      Metrics that declare no category.
 
 
 .. py:class:: InsertOp

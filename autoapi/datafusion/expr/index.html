@@ -1339,8 +1339,9 @@ through <code class="docutils literal notranslate"><span class="pre">pickle.dump
 <span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.distinct" title="Link to this definition">#</a></dt>
 <dd><p>Only evaluate distinct values for an aggregate function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on a window
+function unless that is an aggregate used as one. If used on any other type of
+expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1378,8 +1379,9 @@ type of expression, an error will be generated when <code class="docutils litera
 <span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.filter" title="Link to this definition">#</a></dt>
 <dd><p>Filter an aggregate function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on a window
+function unless that is an aggregate used as one. If used on any other type of
+expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1604,10 +1606,15 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.over">
 <span class="sig-name descname"><span class="pre">over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Window" title="datafusion.expr.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.over" title="Link to this definition">#</a></dt>
-<dd><p>Turn an aggregate function into a window function.</p>
-<p>This function turns any aggregate function into a window function. With the
+<dd><p>Evaluate an aggregate or window function over a window.</p>
+<p>On an aggregate function this turns it into a window function. With the
 exception of <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, how each of the parameters is used is determined
 by the underlying aggregate function.</p>
+<p>On an aggregate, the <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, and <code class="docutils literal notranslate"><span class="pre">distinct</span></code> options
+it was built with are kept, and an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> raises; see
+<a class="reference internal" href="../../../user-guide/common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a>.</p>
+<p>On a window function that already has a <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code>, this raises; see <a class="reference internal" href="../../../user-guide/common-operations/windows.html#window-function-chaining"><span class="std std-ref">Chaining onto a window function</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>window</strong> – Window definition</p>
@@ -1620,8 +1627,10 @@ by the underlying aggregate function.</p>
 <span class="sig-name descname"><span class="pre">partition_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.partition_by" title="Link to this definition">#</a></dt>
 <dd><p>Set the partitioning for a window function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on an
+aggregate function that has not been turned into a window function with
+<a class="reference internal" href="#datafusion.expr.Expr.over" title="datafusion.expr.Expr.over"><code class="xref py py-meth docutils literal notranslate"><span class="pre">over()</span></code></a>. If used on any other type of expression, an error will be
+generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1912,10 +1921,12 @@ SqlType Enum which this expression represents.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.window_frame">
 <span class="sig-name descname"><span class="pre">window_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">WindowFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.window_frame" title="Link to this definition">#</a></dt>
-<dd><p>Set the frame fora  window function.</p>
+<dd><p>Set the frame for a window function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on an
+aggregate function that has not been turned into a window function with
+<a class="reference internal" href="#datafusion.expr.Expr.over" title="datafusion.expr.Expr.over"><code class="xref py py-meth docutils literal notranslate"><span class="pre">over()</span></code></a>. If used on any other type of expression, an error will be
+generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py attribute">
