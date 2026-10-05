@@ -58,15 +58,20 @@ Your payload has to be enough to rebuild the object somewhere your process is
 not. Write the metadata a fresh instance can be constructed from — a path, a
 connection string, a schema, the options the object was created with.
 
-The example codecs in this repository do not do this, and it is worth knowing
-before copying them. They keep a process-local `HashMap` of live providers and
-encode an integer token into it: encoding inserts, decoding removes. That makes
-Rust type identity observable across three separately loaded libraries in one
-test, which is what the examples exist to show. It also means a decode consumes
-its token, so the same bytes cannot be decoded twice, one encoded plan cannot
-fan out to several readers, and a plan that never reaches a decoder keeps its
-provider alive for the life of the process. A real codec has none of those
-properties because it does not park the object anywhere.
+The logical codec in `examples/datafusion-ffi-example` is the pattern to copy.
+It encodes a `MemTable` as its schema and batches, one Arrow IPC stream per
+partition, and decodes by building a new `MemTable` from those streams. Nothing
+is kept between encode and decode, so the same bytes decode any number of times
+and an encoded plan can fan out to several readers.
+
+The physical codec in the same example does not do this, and it is worth
+knowing before copying it. It keeps a process-local `HashMap` of live execution
+plans and encodes an integer token into it: encoding inserts, decoding removes.
+That makes Rust type identity observable across three separately loaded
+libraries in one test, which is what it exists to show. It also means a decode
+consumes its token, so the same bytes cannot be decoded twice, and a plan that
+never reaches a decoder stays alive for the life of the process. A real codec
+has none of those properties because it does not park the object anywhere.
 
 (extension_codec_ids)=
 

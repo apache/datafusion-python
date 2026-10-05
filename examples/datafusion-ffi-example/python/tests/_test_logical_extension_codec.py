@@ -203,12 +203,13 @@ def test_installing_a_codec_cannot_hijack_an_earlier_codecs_objects():
     ctx = ctx.with_logical_extension_codec(later, codec_id="TOKENBBB")
     after = ctx.sql('SELECT "A" FROM numbers').logical_plan().to_bytes(ctx)
 
-    # Provider tokens are minted per encode, so the payloads differ in the
-    # token id. What must not change is which codec claimed the provider.
+    # The provider is encoded as its schema and batches, so re-encoding the
+    # same table yields the same bytes. Which codec claimed it must not
+    # change either.
     assert b"TOKENAAA" in after
     assert b"TOKENBBB" not in after
     assert later.table_provider_encode_calls() == 0
-    assert len(before) == len(after)
+    assert before == after
 
 
 def test_decode_dispatches_to_the_codec_that_encoded():
@@ -231,6 +232,39 @@ def test_decode_dispatches_to_the_codec_that_encoded():
 
     assert first.table_provider_decode_calls() == 1
     assert second.table_provider_decode_calls() == 0
+
+
+def test_one_encoded_plan_decodes_more_than_once():
+    """A table provider payload is durable metadata -- the table's schema
+    and batches -- not a handle into the encoding process, so the same
+    bytes can be decoded again and again, on the session that wrote them
+    or on one that never saw the original provider.
+
+    Every decode rebuilds an equivalent table: the rows come back, and
+    they are the rows the provider was created with.
+    """
+    blob, owner = _encode_provider_plan("TOKENAAA")
+    expected = [[0, 1, 2, 3]]
+
+    def rows(ctx: SessionContext) -> list[list[int]]:
+        restored = LogicalPlan.from_bytes(ctx, blob)
+        batches = ctx.create_dataframe_from_logical_plan(restored).collect()
+        return [batch.column(0).to_pylist() for batch in batches]
+
+    same_session = SessionContext().with_logical_extension_codec(
+        owner, codec_id="TOKENAAA"
+    )
+    assert rows(same_session) == expected
+    assert rows(same_session) == expected
+
+    # A fresh session with a fresh codec instance has no access to anything
+    # the encoding side might have kept; the bytes alone must suffice.
+    elsewhere = SessionContext().with_logical_extension_codec(
+        MyLogicalExtensionCodec(provider_prefix="TOKENAAA"), codec_id="TOKENAAA"
+    )
+    assert rows(elsewhere) == expected
+
+    assert owner.table_provider_decode_calls() == 2
 
 
 def test_decode_survives_a_different_install_order():
