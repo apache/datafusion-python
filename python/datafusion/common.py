@@ -61,7 +61,7 @@ class NullTreatment(Enum):
 
     This is used primarily by aggregate and window functions. It can be set on
     these functions using the builder approach described in
-    ref:`_window_functions` and ref:`_aggregation` in the online documentation.
+    :ref:`window_functions` and :ref:`aggregation` in the online documentation.
 
     """
 

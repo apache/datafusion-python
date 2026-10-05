@@ -1037,8 +1037,9 @@ class Expr:  # noqa: PLW1641
         """Filter an aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on a window
+        function unless that is an aggregate used as one. If used on any other type of
+        expression, an error will be generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.filter(filter.expr))
 
@@ -1046,8 +1047,9 @@ class Expr:  # noqa: PLW1641
         """Only evaluate distinct values for an aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on a window
+        function unless that is an aggregate used as one. If used on any other type of
+        expression, an error will be generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.distinct())
 
@@ -1064,26 +1066,37 @@ class Expr:  # noqa: PLW1641
         """Set the partitioning for a window function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on an
+        aggregate function that has not been turned into a window function with
+        :py:meth:`over`. If used on any other type of expression, an error will be
+        generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.partition_by([e.expr for e in partition_by]))
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
-        """Set the frame fora  window function.
+        """Set the frame for a window function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on an
+        aggregate function that has not been turned into a window function with
+        :py:meth:`over`. If used on any other type of expression, an error will be
+        generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
     def over(self, window: Window) -> Expr:
-        """Turn an aggregate function into a window function.
+        """Evaluate an aggregate or window function over a window.
 
-        This function turns any aggregate function into a window function. With the
+        On an aggregate function this turns it into a window function. With the
         exception of ``partition_by``, how each of the parameters is used is determined
         by the underlying aggregate function.
+
+        On an aggregate, the ``null_treatment``, ``filter``, and ``distinct`` options
+        it was built with are kept, and an ``order_by`` raises; see
+        :ref:`aggregate_over_options`.
+
+        On a window function that already has a ``partition_by``, ``order_by``, or
+        ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
         Args:
             window: Window definition
@@ -1534,6 +1547,15 @@ class Expr:  # noqa: PLW1641
 
 
 class ExprFuncBuilder:
+    """Sets the options of an aggregate or window function.
+
+    ``filter`` and ``distinct`` apply to an aggregate, including one used as a
+    window function; ``partition_by`` and ``window_frame`` apply to a window
+    function. Starting a builder from a window function that already has a
+    ``partition_by``, ``order_by``, or ``window_frame`` raises; see
+    :ref:`window_function_chaining`.
+    """
+
     def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
         self.builder = builder
 

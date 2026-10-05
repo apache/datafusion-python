@@ -99,6 +99,17 @@ def test_python_table_function_no_args() -> None:
     assert list(result[0].column(1).to_pylist()) == [0, 1, 2]
 
 
+def test_python_table_function_keyword_arguments() -> None:
+    ctx = SessionContext()
+    static_func = udtf(
+        func=lambda: python_table_function_inner(2, 3, 1), name="static_func"
+    )
+    ctx.register_udtf(static_func)
+
+    result = ctx.sql("SELECT * FROM static_func()").collect()
+    assert result[0].column(0).to_pylist() == [0, 1, 2]
+
+
 def test_python_table_function_single_arg() -> None:
     """Test Python TableFunction with a single argument."""
     ctx = SessionContext()

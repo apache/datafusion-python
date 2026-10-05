@@ -20,7 +20,7 @@ from uuid import UUID
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
-from datafusion import SessionContext, column, udf
+from datafusion import SessionContext, column, udaf, udf, udwf
 from datafusion import functions as f
 
 
@@ -56,6 +56,26 @@ def test_udf_decorator(df):
 
     df = df.select(is_null(column("b")))
     result = df.collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+
+def test_udf_decorator_keyword_arguments(df):
+    @udf(input_fields=[pa.int64()], return_field=pa.bool_(), volatility="immutable")
+    def is_null(x: pa.Array) -> pa.Array:
+        return x.is_null()
+
+    result = df.select(is_null(column("b"))).collect()[0].column(0)
+    assert result == pa.array([False, False, True])
+
+
+def test_udf_function_keyword_arguments(df):
+    is_null = udf(
+        func=lambda x: x.is_null(),
+        input_fields=[pa.int64()],
+        return_field=pa.bool_(),
+        volatility="immutable",
+    )
+    result = df.select(is_null(column("b"))).collect()[0].column(0)
     assert result == pa.array([False, False, True])
 
 
@@ -278,3 +298,21 @@ def test_udf_with_nullability(ctx: SessionContext) -> None:
     with pytest.raises(Exception) as e_info:
         _results = df_result.collect()
     assert "Invalid argument error" in str(e_info)
+
+
+@pytest.mark.parametrize(
+    ("decorator", "expected"),
+    [
+        (udf, "datafusion_scalar_udf"),
+        (udaf, "datafusion_aggregate_udf"),
+        (udwf, "datafusion_window_udf"),
+    ],
+)
+def test_wrong_capsule_kind_names_expected_and_found(decorator, expected):
+    capsule = SessionContext().__datafusion_logical_extension_codec__()
+    with pytest.raises(
+        ValueError,
+        match=f"Expected name '{expected}' in PyCapsule, "
+        "instead got 'datafusion_logical_extension_codec'",
+    ):
+        decorator(capsule)
