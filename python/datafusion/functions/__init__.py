@@ -5753,7 +5753,7 @@ def array_agg(
 
 
 def grouping(
-    expression: Expr,
+    expression: Expr | str,
     distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
@@ -5783,7 +5783,8 @@ def grouping(
         on the result DataFrame instead.
 
     Args:
-        expression: The column to check grouping status for
+        expression: The column to check grouping status for (expression or column
+            name)
         distinct: If True, compute on distinct values only
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5808,7 +5809,9 @@ def grouping(
         :py:class:`~datafusion.expr.GroupingSet`
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.grouping(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(
+        f.grouping(_to_raw_expr(expression), distinct=distinct, filter=filter_raw)
+    )
 
 
 def avg(
@@ -5906,8 +5909,8 @@ def count(
     the options ``order_by`` and ``null_treatment``.
 
     Args:
-        expressions: Argument to perform bitwise calculation on (expression, column
-            name, or a list of either)
+        expressions: Values to count (expression, column name, or a list of
+            either). ``"*"`` counts all rows, the same as ``count()``.
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
 
@@ -5932,7 +5935,7 @@ def count(
     """
     filter_raw = filter.expr if filter is not None else None
 
-    if expressions is None:
+    if expressions is None or (isinstance(expressions, str) and expressions == "*"):
         args = [Expr.literal(1).expr]
     elif isinstance(expressions, list):
         args = [_to_raw_expr(arg) for arg in expressions]
