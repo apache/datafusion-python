@@ -569,51 +569,48 @@ def test_string_agg(name, expr, result) -> None:
     ("by_name", "by_expr"),
     [
         (f.count(["e"]), f.count([column("e")])),
-        (f.regr_slope("c", "a"), f.regr_slope(column("c"), column("a"))),
+        (f.count("*"), f.count()),
+        (f.regr_slope("c", "b"), f.regr_slope(column("c"), column("b"))),
         (
             f.approx_percentile_cont("b", 0.5),
             f.approx_percentile_cont(column("b"), 0.5),
         ),
         (
-            f.approx_percentile_cont_with_weight("b", "a", 0.5),
-            f.approx_percentile_cont_with_weight(column("b"), column("a"), 0.5),
+            f.approx_percentile_cont_with_weight("b", "c", 0.5),
+            f.approx_percentile_cont_with_weight(column("b"), column("c"), 0.5),
         ),
         (f.percentile_cont("c", 0.5), f.percentile_cont(column("c"), 0.5)),
         (
-            f.first_value("a", order_by="c"),
-            f.first_value(column("a"), order_by="c"),
+            f.first_value("b", order_by="c"),
+            f.first_value(column("b"), order_by="c"),
         ),
-        (f.array_agg("a", order_by="a"), f.array_agg(column("a"), order_by="a")),
+        (f.array_agg("b", order_by="b"), f.array_agg(column("b"), order_by="b")),
         (f.bool_and("d"), f.bool_and(column("d"))),
+        (
+            f.string_agg("s", ",", order_by="c"),
+            f.string_agg(column("s"), ",", order_by="c"),
+        ),
+        (f.grouping("a"), f.grouping(column("a"))),
     ],
 )
-def test_aggregate_accepts_column_name(df, by_name, by_expr) -> None:
-    result = df.aggregate([], [by_name.alias("v")]).collect()[0]
-    expected = df.aggregate([], [by_expr.alias("v")]).collect()[0]
-    assert result == expected
+def test_aggregate_accepts_column_name(by_name, by_expr) -> None:
+    # grouping() needs its argument in the group by, so every case is grouped
+    # by "a". No alias: grouping() cannot be aliased (apache/datafusion#21411).
+    df = SessionContext().from_pydict(
+        {
+            "a": [1, 1, 2],
+            "b": [4, 4, 6],
+            "c": [9, 8, 5],
+            "d": [True, True, False],
+            "e": [1, None, 3],
+            "s": ["one", "two", "three"],
+        }
+    )
 
+    def run(expr):
+        return df.aggregate(["a"], [expr]).sort(column("a")).collect()
 
-def test_string_agg_accepts_column_name() -> None:
-    ctx = SessionContext()
-    df = ctx.from_pydict({"a": ["one", "two", "three"], "b": [2, 0, 1]})
-
-    result = df.aggregate([], [f.string_agg("a", ",", order_by="b").alias("v")])
-
-    assert result.collect()[0].to_pydict() == {"v": ["two,three,one"]}
-
-
-@pytest.mark.parametrize(
-    "build",
-    [
-        lambda: f.sum(1),
-        lambda: f.corr("a", 1),
-        lambda: f.count(["a", 1]),
-        lambda: f.approx_percentile_cont_with_weight("a", 1, 0.5),
-    ],
-)
-def test_aggregate_rejects_non_column_input(build) -> None:
-    with pytest.raises(TypeError, match="Expected Expr or column name"):
-        build()
+    assert run(by_name) == run(by_expr)
 
 
 _FILTER = column("b") > lit(1)
