@@ -4698,7 +4698,7 @@ Package Contents
    5
 
 
-.. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.SortExpr
+.. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = False) -> datafusion.expr.SortExpr
 
    Creates a new sort expression.
 

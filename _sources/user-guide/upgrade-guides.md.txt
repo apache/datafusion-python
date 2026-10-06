@@ -19,6 +19,30 @@
 
 # Upgrade Guides
 
+## DataFusion 56.0.0
+
+### `sort` and `order_by` now order `NULLS LAST` by default
+
+Calling `.sort(...)` on a DataFrame or using the `.order_by(...)` function now
+orders rows with `NULLS LAST` by default, instead of `NULLS FIRST`. This follows
+the same behavior as SQL's `ORDER BY` or the DataFrame's `sort_by(...)`.
+
+To go back to the previous behavior, we need to explicitly specify
+`nulls_first=True`. Example:
+
+```python
+# sort
+df.sort(column("a"), nulls_first=True)
+
+# order by
+expr = f.first_value(column("a")).over(
+    Window(
+        partition_by=partition,
+        order_by=f.order_by(column("b"), nulls_first=True)
+    )
+)
+```
+
 ## DataFusion 55.0.0
 
 This release extends the change made in 52.0.0 to the remaining

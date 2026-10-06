@@ -544,6 +544,29 @@
 -->
 <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">#</a></h1>
+<section id="datafusion-56-0-0">
+<h2>DataFusion 56.0.0<a class="headerlink" href="#datafusion-56-0-0" title="Link to this heading">#</a></h2>
+<section id="sort-and-order-by-now-order-nulls-last-by-default">
+<h3><code class="docutils literal notranslate"><span class="pre">sort</span></code> and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> now order <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default<a class="headerlink" href="#sort-and-order-by-now-order-nulls-last-by-default" title="Link to this heading">#</a></h3>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">.sort(...)</span></code> on a DataFrame or using the <code class="docutils literal notranslate"><span class="pre">.order_by(...)</span></code> function now
+orders rows with <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default, instead of <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">FIRST</span></code>. This follows
+the same behavior as SQL’s <code class="docutils literal notranslate"><span class="pre">ORDER</span> <span class="pre">BY</span></code> or the DataFrame’s <code class="docutils literal notranslate"><span class="pre">sort_by(...)</span></code>.</p>
+<p>To go back to the previous behavior, we need to explicitly specify
+<code class="docutils literal notranslate"><span class="pre">nulls_first=True</span></code>. Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># sort</span>
+<span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># order by</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span>
+        <span class="n">partition_by</span><span class="o">=</span><span class="n">partition</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="datafusion-55-0-0">
 <h2>DataFusion 55.0.0<a class="headerlink" href="#datafusion-55-0-0" title="Link to this heading">#</a></h2>
 <p>This release extends the change made in 52.0.0 to the remaining
@@ -1055,6 +1078,10 @@ using the specific datafusion project crates.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-56-0-0">DataFusion 56.0.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sort-and-order-by-now-order-nulls-last-by-default"><code class="docutils literal notranslate"><span class="pre">sort</span></code> and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> now order <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>

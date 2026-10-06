@@ -1470,7 +1470,7 @@ Package Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = False) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
