@@ -415,7 +415,7 @@ def test_bitwise_distinct_is_kept(fn):
             "first_value_with_null",
             f.first_value(
                 column("b"),
-                order_by=[column("b").sort(ascending=True)],
+                order_by=[column("b").sort(ascending=True, nulls_first=True)],
                 null_treatment=NullTreatment.RESPECT_NULLS,
             ),
             [None, None],
@@ -424,7 +424,7 @@ def test_bitwise_distinct_is_kept(fn):
             "first_value_no_list_order_by",
             f.first_value(
                 column("b"),
-                order_by=column("b"),
+                order_by=column("b").sort(nulls_first=True),
                 null_treatment=NullTreatment.RESPECT_NULLS,
             ),
             [None, None],
