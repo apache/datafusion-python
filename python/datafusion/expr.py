@@ -46,13 +46,14 @@ operators and helpers.
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Iterable, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, overload
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 import pyarrow as pa
 
@@ -114,7 +115,7 @@ def _create_external_table_location(self: Any) -> str:
     return locations[0] if locations else ""
 
 
-CreateExternalTable.location = _create_external_table_location
+CreateExternalTable.location = _create_external_table_location  # ty: ignore[deprecated]
 
 CreateFunction = expr_internal.CreateFunction
 CreateFunctionBody = expr_internal.CreateFunctionBody
@@ -410,8 +411,18 @@ def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
     raise TypeError(error)
 
 
+@overload
+def expr_list_to_raw_expr_list(expr_list: None) -> None: ...
+
+
+@overload
 def expr_list_to_raw_expr_list(
-    expr_list: list[Expr] | Expr | None,
+    expr_list: Sequence[Expr | str] | Expr | str,
+) -> list[expr_internal.Expr]: ...
+
+
+def expr_list_to_raw_expr_list(
+    expr_list: Sequence[Expr | str] | Expr | str | None,
 ) -> list[expr_internal.Expr] | None:
     """Convert a sequence of expressions or column names to raw expressions."""
     if isinstance(expr_list, Expr | str):
@@ -426,6 +437,16 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     if isinstance(e, SortExpr):
         return e.raw_sort
     return SortExpr(e, ascending=True, nulls_first=False).raw_sort
+
+
+@overload
+def sort_list_to_raw_sort_list(sort_list: None) -> None: ...
+
+
+@overload
+def sort_list_to_raw_sort_list(
+    sort_list: Sequence[SortKey] | SortKey,
+) -> list[expr_internal.SortExpr]: ...
 
 
 def sort_list_to_raw_sort_list(
@@ -771,7 +792,7 @@ class Expr:  # noqa: PLW1641
             return Expr(functions_internal.array_slice(self.expr, start, stop, step))
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: object) -> Expr:
+    def __eq__(self, rhs: object) -> Expr:  # ty: ignore[invalid-method-override]
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
@@ -782,7 +803,7 @@ class Expr:  # noqa: PLW1641
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
 
-    def __ne__(self, rhs: object) -> Expr:
+    def __ne__(self, rhs: object) -> Expr:  # ty: ignore[invalid-method-override]
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.

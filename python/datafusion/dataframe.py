@@ -44,19 +44,21 @@ overview of the execution model.
 
 from __future__ import annotations
 
+import sys
 import warnings
 from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
     Literal,
+    cast,
     overload,
 )
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
@@ -1158,8 +1160,8 @@ class DataFrame:
             if left_on is not None or right_on is not None:
                 error_msg = "`left_on` or `right_on` should not provided with `on`"
                 raise ValueError(error_msg)
-            left_on = on
-            right_on = on
+            # The legacy ``(left, right)`` tuple form was consumed above.
+            left_on = right_on = cast("str | Sequence[str]", on)
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 error_msg = "`left_on` and `right_on` should both be provided."
@@ -1344,10 +1346,11 @@ class DataFrame:
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
-        exprs = expr_list_to_raw_expr_list(exprs)
+        raw_exprs = expr_list_to_raw_expr_list(
+            [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        )
 
-        return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
+        return DataFrame(self.df.repartition_by_hash(*raw_exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the union of two :py:class:`DataFrame`.
@@ -1833,10 +1836,9 @@ class DataFrame:
             >>> df.unnest_columns("a", recursions=[("a", "a", 1)]).to_pydict()
             {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
         """
-        columns = list(columns)
         return DataFrame(
             self.df.unnest_columns(
-                columns, preserve_nulls=preserve_nulls, recursions=recursions
+                list(columns), preserve_nulls=preserve_nulls, recursions=recursions
             )
         )
 

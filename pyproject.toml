@@ -181,6 +181,16 @@ extend-allowed-calls = ["datafusion.lit", "lit"]
 
 # CI and pre-commit invoke codespell with different paths, so we have a little
 # redundancy here, and we intentionally drop python in the path.
+[tool.ty.src]
+# Only the published package is type checked for now. Tests and examples
+# can be added once the package itself is clean.
+include = ["python/datafusion"]
+
+[tool.ty.analysis]
+# `_internal` is the compiled PyO3 extension and ships no `.pyi` stubs.
+# pandas and polars are optional and only imported under TYPE_CHECKING.
+allowed-unresolved-imports = ["datafusion._internal", "pandas", "polars"]
+
 [tool.codespell]
 skip = [
   "*/tests/test_functions.py",
@@ -219,6 +229,8 @@ dev = [
   "pyyaml>=6.0.3",
   "ruff>=0.15.1",
   "toml>=0.10.2",
+  # Pinned exactly: ty is pre-1.0 and new releases can add diagnostics.
+  "ty==0.0.84",
 ]
 # Release tooling only. Kept out of `dev` because pygithub pulls in
 # cryptography, which ships no free-threaded wheel and fails to build

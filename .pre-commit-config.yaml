@@ -30,6 +30,13 @@ repos:
           - id: ruff-format
       - repo: local
         hooks:
+          - id: ty
+            name: ty
+            description: Type check python/datafusion with ty.
+            entry: uv run --no-project ty check
+            pass_filenames: false
+            types: [file, python]
+            language: system
           - id: rust-fmt
             name: Rust fmt
             description: Run cargo fmt on files included in the commit. rustfmt should be installed before-hand.

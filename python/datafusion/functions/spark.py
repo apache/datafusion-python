@@ -56,14 +56,14 @@ def _filter_raw(filter: Expr | None) -> Any:
     return filter.expr if filter is not None else None
 
 
-def _coerce_i32(value: Expr | int | None) -> Expr | None:
-    """Coerce a native ``int`` to an int32 literal, passing ``Expr``/``None`` through.
+def _coerce_i32(value: Expr | int) -> Expr:
+    """Coerce a native ``int`` to an int32 literal, passing ``Expr`` through.
 
     Several Spark datetime and interval builders require 32-bit integer
     inputs, so a bare ``int`` must become an int32 literal rather than the
     int64 default that :meth:`Expr.literal` would produce.
     """
-    if value is None or isinstance(value, Expr):
+    if isinstance(value, Expr):
         return value
     return Expr.literal(pa.scalar(value, type=pa.int32()))
 

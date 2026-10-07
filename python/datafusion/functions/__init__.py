@@ -871,8 +871,8 @@ def concat(*args: Expr) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         'hello world'
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.concat(args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.concat(raw_args))
 
 
 def concat_ws(separator: str, *args: Expr) -> Expr:
@@ -888,8 +888,8 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         'hello-world'
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.concat_ws(separator, args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.concat_ws(separator, raw_args))
 
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = False) -> SortExpr:
@@ -1272,8 +1272,8 @@ def coalesce(*args: Expr) -> Expr:
         >>> result.collect_column("c")[0].as_py()
         2
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.coalesce(*args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.coalesce(*raw_args))
 
 
 def cos(arg: Expr) -> Expr:
@@ -3105,8 +3105,8 @@ def make_array(*args: Expr) -> Expr:
         >>> result.collect_column("arr")[0].as_py()
         [1, 2, 3]
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.make_array(args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.make_array(raw_args))
 
 
 def make_list(*args: Expr) -> Expr:
@@ -3240,8 +3240,8 @@ def struct(*args: Expr) -> Expr:
         >>> result.collect_column("s")[0].as_py() == {"c0": 1, "c1": 2}
         True
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.struct(*args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.struct(*raw_args))
 
 
 def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
@@ -3762,8 +3762,8 @@ def array_concat(*args: Expr) -> Expr:
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3, 4]
     """
-    args = [arg.expr for arg in args]
-    return Expr(f.array_concat(args))
+    raw_args = [arg.expr for arg in args]
+    return Expr(f.array_concat(raw_args))
 
 
 def array_cat(*args: Expr) -> Expr:

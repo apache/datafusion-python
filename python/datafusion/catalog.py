@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import sys
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -31,10 +32,10 @@ if TYPE_CHECKING:
     from datafusion.context import TableProviderExportable
     from datafusion.expr import CreateExternalTable
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
 __all__ = [
