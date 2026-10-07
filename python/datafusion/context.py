@@ -58,6 +58,7 @@ from urllib.parse import urlparse
 
 import pyarrow as pa
 
+from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -69,12 +70,6 @@ from datafusion.catalog import (
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
-from datafusion.extensions import (
-    QueryPlannerExportable,
-    SessionComponentsExportable,
-    SessionExtensionComponents,
-    SessionPlannerExportable,
-)
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
     CsvReadOptions,
@@ -90,15 +85,32 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
+    import sys
     from collections.abc import Iterable, Sequence
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
-    from _typeshed import CapsuleType as _PyCapsule
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
     from datafusion.expr import Expr, SortKey
+
+    # Type-only on purpose. `datafusion.extensions` is the one home for the
+    # capsule-getter protocols; importing these at runtime would make them
+    # reachable as `datafusion.context.*`, and for
+    # `PhysicalOptimizerRuleExportable` would restore the 54.0.0 path that
+    # 55.0.0 drops. Runtime checks go through the private `_extensions` alias.
+    from datafusion.extensions import (
+        PhysicalOptimizerRuleExportable,
+        QueryPlannerExportable,
+        SessionComponentsExportable,
+        SessionPlannerExportable,
+    )
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -149,16 +161,6 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
-
-
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class _Contributions(NamedTuple):
@@ -216,7 +218,11 @@ def _collect_contributions(
     """
     for extension in extensions:
         if not isinstance(
-            extension, (SessionComponentsExportable, SessionPlannerExportable)
+            extension,
+            (
+                _extensions.SessionComponentsExportable,
+                _extensions.SessionPlannerExportable,
+            ),
         ):
             msg = (
                 "Extension implements neither "
@@ -227,10 +233,10 @@ def _collect_contributions(
 
     contributed = _Contributions([], [], [], [], [])
     for position, extension in enumerate(extensions):
-        if not isinstance(extension, SessionComponentsExportable):
+        if not isinstance(extension, _extensions.SessionComponentsExportable):
             continue
         components = extension.__datafusion_session_components__(ctx)
-        if not isinstance(components, SessionExtensionComponents):
+        if not isinstance(components, _extensions.SessionExtensionComponents):
             msg = (
                 "__datafusion_session_components__ must return "
                 "SessionExtensionComponents, got "
@@ -1984,7 +1990,8 @@ class SessionContext:
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                a :class:`PhysicalOptimizerRuleExportable`.
+                a
+                :py:class:`~datafusion.extensions.PhysicalOptimizerRuleExportable`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -2183,7 +2190,11 @@ class SessionContext:
         # the same check the validation above uses, so one predicate decides
         # both what is admitted and what is called.
         new.ctx._commit_extensions(
-            [e for e in extensions if isinstance(e, SessionPlannerExportable)],
+            [
+                e
+                for e in extensions
+                if isinstance(e, _extensions.SessionPlannerExportable)
+            ],
             new,
             bool(contributed.logical_codecs or contributed.physical_codecs),
         )

@@ -19,6 +19,30 @@
 
 # Upgrade Guides
 
+## DataFusion 56.0.0
+
+### `sort` and `order_by` now order `NULLS LAST` by default
+
+Calling `.sort(...)` on a DataFrame or using the `.order_by(...)` function now
+orders rows with `NULLS LAST` by default, instead of `NULLS FIRST`. This follows
+the same behavior as SQL's `ORDER BY` or the DataFrame's `sort_by(...)`.
+
+To go back to the previous behavior, we need to explicitly specify
+`nulls_first=True`. Example:
+
+```python
+# sort
+df.sort(column("a"), nulls_first=True)
+
+# order by
+expr = f.first_value(column("a")).over(
+    Window(
+        partition_by=partition,
+        order_by=f.order_by(column("b"), nulls_first=True)
+    )
+)
+```
+
 ## DataFusion 55.0.0
 
 This release extends the change made in 52.0.0 to the remaining
@@ -159,6 +183,34 @@ installed produces the same bytes as before, as do functions encoded by name.
 Regenerate any plan you serialized with an earlier release and stored for later
 use, if it was produced by a session with an extension codec installed.
 
+### Capsule-getter protocols moved to `datafusion.extensions`
+
+`PhysicalOptimizerRuleExportable` now lives in `datafusion.extensions`, next to
+the other protocols an extension library implements against. It was previously
+importable from `datafusion.context`, and that path is gone.
+
+```python
+from datafusion.context import PhysicalOptimizerRuleExportable  # before
+from datafusion.extensions import PhysicalOptimizerRuleExportable  # after
+```
+
+This affects type annotations only. The protocol is structural and not
+`@runtime_checkable`, so nothing imports it to call `isinstance`, and
+`SessionContext.add_physical_optimizer_rule` is unchanged — a rule object that
+worked before still works, whether or not its library names the protocol
+anywhere.
+
+The bundle protocols added in this release —  `QueryPlannerExportable`,
+`SessionComponentsExportable`, and `SessionPlannerExportable` — are reached the
+same way, through `datafusion.extensions` rather than the package root. They are
+new in 55.0.0, so no earlier import path existed. `SessionExtensionComponents`
+stays at the root, because a bundle constructs one rather than merely naming it:
+
+```python
+from datafusion import SessionExtensionComponents
+from datafusion.extensions import SessionComponentsExportable
+```
+
 ### `SessionContext.execute` renamed its second parameter
 
 The parameter is a single partition index, not a count, and is now named
@@ -168,6 +220,179 @@ any call passing it by keyword.
 ```python
 ctx.execute(plan, partitions=0)  # before
 ctx.execute(plan, partition=0)  # after
+```
+
+### More aggregate functions accept `distinct`
+
+{py:func}`~datafusion.functions.bit_and`,
+{py:func}`~datafusion.functions.bit_or`,
+{py:func}`~datafusion.functions.mean`,
+{py:func}`~datafusion.functions.percentile_cont`,
+{py:func}`~datafusion.functions.quantile_cont`, and
+{py:func}`~datafusion.functions.string_agg` now accept a `distinct` argument.
+As with `sum` and `avg` in 54.0.0, `distinct` is inserted *before* `filter`, so
+code that passed `filter` (or, for `string_agg`, `order_by`) positionally must
+pass it by keyword.
+
+```python
+f.bit_and(column("a"), my_filter)  # before
+f.bit_and(column("a"), filter=my_filter)  # after
+```
+
+Passing `filter` to `mean` previously raised a `TypeError`, whether passed
+positionally or by keyword; it now works when passed by keyword.
+
+### Chaining keeps options already set
+
+Chaining a builder method (`order_by`, `filter`, `distinct`, `null_treatment`,
+`partition_by`, `window_frame`) or `over()` onto a function used to start from
+an empty builder, so options set by the function's keyword arguments were
+silently reset. On an aggregate they are now kept, which can change results:
+
+```python
+e = f.string_agg(col("s"), ",", order_by="s")
+e.distinct().build()  # before: order_by dropped; after: kept
+```
+
+On a window function that already has a `partition_by`, `order_by`, or
+`window_frame`, chaining now raises instead of dropping them. Set them in one
+place, as described in {ref}`window_function_chaining`:
+
+```python
+e = f.lead(col("v"), 1, partition_by=[col("g")], order_by="t")
+e.over(Window(order_by="t"))  # before: partition dropped; after: raises
+f.lead(col("v"), 1).over(Window(partition_by=[col("g")], order_by="t"))  # after
+```
+
+Options that used to be dropped now take effect, so a chain that ran before
+may now raise. For example, DISTINCT requires the ORDER BY expressions to be
+among the arguments:
+
+```python
+f.array_agg(col("s"), distinct=True).order_by(col("v")).build()
+# before: ran without DISTINCT
+# after:  Execution error: In an aggregate with DISTINCT, ORDER BY expressions
+#         must appear in argument list
+```
+
+Drop `distinct`, or order by the aggregated column, to get either of the
+results the chain can actually produce.
+
+An option that does not apply to the function now raises as soon as it is
+set, anywhere in the chain. `filter` and `distinct` need an aggregate,
+including one used as a window function, and `partition_by` and
+`window_frame` need a window function. Later in a chain these were silently
+dropped:
+
+```python
+f.sum(col("v")).filter(col("v") > lit(1)).partition_by(col("g"))
+# before: partition_by dropped; after: raises
+```
+
+The default `RESPECT NULLS` set by `first_value`, `last_value`, and `nth_value`
+is also kept, so their generated column names change:
+
+```python
+f.first_value(col("a")).order_by(col("b")).build()
+# before: first_value(a) ORDER BY [b ASC NULLS FIRST]
+# after:  first_value(a) RESPECT NULLS ORDER BY [b ASC NULLS FIRST]
+```
+
+This now matches the name from `f.first_value(col("a"), order_by=col("b"))`.
+Code that selects the result by its generated name should `alias()` it instead.
+
+### `over()` keeps options set on an aggregate
+
+`Expr.over()` on an aggregate used to drop the `filter`, `distinct`,
+`null_treatment`, and `order_by` options it was built with. The first three are
+now kept, which can change results:
+
+```python
+f.avg(col("v"), distinct=True).over(Window())
+# v = [1, 1, 4]; before: 2.0, after: 2.5
+```
+
+An `order_by` on the aggregate now raises instead of being dropped, as it does
+with `OVER` in SQL. Remove it, or move it into the `Window` if it was meant to
+order the rows:
+
+```python
+# before: order_by dropped; after: raises
+f.first_value(col("v"), order_by=col("i").sort(ascending=False)).over(
+    Window(partition_by=[col("g")])
+)
+
+# after: the Window orders the rows the aggregate sees
+f.first_value(col("v")).over(
+    Window(partition_by=[col("g")], order_by=[col("i").sort(ascending=False)])
+)
+```
+
+A `WITHIN GROUP` function such as `percentile_cont` still accepts
+an ascending `sort_expression`, and raises on a descending one, which used to
+give the ascending result. See {ref}`aggregate_over_options`.
+
+### Python aggregate UDFs reject `DISTINCT`
+
+A Python {py:class}`~datafusion.user_defined.Accumulator` cannot deduplicate its
+input, so a Python aggregate UDF with `DISTINCT` counted every row. It now
+raises instead of returning that result:
+
+```python
+my_sum(col("v")).over(Window()).distinct().build()
+# v = [1, 1, 1, 5]; before: 8.0; after: DISTINCT is not supported ...
+```
+
+When the optimizer rewrites the query to group by the distinct values first,
+as it does for SQL's `SELECT my_sum(DISTINCT v) FROM t`, the query still runs
+and gives the distinct result.
+
+### Percentile functions keep the sort direction
+
+{py:func}`~datafusion.functions.percentile_cont`,
+{py:func}`~datafusion.functions.quantile_cont`,
+{py:func}`~datafusion.functions.approx_percentile_cont`, and
+{py:func}`~datafusion.functions.approx_percentile_cont_with_weight` ignored the
+direction of `sort_expression`, so a descending sort gave the ascending result.
+Used as aggregates, they now match `WITHIN GROUP (ORDER BY ... DESC)` in SQL
+(see {ref}`aggregate_over_options` for their use in a window):
+
+```python
+f.percentile_cont(col("a").sort(ascending=False), 0.25)
+# a = [1, 2, 3, 4, 5]; before: 2.0, after: 4.0
+```
+
+Their generated column names now include the ordering, in the same form as SQL.
+Code that selects the result by its generated name should `alias()` it instead.
+
+```python
+f.percentile_cont(col("a"), 0.25)
+# before: percentile_cont(t.a,Float64(0.25))
+# after:  percentile_cont(Float64(0.25)) WITHIN GROUP [t.a ASC NULLS FIRST]
+```
+
+### `fill_null(subset=[])` fills no columns
+
+{py:meth}`~datafusion.dataframe.DataFrame.fill_null` with an empty `subset`
+list used to fill every column, the same as `subset=None`. It now returns the
+DataFrame unchanged, so a subset computed from the schema that matches nothing
+no longer rewrites every column. The new
+{py:meth}`~datafusion.dataframe.DataFrame.fill_nan` behaves the same way.
+
+```python
+df.fill_null(0, subset=[])  # before: fills all columns; after: fills none
+df.fill_null(0)  # fills all columns, before and after
+```
+
+### `spark.last_day` renamed its parameter
+
+The parameter of {py:func}`datafusion.functions.spark.last_day` is now named
+`date`, matching `pyspark.sql.functions.last_day`. Positional calls are
+unaffected; update any call passing it by keyword.
+
+```python
+spark.last_day(col=d)  # before
+spark.last_day(date=d)  # after
 ```
 
 ### Changes to the `datafusion-python-util` crate

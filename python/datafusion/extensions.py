@@ -32,11 +32,12 @@ then every :py:class:`SessionPlannerExportable` runs in argument order. A bundle
 implements either hook or both. Bundle order is significant for planners, which
 nest, and irrelevant for codecs, which accumulate.
 
-Of the four names here, only the two bundle hooks are ``@runtime_checkable``,
+Of the five names here, only the two bundle hooks are ``@runtime_checkable``,
 because :py:meth:`~datafusion.context.SessionContext.with_extensions`
-dispatches on them from Python. :py:class:`QueryPlannerExportable` is a type
-hint only, matching the other capsule-getter protocols in
-:py:mod:`datafusion.user_defined` and :py:mod:`datafusion.catalog`.
+dispatches on them from Python. :py:class:`QueryPlannerExportable` and
+:py:class:`PhysicalOptimizerRuleExportable` are type hints only, matching the
+other capsule-getter protocols in :py:mod:`datafusion.user_defined` and
+:py:mod:`datafusion.catalog`.
 
 See :ref:`extension_bundles` in the online documentation for why the phases are
 split and for a worked implementation.
@@ -48,7 +49,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from _typeshed import CapsuleType as _PyCapsule
+    import sys
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.context import SessionContext
     from datafusion.user_defined import (
@@ -63,11 +69,48 @@ if TYPE_CHECKING:
     )
 
 __all__ = [
+    "PhysicalOptimizerRuleExportable",
     "QueryPlannerExportable",
     "SessionComponentsExportable",
     "SessionExtensionComponents",
     "SessionPlannerExportable",
 ]
+
+
+class PhysicalOptimizerRuleExportable(Protocol):
+    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
+
+    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
+    typically produced by a separate compiled extension. It takes **no
+    argument**: a rule needs neither a codec nor a task-context provider, so
+    there is nothing session-scoped to hand it.
+
+    Rules accumulate rather than replace. Install one with
+    :py:meth:`~datafusion.context.SessionContext.add_physical_optimizer_rule`
+    — see :ref:`extension_other_hooks`.
+
+    Examples:
+        The getter is the whole protocol, and a capsule is what it must return
+        — anything else is refused where it is installed rather than at plan
+        time:
+
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.add_physical_optimizer_rule(object())
+        Traceback (most recent call last):
+            ...
+        RuntimeError: "Invalid datafusion_physical_optimizer_rule...
+
+        Real usage. Skipped here (needs a built extension library); parsed out
+        of this docstring and run for real by
+        ``test_physical_optimizer_rule_docstring_example_still_runs`` in
+        ``datafusion-ffi-example``.
+
+        >>> from datafusion_ffi_example import MyPhysicalOptimizerRule  # doctest: +SKIP
+        >>> ctx.add_physical_optimizer_rule(MyPhysicalOptimizerRule())  # doctest: +SKIP
+    """
+
+    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
 
 
 class QueryPlannerExportable(Protocol):
@@ -96,7 +139,7 @@ class QueryPlannerExportable(Protocol):
 
         The protocol itself is not runtime-checkable:
 
-        >>> from datafusion import QueryPlannerExportable
+        >>> from datafusion.extensions import QueryPlannerExportable
         >>> try:
         ...     isinstance(ctx, QueryPlannerExportable)
         ... except TypeError as e:
@@ -132,7 +175,7 @@ future field that is not a collection and must not be normalized into a tuple.
 """
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class SessionExtensionComponents:
     """Components an extension contributes to a session context.
 
@@ -142,6 +185,9 @@ class SessionExtensionComponents:
     component must be created against the context passed to that method;
     components bound to a different session hold a task-context provider for
     that other session and cannot be rebound.
+
+    Construction is keyword-only, so later releases can add component kinds
+    without changing what an existing call means.
 
     Query planners are not listed here. They install in a second phase so each
     can wrap the one before it — see :py:class:`SessionPlannerExportable`.
@@ -313,10 +359,8 @@ class SessionComponentsExportable(Protocol):
         The codecs this bundle contributes.
 
     Examples:
-        >>> from datafusion import (
-        ...     SessionExtensionComponents,
-        ...     SessionComponentsExportable,
-        ... )
+        >>> from datafusion import SessionExtensionComponents
+        >>> from datafusion.extensions import SessionComponentsExportable
         >>> class MyLibraryExtension:
         ...     def __datafusion_session_components__(self, ctx):
         ...         return SessionExtensionComponents()
@@ -377,7 +421,8 @@ class SessionPlannerExportable(Protocol):
         worth contrasting, because both plan queries successfully and only one
         of them is the no-op:
 
-        >>> from datafusion import SessionContext, SessionPlannerExportable
+        >>> from datafusion import SessionContext
+        >>> from datafusion.extensions import SessionPlannerExportable
         >>> class Contributes:
         ...     def __datafusion_session_planner__(self, ctx, fallback):
         ...         return None  # the no-op: session keeps its own planner

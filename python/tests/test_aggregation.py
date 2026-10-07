@@ -317,11 +317,55 @@ def test_aggregate_100(df_aggregate_100, name, expr, expected):
     assert df.collect()[0].to_pydict() == expected_dict
 
 
+def test_any_value_skips_nulls_per_group():
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {"g": ["x", "x", "y", "y", "z"], "v": [None, 7, 8, None, None]}
+    )
+    result = (
+        df.aggregate([column("g")], [f.any_value(column("v")).alias("v")])
+        .sort(column("g").sort())
+        .to_pydict()
+    )
+    assert result == {"g": ["x", "y", "z"], "v": [7, 8, None]}
+
+
+@pytest.mark.parametrize(
+    ("expr", "expected"),
+    [
+        pytest.param(f.mean(column("v")), 2.0, id="mean"),
+        pytest.param(f.mean(column("v"), distinct=True), 3.0, id="mean_distinct"),
+        pytest.param(
+            f.mean(column("v"), filter=column("v") > lit(1.0)), 5.0, id="mean_filter"
+        ),
+        pytest.param(f.percentile_cont(column("v"), 0.5), 1.0, id="percentile_cont"),
+        pytest.param(
+            f.percentile_cont(column("v"), 0.5, distinct=True),
+            3.0,
+            id="percentile_cont_distinct",
+        ),
+        pytest.param(
+            f.quantile_cont(column("v"), 0.5, distinct=True),
+            3.0,
+            id="quantile_cont_distinct",
+        ),
+    ],
+)
+def test_distinct_numeric_aggregates(expr, expected):
+    ctx = SessionContext()
+    df = ctx.from_pydict({"v": [1.0, 1.0, 1.0, 5.0]})
+    result = df.aggregate([], [expr.alias("r")]).collect_column("r")[0].as_py()
+    assert result == expected
+
+
 data_test_bitwise_and_boolean_functions = [
+    ("any_value_filter", f.any_value(column("a"), filter=column("a") == lit(2)), [2]),
     ("bit_and", f.bit_and(column("a")), [0]),
     ("bit_and_filter", f.bit_and(column("a"), filter=column("a") != lit(2)), [1]),
     ("bit_or", f.bit_or(column("b")), [6]),
     ("bit_or_filter", f.bit_or(column("b"), filter=column("a") != lit(3)), [4]),
+    ("bit_and_distinct", f.bit_and(column("b"), distinct=True), [4]),
+    ("bit_or_distinct", f.bit_or(column("b"), distinct=True), [6]),
     ("bit_xor", f.bit_xor(column("c")), [4]),
     ("bit_xor_distinct", f.bit_xor(column("b"), distinct=True), [2]),
     ("bit_xor_filter", f.bit_xor(column("b"), filter=column("a") != lit(3)), [0]),
@@ -350,6 +394,14 @@ def test_bit_and_bool_fns(df, name, expr, result):
     assert df.collect()[0].to_pydict() == expected
 
 
+@pytest.mark.parametrize("fn", [f.bit_and, f.bit_or])
+def test_bitwise_distinct_is_kept(fn):
+    # AND and OR ignore duplicates, so the result alone cannot show whether
+    # ``distinct`` reached the plan.
+    assert "DISTINCT" in fn(column("b"), distinct=True).canonical_name()
+    assert "DISTINCT" not in fn(column("b")).canonical_name()
+
+
 @pytest.mark.parametrize(
     ("name", "expr", "result"),
     [
@@ -363,7 +415,7 @@ def test_bit_and_bool_fns(df, name, expr, result):
             "first_value_with_null",
             f.first_value(
                 column("b"),
-                order_by=[column("b").sort(ascending=True)],
+                order_by=[column("b").sort(ascending=True, nulls_first=True)],
                 null_treatment=NullTreatment.RESPECT_NULLS,
             ),
             [None, None],
@@ -372,7 +424,7 @@ def test_bit_and_bool_fns(df, name, expr, result):
             "first_value_no_list_order_by",
             f.first_value(
                 column("b"),
-                order_by=column("b"),
+                order_by=column("b").sort(nulls_first=True),
                 null_treatment=NullTreatment.RESPECT_NULLS,
             ),
             [None, None],
@@ -477,6 +529,11 @@ def test_first_last_value(df_partitioned, name, expr, result) -> None:
             f.string_agg(column("a"), ",", order_by=column("b")),
             "one,three,two,two",
         ),
+        (
+            "string_agg",
+            f.string_agg(column("a"), ",", distinct=True, order_by=column("a")),
+            "one,three,two",
+        ),
     ],
 )
 def test_string_agg(name, expr, result) -> None:
@@ -496,3 +553,116 @@ def test_string_agg(name, expr, result) -> None:
     }
     df.show()
     assert df.collect()[0].to_pydict() == expected
+
+
+_FILTER = column("b") > lit(1)
+
+
+@pytest.mark.parametrize(
+    ("call", "match"),
+    [
+        pytest.param(
+            lambda: f.percentile_cont(column("a"), 0.5, _FILTER),
+            r"percentile_cont\(\).*pass filter by keyword",
+            id="percentile_cont",
+        ),
+        pytest.param(
+            lambda: f.quantile_cont(column("a"), 0.5, _FILTER),
+            r"quantile_cont\(\).*pass filter by keyword",
+            id="quantile_cont",
+        ),
+        pytest.param(
+            lambda: f.mean(column("a"), _FILTER),
+            r"mean\(\).*pass filter by keyword",
+            id="mean",
+        ),
+        pytest.param(
+            lambda: f.bit_and(column("a"), _FILTER),
+            r"bit_and\(\).*pass filter by keyword",
+            id="bit_and",
+        ),
+        pytest.param(
+            lambda: f.bit_or(column("a"), _FILTER),
+            r"bit_or\(\).*pass filter by keyword",
+            id="bit_or",
+        ),
+        pytest.param(
+            lambda: f.string_agg(column("a"), ",", _FILTER, column("b")),
+            r"string_agg\(\).*pass filter and order_by by keyword",
+            id="string_agg filter",
+        ),
+        pytest.param(
+            lambda: f.string_agg(column("a"), ",", None, column("b")),
+            r"string_agg\(\).*pass filter and order_by by keyword",
+            id="string_agg None placeholder",
+        ),
+    ],
+)
+def test_positional_filter_names_the_function(call, match) -> None:
+    # ``distinct`` was inserted before ``filter``. A call written for the old
+    # signature must name the function and the fix, not fail inside PyO3. The
+    # ``None`` placeholder would otherwise run with order_by shifted into
+    # filter.
+    with pytest.raises(TypeError, match=match):
+        call()
+
+
+def test_string_agg_accepts_numpy_bool_distinct() -> None:
+    np = pytest.importorskip("numpy")
+    df = SessionContext().from_pydict({"a": ["x", "y", "x"]})
+    expr = f.string_agg(column("a"), ",", distinct=np.True_, order_by="a")
+    assert df.aggregate([], [expr.alias("s")]).collect_column("s")[0].as_py() == "x,y"
+
+
+@pytest.mark.parametrize(
+    ("expr", "sql"),
+    [
+        pytest.param(
+            lambda s: f.percentile_cont(s, 0.25),
+            "percentile_cont(0.25)",
+            id="percentile_cont",
+        ),
+        pytest.param(
+            lambda s: f.quantile_cont(s, 0.25),
+            "quantile_cont(0.25)",
+            id="quantile_cont",
+        ),
+        pytest.param(
+            lambda s: f.approx_percentile_cont(s, 0.25),
+            "approx_percentile_cont(0.25)",
+            id="approx_percentile_cont",
+        ),
+        pytest.param(
+            lambda s: f.approx_percentile_cont_with_weight(s, lit(1.0), 0.25),
+            "approx_percentile_cont_with_weight(1.0, 0.25)",
+            id="approx_percentile_cont_with_weight",
+        ),
+    ],
+)
+def test_percentile_keeps_sort_direction(expr, sql) -> None:
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]}, name="t")
+    desc = column("a").sort(ascending=False)
+
+    result = df.aggregate([], [expr(desc).alias("p")]).collect_column("p")
+    expected = ctx.sql(
+        f"SELECT {sql} WITHIN GROUP (ORDER BY a DESC) AS p FROM t"
+    ).collect_column("p")
+    assert result.to_pylist() == expected.to_pylist()
+    assert (
+        result.to_pylist()
+        != df.aggregate([], [expr(column("a")).alias("p")])
+        .collect_column("p")
+        .to_pylist()
+    )
+
+
+def test_percentile_cont_order_by_replaces_sort() -> None:
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    expr = (
+        f.percentile_cont(column("a"), 0.25)
+        .order_by(column("a").sort(ascending=False))
+        .build()
+    )
+    assert df.aggregate([], [expr.alias("p")]).collect_column("p")[0].as_py() == 4.0

@@ -45,6 +45,7 @@ __all__ = [
     "Schema",
     "SchemaProvider",
     "Table",
+    "TableProviderFactory",
 ]
 
 

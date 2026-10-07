@@ -116,31 +116,38 @@ prefer `with_extensions` — is documented at {ref}`planner_codec_rebinding`.
 ## Why `with_extensions` commits last
 
 `with_extensions` promises that a bundle which raises leaves the session as it
-was. Keeping that promise is an ordering constraint on the implementation,
-because the components a bundle declares no longer all live on the returned
-handle — functions are registered on the shared `SessionState`, and the planner
-is bound there too.
+was, apart from anything a hook writes to the context it is handed
+({ref}`extension_bundles_transaction`). Keeping that promise is an ordering
+constraint on the implementation, not a property of any one step, because the
+components a bundle declares do not all live on the returned handle — functions
+are registered on the shared `SessionState`, and the planner is bound there too.
 
-A call therefore splits into a part that may fail and a part that may not:
+A call therefore splits into four steps, of which only the last writes:
 
-1. **Collect.** Every `__datafusion_session_components__` runs.
+1. **Collect.** Every `__datafusion_session_components__` runs and its
+   components are gathered. Nothing is installed yet, so a hook that raises here
+   has touched nothing.
 2. **Chains.** The codecs are assembled into the returned handle. Codec chains
    live on that handle rather than on the session, so this step writes nothing
-   even though it can fail on a bad capsule or a duplicate id.
-3. **Resolve.** Every declared function is wrapped and every name is checked,
-   and every `__datafusion_session_planner__` runs against the completed
-   chains.
+   to the session even though it can fail on a bad capsule or a duplicate id.
+3. **Resolve.** Every declared function is wrapped and every name is checked.
+   Then every `__datafusion_session_planner__` runs, in argument order, against
+   the completed chains, and each supplied planner is imported as it is
+   returned.
 4. **Commit.** The planner is bound, then the declared functions are
    registered with `register_udf`, `register_udaf` and `register_udwf` — the
-   same methods a caller would use, and three that cannot fail.
+   same methods a caller would use, and three that cannot fail. The bind is
+   skipped entirely when the call installed no planner and no codec, so an
+   empty call does not drag a planner sitting on another handle's codecs onto
+   this one's.
 
-Only step 4 touches the session, and every step that can fail happens before
-it. This is a rule for the next field added to
+Only step 4 touches the session, and every fallible operation completes before
+its first write. This is a rule for the next field added to
 `SessionExtensionComponents`, not only a description of the current code: a new
 kind of component must do its fallible work — importing a capsule, resolving a
-name — in step 3, so that step 4 cannot raise part-way through.
+name — in step 3, so no failure can leave the session half-updated.
 
-There is nothing to roll back to if it does. The returned handle shares one
+There would be nothing to roll back to if one did. The returned handle shares one
 session with the receiver, so the damage is visible from every other handle;
 and undoing a registration is not the same as restoring what it displaced,
 because deregistering a function that shadowed a built-in removes the built-in

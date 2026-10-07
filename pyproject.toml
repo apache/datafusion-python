@@ -54,7 +54,7 @@ dependencies = [
   "cloudpickle>=2.0",
   "pyarrow>=16.0.0;python_version<'3.14'",
   "pyarrow>=22.0.0;python_version>='3.14'",
-  "typing-extensions;python_version<'3.13'",
+  "typing-extensions>=4.12;python_version<'3.13'",
 ]
 dynamic = ["version"]
 
@@ -197,7 +197,7 @@ ignore-words-list = ["IST", "ans"]
 # Keep typing-extensions on a single version across all supported Pythons.
 # Adding the docs `myst-nb` stack pulled a newer typing-extensions only on
 # Python < 3.11, splitting it into two locked versions. Our own
-# `typing-extensions; python_full_version < '3.13'` dependency then spanned
+# `typing-extensions>=4.12; python_full_version < '3.13'` dependency then spanned
 # that split, which uv records as an under-specified lock entry that older
 # uv versions (such as the one in CI) refuse to parse. Pinning to one
 # version removes the fork.
@@ -236,4 +236,5 @@ docs = [
   "sphinx-autoapi>=3.4.0",
   "sphinx-reredirects>=0.1.5",
   "sphinx>=7.1.2",
+  "sphinx_copybutton>=0.5.2",
 ]

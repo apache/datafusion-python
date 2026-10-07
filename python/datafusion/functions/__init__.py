@@ -40,7 +40,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 import pyarrow as pa
 
@@ -82,15 +82,18 @@ __all__ = [
     "acosh",
     "alias",
     "any_match",
+    "any_value",
     "approx_distinct",
     "approx_median",
     "approx_percentile_cont",
     "approx_percentile_cont_with_weight",
     "array",
+    "array_add",
     "array_agg",
     "array_any_match",
     "array_any_value",
     "array_append",
+    "array_avg",
     "array_cat",
     "array_compact",
     "array_concat",
@@ -103,6 +106,7 @@ __all__ = [
     "array_except",
     "array_extract",
     "array_filter",
+    "array_first",
     "array_has",
     "array_has_all",
     "array_has_any",
@@ -119,6 +123,7 @@ __all__ = [
     "array_position",
     "array_positions",
     "array_prepend",
+    "array_product",
     "array_push_back",
     "array_push_front",
     "array_remove",
@@ -130,8 +135,11 @@ __all__ = [
     "array_replace_n",
     "array_resize",
     "array_reverse",
+    "array_scale",
     "array_slice",
     "array_sort",
+    "array_subtract",
+    "array_sum",
     "array_to_string",
     "array_transform",
     "array_union",
@@ -201,6 +209,7 @@ __all__ = [
     "exp",
     "extract",
     "factorial",
+    "file_row_index",
     "find_in_set",
     "first_value",
     "flatten",
@@ -216,6 +225,7 @@ __all__ = [
     "in_list",
     "initcap",
     "inner_product",
+    "input_file_name",
     "instr",
     "is_nan",
     "isnan",
@@ -230,9 +240,11 @@ __all__ = [
     "left",
     "length",
     "levenshtein",
+    "list_add",
     "list_any_match",
     "list_any_value",
     "list_append",
+    "list_avg",
     "list_cat",
     "list_compact",
     "list_concat",
@@ -245,6 +257,7 @@ __all__ = [
     "list_except",
     "list_extract",
     "list_filter",
+    "list_first",
     "list_has",
     "list_has_all",
     "list_has_any",
@@ -262,6 +275,7 @@ __all__ = [
     "list_position",
     "list_positions",
     "list_prepend",
+    "list_product",
     "list_push_back",
     "list_push_front",
     "list_remove",
@@ -273,8 +287,11 @@ __all__ = [
     "list_replace_n",
     "list_resize",
     "list_reverse",
+    "list_scale",
     "list_slice",
     "list_sort",
+    "list_subtract",
+    "list_sum",
     "list_to_string",
     "list_transform",
     "list_union",
@@ -319,6 +336,7 @@ __all__ = [
     "power",
     "quantile_cont",
     "radians",
+    "rand",
     "random",
     "range",
     "rank",
@@ -367,6 +385,7 @@ __all__ = [
     "substr",
     "substr_index",
     "substring",
+    "substring_index",
     "sum",
     "tan",
     "tanh",
@@ -467,46 +486,71 @@ def decode(expr: Expr, encoding: Expr | str) -> Expr:
     return Expr(f.decode(expr.expr, encoding.expr))
 
 
-def array_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
+def array_to_string(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
+
+    NULL elements are omitted unless ``null_string`` is given, in which case it
+    is written in their place.
 
     Examples:
         >>> ctx = dfn.SessionContext()
-        >>> df = ctx.from_pydict({"a": [[1, 2, 3]]})
+        >>> df = ctx.from_pydict({"a": [[1, None, 3]]})
         >>> result = df.select(
         ...     dfn.functions.array_to_string(dfn.col("a"), ",").alias("s"))
         >>> result.collect_column("s")[0].as_py()
-        '1,2,3'
+        '1,3'
+
+        >>> result = df.select(
+        ...     dfn.functions.array_to_string(
+        ...         dfn.col("a"), ",", null_string="*"
+        ...     ).alias("s"))
+        >>> result.collect_column("s")[0].as_py()
+        '1,*,3'
     """
     delimiter = coerce_to_expr(delimiter)
-    return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
+    null_string = coerce_to_expr_or_none(null_string)
+    return Expr(
+        f.array_to_string(
+            expr.expr,
+            delimiter.expr.cast(pa.string()),
+            null_string.expr if null_string is not None else None,
+        )
+    )
 
 
-def array_join(expr: Expr, delimiter: Expr | str) -> Expr:
+def array_join(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
-def list_to_string(expr: Expr, delimiter: Expr | str) -> Expr:
+def list_to_string(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
-def list_join(expr: Expr, delimiter: Expr | str) -> Expr:
+def list_join(
+    expr: Expr, delimiter: Expr | str, null_string: Expr | str | None = None
+) -> Expr:
     """Converts each element to its text representation.
 
     See Also:
         This is an alias for :py:func:`array_to_string`.
     """
-    return array_to_string(expr, delimiter)
+    return array_to_string(expr, delimiter, null_string=null_string)
 
 
 def lambda_var(name: str) -> Expr:
@@ -712,6 +756,46 @@ def list_filter(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
     return array_filter(array, predicate)
 
 
+def array_first(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return the first element of ``array`` for which ``predicate`` is ``True``.
+
+    ``predicate`` may be a Python callable, converted to a lambda
+    automatically, or an explicit lambda built with :py:func:`lambda_`. It must
+    return a boolean expression. Returns NULL if no element matches.
+
+    Examples:
+        Using a Python callable:
+
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1, 2, 3, 4]]})
+        >>> df.select(
+        ...     F.array_first(col("a"), lambda v: v > 2).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        3
+
+        Using an explicit lambda built with :py:func:`lambda_`:
+
+        >>> predicate = F.lambda_(["v"], F.lambda_var("v") > lit(2))
+        >>> df.select(
+        ...     F.array_first(col("a"), predicate).alias("f")
+        ... ).collect_column("f")[0].as_py()
+        3
+
+    See Also:
+        :py:func:`array_filter`, :py:func:`array_any_match`, :py:func:`lambda_`.
+    """
+    return Expr(f.array_first(array.expr, _to_lambda(predicate).expr))
+
+
+def list_first(array: Expr, predicate: Expr | Callable[..., Any]) -> Expr:
+    """Return the first element of a list for which a predicate is ``True``.
+
+    See Also:
+        This is an alias for :py:func:`array_first`.
+    """
+    return array_first(array, predicate)
+
+
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
     """Returns whether the argument is contained within the list ``values``.
 
@@ -808,7 +892,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
     return Expr(f.concat_ws(separator, args))
 
 
-def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
+def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = False) -> SortExpr:
     """Creates a new sort expression.
 
     Examples:
@@ -874,8 +958,9 @@ def count_star(filter: Expr | None = None) -> Expr:
 
     This aggregate function will count all of the rows in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``distinct``, and ``null_treatment``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``. ``distinct`` counts the distinct
+    values of the constant ``1``, so the result is 1 for any non-empty input.
 
     Args:
         filter: If provided, only count rows for which the filter is True
@@ -1069,8 +1154,8 @@ def bit_length(arg: Expr) -> Expr:
     return Expr(f.bit_length(arg.expr))
 
 
-def btrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string.
+def btrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from both sides of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1078,8 +1163,20 @@ def btrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.btrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         'a'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.btrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'a'
     """
-    return Expr(f.btrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.btrim(*args))
 
 
 def cbrt(arg: Expr) -> Expr:
@@ -1557,8 +1654,8 @@ def lpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
 
-def ltrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the beginning of a string.
+def ltrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from the beginning of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -1566,8 +1663,20 @@ def ltrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.ltrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         'a  '
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.ltrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'axx'
     """
-    return Expr(f.ltrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.ltrim(*args))
 
 
 def md5(arg: Expr) -> Expr:
@@ -2079,8 +2188,8 @@ def rpad(string: Expr, count: Expr | int, characters: Expr | str | None = None) 
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
 
-def rtrim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from the end of a string.
+def rtrim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from the end of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2088,8 +2197,20 @@ def rtrim(arg: Expr) -> Expr:
         >>> trim_df = df.select(dfn.functions.rtrim(dfn.col("a")).alias("trimmed"))
         >>> trim_df.collect_column("trimmed")[0].as_py()
         ' a'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxaxx"]})
+        >>> trim_df = df.select(
+        ...     dfn.functions.rtrim(dfn.col("a"), characters="x").alias("trimmed")
+        ... )
+        >>> trim_df.collect_column("trimmed")[0].as_py()
+        'xxa'
     """
-    return Expr(f.rtrim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.rtrim(*args))
 
 
 def sha224(arg: Expr) -> Expr:
@@ -2253,8 +2374,10 @@ def strpos(string: Expr, substring: Expr | str) -> Expr:
     return Expr(f.strpos(string.expr, substring.expr))
 
 
-def substr(string: Expr, position: Expr | int) -> Expr:
-    """Substring from the ``position`` to the end.
+def substr(
+    string: Expr, position: Expr | int, length: Expr | int | None = None
+) -> Expr:
+    """Substring from the ``position``, to the end or for ``length`` characters.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2263,7 +2386,17 @@ def substr(string: Expr, position: Expr | int) -> Expr:
         ...     dfn.functions.substr(dfn.col("a"), 3).alias("s"))
         >>> result.collect_column("s")[0].as_py()
         'llo'
+
+        >>> result = df.select(
+        ...     dfn.functions.substr(dfn.col("a"), 2, length=3).alias("s"))
+        >>> result.collect_column("s")[0].as_py()
+        'ell'
+
+    See Also:
+        :py:func:`substring`.
     """
+    if length is not None:
+        return substring(string, position, length)
     position = coerce_to_expr(position)
     return Expr(f.substr(string.expr, position.expr))
 
@@ -2285,6 +2418,15 @@ def substr_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr
     delimiter = coerce_to_expr(delimiter)
     count = coerce_to_expr(count)
     return Expr(f.substr_index(string.expr, delimiter.expr, count.expr))
+
+
+def substring_index(string: Expr, delimiter: Expr | str, count: Expr | int) -> Expr:
+    """Returns an indexed substring.
+
+    See Also:
+        This is an alias for :py:func:`substr_index`.
+    """
+    return substr_index(string, delimiter, count)
 
 
 def substring(string: Expr, position: Expr | int, length: Expr | int) -> Expr:
@@ -2890,8 +3032,8 @@ def translate(string: Expr, from_val: Expr | str, to_val: Expr | str) -> Expr:
     return Expr(f.translate(string.expr, from_val.expr, to_val.expr))
 
 
-def trim(arg: Expr) -> Expr:
-    """Removes all characters, spaces by default, from both sides of a string.
+def trim(arg: Expr, characters: Expr | str | None = None) -> Expr:
+    """Removes ``characters``, spaces by default, from both sides of a string.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -2899,8 +3041,20 @@ def trim(arg: Expr) -> Expr:
         >>> result = df.select(dfn.functions.trim(dfn.col("a")).alias("t"))
         >>> result.collect_column("t")[0].as_py()
         'hello'
+
+        Trim a different set of characters:
+
+        >>> df = ctx.from_pydict({"a": ["xxhelloxx"]})
+        >>> result = df.select(
+        ...     dfn.functions.trim(dfn.col("a"), characters="x").alias("t")
+        ... )
+        >>> result.collect_column("t")[0].as_py()
+        'hello'
     """
-    return Expr(f.trim(arg.expr))
+    args = [arg.expr]
+    if characters is not None:
+        args.append(coerce_to_expr(characters).expr)
+    return Expr(f.trim(*args))
 
 
 def trunc(num: Expr, precision: Expr | int | None = None) -> Expr:
@@ -2973,18 +3127,84 @@ def array(*args: Expr) -> Expr:
     return make_array(*args)
 
 
-def range(start: Expr, stop: Expr, step: Expr) -> Expr:
-    """Create a list of values in the range between start and stop.
+_SERIES_SIGNATURE = inspect.Signature(
+    [
+        inspect.Parameter("start", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+        inspect.Parameter("stop", inspect.Parameter.POSITIONAL_OR_KEYWORD),
+        inspect.Parameter(
+            "step", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None
+        ),
+    ]
+)
+
+
+def _series(
+    fn: Callable[..., Any], name: str, args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> Expr:
+    # ``stop`` is required and ``start`` defaults to 0, as in numpy.arange: a
+    # lone positional argument is ``stop``. ``start=`` alone is then a missing
+    # ``stop``, so it cannot silently become the upper bound.
+    if len(args) == 1 and not kwargs:
+        args = (0, *args)
+    elif not args and "start" not in kwargs:
+        kwargs = {"start": 0, **kwargs}
+    try:
+        bound = _SERIES_SIGNATURE.bind(*args, **kwargs)
+    except TypeError as e:
+        msg = f"{name}() {e}"
+        raise TypeError(msg) from None
+    start, stop = bound.arguments["start"], bound.arguments["stop"]
+    if stop is None:
+        msg = f"{name}() stop cannot be None"
+        raise TypeError(msg)
+    step = coerce_to_expr_or_none(bound.arguments.get("step"))
+    return Expr(
+        fn(
+            coerce_to_expr(start).expr,
+            coerce_to_expr(stop).expr,
+            step.expr if step is not None else None,
+        )
+    )
+
+
+@overload
+def range(stop: Expr | int) -> Expr: ...
+
+
+@overload
+def range(
+    start: Expr | int,
+    stop: Expr | int,
+    step: Expr | int | None = None,
+) -> Expr: ...
+
+
+def range(*args: Any, **kwargs: Any) -> Expr:
+    """Create a list of values from ``start`` up to, but excluding, ``stop``.
+
+    With a single argument it is ``stop`` and the range starts at 0, like
+    Python's built-in :py:class:`range`.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [1]})
-        >>> result = df.select(
-        ...     dfn.functions.range(dfn.lit(0), dfn.lit(5), dfn.lit(2)).alias("r"))
+        >>> result = df.select(dfn.functions.range(5).alias("r"))
+        >>> result.collect_column("r")[0].as_py()
+        [0, 1, 2, 3, 4]
+
+        Specify a ``stop``:
+
+        >>> result = df.select(dfn.functions.range(1, stop=5).alias("r"))
+        >>> result.collect_column("r")[0].as_py()
+        [1, 2, 3, 4]
+
+        Specify a ``step``:
+
+        >>> result = df.select(dfn.functions.range(0, stop=5, step=2).alias("r"))
         >>> result.collect_column("r")[0].as_py()
         [0, 2, 4]
     """
-    return Expr(f.range(start.expr, stop.expr, step.expr))
+    return _series(f.range, "range", args, kwargs)
 
 
 def uuid() -> Expr:
@@ -3432,6 +3652,64 @@ def random() -> Expr:
     return Expr(f.random())
 
 
+def rand() -> Expr:
+    """Returns a random value in the range ``0.0 <= x < 1.0``.
+
+    See Also:
+        This is an alias for :py:func:`random`.
+    """
+    return random()
+
+
+def input_file_name() -> Expr:
+    """Returns the path of the file that produced the current row.
+
+    Only valid inside a scan of a file-backed table; evaluating it anywhere
+    else raises an error.
+
+    Examples:
+        >>> import tempfile, os
+        >>> import pyarrow as pa, pyarrow.parquet as pq
+        >>> tmp = tempfile.mkdtemp()
+        >>> path = os.path.join(tmp, "data.parquet")
+        >>> pq.write_table(pa.table({"a": [1, 2]}), path)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.read_parquet(path)
+        >>> result = df.select(dfn.functions.input_file_name().alias("f"))
+        >>> result.collect_column("f")[0].as_py().endswith("data.parquet")
+        True
+
+    See Also:
+        :py:func:`file_row_index`.
+    """
+    return Expr(f.input_file_name())
+
+
+def file_row_index() -> Expr:
+    """Returns the zero-based position of the current row within its source file.
+
+    The index restarts at zero for each file, so rows from different files in one
+    scan can share a value. Only valid inside a scan of a Parquet table;
+    evaluating it anywhere else raises an error.
+
+    Examples:
+        >>> import tempfile, os
+        >>> import pyarrow as pa, pyarrow.parquet as pq
+        >>> tmp = tempfile.mkdtemp()
+        >>> path = os.path.join(tmp, "data.parquet")
+        >>> pq.write_table(pa.table({"a": [10, 20, 30]}), path)
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.read_parquet(path).filter(dfn.col("a") > dfn.lit(10))
+        >>> result = df.select(dfn.functions.file_row_index().alias("i"))
+        >>> result.collect_column("i").to_pylist()
+        [1, 2]
+
+    See Also:
+        :py:func:`input_file_name`.
+    """
+    return Expr(f.file_row_index())
+
+
 def array_append(array: Expr, element: Expr) -> Expr:
     """Appends an element to the end of an array.
 
@@ -3687,6 +3965,122 @@ def dot_product(array1: Expr, array2: Expr) -> Expr:
     return inner_product(array1, array2)
 
 
+def array_add(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise sum of two numeric arrays of equal length.
+
+    A NULL element in either input produces a NULL at that position. Execution
+    fails if the arrays in a row have different lengths.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[1.0, 2.0, 3.0]], "b": [[10.0, 20.0, 30.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.array_add(dfn.col("a"), dfn.col("b")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [11.0, 22.0, 33.0]
+    """
+    return Expr(f.array_add(array1.expr, array2.expr))
+
+
+def array_subtract(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise difference of two numeric arrays of equal length.
+
+    Computes ``array1[i] - array2[i]``. A NULL element in either input produces
+    a NULL at that position. Execution fails if the arrays in a row have
+    different lengths.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict(
+        ...     {"a": [[10.0, 20.0, 30.0]], "b": [[1.0, 2.0, 3.0]]}
+        ... )
+        >>> result = df.select(
+        ...     dfn.functions.array_subtract(
+        ...         dfn.col("a"), dfn.col("b")
+        ...     ).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [9.0, 18.0, 27.0]
+    """
+    return Expr(f.array_subtract(array1.expr, array2.expr))
+
+
+def array_scale(array: Expr, scalar: Expr | float) -> Expr:
+    """Multiplies each element of a numeric array by ``scalar``.
+
+    A NULL element produces a NULL at that position. Returns NULL if ``scalar``
+    is NULL.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, 2.0, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_scale(dfn.col("a"), 2.0).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        [2.0, 4.0, 6.0]
+    """
+    scalar = coerce_to_expr(scalar)
+    return Expr(f.array_scale(array.expr, scalar.expr))
+
+
+def array_sum(array: Expr) -> Expr:
+    """Returns the sum of the elements of a numeric array.
+
+    NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+    contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_sum(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        4.0
+    """
+    return Expr(f.array_sum(array.expr))
+
+
+def array_avg(array: Expr) -> Expr:
+    """Returns the arithmetic mean of the elements of a numeric array.
+
+    NULL elements are skipped and excluded from the count. Returns NULL if the
+    array is NULL, empty, or contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[1.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_avg(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        2.0
+    """
+    return Expr(f.array_avg(array.expr))
+
+
+def array_product(array: Expr) -> Expr:
+    """Returns the product of the elements of a numeric array.
+
+    NULL elements are skipped. Returns NULL if the array is NULL, empty, or
+    contains only NULL elements.
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [[2.0, None, 3.0]]})
+        >>> result = df.select(
+        ...     dfn.functions.array_product(dfn.col("a")).alias("result")
+        ... )
+        >>> result.collect_column("result")[0].as_py()
+        6.0
+    """
+    return Expr(f.array_product(array.expr))
+
+
 def list_cat(*args: Expr) -> Expr:
     """Concatenates the input arrays.
 
@@ -3730,6 +4124,60 @@ def list_normalize(array: Expr) -> Expr:
         This is an alias for :py:func:`array_normalize`.
     """
     return array_normalize(array)
+
+
+def list_add(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise sum of two numeric lists of equal length.
+
+    See Also:
+        This is an alias for :py:func:`array_add`.
+    """
+    return array_add(array1, array2)
+
+
+def list_subtract(array1: Expr, array2: Expr) -> Expr:
+    """Returns the element-wise difference of two numeric lists of equal length.
+
+    See Also:
+        This is an alias for :py:func:`array_subtract`.
+    """
+    return array_subtract(array1, array2)
+
+
+def list_scale(array: Expr, scalar: Expr | float) -> Expr:
+    """Multiplies each element of a numeric list by a scalar.
+
+    See Also:
+        This is an alias for :py:func:`array_scale`.
+    """
+    return array_scale(array, scalar)
+
+
+def list_sum(array: Expr) -> Expr:
+    """Returns the sum of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_sum`.
+    """
+    return array_sum(array)
+
+
+def list_avg(array: Expr) -> Expr:
+    """Returns the arithmetic mean of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_avg`.
+    """
+    return array_avg(array)
+
+
+def list_product(array: Expr) -> Expr:
+    """Returns the product of the elements of a numeric list.
+
+    See Also:
+        This is an alias for :py:func:`array_product`.
+    """
+    return array_product(array)
 
 
 def list_dims(array: Expr) -> Expr:
@@ -4696,43 +5144,66 @@ def string_to_list(
     return string_to_array(string, delimiter, null_string)
 
 
-def gen_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
-    """Creates a list of values in the range between start and stop.
+@overload
+def gen_series(stop: Expr | int) -> Expr: ...
 
-    Unlike :py:func:`range`, this includes the upper bound.
+
+@overload
+def gen_series(
+    start: Expr | int,
+    stop: Expr | int,
+    step: Expr | int | None = None,
+) -> Expr: ...
+
+
+def gen_series(*args: Any, **kwargs: Any) -> Expr:
+    """Creates a list of values from ``start`` up to and including ``stop``.
+
+    Unlike :py:func:`range`, this includes the upper bound. With a single
+    argument it is ``stop`` and the series starts at 0.
 
     Examples:
         >>> ctx = dfn.SessionContext()
         >>> df = ctx.from_pydict({"a": [0]})
-        >>> result = df.select(
-        ...     dfn.functions.gen_series(
-        ...         dfn.lit(1), dfn.lit(5),
-        ...     ).alias("result"))
+        >>> result = df.select(dfn.functions.gen_series(3).alias("result"))
+        >>> result.collect_column("result")[0].as_py()
+        [0, 1, 2, 3]
+
+        Specify a ``stop``:
+
+        >>> result = df.select(dfn.functions.gen_series(1, stop=5).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 2, 3, 4, 5]
 
-        Specify a custom ``step``:
+        Specify a ``step``:
 
         >>> result = df.select(
-        ...     dfn.functions.gen_series(
-        ...         dfn.lit(1), dfn.lit(10), step=dfn.lit(3),
-        ...     ).alias("result"))
+        ...     dfn.functions.gen_series(1, stop=10, step=3).alias("result"))
         >>> result.collect_column("result")[0].as_py()
         [1, 4, 7, 10]
     """
-    step_expr = step.expr if step is not None else None
-    return Expr(f.gen_series(start.expr, stop.expr, step_expr))
+    return _series(f.gen_series, "gen_series", args, kwargs)
 
 
-def generate_series(start: Expr, stop: Expr, step: Expr | None = None) -> Expr:
-    """Creates a list of values in the range between start and stop.
+@overload
+def generate_series(stop: Expr | int) -> Expr: ...
 
-    Unlike :py:func:`range`, this includes the upper bound.
+
+@overload
+def generate_series(
+    start: Expr | int,
+    stop: Expr | int,
+    step: Expr | int | None = None,
+) -> Expr: ...
+
+
+def generate_series(*args: Any, **kwargs: Any) -> Expr:
+    """Creates a list of values from ``start`` up to and including ``stop``.
 
     See Also:
         This is an alias for :py:func:`gen_series`.
     """
-    return gen_series(start, stop, step)
+    return _series(f.gen_series, "generate_series", args, kwargs)
 
 
 def flatten(array: Expr) -> Expr:
@@ -4933,7 +5404,7 @@ def approx_distinct(
     will approximate the number of distinct entries. It may return significantly faster
     than :py:func:`count` for some DataFrames.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -4969,7 +5440,7 @@ def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function is similar to :py:func:`median`, but it will only
     approximate the median. It may return significantly faster for some DataFrames.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5016,8 +5487,10 @@ def approx_percentile_cont(
     compute the percentile. You can limit the number of bins used in this algorithm by
     setting the ``num_centroids`` parameter.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the options ``null_treatment`` and ``distinct``. A chained ``order_by`` sets only
+    the sort direction; the percentile is still computed over ``sort_expression``,
+    so pass the same expression.
 
     Args:
         sort_expression: Values for which to find the approximate percentile
@@ -5065,8 +5538,10 @@ def approx_percentile_cont_with_weight(
     This aggregate function is similar to :py:func:`approx_percentile_cont` except that
     it uses the associated associated weights.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the option ``null_treatment`` and rejects ``distinct``. A chained ``order_by``
+    sets only the sort direction; the percentile is still computed over
+    ``sort_expression``, so pass the same expression.
 
     Args:
         sort_expression: Values for which to find the approximate percentile
@@ -5107,9 +5582,33 @@ def approx_percentile_cont_with_weight(
     )
 
 
+def _check_distinct(name: str, distinct: object, *shifted: str) -> None:
+    """Raise when a positional ``filter`` from before ``distinct`` landed here.
+
+    Args:
+        name: Function name for the message.
+        distinct: The value received for ``distinct``.
+        shifted: Names of the arguments that follow ``distinct``.
+
+    Examples:
+        >>> dfn.functions._check_distinct("mean", True, "filter")
+        >>> dfn.functions._check_distinct("mean", dfn.col("a"), "filter")
+        Traceback (most recent call last):
+        ...
+        TypeError: mean() distinct must be a bool, got Expr; pass filter by keyword
+    """
+    if distinct is None or isinstance(distinct, Expr):
+        msg = (
+            f"{name}() distinct must be a bool, got {type(distinct).__name__}; "
+            f"pass {' and '.join(shifted)} by keyword"
+        )
+        raise TypeError(msg)
+
+
 def percentile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the exact percentile of input values using continuous interpolation.
@@ -5117,12 +5616,15 @@ def percentile_cont(
     Unlike :py:func:`approx_percentile_cont`, this function computes the exact
     percentile value rather than an approximation.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the option ``null_treatment``. A chained ``order_by`` sets only the sort
+    direction; the percentile is still computed over ``sort_expression``, so pass
+    the same expression.
 
     Args:
         sort_expression: Values for which to find the percentile
         percentile: This must be between 0.0 and 1.0, inclusive
+        distinct: If True, duplicate values are removed before computing
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -5142,15 +5644,29 @@ def percentile_cont(
         ...     ).alias("v")])
         >>> result.collect_column("v")[0].as_py()
         3.5
+
+        >>> df = ctx.from_pydict({"a": [1.0, 1.0, 1.0, 4.0]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.percentile_cont(
+        ...         dfn.col("a"), 0.5, distinct=True,
+        ...     ).alias("v")])
+        >>> result.collect_column("v")[0].as_py()
+        2.5
     """
+    _check_distinct("percentile_cont", distinct, "filter")
     sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.percentile_cont(sort_expr_raw, percentile, filter=filter_raw))
+    return Expr(
+        f.percentile_cont(
+            sort_expr_raw, percentile, distinct=distinct, filter=filter_raw
+        )
+    )
 
 
 def quantile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
+    distinct: bool = False,
     filter: Expr | None = None,
 ) -> Expr:
     """Computes the exact percentile of input values using continuous interpolation.
@@ -5158,7 +5674,10 @@ def quantile_cont(
     See Also:
         This is an alias for :py:func:`percentile_cont`.
     """
-    return percentile_cont(sort_expression, percentile, filter)
+    _check_distinct("quantile_cont", distinct, "filter")
+    return percentile_cont(
+        sort_expression, percentile, distinct=distinct, filter=filter
+    )
 
 
 def array_agg(
@@ -5173,7 +5692,7 @@ def array_agg(
     consider :py:func:`array_sort` after aggregation.
     [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``null_treatment``.
 
     Args:
@@ -5287,7 +5806,7 @@ def avg(
 
     This aggregate function expects a numeric expression and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5330,7 +5849,7 @@ def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5369,7 +5888,7 @@ def count(
 
     This aggregate function will count the non-null rows provided in the expression.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5413,7 +5932,7 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5454,7 +5973,7 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr
 
     This aggregate function expects both values to be numeric and will return a float.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5496,7 +6015,7 @@ def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
 def max(expression: Expr, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the maximum value of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5525,13 +6044,18 @@ def max(expression: Expr, filter: Expr | None = None) -> Expr:
     return Expr(f.max(expression.expr, filter=filter_raw))
 
 
-def mean(expression: Expr, filter: Expr | None = None) -> Expr:
+def mean(
+    expression: Expr,
+    distinct: bool = False,
+    filter: Expr | None = None,
+) -> Expr:
     """Returns the average (mean) value of the argument.
 
     See Also:
         This is an alias for :py:func:`avg`.
     """
-    return avg(expression, filter)
+    _check_distinct("mean", distinct, "filter")
+    return avg(expression, distinct=distinct, filter=filter)
 
 
 def median(
@@ -5542,7 +6066,7 @@ def median(
     This aggregate function returns the median value of the expression for the given
     aggregate function.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5576,7 +6100,7 @@ def median(
 def min(expression: Expr, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the minimum value of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5614,7 +6138,7 @@ def sum(
 
     This aggregate function expects a numeric expression.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -5655,7 +6179,7 @@ def sum(
 def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the standard deviation of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5687,7 +6211,7 @@ def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
 def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population standard deviation of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5740,7 +6264,7 @@ def var(expression: Expr, filter: Expr | None = None) -> Expr:
 def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5781,7 +6305,7 @@ def var_population(expression: Expr, filter: Expr | None = None) -> Expr:
 def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5829,7 +6353,7 @@ def regr_avgx(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5870,7 +6394,7 @@ def regr_avgy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5911,7 +6435,7 @@ def regr_count(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5952,7 +6476,7 @@ def regr_intercept(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -5995,7 +6519,7 @@ def regr_r2(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6036,7 +6560,7 @@ def regr_slope(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6077,7 +6601,7 @@ def regr_sxx(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6118,7 +6642,7 @@ def regr_sxy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6159,7 +6683,7 @@ def regr_syy(
     This is a linear regression aggregate function. Only non-null pairs of the inputs
     are evaluated.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6200,7 +6724,7 @@ def first_value(
 
     This aggregate function will return the first value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6256,7 +6780,7 @@ def last_value(
 
     This aggregate function will return the last value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6313,7 +6837,7 @@ def nth_value(
 
     This aggregate function will return the n-th value in the partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the option ``distinct``.
 
     Args:
@@ -6360,16 +6884,55 @@ def nth_value(
     )
 
 
-def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
+def any_value(expression: Expr, filter: Expr | None = None) -> Expr:
+    """Returns an arbitrary non-null value from each group.
+
+    Returns NULL if every value in the group is NULL. Which value is returned
+    is not specified and may differ between runs.
+
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to pick a value from
+        filter: If provided, only consider rows for which the filter is True
+
+    Examples:
+        >>> ctx = dfn.SessionContext()
+        >>> df = ctx.from_pydict({"a": [None, 7, None]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.any_value(dfn.col("a")).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        7
+
+        >>> df = ctx.from_pydict({"a": [None, 7, 8], "b": [1, 2, 3]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.any_value(
+        ...         dfn.col("a"),
+        ...         filter=dfn.col("b") > dfn.lit(2)
+        ...     ).alias("v")]
+        ... )
+        >>> result.collect_column("v")[0].as_py()
+        8
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.any_value(expression.expr, filter=filter_raw))
+
+
+def bit_and(
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
+) -> Expr:
     """Computes the bitwise AND of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6391,20 +6954,24 @@ def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result.collect_column("v")[0].as_py()
         5
     """
+    _check_distinct("bit_and", distinct, "filter")
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_and(expression.expr, filter=filter_raw))
+    return Expr(f.bit_and(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
+def bit_or(
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
+) -> Expr:
     """Computes the bitwise OR of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by``, ``null_treatment``, and ``distinct``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
         filter: If provided, only compute against rows for which the filter is True
 
     Examples:
@@ -6428,8 +6995,9 @@ def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
         >>> result.collect_column("v")[0].as_py()
         6
     """
+    _check_distinct("bit_or", distinct, "filter")
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.bit_or(expression.expr, filter=filter_raw))
+    return Expr(f.bit_or(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def bit_xor(
@@ -6439,7 +7007,7 @@ def bit_xor(
 
     This aggregate function will bitwise compare every value in the input partition.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by`` and ``null_treatment``.
 
     Args:
@@ -6478,7 +7046,7 @@ def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function will compare every value in the input partition. These are
     expected to be boolean values.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6517,7 +7085,7 @@ def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     This aggregate function will compare every value in the input partition. These are
     expected to be boolean values.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
+    If using the builder functions described in :ref:`aggregation` this function ignores
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
@@ -6556,6 +7124,7 @@ def lead(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
+    null_treatment: NullTreatment | None = None,
 ) -> Expr:
     """Create a lead window function.
 
@@ -6577,7 +7146,7 @@ def lead(
         +--------+------+-----+
 
     To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    :ref:`window_functions` online documentation.
 
     Args:
         arg: Value to return
@@ -6586,6 +7155,8 @@ def lead(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
+        null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+            counting ``shift_offset`` rows.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -6608,6 +7179,16 @@ def lead(
         ...     ).alias("lead"))
         >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lead").to_pylist()
         [2, 0, 0]
+
+        >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+        >>> result = df.select(
+        ...     dfn.col("i"),
+        ...     dfn.functions.lead(
+        ...         dfn.col("v"), order_by="i",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("lead"))
+        >>> result.sort(dfn.col("i")).collect_column("lead").to_pylist()
+        [4, 4, 4, None]
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -6622,6 +7203,9 @@ def lead(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
+            null_treatment=(
+                null_treatment.value if null_treatment is not None else None
+            ),
         )
     )
 
@@ -6632,6 +7216,7 @@ def lag(
     default_value: Any | None = None,
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
+    null_treatment: NullTreatment | None = None,
 ) -> Expr:
     """Create a lag window function.
 
@@ -6659,6 +7244,8 @@ def lag(
         partition_by: Expressions to partition the window frame on.
         order_by: Set ordering within the window frame. Accepts
             column names or expressions.
+        null_treatment: Set to ``IGNORE_NULLS`` to skip null values when
+            counting ``shift_offset`` rows.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -6681,6 +7268,16 @@ def lag(
         ...     ).alias("lag"))
         >>> result.sort(dfn.col("g"), dfn.col("v")).collect_column("lag").to_pylist()
         [0, 1, 0]
+
+        >>> df = ctx.from_pydict({"i": [1, 2, 3, 4], "v": [1, None, None, 4]})
+        >>> result = df.select(
+        ...     dfn.col("i"),
+        ...     dfn.functions.lag(
+        ...         dfn.col("v"), order_by="i",
+        ...         null_treatment=dfn.common.NullTreatment.IGNORE_NULLS,
+        ...     ).alias("lag"))
+        >>> result.sort(dfn.col("i")).collect_column("lag").to_pylist()
+        [None, 1, 1, 1]
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -6695,6 +7292,9 @@ def lag(
             default_value,
             partition_by=partition_by_raw,
             order_by=order_by_raw,
+            null_treatment=(
+                null_treatment.value if null_treatment is not None else None
+            ),
         )
     )
 
@@ -7054,6 +7654,7 @@ def ntile(
 def string_agg(
     expression: Expr,
     delimiter: str,
+    distinct: bool = False,
     filter: Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
@@ -7063,12 +7664,13 @@ def string_agg(
     separating them with the specified delimiter. Non-string values will be converted to
     their string equivalents.
 
-    If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``distinct`` and ``null_treatment``.
+    If using the builder functions described in :ref:`aggregation` this function ignores
+    the option ``null_treatment``.
 
     Args:
         expression: Argument to perform bitwise calculation on
         delimiter: Text to place between each value of expression
+        distinct: If True, each unique value of expression is included only once
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate. Accepts
             column names or expressions.
@@ -7091,7 +7693,16 @@ def string_agg(
         ...     ).alias("s")])
         >>> result.collect_column("s")[0].as_py()
         'y,z'
+
+        >>> df = ctx.from_pydict({"a": ["y", "x", "y"]})
+        >>> result = df.aggregate(
+        ...     [], [dfn.functions.string_agg(
+        ...         dfn.col("a"), ",", distinct=True, order_by="a",
+        ...     ).alias("s")])
+        >>> result.collect_column("s")[0].as_py()
+        'x,y'
     """
+    _check_distinct("string_agg", distinct, "filter", "order_by")
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
@@ -7099,6 +7710,7 @@ def string_agg(
         f.string_agg(
             expression.expr,
             delimiter,
+            distinct=distinct,
             filter=filter_raw,
             order_by=order_by_raw,
         )
